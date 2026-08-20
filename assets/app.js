@@ -66,13 +66,15 @@ function updateCartCount(){
   const count = getCart().reduce((s,i)=>s+i.qty,0);
   document.querySelectorAll(".cart-count").forEach(x=>{x.textContent=count;x.classList.toggle("show",count>0)});
 }
-function addToCart(id,size=2,qty=1){
+function addToCart(id,size=2,qty=1,group="decant"){
   const p = PRODUCTS.find(x=>x.id===id); if(!p) return;
-  const key = id+"-"+size; const cart = getCart();
+  const price = group==="bottle" ? p.bottle?.[size] : p.price[size];
+  if(!price) return;
+  const key = id+"-"+size+"-"+group; const cart = getCart();
   const ex = cart.find(i=>i.key===key);
-  if(ex) ex.qty += qty; else cart.push({key,id,size,qty,price:p.price[size]});
+  if(ex) ex.qty += qty; else cart.push({key,id,size,qty,price,group});
   saveCart(cart);
-  toast(`${p.brand} ${p.name} · ${size} ml — añadido`);
+  toast(`${p.brand} ${p.name} · ${group==="bottle"?"frasco ":""}${size} ml — añadido`);
 }
 function removeFromCart(key){ saveCart(getCart().filter(i=>i.key!==key)); renderCart(); }
 function changeQty(key,delta){
@@ -81,26 +83,38 @@ function changeQty(key,delta){
 }
 
 /* ---------- Tarjeta de producto ---------- */
-function productCard(p){
-  const min = Math.min(...Object.values(p.price));
+function productCard(p, mode){
+  const isBottle = mode === "bottle";
+  const prices = isBottle ? p.bottle : p.price;
+  const min = Math.min(...Object.values(prices));
+  const minSize = isBottle ? Math.min(...Object.keys(p.bottle)) : 1;
+  const bottle = p.bottle ? Math.min(...Object.values(p.bottle)) : null;
+  const bSize = p.bottle ? Math.min(...Object.keys(p.bottle)) : null;
+  const qSize = isBottle ? minSize : 2;
+  const qGroup = isBottle ? "bottle" : "decant";
   return `<article class="product-card reveal in">
     <a href="product.html?id=${p.id}">
       <div class="card-media" style="--glow:${glow(p)}">
         ${bottleSVG(p)}
         <span class="tag">${p.tag}</span>
-        <button class="quick-add" data-add="${p.id}" aria-label="Añadir ${p.name}">+</button>
+        <button class="quick-add" data-add="${p.id}" data-size="${qSize}" data-group="${qGroup}" aria-label="Añadir ${p.name}">+</button>
       </div>
       <div class="card-body">
         <span class="card-brand">${p.brand}</span>
         <h3 class="card-name">${p.name}</h3>
-        <div class="card-meta"><span>desde 1 ml</span><b>${money(min)}</b></div>
+        <div class="card-meta"><span>${isBottle?`frasco ${minSize} ml`:"desde 1 ml"}</span><b>${money(min)}</b></div>
+        ${isBottle && p.price ? `<div class="card-bottle">Prueba antes en decant · desde ${money(Math.min(...Object.values(p.price)))}</div>` : ""}
+        ${!isBottle && bottle ? `<div class="card-bottle">Frasco completo · desde ${money(bottle)} (${bSize} ml)</div>` : ""}
       </div>
     </a>
   </article>`;
 }
 function attachAddHandlers(){
   document.querySelectorAll("[data-add]").forEach(b=>{
-    b.addEventListener("click",e=>{ e.preventDefault(); e.stopPropagation(); addToCart(b.dataset.add,2); });
+    b.addEventListener("click",e=>{
+      e.preventDefault(); e.stopPropagation();
+      addToCart(b.dataset.add, Number(b.dataset.size||2), 1, b.dataset.group||"decant");
+    });
   });
 }
 
@@ -146,21 +160,34 @@ function initSearch(){
   });
 }
 
+/* ---------- Home: frascos completos ---------- */
+function renderBottles(){
+  const el = document.getElementById("bottle-grid"); if(!el) return;
+  const items = PRODUCTS.filter(p=>p.bottle)
+    .sort((a,b)=>Math.min(...Object.values(a.price))-Math.min(...Object.values(b.price)))
+    .slice(0,4);
+  el.innerHTML = items.map(p=>productCard(p,"bottle")).join("");
+  attachAddHandlers();
+}
+
 /* ---------- Catálogo ---------- */
 function initCatalog(){
   const grid = document.getElementById("catalog-grid"); if(!grid) return;
   const gender = document.getElementById("gender-filter"), family = document.getElementById("family-filter"),
-        type = document.getElementById("type-filter"), sale = document.getElementById("sale-filter"),
+        type = document.getElementById("type-filter"), format = document.getElementById("format-filter"),
+        sale = document.getElementById("sale-filter"),
         sort = document.getElementById("sort-filter"), count = document.getElementById("result-count");
   const qs = new URLSearchParams(location.search);
   if(qs.get("family")) family.value = qs.get("family");
   if(qs.get("gender")) gender.value = qs.get("gender");
   if(qs.get("type")) type.value = qs.get("type");
+  if(qs.get("format")) format.value = qs.get("format");
   const run = ()=>{
     let items = [...PRODUCTS];
     if(gender.value!=="all") items = items.filter(p=>p.gender===gender.value);
     if(family.value!=="all") items = items.filter(p=>p.family===family.value);
     if(type.value!=="all") items = items.filter(p=>p.type===type.value);
+    if(format.value==="bottle") items = items.filter(p=>p.bottle);
     if(sale.checked) items = items.filter(p=>p.bestseller);
     const minP = p => Math.min(...Object.values(p.price));
     if(sort.value==="priceAsc") items.sort((a,b)=>minP(a)-minP(b));
@@ -171,9 +198,9 @@ function initCatalog(){
       : `<div class="empty-state"><strong>Sin resultados</strong>Prueba ajustando los filtros o buscando otra familia olfativa.</div>`;
     attachAddHandlers();
   };
-  [gender,family,type,sale,sort].forEach(x=>x?.addEventListener("change",run));
+  [gender,family,type,format,sale,sort].forEach(x=>x?.addEventListener("change",run));
   document.querySelector("[data-clear-filters]")?.addEventListener("click",()=>{
-    gender.value=family.value=type.value="all"; sale.checked=false; sort.value="featured"; run();
+    gender.value=family.value=type.value=format.value="all"; sale.checked=false; sort.value="featured"; run();
   });
   run();
 }
@@ -187,6 +214,14 @@ function initProduct(){
   const fallback = PRODUCTS.filter(x=>x.id!==p.id).slice(0,4);
   const rel = (related.length?related:fallback).slice(0,4);
   document.title = `${p.name} — ${p.brand} · Cruzial Parfums`;
+  const decantBtns = [1,2,5,10].map((s,i)=>`
+    <button class="size-btn ${i===1?"active":""}" data-size="${s}" data-group="decant" data-price="${p.price[s]}">
+      <b>${s} ml</b><span>${money(p.price[s])}</span>
+    </button>`).join("");
+  const bottleBtns = p.bottle ? Object.entries(p.bottle).map(([s,v])=>`
+    <button class="size-btn" data-size="${s}" data-group="bottle" data-price="${v}">
+      <b>${s} ml</b><span>${money(v)}</span>
+    </button>`).join("") : "";
   box.innerHTML = `
   <section class="product-detail">
     <div class="product-stage" style="--glow:${glow(p)}">
@@ -209,12 +244,11 @@ function initProduct(){
         <div class="note-chips">${p.notes.map(n=>`<span>${n}</span>`).join("")}</div>
       </div>
       <div class="note-block">
-        <div class="note-title">ELIGE TU FORMATO</div>
-        <div class="size-row">${[1,2,5,10].map((s,i)=>`
-          <button class="size-btn ${i===1?"active":""}" data-size="${s}">
-            <b>${s} ml</b><span>${money(p.price[s])}</span>
-          </button>`).join("")}
-        </div>
+        <div class="note-title">DECANT · PRUEBA DE 1 A 10 ML</div>
+        <div class="size-row">${decantBtns}</div>
+        ${p.bottle ? `
+        <div class="note-title bottle-label">FRASCO COMPLETO · ORIGINAL SELLADO</div>
+        <div class="size-row">${bottleBtns}</div>` : ""}
       </div>
       <div class="total-line"><span>Cantidad</span><div class="cart-controls" id="qty-stepper">
         <button data-qminus aria-label="Menos">−</button><span class="qty">1</span><button data-qplus aria-label="Más">+</button>
@@ -233,19 +267,18 @@ function initProduct(){
     </div>
     <div class="product-grid">${rel.map(productCard).join("")}</div>
   </section>`;
-  let size = 2, qty = 1;
-  const priceEl = document.querySelector(".size-row");
+  let size = 2, qty = 1, group = "decant";
   document.querySelectorAll(".size-btn").forEach(b=>{
     b.addEventListener("click",()=>{
       document.querySelectorAll(".size-btn").forEach(x=>x.classList.remove("active"));
-      b.classList.add("active"); size = Number(b.dataset.size);
+      b.classList.add("active"); size = Number(b.dataset.size); group = b.dataset.group;
     });
   });
   const stepper = document.getElementById("qty-stepper");
   const qtyEl = stepper.querySelector(".qty");
   stepper.querySelector("[data-qminus]").addEventListener("click",()=>{ qty = Math.max(1,qty-1); qtyEl.textContent = qty; });
   stepper.querySelector("[data-qplus]").addEventListener("click",()=>{ qty = Math.min(99,qty+1); qtyEl.textContent = qty; });
-  document.getElementById("detail-add").addEventListener("click",()=>addToCart(p.id,size,qty));
+  document.getElementById("detail-add").addEventListener("click",()=>addToCart(p.id,size,qty,group));
   attachAddHandlers();
 }
 
@@ -266,12 +299,13 @@ function renderCart(){
   box.innerHTML = cart.map(i=>{
     const p = PRODUCTS.find(x=>x.id===i.id);
     const sub = i.price*i.qty; sum += sub;
+    const label = i.group==="bottle" ? `Frasco ${i.size} ml` : `${i.size} ml`;
     return `<div class="cart-row">
       <div class="cart-thumb" style="--glow:${glow(p)}">${bottleSVG(p)}</div>
       <div>
         <span class="brand">${p.brand}</span>
         <h3>${p.name}</h3>
-        <div class="variant">${i.size} ml · ${money(i.price)}</div>
+        <div class="variant">${label} · ${money(i.price)}</div>
         <div class="cart-controls">
           <button data-minus="${i.key}" aria-label="Menos">−</button>
           <span class="qty">${i.qty}</span>
@@ -300,7 +334,8 @@ function initOrderForm(){
     let total = 0;
     const lines = cart.map(i=>{
       const p = PRODUCTS.find(x=>x.id===i.id); total += i.price*i.qty;
-      return `${i.size} ml ${p.brand} ${p.name} ×${i.qty} = ${money(i.price*i.qty)}`;
+      const label = i.group==="bottle" ? `Frasco ${i.size} ml` : `${i.size} ml`;
+      return `${label} ${p.brand} ${p.name} ×${i.qty} = ${money(i.price*i.qty)}`;
     });
     const msg =
 `Hola ${CONFIG.STORE}. Quiero realizar este pedido:
@@ -355,7 +390,7 @@ function renderDrawer(){
       <div class="cart-thumb" style="--glow:${glow(p)}">${bottleSVG(p)}</div>
       <div>
         <h4>${p.name}</h4>
-        <small>${p.brand} · ${i.size} ml</small>
+        <small>${p.brand} · ${i.group==="bottle"?"frasco ":""}${i.size} ml</small>
         <div class="d-qty">
           <button data-dminus="${i.key}" aria-label="Menos">−</button>
           <span>${i.qty}</span>
@@ -444,6 +479,7 @@ initArt();
 updateCartCount();
 initPills();
 renderFeatured();
+renderBottles();
 initSearch();
 initCatalog();
 initProduct();
