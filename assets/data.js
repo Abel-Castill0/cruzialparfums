@@ -1,36 +1,157 @@
 ﻿/* ============================================================
    CRUZIAL PARFUMS — Catálogo y configuración
-   Cambia WA_NUMBER por tu número real de WhatsApp (código de país + número, sin + ni espacios).
+   Fuente: CATALOGO DE DECANTS.pdf (38 páginas, 2026) — datos verificados.
+   Cambia WA_NUMBER solo si el número oficial cambia.
    mood: paleta de la botella SVG (a = luz, b = sombra, liquid = color del líquido, glow = resplandor)
    ============================================================ */
 
 window.CRUZIAL_CONFIG = {
-  WA_NUMBER: "51999999999",
+  WA_NUMBER: "51924590921",
+  PHONE_DISPLAY: "924 590 921",
+  INSTAGRAM_HANDLE: "@Cruzial_parfum",
+  INSTAGRAM_URL: "https://www.instagram.com/Cruzial_parfum/",
   STORE: "Cruzial Parfums",
-  CITY: "Lima · Perú"
+  CITY: "Lima · Perú",
+  SIZES: [3, 5, 10],
+  ATOMIZACIONES: { 3: "50–60", 5: "70–80", 10: "140–150" },
+  ADELANTO: "50% de adelanto",
+  DELIVERY: "Línea 1 del tren eléctrico · Motorizado · Contraentrega Lima · Shalom / Olva"
 };
 
+/* Paletas de botella SVG */
+const M = {
+  m1: { a: "#f2e3bd", b: "#8a6d3b", liquid: "#d9a441", glow: "rgba(217,164,65,.45)" },
+  m2: { a: "#f5ecd6", b: "#7a5a2e", liquid: "#c9a25e", glow: "rgba(201,162,94,.4)" },
+  m3: { a: "#efe0c2", b: "#6b4d26", liquid: "#b8860b", glow: "rgba(184,134,11,.4)" },
+  m4: { a: "#f8eede", b: "#8f6a35", liquid: "#d4a24c", glow: "rgba(212,162,76,.45)" },
+  m5: { a: "#f3e8cd", b: "#5f4520", liquid: "#a87c32", glow: "rgba(168,124,50,.42)" },
+  m6: { a: "#f9f1e0", b: "#96713a", liquid: "#e0b253", glow: "rgba(224,178,83,.45)" },
+  m7: { a: "#eddfc0", b: "#7a5f2e", liquid: "#c08a2e", glow: "rgba(192,138,46,.4)" },
+  m8: { a: "#f7ecd3", b: "#8d6a30", liquid: "#d9b054", glow: "rgba(217,176,84,.4)" }
+};
+
+/* Fábrica compacta de productos.
+   extra: { tag, desc, bottle, bestseller } */
+const P = (id, brand, name, gender, type, family, conc, price, notes, mood, extra) => ({
+  id, brand, name, gender, type, family, conc, price, notes, mood,
+  tag: extra && extra.tag || (type === "combo" ? "Combo" : type === "arab" ? "Árabe" : type === "niche" ? "Nicho" : "Designer"),
+  desc: extra && extra.desc || `${name} — fragancia de la familia ${family.toLowerCase()}, concentración ${conc}. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.`,
+  bottle: extra && extra.bottle || null,
+  bestseller: !!(extra && extra.bestseller)
+});
+
+/* Precios según el catálogo */
+const T121626 = { 3: 12, 5: 16, 10: 26 };
+const T111524 = { 3: 11, 5: 15, 10: 24 };
+const T131728 = { 3: 13, 5: 17, 10: 28 };
+const T141830 = { 3: 14, 5: 18, 10: 30 };
+const T121729 = { 3: 12, 5: 17, 10: 29 };
+const T111424 = { 3: 11, 5: 14, 10: 24 };
+const T223048 = { 3: 22, 5: 30, 10: 48 };
+const T243251 = { 3: 24, 5: 32, 10: 51 };
+const T263456 = { 3: 26, 5: 34, 10: 56 };
+const T303869 = { 3: 30, 5: 38, 10: 69 };
+const T404889 = { 3: 40, 5: 48, 10: 89 };
+
 window.CRUZIAL_PRODUCTS = [
-  {id:"aventus", brand:"Creed", name:"Aventus", gender:"men", type:"niche", family:"woody", conc:"EDP", price:{1:39,2:69,5:149,10:269}, bottle:{50:720,100:1290}, notes:["Piña","Abedul","Musgo de roble"], tag:"BESTSELLER", bestseller:true, desc:"Potente, sofisticado y de proyección marcada. La referencia absoluta para quien quiere oler impecable sin esfuerzo.", mood:{a:"#9db7a4",b:"#24342b",liquid:"#3f5a47",glow:"#5f8a6c"}},
-  {id:"aventus-cologne", brand:"Creed", name:"Aventus Cologne", gender:"men", type:"niche", family:"citrus", conc:"EDP", price:{1:35,2:62,5:135,10:245}, bottle:{50:680,100:1150}, notes:["Bergamota","Manzana","Iris"], tag:"FRESH", desc:"La versión luminosa de Aventus: más cítrico, más limpio. Ideal para el día y climas cálidos.", mood:{a:"#a8c6cc",b:"#28434b",liquid:"#41707d",glow:"#5f9fb0"}},
-  {id:"br540", brand:"Maison Francis Kurkdjian", name:"Baccarat Rouge 540", gender:"unisex", type:"niche", family:"amber", conc:"Extrait", price:{1:45,2:82,5:179,10:319}, bottle:{70:1550}, notes:["Azafrán","Ámbar gris","Cedro"], tag:"ICON", bestseller:true, desc:"Aire ambarado, mineral y envolvente. Dulce sin caer en lo obvio. Un icono moderno que se reconoce en cualquier habitación.", mood:{a:"#d88a5f",b:"#4a1f12",liquid:"#8a3d20",glow:"#c46a3c"}},
-  {id:"gentle-fluidity-silver", brand:"Maison Francis Kurkdjian", name:"Gentle Fluidity Silver", gender:"unisex", type:"niche", family:"woody", conc:"EDP", price:{1:40,2:72,5:159,10:289}, bottle:{70:1050}, notes:["Enebro","Nuez moscada","Ámbar"], tag:"MINIMAL", desc:"Especiado y cristalino, con un amaderado metálico que se siente limpio y caro. Minimalismo en estado puro.", mood:{a:"#b9bdc4",b:"#2c2f36",liquid:"#5b616e",glow:"#8d94a3"}},
-  {id:"sauvage-elixir", brand:"Dior", name:"Sauvage Elixir", gender:"men", type:"designer", family:"spicy", conc:"Extrait", price:{1:22,2:39,5:89,10:159}, bottle:{60:520,100:780}, notes:["Canela","Nuez moscada","Sándalo"], tag:"INTENSE", desc:"Especiado, oscuro y elegante. Una concentración altísima para noches y ocasiones donde quieres presencia.", mood:{a:"#8a7ba6",b:"#241d33",liquid:"#4a3f63",glow:"#6a5a8a"}},
-  {id:"libre-intense", brand:"Yves Saint Laurent", name:"Libre Intense", gender:"women", type:"designer", family:"floral", conc:"EDP", price:{1:19,2:34,5:79,10:139}, bottle:{50:470,90:690}, notes:["Lavanda","Azahar","Vainilla"], tag:"POPULAR", desc:"Floral cálido con vainilla. Femenino, moderno y muy fácil de reconocer. La firma de una mujer libre.", mood:{a:"#e6c08f",b:"#7a4a1f",liquid:"#c08a3c",glow:"#d9a55f"}},
-  {id:"delina", brand:"Parfums de Marly", name:"Delina", gender:"women", type:"niche", family:"floral", conc:"EDP", price:{1:42,2:75,5:169,10:299}, bottle:{75:1050}, notes:["Lichi","Rosa turca","Vainilla"], tag:"SIGNATURE", bestseller:true, desc:"Rosa moderna y luminosa con una estela femenina, elegante y muy memorable. Una de las rosas más deseadas del nicho.", mood:{a:"#e8b3b9",b:"#7a2e38",liquid:"#b34e5c",glow:"#cf7d8a"}},
-  {id:"layton", brand:"Parfums de Marly", name:"Layton", gender:"unisex", type:"niche", family:"woody", conc:"EDP", price:{1:39,2:70,5:159,10:289}, bottle:{75:950}, notes:["Manzana","Lavanda","Vainilla"], tag:"EDITOR'S PICK", bestseller:true, desc:"Elegante, cremoso y ligeramente especiado. Uno de los perfiles más versátiles y adictivos del nicho.", mood:{a:"#c9b07e",b:"#4a3a1f",liquid:"#8a6a2b",glow:"#b0944f"}},
-  {id:"wood-sage", brand:"Jo Malone", name:"Wood Sage & Sea Salt", gender:"unisex", type:"designer", family:"fresh", conc:"Cologne", price:{1:21,2:38,5:86,10:149}, bottle:{100:620}, notes:["Sal marina","Salvia","Maderas"], tag:"FRESH", desc:"Limpio, mineral y relajado. El aroma de una brisa marina en un día perfecto. Discreto y adictivo.", mood:{a:"#a9c4ae",b:"#2e4234",liquid:"#4f705a",glow:"#78a184"}},
-  {id:"erba-pura", brand:"Xerjoff", name:"Erba Pura", gender:"unisex", type:"niche", family:"citrus", conc:"Extrait", price:{1:38,2:68,5:155,10:279}, bottle:{50:900,100:1350}, notes:["Cítricos","Frutas","Ámbar"], tag:"NICHE", desc:"Frutal cítrico, brillante y de enorme difusión. Un cóctel de frutas bañado en ámbar con personalidad propia.", mood:{a:"#e8c36a",b:"#6b4a12",liquid:"#c99a2b",glow:"#e0b43f"}},
-  {id:"black-orchid", brand:"Tom Ford", name:"Black Orchid", gender:"unisex", type:"designer", family:"amber", conc:"EDP", price:{1:24,2:43,5:99,10:179}, bottle:{50:640,100:890}, notes:["Trufa","Orquídea","Patchouli"], tag:"DARK", desc:"Oscuro, sensual y teatral. Una de las mejores puertas de entrada a perfiles profundos y nocturnos.", mood:{a:"#4a4550",b:"#0c0b0e",liquid:"#241f2b",glow:"#4a3f5c"}},
-  {id:"tobacco-vanille", brand:"Tom Ford", name:"Tobacco Vanille", gender:"unisex", type:"designer", family:"gourmand", conc:"EDP", price:{1:31,2:55,5:129,10:229}, bottle:{50:820,100:1150}, notes:["Tabaco","Vainilla","Cacao"], tag:"WARM", desc:"Dulce, cálido y especiado. Para amantes de la vainilla con una lectura más adulta y envolvente.", mood:{a:"#c9a062",b:"#5a3a12",liquid:"#8a5a1f",glow:"#b0803c"}},
-  {id:"imagination", brand:"Louis Vuitton", name:"Imagination", gender:"men", type:"niche", family:"citrus", conc:"EDP", price:{1:37,2:65,5:149,10:269}, bottle:{100:1250}, notes:["Cidra","Té negro","Ambrox"], tag:"MODERN", desc:"Cítrico, limpio y sofisticado. Lujo contemporáneo para uso diario: la camisa blanca de las fragancias.", mood:{a:"#9fb8c9",b:"#263c4d",liquid:"#3f6378",glow:"#5f8fa8"}},
-  {id:"la-vie-est-belle", brand:"Lancôme", name:"La Vie Est Belle", gender:"women", type:"designer", family:"gourmand", conc:"EDP", price:{1:17,2:30,5:69,10:119}, bottle:{75:560,100:640}, notes:["Iris","Praliné","Vainilla"], tag:"BESTSELLER", bestseller:true, desc:"Gourmand floral muy reconocible, cómodo y de gran aceptación. El abrazo hecho fragancia.", mood:{a:"#e6c2c9",b:"#6e2e3a",liquid:"#b35f70",glow:"#d48b9b"}},
-  {id:"bleu-de-chanel", brand:"Chanel", name:"Bleu de Chanel EDP", gender:"men", type:"designer", family:"woody", conc:"EDP", price:{1:20,2:36,5:82,10:149}, bottle:{50:520,100:740}, notes:["Pomelo","Incienso","Sándalo"], tag:"CLASSIC", desc:"Amaderado elegante y versátil. El clásico moderno que funciona en la oficina y en la noche.", mood:{a:"#7fa8c4",b:"#1c2e40",liquid:"#2f5370",glow:"#4d7fa3"}},
-  {id:"le-male-elixir", brand:"Jean Paul Gaultier", name:"Le Male Elixir", gender:"men", type:"designer", family:"gourmand", conc:"Extrait", price:{1:24,2:43,5:99,10:179}, bottle:{75:600}, notes:["Menta","Miel","Vainilla"], tag:"SWEET", desc:"Dulce, especiado y magnético. Menta y miel sobre vainilla: una firma nocturna que enamora.", mood:{a:"#9fc9b8",b:"#1f4a3c",liquid:"#2f6b55",glow:"#4f9c7d"}},
-  {id:"good-girl", brand:"Carolina Herrera", name:"Good Girl", gender:"women", type:"designer", family:"floral", conc:"EDP", price:{1:18,2:32,5:74,10:129}, bottle:{50:500,80:680}, notes:["Almendra","Tuberosa","Cacao"], tag:"GLAMOUR", desc:"Femenino con carácter: almendra y tuberosa sobre un fondo de cacao. El tacón de aguja de los perfumes.", mood:{a:"#8a8fae",b:"#1d2140",liquid:"#313a6b",glow:"#4f5a9c"}},
-  {id:"acqua-di-gio-profumo", brand:"Giorgio Armani", name:"Acqua di Giò Profumo", gender:"men", type:"designer", family:"fresh", conc:"EDP", price:{1:20,2:36,5:82,10:149}, bottle:{50:540,75:660}, notes:["Bergamota","Incienso","Patchouli"], tag:"SEA", desc:"Fresco marino con un fondo de incienso. La elegancia del mar en su versión más profunda.", mood:{a:"#8fc9cc",b:"#1e4a4d",liquid:"#2f6b70",glow:"#4f9fa3"}},
-  {id:"jazz-club", brand:"Maison Margiela", name:"Jazz Club", gender:"unisex", type:"designer", family:"gourmand", conc:"EDT", price:{1:22,2:40,5:92,10:169}, bottle:{100:700}, notes:["Ron","Tabaco","Vainilla"], tag:"NIGHT", desc:"Un bar con luz baja: ron, tabaco y vainilla envueltos en humo. Bohemio, cálido y adictivo.", mood:{a:"#c9a08a",b:"#47281c",liquid:"#7a4630",glow:"#a8674a"}},
-  {id:"oud-for-greatness", brand:"Initio", name:"Oud for Greatness", gender:"unisex", type:"niche", family:"woody", conc:"Extrait", price:{1:48,2:88,5:195,10:349}, bottle:{50:980,100:1600}, notes:["Oud","Azafrán","Ámbar"], tag:"OUD ROYAL", bestseller:true, desc:"Oud, azafrán y ámbar en una concentración poderosa. Oscuro, majestuoso e imposible de ignorar.", mood:{a:"#a67a3c",b:"#3a2410",liquid:"#6b4515",glow:"#8f6422"}},
-  {id:"hacivat", brand:"Nishane", name:"Hacivat", gender:"unisex", type:"niche", family:"citrus", conc:"EDP", price:{1:36,2:64,5:145,10:259}, bottle:{50:800,100:1150}, notes:["Piña","Bergamota","Musgo de roble"], tag:"NICHE", desc:"Piña y bergamota sobre musgo de roble. Frescura que dura horas: el gemelo verde y explosivo del Aventus.", mood:{a:"#a8c48a",b:"#2e4a1f",liquid:"#4a7033",glow:"#6fa34f"}},
-  {id:"love-dont-be-shy", brand:"Kilian", name:"Love Don't Be Shy", gender:"women", type:"niche", family:"gourmand", conc:"EDP", price:{1:34,2:60,5:135,10:245}, bottle:{50:780,100:980}, notes:["Neroli","Malvavisco","Azúcar"], tag:"ROMANCE", desc:"Azúcar, malvavisco y neroli. Dulzura adictiva que se siente como el primer amor: imposible de olvidar.", mood:{a:"#e8b3c4",b:"#6e2e4a",liquid:"#b34e7a",glow:"#cf7d9f"}}
+  /* ================= PERFUMERÍA ÁRABE ================= */
+  P("khamrah-clasico", "Lattafa", "Khamrah Clásico", "unisex", "arab", "Gourmand", "EDP", T121626, ["Vainilla", "Canela", "Ámbar"], M.m1, { bestseller: true, bottle: { 100: 380 }, desc: "Dulce, cálido y boozy: vainilla con canela sobre una base de ámbar. Un clásico de la perfumería árabe que se siente abrigador." }),
+  P("khamrah-qahwa", "Lattafa", "Khamrah Qahwa", "unisex", "arab", "Gourmand", "EDP", T121626, ["Café", "Vainilla", "Ámbar"], M.m2, { bestseller: true }),
+  P("khamrah-dukhan", "Lattafa", "Khamrah Dukhan", "unisex", "arab", "Especiado", "EDP", T121626, ["Incienso", "Vainilla", "Humo"], M.m3),
+  P("khamrah-waha", "Lattafa", "Khamrah Waha", "unisex", "arab", "Ámbar", "EDP", T131728, ["Ámbar", "Coco", "Vainilla"], M.m4),
+  P("mashrabya", "Lattafa", "Mashrabya", "unisex", "arab", "Amaderado", "EDP", T111524, ["Madera", "Rosas", "Ámbar"], M.m5),
+  P("asad-elixir", "Lattafa", "Asad Elixir", "men", "arab", "Especiado", "EDP", T121626, ["Especias", "Café", "Cuero"], M.m6, { bestseller: true, bottle: { 100: 360 } }),
+  P("asad-clasico", "Lattafa", "Asad Clásico", "men", "arab", "Especiado", "EDP", T111524, ["Especias", "Vainilla", "Ámbar"], M.m7),
+  P("asad-bourbon", "Lattafa", "Asad Bourbon", "men", "arab", "Especiado", "EDP", T121626, ["Ron", "Especias", "Madera"], M.m8),
+  P("zanzibar-limited-e", "", "Zanzibar Limited E.", "men", "arab", "Amaderado", "EDP", T111524, ["Madera", "Ámbar", "Especias"], M.m1),
+  P("yara-pink", "Lattafa", "Yara Pink", "women", "arab", "Floral", "EDP", T111524, ["Flores", "Frutos rojos", "Vainilla"], M.m2),
+  P("yara-candy", "Lattafa", "Yara Candy", "women", "arab", "Gourmand", "EDP", T111524, ["Algodón dulce", "Fresa", "Vainilla"], M.m3),
+  P("yara-elixir", "Lattafa", "Yara Elixir", "women", "arab", "Floral", "EDP", T121626, ["Flores blancas", "Ámbar", "Vainilla"], M.m4),
+  P("mandarin-sky", "Afnan", "Mandarin Sky", "men", "arab", "Gourmand", "EDP", T121626, ["Mandarina", "Vainilla", "Caramelo"], M.m5),
+  P("m-sky-elixir", "Afnan", "M. Sky Elixir", "men", "arab", "Gourmand", "EDP", T121626, ["Mandarina", "Ámbar", "Cacao"], M.m6),
+  P("m-sky-vintage", "Afnan", "M. Sky Vintage", "men", "arab", "Amaderado", "EDP", T121626, ["Madera", "Ámbar", "Cítricos"], M.m7),
+  P("odyssey-aqua", "Lattafa", "Odyssey Aqua", "men", "arab", "Fresco", "EDP", T121626, ["Acuático", "Cítricos", "Madera"], M.m8),
+  P("odyssey-homme", "Lattafa", "Odyssey Homme", "men", "arab", "Fresco", "EDP", T111524, ["Lavanda", "Ámbar", "Madera"], M.m1),
+  P("homme-white", "Lattafa", "Homme White", "men", "arab", "Cítrico", "EDP", T111524, ["Bergamota", "Especias", "Ámbar"], M.m2),
+  P("odyssey-spectra", "Lattafa", "Odyssey Spectra", "men", "arab", "Fresco", "EDP", T111524, ["Acuático", "Jazmín", "Ámbar"], M.m3),
+  P("odyssey-mega", "Lattafa", "Odyssey Mega", "men", "arab", "Amaderado", "EDP", T111524, ["Madera", "Ámbar", "Cítricos"], M.m4),
+  P("odyssey-limoni", "Lattafa", "Odyssey Limoni", "men", "arab", "Cítrico", "EDP", T111524, ["Limón", "Cedro", "Menta"], M.m5),
+  P("odyssey-artisto", "Lattafa", "Odyssey Artisto", "men", "arab", "Especiado", "EDP", T121626, ["Especias", "Cuero", "Ámbar"], M.m6),
+  P("mayar", "Lattafa", "Mayar", "women", "arab", "Floral", "EDP", T121626, ["Flores blancas", "Ámbar", "Vainilla"], M.m7),
+  P("mayar-cherry-i", "Lattafa", "Mayar Cherry I.", "women", "arab", "Gourmand", "EDP", T121626, ["Cereza", "Flores", "Vainilla"], M.m8),
+  P("sublime", "Lattafa", "Sublime", "women", "arab", "Floral", "EDP", T121626, ["Flores", "Ámbar", "Almizcle"], M.m1),
+  P("oud-for-glory", "Lattafa", "Oud For Glory", "men", "arab", "Amaderado", "EDP", T121626, ["Oud", "Especias", "Ámbar"], M.m2),
+  P("honor-and-glory", "Lattafa", "Honor And Glory", "men", "arab", "Gourmand", "EDP", T121626, ["Piña", "Caramelo", "Especias"], M.m3),
+  P("eclaire", "Lattafa", "Eclaire", "women", "arab", "Gourmand", "EDP", T121626, ["Vainilla", "Caramelo", "Ámbar"], M.m4, { bestseller: true }),
+  P("eclaire-banoffi", "Lattafa", "Eclaire Banoffi", "women", "arab", "Gourmand", "EDP", T111524, ["Plátano", "Caramelo", "Vainilla"], M.m5),
+  P("eclaire-pistache", "Lattafa", "Eclaire Pistache", "women", "arab", "Gourmand", "EDP", T111524, ["Pistacho", "Vainilla", "Almendra"], M.m6),
+  P("yum-yum", "Lattafa", "Yum Yum", "women", "arab", "Gourmand", "EDP", T121626, ["Praliné", "Flores", "Vainilla"], M.m7),
+  P("angham", "Lattafa", "Angham", "women", "arab", "Gourmand", "EDP", T121626, ["Vainilla", "Ámbar", "Flores"], M.m8),
+  P("hawas-exotic", "Rasasi", "Hawas Exotic", "men", "arab", "Fresco", "EDP", T131728, ["Acuático", "Mango", "Ámbar"], M.m1),
+  P("hawas-ice", "Rasasi", "Hawas Ice", "men", "arab", "Fresco", "EDP", T121626, ["Acuático", "Menta", "Ámbar"], M.m2, { bestseller: true, bottle: { 100: 380 } }),
+  P("hawas-fire", "Rasasi", "Hawas Fire", "men", "arab", "Especiado", "EDP", T121626, ["Especias", "Ámbar", "Madera"], M.m3),
+  P("hawas-kobra", "Rasasi", "Hawas Kobra", "men", "arab", "Fresco", "EDP", T121626, ["Acuático", "Cítricos", "Ámbar"], M.m4),
+  P("hawas-verde", "Rasasi", "Hawas Verde", "men", "arab", "Fresco", "EDP", T131728, ["Verde", "Acuático", "Cítricos"], M.m5),
+  P("hawas-elixir", "Rasasi", "Hawas Elixir", "men", "arab", "Fresco", "EDP", T121626, ["Acuático", "Ámbar", "Especias"], M.m6),
+  P("hawas-tropical", "Rasasi", "Hawas Tropical", "men", "arab", "Fresco", "EDP", T121626, ["Coco", "Fruta tropical", "Ámbar"], M.m7),
+  P("9pm", "Afnan", "9 PM", "men", "arab", "Gourmand", "EDP", T121626, ["Manzana", "Canela", "Vainilla"], M.m8, { bestseller: true, bottle: { 100: 350 } }),
+  P("9pm-rebel", "Afnan", "9 PM Rebel", "men", "arab", "Especiado", "EDP", T121626, ["Especias", "Vainilla", "Ámbar"], M.m1),
+  P("9pm-elixir", "Afnan", "9 PM Elixir", "men", "arab", "Gourmand", "EDP", T121626, ["Vainilla", "Ámbar", "Especias"], M.m2),
+  P("9pm-night-out", "Afnan", "9 PM Night Out", "men", "arab", "Especiado", "EDP", T131728, ["Especias", "Cuero", "Ámbar"], M.m3),
+  P("9am", "Afnan", "9AM", "men", "arab", "Fresco", "EDP", T111524, ["Cítricos", "Acuático", "Ámbar"], M.m4),
+  P("9am-dive", "Afnan", "9AM Dive", "men", "arab", "Fresco", "EDP", T121626, ["Acuático", "Verde", "Madera"], M.m5),
+  P("art-of-universe", "Lattafa", "Art Of Universe", "men", "arab", "Especiado", "EDP", T131728, ["Especias", "Ámbar", "Cuero"], M.m6),
+  P("liquid-brun", "Fragrance World", "Liquid Brun", "men", "arab", "Especiado", "EDP", T121626, ["Canela", "Ámbar", "Vainilla"], M.m7, { bestseller: true, bottle: { 100: 450 } }),
+  P("vulcan-feu", "Fragrance World", "Vulcan Feu", "men", "arab", "Especiado", "EDP", T131728, ["Fuego", "Especias", "Ámbar"], M.m8),
+  P("amber-o-gold-e", "Al Haramain", "Amber O. Gold E.", "unisex", "arab", "Ámbar", "EDP", T131728, ["Ámbar", "Coco", "Vainilla"], M.m1),
+  P("ao-aqua-dubai", "Al Haramain", "A.O. Aqua Dubai", "men", "arab", "Fresco", "EDP", T131728, ["Acuático", "Bergamota", "Ámbar"], M.m2),
+  P("ao-dubai-night", "Al Haramain", "A.O. Dubai Night", "men", "arab", "Ámbar", "EDP", T141830, ["Ámbar", "Cuero", "Especias"], M.m3),
+  P("nitro-red", "Afnan", "Nitro Red", "men", "arab", "Fresco", "EDP", T121626, ["Frutal", "Acuático", "Ámbar"], M.m4),
+  P("red-intensely", "", "Red Intensely", "men", "arab", "Gourmand", "EDP", T131728, ["Frutos rojos", "Vainilla", "Ámbar"], M.m5),
+  P("cdn-intense-man", "Armaf", "CDN Intense Man", "men", "arab", "Cítrico", "EDP", T121626, ["Piña", "Abedul", "Ámbar"], M.m6, { bestseller: true, bottle: { 105: 420 } }),
+  P("cdn-urban-man-e", "Armaf", "CDN Urban Man E.", "men", "arab", "Fresco", "EDP", T121729, ["Cítricos", "Verde", "Ámbar"], M.m7),
+  P("cdn-preciux-i", "Armaf", "CDN Preciux I", "men", "arab", "Amaderado", "EDP", T223048, ["Piña", "Cedro", "Ámbar"], M.m8),
+  P("supremacy-colle", "Afnan", "Supremacy Colle.", "men", "arab", "Cítrico", "EDP", T131728, ["Piña", "Madera", "Ámbar"], M.m8),
+  P("supremacy-noi", "Afnan", "Supremacy NOI", "men", "arab", "Cítrico", "EDP", T121626, ["Piña", "Cedro", "Almizcle"], M.m1),
+  P("sceptre-malachite", "Maison Alhambra", "Sceptre Malachite", "men", "arab", "Amaderado", "EDP", T111424, ["Madera", "Ámbar", "Especias"], M.m2),
+  P("bright-peach", "Maison Alhambra", "Bright Peach", "women", "arab", "Gourmand", "EDP", T131728, ["Melocotón", "Flores", "Vainilla"], M.m3),
+  P("qaed-al-fursan", "Lattafa", "Qaed Al Fursan", "men", "arab", "Amaderado", "EDP", T111524, ["Azafrán", "Madera", "Ámbar"], M.m4),
+  P("jean-lowe-vibe", "Maison Alhambra", "Jean Lowe Vibe", "men", "arab", "Fresco", "EDP", T121626, ["Cítricos", "Acuático", "Madera"], M.m5),
+  P("jean-lowe-inmotel", "Maison Alhambra", "Jean Lowe Inmotel", "men", "arab", "Cítrico", "EDP", T121626, ["Bergamota", "Ámbar", "Vainilla"], M.m6),
+  P("fakhar-black", "Lattafa", "Fakhar Black", "men", "arab", "Floral", "EDP", T121626, ["Lavanda", "Geranio", "Vainilla"], M.m7),
+  P("rayhaan-italia", "Rayhaan", "Rayhaan Italia", "men", "arab", "Cítrico", "EDP", T121626, ["Cítricos", "Especias", "Ámbar"], M.m8),
+  P("hawas-chrome", "Rasasi", "Hawas Chrome", "men", "arab", "Fresco", "EDP", T131728, ["Acuático", "Cítricos", "Metálico"], M.m1),
+
+  /* ================= COMBOS ÁRABES ================= */
+  P("combo-cuarteto", "", "Cuarteto Oriental", "unisex", "combo", "Ámbar", "EDP", { 3: 40, 5: 55, 10: 89 }, ["4 fragancias", "Orientales", "Selección"], M.m4, { desc: "Combo de 4 fragancias de perfumería árabe seleccionadas por Cruzial. Rinde hasta 600 atomizaciones en su formato 10 ml. El contenido exacto se confirma por WhatsApp.", tag: "Combo" }),
+  P("combo-vainilla", "", "Vainilla Freak", "unisex", "combo", "Gourmand", "EDP", { 3: 27, 5: 39, 10: 65 }, ["Vainilla", "Gourmand", "Dulce"], M.m2, { desc: "Combo especial para amantes de la vainilla: rinde hasta 450 atomizaciones en su formato 10 ml. El contenido exacto se confirma por WhatsApp.", tag: "Combo" }),
+  P("combo-tulum", "", "Set Tulum", "unisex", "combo", "Fresco", "EDP", { 3: 31, 5: 42, 10: 71 }, ["Fresco", "Cálido", "Veraniego"], M.m6, { desc: "Set de fragancias para clima cálido, con espíritu playero. Rinde hasta 450 atomizaciones en su formato 10 ml. El contenido exacto se confirma por WhatsApp.", tag: "Combo" }),
+
+  /* ================= PERFUMERÍA DE DISEÑADOR Y NICHO ================= */
+  P("212-edt", "Carolina Herrera", "212 EDT", "men", "designer", "Fresco", "EDT", T223048, ["Bergamota", "Flor de naranjo", "Madera"], M.m1),
+  P("eros-edt", "Versace", "Eros EDT", "men", "designer", "Fresco", "EDT", T223048, ["Menta", "Manzana", "Vainilla"], M.m2, { bestseller: true, bottle: { 100: 580 } }),
+  P("eros-flame", "Versace", "Eros Flame", "men", "designer", "Especiado", "EDP", T223048, ["Mandarina", "Rosas", "Vainilla"], M.m3),
+  P("spicebomb-extreme", "Viktor & Rolf", "Spicebomb Extreme", "men", "designer", "Especiado", "EDP", T243251, ["Canela", "Tabaco", "Vainilla"], M.m4, { bottle: { 90: 680 } }),
+  P("azzaro-tmw-edp", "Azzaro", "Azzaro TMW EDP", "men", "designer", "Especiado", "EDP", T223048, ["Manzana", "Cardamomo", "Ámbar"], M.m5),
+  P("swy-intensely", "Armani", "SWY Intensely", "men", "designer", "Gourmand", "EDP", T243251, ["Canela", "Ron", "Vainilla"], M.m6),
+  P("swy-absolutely", "Armani", "SWY Absolutely", "men", "designer", "Amaderado", "EDP", T263456, ["Madera", "Ámbar", "Café"], M.m7),
+  P("ultra-male", "Jean Paul Gaultier", "Ultra Male", "men", "designer", "Fresco", "EDT", T243251, ["Pera", "Vainilla", "Lavanda"], M.m8, { bottle: { 125: 650 } }),
+  P("le-male-elixir", "Jean Paul Gaultier", "Le Male Elixir", "men", "designer", "Especiado", "EDP", T243251, ["Miel", "Canela", "Tabaco"], M.m1, { bestseller: true, bottle: { 75: 600 } }),
+  P("le-beau-le-parfum", "Jean Paul Gaultier", "Le Beau Le Parfum", "men", "designer", "Fresco", "EDP", T243251, ["Coco", "Madera", "Especias"], M.m2, { bottle: { 100: 680 } }),
+  P("paradise-garden", "Lattafa", "Paradise Garden", "unisex", "designer", "Floral", "EDP", T243251, ["Flores", "Coco", "Ámbar"], M.m3),
+  P("victory-elixir", "Paco Rabanne", "Victory Elixir", "men", "designer", "Especiado", "EDP", T243251, ["Especias", "Ámbar", "Café"], M.m4, { bottle: { 100: 650 } }),
+  P("purple-melancholia", "", "Purple Melancholia", "unisex", "niche", "Floral", "EDP", T263456, ["Violeta", "Flores", "Ámbar"], M.m5),
+  P("bir-intense", "Burberry", "BIR Intense", "men", "designer", "Amaderado", "EDP", T263456, ["Romero", "Cedro", "Ámbar"], M.m6, { bottle: { 100: 720 } }),
+  P("b-man-in-black", "Bvlgari", "B. Man In Black", "men", "designer", "Amaderado", "EDP", T263456, ["Ron", "Cuero", "Especias"], M.m7, { bottle: { 100: 760 } }),
+  P("sauvage-edt", "Dior", "Sauvage EDT", "men", "designer", "Fresco", "EDT", T223048, ["Bergamota", "Pimienta", "Ámbar"], M.m8, { bestseller: true, bottle: { 100: 650 } }),
+  P("dylan-blue", "Versace", "Dylan Blue", "men", "designer", "Fresco", "EDP", T303869, ["Bergamota", "Agua", "Almizcle"], M.m1, { bottle: { 100: 620 } }),
+  P("adg-profondo-edp", "Armani", "ADG Profondo EDP", "men", "designer", "Fresco", "EDP", T263456, ["Marino", "Bergamota", "Madera"], M.m2, { bottle: { 100: 700 } }),
+  P("1-million-lucky", "Paco Rabanne", "1 Million Lucky", "men", "designer", "Gourmand", "EDT", T263456, ["Ciruela", "Avellana", "Ámbar"], M.m3, { bottle: { 100: 780 } }),
+  P("reserve-privee", "Armani", "Reserve Privée", "men", "designer", "Amaderado", "EDP", T263456, ["Madera", "Ámbar", "Vainilla"], M.m4),
+  P("cedrat-boise-int", "Mancera", "Cedrat Boise Int.", "men", "niche", "Cítrico", "EDP", T263456, ["Limón", "Cedro", "Almizcle"], M.m5, { bottle: { 100: 820 } }),
+  P("m-red-tobacco", "Mancera", "M. Red Tobacco", "men", "niche", "Especiado", "EDP", T263456, ["Tabaco", "Canela", "Ámbar"], M.m6, { bottle: { 100: 850 } }),
+  P("tmw-parfum", "Azzaro", "TMW Parfum", "men", "designer", "Especiado", "Parfum", T243251, ["Manzana", "Toffee", "Ámbar"], M.m7, { bottle: { 100: 700 } }),
+  P("by-the-fireplace", "Maison Margiela", "By The Fireplace", "unisex", "designer", "Gourmand", "EDP", T263456, ["Castaña", "Vainilla", "Madera"], M.m8, { bottle: { 100: 750 } }),
+  P("erba-pura", "Xerjoff", "Erba Pura", "unisex", "niche", "Gourmand", "EDP", T404889, ["Fruta", "Vainilla", "Almizcle"], M.m2, { bestseller: true, bottle: { 50: 900, 100: 1350 } }),
+  P("nautica-voyage", "Nautica", "Nautica Voyage", "men", "designer", "Acuático", "EDT", T121626, ["Marino", "Manzana", "Madera"], M.m5)
 ];

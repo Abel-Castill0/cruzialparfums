@@ -90,8 +90,9 @@ function productCard(p, mode){
   const minSize = isBottle ? Math.min(...Object.keys(p.bottle)) : 1;
   const bottle = p.bottle ? Math.min(...Object.values(p.bottle)) : null;
   const bSize = p.bottle ? Math.min(...Object.keys(p.bottle)) : null;
-  const qSize = isBottle ? minSize : 2;
+  const qSize = isBottle ? minSize : 3;
   const qGroup = isBottle ? "bottle" : "decant";
+  const brand = p.brand ? `<span class="card-brand">${p.brand}</span>` : "";
   return `<article class="product-card reveal in">
     <a href="product.html?id=${p.id}">
       <div class="card-media" style="--glow:${glow(p)}">
@@ -100,9 +101,9 @@ function productCard(p, mode){
         <button class="quick-add" data-add="${p.id}" data-size="${qSize}" data-group="${qGroup}" aria-label="Añadir ${p.name}">+</button>
       </div>
       <div class="card-body">
-        <span class="card-brand">${p.brand}</span>
+        ${brand}
         <h3 class="card-name">${p.name}</h3>
-        <div class="card-meta"><span>${isBottle?`frasco ${minSize} ml`:"desde 1 ml"}</span><b>${money(min)}</b></div>
+        <div class="card-meta"><span>${isBottle?`frasco ${minSize} ml`:"desde 3 ml"}</span><b>${money(min)}</b></div>
         ${isBottle && p.price ? `<div class="card-bottle">Prueba antes en decant · desde ${money(Math.min(...Object.values(p.price)))}</div>` : ""}
         ${!isBottle && bottle ? `<div class="card-bottle">Frasco completo · desde ${money(bottle)} (${bSize} ml)</div>` : ""}
       </div>
@@ -170,6 +171,13 @@ function renderBottles(){
   attachAddHandlers();
 }
 
+/* ---------- Home: combos ---------- */
+function renderCombos(){
+  const el = document.getElementById("combo-grid"); if(!el) return;
+  el.innerHTML = PRODUCTS.filter(p=>p.type==="combo").map(p=>productCard(p,"decant")).join("");
+  attachAddHandlers();
+}
+
 /* ---------- Catálogo ---------- */
 function initCatalog(){
   const grid = document.getElementById("catalog-grid"); if(!grid) return;
@@ -213,9 +221,11 @@ function initProduct(){
   const related = PRODUCTS.filter(x=>x.id!==p.id && (x.gender===p.gender || x.family===p.family)).slice(0,4);
   const fallback = PRODUCTS.filter(x=>x.id!==p.id).slice(0,4);
   const rel = (related.length?related:fallback).slice(0,4);
-  document.title = `${p.name} — ${p.brand} · Cruzial Parfums`;
-  const decantBtns = [1,2,5,10].map((s,i)=>`
-    <button class="size-btn ${i===1?"active":""}" data-size="${s}" data-group="decant" data-price="${p.price[s]}">
+  document.title = `${p.name}${p.brand ? " — " + p.brand : ""} · Cruzial Parfums`;
+  const typeLabel = p.type==="arab" ? "PERFUMERÍA ÁRABE" : p.type==="combo" ? "COMBO ÁRABE" : p.type==="niche" ? "NICHO" : "DESIGNER";
+  const decantSizes = Object.keys(p.price).map(Number).sort((a,b)=>a-b);
+  const decantBtns = decantSizes.map((s,i)=>`
+    <button class="size-btn ${i===0?"active":""}" data-size="${s}" data-group="decant" data-price="${p.price[s]}">
       <b>${s} ml</b><span>${money(p.price[s])}</span>
     </button>`).join("");
   const bottleBtns = p.bottle ? Object.entries(p.bottle).map(([s,v])=>`
@@ -229,23 +239,24 @@ function initProduct(){
       <span class="tag">${p.tag}</span>
     </div>
     <div class="product-info">
-      <span class="eyebrow">${p.type==="niche"?"NICHO":"DESIGNER"} · ${p.conc}</span>
-      <span class="brandline">${p.brand}</span>
+      <span class="eyebrow">${typeLabel} · ${p.conc}</span>
+      ${p.brand ? `<span class="brandline">${p.brand}</span>` : ""}
       <h1>${p.name}</h1>
       <div class="subline">${p.gender==="men"?"Hombre":p.gender==="women"?"Mujer":"Unisex"} · ${p.family}</div>
       <p class="desc">${p.desc}</p>
       <div class="meta-row">
         <div><span>Concentración</span><b>${p.conc}</b></div>
         <div><span>Familia</span><b>${p.family}</b></div>
-        <div><span>Precio/ml</span><b>${money(p.price[1])}</b></div>
+        <div><span>Desde</span><b>${money(p.price[Math.min(...Object.keys(p.price).map(Number))])}</b></div>
       </div>
       <div class="note-block">
         <div class="note-title">NOTAS PRINCIPALES</div>
         <div class="note-chips">${p.notes.map(n=>`<span>${n}</span>`).join("")}</div>
       </div>
       <div class="note-block">
-        <div class="note-title">DECANT · PRUEBA DE 1 A 10 ML</div>
+        <div class="note-title">DECANT · ${decantSizes.join(" · ")} ML</div>
         <div class="size-row">${decantBtns}</div>
+        <p class="atom-note">≈ ${CONFIG.ATOMIZACIONES[decantSizes[0]]} atomizaciones · ${p.type==="arab"?"Decant clásico":"Decant clásico (3 ml) / Premium (5 y 10 ml)"}</p>
         ${p.bottle ? `
         <div class="note-title bottle-label">FRASCO COMPLETO · ORIGINAL SELLADO</div>
         <div class="size-row">${bottleBtns}</div>` : ""}
@@ -267,11 +278,19 @@ function initProduct(){
     </div>
     <div class="product-grid">${rel.map(productCard).join("")}</div>
   </section>`;
-  let size = 2, qty = 1, group = "decant";
+  let size = decantSizes[0], qty = 1, group = "decant";
+  const atomNote = document.querySelector(".atom-note");
+  const updateAtom = ()=>{
+    if(!atomNote) return;
+    if(group==="bottle"){ atomNote.textContent = "Frasco original sellado · 100% auténtico"; return; }
+    const pres = p.type==="arab" ? "decant clásico" : size===3 ? "decant clásico" : "decant premium";
+    atomNote.textContent = `≈ ${CONFIG.ATOMIZACIONES[size]} atomizaciones · ${pres}`;
+  };
   document.querySelectorAll(".size-btn").forEach(b=>{
     b.addEventListener("click",()=>{
       document.querySelectorAll(".size-btn").forEach(x=>x.classList.remove("active"));
       b.classList.add("active"); size = Number(b.dataset.size); group = b.dataset.group;
+      updateAtom();
     });
   });
   const stepper = document.getElementById("qty-stepper");
@@ -479,6 +498,7 @@ initArt();
 updateCartCount();
 initPills();
 renderFeatured();
+renderCombos();
 renderBottles();
 initSearch();
 initCatalog();
