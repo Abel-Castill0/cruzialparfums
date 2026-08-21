@@ -132,11 +132,11 @@ input,select,textarea{font-family:inherit}
 .announcement{
   background:linear-gradient(90deg,#14100a,#241c0f,#14100a);
   color:var(--gold-bright);
-  font-size:10px;
+  font-size:9px;
   letter-spacing:.34em;
   text-transform:uppercase;
   text-align:center;
-  padding:11px 16px;
+  padding:7px 16px;
   border-bottom:1px solid var(--line);
   position:relative;
   z-index:60;
@@ -159,18 +159,18 @@ input,select,textarea{font-family:inherit}
   align-items:center;
   justify-content:space-between;
   gap:24px;
-  padding:18px 0;
+  padding:10px 0;
   transition:padding .5s var(--ease);
 }
-.site-header.scrolled .header-inner{padding:12px 0}
+.site-header.scrolled .header-inner{padding:7px 0}
 
 .brand{display:flex;align-items:center;gap:14px}
 .brand-mark{
-  width:44px;height:44px;
+  width:36px;height:36px;
   display:grid;place-items:center;
   border:1px solid var(--line-strong);
   font-family:var(--serif);
-  font-size:26px;
+  font-size:22px;
   color:var(--gold-bright);
   border-radius:50%;
   transition:all .5s var(--ease);
@@ -185,31 +185,31 @@ input,select,textarea{font-family:inherit}
   background:#0a0806;
 }
 .brand-mark{padding:3px;overflow:hidden}
-.footer-brand .brand-mark{width:58px;height:58px;padding:4px}
+.footer-brand .brand-mark{width:48px;height:48px;padding:4px}
 .brand-word{display:flex;flex-direction:column;line-height:1.05}
 .brand-word strong{
   font-family:var(--serif);
   font-weight:600;
-  font-size:21px;
+  font-size:17px;
   letter-spacing:.22em;
   color:var(--cream);
 }
 .brand-word small{
-  font-size:9.5px;
+  font-size:8.5px;
   letter-spacing:.62em;
   color:var(--gold);
   text-transform:uppercase;
-  margin-top:3px;
+  margin-top:2px;
 }
 
-.main-nav{display:flex;gap:38px}
+.main-nav{display:flex;gap:30px}
 .main-nav a{
-  font-size:11px;
-  letter-spacing:.24em;
+  font-size:10px;
+  letter-spacing:.22em;
   text-transform:uppercase;
   color:var(--muted);
   position:relative;
-  padding:6px 0;
+  padding:4px 0;
   transition:color .35s var(--ease);
 }
 .main-nav a::after{
@@ -224,16 +224,16 @@ input,select,textarea{font-family:inherit}
 .main-nav a:hover::after{width:100%}
 .main-nav a.active{color:var(--gold-bright)}
 
-.header-actions{display:flex;align-items:center;gap:6px}
+.header-actions{display:flex;align-items:center;gap:4px}
 .icon-btn{
-  width:42px;height:42px;
+  width:36px;height:36px;
   display:grid;place-items:center;
   border:1px solid transparent;
   border-radius:50%;
   color:var(--cream);
   position:relative;
   transition:all .35s var(--ease);
-  font-size:16px;
+  font-size:14px;
 }
 .icon-btn:hover{border-color:var(--line-strong);color:var(--gold-bright);transform:translateY(-1px)}
 .cart-count{
@@ -1335,7 +1335,7 @@ input,select,textarea{font-family:inherit}
   gap:clamp(30px,4vw,60px);
   padding-bottom:clamp(40px,5vw,70px);
 }
-.footer-brand .brand-word strong{font-size:26px}
+.footer-brand .brand-word strong{font-size:22px}
 .footer-brand p{color:var(--muted);margin-top:18px;max-width:260px;font-size:14px}
 .footer-social{display:flex;gap:12px;margin-top:26px}
 .footer-social a{
@@ -1658,7 +1658,7 @@ input,select,textarea{font-family:inherit}
   .meta-row div{padding:13px 10px}
   .meta-row span{font-size:8px;letter-spacing:.18em}
   .meta-row b{font-size:15px}
-  .icon-btn{width:40px;height:40px}
+  .icon-btn{width:34px;height:34px}
   .cart-controls{flex-wrap:wrap}
   .marquee span{font-size:15px;gap:36px}
   .marquee-track{gap:36px}
@@ -1669,11 +1669,11 @@ input,select,textarea{font-family:inherit}
 }
 @media (max-width:480px){
   .announcement{font-size:8.5px;letter-spacing:.18em;line-height:1.6;padding:10px 12px}
-  .brand-word strong{font-size:17px;letter-spacing:.16em}
-  .brand-word small{font-size:8px;letter-spacing:.46em}
-  .brand-mark{width:40px;height:40px}
-  .header-inner{padding:12px 0;gap:12px}
-  .site-header.scrolled .header-inner{padding:9px 0}
+  .brand-word strong{font-size:14px;letter-spacing:.16em}
+  .brand-word small{font-size:7.5px;letter-spacing:.46em}
+  .brand-mark{width:32px;height:32px}
+  .header-inner{padding:8px 0;gap:12px}
+  .site-header.scrolled .header-inner{padding:6px 0}
   .header-actions{gap:2px}
   .hero{padding:26px 0 70px;min-height:auto}
   .hero h1{margin:18px 0 18px}
@@ -1746,7 +1746,7 @@ input,select,textarea{font-family:inherit}
 }/* ---------- Menú móvil ---------- */
 .mobile-toggle{
   display:none;
-  width:42px;height:42px;
+  width:36px;height:36px;
   border:1px solid var(--line);
   border-radius:50%;
   place-items:center;
