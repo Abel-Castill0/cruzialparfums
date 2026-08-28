@@ -82,17 +82,17 @@ const IMG_MAP = {
   "nitro-red": { bottle: "img/perfumes/DUMONT PARIS - NITRO RED.png", set: "img/perfumes/DUMONT PARIS - NITRO RED (2).png" },
   "cdn-intense-man": { bottle: "img/perfumes/ARMAF - CLUB DE NUIT INTENSE EDT.png", set: "img/perfumes/ARMAF - CLUB DE NUIT INTENSE EDT (2).png" },
   "cdn-urban-man-e": { bottle: "img/perfumes/ARMAF - CLUB DE NUIT URBAN MAN ELIXIR.png", set: "img/perfumes/ARMAF - CLUB DE NUIT URBAN MAN ELIXIR (2).png" },
-  "sceptre-malachite": { bottle: "img/perfumes/MAISON ALHAMBRA - SCEPTRE MALACHITE.png", set: "img/perfumes/MAISON ALHAMBRA - SCEPTRE MALACHITE (2).png" },
+  "sceptre-malachite": { bottle: "img/perfumes/MAISON ALHAMBRA - SCEPTRE MALACHITE.png", set: "img/perfumes/MAISON ALHAMBRA -  SCEPTRE MALACHITE.png" },
   "eros-flame": { bottle: "img/perfumes/VERSACE - EROS FLAME.png", set: "img/perfumes/VERSACE - EROS FLAME (2).png" },
   "swy-intensely": { bottle: "img/perfumes/EMPORIO ARMANI - STRONGER WITH YOU INTENSELY.png", set: "img/perfumes/EMPORIO ARMANI - STRONGER WITH YOU INTENSELY (2).png" },
   "swy-absolutely": { bottle: "img/perfumes/EMPORIO ARMANI - STRONGER WITH YOU ABSOLUTELY.png", set: "img/perfumes/EMPORIO ARMANI - STRONGER WITH YOU ABSOLUTELY (2).png" },
-  "le-male-elixir": { bottle: "img/perfumes/JEAN PAUL GAULTIER - LE MALE ELIXIR.png", set: "img/perfumes/JEAN PAUL GAULTIER - LE MALE ELIXIR (2).png" },
+  "le-male-elixir": { bottle: "img/perfumes/JEAN PAUL GAULTIER - LE MALE ELIXIR.png", set: "img/perfumes/JEAN PAUL GAULTIER - LE MALE ELIXIR EDT.png" },
   "le-beau-le-parfum": { bottle: "img/perfumes/JEAN PAUL GAULTIER - LE BEAU LE PARFUM.png", set: "img/perfumes/JEAN PAUL GAULTIER - LE BEAU LE PARFUM (2).png" },
   "azzaro-tmw-edp": { bottle: "img/perfumes/AZZARO.-AZZARO THE MOSTH WANTED INTENSE EDP.png", set: "img/perfumes/AZZARO.-AZZARO THE MOSTH WANTED INTENSE EDP (2).png" },
   "tmw-parfum": { bottle: "img/perfumes/AZZARO.-AZZARO THE MOSTH WANTED PARFUM.png", set: "img/perfumes/AZZARO.-AZZARO THE MOSTH WANTED PARFUM (2).png" },
   "adg-profondo-edp": { bottle: "img/perfumes/GIORGIO ARMANI .-ACQUA DI GIO PROFONDO EDP.png", set: "img/perfumes/GIORGIO ARMANI .-ACQUA DI GIO PROFONDO EDP (2).png" },
   "invictus-elixir": { bottle: "img/perfumes/PACO RABANNE -INVICTUS ELIXIR.png", set: "img/perfumes/PACO RABANNE -INVICTUS ELIXIR (2).png" },
-  "liquid-brun": { bottle: "img/perfumes/FRENCH AVENUE - LIQUID BRUN.png", set: "img/perfumes/FRENCH AVENUE - LIQUID BRUN (2).png" }
+  "liquid-brun": { bottle: "img/perfumes/liquid brun.png", set: "img/perfumes/liquid brun (2).png" }
 };
 
 /* Mensaje regalo por compra al detal */
