@@ -2006,6 +2006,7 @@ input,select,textarea{font-family:inherit}
 .product-card{
   transform-style:preserve-3d;
   perspective:800px;
+  will-change:transform;
 }
 .product-card::after{
   content:"";
@@ -2021,6 +2022,7 @@ input,select,textarea{font-family:inherit}
 .collection-card{
   transform-style:preserve-3d;
   perspective:600px;
+  will-change:transform;
 }
 .btn-primary{
   transition:all .45s var(--ease),transform .15s ease;

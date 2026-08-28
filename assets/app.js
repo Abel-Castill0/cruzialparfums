@@ -484,12 +484,23 @@ function initDrawer(){
 function initMobileMenu(){
   const menu = document.getElementById("mobile-menu");
   if(!menu) return;
+  var lastFocused = null;
   document.querySelectorAll("[data-open-menu]").forEach(b=>b.addEventListener("click",()=>{
+    lastFocused = document.activeElement;
     menu.classList.add("open"); document.body.style.overflow="hidden";
+    var firstLink = menu.querySelector("a");
+    if(firstLink) setTimeout(function(){firstLink.focus()},100);
   }));
   document.querySelectorAll("[data-close-menu], .mobile-menu a").forEach(b=>b.addEventListener("click",()=>{
     menu.classList.remove("open"); document.body.style.overflow="";
+    if(lastFocused) lastFocused.focus();
   }));
+  menu.addEventListener("keydown",function(e){
+    if(e.key==="Escape"){
+      menu.classList.remove("open"); document.body.style.overflow="";
+      if(lastFocused) lastFocused.focus();
+    }
+  });
 }
 
 /* ---------- Header + reveal ---------- */
@@ -616,12 +627,40 @@ initReveal();
 initNewsletter();
 initTilt();
 initRipple();
+initAnalytics();
 
 /* ---------- Page loader ---------- */
 window.addEventListener("load",function(){
   var loader=document.getElementById("page-loader");
   if(loader) setTimeout(function(){loader.classList.add("hide")},400);
 });
+
+/* ---------- GA4 Event Tracking ---------- */
+function initAnalytics(){
+  document.addEventListener("click",function(e){
+    var btn=e.target.closest(".btn-primary, .quick-add, [data-add]");
+    if(btn){
+      var label=btn.textContent.trim()||"CTA";
+      var product=btn.dataset.add||"";
+      if(typeof gtag==="function"){
+        gtag("event","click",{event_category:"CTA",event_label:label,product_id:product});
+      }
+    }
+    var wa=e.target.closest(".wa-float, a[href*='wa.me']");
+    if(wa){
+      if(typeof gtag==="function"){
+        gtag("event","whatsapp_click",{event_category:"Contact"});
+      }
+    }
+  });
+  document.querySelectorAll("form").forEach(function(f){
+    f.addEventListener("submit",function(){
+      if(typeof gtag==="function"){
+        gtag("event","form_submit",{event_category:"Form",form_id:f.id||"unknown"});
+      }
+    });
+  });
+}
 
 /* ---------- Page exit transitions ---------- */
 document.addEventListener("DOMContentLoaded",function(){
