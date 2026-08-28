@@ -385,20 +385,41 @@ function renderCart(){
 function initCartActions(){
   document.getElementById("clear-cart")?.addEventListener("click",()=>{ saveCart([]); renderCart(); });
 }
+/* Shared submit feedback: runs onSend() immediately — synchronously, in the
+   same click/submit call stack — so window.open() still carries the user's
+   click activation and isn't caught by popup blockers, then shows a
+   confirmed state on the button for a moment so the tap feels acknowledged. */
+function withSubmitFeedback(form, onSend){
+  const btn = form.querySelector("button[type=submit]");
+  if(!btn){ onSend(); return; }
+  const original = btn.innerHTML;
+  onSend();
+  btn.disabled = true;
+  btn.setAttribute("aria-busy","true");
+  btn.innerHTML = `<span>Abierto en WhatsApp ✓</span>`;
+  setTimeout(()=>{
+    btn.disabled = false;
+    btn.removeAttribute("aria-busy");
+    btn.innerHTML = original;
+  }, 1800);
+}
+
 function initOrderForm(){
   const form = document.getElementById("order-form"); if(!form) return;
   form.addEventListener("submit",e=>{
     e.preventDefault();
+    if(!form.reportValidity()) return;
     const cart = getCart();
     if(!cart.length){ toast("Tu selección está vacía"); return; }
     const d = Object.fromEntries(new FormData(form));
-    let total = 0;
-    const lines = cart.map(i=>{
-      const p = PRODUCTS.find(x=>x.id===i.id); total += i.price*i.qty;
-      const label = i.group==="bottle" ? `Frasco ${i.size} ml` : `${i.size} ml`;
-      return `${label} ${p.brand} ${p.name} ×${i.qty} = ${money(i.price*i.qty)}`;
-    });
-    const msg =
+    withSubmitFeedback(form, ()=>{
+      let total = 0;
+      const lines = cart.map(i=>{
+        const p = PRODUCTS.find(x=>x.id===i.id); total += i.price*i.qty;
+        const label = i.group==="bottle" ? `Frasco ${i.size} ml` : `${i.size} ml`;
+        return `${label} ${p.brand} ${p.name} ×${i.qty} = ${money(i.price*i.qty)}`;
+      });
+      const msg =
 `Hola ${CONFIG.STORE}. Quiero realizar este pedido:
 
 ${lines.join("\n")}
@@ -413,8 +434,9 @@ Entrega: ${d.delivery}
 Nota: ${d.note||"—"}
 
 Quedo atento/a a la confirmación de stock, envío y total final.`;
-    window.open(`https://wa.me/${WA}?text=${encodeURIComponent(msg)}`,"_blank");
-    toast("Pedido abierto en WhatsApp");
+      window.open(`https://wa.me/${WA}?text=${encodeURIComponent(msg)}`,"_blank");
+      toast("Pedido abierto en WhatsApp");
+    });
   });
 }
 
@@ -423,13 +445,17 @@ function initInfoForms(){
   document.querySelectorAll("[data-wa-form]").forEach(form=>{
     form.addEventListener("submit",e=>{
       e.preventDefault();
+      if(!form.reportValidity()) return;
       const intent = form.dataset.waForm;
       const d = Object.fromEntries(new FormData(form));
-      const msg = intent==="wholesale"
-        ? `Hola ${CONFIG.STORE}. Quiero información sobre precios por MAYOR.\n\nNombre: ${d.name}\nNegocio: ${d.business||"—"}\nWhatsApp: ${d.phone}\nVolumen estimado: ${d.volume||"—"}\nMensaje: ${d.message||"—"}`
-        : `Hola ${CONFIG.STORE}. Quiero contactarme.\n\nNombre: ${d.name}\nWhatsApp: ${d.phone}\nMotivo: ${d.topic||"—"}\nMensaje: ${d.message||"—"}`;
-      window.open(`https://wa.me/${WA}?text=${encodeURIComponent(msg)}`,"_blank");
-      toast("Mensaje abierto en WhatsApp");
+      withSubmitFeedback(form, ()=>{
+        const msg = intent==="wholesale"
+          ? `Hola ${CONFIG.STORE}. Quiero información sobre precios por MAYOR.\n\nNombre: ${d.name}\nNegocio: ${d.business||"—"}\nWhatsApp: ${d.phone}\nVolumen estimado: ${d.volume||"—"}\nMensaje: ${d.message||"—"}`
+          : `Hola ${CONFIG.STORE}. Quiero contactarme.\n\nNombre: ${d.name}\nWhatsApp: ${d.phone}\nMotivo: ${d.topic||"—"}\nMensaje: ${d.message||"—"}`;
+        window.open(`https://wa.me/${WA}?text=${encodeURIComponent(msg)}`,"_blank");
+        toast("Mensaje abierto en WhatsApp");
+        form.reset();
+      });
     });
   });
 }
@@ -561,7 +587,7 @@ function initArt(){
       el.style.setProperty("--glow", glow(p));
       const artImg = p.imgBottle || p.img;
       el.innerHTML = artImg
-        ? `<img src="${artImg}" alt="${p.brand} ${p.name}" style="width:100%;height:100%;object-fit:contain" loading="lazy" decoding="async">`
+        ? `<img src="${artImg}" alt="${p.brand} ${p.name}" class="art-media" loading="lazy" decoding="async">`
         : bottleSVG(p);
     }
   });

@@ -114,6 +114,14 @@ input,select,textarea{font-family:inherit}
 .btn-ghost{color:var(--text);padding:17px 10px}
 .btn-ghost:hover{color:var(--gold-bright)}
 .btn.full{width:100%}
+/* Safety net: if a long, uppercase, letter-spaced label still doesn't fit
+   the button on a narrow screen, wrap it onto two lines instead of
+   silently clipping it (initRipple() sets overflow:hidden on these). */
+@media (max-width:480px){
+  .btn.full{white-space:normal;text-align:center;row-gap:4px}
+}
+.btn:disabled{cursor:default;opacity:.85}
+.btn:disabled span{transform:none}
 
 .text-link{
   font-size:11px;
@@ -327,6 +335,7 @@ input,select,textarea{font-family:inherit}
   animation:float 7s ease-in-out infinite;
   filter:drop-shadow(0 40px 70px rgba(0,0,0,.6));
 }
+.hero-bottle .art-media{width:100%;height:auto}
 .hero-aura{
   position:absolute;
   width:min(520px,90%);
@@ -426,6 +435,12 @@ input,select,textarea{font-family:inherit}
   grid-template-columns:repeat(4,1fr);
   gap:26px;
 }
+/* Grid items default to min-width:auto, which lets oversized intrinsic
+   content (e.g. a real product photo) blow the column out past its
+   track and overflow the page. Force every card grid to respect its
+   track width instead. */
+.product-grid>*,
+.collection-grid>*{min-width:0;max-width:100%}
 .product-card{
   background:var(--surface);
   border:1px solid var(--line);
@@ -646,14 +661,20 @@ input,select,textarea{font-family:inherit}
     linear-gradient(180deg,#171310,#0b0906);
 }
 .collection-card:hover{transform:translateY(-8px);border-color:var(--line-strong);box-shadow:var(--shadow)}
-.collection-card svg{
+/* .art-media = <img> inserted by initArt() for [data-bottle] placeholders.
+   Base rule keeps it from ever forcing its intrinsic size onto flex/grid
+   parents; each context below then sizes/positions it like its SVG twin. */
+.art-media{display:block;max-width:100%;height:auto;object-fit:contain}
+.collection-card svg,
+.collection-card .art-media{
   width:48%;
   position:absolute;
   top:2%;
   transition:transform .8s var(--ease);
   filter:drop-shadow(0 24px 36px rgba(0,0,0,.55));
 }
-.collection-card:hover svg{transform:translateY(-10px) scale(1.06)}
+.collection-card:hover svg,
+.collection-card:hover .art-media{transform:translateY(-10px) scale(1.06)}
 .collection-card .eyebrow{justify-content:center}
 .collection-card .eyebrow::after{content:"";width:26px;height:1px;background:var(--line-strong)}
 .collection-card h3{font-family:var(--serif);font-weight:500;font-size:22px;margin:10px 0 6px;color:var(--cream)}
@@ -688,7 +709,8 @@ input,select,textarea{font-family:inherit}
   display:grid;
   place-items:center;
 }
-.split-art svg{width:52%;animation:float 8s ease-in-out infinite;filter:drop-shadow(0 30px 50px rgba(0,0,0,.55))}
+.split-art svg,
+.split-art .art-media{width:52%;animation:float 8s ease-in-out infinite;filter:drop-shadow(0 30px 50px rgba(0,0,0,.55))}
 .split-art .art-number{
   position:absolute;
   top:26px;left:30px;
@@ -1426,6 +1448,7 @@ input,select,textarea{font-family:inherit}
 .pricing-table tr:hover td{background:rgba(201,169,98,.03)}
 .pricing-table td b{color:var(--gold-bright);font-family:var(--serif);font-weight:500;font-size:17px}
 
+.pricing-mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:40px}
 .contact-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:22px}
 .contact-card{
   border:1px solid var(--line);
@@ -1757,6 +1780,16 @@ input,select,textarea{font-family:inherit}
 .legal-content a{color:var(--gold);text-decoration:underline;text-underline-offset:3px}
 .legal-content a:hover{color:var(--gold-bright)}
 
+.mobile-toggle{
+  display:none;
+  width:36px;height:36px;
+  border:1px solid var(--line);
+  border-radius:50%;
+  place-items:center;
+  color:var(--cream);
+  transition:all .35s;
+}
+
 /* ---------- Responsive ---------- */
 @media (max-width:1280px){
   .product-grid{grid-template-columns:repeat(4,1fr);gap:18px}
@@ -1783,8 +1816,8 @@ input,select,textarea{font-family:inherit}
   .info-grid{grid-template-columns:1fr 1fr}
   .wholesale-band{grid-template-columns:1fr}
   .main-nav{display:none}
-  .mobile-toggle{display:grid!important}
-  .pricing-mode-grid{grid-template-columns:1fr!important}
+  .mobile-toggle{display:grid}
+  .pricing-mode-grid{grid-template-columns:1fr}
   .product-grid{grid-template-columns:repeat(3,1fr)}
   .collection-grid{grid-template-columns:repeat(2,1fr)}
 }
@@ -1820,7 +1853,7 @@ input,select,textarea{font-family:inherit}
   .section-heading{flex-direction:column;align-items:flex-start}
   .wholesale-band{padding:40px 24px}
   .hero-actions{gap:16px;margin-top:34px}
-  .btn{padding:15px 26px}
+  .btn{padding:15px 22px;letter-spacing:.16em;font-size:10.5px}
   .form-field input,.form-field select,.form-field textarea{font-size:16px}
   .results-top select{max-width:100%}
   .detail-actions{flex-direction:column;align-items:stretch}
@@ -1828,7 +1861,8 @@ input,select,textarea{font-family:inherit}
   .meta-row div{padding:13px 10px}
   .meta-row span{font-size:8px;letter-spacing:.18em}
   .meta-row b{font-size:15px}
-  .icon-btn{width:40px;height:40px}
+  .icon-btn{width:44px;height:44px}
+  .mobile-toggle{width:44px;height:44px}
   .cart-controls{flex-wrap:wrap}
   .marquee span{font-size:15px;gap:36px}
   .marquee-track{gap:36px}
@@ -1863,10 +1897,11 @@ input,select,textarea{font-family:inherit}
   .eyebrow::before{width:22px}
   .pill{padding:9px 15px;font-size:9px;letter-spacing:.16em}
   .pills{gap:7px}
-  .collection-card{aspect-ratio:1/1.05;padding:18px 14px}
-  .collection-card svg,.collection-card img{width:55%;top:8%}
-  .collection-card h3{font-size:22px}
-  .collection-card p{font-size:11px;margin-bottom:12px}
+  .collection-grid{gap:10px}
+  .collection-card{aspect-ratio:1/1.05;padding:16px 12px;min-width:0}
+  .collection-card svg,.collection-card img,.collection-card .art-media{width:52%;top:6%}
+  .collection-card h3{font-size:19px;margin:8px 0 4px}
+  .collection-card p{font-size:10.5px;margin-bottom:10px}
   .step{padding:34px 20px 26px}
   .step::before{font-size:52px}
   .testimonial{padding:30px 22px}
@@ -1916,15 +1951,6 @@ input,select,textarea{font-family:inherit}
   .footer-col a,.footer-col span{font-size:13px}
   .empty-cart{padding:50px 20px}
 }/* ---------- Menú móvil ---------- */
-.mobile-toggle{
-  display:none;
-  width:36px;height:36px;
-  border:1px solid var(--line);
-  border-radius:50%;
-  place-items:center;
-  color:var(--cream);
-  transition:all .35s;
-}
 .mobile-toggle:hover{border-color:var(--gold);color:var(--gold-bright)}
 .mobile-menu{
   position:fixed;
@@ -2107,12 +2133,14 @@ html{
   .card-name{font-size:16px}
   .card-meta b{font-size:14px}
   .card-body{padding:12px 12px 16px}
-  .collection-grid{grid-template-columns:1fr}
-  .collection-card h3{font-size:20px}
-  .collection-card p{font-size:10px}
+  .collection-grid{grid-template-columns:1fr 1fr;gap:8px}
+  .collection-card{padding:14px 10px}
+  .collection-card h3{font-size:18px;margin:8px 0 4px}
+  .collection-card p{font-size:10px;margin-bottom:8px}
+  .collection-card .count{font-size:8.5px;letter-spacing:.2em;padding-top:10px}
   .product-info h1{font-size:28px}
   .product-info .desc{font-size:14px}
-  .btn{padding:14px 22px;font-size:13px}
+  .btn{padding:14px 16px;font-size:10px;letter-spacing:.1em}
   .form-field input,.form-field select,.form-field textarea{padding:14px 14px;font-size:16px}
 }
 /* Reduced motion */
