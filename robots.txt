@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /assets/
+Disallow: /img/
+
+Sitemap: https://abel-castill0.github.io/cruzialparfums/sitemap.xml

@@ -752,16 +752,19 @@ input,select,textarea{font-family:inherit}
   background:radial-gradient(circle at 30% 25%,rgba(232,213,163,.14),transparent 70%);
 }
 
-/* ---------- Testimonios ---------- */
-.testimonial-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:26px}
+/* ---------- Testimonios (Swiper) ---------- */
+.testimonial-swiper{padding:20px 0 50px}
+.swiper-pagination-bullet{background:var(--gold);opacity:.3}
+.swiper-pagination-bullet-active{opacity:1;background:var(--gold-bright)}
 .testimonial{
   border:1px solid var(--line);
-  padding:40px 32px;
+  padding:36px 28px;
   background:var(--surface);
   position:relative;
   transition:all .5s var(--ease);
   display:flex;
   flex-direction:column;
+  height:100%;
 }
 .testimonial:hover{border-color:var(--line-strong);transform:translateY(-5px)}
 .testimonial::before{
@@ -1688,6 +1691,36 @@ input,select,textarea{font-family:inherit}
 .reveal-d1{transition-delay:.12s}
 .reveal-d2{transition-delay:.24s}
 .reveal-d3{transition-delay:.36s}
+
+/* ---------- Back to top ---------- */
+.back-to-top{
+  position:fixed;
+  right:24px;bottom:94px;
+  z-index:70;
+  width:44px;height:44px;
+  border-radius:50%;
+  background:rgba(21,17,12,.85);
+  border:1px solid var(--line);
+  color:var(--gold);
+  font-size:18px;
+  display:grid;place-items:center;
+  opacity:0;
+  transform:translateY(20px);
+  transition:all .4s var(--ease);
+  pointer-events:none;
+  backdrop-filter:blur(8px);
+}
+.back-to-top.show{opacity:1;transform:translateY(0);pointer-events:auto}
+.back-to-top:hover{border-color:var(--gold-bright);color:var(--gold-bright);transform:translateY(-3px)}
+
+/* ---------- Legal content ---------- */
+.legal-content{font-family:'Jost',sans-serif;font-size:15px;line-height:1.75;color:var(--text-secondary)}
+.legal-content h2{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:600;color:var(--text-primary);margin:36px 0 12px;border-bottom:1px solid var(--line);padding-bottom:10px}
+.legal-content p{margin-bottom:14px}
+.legal-content ul,.legal-content ol{margin:0 0 16px 20px}
+.legal-content li{margin-bottom:6px}
+.legal-content a{color:var(--gold);text-decoration:underline;text-underline-offset:3px}
+.legal-content a:hover{color:var(--gold-bright)}
 
 /* ---------- Responsive ---------- */
 @media (max-width:1280px){
