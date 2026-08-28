@@ -106,7 +106,7 @@ function productCard(p, mode){
   const media = cardImg
     ? `<img src="${cardImg}" alt="${p.brand} ${p.name}" class="card-img" loading="lazy">`
     : bottleSVG(p);
-  return `<article class="product-card reveal in">
+  return `<article class="product-card">
     <a href="product.html?id=${p.id}">
       <div class="card-media" style="--glow:${glow(p)}">
         ${media}

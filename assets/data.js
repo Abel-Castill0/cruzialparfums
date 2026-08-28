@@ -82,7 +82,7 @@ const IMG_MAP = {
   "nitro-red": { bottle: "img/perfumes/DUMONT PARIS - NITRO RED.png", set: "img/perfumes/DUMONT PARIS - NITRO RED (2).png" },
   "cdn-intense-man": { bottle: "img/perfumes/ARMAF - CLUB DE NUIT INTENSE EDT.png", set: "img/perfumes/ARMAF - CLUB DE NUIT INTENSE EDT (2).png" },
   "cdn-urban-man-e": { bottle: "img/perfumes/ARMAF - CLUB DE NUIT URBAN MAN ELIXIR.png", set: "img/perfumes/ARMAF - CLUB DE NUIT URBAN MAN ELIXIR (2).png" },
-  "sceptre-malachite": { bottle: "img/perfumes/MAISON ALHAMBRA - SCEPTRE MALACHITE.png", set: "img/perfumes/MAISON ALHAMBRA -  SCEPTRE MALACHITE.png" },
+  "sceptre-malachite": { bottle: "img/perfumes/MAISON ALHAMBRA - SCEPTRE MALACHITE.png", set: "img/perfumes/MAISON ALHAMBRA - SCEPTRE MALACHITE (2).png" },
   "eros-flame": { bottle: "img/perfumes/VERSACE - EROS FLAME.png", set: "img/perfumes/VERSACE - EROS FLAME (2).png" },
   "swy-intensely": { bottle: "img/perfumes/EMPORIO ARMANI - STRONGER WITH YOU INTENSELY.png", set: "img/perfumes/EMPORIO ARMANI - STRONGER WITH YOU INTENSELY (2).png" },
   "swy-absolutely": { bottle: "img/perfumes/EMPORIO ARMANI - STRONGER WITH YOU ABSOLUTELY.png", set: "img/perfumes/EMPORIO ARMANI - STRONGER WITH YOU ABSOLUTELY (2).png" },
