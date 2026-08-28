@@ -104,7 +104,7 @@ function productCard(p, mode){
   const brand = p.brand ? `<span class="card-brand">${p.brand}</span>` : "";
   const cardImg = p.imgBottle || p.imgSet || p.img;
   const media = cardImg
-    ? `<img src="${cardImg}" alt="${p.brand} ${p.name}" class="card-img" loading="lazy">`
+    ? `<img src="${cardImg}" alt="${p.brand} ${p.name}" class="card-img" loading="lazy" decoding="async">`
     : bottleSVG(p);
   return `<article class="product-card">
     <a href="product.html?id=${p.id}">
@@ -170,7 +170,7 @@ function initSearch(){
       const searchImg = p.imgBottle || p.imgSet || p.img;
       return `
       <a class="search-item" href="product.html?id=${p.id}">
-        ${searchImg ? `<img src="${searchImg}" alt="${p.brand} ${p.name}" class="search-img" loading="lazy">` : bottleSVG(p)}
+        ${searchImg ? `<img src="${searchImg}" alt="${p.brand} ${p.name}" class="search-img" loading="lazy" decoding="async">` : bottleSVG(p)}
         <span><span class="s-brand">${p.brand}</span><span class="s-name">${p.name}</span></span>
         <span class="s-price">${money(Math.min(...Object.values(p.price)))}</span>
       </a>`;
@@ -250,9 +250,9 @@ function initProduct(){
       <b>${s} ml</b><span>${money(v)}</span>
     </button>`).join("") : "";
   const stageMedia = p.imgBottle
-    ? `<img id="product-stage-img" src="${p.imgBottle}" alt="${p.brand} ${p.name}" class="product-img" loading="lazy">`
+    ? `<img id="product-stage-img" src="${p.imgBottle}" alt="${p.brand} ${p.name}" class="product-img" loading="lazy" decoding="async">`
     : p.img
-    ? `<img id="product-stage-img" src="${p.img}" alt="${p.brand} ${p.name}" class="product-img" loading="lazy">`
+    ? `<img id="product-stage-img" src="${p.img}" alt="${p.brand} ${p.name}" class="product-img" loading="lazy" decoding="async">`
     : bottleSVG(p);
   box.innerHTML = `
   <section class="product-detail">
@@ -359,7 +359,7 @@ function renderCart(){
     const label = i.group==="bottle" ? `Frasco ${i.size} ml` : `${i.size} ml`;
     const cartImg = p.imgBottle || p.img;
     const thumb = cartImg
-      ? `<img src="${cartImg}" alt="${p.brand} ${p.name}" class="cart-thumb-img" loading="lazy">`
+      ? `<img src="${cartImg}" alt="${p.brand} ${p.name}" class="cart-thumb-img" loading="lazy" decoding="async">`
       : `<div class="cart-thumb" style="--glow:${glow(p)}">${bottleSVG(p)}</div>`;
     return `<div class="cart-row">
       ${thumb}
@@ -449,7 +449,7 @@ function renderDrawer(){
     const p = PRODUCTS.find(x=>x.id===i.id); sum += i.price*i.qty;
     const drawerImg = p.imgBottle || p.img;
     const thumb = drawerImg
-      ? `<img src="${drawerImg}" alt="${p.brand} ${p.name}" class="drawer-thumb-img" loading="lazy">`
+      ? `<img src="${drawerImg}" alt="${p.brand} ${p.name}" class="drawer-thumb-img" loading="lazy" decoding="async">`
       : `<div class="cart-thumb" style="--glow:${glow(p)}">${bottleSVG(p)}</div>`;
     return `<div class="drawer-item">
       ${thumb}
@@ -539,9 +539,46 @@ function initArt(){
       el.style.setProperty("--glow", glow(p));
       const artImg = p.imgBottle || p.img;
       el.innerHTML = artImg
-        ? `<img src="${artImg}" alt="${p.brand} ${p.name}" style="width:100%;height:100%;object-fit:contain" loading="lazy">`
+        ? `<img src="${artImg}" alt="${p.brand} ${p.name}" style="width:100%;height:100%;object-fit:contain" loading="lazy" decoding="async">`
         : bottleSVG(p);
     }
+  });
+}
+
+/* ---------- 3D Tilt on product cards ---------- */
+function initTilt(){
+  if(matchMedia("(pointer:fine)").matches===false) return;
+  document.querySelectorAll(".product-card").forEach(function(card){
+    card.addEventListener("mousemove",function(e){
+      var r=card.getBoundingClientRect();
+      var x=(e.clientX-r.left)/r.width-.5;
+      var y=(e.clientY-r.top)/r.height-.5;
+      card.style.transform="translateY(-6px) perspective(600px) rotateX("+(-y*8)+"deg) rotateY("+(x*8)+"deg) scale(1.02)";
+      card.style.transition="transform .15s ease-out";
+    });
+    card.addEventListener("mouseleave",function(){
+      card.style.transform="";
+      card.style.transition="all .55s cubic-bezier(.22,1,.36,1)";
+    });
+  });
+}
+
+/* ---------- Button Ripple effect ---------- */
+function initRipple(){
+  document.querySelectorAll(".btn-primary, .btn-outline").forEach(function(btn){
+    btn.style.position="relative";
+    btn.style.overflow="hidden";
+    btn.addEventListener("click",function(e){
+      var r=btn.getBoundingClientRect();
+      var d=Math.max(r.width,r.height);
+      var span=document.createElement("span");
+      span.className="ripple-effect";
+      span.style.width=span.style.height=d+"px";
+      span.style.left=(e.clientX-r.left-d/2)+"px";
+      span.style.top=(e.clientY-r.top-d/2)+"px";
+      btn.appendChild(span);
+      setTimeout(function(){span.remove()},700);
+    });
   });
 }
 
@@ -577,3 +614,5 @@ initMobileMenu();
 initHeader();
 initReveal();
 initNewsletter();
+initTilt();
+initRipple();

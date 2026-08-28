@@ -11,6 +11,7 @@
   <meta http-equiv="X-Frame-Options" content="DENY">
   <meta http-equiv="X-XSS-Protection" content="1; mode=block">
   <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://www.googletagmanager.com https://www.google-analytics.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob:; connect-src 'self' https://www.google-analytics.com https://www.googletagmanager.com; font-src 'self' https://fonts.gstatic.com; frame-ancestors 'none';">
   <title>Cruzial Parfums — Perfumes que dejan presencia</title>
   <link rel="canonical" href="https://abel-castill0.github.io/cruzialparfums/">
   <!-- Open Graph -->
@@ -327,7 +328,7 @@
           </div>
           <div class="side">+500 clientes entre Lima y provincias ya armaron su colección con nosotros.</div>
         </div>
-        <div class="swiper testimonial-swiper">
+        <div class="swiper testimonial-swiper" role="region" aria-label="Testimonios de clientes">
           <div class="swiper-wrapper">
             <div class="swiper-slide">
               <div class="testimonial">
@@ -597,7 +598,7 @@
   </footer>
 
   <!-- Buscador -->
-  <div class="search-panel" data-search-panel>
+  <div class="search-panel" data-search-panel role="search" aria-label="Buscar fragancias">
     <button class="close-panel" data-close-search aria-label="Cerrar búsqueda">×</button>
     <div class="container">
       <p class="eyebrow">Buscar en Cruzial</p>
@@ -611,7 +612,7 @@
 
   <!-- Drawer carrito -->
   <div class="drawer-overlay" id="drawer-overlay" data-close-cart></div>
-  <aside class="drawer" id="cart-drawer" aria-label="Carrito de compras">
+  <aside class="drawer" id="cart-drawer" aria-label="Carrito de compras" role="dialog" aria-modal="true">
     <div class="drawer-head">
       <strong>Tu selección</strong>
       <button class="drawer-close" data-close-cart aria-label="Cerrar carrito">×</button>
@@ -625,7 +626,7 @@
   </aside>
 
   <!-- Menú móvil -->
-  <div class="mobile-menu" id="mobile-menu">
+  <div class="mobile-menu" id="mobile-menu" role="dialog" aria-label="Menú de navegación" aria-modal="true">
     <img src="logo.jpeg" alt="Cruzial Parfums" class="menu-logo">
     <button class="close-mobile" data-close-menu aria-label="Cerrar menú">×</button>
     <a href="index.html">Inicio</a>
@@ -669,7 +670,7 @@
       },{passive:true});
       backToTop.addEventListener("click",function(){window.scrollTo({top:0,behavior:"smooth"})});
     }
-    var sw=new Swiper(".testimonial-swiper",{loop:true,autoplay:{delay:4500,disableOnInteraction:false},slidesPerView:1,spaceBetween:24,breakpoints:{640:{slidesPerView:2},1024:{slidesPerView:3}},pagination:{el:".swiper-pagination",clickable:true}});
+    var sw=new Swiper(".testimonial-swiper",{loop:true,autoplay:{delay:4500,disableOnInteraction:false,pauseOnMouseEnter:true},slidesPerView:1,spaceBetween:24,breakpoints:{640:{slidesPerView:2},1024:{slidesPerView:3}},pagination:{el:".swiper-pagination",clickable:true},a11y:{enabled:true,prevSlideMessage:"Testimonio anterior",nextSlideMessage:"Testimonio siguiente",paginationBulletMessage:"Ir al testimonio {{index}}"}});
   });
   </script>
 

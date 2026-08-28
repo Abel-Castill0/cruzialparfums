@@ -430,8 +430,10 @@ input,select,textarea{font-family:inherit}
   transition:all .55s var(--ease);
   position:relative;
   overflow:hidden;
+  transform-style:preserve-3d;
+  will-change:transform;
 }
-.product-card:hover{transform:translateY(-6px);border-color:var(--line-strong);box-shadow:var(--shadow)}
+.product-card:hover{transform:translateY(-6px) perspective(600px) rotateX(2deg);border-color:var(--line-strong);box-shadow:var(--shadow)}
 .product-card::before{
   content:"";
   position:absolute;
@@ -1712,6 +1714,20 @@ input,select,textarea{font-family:inherit}
 }
 .back-to-top.show{opacity:1;transform:translateY(0);pointer-events:auto}
 .back-to-top:hover{border-color:var(--gold-bright);color:var(--gold-bright);transform:translateY(-3px)}
+
+/* ---------- Ripple effect ---------- */
+.ripple-effect{
+  position:absolute;
+  border-radius:50%;
+  background:rgba(232,213,163,.3);
+  transform:scale(0);
+  animation:rippleAnim .7s linear;
+  pointer-events:none;
+  z-index:10;
+}
+@keyframes rippleAnim{
+  to{transform:scale(4);opacity:0}
+}
 
 /* ---------- Legal content ---------- */
 .legal-content{font-family:'Jost',sans-serif;font-size:15px;line-height:1.75;color:var(--muted)}
