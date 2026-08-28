@@ -12,6 +12,15 @@ const money = n => "S/ " + n.toFixed(2);
 function hashStr(s){let h=0;for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))%997;return h}
 function shade(hex,p){const n=parseInt(hex.slice(1),16);const r=Math.max(0,Math.min(255,(n>>16)+p));const g=Math.max(0,Math.min(255,((n>>8)&255)+p));const b=Math.max(0,Math.min(255,(n&255)+p));return `rgb(${r},${g},${b})`}
 function initials(brand){return brand.split(/\s+/).map(w=>w[0]).join("").slice(0,3).toUpperCase()}
+function imgError(el){
+  const parent = el.parentElement;
+  if(!parent) return;
+  const id = el.src.match(/\/([^\/]+?)\.(?:png|jpg|webp)$/i);
+  if(id && window.CRUZIAL_PRODUCTS){
+    const p = window.CRUZIAL_PRODUCTS.find(x=>el.alt && el.alt.includes(x.name));
+    if(p) parent.innerHTML = bottleSVG(p);
+  }
+}
 
 /* ---------- Generador de botellas SVG ---------- */
 function bottleSVG(p){
@@ -93,10 +102,14 @@ function productCard(p, mode){
   const qSize = isBottle ? minSize : 3;
   const qGroup = isBottle ? "bottle" : "decant";
   const brand = p.brand ? `<span class="card-brand">${p.brand}</span>` : "";
+  const cardImg = p.imgBottle || p.imgSet || p.img;
+  const media = cardImg
+    ? `<img src="${cardImg}" alt="${p.brand} ${p.name}" class="card-img" loading="lazy">`
+    : bottleSVG(p);
   return `<article class="product-card reveal in">
     <a href="product.html?id=${p.id}">
       <div class="card-media" style="--glow:${glow(p)}">
-        ${bottleSVG(p)}
+        ${media}
         <span class="tag">${p.tag}</span>
         <button class="quick-add" data-add="${p.id}" data-size="${qSize}" data-group="${qGroup}" aria-label="Añadir ${p.name}">+</button>
       </div>
@@ -106,6 +119,7 @@ function productCard(p, mode){
         <div class="card-meta"><span>${isBottle?`frasco ${minSize} ml`:"desde 3 ml"}</span><b>${money(min)}</b></div>
         ${isBottle && p.price ? `<div class="card-bottle">Prueba antes en decant · desde ${money(Math.min(...Object.values(p.price)))}</div>` : ""}
         ${!isBottle && bottle ? `<div class="card-bottle">Frasco completo · desde ${money(bottle)} (${bSize} ml)</div>` : ""}
+        ${!isBottle ? `<div class="card-gift">${GIFT_MESSAGE}</div>` : ""}
       </div>
     </a>
   </article>`;
@@ -152,12 +166,15 @@ function initSearch(){
     const list = q
       ? PRODUCTS.filter(p=>(p.brand+" "+p.name+" "+p.notes.join(" ")+" "+p.family).toLowerCase().includes(q))
       : PRODUCTS.slice(0,6);
-    results.innerHTML = list.map(p=>`
+    results.innerHTML = list.map(p=>{
+      const searchImg = p.imgBottle || p.imgSet || p.img;
+      return `
       <a class="search-item" href="product.html?id=${p.id}">
-        ${bottleSVG(p)}
+        ${searchImg ? `<img src="${searchImg}" alt="${p.brand} ${p.name}" class="search-img" loading="lazy">` : bottleSVG(p)}
         <span><span class="s-brand">${p.brand}</span><span class="s-name">${p.name}</span></span>
         <span class="s-price">${money(Math.min(...Object.values(p.price)))}</span>
-      </a>`).join("");
+      </a>`;
+    }).join("");
   });
 }
 
@@ -232,10 +249,15 @@ function initProduct(){
     <button class="size-btn" data-size="${s}" data-group="bottle" data-price="${v}">
       <b>${s} ml</b><span>${money(v)}</span>
     </button>`).join("") : "";
+  const stageMedia = p.imgBottle
+    ? `<img id="product-stage-img" src="${p.imgBottle}" alt="${p.brand} ${p.name}" class="product-img" loading="lazy">`
+    : p.img
+    ? `<img id="product-stage-img" src="${p.img}" alt="${p.brand} ${p.name}" class="product-img" loading="lazy">`
+    : bottleSVG(p);
   box.innerHTML = `
   <section class="product-detail">
     <div class="product-stage" style="--glow:${glow(p)}">
-      ${bottleSVG(p)}
+      ${stageMedia}
       <span class="tag">${p.tag}</span>
     </div>
     <div class="product-info">
@@ -269,6 +291,7 @@ function initProduct(){
         <a class="btn btn-outline" target="_blank" rel="noopener" href="https://wa.me/${WA}?text=${encodeURIComponent(`Hola ${CONFIG.STORE}, quiero consultar por ${p.brand} ${p.name}.`)}">Consultar <span>↗</span></a>
       </div>
       <p class="detail-note">Envío, disponibilidad y total final se confirman por WhatsApp. Sin pagos dentro de la web.</p>
+      <div class="gift-banner">${GIFT_MESSAGE}</div>
     </div>
   </section>
   <section class="relacionados">
@@ -286,11 +309,26 @@ function initProduct(){
     const pres = p.type==="arab" ? "decant clásico" : size===3 ? "decant clásico" : "decant premium";
     atomNote.textContent = `≈ ${CONFIG.ATOMIZACIONES[size]} atomizaciones · ${pres}`;
   };
+  const stageImg = document.getElementById("product-stage-img");
+  const updateStageImage = ()=>{
+    if(!stageImg || !p.imgBottle) return;
+    const newSrc = group === "bottle" ? p.imgBottle : (p.imgSet || p.imgBottle);
+    if(stageImg.src !== newSrc) {
+      stageImg.style.opacity = "0";
+      stageImg.style.transform = "scale(0.96)";
+      setTimeout(()=>{
+        stageImg.src = newSrc;
+        stageImg.style.opacity = "1";
+        stageImg.style.transform = "scale(1)";
+      }, 250);
+    }
+  };
   document.querySelectorAll(".size-btn").forEach(b=>{
     b.addEventListener("click",()=>{
       document.querySelectorAll(".size-btn").forEach(x=>x.classList.remove("active"));
       b.classList.add("active"); size = Number(b.dataset.size); group = b.dataset.group;
       updateAtom();
+      updateStageImage();
     });
   });
   const stepper = document.getElementById("qty-stepper");
@@ -319,8 +357,12 @@ function renderCart(){
     const p = PRODUCTS.find(x=>x.id===i.id);
     const sub = i.price*i.qty; sum += sub;
     const label = i.group==="bottle" ? `Frasco ${i.size} ml` : `${i.size} ml`;
+    const cartImg = p.imgBottle || p.img;
+    const thumb = cartImg
+      ? `<img src="${cartImg}" alt="${p.brand} ${p.name}" class="cart-thumb-img" loading="lazy">`
+      : `<div class="cart-thumb" style="--glow:${glow(p)}">${bottleSVG(p)}</div>`;
     return `<div class="cart-row">
-      <div class="cart-thumb" style="--glow:${glow(p)}">${bottleSVG(p)}</div>
+      ${thumb}
       <div>
         <span class="brand">${p.brand}</span>
         <h3>${p.name}</h3>
@@ -405,8 +447,12 @@ function renderDrawer(){
   let sum = 0;
   list.innerHTML = cart.map(i=>{
     const p = PRODUCTS.find(x=>x.id===i.id); sum += i.price*i.qty;
+    const drawerImg = p.imgBottle || p.img;
+    const thumb = drawerImg
+      ? `<img src="${drawerImg}" alt="${p.brand} ${p.name}" class="drawer-thumb-img" loading="lazy">`
+      : `<div class="cart-thumb" style="--glow:${glow(p)}">${bottleSVG(p)}</div>`;
     return `<div class="drawer-item">
-      <div class="cart-thumb" style="--glow:${glow(p)}">${bottleSVG(p)}</div>
+      ${thumb}
       <div>
         <h4>${p.name}</h4>
         <small>${p.brand} · ${i.group==="bottle"?"frasco ":""}${i.size} ml</small>
@@ -489,11 +535,29 @@ function initNewsletter(){
 function initArt(){
   document.querySelectorAll("[data-bottle]").forEach(el=>{
     const p = PRODUCTS.find(x=>x.id===el.dataset.bottle);
-    if(p){ el.style.setProperty("--glow", glow(p)); el.innerHTML = bottleSVG(p); }
+    if(p){
+      el.style.setProperty("--glow", glow(p));
+      const artImg = p.imgBottle || p.img;
+      el.innerHTML = artImg
+        ? `<img src="${artImg}" alt="${p.brand} ${p.name}" style="width:100%;height:100%;object-fit:contain" loading="lazy">`
+        : bottleSVG(p);
+    }
   });
 }
 
 /* ---------- Init ---------- */
+document.addEventListener("error",function(e){
+  if(e.target.tagName==="IMG" && !e.target.dataset.bottle){
+    const p = window.CRUZIAL_PRODUCTS.find(x=>x.name && e.target.alt && e.target.alt.includes(x.name));
+    if(p && e.target.parentElement){
+      e.target.style.display="none";
+      const svg=document.createElement("div");
+      svg.innerHTML=bottleSVG(p);
+      svg.querySelector("svg").style.cssText="width:100%;height:100%";
+      e.target.parentElement.replaceChild(svg,e.target);
+    }
+  }
+},true);
 initArt();
 updateCartCount();
 initPills();

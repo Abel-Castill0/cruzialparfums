@@ -53,6 +53,51 @@ const T263456 = { 3: 26, 5: 34, 10: 56 };
 const T303869 = { 3: 30, 5: 38, 10: 69 };
 const T404889 = { 3: 40, 5: 48, 10: 89 };
 
+/* Mapa de imágenes reales del catálogo
+   bottle = frasco solo · set = frasco + decants (3, 5, 10 ml) */
+const IMG_MAP = {
+  "khamrah-clasico": { bottle: "img/perfumes/LATTAFA - KHAMRAH CLASICO.png", set: "img/perfumes/LATTAFA - KHAMRAH CLASICO (2).png" },
+  "khamrah-qahwa": { bottle: "img/perfumes/LATTAFA - KHAMRAH QAHWA.png", set: "img/perfumes/LATTAFA - KHAMRAH QAHWA (2).png" },
+  "khamrah-dukhan": { bottle: "img/perfumes/LATTAFA - KHAMRAH DUKHAN.png", set: "img/perfumes/LATTAFA - KHAMRAH DUKHAN (2).png" },
+  "asad-clasico": { bottle: "img/perfumes/LATTAFA - ASAD CLASICO.png", set: "img/perfumes/LATTAFA - ASAD CLASICO (2).png" },
+  "asad-bourbon": { bottle: "img/perfumes/LATTAFA - ASAD BOURBON.png", set: "img/perfumes/LATTAFA - ASAD BOURBON (2).png" },
+  "yara-pink": { bottle: "img/perfumes/LATTAFA - YARA PINK.png", set: "img/perfumes/LATTAFA - YARA PINK (2).png" },
+  "yara-elixir": { bottle: "img/perfumes/LATTAFA - YARA ELIXIR.png", set: "img/perfumes/LATTAFA - YARA ELIXIR (2).png" },
+  "mandarin-sky": { bottle: "img/perfumes/ARMAF - MANDARIN SKY.png", set: "img/perfumes/ARMAF - MANDARIN SKY (2).png" },
+  "odyssey-aqua": { bottle: "img/perfumes/ARMAF - ODYSSEY AQUA.png", set: "img/perfumes/ARMAF - ODYSSEY AQUA (2).png" },
+  "honor-and-glory": { bottle: "img/perfumes/LATTAFA - HONOR AND GLORY.png", set: "img/perfumes/LATTAFA - HONOR AND GLORY (2).png" },
+  "eclaire": { bottle: "img/perfumes/LATTAFA - ECLAIRE.png", set: "img/perfumes/LATTAFA - ECLAIRE (2).png" },
+  "sublime": { bottle: "img/perfumes/LATTAFA - SUBLIME.png", set: "img/perfumes/LATTAFA - SUBLIME (2).png" },
+  "hawas-fire": { bottle: "img/perfumes/RASASI - HAWAS FIRE.png", set: "img/perfumes/RASASI - HAWAS FIRE (2).png" },
+  "hawas-ice": { bottle: "img/perfumes/RASASI - HAWAS ICE.png", set: "img/perfumes/RASASI - HAWAS ICE (2).png" },
+  "hawas-kobra": { bottle: "img/perfumes/RASASI - HAWAS KOBRA.png", set: "img/perfumes/RASASI - HAWAS KOBRA (2).png" },
+  "hawas-tropical": { bottle: "img/perfumes/RASASI - HAWAS TROPICAL.png", set: "img/perfumes/RASASI - HAWAS TROPICAL (2).png" },
+  "hawas-chrome": { bottle: "img/perfumes/RASASI - HAWAS CHROME.png", set: "img/perfumes/RASASI - HAWAS CHROME (2).png" },
+  "9pm": { bottle: "img/perfumes/AFNAN - 9PM.png", set: "img/perfumes/AFNAN - 9PM (2).png" },
+  "9pm-elixir": { bottle: "img/perfumes/AFNAN - 9PM ELIXIR.png", set: "img/perfumes/AFNAN - 9PM ELIXIR (2).png" },
+  "9pm-night-out": { bottle: "img/perfumes/AFNAN - 9PM NIGHT OUT.png", set: "img/perfumes/AFNAN - 9PM NIGHT OUT (2).png" },
+  "9am-dive": { bottle: "img/perfumes/AFNAN - 9AM DIVE.png", set: "img/perfumes/AFNAN - 9AM DIVE (2).png" },
+  "vulcan-feu": { bottle: "img/perfumes/FRENCH AVENUE - VULCAN FEU.png", set: "img/perfumes/FRENCH AVENUE - VULCAN FEU (2).png" },
+  "amber-o-gold-e": { bottle: "img/perfumes/AL HARAMAIN - AMBER OUD GOLD EDITION.png", set: "img/perfumes/AL HARAMAIN - AMBER OUD GOLD EDITION (2).png" },
+  "nitro-red": { bottle: "img/perfumes/DUMONT PARIS - NITRO RED.png", set: "img/perfumes/DUMONT PARIS - NITRO RED (2).png" },
+  "cdn-intense-man": { bottle: "img/perfumes/ARMAF - CLUB DE NUIT INTENSE EDT.png", set: "img/perfumes/ARMAF - CLUB DE NUIT INTENSE EDT (2).png" },
+  "cdn-urban-man-e": { bottle: "img/perfumes/ARMAF - CLUB DE NUIT URBAN MAN ELIXIR.png", set: "img/perfumes/ARMAF - CLUB DE NUIT URBAN MAN ELIXIR (2).png" },
+  "sceptre-malachite": { bottle: "img/perfumes/MAISON ALHAMBRA - SCEPTRE MALACHITE.png", set: "img/perfumes/MAISON ALHAMBRA - SCEPTRE MALACHITE (2).png" },
+  "eros-flame": { bottle: "img/perfumes/VERSACE - EROS FLAME.png", set: "img/perfumes/VERSACE - EROS FLAME (2).png" },
+  "swy-intensely": { bottle: "img/perfumes/EMPORIO ARMANI - STRONGER WITH YOU INTENSELY.png", set: "img/perfumes/EMPORIO ARMANI - STRONGER WITH YOU INTENSELY (2).png" },
+  "swy-absolutely": { bottle: "img/perfumes/EMPORIO ARMANI - STRONGER WITH YOU ABSOLUTELY.png", set: "img/perfumes/EMPORIO ARMANI - STRONGER WITH YOU ABSOLUTELY (2).png" },
+  "le-male-elixir": { bottle: "img/perfumes/JEAN PAUL GAULTIER - LE MALE ELIXIR.png", set: "img/perfumes/JEAN PAUL GAULTIER - LE MALE ELIXIR (2).png" },
+  "le-beau-le-parfum": { bottle: "img/perfumes/JEAN PAUL GAULTIER - LE BEAU LE PARFUM.png", set: "img/perfumes/JEAN PAUL GAULTIER - LE BEAU LE PARFUM (2).png" },
+  "azzaro-tmw-edp": { bottle: "img/perfumes/AZZARO.-AZZARO THE MOSTH WANTED INTENSE EDP.png", set: "img/perfumes/AZZARO.-AZZARO THE MOSTH WANTED INTENSE EDP (2).png" },
+  "tmw-parfum": { bottle: "img/perfumes/AZZARO.-AZZARO THE MOSTH WANTED PARFUM.png", set: "img/perfumes/AZZARO.-AZZARO THE MOSTH WANTED PARFUM (2).png" },
+  "adg-profondo-edp": { bottle: "img/perfumes/GIORGIO ARMANI .-ACQUA DI GIO PROFONDO EDP.png", set: "img/perfumes/GIORGIO ARMANI .-ACQUA DI GIO PROFONDO EDP (2).png" },
+  "invictus-elixir": { bottle: "img/perfumes/PACO RABANNE -INVICTUS ELIXIR.png", set: "img/perfumes/PACO RABANNE -INVICTUS ELIXIR (2).png" },
+  "liquid-brun": { bottle: "img/perfumes/FRENCH AVENUE - LIQUID BRUN.png", set: "img/perfumes/FRENCH AVENUE - LIQUID BRUN (2).png" }
+};
+
+/* Mensaje regalo por compra al detal */
+const GIFT_MESSAGE = "🎁 Regalo: Decant de 2 ml de cualquier perfume árabe del catálogo, a tu elección.";
+
 window.CRUZIAL_PRODUCTS = [
   /* ================= PERFUMERÍA ÁRABE ================= */
   P("khamrah-clasico", "Lattafa", "Khamrah Clásico", "unisex", "arab", "Gourmand", "EDP", T121626, ["Vainilla", "Canela", "Ámbar"], M.m1, { bestseller: true, bottle: { 100: 380 }, desc: "Dulce, cálido y boozy: vainilla con canela sobre una base de ámbar. Un clásico de la perfumería árabe que se siente abrigador." }),
@@ -63,7 +108,7 @@ window.CRUZIAL_PRODUCTS = [
   P("asad-elixir", "Lattafa", "Asad Elixir", "men", "arab", "Especiado", "EDP", T121626, ["Especias", "Café", "Cuero"], M.m6, { bestseller: true, bottle: { 100: 360 } }),
   P("asad-clasico", "Lattafa", "Asad Clásico", "men", "arab", "Especiado", "EDP", T111524, ["Especias", "Vainilla", "Ámbar"], M.m7),
   P("asad-bourbon", "Lattafa", "Asad Bourbon", "men", "arab", "Especiado", "EDP", T121626, ["Ron", "Especias", "Madera"], M.m8),
-  P("zanzibar-limited-e", "", "Zanzibar Limited Edition", "men", "arab", "Amaderado", "EDP", T111524, ["Madera", "Ámbar", "Especias"], M.m1),
+  P("zanzibar-limited-e", "Lattafa", "Zanzibar Limited Edition", "men", "arab", "Amaderado", "EDP", T111524, ["Madera", "Ámbar", "Especias"], M.m1),
   P("yara-pink", "Lattafa", "Yara Pink", "women", "arab", "Floral", "EDP", T111524, ["Flores", "Frutos rojos", "Vainilla"], M.m2),
   P("yara-candy", "Lattafa", "Yara Candy", "women", "arab", "Gourmand", "EDP", T111524, ["Algodón dulce", "Fresa", "Vainilla"], M.m3),
   P("yara-elixir", "Lattafa", "Yara Elixir", "women", "arab", "Floral", "EDP", T121626, ["Flores blancas", "Ámbar", "Vainilla"], M.m4),
@@ -101,13 +146,13 @@ window.CRUZIAL_PRODUCTS = [
   P("9am", "Afnan", "9 AM", "men", "arab", "Fresco", "EDP", T111524, ["Cítricos", "Acuático", "Ámbar"], M.m4),
   P("9am-dive", "Afnan", "9 AM Dive", "men", "arab", "Fresco", "EDP", T121626, ["Acuático", "Verde", "Madera"], M.m5),
   P("art-of-universe", "Lattafa", "Art Of Universe", "men", "arab", "Especiado", "EDP", T131728, ["Especias", "Ámbar", "Cuero"], M.m6),
-  P("liquid-brun", "Fragrance World", "Liquid Brun", "men", "arab", "Especiado", "EDP", T121626, ["Canela", "Ámbar", "Vainilla"], M.m7, { bestseller: true, bottle: { 100: 450 } }),
-  P("vulcan-feu", "Fragrance World", "Vulcan Feu", "men", "arab", "Especiado", "EDP", T131728, ["Fuego", "Especias", "Ámbar"], M.m8),
+  P("liquid-brun", "French Avenue", "Liquid Brun", "men", "arab", "Especiado", "EDP", T121626, ["Canela", "Ámbar", "Vainilla"], M.m7, { bestseller: true, bottle: { 100: 450 } }),
+  P("vulcan-feu", "French Avenue", "Vulcan Feu", "men", "arab", "Especiado", "EDP", T131728, ["Fuego", "Especias", "Ámbar"], M.m8),
   P("amber-o-gold-e", "Al Haramain", "Amber Oud Gold Elixir", "unisex", "arab", "Ámbar", "EDP", T131728, ["Ámbar", "Coco", "Vainilla"], M.m1),
   P("ao-aqua-dubai", "Al Haramain", "Amber Oud Aqua Dubai", "men", "arab", "Fresco", "EDP", T131728, ["Acuático", "Bergamota", "Ámbar"], M.m2),
   P("ao-dubai-night", "Al Haramain", "Amber Oud Dubai Night", "men", "arab", "Ámbar", "EDP", T141830, ["Ámbar", "Cuero", "Especias"], M.m3),
-  P("nitro-red", "Afnan", "Nitro Red", "men", "arab", "Fresco", "EDP", T121626, ["Frutal", "Acuático", "Ámbar"], M.m4),
-  P("red-intensely", "", "Red Intensely", "men", "arab", "Gourmand", "EDP", T131728, ["Frutos rojos", "Vainilla", "Ámbar"], M.m5),
+  P("nitro-red", "Dumont Paris", "Nitro Red", "men", "arab", "Fresco", "EDP", T121626, ["Frutal", "Acuático", "Ámbar"], M.m4),
+  P("red-intensely", "Lattafa", "Red Intensely", "men", "arab", "Gourmand", "EDP", T131728, ["Frutos rojos", "Vainilla", "Ámbar"], M.m5),
   P("cdn-intense-man", "Armaf", "Club de Nuit Intense Man", "men", "arab", "Cítrico", "EDP", T121626, ["Piña", "Abedul", "Ámbar"], M.m6, { bestseller: true, bottle: { 105: 420 } }),
   P("cdn-urban-man-e", "Armaf", "Club de Nuit Urban Man Elixir", "men", "arab", "Fresco", "EDP", T121729, ["Cítricos", "Verde", "Ámbar"], M.m7),
   P("cdn-preciux-i", "Armaf", "Club de Nuit Precious I", "men", "arab", "Amaderado", "EDP", T223048, ["Piña", "Cedro", "Ámbar"], M.m8),
@@ -147,6 +192,7 @@ window.CRUZIAL_PRODUCTS = [
   P("dylan-blue", "Versace", "Dylan Blue", "men", "designer", "Fresco", "EDP", T303869, ["Bergamota", "Agua", "Almizcle"], M.m1, { bottle: { 100: 620 } }),
   P("adg-profondo-edp", "Armani", "Acqua di Gio Profondo EDP", "men", "designer", "Fresco", "EDP", T263456, ["Marino", "Bergamota", "Madera"], M.m2, { bottle: { 100: 700 } }),
   P("1-million-lucky", "Paco Rabanne", "1 Million Lucky", "men", "designer", "Gourmand", "EDT", T263456, ["Ciruela", "Avellana", "Ámbar"], M.m3, { bottle: { 100: 780 } }),
+  P("invictus-elixir", "Paco Rabanne", "Invictus Elixir", "men", "designer", "Fresco", "EDP", T243251, ["Acuático", "Ámbar", "Madera"], M.m1),
   P("reserve-privee", "Armani", "Reserve Privée", "men", "designer", "Amaderado", "EDP", T263456, ["Madera", "Ámbar", "Vainilla"], M.m4),
   P("cedrat-boise-int", "Mancera", "Cedrat Boise Intense", "men", "niche", "Cítrico", "EDP", T263456, ["Limón", "Cedro", "Almizcle"], M.m5, { bottle: { 100: 820 } }),
   P("m-red-tobacco", "Mancera", "Mancera Red Tobacco", "men", "niche", "Especiado", "EDP", T263456, ["Tabaco", "Canela", "Ámbar"], M.m6, { bottle: { 100: 850 } }),
@@ -155,3 +201,17 @@ window.CRUZIAL_PRODUCTS = [
   P("erba-pura", "Xerjoff", "Erba Pura", "unisex", "niche", "Gourmand", "EDP", T404889, ["Fruta", "Vainilla", "Almizcle"], M.m2, { bestseller: true, bottle: { 50: 900, 100: 1350 } }),
   P("nautica-voyage", "Nautica", "Nautica Voyage", "men", "designer", "Acuático", "EDT", T121626, ["Marino", "Manzana", "Madera"], M.m5)
 ];
+
+/* Enriquecer productos con imágenes reales */
+window.CRUZIAL_PRODUCTS.forEach(p => {
+  const imgs = IMG_MAP[p.id];
+  if (imgs) {
+    p.img = imgs.set || imgs.bottle || null;
+    p.imgBottle = imgs.bottle || null;
+    p.imgSet = imgs.set || imgs.bottle || null;
+  } else {
+    p.img = null;
+    p.imgBottle = null;
+    p.imgSet = null;
+  }
+});
