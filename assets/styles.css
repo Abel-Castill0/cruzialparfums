@@ -25,7 +25,7 @@
 }
 
 *{margin:0;padding:0;box-sizing:border-box}
-html{scroll-behavior:smooth}
+html{scroll-behavior:smooth;overflow-x:hidden}
 body{
   background:var(--bg);
   color:var(--text);
@@ -1775,6 +1775,9 @@ input,select,textarea{font-family:inherit}
   .collection-grid{grid-template-columns:repeat(2,1fr)}
 }
 @media (max-width:640px){
+  .hero{min-height:auto;padding:26px 0 50px}
+  .hero h1{margin:18px 0 18px}
+  .hero-text{font-size:15px}
   .product-grid{grid-template-columns:repeat(2,1fr);gap:14px}
   .card-body{padding:14px 14px 18px}
   .card-name{font-size:18px}
@@ -1818,6 +1821,11 @@ input,select,textarea{font-family:inherit}
   .cart-panel-head{padding:18px 16px}
   .cart-total{padding:20px 16px}
   .search-item .s-price{display:none}
+  .testimonial-swiper{padding:20px 10px 40px}
+  .swiper{overflow:hidden}
+  .testimonial p{font-size:17px}
+  .back-to-top{right:16px;bottom:88px}
+  .wa-float{width:52px;height:52px;right:16px;bottom:16px}
 }
 @media (max-width:480px){
   .announcement{font-size:8.5px;letter-spacing:.18em;line-height:1.6;padding:10px 12px}
@@ -1827,9 +1835,6 @@ input,select,textarea{font-family:inherit}
   .header-inner{padding:8px 0;gap:12px}
   .site-header.scrolled .header-inner{padding:6px 0}
   .header-actions{gap:2px}
-  .hero{padding:26px 0 70px;min-height:auto}
-  .hero h1{margin:18px 0 18px}
-  .hero-text{font-size:15px}
   .hero-actions{flex-direction:column;align-items:stretch}
   .hero-actions .btn{width:100%;justify-content:center}
   .hero-proof{margin-top:36px;gap:6px}
@@ -1869,7 +1874,7 @@ input,select,textarea{font-family:inherit}
   .mobile-menu a{font-size:28px}
   .menu-logo{width:76px;height:76px}
   .toast{max-width:calc(100vw - 32px);text-align:center;padding:13px 18px;font-size:10px}
-  .wa-float{width:52px;height:52px;right:16px;bottom:16px}
+  .wa-float{width:48px;height:48px;right:14px;bottom:14px}
   .drawer-items{padding:6px 16px}
   .drawer-item{gap:12px;padding:15px 0}
   .drawer-foot{padding:18px 16px}
@@ -1918,10 +1923,11 @@ input,select,textarea{font-family:inherit}
   justify-content:center;
   gap:8px;
   opacity:0;
+  transform:scale(.96);
   pointer-events:none;
-  transition:opacity .45s var(--ease);
+  transition:opacity .4s var(--ease),transform .4s var(--ease);
 }
-.mobile-menu.open{opacity:1;pointer-events:auto}
+.mobile-menu.open{opacity:1;transform:scale(1);pointer-events:auto}
 .mobile-menu a{
   font-family:var(--serif);
   font-size:34px;
