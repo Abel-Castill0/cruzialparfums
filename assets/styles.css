@@ -547,7 +547,7 @@ input,select,textarea{font-family:inherit}
 
 /* ---------- Imágenes reales de producto ---------- */
 .card-img{
-  width:72%;
+  width:62%;
   height:auto;
   object-fit:contain;
   transition:transform .8s var(--ease);
@@ -805,65 +805,31 @@ input,select,textarea{font-family:inherit}
   background:
     radial-gradient(circle at 50% 45%,var(--glow,rgba(201,169,98,.16)),transparent 65%),
     linear-gradient(200deg,#191410,#0c0906);
+  padding:20px;
 }
-.editorial-art svg{width:34%;transition:transform .8s var(--ease);filter:drop-shadow(0 18px 30px rgba(0,0,0,.5))}
-.editorial-card:hover .editorial-art svg{transform:scale(1.08) rotate(-4deg)}
-.editorial-icon{
-  font-size:clamp(42px,5vw,64px);
-  color:var(--gold);
-  opacity:.7;
-  transition:all .6s var(--ease);
-  text-shadow:0 0 40px rgba(201,169,98,.3);
+.editorial-svg{
+  width:100%;
+  height:100%;
+  transition:transform .8s var(--ease);
 }
-.editorial-card:hover .editorial-icon{opacity:1;transform:scale(1.1)}
-.editorial-label{
-  position:absolute;
-  bottom:14px;
-  right:18px;
-  font-size:9px;
-  letter-spacing:.35em;
-  text-transform:uppercase;
-  color:var(--gold);
-  opacity:.5;
-}
+.editorial-card:hover .editorial-svg{transform:scale(1.03)}
 .editorial-guide{
   background:
-    radial-gradient(circle at 35% 40%,rgba(201,169,98,.12),transparent 55%),
-    radial-gradient(circle at 70% 60%,rgba(201,169,98,.08),transparent 50%),
+    radial-gradient(circle at 35% 40%,rgba(201,169,98,.1),transparent 55%),
+    radial-gradient(circle at 70% 60%,rgba(201,169,98,.06),transparent 50%),
     linear-gradient(160deg,#1a1510,#0c0906);
-}
-.editorial-guide .editorial-icon{
-  background:linear-gradient(135deg,rgba(201,169,98,.15),rgba(201,169,98,.05));
-  width:80px;height:80px;
-  border-radius:50%;
-  display:grid;place-items:center;
-  border:1px solid rgba(201,169,98,.2);
 }
 .editorial-notes{
   background:
-    radial-gradient(circle at 60% 35%,rgba(201,169,98,.14),transparent 55%),
-    radial-gradient(circle at 30% 70%,rgba(201,169,98,.06),transparent 50%),
+    radial-gradient(circle at 60% 35%,rgba(201,169,98,.12),transparent 55%),
+    radial-gradient(circle at 30% 70%,rgba(201,169,98,.05),transparent 50%),
     linear-gradient(200deg,#191410,#0c0906);
-}
-.editorial-notes .editorial-icon{
-  background:linear-gradient(135deg,rgba(201,169,98,.18),rgba(201,169,98,.04));
-  width:80px;height:80px;
-  border-radius:50%;
-  display:grid;place-items:center;
-  border:1px solid rgba(201,169,98,.2);
 }
 .editorial-families{
   background:
-    radial-gradient(circle at 45% 50%,rgba(201,169,98,.12),transparent 55%),
-    radial-gradient(circle at 75% 30%,rgba(201,169,98,.08),transparent 50%),
+    radial-gradient(circle at 45% 50%,rgba(201,169,98,.1),transparent 55%),
+    radial-gradient(circle at 75% 30%,rgba(201,169,98,.06),transparent 50%),
     linear-gradient(180deg,#181310,#0c0906);
-}
-.editorial-families .editorial-icon{
-  background:linear-gradient(135deg,rgba(201,169,98,.16),rgba(201,169,98,.05));
-  width:80px;height:80px;
-  border-radius:50%;
-  display:grid;place-items:center;
-  border:1px solid rgba(201,169,98,.2);
 }
 .editorial-body{padding:28px 28px 32px}
 .editorial-body p{font-size:9.5px;letter-spacing:.3em;text-transform:uppercase;color:var(--gold)}
