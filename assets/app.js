@@ -616,3 +616,23 @@ initReveal();
 initNewsletter();
 initTilt();
 initRipple();
+
+/* ---------- Page loader ---------- */
+window.addEventListener("load",function(){
+  var loader=document.getElementById("page-loader");
+  if(loader) setTimeout(function(){loader.classList.add("hide")},400);
+});
+
+/* ---------- Page exit transitions ---------- */
+document.addEventListener("DOMContentLoaded",function(){
+  document.querySelectorAll('a[href]').forEach(function(a){
+    var href=a.getAttribute("href");
+    if(!href||href.startsWith("#")||href.startsWith("javascript:")||a.target==="_blank") return;
+    a.addEventListener("click",function(e){
+      if(e.metaKey||e.ctrlKey||e.shiftKey) return;
+      e.preventDefault();
+      document.body.classList.add("page-exit","out");
+      setTimeout(function(){window.location.href=href},350);
+    });
+  });
+});

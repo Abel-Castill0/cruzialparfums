@@ -36,6 +36,7 @@ body{
   -webkit-font-smoothing:antialiased;
   overflow-x:hidden;
   -webkit-tap-highlight-color:transparent;
+  transition:opacity .3s var(--ease);
 }
 ::selection{background:var(--gold);color:#0a0806}
 ::-webkit-scrollbar{width:10px}
@@ -1809,7 +1810,7 @@ input,select,textarea{font-family:inherit}
   .meta-row div{padding:13px 10px}
   .meta-row span{font-size:8px;letter-spacing:.18em}
   .meta-row b{font-size:15px}
-  .icon-btn{width:34px;height:34px}
+  .icon-btn{width:40px;height:40px}
   .cart-controls{flex-wrap:wrap}
   .marquee span{font-size:15px;gap:36px}
   .marquee-track{gap:36px}
@@ -1925,7 +1926,10 @@ input,select,textarea{font-family:inherit}
   font-family:var(--serif);
   font-size:34px;
   color:var(--cream);
-  padding:10px 24px;
+  padding:14px 24px;
+  min-height:48px;
+  display:flex;
+  align-items:center;
   transition:color .3s;
 }
 .mobile-menu a:hover{color:var(--gold-bright)}
@@ -1968,6 +1972,35 @@ input,select,textarea{font-family:inherit}
 .hairline{height:1px;background:linear-gradient(90deg,transparent,var(--line-strong),transparent);border:none;margin:0}
 .page-pad{padding-top:clamp(40px,5vw,60px)}
 .pad-bottom{padding-bottom:clamp(80px,10vw,140px)}
+
+/* ---------- Page loader ---------- */
+.page-loader{
+  position:fixed;
+  inset:0;
+  z-index:999;
+  background:var(--bg);
+  display:grid;
+  place-items:center;
+  transition:opacity .6s var(--ease), visibility .6s;
+}
+.page-loader.hide{opacity:0;visibility:hidden;pointer-events:none}
+.page-loader-logo{
+  width:60px;height:60px;
+  border:1px solid var(--line-strong);
+  border-radius:50%;
+  display:grid;place-items:center;
+  animation:loaderPulse 1.2s ease-in-out infinite;
+  background:radial-gradient(circle at 30% 25%,rgba(232,213,163,.16),transparent 70%);
+}
+.page-loader-logo img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+@keyframes loaderPulse{
+  0%,100%{transform:scale(1);opacity:.7}
+  50%{transform:scale(1.1);opacity:1}
+}
+
+/* ---------- Page exit transition ---------- */
+.page-exit{opacity:1;transition:opacity .3s var(--ease)}
+.page-exit.out{opacity:0}
 
 /* ---------- Luxury microinteractions ---------- */
 .product-card{
