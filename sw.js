@@ -1,9 +1,12 @@
 /* ============================================================
-   CRUZIAL PARFUMS — Service Worker
-   Caches static assets for faster repeat visits
+   CRUZIAL PARFUMS — Service Worker v2
+   Stale-while-revalidate for HTML, cache-first for assets
    ============================================================ */
 
-const CACHE_NAME = "cruzial-v1";
+const CACHE_VERSION = "v2";
+const CACHE_NAME = "cruzial-" + CACHE_VERSION;
+const PRECACHE = "cruzial-precache-" + CACHE_VERSION;
+
 const STATIC_ASSETS = [
   "/cruzialparfums/",
   "/cruzialparfums/index.html",
@@ -19,40 +22,60 @@ const STATIC_ASSETS = [
   "/cruzialparfums/manifest.json"
 ];
 
-/* Install: cache static assets */
+/* Install: precache static assets */
 self.addEventListener("install", function(e) {
   e.waitUntil(
-    caches.open(CACHE_NAME).then(function(cache) {
+    caches.open(PRECACHE).then(function(cache) {
       return cache.addAll(STATIC_ASSETS);
     })
   );
   self.skipWaiting();
 });
 
-/* Activate: clean old caches */
+/* Activate: clean ALL old caches */
 self.addEventListener("activate", function(e) {
   e.waitUntil(
     caches.keys().then(function(names) {
       return Promise.all(
-        names.filter(function(n) { return n !== CACHE_NAME; })
-             .map(function(n) { return caches.delete(n); })
+        names.filter(function(n) {
+          return n.startsWith("cruzial-") && n !== PRECACHE && n !== CACHE_NAME;
+        }).map(function(n) { return caches.delete(n); })
       );
     })
   );
   self.clients.claim();
 });
 
-/* Fetch: cache-first for static, network-first for others */
+/* Fetch strategies */
 self.addEventListener("fetch", function(e) {
   var url = new URL(e.request.url);
 
-  /* Skip non-GET and cross-origin */
+  /* Skip non-GET, cross-origin, analytics, API */
   if (e.request.method !== "GET") return;
   if (url.origin !== location.origin) return;
-
-  /* Skip API calls and analytics */
   if (url.pathname.includes("/api/") || url.hostname.includes("google-analytics")) return;
 
+  /* HTML: stale-while-revalidate (show cache, update in background) */
+  if (e.request.mode === "navigate" || e.request.headers.get("accept")?.includes("text/html")) {
+    e.respondWith(
+      caches.open(CACHE_NAME).then(function(cache) {
+        return cache.match(e.request).then(function(cached) {
+          var fetchPromise = fetch(e.request).then(function(networkResponse) {
+            if (networkResponse && networkResponse.status === 200) {
+              cache.put(e.request, networkResponse.clone());
+            }
+            return networkResponse;
+          }).catch(function() {
+            return cached;
+          });
+          return cached || fetchPromise;
+        });
+      })
+    );
+    return;
+  }
+
+  /* CSS/JS/Images: cache-first */
   e.respondWith(
     caches.match(e.request).then(function(cached) {
       if (cached) return cached;
@@ -64,11 +87,13 @@ self.addEventListener("fetch", function(e) {
         });
         return response;
       });
-    }).catch(function() {
-      /* Offline fallback: return cached index for navigation */
-      if (e.request.mode === "navigate") {
-        return caches.match("/cruzialparfums/index.html");
-      }
     })
   );
+});
+
+/* Notify clients when new SW is available */
+self.addEventListener("message", function(e) {
+  if (e.data && e.data.type === "SKIP_WAITING") {
+    self.skipWaiting();
+  }
 });

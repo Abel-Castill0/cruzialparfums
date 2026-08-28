@@ -164,20 +164,20 @@
             <h2>Solicitar tarifas</h2>
             <form data-wa-form="wholesale">
               <div class="form-field">
-                <label>Nombre y apellido</label>
-                <input name="name" required placeholder="Tu nombre">
+                <label for="w-name">Nombre y apellido</label>
+                <input id="w-name" name="name" required placeholder="Tu nombre" aria-label="Nombre y apellido">
               </div>
               <div class="form-field">
-                <label>Nombre de tu negocio</label>
-                <input name="business" placeholder="Ej. Barbería El Faro">
+                <label for="w-business">Nombre de tu negocio</label>
+                <input id="w-business" name="business" placeholder="Ej. Barbería El Faro" aria-label="Nombre de tu negocio">
               </div>
               <div class="form-field">
-                <label>WhatsApp</label>
-                <input name="phone" required type="tel" placeholder="9XX XXX XXX">
+                <label for="w-phone">WhatsApp</label>
+                <input id="w-phone" name="phone" required type="tel" placeholder="9XX XXX XXX" aria-label="WhatsApp">
               </div>
               <div class="form-field">
-                <label>Volumen estimado por pedido</label>
-                <select name="volume">
+                <label for="w-volume">Volumen estimado por pedido</label>
+                <select id="w-volume" name="volume" aria-label="Volumen estimado">
                   <option>5 – 20 unidades</option>
                   <option>20 – 50 unidades</option>
                   <option>50+ unidades</option>
@@ -185,8 +185,8 @@
                 </select>
               </div>
               <div class="form-field">
-                <label>Fragancias de interés</label>
-                <textarea name="message" rows="3" placeholder="Ej. Aventus, BR 540, Delina…"></textarea>
+                <label for="w-message">Fragancias de interés</label>
+                <textarea id="w-message" name="message" rows="3" placeholder="Ej. Aventus, BR 540, Delina…" aria-label="Fragancias de interés"></textarea>
               </div>
               <button class="btn btn-primary full" type="submit">Enviar por WhatsApp <span>↗</span></button>
               <small class="form-note"><b>Respuesta en el día.</b> Este formulario abre una conversación de WhatsApp con nuestro equipo de ventas.</small>
@@ -249,7 +249,7 @@
     <button class="close-panel" data-close-search aria-label="Cerrar búsqueda">×</button>
     <div class="container">
       <p class="eyebrow">Buscar en Cruzial</p>
-      <input id="global-search" class="search-input" type="search" placeholder="Busca por marca, perfume o nota…" autocomplete="off">
+      <input id="global-search" class="search-input" type="search" placeholder="Busca por marca, perfume o nota…" autocomplete="off" aria-label="Buscar fragancias">
       <div id="search-results" class="search-results"></div>
     </div>
   </div>

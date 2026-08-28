@@ -101,16 +101,16 @@
             <h2>Formulario de contacto</h2>
             <form data-wa-form="contact">
               <div class="form-field">
-                <label>Nombre y apellido</label>
-                <input name="name" required placeholder="Tu nombre">
+                <label for="c-name">Nombre y apellido</label>
+                <input id="c-name" name="name" required placeholder="Tu nombre" aria-label="Nombre y apellido">
               </div>
               <div class="form-field">
-                <label>WhatsApp</label>
-                <input name="phone" required type="tel" placeholder="9XX XXX XXX">
+                <label for="c-phone">WhatsApp</label>
+                <input id="c-phone" name="phone" required type="tel" placeholder="9XX XXX XXX" aria-label="WhatsApp">
               </div>
               <div class="form-field">
-                <label>Motivo</label>
-                <select name="topic">
+                <label for="c-topic">Motivo</label>
+                <select id="c-topic" name="topic" aria-label="Motivo de contacto">
                   <option>Recomendación de fragancia</option>
                   <option>Consulta de pedido</option>
                   <option>Venta por mayor</option>
@@ -118,8 +118,8 @@
                 </select>
               </div>
               <div class="form-field">
-                <label>Mensaje</label>
-                <textarea name="message" rows="4" required placeholder="Cuéntanos cómo quieres oler o qué necesitas…"></textarea>
+                <label for="c-message">Mensaje</label>
+                <textarea id="c-message" name="message" rows="4" required placeholder="Cuéntanos cómo quieres oler o qué necesitas…" aria-label="Mensaje"></textarea>
               </div>
               <button class="btn btn-primary full" type="submit">Enviar por WhatsApp <span>↗</span></button>
               <small class="form-note"><b>Sin pasarela de pagos.</b> Este formulario abre una conversación de WhatsApp con nuestro equipo.</small>
@@ -199,7 +199,7 @@
     <button class="close-panel" data-close-search aria-label="Cerrar búsqueda">×</button>
     <div class="container">
       <p class="eyebrow">Buscar en Cruzial</p>
-      <input id="global-search" class="search-input" type="search" placeholder="Busca por marca, perfume o nota…" autocomplete="off">
+      <input id="global-search" class="search-input" type="search" placeholder="Busca por marca, perfume o nota…" autocomplete="off" aria-label="Buscar fragancias">
       <div id="search-results" class="search-results"></div>
     </div>
   </div>
