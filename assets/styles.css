@@ -264,6 +264,7 @@ input,select,textarea{font-family:inherit}
   gap:40px;
   padding:80px 0 100px;
   overflow:hidden;
+  will-change:transform;
 }
 .hero::before{
   content:"";
@@ -755,7 +756,10 @@ input,select,textarea{font-family:inherit}
 }
 
 /* ---------- Testimonios (Swiper) ---------- */
-.testimonial-swiper{padding:20px 0 50px}
+.testimonial-swiper{padding:20px 0 50px;width:100%}
+.swiper{width:100%}
+.swiper-slide{height:auto;display:flex}
+.testimonial-swiper .swiper-pagination{bottom:0}
 .swiper-pagination-bullet{background:var(--gold);opacity:.3}
 .swiper-pagination-bullet-active{opacity:1;background:var(--gold-bright)}
 .testimonial{
