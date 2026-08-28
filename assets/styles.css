@@ -632,7 +632,7 @@ input,select,textarea{font-family:inherit}
 .collection-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
 .collection-card{
   position:relative;
-  aspect-ratio:2/3;
+  aspect-ratio:1/1.05;
   border:1px solid var(--line);
   display:flex;
   flex-direction:column;
@@ -1863,8 +1863,8 @@ input,select,textarea{font-family:inherit}
   .eyebrow::before{width:22px}
   .pill{padding:9px 15px;font-size:9px;letter-spacing:.16em}
   .pills{gap:7px}
-  .collection-card{padding:22px 14px;aspect-ratio:3/4}
-  .collection-card svg,.collection-card img{width:52%;top:12%}
+  .collection-card{aspect-ratio:1/1.05;padding:18px 14px}
+  .collection-card svg,.collection-card img{width:55%;top:8%}
   .collection-card h3{font-size:22px}
   .collection-card p{font-size:11px;margin-bottom:12px}
   .step{padding:34px 20px 26px}
