@@ -15,12 +15,13 @@ window.CRUZIAL_CONFIG = {
   SIZES: [3, 5, 10],
   ATOMIZACIONES: { 3: "50–60", 5: "70–80", 10: "140–150" },
   ADELANTO: "50% de adelanto",
-  DELIVERY: "Línea 1 del tren eléctrico · Motorizado · Contraentrega Lima · Shalom / Olva",
-  /* Perfumes enteros (frasco sellado): el cliente confirmó 3 escalas —
-     1 unidad (precio de lista), 4+ unidades (descuento moderado) y
-     10+ unidades (precio mayorista que maneja de forma privada por
-     WhatsApp, no se publica en la web). Factor editable aquí. */
-  WHOLESALE_TIER4_FACTOR: 0.9
+  DELIVERY: "Línea 1 del tren eléctrico · Motorizado · Contraentrega Lima · Shalom / Olva"
+  /* Perfumes enteros (frasco sellado): se muestra el precio de 1 unidad
+     cuando está confirmado en cada producto (ver `bottle` más abajo).
+     Para volumen no se publica un número — el precio se cotiza por
+     WhatsApp según cantidad. Fase 2 del Master Plan retiró el factor
+     de descuento "4+ unidades" que existía aquí: era un cálculo
+     (precio × 0.9) sin respaldo comercial real. */
 };
 
 /* Paletas de botella SVG */

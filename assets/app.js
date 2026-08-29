@@ -179,7 +179,6 @@ function bottleCard(p){
   const sizeKeys = Object.keys(p.bottle).map(Number).sort((a,b)=>a-b);
   const size = sizeKeys[0];
   const unit = p.bottle[size];
-  const tier4 = Math.round(unit * CONFIG.WHOLESALE_TIER4_FACTOR);
   return `<article class="product-card bottle-card">
     <a href="product.html?id=${p.id}">
       <div class="card-media" style="--glow:${glow(p)}">
@@ -190,12 +189,8 @@ function bottleCard(p){
       <div class="card-body">
         ${brand}
         <h3 class="card-name">${p.name}</h3>
-        <div class="card-meta"><span>frasco ${size} ml</span><b>${money(unit)}</b></div>
-        <div class="bottle-tiers">
-          <div><span>1 ud</span><b>${money(unit)}</b></div>
-          <div><span>4+ ud</span><b>desde ${money(tier4)}</b></div>
-          <div><span>10+ ud</span><b class="price-consult">Consultar</b></div>
-        </div>
+        <div class="card-meta"><span>frasco ${size} ml · 1 unidad</span><b>${money(unit)}</b></div>
+        <div class="bottle-volume-note">¿Varias unidades? Cotización según cantidad.</div>
       </div>
     </a>
   </article>`;
