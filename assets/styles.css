@@ -503,6 +503,22 @@ input,select,textarea{font-family:inherit}
   color:var(--gold-bright);
   text-transform:uppercase;
 }
+.tag-discontinued{
+  color:#d9a6a6;
+  border-color:rgba(217,166,166,.4);
+  background:rgba(30,14,14,.75);
+}
+.product-card.is-discontinued .card-media{filter:grayscale(.55) brightness(.72)}
+.product-card.is-discontinued .card-name{color:var(--muted)}
+.product-card.is-discontinued:hover{transform:none;box-shadow:none;border-color:var(--line)}
+.discontinued-notice{
+  margin:26px 0;
+  padding:18px 20px;
+  border:1px solid rgba(217,166,166,.28);
+  background:rgba(30,14,14,.35);
+}
+.discontinued-notice strong{display:block;color:#e0b3b3;font-family:var(--serif);font-size:17px;font-weight:500;margin-bottom:6px}
+.discontinued-notice p{color:var(--muted);font-size:13.5px;line-height:1.6}
 .quick-add{
   position:absolute;
   right:14px;bottom:14px;
@@ -1043,6 +1059,149 @@ input,select,textarea{font-family:inherit}
   flex-shrink:0;
 }
 
+/* ---------- Perfumes enteros (frasco completo) ---------- */
+.wholesale-price-note{
+  margin-top:20px;
+  font-size:12px;
+  color:var(--muted2);
+  line-height:1.6;
+  max-width:760px;
+}
+.price-consult{color:var(--gold)!important;font-family:var(--sans)!important;font-weight:500;font-size:12.5px!important;letter-spacing:.04em}
+.bottle-tiers{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:1px;
+  margin-top:14px;
+  background:var(--line);
+  border:1px solid var(--line);
+}
+.bottle-tiers div{
+  background:var(--surface);
+  padding:9px 8px;
+  text-align:center;
+}
+.bottle-tiers span{display:block;font-size:8px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted2);margin-bottom:4px}
+.bottle-tiers b{font-family:var(--serif);font-size:13px;color:var(--gold-bright);font-weight:500}
+.bottle-card.no-price .card-body{padding-bottom:16px}
+.bottle-consult-btn{
+  display:block;
+  margin:0 22px 20px;
+  width:calc(100% - 44px);
+}
+.bottle-card.is-discontinued .card-body{padding-bottom:24px}
+
+/* ---------- Arma tu combo ---------- */
+.combo-builder{
+  display:grid;
+  grid-template-columns:1.5fr 1fr;
+  gap:clamp(24px,3vw,40px);
+  align-items:start;
+}
+.cb-controls{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:20px;
+  flex-wrap:wrap;
+  margin-bottom:20px;
+}
+.cb-size-select{display:flex;align-items:center;gap:14px}
+.cb-label{font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--muted2)}
+.cb-search{
+  flex:1;
+  min-width:200px;
+  background:var(--surface);
+  border:1px solid var(--line);
+  color:var(--cream);
+  padding:12px 16px;
+  font-size:13.5px;
+  letter-spacing:.03em;
+  outline:none;
+  transition:border-color .3s var(--ease);
+}
+.cb-search:focus{border-color:var(--gold)}
+.cb-search::placeholder{color:var(--muted2)}
+.cb-picker{
+  border:1px solid var(--line);
+  background:var(--surface);
+  max-height:520px;
+  overflow-y:auto;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+}
+.cb-item{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:2px;
+  text-align:left;
+  padding:14px 18px;
+  border-bottom:1px solid var(--line);
+  border-right:1px solid var(--line);
+  transition:all .3s var(--ease);
+  min-height:44px;
+}
+.cb-item:nth-child(2n){border-right:none}
+.cb-item:hover{background:rgba(201,169,98,.06)}
+.cb-item.selected{background:rgba(201,169,98,.12);box-shadow:inset 3px 0 0 var(--gold)}
+.cb-item-brand{font-size:8.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold)}
+.cb-item-name{font-family:var(--serif);font-size:15.5px;color:var(--cream)}
+.cb-item.selected .cb-item-name{color:var(--gold-bright)}
+.cb-item-price{font-size:11px;color:var(--muted2);margin-top:2px}
+.cb-no-results{grid-column:1/-1;padding:40px 20px;text-align:center;color:var(--muted);font-size:13.5px}
+.cb-summary{
+  border:1px solid var(--line-strong);
+  background:var(--surface);
+  padding:26px 24px;
+  position:sticky;
+  top:110px;
+}
+.cb-summary-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.cb-summary-head strong{font-family:var(--serif);font-size:19px;color:var(--cream);font-weight:500}
+.cb-summary-head span{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted2)}
+.cb-selected{list-style:none;display:flex;flex-direction:column;gap:2px;max-height:260px;overflow-y:auto}
+.cb-selected li{
+  display:grid;
+  grid-template-columns:1fr auto auto;
+  align-items:center;
+  gap:10px;
+  padding:9px 0;
+  border-bottom:1px solid var(--line);
+  font-size:13px;
+  color:var(--cream);
+}
+.cb-item-line-price{font-size:12px;color:var(--gold-bright);white-space:nowrap}
+.cb-remove{
+  width:22px;height:22px;
+  display:grid;place-items:center;
+  color:var(--muted2);
+  font-size:15px;
+  transition:color .3s;
+}
+.cb-remove:hover{color:#d98a8a}
+.cb-empty{color:var(--muted2);font-size:12.5px;padding:14px 0;line-height:1.6}
+.cb-total{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:16px 0;
+  margin-top:8px;
+  border-top:1px solid var(--line-strong);
+}
+.cb-total span{font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted2)}
+.cb-total strong{font-family:var(--serif);font-size:24px;font-weight:500;color:var(--gold-bright)}
+.cb-hint{font-size:11.5px;color:var(--muted2);margin-bottom:16px}
+@media (max-width:1024px){
+  .combo-builder{grid-template-columns:1fr}
+  .cb-summary{position:static}
+}
+@media (max-width:640px){
+  .cb-picker{grid-template-columns:1fr}
+  .cb-item:nth-child(2n){border-right:1px solid var(--line)}
+  .cb-picker{max-height:400px}
+}
+
 /* ---------- Page hero (páginas internas) ---------- */
 .page-hero{
   padding:clamp(70px,9vw,120px) 0 clamp(40px,5vw,70px);
@@ -1449,6 +1608,7 @@ input,select,textarea{font-family:inherit}
 .pricing-table td b{color:var(--gold-bright);font-family:var(--serif);font-weight:500;font-size:17px}
 
 .pricing-mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:40px}
+.wholesale-tiers-grid{grid-template-columns:repeat(3,1fr)}
 .contact-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:22px}
 .contact-card{
   border:1px solid var(--line);

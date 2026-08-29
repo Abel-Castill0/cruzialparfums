@@ -106,6 +106,21 @@ function productCard(p, mode){
   const media = cardImg
     ? `<img src="${cardImg}" alt="${p.brand} ${p.name}" class="card-img" loading="lazy" decoding="async">`
     : bottleSVG(p);
+  if(p.discontinued){
+    return `<article class="product-card is-discontinued">
+      <a href="product.html?id=${p.id}">
+        <div class="card-media" style="--glow:${glow(p)}">
+          ${media}
+          <span class="tag tag-discontinued">Descontinuado</span>
+        </div>
+        <div class="card-body">
+          ${brand}
+          <h3 class="card-name">${p.name}</h3>
+          <div class="card-meta"><span>Sin reposición</span><b class="muted">Agotado</b></div>
+        </div>
+      </a>
+    </article>`;
+  }
   return `<article class="product-card">
     <a href="product.html?id=${p.id}">
       <div class="card-media" style="--glow:${glow(p)}">
@@ -124,6 +139,64 @@ function productCard(p, mode){
     </a>
   </article>`;
 }
+/* ---------- Tarjeta de frasco completo (perfumes-enteros.html) ---------- */
+function bottleCard(p){
+  const brand = p.brand ? `<span class="card-brand">${p.brand}</span>` : "";
+  const cardImg = p.imgBottle || p.imgSet || p.img;
+  const media = cardImg
+    ? `<img src="${cardImg}" alt="${p.brand} ${p.name}" class="card-img" loading="lazy" decoding="async">`
+    : bottleSVG(p);
+  if(p.discontinued){
+    return `<article class="product-card bottle-card is-discontinued">
+      <a href="product.html?id=${p.id}">
+        <div class="card-media" style="--glow:${glow(p)}">${media}<span class="tag tag-discontinued">Descontinuado</span></div>
+        <div class="card-body">
+          ${brand}
+          <h3 class="card-name">${p.name}</h3>
+          <div class="card-meta"><span>Sin reposición</span><b class="muted">Agotado</b></div>
+        </div>
+      </a>
+    </article>`;
+  }
+  if(!p.bottle){
+    const waMsg = encodeURIComponent(`Hola ${CONFIG.STORE}, quiero el precio del frasco completo de ${p.brand} ${p.name}.`);
+    return `<article class="product-card bottle-card no-price">
+      <a href="product.html?id=${p.id}">
+        <div class="card-media" style="--glow:${glow(p)}">${media}<span class="tag">${p.tag}</span></div>
+        <div class="card-body">
+          ${brand}
+          <h3 class="card-name">${p.name}</h3>
+          <div class="card-meta"><span>Frasco completo</span><b class="price-consult">Consultar</b></div>
+        </div>
+      </a>
+      <a class="btn btn-outline full bottle-consult-btn" target="_blank" rel="noopener" href="https://wa.me/${WA}?text=${waMsg}">Preguntar precio <span>↗</span></a>
+    </article>`;
+  }
+  const sizeKeys = Object.keys(p.bottle).map(Number).sort((a,b)=>a-b);
+  const size = sizeKeys[0];
+  const unit = p.bottle[size];
+  const tier4 = Math.round(unit * CONFIG.WHOLESALE_TIER4_FACTOR);
+  return `<article class="product-card bottle-card">
+    <a href="product.html?id=${p.id}">
+      <div class="card-media" style="--glow:${glow(p)}">
+        ${media}
+        <span class="tag">${p.tag}</span>
+        <button class="quick-add" data-add="${p.id}" data-size="${size}" data-group="bottle" aria-label="Añadir ${p.name}">+</button>
+      </div>
+      <div class="card-body">
+        ${brand}
+        <h3 class="card-name">${p.name}</h3>
+        <div class="card-meta"><span>frasco ${size} ml</span><b>${money(unit)}</b></div>
+        <div class="bottle-tiers">
+          <div><span>1 ud</span><b>${money(unit)}</b></div>
+          <div><span>4+ ud</span><b>desde ${money(tier4)}</b></div>
+          <div><span>10+ ud</span><b class="price-consult">Consultar</b></div>
+        </div>
+      </div>
+    </a>
+  </article>`;
+}
+
 function attachAddHandlers(){
   document.querySelectorAll("[data-add]").forEach(b=>{
     b.addEventListener("click",e=>{
@@ -136,7 +209,7 @@ function attachAddHandlers(){
 /* ---------- Home: destacados ---------- */
 function renderFeatured(filter="all"){
   const el = document.getElementById("featured-grid"); if(!el) return;
-  const items = PRODUCTS.filter(p=>filter==="all"||p.gender===filter||p.type===filter).slice(0,8);
+  const items = PRODUCTS.filter(p=>!p.discontinued && (filter==="all"||p.gender===filter||p.type===filter)).slice(0,8);
   el.innerHTML = items.map(productCard).join("");
   attachAddHandlers();
 }
@@ -181,7 +254,7 @@ function initSearch(){
 /* ---------- Home: frascos completos ---------- */
 function renderBottles(){
   const el = document.getElementById("bottle-grid"); if(!el) return;
-  const items = PRODUCTS.filter(p=>p.bottle)
+  const items = PRODUCTS.filter(p=>p.bottle && !p.discontinued)
     .sort((a,b)=>Math.min(...Object.values(a.price))-Math.min(...Object.values(b.price)))
     .slice(0,4);
   el.innerHTML = items.map(p=>productCard(p,"bottle")).join("");
@@ -193,6 +266,88 @@ function renderCombos(){
   const el = document.getElementById("combo-grid"); if(!el) return;
   el.innerHTML = PRODUCTS.filter(p=>p.type==="combo").map(p=>productCard(p,"decant")).join("");
   attachAddHandlers();
+}
+
+/* ---------- Arma tu combo ---------- */
+function initComboBuilder(){
+  const picker = document.getElementById("cb-picker"); if(!picker) return;
+  const eligible = PRODUCTS.filter(p=>p.type!=="combo" && !p.discontinued);
+  const search = document.getElementById("cb-search");
+  const sizePills = document.querySelectorAll("#cb-size-pills .pill");
+  const selectedList = document.getElementById("cb-selected");
+  const emptyHint = document.getElementById("cb-empty-hint");
+  const countEl = document.getElementById("cb-count");
+  const totalEl = document.getElementById("cb-total");
+  const sendBtn = document.getElementById("cb-send");
+  const MIN_ITEMS = 3;
+
+  let size = 3;
+  const selected = new Set();
+
+  const renderPicker = (q = "") => {
+    const query = q.toLowerCase().trim();
+    const list = query
+      ? eligible.filter(p => `${p.brand} ${p.name} ${p.family}`.toLowerCase().includes(query))
+      : eligible;
+    picker.innerHTML = list.map(p => `
+      <button type="button" class="cb-item${selected.has(p.id) ? " selected" : ""}" data-id="${p.id}" role="option" aria-selected="${selected.has(p.id)}">
+        <span class="cb-item-brand">${p.brand || p.tag}</span>
+        <span class="cb-item-name">${p.name}</span>
+        <span class="cb-item-price">${money(p.price[size])}</span>
+      </button>`).join("") || `<p class="cb-no-results">No encontramos fragancias con ese nombre.</p>`;
+    picker.querySelectorAll(".cb-item").forEach(btn => {
+      btn.addEventListener("click", () => toggle(btn.dataset.id));
+    });
+  };
+
+  const toggle = (id) => {
+    if (selected.has(id)) selected.delete(id); else selected.add(id);
+    renderPicker(search.value);
+    renderSummary();
+  };
+
+  const renderSummary = () => {
+    const items = [...selected].map(id => PRODUCTS.find(p => p.id === id)).filter(Boolean);
+    countEl.textContent = `${items.length} fragancia${items.length === 1 ? "" : "s"}`;
+    emptyHint.style.display = items.length ? "none" : "block";
+    selectedList.innerHTML = items.map(p => `
+      <li>
+        <span>${p.name}</span>
+        <span class="cb-item-line-price">${money(p.price[size])}</span>
+        <button type="button" class="cb-remove" data-id="${p.id}" aria-label="Quitar ${p.name}">×</button>
+      </li>`).join("");
+    selectedList.querySelectorAll(".cb-remove").forEach(b => {
+      b.addEventListener("click", () => toggle(b.dataset.id));
+    });
+    const total = items.reduce((s, p) => s + p.price[size], 0);
+    totalEl.textContent = money(total);
+    sendBtn.disabled = items.length < MIN_ITEMS;
+  };
+
+  sizePills.forEach(pill => {
+    pill.addEventListener("click", () => {
+      sizePills.forEach(x => x.classList.remove("active"));
+      pill.classList.add("active");
+      size = Number(pill.dataset.size);
+      renderPicker(search.value);
+      renderSummary();
+    });
+  });
+
+  search.addEventListener("input", () => renderPicker(search.value));
+
+  sendBtn.addEventListener("click", () => {
+    const items = [...selected].map(id => PRODUCTS.find(p => p.id === id)).filter(Boolean);
+    if (items.length < MIN_ITEMS) return;
+    const total = items.reduce((s, p) => s + p.price[size], 0);
+    const lines = items.map(p => `• ${p.brand ? p.brand + " " : ""}${p.name}`).join("\n");
+    const msg = `Hola ${CONFIG.STORE}. Quiero armar mi propio combo de ${items.length} fragancias en ${size} ml cada una:\n\n${lines}\n\nTOTAL ESTIMADO: ${money(total)}\n\nQuedo atento/a a la confirmación de stock y total final.`;
+    window.open(`https://wa.me/${WA}?text=${encodeURIComponent(msg)}`, "_blank");
+    toast("Tu combo se abrió en WhatsApp");
+  });
+
+  renderPicker();
+  renderSummary();
 }
 
 /* ---------- Catálogo ---------- */
@@ -230,6 +385,36 @@ function initCatalog(){
   run();
 }
 
+/* ---------- Perfumes enteros (perfumes-enteros.html) ---------- */
+function initWholesaleCatalog(){
+  const grid = document.getElementById("wholesale-grid"); if(!grid) return;
+  const gender = document.getElementById("w-gender-filter"), family = document.getElementById("w-family-filter"),
+        avail = document.getElementById("w-avail-filter"), sort = document.getElementById("w-sort-filter"),
+        count = document.getElementById("w-result-count");
+  const run = () => {
+    let items = PRODUCTS.filter(p => p.type !== "combo");
+    if (gender.value !== "all") items = items.filter(p => p.gender === gender.value);
+    if (family.value !== "all") items = items.filter(p => p.family === family.value);
+    if (avail.value === "priced") items = items.filter(p => p.bottle && !p.discontinued);
+    if (avail.value === "consult") items = items.filter(p => !p.bottle && !p.discontinued);
+    const unitPrice = p => p.bottle ? Math.min(...Object.values(p.bottle)) : Infinity;
+    if (sort.value === "priceAsc") items.sort((a, b) => unitPrice(a) - unitPrice(b));
+    if (sort.value === "priceDesc") items.sort((a, b) => (unitPrice(b) === Infinity ? -1 : unitPrice(b)) - (unitPrice(a) === Infinity ? -1 : unitPrice(a)));
+    if (sort.value === "name") items.sort((a, b) => a.name.localeCompare(b.name));
+    // Descontinuados siempre al final, sin importar el orden elegido.
+    items.sort((a, b) => (a.discontinued === b.discontinued) ? 0 : a.discontinued ? 1 : -1);
+    count.textContent = items.length + (items.length === 1 ? " perfume" : " perfumes");
+    grid.innerHTML = items.length ? items.map(bottleCard).join("")
+      : `<div class="empty-state"><strong>Sin resultados</strong>Prueba ajustando los filtros.</div>`;
+    attachAddHandlers();
+  };
+  [gender, family, avail, sort].forEach(x => x?.addEventListener("change", run));
+  document.querySelector("[data-clear-w-filters]")?.addEventListener("click", () => {
+    gender.value = family.value = avail.value = "all"; sort.value = "featured"; run();
+  });
+  run();
+}
+
 /* ---------- Página de producto ---------- */
 function initProduct(){
   const box = document.getElementById("product-page"); if(!box) return;
@@ -258,7 +443,7 @@ function initProduct(){
   <section class="product-detail">
     <div class="product-stage" style="--glow:${glow(p)}">
       ${stageMedia}
-      <span class="tag">${p.tag}</span>
+      <span class="tag${p.discontinued?" tag-discontinued":""}">${p.discontinued?"Descontinuado":p.tag}</span>
     </div>
     <div class="product-info">
       <span class="eyebrow">${typeLabel} · ${p.conc}</span>
@@ -275,6 +460,14 @@ function initProduct(){
         <div class="note-title">NOTAS PRINCIPALES</div>
         <div class="note-chips">${p.notes.map(n=>`<span>${n}</span>`).join("")}</div>
       </div>
+      ${p.discontinued ? `
+      <div class="discontinued-notice">
+        <strong>Este perfume fue descontinuado.</strong>
+        <p>Ya no se repone al agotar el stock restante. Consulta si aún queda unidad disponible, o pide una recomendación de un aroma similar.</p>
+      </div>
+      <div class="detail-actions">
+        <a class="btn btn-outline full" target="_blank" rel="noopener" href="https://wa.me/${WA}?text=${encodeURIComponent(`Hola ${CONFIG.STORE}, quiero saber si aún queda ${p.brand} ${p.name} (descontinuado), o una alternativa similar.`)}">Consultar disponibilidad <span>↗</span></a>
+      </div>` : `
       <div class="note-block">
         <div class="note-title">DECANT · ${decantSizes.join(" · ")} ML</div>
         <div class="size-row">${decantBtns}</div>
@@ -291,7 +484,7 @@ function initProduct(){
         <a class="btn btn-outline" target="_blank" rel="noopener" href="https://wa.me/${WA}?text=${encodeURIComponent(`Hola ${CONFIG.STORE}, quiero consultar por ${p.brand} ${p.name}.`)}">Consultar <span>↗</span></a>
       </div>
       <p class="detail-note">Envío, disponibilidad y total final se confirman por WhatsApp. Sin pagos dentro de la web.</p>
-      <div class="gift-banner">${GIFT_MESSAGE}</div>
+      <div class="gift-banner">${GIFT_MESSAGE}</div>`}
     </div>
   </section>
   <section class="relacionados">
@@ -332,10 +525,12 @@ function initProduct(){
     });
   });
   const stepper = document.getElementById("qty-stepper");
-  const qtyEl = stepper.querySelector(".qty");
-  stepper.querySelector("[data-qminus]").addEventListener("click",()=>{ qty = Math.max(1,qty-1); qtyEl.textContent = qty; });
-  stepper.querySelector("[data-qplus]").addEventListener("click",()=>{ qty = Math.min(99,qty+1); qtyEl.textContent = qty; });
-  document.getElementById("detail-add").addEventListener("click",()=>addToCart(p.id,size,qty,group));
+  if(stepper){
+    const qtyEl = stepper.querySelector(".qty");
+    stepper.querySelector("[data-qminus]").addEventListener("click",()=>{ qty = Math.max(1,qty-1); qtyEl.textContent = qty; });
+    stepper.querySelector("[data-qplus]").addEventListener("click",()=>{ qty = Math.min(99,qty+1); qtyEl.textContent = qty; });
+  }
+  document.getElementById("detail-add")?.addEventListener("click",()=>addToCart(p.id,size,qty,group));
   attachAddHandlers();
 }
 
@@ -581,13 +776,18 @@ function initNewsletter(){
 
 /* ---------- Botellas en arte estático ---------- */
 function initArt(){
+  /* Estas imágenes visten el hero, las tarjetas de "La Colección" y los
+     paneles split-art: siempre están al inicio de la página o justo
+     debajo del pliegue, y son pocas (nunca más de 5–6 por página). Se
+     cargan eager — loading="lazy" aquí solo arriesgaba una tarjeta en
+     blanco mientras el navegador decidía si "ya se veían" o no. */
   document.querySelectorAll("[data-bottle]").forEach(el=>{
     const p = PRODUCTS.find(x=>x.id===el.dataset.bottle);
     if(p){
       el.style.setProperty("--glow", glow(p));
       const artImg = p.imgBottle || p.img;
       el.innerHTML = artImg
-        ? `<img src="${artImg}" alt="${p.brand} ${p.name}" class="art-media" loading="lazy" decoding="async">`
+        ? `<img src="${artImg}" alt="${p.brand} ${p.name}" class="art-media" decoding="async">`
         : bottleSVG(p);
     }
   });
@@ -651,6 +851,8 @@ renderCombos();
 renderBottles();
 initSearch();
 initCatalog();
+initComboBuilder();
+initWholesaleCatalog();
 initProduct();
 renderCart();
 initCartActions();

@@ -15,7 +15,12 @@ window.CRUZIAL_CONFIG = {
   SIZES: [3, 5, 10],
   ATOMIZACIONES: { 3: "50–60", 5: "70–80", 10: "140–150" },
   ADELANTO: "50% de adelanto",
-  DELIVERY: "Línea 1 del tren eléctrico · Motorizado · Contraentrega Lima · Shalom / Olva"
+  DELIVERY: "Línea 1 del tren eléctrico · Motorizado · Contraentrega Lima · Shalom / Olva",
+  /* Perfumes enteros (frasco sellado): el cliente confirmó 3 escalas —
+     1 unidad (precio de lista), 4+ unidades (descuento moderado) y
+     10+ unidades (precio mayorista que maneja de forma privada por
+     WhatsApp, no se publica en la web). Factor editable aquí. */
+  WHOLESALE_TIER4_FACTOR: 0.9
 };
 
 /* Paletas de botella SVG */
@@ -31,13 +36,14 @@ const M = {
 };
 
 /* Fábrica compacta de productos.
-   extra: { tag, desc, bottle, bestseller } */
+   extra: { tag, desc, bottle, bestseller, discontinued } */
 const P = (id, brand, name, gender, type, family, conc, price, notes, mood, extra) => ({
   id, brand, name, gender, type, family, conc, price, notes, mood,
   tag: extra && extra.tag || (type === "combo" ? "Combo" : type === "arab" ? "Árabe" : type === "niche" ? "Nicho" : "Designer"),
   desc: extra && extra.desc || `${name} — fragancia de la familia ${family.toLowerCase()}, concentración ${conc}. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.`,
   bottle: extra && extra.bottle || null,
-  bestseller: !!(extra && extra.bestseller)
+  bestseller: !!(extra && extra.bestseller),
+  discontinued: !!(extra && extra.discontinued)
 });
 
 /* Precios según el catálogo */
@@ -159,13 +165,16 @@ window.CRUZIAL_PRODUCTS = [
   P("supremacy-colle", "Afnan", "Supremacy Collection", "men", "arab", "Cítrico", "EDP", T131728, ["Piña", "Madera", "Ámbar"], M.m8),
   P("supremacy-noi", "Afnan", "Supremacy NOI", "men", "arab", "Cítrico", "EDP", T121626, ["Piña", "Cedro", "Almizcle"], M.m1),
   P("sceptre-malachite", "Maison Alhambra", "Sceptre Malachite", "men", "arab", "Amaderado", "EDP", T111424, ["Madera", "Ámbar", "Especias"], M.m2),
-  P("bright-peach", "Maison Alhambra", "Bright Peach", "women", "arab", "Gourmand", "EDP", T131728, ["Melocotón", "Flores", "Vainilla"], M.m3),
+  P("lovely-cherry", "Maison Alhambra", "Lovely Cherry", "women", "arab", "Gourmand", "EDP", T131728, ["Cereza", "Almendra", "Vainilla"], M.m6, { discontinued: true, desc: "Cereza, almendra y vainilla sobre una base golosa. Producto descontinuado: ya no se repone al agotar el stock restante." }),
+  P("bright-peach", "Maison Alhambra", "Bright Peach", "women", "arab", "Gourmand", "EDP", T131728, ["Melocotón", "Flores", "Vainilla"], M.m3, { discontinued: true, desc: "Melocotón, flores blancas y vainilla en una composición dulce y luminosa. Producto descontinuado: ya no se repone al agotar el stock restante." }),
   P("qaed-al-fursan", "Lattafa", "Qaed Al Fursan", "men", "arab", "Amaderado", "EDP", T111524, ["Azafrán", "Madera", "Ámbar"], M.m4),
+  P("bharara-king", "Bharara", "Bharara King", "men", "arab", "Amaderado", "EDP", T131728, ["Especias", "Cuero", "Ámbar"], M.m1),
   P("jean-lowe-vibe", "Maison Alhambra", "Jean Lowe Vibe", "men", "arab", "Fresco", "EDP", T121626, ["Cítricos", "Acuático", "Madera"], M.m5),
   P("jean-lowe-inmotel", "Maison Alhambra", "Jean Lowe Inmotel", "men", "arab", "Cítrico", "EDP", T121626, ["Bergamota", "Ámbar", "Vainilla"], M.m6),
   P("fakhar-black", "Lattafa", "Fakhar Black", "men", "arab", "Floral", "EDP", T121626, ["Lavanda", "Geranio", "Vainilla"], M.m7),
   P("rayhaan-italia", "Rayhaan", "Rayhaan Italia", "men", "arab", "Cítrico", "EDP", T121626, ["Cítricos", "Especias", "Ámbar"], M.m8),
   P("hawas-chrome", "Rasasi", "Hawas Chrome", "men", "arab", "Fresco", "EDP", T131728, ["Acuático", "Cítricos", "Metálico"], M.m1),
+  P("royal-blend-sequoia", "Maison Alhambra", "Royal Blend Sequoia", "men", "arab", "Amaderado", "EDP", T121626, ["Cedro", "Especias", "Ámbar"], M.m5),
 
   /* ================= COMBOS ÁRABES ================= */
   P("combo-cuarteto", "", "Cuarteto Oriental", "unisex", "combo", "Ámbar", "EDP", { 3: 40, 5: 55, 10: 89 }, ["4 fragancias", "Orientales", "Selección"], M.m4, { desc: "Combo de 4 fragancias de perfumería árabe seleccionadas por Cruzial. Rinde hasta 600 atomizaciones en su formato 10 ml. El contenido exacto se confirma por WhatsApp.", tag: "Combo" }),
@@ -180,7 +189,7 @@ window.CRUZIAL_PRODUCTS = [
   P("azzaro-tmw-edp", "Azzaro", "The Most Wanted EDP", "men", "designer", "Especiado", "EDP", T223048, ["Manzana", "Cardamomo", "Ámbar"], M.m5),
   P("swy-intensely", "Armani", "Stronger With You Intensely", "men", "designer", "Gourmand", "EDP", T243251, ["Canela", "Ron", "Vainilla"], M.m6),
   P("swy-absolutely", "Armani", "Stronger With You Absolutely", "men", "designer", "Amaderado", "EDP", T263456, ["Madera", "Ámbar", "Café"], M.m7),
-  P("ultra-male", "Jean Paul Gaultier", "Ultra Male", "men", "designer", "Fresco", "EDT", T243251, ["Pera", "Vainilla", "Lavanda"], M.m8, { bottle: { 125: 650 } }),
+  P("ultra-male", "Jean Paul Gaultier", "Ultra Male", "men", "designer", "Fresco", "EDT", T243251, ["Pera", "Vainilla", "Lavanda"], M.m8, { bottle: { 125: 650 }, discontinued: true, desc: "Pera, vainilla y lavanda sobre una base ambarina golosa. Producto descontinuado: ya no se repone al agotar el stock restante." }),
   P("le-male-elixir", "Jean Paul Gaultier", "Le Male Elixir", "men", "designer", "Especiado", "EDP", T243251, ["Miel", "Canela", "Tabaco"], M.m1, { bestseller: true, bottle: { 75: 600 } }),
   P("le-beau-le-parfum", "Jean Paul Gaultier", "Le Beau Le Parfum", "men", "designer", "Fresco", "EDP", T243251, ["Coco", "Madera", "Especias"], M.m2, { bottle: { 100: 680 } }),
   P("paradise-garden", "Lattafa", "Paradise Garden", "unisex", "designer", "Floral", "EDP", T243251, ["Flores", "Coco", "Ámbar"], M.m3),
