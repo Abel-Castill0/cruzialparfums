@@ -24,6 +24,56 @@
   --ease:cubic-bezier(.22,1,.36,1);
 }
 
+/* ============================================================
+   FASE 0 — Sistema Obsidiana / Ivory (Master Plan §03)
+   Aditivo: nada de arriba se toca ni se borra todavía. Las
+   fases siguientes migran un componente a la vez a estas
+   variables; hasta entonces ningún selector las usa, así que
+   este bloque no cambia nada visualmente por sí solo.
+   ============================================================ */
+:root{
+  /* Fondos de sección alterna (home: obsidiana → ivory → obsidiana…) */
+  --obsidian:#0a0a08;
+  --obsidian-2:#14120f;
+  --ivory:#f5f2ea;
+  --ivory-2:#ece7db;
+
+  /* Texto sobre cada fondo */
+  --ink-on-obsidian:#f1ede4;
+  --ink-on-obsidian-muted:#a89d8a;
+  --ink-on-ivory:#14120f;
+  --ink-on-ivory-muted:#6b6355;
+
+  /* Líneas/hairlines sobre cada fondo */
+  --line-on-obsidian:rgba(241,237,228,.14);
+  --line-on-ivory:rgba(20,18,15,.14);
+
+  /* Dorado: acento único (mismo tono ya usado en logo/favicon).
+     Ya no es base de degradados de relleno — ver Fase 4. */
+  --gold-accent:#c9a962;
+  --ink-on-gold:#14100a;
+
+  /* Botón sólido = color opuesto al fondo de su sección */
+  --btn-fill-on-obsidian:var(--ivory);
+  --btn-ink-on-obsidian:var(--obsidian);
+  --btn-fill-on-ivory:var(--obsidian);
+  --btn-ink-on-ivory:var(--ivory);
+
+  /* Escala de espaciado documentada — ya usada de forma ad hoc en
+     todo styles.css; se nombra para que las fases siguientes dejen
+     de improvisar valores nuevos por componente. */
+  --space-1:4px;
+  --space-2:8px;
+  --space-3:12px;
+  --space-4:16px;
+  --space-5:24px;
+  --space-6:32px;
+  --space-7:48px;
+  --space-8:64px;
+  --space-9:96px;
+  --space-10:128px;
+}
+
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth;overflow-x:hidden}
 body{
