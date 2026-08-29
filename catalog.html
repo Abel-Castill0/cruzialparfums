@@ -88,9 +88,9 @@
               <div class="cb-size-select">
                 <span class="cb-label">Tamaño</span>
                 <div class="pills" id="cb-size-pills">
-                  <button type="button" class="pill active" data-size="3">3 ml</button>
-                  <button type="button" class="pill" data-size="5">5 ml</button>
-                  <button type="button" class="pill" data-size="10">10 ml</button>
+                  <button type="button" class="pill active" data-size="3" aria-pressed="true">3 ml</button>
+                  <button type="button" class="pill" data-size="5" aria-pressed="false">5 ml</button>
+                  <button type="button" class="pill" data-size="10" aria-pressed="false">10 ml</button>
                 </div>
               </div>
               <input type="search" id="cb-search" class="cb-search" placeholder="Buscar perfume para añadir…" aria-label="Buscar perfume para tu combo" autocomplete="off">
@@ -104,6 +104,7 @@
             </div>
             <ul class="cb-selected" id="cb-selected"></ul>
             <p class="cb-empty" id="cb-empty-hint">Toca las fragancias de la izquierda para añadirlas aquí.</p>
+            <p class="cb-limit-note" id="cb-limit-note" style="display:none">Llegaste al máximo de 6. Quita una para cambiarla.</p>
             <div class="cb-total"><span>Total estimado</span><strong id="cb-total">S/ 0.00</strong></div>
             <p class="cb-hint">Mínimo 3 fragancias para armar tu combo.</p>
             <button class="btn btn-primary full" id="cb-send" type="button" disabled>Pedir mi combo por WhatsApp <span>↗</span></button>

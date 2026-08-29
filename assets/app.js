@@ -9,6 +9,10 @@ const WA = CONFIG.WA_NUMBER;
 const money = n => "S/ " + n.toFixed(2);
 
 /* ---------- Utilidades ---------- */
+function debounce(fn, wait){
+  let t;
+  return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), wait); };
+}
 function hashStr(s){let h=0;for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))%997;return h}
 function shade(hex,p){const n=parseInt(hex.slice(1),16);const r=Math.max(0,Math.min(255,(n>>16)+p));const g=Math.max(0,Math.min(255,((n>>8)&255)+p));const b=Math.max(0,Math.min(255,(n&255)+p));return `rgb(${r},${g},${b})`}
 function initials(brand){return brand.split(/\s+/).map(w=>w[0]).join("").slice(0,3).toUpperCase()}
@@ -234,12 +238,12 @@ function initSearch(){
   document.querySelector("[data-close-search]")?.addEventListener("click",close);
   overlay?.addEventListener("click",close);
   document.addEventListener("keydown",e=>{ if(e.key==="Escape") close(); });
-  input?.addEventListener("input",()=>{
+  input?.addEventListener("input",debounce(()=>{
     const q = input.value.toLowerCase().trim();
     const list = q
       ? PRODUCTS.filter(p=>(p.brand+" "+p.name+" "+p.notes.join(" ")+" "+p.family).toLowerCase().includes(q))
       : PRODUCTS.slice(0,6);
-    results.innerHTML = list.map(p=>{
+    results.innerHTML = list.length ? list.map(p=>{
       const searchImg = p.imgBottle || p.imgSet || p.img;
       return `
       <a class="search-item" href="product.html?id=${p.id}">
@@ -247,8 +251,8 @@ function initSearch(){
         <span><span class="s-brand">${p.brand}</span><span class="s-name">${p.name}</span></span>
         <span class="s-price">${money(Math.min(...Object.values(p.price)))}</span>
       </a>`;
-    }).join("");
-  });
+    }).join("") : `<p class="search-empty">No encontramos nada con "${input.value.trim()}". Prueba con otra marca o nota olfativa.</p>`;
+  },150));
 }
 
 /* ---------- Home: frascos completos ---------- */
@@ -279,7 +283,9 @@ function initComboBuilder(){
   const countEl = document.getElementById("cb-count");
   const totalEl = document.getElementById("cb-total");
   const sendBtn = document.getElementById("cb-send");
+  const limitNote = document.getElementById("cb-limit-note");
   const MIN_ITEMS = 3;
+  const MAX_ITEMS = 6;
 
   let size = 3;
   const selected = new Set();
@@ -289,27 +295,40 @@ function initComboBuilder(){
     const list = query
       ? eligible.filter(p => `${p.brand} ${p.name} ${p.family}`.toLowerCase().includes(query))
       : eligible;
-    picker.innerHTML = list.map(p => `
-      <button type="button" class="cb-item${selected.has(p.id) ? " selected" : ""}" data-id="${p.id}" role="option" aria-selected="${selected.has(p.id)}">
+    const atLimit = selected.size >= MAX_ITEMS;
+    picker.innerHTML = list.map(p => {
+      const isSelected = selected.has(p.id);
+      const disabled = atLimit && !isSelected;
+      return `
+      <button type="button" class="cb-item${isSelected ? " selected" : ""}" data-id="${p.id}" role="option"
+        aria-selected="${isSelected}" aria-pressed="${isSelected}" aria-label="${isSelected ? `Quitar ${p.name} de tu combo` : `Añadir ${p.name} a tu combo`}"
+        ${disabled ? "disabled" : ""}>
+        <span class="cb-item-check" aria-hidden="true">✓</span>
         <span class="cb-item-brand">${p.brand || p.tag}</span>
         <span class="cb-item-name">${p.name}</span>
         <span class="cb-item-price">${money(p.price[size])}</span>
-      </button>`).join("") || `<p class="cb-no-results">No encontramos fragancias con ese nombre.</p>`;
+      </button>`;
+    }).join("") || `<p class="cb-no-results">No encontramos fragancias con ese nombre.</p>`;
     picker.querySelectorAll(".cb-item").forEach(btn => {
       btn.addEventListener("click", () => toggle(btn.dataset.id));
     });
   };
 
   const toggle = (id) => {
-    if (selected.has(id)) selected.delete(id); else selected.add(id);
+    if (selected.has(id)) selected.delete(id);
+    else {
+      if (selected.size >= MAX_ITEMS) { toast(`Máximo ${MAX_ITEMS} fragancias por combo`); return; }
+      selected.add(id);
+    }
     renderPicker(search.value);
     renderSummary();
   };
 
   const renderSummary = () => {
     const items = [...selected].map(id => PRODUCTS.find(p => p.id === id)).filter(Boolean);
-    countEl.textContent = `${items.length} fragancia${items.length === 1 ? "" : "s"}`;
+    countEl.textContent = `${items.length}/${MAX_ITEMS} fragancias`;
     emptyHint.style.display = items.length ? "none" : "block";
+    if(limitNote) limitNote.style.display = items.length >= MAX_ITEMS ? "block" : "none";
     selectedList.innerHTML = items.map(p => `
       <li>
         <span>${p.name}</span>
@@ -326,21 +345,22 @@ function initComboBuilder(){
 
   sizePills.forEach(pill => {
     pill.addEventListener("click", () => {
-      sizePills.forEach(x => x.classList.remove("active"));
+      sizePills.forEach(x => { x.classList.remove("active"); x.setAttribute("aria-pressed","false"); });
       pill.classList.add("active");
+      pill.setAttribute("aria-pressed","true");
       size = Number(pill.dataset.size);
       renderPicker(search.value);
       renderSummary();
     });
   });
 
-  search.addEventListener("input", () => renderPicker(search.value));
+  search.addEventListener("input", debounce(() => renderPicker(search.value), 150));
 
   sendBtn.addEventListener("click", () => {
     const items = [...selected].map(id => PRODUCTS.find(p => p.id === id)).filter(Boolean);
     if (items.length < MIN_ITEMS) return;
     const total = items.reduce((s, p) => s + p.price[size], 0);
-    const lines = items.map(p => `• ${p.brand ? p.brand + " " : ""}${p.name}`).join("\n");
+    const lines = items.map(p => `• ${p.brand ? p.brand + " " : ""}${p.name} — ${money(p.price[size])}`).join("\n");
     const msg = `Hola ${CONFIG.STORE}. Quiero armar mi propio combo de ${items.length} fragancias en ${size} ml cada una:\n\n${lines}\n\nTOTAL ESTIMADO: ${money(total)}\n\nQuedo atento/a a la confirmación de stock y total final.`;
     window.open(`https://wa.me/${WA}?text=${encodeURIComponent(msg)}`, "_blank");
     toast("Tu combo se abrió en WhatsApp");

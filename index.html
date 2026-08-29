@@ -126,29 +126,42 @@
   </header>
 
   <main>
-    <!-- HERO -->
-    <section class="hero container">
-      <div class="hero-copy reveal">
-        <p class="eyebrow">Fragrance Curators · Lima / Perú</p>
-        <h1 class="h1">Una fragancia no se usa.<br><em>Se recuerda.</em></h1>
-        <p class="hero-text">Decants originales de perfumería árabe, diseñador y nicho, en formatos de 3, 5 y 10 ml. Del frasco original a tu rutina, con envíos a Lima y todo el Perú.</p>
-        <div class="hero-actions">
-          <a class="btn btn-primary" href="catalog.html">Explorar la colección <span>→</span></a>
-          <a class="btn btn-ghost" href="#colecciones">Encuentra tu aroma <span>↓</span></a>
+    <!-- HERO
+         Full-bleed: la sección ocupa todo el ancho del viewport (por eso NO
+         lleva class="container"); el contenido interno sí se alinea al
+         ancho de lectura habitual vía .hero-inner.container. Así el brillo
+         ambiental y el "PARFUMS" fantasma respiran en pantallas anchas en
+         vez de quedar encerrados en una caja de 1240px con vacío a los
+         lados — eso es lo que pedía el cliente con "que se vea grande de
+         anchos".
+         Para poner la foto de perfumes que el cliente va a editar: agrega
+         --hero-photo:url('img/hero/tu-foto.jpg') como estilo inline en
+         este <section>, o defínelo dentro de .hero en styles.css. Ya está
+         cableado (ver .hero::before) — no hace falta tocar nada más. -->
+    <section class="hero">
+      <div class="hero-inner container">
+        <div class="hero-copy reveal">
+          <p class="eyebrow">Fragrance Curators · Lima / Perú</p>
+          <h1 class="h1">Una fragancia no se usa.<br><em>Se recuerda.</em></h1>
+          <p class="hero-text">Decants originales, en 3, 5 y 10 ml. De Lima a todo el Perú.</p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="catalog.html">Explorar Decants <span>→</span></a>
+            <a class="btn btn-outline" href="perfumes-enteros.html">Perfumes Enteros <span>→</span></a>
+          </div>
+          <div class="hero-proof">
+            <div><strong>100%</strong><span>Originales</span></div>
+            <div><strong>3 · 5 · 10 ml</strong><span>Formatos</span></div>
+            <div><strong>Contraentrega</strong><span>Lima Metropolitana</span></div>
+          </div>
         </div>
-        <div class="hero-proof">
-          <div><strong>100%</strong><span>Originales</span></div>
-          <div><strong>3 · 5 · 10 ml</strong><span>Formatos</span></div>
-          <div><strong>Contraentrega</strong><span>Lima Metropolitana</span></div>
-        </div>
-      </div>
-      <div class="hero-visual reveal reveal-d2">
-        <div class="hero-aura"></div>
-        <div class="hero-bottle" data-bottle="erba-pura"></div>
-        <div class="hero-card">
-          <span>Editor's Pick</span>
-          <strong>Erba Pura</strong>
-          <small>La firma de Xerjoff que se recuerda desde cualquier rincón de la sala.</small>
+        <div class="hero-visual reveal reveal-d2">
+          <div class="hero-aura"></div>
+          <div class="hero-bottle" data-bottle="erba-pura"></div>
+          <div class="hero-card">
+            <span>Editor's Pick</span>
+            <strong>Erba Pura</strong>
+            <small>La firma de Xerjoff que se recuerda desde cualquier rincón de la sala.</small>
+          </div>
         </div>
       </div>
     </section>
@@ -204,6 +217,20 @@
       </div>
     </section>
 
+    <!-- COMBOS ÁRABES -->
+    <section class="section" id="combos" style="padding-top:0">
+      <div class="container">
+        <div class="section-heading reveal">
+          <div>
+            <p class="eyebrow">Combos Árabes</p>
+            <h2 class="h2">Más aroma,<br><em>mejor precio.</em></h2>
+          </div>
+          <div class="side">Rinden hasta 600 atomizaciones. El contenido exacto se confirma por WhatsApp — o <a href="catalog.html#arma-combo" style="color:var(--gold-bright);text-decoration:underline;text-underline-offset:3px">arma el tuyo</a>.</div>
+        </div>
+        <div id="combo-grid" class="product-grid"></div>
+      </div>
+    </section>
+
     <!-- DESTACADOS -->
     <section class="section" id="destacados" style="padding-top:0">
       <div class="container">
@@ -222,20 +249,6 @@
           <button class="pill" data-filter="niche">Nicho</button>
         </div>
         <div id="featured-grid" class="product-grid"></div>
-      </div>
-    </section>
-
-    <!-- COMBOS ÁRABES -->
-    <section class="section" id="combos" style="padding-top:0">
-      <div class="container">
-        <div class="section-heading reveal">
-          <div>
-            <p class="eyebrow">Combos Árabes</p>
-            <h2 class="h2">Más aroma,<br><em>mejor precio.</em></h2>
-          </div>
-          <div class="side">Selecciones de perfumería árabe que rinden hasta 600 atomizaciones. El contenido exacto de cada combo se confirma por WhatsApp.</div>
-        </div>
-        <div id="combo-grid" class="product-grid"></div>
       </div>
     </section>
 
@@ -316,7 +329,7 @@
           <div>
             <p class="eyebrow">Cruzial Business</p>
             <h2 class="h2">¿Compras para <em>revender</em>?</h2>
-            <p>Precios por volumen para tiendas, barberías, creadores de contenido, regalos corporativos y revendedores. Una experiencia premium también debe funcionar como negocio.</p>
+            <p>Precios por volumen para tiendas, barberías, creadores y revendedores.</p>
             <div class="actions">
               <a class="btn btn-primary" href="mayorista.html">Solicitar tarifas <span>→</span></a>
               <a class="btn btn-outline" target="_blank" rel="noopener" href="https://wa.me/51924590921?text=Hola%20Cruzial%20Parfums%2C%20quiero%20informaci%C3%B3n%20sobre%20precios%20por%20mayor.">Hablar con ventas <span>↗</span></a>
