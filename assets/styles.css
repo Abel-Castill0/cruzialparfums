@@ -213,15 +213,30 @@ input,select,textarea{font-family:inherit}
   border-bottom:1px solid transparent;
 }
 .site-header.scrolled{border-bottom-color:var(--line);background:rgba(10,8,6,.88)}
+/* Fase 1 (Master Plan §04): el header ya no vive dentro de
+   .container — tiene su propio ancho completo + padding lateral
+   responsivo, para que el logo se ancle al borde del viewport en
+   vez de al borde de una caja de 1240px centrada. Medido antes:
+   95–105px de hueco a 1440px; con esto queda en 48px. */
 .header-inner{
+  width:100%;
   display:flex;
   align-items:center;
   justify-content:space-between;
   gap:24px;
-  padding:10px 0;
+  padding:10px 20px;
   transition:padding .5s var(--ease);
 }
-.site-header.scrolled .header-inner{padding:7px 0}
+.site-header.scrolled .header-inner{padding-top:7px;padding-bottom:7px}
+@media (min-width:768px){
+  .header-inner{padding-left:32px;padding-right:32px}
+}
+@media (min-width:1024px){
+  .header-inner{padding-left:40px;padding-right:40px}
+}
+@media (min-width:1280px){
+  .header-inner{padding-left:var(--space-7);padding-right:var(--space-7)}
+}
 
 .brand{display:flex;align-items:center;gap:14px}
 .brand-mark{
@@ -2132,8 +2147,8 @@ input,select,textarea{font-family:inherit}
   .brand-word strong{font-size:14px;letter-spacing:.16em}
   .brand-word small{font-size:7.5px;letter-spacing:.46em}
   .brand-mark{width:32px;height:32px}
-  .header-inner{padding:8px 0;gap:12px}
-  .site-header.scrolled .header-inner{padding:6px 0}
+  .header-inner{padding-top:8px;padding-bottom:8px;gap:12px}
+  .site-header.scrolled .header-inner{padding-top:6px;padding-bottom:6px}
   .header-actions{gap:2px}
   .hero-actions{flex-direction:column;align-items:stretch}
   .hero-actions .btn{width:100%;justify-content:center}
