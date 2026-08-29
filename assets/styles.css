@@ -2034,6 +2034,59 @@ input,select,textarea{font-family:inherit}
   to{transform:scale(4);opacity:0}
 }
 
+/* ---------- Fase 3 — Homepage: ritmo obsidiana/ivory (Master Plan §08) ----------
+   .section-obsidian / .section-ivory se agregan JUNTO a .section (no la
+   reemplazan) — solo fijan fondo + color de texto. Los componentes que
+   viven dentro (product-card, collection-card, .wholesale-band…) traen
+   su propio fondo explícito y no cambian: quedan como "objetos" sobre
+   el color de sección, que es intencional hasta que la Fase 4 les dé
+   tratamiento propio por contexto. */
+.section-obsidian{background:var(--obsidian);color:var(--ink-on-obsidian)}
+.section-ivory{background:var(--ivory);color:var(--ink-on-ivory)}
+.section-ivory .side,
+.section-ivory .center-block p,
+.section-ivory .muted{color:var(--ink-on-ivory-muted)}
+.section-obsidian .side,
+.section-obsidian .center-block p{color:var(--ink-on-obsidian-muted)}
+.section-ivory .h1 em,.section-ivory .h2 em,.section-ivory .h3 em{color:inherit}
+.section-ivory .eyebrow{color:var(--ink-on-ivory-muted)}
+.section-ivory .eyebrow::before,.section-ivory .eyebrow::after{background:linear-gradient(90deg,var(--gold-accent),transparent)}
+.section-ivory .text-link{color:var(--ink-on-ivory)}
+.section-ivory .text-link:hover{color:var(--gold-accent);border-color:var(--gold-accent)}
+
+/* Entrada Decants / Perfumes Completos (homepage §02) */
+.entry-split{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line-on-ivory)}
+.entry-panel{
+  background:var(--ivory);
+  padding:clamp(40px,6vw,72px) clamp(28px,4vw,56px);
+  display:flex;flex-direction:column;gap:12px;
+  transition:background .4s var(--ease);
+}
+.entry-panel:hover{background:var(--ivory-2)}
+.entry-index{font-size:11.5px;letter-spacing:.16em;color:var(--ink-on-ivory-muted)}
+.entry-title{font-family:var(--serif);font-size:clamp(28px,3.4vw,44px);font-weight:500;color:var(--ink-on-ivory);line-height:1.1}
+.entry-desc{color:var(--ink-on-ivory-muted);font-size:15px;max-width:38ch}
+.entry-link{
+  font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-on-ivory);
+  display:inline-flex;align-items:center;gap:8px;margin-top:10px;
+  border-bottom:1px solid var(--ink-on-ivory);padding-bottom:4px;width:fit-content;
+  transition:gap .3s var(--ease),color .3s var(--ease),border-color .3s var(--ease);
+}
+.entry-panel:hover .entry-link{gap:14px;color:var(--gold-accent);border-color:var(--gold-accent)}
+@media (max-width:768px){.entry-split{grid-template-columns:1fr}}
+
+/* La experiencia decant 3/5/10 ml (homepage §05) */
+.size-experience{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line-on-obsidian);margin-top:8px}
+.size-exp-item{background:var(--obsidian);padding:36px 28px;text-align:center}
+.size-exp-item strong{display:block;font-family:var(--serif);font-size:clamp(32px,4vw,48px);color:var(--ink-on-obsidian);font-weight:500;line-height:1}
+.size-exp-label{display:block;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold-accent);margin:10px 0 14px}
+.size-exp-item p{color:var(--ink-on-obsidian-muted);font-size:13.5px;max-width:26ch;margin-inline:auto}
+@media (max-width:640px){.size-experience{grid-template-columns:1fr;background:transparent;gap:14px}.size-exp-item{border:1px solid var(--line-on-obsidian)}}
+
+/* Crea tu colección — teaser (homepage §06) */
+.combo-teaser{text-align:center;max-width:640px;margin-inline:auto;padding:20px 0}
+.combo-teaser p{color:var(--ink-on-ivory-muted);margin:18px 0 30px;max-width:52ch;margin-inline:auto}
+
 /* ---------- Legal content ---------- */
 .legal-content{font-family:'Jost',sans-serif;font-size:15px;line-height:1.75;color:var(--muted)}
 .legal-content h2{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:600;color:var(--cream);margin:36px 0 12px;border-bottom:1px solid var(--line);padding-bottom:10px}

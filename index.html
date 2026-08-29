@@ -43,9 +43,6 @@
   <!-- GSAP + ScrollTrigger -->
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.12/dist/gsap.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.12/dist/ScrollTrigger.min.js" defer></script>
-  <!-- Swiper -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js" defer></script>
   <!-- Styles -->
   <link rel="stylesheet" href="assets/styles.css">
   <!-- Schema.org LocalBusiness -->
@@ -146,7 +143,6 @@
           <p class="hero-text">Decants originales, en 3, 5 y 10 ml. De Lima a todo el Perú.</p>
           <div class="hero-actions">
             <a class="btn btn-primary" href="catalog.html">Explorar Decants <span>→</span></a>
-            <a class="btn btn-outline" href="perfumes-enteros.html">Perfumes Enteros <span>→</span></a>
           </div>
           <div class="hero-proof">
             <div><strong>100%</strong><span>Originales</span></div>
@@ -174,69 +170,30 @@
       </div>
     </div>
 
-    <!-- COLECCIONES -->
-    <section class="section" id="colecciones">
-      <div class="container">
-        <div class="section-heading reveal">
-          <div>
-            <p class="eyebrow">La Colección</p>
-            <h2 class="h2">Cuatro caminos hacia<br>tu <em>firma olfativa</em>.</h2>
-          </div>
-          <div class="side">Cada perfume de nuestra selección está curado a mano: no vendemos ruido, vendemos carácter.</div>
-        </div>
-        <div class="collection-grid">
-          <a class="collection-card reveal" href="catalog.html?gender=women">
-            <div data-bottle="eclaire"></div>
-            <p class="eyebrow">Femenina</p>
-            <h3>Mujer</h3>
-            <p>Rosas, vainillas y firma.</p>
-            <span class="count">12 fragancias →</span>
-          </a>
-          <a class="collection-card reveal reveal-d1" href="catalog.html?gender=men">
-            <div data-bottle="cdn-intense-man"></div>
-            <p class="eyebrow">Masculina</p>
-            <h3>Hombre</h3>
-            <p>Amaderados, especiados y presencia.</p>
-            <span class="count">60+ fragancias →</span>
-          </a>
-          <a class="collection-card reveal reveal-d2" href="catalog.html?gender=unisex">
-            <div data-bottle="khamrah-clasico"></div>
-            <p class="eyebrow">Sin género</p>
-            <h3>Unisex</h3>
-            <p>El nicho sin etiquetas.</p>
-            <span class="count">14 fragancias →</span>
-          </a>
-          <a class="collection-card reveal reveal-d3" href="catalog.html?type=niche">
-            <div data-bottle="erba-pura"></div>
-            <p class="eyebrow">Alta perfumería</p>
-            <h3>Nicho</h3>
-            <p>Lo que no encuentras en cualquier tienda.</p>
-            <span class="count">4 fragancias →</span>
-          </a>
-        </div>
+    <!-- 02 · DECANTS / PERFUMES COMPLETOS -->
+    <section class="section-ivory">
+      <div class="entry-split">
+        <a class="entry-panel reveal" href="catalog.html">
+          <span class="entry-index">01 · Decants</span>
+          <h2 class="entry-title">Descubre antes<br>de decidir.</h2>
+          <p class="entry-desc">96 fragancias en 3, 5 y 10&nbsp;ml, desde S/&nbsp;11. Prueba, rota y arma tu colección.</p>
+          <span class="entry-link">Descubrir Decants <span>→</span></span>
+        </a>
+        <a class="entry-panel reveal reveal-d1" href="perfumes-enteros.html">
+          <span class="entry-index">02 · Perfumes Completos</span>
+          <h2 class="entry-title">Llévalo<br>contigo.</h2>
+          <p class="entry-desc">Frasco original sellado. Por unidad, o cotización por volumen para tu negocio.</p>
+          <span class="entry-link">Ver Perfumes Completos <span>→</span></span>
+        </a>
       </div>
     </section>
 
-    <!-- COMBOS ÁRABES -->
-    <section class="section" id="combos" style="padding-top:0">
+    <!-- 03 · SELECCIÓN CRUZIAL -->
+    <section class="section section-obsidian" id="destacados">
       <div class="container">
         <div class="section-heading reveal">
           <div>
-            <p class="eyebrow">Combos Árabes</p>
-            <h2 class="h2">Más aroma,<br><em>mejor precio.</em></h2>
-          </div>
-          <div class="side">Rinden hasta 600 atomizaciones. El contenido exacto se confirma por WhatsApp — o <a href="catalog.html#arma-combo" style="color:var(--gold-bright);text-decoration:underline;text-underline-offset:3px">arma el tuyo</a>.</div>
-        </div>
-        <div id="combo-grid" class="product-grid"></div>
-      </div>
-    </section>
-
-    <!-- DESTACADOS -->
-    <section class="section" id="destacados" style="padding-top:0">
-      <div class="container">
-        <div class="section-heading reveal">
-          <div>
-            <p class="eyebrow">Los Más Deseados</p>
+            <p class="eyebrow">Selección Cruzial</p>
             <h2 class="h2">Los que todos <em>quieren probar</em>.</h2>
           </div>
           <a class="text-link" href="catalog.html">Ver catálogo completo <span>→</span></a>
@@ -252,82 +209,84 @@
       </div>
     </section>
 
-    <!-- FRASCOS COMPLETOS -->
-    <section class="section" id="frascos" style="padding-top:0">
+    <!-- 04 · COLECCIONES -->
+    <section class="section section-ivory" id="colecciones">
+      <div class="container">
+        <div class="section-heading reveal">
+          <div>
+            <p class="eyebrow">Colecciones Cruzial</p>
+            <h2 class="h2">Sets ya <em>armados</em>.</h2>
+          </div>
+          <div class="side">Rinden hasta 600 atomizaciones. El contenido exacto se confirma por WhatsApp — o <a href="catalog.html#arma-combo" style="color:inherit;text-decoration:underline;text-underline-offset:3px">arma el tuyo</a>.</div>
+        </div>
+        <div id="combo-grid" class="product-grid"></div>
+      </div>
+    </section>
+
+    <!-- 05 · LA EXPERIENCIA DECANT -->
+    <section class="section section-obsidian">
+      <div class="container">
+        <div class="section-heading reveal">
+          <div>
+            <p class="eyebrow">La Experiencia Decant</p>
+            <h2 class="h2">Un tamaño para <em>cada momento</em>.</h2>
+          </div>
+        </div>
+        <div class="size-experience">
+          <div class="size-exp-item reveal">
+            <strong>3&nbsp;ml</strong>
+            <span class="size-exp-label">Descubre</span>
+            <p>≈ 50–60 atomizaciones para conocer una fragancia nueva.</p>
+          </div>
+          <div class="size-exp-item reveal reveal-d1">
+            <strong>5&nbsp;ml</strong>
+            <span class="size-exp-label">Disfruta</span>
+            <p>≈ 70–80 atomizaciones para vivirla un buen tiempo.</p>
+          </div>
+          <div class="size-exp-item reveal reveal-d2">
+            <strong>10&nbsp;ml</strong>
+            <span class="size-exp-label">Quédate</span>
+            <p>≈ 140–150 atomizaciones para hacerla tuya.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 06 · CREA TU COLECCIÓN -->
+    <section class="section section-ivory">
+      <div class="container">
+        <div class="combo-teaser reveal">
+          <p class="eyebrow center">Hazlo a tu manera</p>
+          <h2 class="h2">Crea tu <em>colección</em>.</h2>
+          <p>Elige hasta seis fragancias, arma tu propio combo y pídelo directo por WhatsApp.</p>
+          <a class="btn btn-primary" href="catalog.html#arma-combo">Crear mi colección <span>→</span></a>
+        </div>
+      </div>
+    </section>
+
+    <!-- 07 · FRASCO COMPLETO -->
+    <section class="section section-obsidian" id="frascos">
       <div class="container">
         <div class="section-heading reveal">
           <div>
             <p class="eyebrow">Frasco Completo</p>
-            <h2 class="h2">¿Ya es tuyo?<br><em>Llévalo en frasco.</em></h2>
+            <h2 class="h2">¿Te conquistó?<br><em>Llévalo completo.</em></h2>
           </div>
-          <div class="side">Después de probar el decant, lleva la misma fragancia en su frasco original sellado. También al por mayor.</div>
+          <div class="side">Frascos originales sellados de las fragancias que ya probaste en decant.</div>
         </div>
         <div id="bottle-grid" class="product-grid"></div>
         <div style="text-align:center;margin-top:44px" class="reveal">
-          <a class="text-link" href="catalog.html?format=bottle">Ver todos los frascos completos <span>→</span></a>
+          <a class="text-link" href="perfumes-enteros.html">Ver todos los perfumes completos <span>→</span></a>
         </div>
       </div>
     </section>
 
-    <!-- ARTE DEL DECANT -->
-    <section class="section" style="padding-top:0">
-      <div class="container split-section">
-        <div class="split-art reveal">
-          <span class="art-number">01</span>
-          <div data-bottle="liquid-brun"></div>
-          <div class="art-caption">El arte del decant · Esencia en su estado puro</div>
-        </div>
-        <div class="split-copy reveal reveal-d1">
-          <p class="eyebrow">El Arte del Decant</p>
-          <h2 class="h2">Menos volumen.<br><em>Más criterio.</em></h2>
-          <p>Un decant es la misma fragancia original, trasvasada con precisión a formatos que permiten probar antes de comprometerte con un frasco completo. Perfecto para descubrir, rotar según la ocasión o coleccionar sin límites.</p>
-          <div class="mini-stats">
-            <div class="mini-stat"><strong>100%</strong><span>Originales</span></div>
-            <div class="mini-stat"><strong>3 · 5 · 10 ml</strong><span>Formatos</span></div>
-            <div class="mini-stat"><strong>Contraentrega</strong><span>Lima Metropolitana</span></div>
-          </div>
-          <div class="actions">
-            <a class="btn btn-primary" href="catalog.html">Descubrir fragancias <span>→</span></a>
-            <a class="btn btn-ghost" href="nosotros.html">Nuestra historia <span>→</span></a>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- CÓMO COMPRAR -->
-    <section class="section" style="padding-top:0">
-      <div class="container">
-        <div class="center-block reveal" style="margin-bottom:56px">
-          <p class="eyebrow center">Cómo Comprar</p>
-          <h2 class="h2">Tres pasos, <em>cero fricción</em>.</h2>
-          <p>Sin pasarelas ni complicaciones: elige, arma tu selección y confirma por WhatsApp con un asesor real.</p>
-        </div>
-        <div class="steps-grid">
-          <div class="step reveal">
-            <div class="step-icon">✦</div>
-            <h3>Elige tu formato</h3>
-            <p>Cada fragancia está disponible en 3, 5 y 10 ml. Empieza pequeño y escala cuando lo sientas tuyo.</p>
-          </div>
-          <div class="step reveal reveal-d1">
-            <div class="step-icon">+</div>
-            <h3>Añade al carrito</h3>
-            <p>Arma tu selección a tu ritmo. Tu carrito se guarda para que vuelvas cuando quieras sin perder nada.</p>
-          </div>
-          <div class="step reveal reveal-d2">
-            <div class="step-icon">✉</div>
-            <h3>Confirma por WhatsApp</h3>
-            <p>Envías tu pedido con un mensaje listo. Confirmamos stock, envío y total, y lo despachamos.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- MAYORISTA -->
-    <section class="section" style="padding-top:0">
+    <!-- 08 · COMPRA POR VOLUMEN -->
+    <section class="section section-ivory">
       <div class="container">
         <div class="wholesale-band reveal">
           <div>
-            <p class="eyebrow">Cruzial Business</p>
+            <p class="eyebrow">Compra por Volumen</p>
             <h2 class="h2">¿Compras para <em>revender</em>?</h2>
             <p>Precios por volumen para tiendas, barberías, creadores y revendedores.</p>
             <div class="actions">
@@ -336,233 +295,16 @@
             </div>
           </div>
           <div class="wholesale-feats">
-            <div>Tarifas especiales desde 5 unidades</div>
-            <div>Formatos comerciales 10 ml y frascos</div>
+            <div>Frascos 100% originales sellados</div>
+            <div>Cotización según cantidad solicitada</div>
             <div>Atención directa por WhatsApp</div>
-            <div>Reposición rápida de bestsellers</div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- TESTIMONIOS -->
-    <section class="section" style="padding-top:0">
-      <div class="container">
-        <div class="section-heading reveal">
-          <div>
-            <p class="eyebrow">Ellos Ya Encontraron Su Aroma</p>
-            <h2 class="h2">Historias que <em>huelen bien</em>.</h2>
-          </div>
-          <div class="side">+500 clientes entre Lima y provincias ya armaron su colección con nosotros.</div>
-        </div>
-        <div class="swiper testimonial-swiper" role="region" aria-label="Testimonios de clientes">
-          <div class="swiper-wrapper">
-            <div class="swiper-slide">
-              <div class="testimonial">
-                <div class="stars">★★★★★</div>
-                <p>Pedí el discovery de 5 fragancias y descubrí que mi perfume de siempre no era el que pensaba. El asesor por WhatsApp fue impecable.</p>
-                <div class="who"><b>Camila R.</b>Lima · Miraflores</div>
-              </div>
-            </div>
-            <div class="swiper-slide">
-              <div class="testimonial">
-                <div class="stars">★★★★★</div>
-                <p>Compro decants de 10 ml para revender en mi barbería. Precios justos, entrega rápida y siempre responden al toque.</p>
-                <div class="who"><b>José M.</b>Mayorista · Callao</div>
-              </div>
-            </div>
-            <div class="swiper-slide">
-              <div class="testimonial">
-                <div class="stars">★★★★★</div>
-                <p>El decant de 3 ml es perfecto para probar antes de comprar el frasco. Ya son 12 aromas en mi colección personal.</p>
-                <div class="who"><b>Andrea P.</b>Arequipa</div>
-              </div>
-            </div>
-            <div class="swiper-slide">
-              <div class="testimonial">
-                <div class="stars">★★★★★</div>
-                <p>Los combos árabes son una locura. 3 decants por menos de S/ 40. Ya hice 4 pedidos este mes.</p>
-                <div class="who"><b>Carlos M.</b>Santiago de Surco</div>
-              </div>
-            </div>
-            <div class="swiper-slide">
-              <div class="testimonial">
-                <div class="stars">★★★★★</div>
-                <p>Regalé un combo de 3 para el día del padre y encantó. El packaging es elegante y el aroma dura todo el día.</p>
-                <div class="who"><b>María F.</b>San Isidro</div>
-              </div>
-            </div>
-          </div>
-          <div class="swiper-pagination"></div>
-        </div>
-      </div>
-    </section>
-
-    <!-- JOURNAL -->
-    <section class="section" style="padding-top:0">
-      <div class="container">
-        <div class="section-heading reveal">
-          <div>
-            <p class="eyebrow">Cruzial Journal</p>
-            <h2 class="h2">Compra con <em>criterio</em>.</h2>
-          </div>
-          <div class="side">Guías breves para entender qué estás oliendo — y qué estás pagando.</div>
-        </div>
-        <div class="editorial-grid">
-          <article class="editorial-card reveal">
-            <div class="editorial-art editorial-guide">
-              <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg" class="editorial-svg">
-                <defs>
-                  <linearGradient id="eg1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#c9a962" stop-opacity=".3"/><stop offset="1" stop-color="#8a6d3b" stop-opacity=".1"/></linearGradient>
-                  <radialGradient id="eg2" cx="50%" cy="50%"><stop offset="0" stop-color="#c9a962" stop-opacity=".15"/><stop offset="1" stop-color="transparent"/></radialGradient>
-                </defs>
-                <rect width="320" height="180" fill="none"/>
-                <circle cx="160" cy="90" r="70" fill="url(#eg2)"/>
-                <rect x="140" y="30" width="40" height="12" rx="6" fill="#c9a962" opacity=".5"/>
-                <rect x="148" y="42" width="24" height="8" rx="2" fill="#8a6d3b" opacity=".4"/>
-                <rect x="132" y="50" width="56" height="90" rx="8" fill="url(#eg1)" stroke="#c9a962" stroke-width=".8" opacity=".6"/>
-                <rect x="138" y="60" width="44" height="70" rx="4" fill="#c9a962" opacity=".08"/>
-                <circle cx="220" cy="65" r="28" fill="none" stroke="#c9a962" stroke-width="1.2" opacity=".35"/>
-                <line x1="240" y1="85" x2="260" y2="105" stroke="#c9a962" stroke-width="1.5" opacity=".3"/>
-                <text x="220" y="70" text-anchor="middle" font-family="Georgia,serif" font-size="22" fill="#c9a962" opacity=".4">?</text>
-                <text x="60" y="155" font-family="Georgia,serif" font-size="9" fill="#c9a962" opacity=".25" letter-spacing="3">SELECCIÓN</text>
-              </svg>
-            </div>
-            <div class="editorial-body">
-              <p>01 / Guía</p>
-              <h3><a href="contacto.html">Cómo elegir un perfume sin probar el frasco.</a></h3>
-            </div>
-          </article>
-          <article class="editorial-card reveal reveal-d1">
-            <div class="editorial-art editorial-notes">
-              <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg" class="editorial-svg">
-                <defs>
-                  <linearGradient id="en1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c9a962" stop-opacity=".2"/><stop offset="1" stop-color="#8a6d3b" stop-opacity=".05"/></linearGradient>
-                </defs>
-                <rect width="320" height="180" fill="none"/>
-                <circle cx="100" cy="90" r="50" fill="none" stroke="#c9a962" stroke-width=".7" opacity=".2"/>
-                <circle cx="100" cy="90" r="35" fill="none" stroke="#c9a962" stroke-width=".5" opacity=".15"/>
-                <circle cx="100" cy="90" r="20" fill="#c9a962" opacity=".06"/>
-                <text x="100" y="86" text-anchor="middle" font-family="Georgia,serif" font-size="11" fill="#c9a962" opacity=".5">OUD</text>
-                <text x="100" y="100" text-anchor="middle" font-family="Georgia,serif" font-size="7" fill="#c9a962" opacity=".3"> Woody</text>
-                <circle cx="210" cy="70" r="40" fill="none" stroke="#c9a962" stroke-width=".7" opacity=".2"/>
-                <circle cx="210" cy="70" r="26" fill="none" stroke="#c9a962" stroke-width=".5" opacity=".15"/>
-                <circle cx="210" cy="70" r="14" fill="#c9a962" opacity=".06"/>
-                <text x="210" y="67" text-anchor="middle" font-family="Georgia,serif" font-size="10" fill="#c9a962" opacity=".5">IRIS</text>
-                <text x="210" y="80" text-anchor="middle" font-family="Georgia,serif" font-size="7" fill="#c9a962" opacity=".3">Floral</text>
-                <circle cx="170" cy="130" r="36" fill="none" stroke="#c9a962" stroke-width=".7" opacity=".2"/>
-                <circle cx="170" cy="130" r="23" fill="none" stroke="#c9a962" stroke-width=".5" opacity=".15"/>
-                <circle cx="170" cy="130" r="12" fill="#c9a962" opacity=".06"/>
-                <text x="170" y="127" text-anchor="middle" font-family="Georgia,serif" font-size="9" fill="#c9a962" opacity=".5">VAINILLA</text>
-                <text x="170" y="140" text-anchor="middle" font-family="Georgia,serif" font-size="7" fill="#c9a962" opacity=".3">Gourmand</text>
-                <line x1="130" y1="80" x2="180" y2="70" stroke="#c9a962" stroke-width=".4" opacity=".15"/>
-                <line x1="195" y1="95" x2="185" y2="115" stroke="#c9a962" stroke-width=".4" opacity=".15"/>
-                <line x1="140" y1="110" x2="125" y2="95" stroke="#c9a962" stroke-width=".4" opacity=".15"/>
-              </svg>
-            </div>
-            <div class="editorial-body">
-              <p>02 / Notas</p>
-              <h3><a href="contacto.html">Oud, iris, vainilla: aprende a leer las notas.</a></h3>
-            </div>
-          </article>
-          <article class="editorial-card reveal reveal-d2">
-            <div class="editorial-art editorial-families">
-              <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg" class="editorial-svg">
-                <defs>
-                  <linearGradient id="ef1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c9a962" stop-opacity=".25"/><stop offset="1" stop-color="#8a6d3b" stop-opacity=".05"/></linearGradient>
-                </defs>
-                <rect width="320" height="180" fill="none"/>
-                <g opacity=".5">
-                  <rect x="30" y="70" width="28" height="70" rx="4" fill="url(#ef1)" stroke="#c9a962" stroke-width=".6"/>
-                  <rect x="34" y="76" width="20" height="50" rx="2" fill="#c9a962" opacity=".06"/>
-                  <text x="44" y="155" text-anchor="middle" font-family="Georgia,serif" font-size="6" fill="#c9a962" opacity=".4">CÍTRICO</text>
-                </g>
-                <g opacity=".55">
-                  <rect x="75" y="55" width="28" height="85" rx="4" fill="url(#ef1)" stroke="#c9a962" stroke-width=".6"/>
-                  <rect x="79" y="61" width="20" height="65" rx="2" fill="#c9a962" opacity=".06"/>
-                  <text x="89" y="155" text-anchor="middle" font-family="Georgia,serif" font-size="6" fill="#c9a962" opacity=".4">FLORAL</text>
-                </g>
-                <g opacity=".6">
-                  <rect x="120" y="40" width="28" height="100" rx="4" fill="url(#ef1)" stroke="#c9a962" stroke-width=".6"/>
-                  <rect x="124" y="46" width="20" height="80" rx="2" fill="#c9a962" opacity=".06"/>
-                  <text x="134" y="155" text-anchor="middle" font-family="Georgia,serif" font-size="6" fill="#c9a962" opacity=".4">AMADERADO</text>
-                </g>
-                <g opacity=".55">
-                  <rect x="165" y="55" width="28" height="85" rx="4" fill="url(#ef1)" stroke="#c9a962" stroke-width=".6"/>
-                  <rect x="169" y="61" width="20" height="65" rx="2" fill="#c9a962" opacity=".06"/>
-                  <text x="179" y="155" text-anchor="middle" font-family="Georgia,serif" font-size="6" fill="#c9a962" opacity=".4">ESPECIADO</text>
-                </g>
-                <g opacity=".5">
-                  <rect x="210" y="70" width="28" height="70" rx="4" fill="url(#ef1)" stroke="#c9a962" stroke-width=".6"/>
-                  <rect x="214" y="76" width="20" height="50" rx="2" fill="#c9a962" opacity=".06"/>
-                  <text x="224" y="155" text-anchor="middle" font-family="Georgia,serif" font-size="6" fill="#c9a962" opacity=".4">GOURMAND</text>
-                </g>
-                <line x1="30" y1="160" x2="238" y2="160" stroke="#c9a962" stroke-width=".5" opacity=".2"/>
-                <text x="275" y="115" font-family="Georgia,serif" font-size="36" fill="#c9a962" opacity=".12">5</text>
-              </svg>
-            </div>
-            <div class="editorial-body">
-              <p>03 / Estilo</p>
-              <h3><a href="contacto.html">5 familias olfativas para construir tu colección.</a></h3>
-            </div>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <!-- FAQ -->
-    <section class="section" style="padding-top:0">
-      <div class="container">
-        <div class="center-block reveal" style="margin-bottom:48px">
-          <p class="eyebrow center">Preguntas Frecuentes</p>
-          <h2 class="h2">Todo lo que <em>necesitas saber</em>.</h2>
-        </div>
-        <div class="faq reveal">
-          <details>
-            <summary>¿Qué es un decant?</summary>
-            <p>Es la misma fragancia original, trasvasada desde el frasco auténtico a envases de 3, 5 y 10 ml. Conserva exactamente el mismo aroma, proyección y duración, sin alteraciones.</p>
-          </details>
-          <details>
-            <summary>¿Son perfumes originales o réplicas?</summary>
-            <p>100% originales. Trabajamos con frascos auténticos de las casas oficiales y preparamos los decants con jeringas nuevas por cada cliente y producto. Todos se empaquetan con protección para garantizar el bienestar del contenido.</p>
-          </details>
-          <details>
-            <summary>¿Cómo hago mi pedido?</summary>
-            <p>Añade tus fragancias al carrito, completa tus datos en el checkout y envía tu pedido por WhatsApp. El pedido se confirma con el 50% de adelanto; coordinamos stock, envío y total antes de cerrar la venta.</p>
-          </details>
-          <details>
-            <summary>¿Cómo son los envíos?</summary>
-            <p>Delivery gratis en Lima Metropolitana por la Línea 1 del tren eléctrico. Para otras zonas de Lima usamos motorizado (costo adicional) y contamos con contraentrega a nivel Lima Metropolitana. A todo el Perú enviamos por la agencia Shalom u Olva.</p>
-          </details>
-          <details>
-            <summary>¿Qué presentación tienen los decants?</summary>
-            <p>La perfumería árabe se presenta en decant clásico. En diseñador y nicho, los formatos de 5 y 10 ml usan decant premium y el de 3 ml presentación clásica.</p>
-          </details>
-          <details>
-            <summary>¿Compran al por mayor?</summary>
-            <p>Sí. Tenemos tarifas especiales para revendedores, tiendas, barberías y creadores. Escríbenos por WhatsApp o revisa nuestra sección Mayorista.</p>
-          </details>
-        </div>
-      </div>
-    </section>
-
-    <!-- NEWSLETTER -->
-    <section class="section" style="padding-top:0">
-      <div class="container">
-        <div class="newsletter reveal">
-          <span class="script">Únete al círculo</span>
-          <h2 class="h2">Nuevas fragancias,<br><em>antes que nadie.</em></h2>
-          <p>Recibe lanzamientos, decants limitados y ofertas exclusivas de mayorista directamente en tu correo.</p>
-          <form id="newsletter-form">
-            <input type="email" required placeholder="Tu mejor correo" aria-label="Correo electrónico para newsletter">
-            <button type="submit">Suscribirme</button>
-          </form>
-        </div>
-      </div>
-    </section>
-
-    <!-- CONFIANZA -->
-    <section class="trust-strip">
+    <!-- 09 · CONFIANZA -->
+    <section class="trust-strip section-obsidian">
       <div class="trust-item reveal"><span>01</span><strong>Originalidad</strong><p>Decants preparados a partir de fragancias auténticas, con material nuevo por cada pedido.</p></div>
       <div class="trust-item reveal reveal-d1"><span>02</span><strong>Selección</strong><p>Un catálogo curado en lugar de ruido infinito. Cada aroma tiene una razón de estar.</p></div>
       <div class="trust-item reveal reveal-d2"><span>03</span><strong>Atención</strong><p>Tu pedido termina por WhatsApp, con asesoría humana real antes y después de comprar.</p></div>
@@ -682,9 +424,6 @@
     gsap.utils.toArray(".reveal").forEach(function(el){
       gsap.fromTo(el,{opacity:0,y:40},{opacity:1,y:0,duration:1,ease:"power3.out",scrollTrigger:{trigger:el,start:"top 88%",toggleActions:"play none none none"}});
     });
-    gsap.utils.toArray(".collection-card").forEach(function(el,i){
-      gsap.fromTo(el,{opacity:0,y:50},{opacity:1,y:0,duration:.8,delay:i*.12,ease:"power3.out",scrollTrigger:{trigger:el,start:"top 90%"}});
-    });
     gsap.utils.toArray(".product-card").forEach(function(el,i){
       gsap.fromTo(el,{opacity:0,y:40,scale:.97},{opacity:1,y:0,scale:1,duration:.7,delay:(i%4)*.1,ease:"power3.out",scrollTrigger:{trigger:el,start:"top 92%"}});
     });
@@ -699,7 +438,6 @@
       },{passive:true});
       backToTop.addEventListener("click",function(){window.scrollTo({top:0,behavior:"smooth"})});
     }
-    var sw=new Swiper(".testimonial-swiper",{loop:true,autoplay:{delay:4500,disableOnInteraction:false,pauseOnMouseEnter:true},slidesPerView:1,spaceBetween:24,breakpoints:{640:{slidesPerView:2},1024:{slidesPerView:3}},pagination:{el:".swiper-pagination",clickable:true},a11y:{enabled:true,prevSlideMessage:"Testimonio anterior",nextSlideMessage:"Testimonio siguiente",paginationBulletMessage:"Ir al testimonio {{index}}"}});
   });
   </script>
 
