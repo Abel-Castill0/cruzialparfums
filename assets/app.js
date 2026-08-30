@@ -417,19 +417,27 @@ function initCatalog(){
   const grid = document.getElementById("catalog-grid"); if(!grid) return;
   const gender = document.getElementById("gender-filter"), family = document.getElementById("family-filter"),
         type = document.getElementById("type-filter"), format = document.getElementById("format-filter"),
+        price = document.getElementById("price-filter"),
         sort = document.getElementById("sort-filter"), count = document.getElementById("result-count");
   const qs = new URLSearchParams(location.search);
   if(qs.get("family")) family.value = qs.get("family");
   if(qs.get("gender")) gender.value = qs.get("gender");
   if(qs.get("type")) type.value = qs.get("type");
   if(qs.get("format")) format.value = qs.get("format");
+  if(qs.get("price")) price.value = qs.get("price");
+  const minP = p => Math.min(...Object.values(p.price));
   const run = ()=>{
     let items = [...PRODUCTS];
     if(gender.value!=="all") items = items.filter(p=>p.gender===gender.value);
     if(family.value!=="all") items = items.filter(p=>p.family===family.value);
     if(type.value!=="all") items = items.filter(p=>p.type===type.value);
     if(format.value==="bottle") items = items.filter(p=>p.bottle);
-    const minP = p => Math.min(...Object.values(p.price));
+    /* Presupuesto: cortes elegidos según la distribución real de precios
+       en data.js (69/99 productos ≤S/15, ninguno pasa de S/40) -- no los
+       tramos genéricos de S/15/25/40/41+ que dejarían un tramo vacío. */
+    if(price.value==="15") items = items.filter(p=>minP(p)<=15);
+    else if(price.value==="25") items = items.filter(p=>minP(p)>15 && minP(p)<=25);
+    else if(price.value==="26+") items = items.filter(p=>minP(p)>25);
     if(sort.value==="priceAsc") items.sort((a,b)=>minP(a)-minP(b));
     if(sort.value==="priceDesc") items.sort((a,b)=>minP(b)-minP(a));
     if(sort.value==="name") items.sort((a,b)=>a.name.localeCompare(b.name));
@@ -443,9 +451,9 @@ function initCatalog(){
       : `<div class="empty-state"><strong>Sin resultados</strong>Prueba ajustando los filtros o buscando otra familia olfativa.</div>`;
     attachAddHandlers();
   };
-  [gender,family,type,format,sort].forEach(x=>x?.addEventListener("change",run));
+  [gender,family,type,format,price,sort].forEach(x=>x?.addEventListener("change",run));
   document.querySelector("[data-clear-filters]")?.addEventListener("click",()=>{
-    gender.value=family.value=type.value=format.value="all"; sort.value="featured"; run();
+    gender.value=family.value=type.value=format.value=price.value="all"; sort.value="featured"; run();
   });
   run();
 }
