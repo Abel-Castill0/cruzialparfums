@@ -43,7 +43,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Jost:wght@300;400;500;600&family=Italianno&display=swap" rel="stylesheet">
   <!-- Styles -->
-  <link rel="stylesheet" href="assets/styles.css?v=20260830c">
+  <link rel="stylesheet" href="assets/styles.css?v=20260830d">
   <!-- Schema.org LocalBusiness -->
   <script type="application/ld+json">
   {
@@ -142,15 +142,19 @@
        sobre piedra, con una zona negativa a la izquierda pensada para
        texto -- no se superpone otro cutout de producto encima (se veía
        redundante). El scrim en ::before garantiza contraste del texto
-       blanco sin depender de qué parte exacta de la imagen quede visible
-       al recortar con cover en cada viewport. */
-    /* background-position: top right, no center right -- a la altura típica
-       de hero (viewport - header) el cover recortaba ~100px repartidos
-       arriba/abajo con "center", cortando justo el aro dorado y el borde
-       superior del wordmark de hero2.png. Anclar arriba conserva ese
-       encuadre completo y deja que el recorte caiga sobre la base de
-       piedra (menos crítica) en su lugar. */
-    .hero { position: relative; min-height: calc(100vh - 110px); display: flex; align-items: center; background: #0a0806 url('img/hero/hero2.webp') top right / cover no-repeat; overflow: hidden; padding: 56px 0; }
+       blanco sin depender de qué parte exacta de la imagen quede visible. */
+    /* Medido en píxeles reales sobre hero2.png: el contenido importante
+       (aro dorado, wordmark, botellas, pedestal) ocupa desde y=6 hasta
+       y=767 de una imagen de 768px de alto -- prácticamente el 100% de
+       la altura, sin margen seguro arriba NI abajo. Ningún valor de
+       background-position evita recortar algo importante si el
+       contenedor es más alto que la relación de aspecto de la imagen
+       (1376:768 ≈ 1.79:1). La solución real es que .hero NUNCA sea más
+       alto de lo que esa relación de aspecto permite mostrar completo:
+       aspect-ratio en vez de min-height:100vh, así "cover" no necesita
+       recortar (o recorta un margen mínimo solo en pantallas ultra
+       anchas, ver max-height más abajo). */
+    .hero { position: relative; aspect-ratio: 1376 / 768; min-height: 460px; max-height: 1000px; display: flex; align-items: center; background: #0a0806 url('img/hero/hero2.webp') center / cover no-repeat; overflow: hidden; padding: 56px 0; }
     .hero::before { content: ''; position: absolute; inset: 0; background: linear-gradient(100deg, rgba(8,7,5,.92) 0%, rgba(8,7,5,.72) 32%, rgba(8,7,5,.15) 56%, rgba(8,7,5,0) 72%); pointer-events: none; }
     .hero-inner { display: block; width: 100%; position: relative; z-index: 1; }
     .hero-copy { max-width: 560px; background: none; padding: 0; border: none; }
@@ -754,9 +758,9 @@
   });
   </script>
 
-  <script src="assets/data.js?v=20260830c"></script>
-  <script src="assets/app.js?v=20260830c"></script>
-  <script src="assets/finder.js?v=20260830c"></script>
+  <script src="assets/data.js?v=20260830d"></script>
+  <script src="assets/app.js?v=20260830d"></script>
+  <script src="assets/finder.js?v=20260830d"></script>
   <script>
   if("serviceWorker" in navigator){
     window.addEventListener("load",function(){
