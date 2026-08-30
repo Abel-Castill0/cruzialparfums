@@ -85,22 +85,22 @@
     .catalog-hero h1 em { font-style: italic; color: var(--gold); }
     .catalog-hero p { font-size: 16px; color: var(--text-light); max-width: 480px; margin: 0 auto; }
 
-    /* FILTER BAR */
+    /* FILTER BAR — borde dorado sutil, flecha dorada, glow al enfocar */
     .filter-bar { padding: 0 0 clamp(16px,2vh,24px); border-bottom: 1px solid var(--border); margin-bottom: 32px; }
     .filter-bar-inner { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
     .filter-group { position: relative; }
-    .filter-group select { appearance: none; -webkit-appearance: none; min-width: 178px; width: auto; padding: 10px 36px 10px 16px; border-radius: 100px; border: 1px solid var(--border); background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b6b6b' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 14px center; font-family: var(--sans); font-size: 13px; font-weight: 500; color: var(--text); cursor: pointer; transition: border-color var(--transition), background var(--transition); }
-    .filter-group select:hover { border-color: var(--gold); }
-    .filter-group select:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px rgba(201,169,98,.12); }
+    .filter-group select { appearance: none; -webkit-appearance: none; min-width: 178px; width: auto; padding: 10px 38px 10px 16px; border-radius: 100px; border: 1px solid rgba(201,169,98,.35); background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23c9a962' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 15px center; font-family: var(--sans); font-size: 13px; font-weight: 500; letter-spacing: .02em; color: var(--text); cursor: pointer; transition: border-color .3s ease, box-shadow .3s ease; }
+    .filter-group select:hover { border-color: var(--gold); box-shadow: 0 2px 14px -4px rgba(201,169,98,.35); }
+    .filter-group select:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px rgba(201,169,98,.16), 0 2px 14px -4px rgba(201,169,98,.35); }
     .clear-filters { padding: 10px 20px; border-radius: 100px; border: 1px solid var(--border); background: transparent; font-size: 13px; font-weight: 500; color: var(--text-light); cursor: pointer; transition: all var(--transition); }
     .clear-filters:hover { border-color: var(--darker); color: var(--darker); }
 
     /* RESULTS TOP */
     .results-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; }
     .results-top span { font-size: 14px; color: var(--text-light); font-weight: 400; }
-    .results-top select { appearance: none; -webkit-appearance: none; padding: 8px 32px 8px 14px; border-radius: 100px; border: 1px solid var(--border); background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b6b6b' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 12px center; font-family: var(--sans); font-size: 13px; font-weight: 500; color: var(--text); cursor: pointer; transition: border-color var(--transition); }
-    .results-top select:hover { border-color: var(--gold); }
-    .results-top select:focus { outline: none; border-color: var(--gold); }
+    .results-top select { appearance: none; -webkit-appearance: none; padding: 8px 34px 8px 14px; border-radius: 100px; border: 1px solid rgba(201,169,98,.35); background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23c9a962' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 13px center; font-family: var(--sans); font-size: 13px; font-weight: 500; color: var(--text); cursor: pointer; transition: border-color .3s ease, box-shadow .3s ease; }
+    .results-top select:hover { border-color: var(--gold); box-shadow: 0 2px 14px -4px rgba(201,169,98,.35); }
+    .results-top select:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px rgba(201,169,98,.16); }
 
     /* PRODUCT GRID */
     .catalog-layout { padding: 0 clamp(16px,4vw,48px) clamp(60px,8vh,100px); }

@@ -1,9 +1,13 @@
 /* ============================================================
-   CRUZIAL PARFUMS — Service Worker v2
-   Stale-while-revalidate for HTML, cache-first for assets
+   CRUZIAL PARFUMS — Service Worker v3
+   Network-first for HTML (precios y catálogo nunca deben quedar
+   pegados a una versión vieja del caché — ver ZERO INVENTED COMMERCE
+   en CLAUDE.md: mostrar un precio desactualizado por un caché
+   agresivo es tan grave como inventarlo). Cache-first para
+   CSS/JS/imágenes, que sí cambian de nombre de archivo cuando cambian.
    ============================================================ */
 
-const CACHE_VERSION = "v2";
+const CACHE_VERSION = "v3";
 const CACHE_NAME = "cruzial-" + CACHE_VERSION;
 const PRECACHE = "cruzial-precache-" + CACHE_VERSION;
 
@@ -12,13 +16,18 @@ const STATIC_ASSETS = [
   "/cruzialparfums/index.html",
   "/cruzialparfums/catalog.html",
   "/cruzialparfums/product.html",
+  "/cruzialparfums/checkout.html",
+  "/cruzialparfums/combos.html",
   "/cruzialparfums/mayorista.html",
   "/cruzialparfums/nosotros.html",
   "/cruzialparfums/contacto.html",
+  "/cruzialparfums/terminos.html",
+  "/cruzialparfums/privacidad.html",
   "/cruzialparfums/assets/styles.css",
   "/cruzialparfums/assets/data.js",
   "/cruzialparfums/assets/app.js",
-  "/cruzialparfums/logo.jpeg",
+  "/cruzialparfums/assets/finder.js",
+  "/cruzialparfums/img/logo-mark.png",
   "/cruzialparfums/manifest.json"
 ];
 
@@ -55,21 +64,19 @@ self.addEventListener("fetch", function(e) {
   if (url.origin !== location.origin) return;
   if (url.pathname.includes("/api/") || url.hostname.includes("google-analytics")) return;
 
-  /* HTML: stale-while-revalidate (show cache, update in background) */
+  /* HTML: network-first — intenta la red primero (catálogo y precios
+     siempre al día); si no hay red, cae al caché para que el sitio
+     siga siendo usable offline. */
   if (e.request.mode === "navigate" || e.request.headers.get("accept")?.includes("text/html")) {
     e.respondWith(
-      caches.open(CACHE_NAME).then(function(cache) {
-        return cache.match(e.request).then(function(cached) {
-          var fetchPromise = fetch(e.request).then(function(networkResponse) {
-            if (networkResponse && networkResponse.status === 200) {
-              cache.put(e.request, networkResponse.clone());
-            }
-            return networkResponse;
-          }).catch(function() {
-            return cached;
-          });
-          return cached || fetchPromise;
-        });
+      fetch(e.request).then(function(networkResponse) {
+        if (networkResponse && networkResponse.status === 200) {
+          var clone = networkResponse.clone();
+          caches.open(CACHE_NAME).then(function(cache) { cache.put(e.request, clone); });
+        }
+        return networkResponse;
+      }).catch(function() {
+        return caches.open(CACHE_NAME).then(function(cache) { return cache.match(e.request); });
       })
     );
     return;

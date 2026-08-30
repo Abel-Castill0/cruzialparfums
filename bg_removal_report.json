@@ -1,0 +1,778 @@
+{
+ "9 PM Rebel (2)": {
+  "bg_fraction": 0.61,
+  "flag": "ok"
+ },
+ "9 PM Rebel": {
+  "bg_fraction": 0.688,
+  "flag": "ok"
+ },
+ "AFNAN - 9AM DIVE (2)": {
+  "bg_fraction": 0.783,
+  "flag": "ok"
+ },
+ "AFNAN - 9AM DIVE": {
+  "bg_fraction": 0.767,
+  "flag": "ok"
+ },
+ "AFNAN - 9PM (2)": {
+  "bg_fraction": 0.791,
+  "flag": "ok"
+ },
+ "AFNAN - 9PM ELIXIR (2)": {
+  "bg_fraction": 0.77,
+  "flag": "ok"
+ },
+ "AFNAN - 9PM ELIXIR": {
+  "bg_fraction": 0.768,
+  "flag": "ok"
+ },
+ "AFNAN - 9PM NIGHT OUT (2)": {
+  "bg_fraction": 0.777,
+  "flag": "ok"
+ },
+ "AFNAN - 9PM NIGHT OUT": {
+  "bg_fraction": 0.765,
+  "flag": "ok"
+ },
+ "AFNAN - 9PM": {
+  "bg_fraction": 0.792,
+  "flag": "ok"
+ },
+ "AL HARAMAIN - AMBER OUD GOLD EDITION (2)": {
+  "bg_fraction": 0.785,
+  "flag": "ok"
+ },
+ "AL HARAMAIN - AMBER OUD GOLD EDITION": {
+  "bg_fraction": 0.799,
+  "flag": "ok"
+ },
+ "ARMAF - CLUB DE NUIT INTENSE EDT (2)": {
+  "bg_fraction": 0.689,
+  "flag": "ok"
+ },
+ "ARMAF - CLUB DE NUIT INTENSE EDT": {
+  "bg_fraction": 0.73,
+  "flag": "ok"
+ },
+ "ARMAF - CLUB DE NUIT URBAN MAN ELIXIR (2)": {
+  "bg_fraction": 0.746,
+  "flag": "ok"
+ },
+ "ARMAF - CLUB DE NUIT URBAN MAN ELIXIR": {
+  "bg_fraction": 0.684,
+  "flag": "ok"
+ },
+ "ARMAF - MANDARIN SKY (2)": {
+  "bg_fraction": 0.745,
+  "flag": "ok"
+ },
+ "ARMAF - MANDARIN SKY": {
+  "bg_fraction": 0.883,
+  "flag": "ok"
+ },
+ "ARMAF - ODYSSEY AQUA (2)": {
+  "bg_fraction": 0.747,
+  "flag": "ok"
+ },
+ "ARMAF - ODYSSEY AQUA": {
+  "bg_fraction": 0.663,
+  "flag": "ok"
+ },
+ "AZZARO.-AZZARO THE MOSTH WANTED INTENSE EDP (2)": {
+  "bg_fraction": 0.741,
+  "flag": "ok"
+ },
+ "AZZARO.-AZZARO THE MOSTH WANTED INTENSE EDP": {
+  "bg_fraction": 0.777,
+  "flag": "ok"
+ },
+ "AZZARO.-AZZARO THE MOSTH WANTED PARFUM (2)": {
+  "bg_fraction": 0.677,
+  "flag": "ok"
+ },
+ "AZZARO.-AZZARO THE MOSTH WANTED PARFUM": {
+  "bg_fraction": 0.656,
+  "flag": "ok"
+ },
+ "Afnan 9 AM (2)": {
+  "bg_fraction": 0.67,
+  "flag": "ok"
+ },
+ "Afnan 9 AM": {
+  "bg_fraction": 0.75,
+  "flag": "ok"
+ },
+ "Afnan Supremacy Collection (2)": {
+  "bg_fraction": 0.801,
+  "flag": "ok"
+ },
+ "Afnan Supremacy Collection": {
+  "bg_fraction": 0.88,
+  "flag": "ok"
+ },
+ "Afnan Supremacy NOIR (2)": {
+  "bg_fraction": 0.595,
+  "flag": "ok"
+ },
+ "Afnan Supremacy NOIR": {
+  "bg_fraction": 0.675,
+  "flag": "ok"
+ },
+ "Amber Oud Aqua Dubai (2)": {
+  "bg_fraction": 0.576,
+  "flag": "ok"
+ },
+ "Amber Oud Aqua Dubai": {
+  "bg_fraction": 0.625,
+  "flag": "ok"
+ },
+ "Amber Oud Dubai Night (2)": {
+  "bg_fraction": 0.569,
+  "flag": "ok"
+ },
+ "Amber Oud Dubai Night": {
+  "bg_fraction": 0.647,
+  "flag": "ok"
+ },
+ "Armani Reserve Privée (2)": {
+  "bg_fraction": 0.643,
+  "flag": "ok"
+ },
+ "Armani Reserve Privée": {
+  "bg_fraction": 0.693,
+  "flag": "ok"
+ },
+ "Art Of Universe (2)": {
+  "bg_fraction": 0.567,
+  "flag": "ok"
+ },
+ "Art Of Universe": {
+  "bg_fraction": 0.645,
+  "flag": "ok"
+ },
+ "Asad Elixir (2)": {
+  "bg_fraction": 0.619,
+  "flag": "ok"
+ },
+ "Asad Elixir": {
+  "bg_fraction": 0.697,
+  "flag": "ok"
+ },
+ "Bright Peach (2)": {
+  "bg_fraction": 0.643,
+  "flag": "ok"
+ },
+ "Bright Peach": {
+  "bg_fraction": 0.721,
+  "flag": "ok"
+ },
+ "Burberry Burberry Brit Intense (2)": {
+  "bg_fraction": 0.535,
+  "flag": "ok"
+ },
+ "Burberry Burberry Brit Intense": {
+  "bg_fraction": 0.615,
+  "flag": "ok"
+ },
+ "Bvlgari Bvlgari Man In Black (2)": {
+  "bg_fraction": 0.513,
+  "flag": "ok"
+ },
+ "Bvlgari Bvlgari Man In Black": {
+  "bg_fraction": 0.595,
+  "flag": "ok"
+ },
+ "Carolina Herrera 212 EDT (2)": {
+  "bg_fraction": 0.651,
+  "flag": "ok"
+ },
+ "Carolina Herrera 212 EDT": {
+  "bg_fraction": 0.729,
+  "flag": "ok"
+ },
+ "Club de Nuit Precieux I (2)": {
+  "bg_fraction": 0.632,
+  "flag": "ok"
+ },
+ "Club de Nuit Precieux I": {
+  "bg_fraction": 0.651,
+  "flag": "ok"
+ },
+ "Cuarteto Oriental Vainilla Freak (2)": {
+  "bg_fraction": 0.53,
+  "flag": "ok"
+ },
+ "Cuarteto Oriental Vainilla Freak": {
+  "bg_fraction": 0.609,
+  "flag": "ok"
+ },
+ "DUMONT PARIS - NITRO RED (2)": {
+  "bg_fraction": 0.755,
+  "flag": "ok"
+ },
+ "DUMONT PARIS - NITRO RED": {
+  "bg_fraction": 0.822,
+  "flag": "ok"
+ },
+ "Dior Sauvage EDT (2)": {
+  "bg_fraction": 0.696,
+  "flag": "ok"
+ },
+ "Dior Sauvage EDT": {
+  "bg_fraction": 0.707,
+  "flag": "ok"
+ },
+ "EMPORIO ARMANI - STRONGER WITH YOU ABSOLUTELY (2)": {
+  "bg_fraction": 0.867,
+  "flag": "ok"
+ },
+ "EMPORIO ARMANI - STRONGER WITH YOU ABSOLUTELY": {
+  "bg_fraction": 0.716,
+  "flag": "ok"
+ },
+ "EMPORIO ARMANI - STRONGER WITH YOU INTENSELY (2)": {
+  "bg_fraction": 0.741,
+  "flag": "ok"
+ },
+ "EMPORIO ARMANI - STRONGER WITH YOU INTENSELY": {
+  "bg_fraction": 0.783,
+  "flag": "ok"
+ },
+ "FRENCH AVENEU - LIQUID BRUN": {
+  "bg_fraction": 0.863,
+  "flag": "ok"
+ },
+ "FRENCH AVENEU -LIQUID BRUN": {
+  "bg_fraction": 0.78,
+  "flag": "ok"
+ },
+ "FRENCH AVENUE - VULCAN FEU (2)": {
+  "bg_fraction": 0.871,
+  "flag": "ok"
+ },
+ "FRENCH AVENUE - VULCAN FEU": {
+  "bg_fraction": 0.907,
+  "flag": "ok"
+ },
+ "GIORGIO ARMANI .-ACQUA DI GIO PROFONDO EDP (2)": {
+  "bg_fraction": 0.868,
+  "flag": "ok"
+ },
+ "GIORGIO ARMANI .-ACQUA DI GIO PROFONDO EDP": {
+  "bg_fraction": 0.905,
+  "flag": "ok"
+ },
+ "Hawas Elixir (2)": {
+  "bg_fraction": 0.861,
+  "flag": "ok"
+ },
+ "Hawas Elixir": {
+  "bg_fraction": 0.94,
+  "flag": "review"
+ },
+ "Hawas Exotic (2)": {
+  "bg_fraction": 0.552,
+  "flag": "ok"
+ },
+ "Hawas Exotic": {
+  "bg_fraction": 0.631,
+  "flag": "ok"
+ },
+ "Hawas Verde (2)": {
+  "bg_fraction": 0.562,
+  "flag": "ok"
+ },
+ "Hawas Verde": {
+  "bg_fraction": 0.642,
+  "flag": "ok"
+ },
+ "JEAN PAUL GAULTIER - LE BEAU LE PARFUM (2)": {
+  "bg_fraction": 0.763,
+  "flag": "ok"
+ },
+ "JEAN PAUL GAULTIER - LE BEAU LE PARFUM": {
+  "bg_fraction": 0.817,
+  "flag": "ok"
+ },
+ "JEAN PAUL GAULTIER - LE MALE ELIXIR EDT": {
+  "bg_fraction": 0.849,
+  "flag": "ok"
+ },
+ "JEAN PAUL GAULTIER - LE MALE ELIXIR": {
+  "bg_fraction": 0.807,
+  "flag": "ok"
+ },
+ "Jean Paul Gaultier Ultra Male (2)": {
+  "bg_fraction": 0.703,
+  "flag": "ok"
+ },
+ "Jean Paul Gaultier Ultra Male": {
+  "bg_fraction": 0.781,
+  "flag": "ok"
+ },
+ "Khamrah Waha (2)": {
+  "bg_fraction": 0.661,
+  "flag": "ok"
+ },
+ "Khamrah Waha": {
+  "bg_fraction": 0.688,
+  "flag": "ok"
+ },
+ "LATTAFA - ASAD BOURBON (2)": {
+  "bg_fraction": 0.779,
+  "flag": "ok"
+ },
+ "LATTAFA - ASAD BOURBON": {
+  "bg_fraction": 0.793,
+  "flag": "ok"
+ },
+ "LATTAFA - ASAD CLASICO (2)": {
+  "bg_fraction": 0.781,
+  "flag": "ok"
+ },
+ "LATTAFA - ASAD CLASICO": {
+  "bg_fraction": 0.8,
+  "flag": "ok"
+ },
+ "LATTAFA - ECLAIRE (2)": {
+  "bg_fraction": 0.9,
+  "flag": "ok"
+ },
+ "LATTAFA - ECLAIRE": {
+  "bg_fraction": 0.957,
+  "flag": "review"
+ },
+ "LATTAFA - HONOR AND GLORY (2)": {
+  "bg_fraction": 0.769,
+  "flag": "ok"
+ },
+ "LATTAFA - HONOR AND GLORY": {
+  "bg_fraction": 0.766,
+  "flag": "ok"
+ },
+ "LATTAFA - KHAMRAH CLASICO (2)": {
+  "bg_fraction": 0.778,
+  "flag": "ok"
+ },
+ "LATTAFA - KHAMRAH CLASICO (3)": {
+  "bg_fraction": 0.846,
+  "flag": "ok"
+ },
+ "LATTAFA - KHAMRAH CLASICO (4)": {
+  "bg_fraction": 0.771,
+  "flag": "ok"
+ },
+ "LATTAFA - KHAMRAH CLASICO": {
+  "bg_fraction": 0.704,
+  "flag": "ok"
+ },
+ "LATTAFA - KHAMRAH DUKHAN (2)": {
+  "bg_fraction": 0.723,
+  "flag": "ok"
+ },
+ "LATTAFA - KHAMRAH DUKHAN": {
+  "bg_fraction": 0.776,
+  "flag": "ok"
+ },
+ "LATTAFA - KHAMRAH QAHWA (2)": {
+  "bg_fraction": 0.777,
+  "flag": "ok"
+ },
+ "LATTAFA - KHAMRAH QAHWA": {
+  "bg_fraction": 0.7,
+  "flag": "ok"
+ },
+ "LATTAFA - SUBLIME (2)": {
+  "bg_fraction": 0.773,
+  "flag": "ok"
+ },
+ "LATTAFA - SUBLIME": {
+  "bg_fraction": 0.754,
+  "flag": "ok"
+ },
+ "LATTAFA - YARA ELIXIR (2)": {
+  "bg_fraction": 0.749,
+  "flag": "ok"
+ },
+ "LATTAFA - YARA ELIXIR": {
+  "bg_fraction": 0.839,
+  "flag": "ok"
+ },
+ "LATTAFA - YARA PINK (2)": {
+  "bg_fraction": 0.903,
+  "flag": "ok"
+ },
+ "LATTAFA - YARA PINK": {
+  "bg_fraction": 0.958,
+  "flag": "review"
+ },
+ "Lattafa Angham (2)": {
+  "bg_fraction": 0.87,
+  "flag": "ok"
+ },
+ "Lattafa Angham": {
+  "bg_fraction": 0.926,
+  "flag": "review"
+ },
+ "Lattafa Eclaire Banoffi (2)": {
+  "bg_fraction": 0.716,
+  "flag": "ok"
+ },
+ "Lattafa Eclaire Banoffi": {
+  "bg_fraction": 0.795,
+  "flag": "ok"
+ },
+ "Lattafa Eclaire Pistache (2)": {
+  "bg_fraction": 0.689,
+  "flag": "ok"
+ },
+ "Lattafa Eclaire Pistache": {
+  "bg_fraction": 0.767,
+  "flag": "ok"
+ },
+ "Lattafa Fakhar Black (2)": {
+  "bg_fraction": 0.643,
+  "flag": "ok"
+ },
+ "Lattafa Fakhar Black": {
+  "bg_fraction": 0.711,
+  "flag": "ok"
+ },
+ "Lattafa Homme White (2)": {
+  "bg_fraction": 0.78,
+  "flag": "ok"
+ },
+ "Lattafa Homme White": {
+  "bg_fraction": 0.858,
+  "flag": "ok"
+ },
+ "Lattafa Mayar (2)": {
+  "bg_fraction": 0.81,
+  "flag": "ok"
+ },
+ "Lattafa Mayar Cherry Intense (2)": {
+  "bg_fraction": 0.648,
+  "flag": "ok"
+ },
+ "Lattafa Mayar Cherry Intense": {
+  "bg_fraction": 0.726,
+  "flag": "ok"
+ },
+ "Lattafa Mayar": {
+  "bg_fraction": 0.89,
+  "flag": "ok"
+ },
+ "Lattafa Odyssey Artisto (2)": {
+  "bg_fraction": 0.463,
+  "flag": "ok"
+ },
+ "Lattafa Odyssey Artisto": {
+  "bg_fraction": 0.542,
+  "flag": "ok"
+ },
+ "Lattafa Odyssey Homme (2)": {
+  "bg_fraction": 0.541,
+  "flag": "ok"
+ },
+ "Lattafa Odyssey Homme": {
+  "bg_fraction": 0.62,
+  "flag": "ok"
+ },
+ "Lattafa Odyssey Limoni (2)": {
+  "bg_fraction": 0.505,
+  "flag": "ok"
+ },
+ "Lattafa Odyssey Limoni": {
+  "bg_fraction": 0.584,
+  "flag": "ok"
+ },
+ "Lattafa Odyssey Mega (2)": {
+  "bg_fraction": 0.496,
+  "flag": "ok"
+ },
+ "Lattafa Odyssey Mega": {
+  "bg_fraction": 0.576,
+  "flag": "ok"
+ },
+ "Lattafa Odyssey Spectra (2)": {
+  "bg_fraction": 0.486,
+  "flag": "ok"
+ },
+ "Lattafa Odyssey Spectra": {
+  "bg_fraction": 0.509,
+  "flag": "ok"
+ },
+ "Lattafa Paradise Garden (2)": {
+  "bg_fraction": 0.705,
+  "flag": "ok"
+ },
+ "Lattafa Paradise Garden": {
+  "bg_fraction": 0.793,
+  "flag": "ok"
+ },
+ "Lattafa Qaed Al Fursan (2)": {
+  "bg_fraction": 0.583,
+  "flag": "ok"
+ },
+ "Lattafa Qaed Al Fursan": {
+  "bg_fraction": 0.551,
+  "flag": "ok"
+ },
+ "Lattafa Red Intensely (2)": {
+  "bg_fraction": 0.606,
+  "flag": "ok"
+ },
+ "Lattafa Red Intensely": {
+  "bg_fraction": 0.634,
+  "flag": "ok"
+ },
+ "Lattafa Yum Yum (2)": {
+  "bg_fraction": 0.851,
+  "flag": "ok"
+ },
+ "Lattafa Yum Yum": {
+  "bg_fraction": 0.926,
+  "flag": "review"
+ },
+ "MAISON ALHAMBRA - SCEPTRE MALACHITE (2)": {
+  "bg_fraction": 0.745,
+  "flag": "ok"
+ },
+ "MAISON ALHAMBRA - SCEPTRE MALACHITE": {
+  "bg_fraction": 0.78,
+  "flag": "ok"
+ },
+ "Maison Alhambra Jean Lowe Inmotel (2)": {
+  "bg_fraction": 0.85,
+  "flag": "ok"
+ },
+ "Maison Alhambra Jean Lowe Inmotel": {
+  "bg_fraction": 0.927,
+  "flag": "review"
+ },
+ "Maison Alhambra Jean Lowe Vibe (2)": {
+  "bg_fraction": 0.829,
+  "flag": "ok"
+ },
+ "Maison Alhambra Jean Lowe Vibe": {
+  "bg_fraction": 0.899,
+  "flag": "ok"
+ },
+ "Maison Margiela By The Fireplace (2)": {
+  "bg_fraction": 0.664,
+  "flag": "ok"
+ },
+ "Maison Margiela By The Fireplace": {
+  "bg_fraction": 0.744,
+  "flag": "ok"
+ },
+ "Mancera Cedrat Boise Intense (2)": {
+  "bg_fraction": 0.661,
+  "flag": "ok"
+ },
+ "Mancera Cedrat Boise Intense": {
+  "bg_fraction": 0.732,
+  "flag": "ok"
+ },
+ "Mancera Mancera Red Tobacco (2)": {
+  "bg_fraction": 0.631,
+  "flag": "ok"
+ },
+ "Mancera Mancera Red Tobacco": {
+  "bg_fraction": 0.71,
+  "flag": "ok"
+ },
+ "Mandarin Sky Elixir (2)": {
+  "bg_fraction": 0.525,
+  "flag": "ok"
+ },
+ "Mandarin Sky Elixir": {
+  "bg_fraction": 0.58,
+  "flag": "ok"
+ },
+ "Mandarin Sky Vintage (2)": {
+  "bg_fraction": 0.512,
+  "flag": "ok"
+ },
+ "Mandarin Sky Vintage": {
+  "bg_fraction": 0.591,
+  "flag": "ok"
+ },
+ "Mashrabya (2)": {
+  "bg_fraction": 0.662,
+  "flag": "ok"
+ },
+ "Mashrabya": {
+  "bg_fraction": 0.772,
+  "flag": "ok"
+ },
+ "Nautica Nautica Voyage (2)": {
+  "bg_fraction": 0.63,
+  "flag": "ok"
+ },
+ "Nautica Nautica Voyage": {
+  "bg_fraction": 0.577,
+  "flag": "ok"
+ },
+ "Oud For Glory (2)": {
+  "bg_fraction": 0.568,
+  "flag": "ok"
+ },
+ "Oud For Glory": {
+  "bg_fraction": 0.646,
+  "flag": "ok"
+ },
+ "PACO RABANNE -INVICTUS ELIXIR (2)": {
+  "bg_fraction": 0.655,
+  "flag": "ok"
+ },
+ "PACO RABANNE -INVICTUS ELIXIR": {
+  "bg_fraction": 0.737,
+  "flag": "ok"
+ },
+ "Paco Rabanne 1 Million Lucky (2)": {
+  "bg_fraction": 0.675,
+  "flag": "ok"
+ },
+ "Paco Rabanne 1 Million Lucky": {
+  "bg_fraction": 0.753,
+  "flag": "ok"
+ },
+ "Paco Rabanne Victory Elixir (2)": {
+  "bg_fraction": 0.543,
+  "flag": "ok"
+ },
+ "Paco Rabanne Victory Elixir": {
+  "bg_fraction": 0.621,
+  "flag": "ok"
+ },
+ "Purple Melancholia (2)": {
+  "bg_fraction": 0.599,
+  "flag": "ok"
+ },
+ "Purple Melancholia": {
+  "bg_fraction": 0.634,
+  "flag": "ok"
+ },
+ "RASASI - HAWAS CHROME (2)": {
+  "bg_fraction": 0.834,
+  "flag": "ok"
+ },
+ "RASASI - HAWAS CHROME": {
+  "bg_fraction": 0.734,
+  "flag": "ok"
+ },
+ "RASASI - HAWAS FIRE (2)": {
+  "bg_fraction": 0.778,
+  "flag": "ok"
+ },
+ "RASASI - HAWAS FIRE (3)": {
+  "bg_fraction": 0.787,
+  "flag": "ok"
+ },
+ "RASASI - HAWAS FIRE (4)": {
+  "bg_fraction": 0.785,
+  "flag": "ok"
+ },
+ "RASASI - HAWAS FIRE": {
+  "bg_fraction": 0.711,
+  "flag": "ok"
+ },
+ "RASASI - HAWAS ICE (2)": {
+  "bg_fraction": 0.778,
+  "flag": "ok"
+ },
+ "RASASI - HAWAS ICE": {
+  "bg_fraction": 0.723,
+  "flag": "ok"
+ },
+ "RASASI - HAWAS KOBRA (2)": {
+  "bg_fraction": 0.68,
+  "flag": "ok"
+ },
+ "RASASI - HAWAS KOBRA": {
+  "bg_fraction": 0.735,
+  "flag": "ok"
+ },
+ "RASASI - HAWAS TROPICAL (2)": {
+  "bg_fraction": 0.782,
+  "flag": "ok"
+ },
+ "RASASI - HAWAS TROPICAL": {
+  "bg_fraction": 0.933,
+  "flag": "review"
+ },
+ "Rayhaan Italia (2)": {
+  "bg_fraction": 0.874,
+  "flag": "ok"
+ },
+ "Rayhaan Italia": {
+  "bg_fraction": 0.936,
+  "flag": "review"
+ },
+ "Spicebomb Extreme (2)": {
+  "bg_fraction": 0.586,
+  "flag": "ok"
+ },
+ "Spicebomb Extreme": {
+  "bg_fraction": 0.666,
+  "flag": "ok"
+ },
+ "VERSACE - EROS FLAME (2)": {
+  "bg_fraction": 0.758,
+  "flag": "ok"
+ },
+ "VERSACE - EROS FLAME": {
+  "bg_fraction": 0.707,
+  "flag": "ok"
+ },
+ "Versace Dylan Blue (2)": {
+  "bg_fraction": 0.576,
+  "flag": "ok"
+ },
+ "Versace Dylan Blue": {
+  "bg_fraction": 0.655,
+  "flag": "ok"
+ },
+ "Versace Eros EDT (2)": {
+  "bg_fraction": 0.635,
+  "flag": "ok"
+ },
+ "Versace Eros EDT": {
+  "bg_fraction": 0.626,
+  "flag": "ok"
+ },
+ "Xerjoff Erba Pura (2)": {
+  "bg_fraction": 0.705,
+  "flag": "ok"
+ },
+ "Xerjoff Erba Pura": {
+  "bg_fraction": 0.782,
+  "flag": "ok"
+ },
+ "Yara Candy (2)": {
+  "bg_fraction": 0.625,
+  "flag": "ok"
+ },
+ "Yara Candy": {
+  "bg_fraction": 0.739,
+  "flag": "ok"
+ },
+ "Zanzibar Limited Edition (2)": {
+  "bg_fraction": 0.621,
+  "flag": "ok"
+ },
+ "Zanzibar Limited Edition": {
+  "bg_fraction": 0.699,
+  "flag": "ok"
+ },
+ "liquid brun (2)": {
+  "bg_fraction": 0.75,
+  "flag": "ok"
+ },
+ "liquid brun": {
+  "bg_fraction": 0.75,
+  "flag": "ok"
+ }
+}

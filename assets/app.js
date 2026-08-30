@@ -624,10 +624,15 @@ function initProduct(){
         <div><span>Familia</span><b>${p.family}</b></div>
         <div><span>Desde</span><b>${money(p.price[Math.min(...Object.keys(p.price).map(Number))])}</b></div>
       </div>
+      ${p.type === "combo" ? `
+      <div class="note-block">
+        <div class="note-title">INCLUYE</div>
+        ${comboThumbsHTML(p)}
+      </div>` : `
       <div class="note-block">
         <div class="note-title">NOTAS PRINCIPALES</div>
         <div class="note-chips">${p.notes.map(n=>`<span>${n}</span>`).join("")}</div>
-      </div>
+      </div>`}
       ${p.discontinued ? `
       <div class="discontinued-notice">
         <strong>Este perfume fue descontinuado.</strong>
@@ -649,7 +654,7 @@ function initProduct(){
       </div></div>
       <div class="detail-actions">
         <button class="btn btn-primary" id="detail-add">Añadir al carrito <span>+</span></button>
-        <a class="btn btn-outline" target="_blank" rel="noopener" href="https://wa.me/${WA}?text=${encodeURIComponent(`Hola ${CONFIG.STORE}, quiero consultar por ${p.brand} ${p.name}.`)}">Consultar <span>↗</span></a>
+        <a class="btn btn-outline" id="detail-consult" target="_blank" rel="noopener" href="#">Consultar <span>↗</span></a>
       </div>
       <p class="detail-note">Envío, disponibilidad y total final se confirman por WhatsApp. Sin pagos dentro de la web.</p>
       <div class="gift-banner">${GIFT_MESSAGE}</div>
@@ -692,19 +697,36 @@ function initProduct(){
       }, 250);
     }
   };
+  const consultLink = document.getElementById("detail-consult");
+  const updateConsultLink = ()=>{
+    if(!consultLink) return;
+    let msg;
+    if(p.type === "combo"){
+      const contents = window.CRUZIAL_COMBO_CONTENTS && window.CRUZIAL_COMBO_CONTENTS[p.id];
+      const unitPrice = group === "bottle" ? p.bottle[size] : p.price[size];
+      const total = unitPrice * qty;
+      const lines = contents ? contents.perfumes.map(n => `• ${n}`).join("\n") : "";
+      msg = `Hola ${CONFIG.STORE}, quiero pedir el combo ${p.name} en tamaño ${size} ml${qty>1?` (x${qty})`:""}${contents ? `, que incluye:\n${lines}` : ""}.\n\nTotal: ${money(total)}\n\n¿Cómo puedo realizar el pago?`;
+    } else {
+      msg = `Hola ${CONFIG.STORE}, quiero consultar por ${p.brand} ${p.name}.`;
+    }
+    consultLink.href = `https://wa.me/${WA}?text=${encodeURIComponent(msg)}`;
+  };
+  updateConsultLink();
   document.querySelectorAll(".size-btn").forEach(b=>{
     b.addEventListener("click",()=>{
       document.querySelectorAll(".size-btn").forEach(x=>x.classList.remove("active"));
       b.classList.add("active"); size = Number(b.dataset.size); group = b.dataset.group;
       updateAtom();
       updateStageImage();
+      updateConsultLink();
     });
   });
   const stepper = document.getElementById("qty-stepper");
   if(stepper){
     const qtyEl = stepper.querySelector(".qty");
-    stepper.querySelector("[data-qminus]").addEventListener("click",()=>{ qty = Math.max(1,qty-1); qtyEl.textContent = qty; });
-    stepper.querySelector("[data-qplus]").addEventListener("click",()=>{ qty = Math.min(99,qty+1); qtyEl.textContent = qty; });
+    stepper.querySelector("[data-qminus]").addEventListener("click",()=>{ qty = Math.max(1,qty-1); qtyEl.textContent = qty; updateConsultLink(); });
+    stepper.querySelector("[data-qplus]").addEventListener("click",()=>{ qty = Math.min(99,qty+1); qtyEl.textContent = qty; updateConsultLink(); });
   }
   document.getElementById("detail-add")?.addEventListener("click",()=>addToCart(p.id,size,qty,group));
   attachAddHandlers();
@@ -1114,4 +1136,12 @@ document.addEventListener("DOMContentLoaded",function(){
       setTimeout(function(){window.location.href=href},350);
     });
   });
+});
+/* Si el navegador restaura esta página desde el bfcache (botón "atrás"), el
+   DOM vuelve exactamente como quedó al salir — con "page-exit out" todavía
+   puesto y la página en opacity:0 para siempre, porque DOMContentLoaded no
+   se dispara de nuevo en una restauración de bfcache. Sin esto, "atrás"
+   deja la página en blanco hasta que el usuario hace F5. */
+window.addEventListener("pageshow",function(e){
+  if(e.persisted) document.body.classList.remove("page-exit","out");
 });

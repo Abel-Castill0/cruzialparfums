@@ -295,7 +295,7 @@ function finderProductMini(p, score, reasons){
         <a class="btn btn-outline" href="product.html?id=${p.id}">Ver perfume</a>
         <button class="btn btn-primary" data-finder-add="${p.id}" data-size="3">Probar en decant <span>+</span></button>
       </div>
-      <div class="finder-result-price">Decants desde ${money(minP)} · 3 · 5 · 10 ml</div>
+      <div class="finder-result-price"><b>Decants desde ${money(minP)}</b><span>3 · 5 · 10 ml</span></div>
     </div>
   </article>`;
 }

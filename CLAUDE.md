@@ -72,6 +72,28 @@ is stale; fix the README, never the other way around.
   to catch mistakes for you.
 - **Phased changes.** Structural/visual changes land in small, independently
   verifiable phases with their own commit — not one large rewrite.
+- **`.active` vs `.open` — check both before touching `index.html`/`catalog.html`/
+  `mayorista.html`'s local `<style>` blocks.** These three pages embed a full
+  parallel design system on top of `assets/styles.css`. app.js/finder.js toggle
+  `.open` to show `.search-panel`, `.mobile-menu`, `.finder-modal`, `.drawer`;
+  the local styles in some of these pages were written expecting `.active`
+  instead, which silently made the mobile menu and search completely
+  non-functional (fixed 2026-08-30) despite `position:sticky`-style CSS looking
+  correct at a glance. When a local block partially overrides a shared class,
+  check what it does NOT override — those properties leak through from
+  `assets/styles.css` and can surprise you (a stray `background`/`padding` on
+  `.hero-copy`/`.brand-mark`/`.wholesale-filters` caused three separate bugs
+  this way). This is symptom-level firefighting, not a fix for the root cause;
+  unifying the two design systems is still open, larger, unscheduled work.
+- **Service worker (`sw.js`) is network-first for HTML**, not
+  stale-while-revalidate — a cached page showing an old price after a deploy is
+  the same class of problem as inventing one. Bump `CACHE_VERSION` when you
+  change `sw.js` itself so old clients pick up the new logic.
+- **bfcache**: `app.js` fades the page out (`page-exit out` class) before
+  navigating away on a normal click. Restoring that page via the browser's
+  "back" button from bfcache does NOT re-fire `DOMContentLoaded`, so a
+  `pageshow` listener (`e.persisted`) clears those classes — don't remove it,
+  the symptom without it is "back button shows a blank page until F5".
 - **Perfume Finder scoring is not a ZERO INVENTED COMMERCE violation.**
   `assets/finder.js` classifies olfactory families into general moods/
   intensity tiers (`FAMILY_TRAITS`) to power the "Encuentra tu fragancia"
