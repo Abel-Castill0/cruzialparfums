@@ -73,7 +73,24 @@ function bottleSVG(p){
 function glow(p){return `radial-gradient(circle at 50% 40%,${p.mood.glow}2e,transparent 62%)`}
 
 /* ---------- Carrito ---------- */
-const getCart = () => JSON.parse(localStorage.getItem("cruzial_cart") || "[]");
+/* JSON.parse sin try/catch: un valor corrupto en localStorage.cruzial_cart
+   (editado a mano, extensión de terceros, versión previa incompatible)
+   lanzaba una excepción no controlada en la primera lectura del carrito,
+   rompiendo la inicialización de toda la página. También se filtran los
+   items cuyo producto ya no existe en PRODUCTS (ej. tras quitar un
+   producto de data.js) -- sin esto, renderCart()/renderDrawer() revientan
+   al hacer p.brand sobre un `p` undefined dentro de un .map(). */
+function getCart(){
+  let raw;
+  try{
+    raw = JSON.parse(localStorage.getItem("cruzial_cart") || "[]");
+  }catch{
+    localStorage.removeItem("cruzial_cart");
+    return [];
+  }
+  if(!Array.isArray(raw)) return [];
+  return raw.filter(i => i && typeof i === "object" && typeof i.key === "string" && PRODUCTS.some(p => p.id === i.id));
+}
 const saveCart = c => { localStorage.setItem("cruzial_cart", JSON.stringify(c)); updateCartCount(); renderDrawer(); };
 function updateCartCount(){
   const count = getCart().reduce((s,i)=>s+i.qty,0);
