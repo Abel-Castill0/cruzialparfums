@@ -453,6 +453,7 @@ function initWholesaleTable(){
     );
     return {
       id: p.id,
+      img: p.imgBottle || p.imgSet || p.img || "",
       brand: p.brand || "—",
       name: p.name,
       type: p.type,
@@ -469,6 +470,9 @@ function initWholesaleTable(){
   function renderRows(list){
     tbody.innerHTML = list.map(r => `
       <tr data-type="${r.type}">
+        <td class="thumb-col">${r.img
+          ? `<img src="${r.img}" alt="" loading="lazy" decoding="async">`
+          : `<span class="thumb-placeholder" aria-hidden="true"></span>`}</td>
         <td class="brand-col">${r.brand}</td>
         <td class="name-col">${r.name}</td>
         <td class="price-col">S/ ${r.unit}</td>

@@ -60,6 +60,8 @@
     .wholesale-table tbody tr:last-child td{border-bottom:none}
     .wholesale-table tbody tr:hover{background:#faf9f7}
     .wholesale-table .price-col,.wholesale-table .action-col{text-align:right}
+    .wholesale-table .thumb-col{width:56px;padding:8px 8px 8px 16px;text-align:left}
+    .wholesale-table td.thumb-col img,.wholesale-table td.thumb-col .thumb-placeholder{display:block;width:40px;height:40px;object-fit:cover;border-radius:6px;background:#f5f0e8;border:1px solid #e8e4de}
     .wholesale-table .wa-link{display:inline-flex;align-items:center;gap:6px;color:#c9a962;font-weight:500;text-decoration:none;font-size:.82rem;transition:color .2s}
     .wholesale-table .wa-link:hover{color:#a8873d}
     .table-note{margin-top:16px;font-size:.8rem;color:#999;text-align:center}
@@ -202,6 +204,7 @@
           <table class="wholesale-table" id="wholesale-table">
             <thead>
               <tr>
+                <th class="thumb-col" aria-hidden="true"></th>
                 <th>Marca</th>
                 <th>Fragancia</th>
                 <th class="price-col">Unit.</th>
