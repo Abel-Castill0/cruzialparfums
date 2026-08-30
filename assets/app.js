@@ -682,7 +682,11 @@ function initProduct(){
       <div class="note-block">
         <div class="note-title">DECANT · ${decantSizes.join(" · ")} ML</div>
         <div class="size-row">${decantBtns}</div>
-        <p class="atom-note">≈ ${CONFIG.ATOMIZACIONES[decantSizes[0]]} atomizaciones · ${p.type==="arab"?"Decant clásico":"Decant clásico (3 ml) / Premium (5 y 10 ml)"}</p>
+        <div class="atom-note">
+          <span class="atom-label">Rendimiento</span>
+          <strong class="atom-figure">≈ ${CONFIG.ATOMIZACIONES[decantSizes[0]]} atomizaciones</strong>
+          <span class="atom-sub">${p.type==="arab"?"Decant clásico":"Decant clásico"} · ${decantSizes[0]} ml</span>
+        </div>
         ${p.bottle ? `
         <div class="note-title bottle-label">FRASCO COMPLETO · ORIGINAL SELLADO</div>
         <div class="size-row">${bottleBtns}</div>` : ""}
@@ -717,12 +721,13 @@ function initProduct(){
   </section>`;
   let size = wantsBottle ? Math.min(...Object.keys(p.bottle).map(Number)) : decantSizes[0],
       qty = 1, group = wantsBottle ? "bottle" : "decant";
-  const atomNote = document.querySelector(".atom-note");
+  const atomFigure = document.querySelector(".atom-figure"), atomSub = document.querySelector(".atom-sub");
   const updateAtom = ()=>{
-    if(!atomNote) return;
-    if(group==="bottle"){ atomNote.textContent = "Frasco original sellado · 100% auténtico"; return; }
-    const pres = p.type==="arab" ? "decant clásico" : size===3 ? "decant clásico" : "decant premium";
-    atomNote.textContent = `≈ ${CONFIG.ATOMIZACIONES[size]} atomizaciones · ${pres}`;
+    if(!atomFigure) return;
+    if(group==="bottle"){ atomFigure.textContent = "Frasco sellado"; atomSub.textContent = "100% original · " + size + " ml"; return; }
+    const pres = p.type==="arab" ? "Decant clásico" : size===3 ? "Decant clásico" : "Decant premium";
+    atomFigure.textContent = `≈ ${CONFIG.ATOMIZACIONES[size]} atomizaciones`;
+    atomSub.textContent = `${pres} · ${size} ml`;
   };
   updateAtom();
   if(wantsBottle) document.querySelector(".bottle-label")?.scrollIntoView?.({block:"center",behavior:"smooth"});

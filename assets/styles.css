@@ -474,7 +474,13 @@ input,select,textarea{font-family:inherit}
 .meta-row b{font-family:var(--serif);font-weight:500;font-size:17px;color:var(--gold);letter-spacing:.04em}
 .note-block{margin:30px 0}
 .note-block .note-title{font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--muted2);margin-bottom:14px}
-.atom-note{margin-top:12px;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted2);line-height:1.6}
+/* Antes un <p> de 10.5px casi invisible -- es un argumento de compra real
+   ("¿cuánto me va a durar?"), se presenta como un módulo de información
+   con la misma jerarquía visual que el resto de datos del producto. */
+.atom-note{margin-top:16px;padding:14px 18px;background:var(--bg2);border:1px solid var(--line);border-radius:4px;display:flex;flex-direction:column;gap:2px}
+.atom-note .atom-label{font-size:9.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--gold-deep)}
+.atom-note .atom-figure{font-family:var(--serif);font-size:19px;font-weight:600;color:var(--text)}
+.atom-note .atom-sub{font-size:12px;color:var(--muted);letter-spacing:.02em}
 .note-title.bottle-label{margin-top:24px;padding-top:22px;border-top:1px solid var(--line-strong);color:var(--gold)}
 .note-chips{display:flex;gap:10px;flex-wrap:wrap}
 .note-chips span{padding:10px 18px;border:1px solid var(--line);background:var(--bg);font-family:var(--serif);font-size:16px;color:#1A1A1A;transition:all .35s var(--ease)}
