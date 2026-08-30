@@ -55,7 +55,10 @@
         <p class="eyebrow">Catálogo de Decants</p>
         <h1 class="h1">Una biblioteca de<br><em>aromas memorables.</em></h1>
         <p>96 fragancias en decants de 3, 5 y 10 ml. Filtra por estilo, familia olfativa y presupuesto — o arma tu propio combo más abajo.</p>
-        <a class="text-link" href="#arma-combo" style="margin-top:22px">Ir a "Arma tu combo" <span>↓</span></a>
+        <div style="display:flex;flex-wrap:wrap;gap:14px 28px;margin-top:22px;align-items:center">
+          <a class="text-link" href="#arma-combo">Ir a "Arma tu combo" <span>↓</span></a>
+          <button class="finder-secondary-link" data-open-finder type="button">¿No sabes cuál elegir? Encuentra tu fragancia <span>→</span></button>
+        </div>
       </div>
     </section>
 
@@ -262,11 +265,24 @@
     <small>CRUZIAL PARFUMS · LIMA / PERÚ</small>
   </div>
 
+  <!-- Cruzial Perfume Finder -->
+  <div class="finder-modal" id="finder-modal">
+    <div class="finder-modal-overlay" data-finder-overlay></div>
+    <div class="finder-panel" role="dialog" aria-modal="true" aria-label="Encuentra tu fragancia">
+      <div class="finder-head">
+        <span class="finder-kicker">Cruzial Perfume Finder</span>
+        <button class="finder-close" data-finder-close aria-label="Cerrar">×</button>
+      </div>
+      <div class="finder-body" id="finder-body"></div>
+    </div>
+  </div>
+
   <a class="wa-float" href="https://wa.me/51924590921?text=Hola%20Cruzial%20Parfums%2C%20tengo%20una%20consulta." target="_blank" rel="noopener" aria-label="Escríbenos por WhatsApp">
     <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm5.4 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.6-4-4.7-4.2-.1-.2-1.1-1.5-1.1-2.9s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5s.8 1.9.8 2c.1.1.1.3 0 .4-.4.8-.9 1-.7 1.4.6 1.1 1.9 2.3 2.9 2.8.4.2.6.1.9-.1.2-.3.9-1 1.1-1.4.2-.3.4-.3.7-.2l2 .9c.3.2.5.3.6.4.1.2.1.8-.1 1.4Z"/></svg>
   </a>
 
   <script src="assets/data.js"></script>
   <script src="assets/app.js"></script>
+  <script src="assets/finder.js"></script>
 </body>
 </html>

@@ -2448,3 +2448,138 @@ html{
     animation:none !important;
   }
 }
+
+/* ============================================================
+   CRUZIAL PERFUME FINDER — "Encuentra tu fragancia"
+   assets/finder.js maneja la lógica; esto es solo presentación.
+   ============================================================ */
+
+/* --- Bloque de entrada (home / catálogo) --- */
+.finder-invite{
+  border:1px solid var(--line);
+  background:var(--surface);
+  padding:clamp(36px,5vw,56px) clamp(24px,4vw,56px);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:32px;
+  flex-wrap:wrap;
+}
+.finder-invite-copy{max-width:520px}
+.finder-invite .script{display:block;margin-bottom:10px}
+.finder-invite p{color:var(--muted);margin-top:12px;font-size:15px;max-width:46ch}
+.finder-invite-cta{flex-shrink:0}
+.finder-secondary-link{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  font-size:11px;
+  letter-spacing:.16em;
+  text-transform:uppercase;
+  color:var(--muted);
+  border-bottom:1px solid var(--line-strong);
+  padding-bottom:3px;
+  transition:color .3s,border-color .3s;
+}
+.finder-secondary-link:hover{color:var(--gold-bright);border-color:var(--gold)}
+
+/* --- Modal --- */
+.finder-modal{
+  position:fixed;inset:0;z-index:98;
+  opacity:0;pointer-events:none;
+  transition:opacity .4s var(--ease);
+  display:flex;align-items:center;justify-content:center;
+  padding:20px;
+}
+.finder-modal.open{opacity:1;pointer-events:auto}
+.finder-modal-overlay{position:absolute;inset:0;background:rgba(5,4,3,.72);backdrop-filter:blur(6px)}
+.finder-panel{
+  position:relative;
+  width:min(640px,100%);
+  max-height:min(720px,92vh);
+  background:var(--bg2);
+  border:1px solid var(--line-strong);
+  display:flex;flex-direction:column;
+  transform:translateY(16px) scale(.98);
+  transition:transform .4s var(--ease);
+  box-shadow:var(--shadow);
+}
+.finder-modal.open .finder-panel{transform:translateY(0) scale(1)}
+.finder-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:22px 26px;border-bottom:1px solid var(--line);flex-shrink:0;
+}
+.finder-kicker{font-family:var(--serif);font-size:15px;font-style:italic;color:var(--gold-bright)}
+.finder-close{
+  width:36px;height:36px;border:1px solid var(--line);border-radius:50%;
+  display:grid;place-items:center;font-size:18px;color:var(--muted);
+  transition:all .3s;flex-shrink:0;
+}
+.finder-close:hover{border-color:var(--gold);color:var(--gold-bright);transform:rotate(90deg)}
+.finder-body{padding:28px 26px 32px;overflow-y:auto;flex:1}
+
+.finder-progress{display:flex;align-items:center;gap:14px;margin-bottom:22px}
+.finder-progress span{font-size:10.5px;letter-spacing:.2em;color:var(--muted2);flex-shrink:0}
+.finder-bar{flex:1;height:1px;background:var(--line)}
+.finder-bar-fill{height:100%;background:var(--gold);transition:width .4s var(--ease)}
+
+.finder-q{font-size:clamp(22px,3.4vw,28px);margin-bottom:6px}
+.finder-sub{color:var(--muted);font-size:13.5px;margin-bottom:24px;max-width:50ch}
+
+.finder-grid{display:grid;gap:10px;margin-bottom:8px}
+.finder-grid-2{grid-template-columns:repeat(2,1fr)}
+.finder-grid-3{grid-template-columns:repeat(3,1fr)}
+.finder-grid-4{grid-template-columns:repeat(auto-fill,minmax(110px,1fr))}
+.finder-opt{
+  border:1px solid var(--line);
+  background:transparent;
+  color:var(--text);
+  padding:14px 16px;
+  font-size:13.5px;
+  text-align:left;
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  transition:all .25s var(--ease);
+  min-height:48px;
+}
+.finder-opt:hover{border-color:var(--line-strong)}
+.finder-opt.is-selected{border-color:var(--gold);background:rgba(201,169,98,.08);color:var(--gold-bright)}
+.finder-check{font-size:12px;color:var(--gold)}
+
+.finder-nav{display:flex;justify-content:space-between;align-items:center;margin-top:28px;gap:16px}
+
+/* --- Resultados --- */
+.finder-results-eyebrow{font-size:10.5px;letter-spacing:.26em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+.finder-also{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted2);margin:32px 0 14px}
+.finder-result-card{
+  display:grid;grid-template-columns:96px minmax(0,1fr);gap:18px;
+  border:1px solid var(--line);padding:16px;
+  max-width:100%;
+}
+.finder-result-media{display:block;width:96px;height:120px;overflow:hidden;flex-shrink:0}
+.finder-result-body{min-width:0}
+.finder-result-media img{width:100%;height:100%;object-fit:cover}
+.finder-score{display:inline-block;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold-bright);margin-bottom:6px}
+.finder-brand{display:block;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted2)}
+.finder-result-body h4{font-family:var(--serif);font-weight:500;font-size:19px;margin:2px 0 6px}
+.finder-result-body h4 a{color:var(--cream)}
+.finder-why{color:var(--muted);font-size:12.5px;margin-bottom:12px;line-height:1.5}
+.finder-result-actions{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:8px}
+.finder-result-actions .btn{padding:10px 14px;font-size:9.5px;white-space:normal;text-align:center;flex:1 1 auto;min-width:0}
+.finder-result-price{font-size:11px;color:var(--muted2)}
+.finder-alt-grid{display:grid;grid-template-columns:1fr;gap:14px}
+.finder-result-footer{display:flex;flex-wrap:wrap;gap:14px;margin-top:32px;padding-top:22px;border-top:1px solid var(--line)}
+
+@media (min-width:640px){
+  .finder-alt-grid{grid-template-columns:1fr 1fr}
+}
+@media (max-width:560px){
+  .finder-grid-2,.finder-grid-3{grid-template-columns:1fr 1fr}
+  .finder-result-card{grid-template-columns:72px minmax(0,1fr)}
+  .finder-result-media{width:72px;height:90px}
+  .finder-invite{flex-direction:column;align-items:flex-start;text-align:left}
+  .finder-result-actions{flex-direction:column}
+  .finder-result-actions .btn{white-space:nowrap}
+}
+@media (prefers-reduced-motion:reduce){
+  .finder-modal,.finder-panel{transition:none}
+}

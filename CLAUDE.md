@@ -72,3 +72,14 @@ is stale; fix the README, never the other way around.
   to catch mistakes for you.
 - **Phased changes.** Structural/visual changes land in small, independently
   verifiable phases with their own commit — not one large rewrite.
+- **Perfume Finder scoring is not a ZERO INVENTED COMMERCE violation.**
+  `assets/finder.js` classifies olfactory families into general moods/
+  intensity tiers (`FAMILY_TRAITS`) to power the "Encuentra tu fragancia"
+  recommender. That table is documented industry convention (the same
+  family→mood grouping every fragrance reference site uses), applied equally
+  to any product of that family — it is not a per-product fact and does not
+  get added to `data.js`. The scoring itself only reads real product fields
+  (`family`, `notes`, `conc`, `gender`) that already exist. Do not add
+  per-product `intensity`/`sweetness`/`freshness` scores to `data.js` — if the
+  Finder needs a new signal, it must be derived transparently at runtime from
+  confirmed fields, the same way, never hand-authored per product.
