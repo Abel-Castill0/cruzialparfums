@@ -137,8 +137,43 @@ and the outcome, so they aren't re-flagged as unverified on a future audit:
 - **combos.html:** Dedicated page for pre-built sets ("Sets ya armados") and
   the combo builder ("Arma tu propio combo"). Replaced the combo sections that
   were previously in catalog.html.
-- **perfumes-enteros.html:** Redirects to `mayorista.html` (full bottles are now
-  in the Mayorista section). Has `noindex, nofollow` and `meta http-equiv="refresh"`.
+- **perfumes-enteros.html:** Redirects to `mayorista.html`. Has `noindex, nofollow`
+  and `meta http-equiv="refresh"`. Retail single-bottle purchase does NOT live
+  here — it's a catalog-card link (`product.html?id=...&variant=bottle`) that
+  pre-selects the existing FRASCO COMPLETO size row on the product page.
+  Mayorista is reserved for genuine bulk/volume orders only; don't route a
+  single-bottle retail flow through it.
 - **No newsletter form.** Removed during redesign — no backend service configured.
 - **WhatsApp is the primary CTA** on every page (header icon, floating button,
   checkout flow). No payment gateway.
+
+## Product photography — read before touching any image
+
+- **`img/perfumes/*.png` (repo root, untracked-until-added) are the CLIENT'S
+  ORIGINAL studio photos — white background, full bottle, correct.** They exist
+  because an earlier round's automatic background removal (flood-fill) ate
+  parts of clear/glass bottles; the client re-uploaded clean originals to
+  replace the damaged set. **Never run background removal, flood-fill, or
+  content-cropping on these again.** The white background is intentional, not
+  a defect to fix with more processing.
+- **`img/perfumes/webp/*.webp`** is the deployed, optimized copy (resized to
+  1100px max side, WebP quality 88 — pure format/size conversion, zero content
+  change; see `.claude/scripts/migrate_new_photos.py`). `data.js`'s `IMG_MAP`
+  points here. One product (`sceptre-malachite`) still points at the old
+  `img/perfumes/transparent/` path — no new photo was provided for it yet.
+- **`.card-media.has-photo`/`.product-stage.has-photo` use `object-fit:contain`**,
+  not `cover` — these photos have real white backgrounds meant to be shown in
+  full, not cropped edge-to-edge. Small thumbnails (mayorista table, combo
+  picker, search results, cart/drawer) still use `cover`, which is fine at
+  that size.
+- **`img/hero/hero2.png`/`.webp`** is the homepage hero background (full-bleed,
+  `.hero` in `index.html`) — client-provided, do not regenerate or reprocess.
+
+## Working style for this project
+
+Sessions run long; treat context as a budget. Verify claims (an old audit, a
+prior round's assumption) against the current file/DOM state before acting on
+them — don't re-fix what's already fixed, and don't trust a claim just because
+it's specific. Prefer one focused, well-verified change over a sweeping
+rewrite across many files in one pass; commit in atomic, reviewable batches
+matching what was actually verified, not the whole task at once.
