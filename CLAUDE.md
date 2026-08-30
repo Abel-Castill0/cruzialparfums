@@ -1,0 +1,65 @@
+# CLAUDE.md — Cruzial Parfums
+
+Project rules for anyone (human or AI) making changes to this repo. These are not
+style preferences — they are constraints established after real errors were caught
+in this project (invented commercial claims, duplicated/conflicting data across
+files). Follow them on every change, not just when reminded.
+
+## ZERO INVENTED COMMERCE
+
+Never invent:
+- prices
+- discounts
+- bestseller status
+- customer testimonials
+- demand claims
+- stock
+- product availability
+- wholesale tiers
+- guarantees
+- authenticity claims
+- product performance claims
+
+When source is unavailable:
+- omit it
+- mark as consult
+- or classify as editorial copy
+
+Never convert derived values into factual commercial claims without validation.
+
+**In practice:** if you cannot point to where a commercial fact came from (the
+client, `assets/data.js`, an official price list), it does not go on the site as
+fact. Use "Consultar" / WhatsApp handoff, or write it as clearly editorial
+framing, never as a stated number or status.
+
+## SINGLE SOURCE OF TRUTH
+
+`assets/data.js` must be the canonical source of:
+- products
+- categories
+- prices
+- sizes
+- discontinued status
+- combos
+- commercial metadata
+
+README documents. HTML presents. Do not maintain independent commercial
+figures across multiple files when they can be derived from `data.js`.
+
+**In practice:** counts, prices, and product-status figures that appear in
+`README.md` or in page copy must be derived from `assets/data.js` (ideally by
+actually counting the array, not by memory/estimate) — never hand-maintained as
+a separate number that can drift out of sync.
+
+## Working conventions this project uses
+
+- **Data provenance tagging:** when auditing or adding commercial data, classify
+  its source as `OFFICIAL_PDF | CLIENT_CONFIRMED | DERIVED_VALIDATED |
+  MARKETING_COPY | UNKNOWN`. Anything `UNKNOWN` is a candidate for omission or
+  "Consultar", not for publishing as fact.
+- **No build step.** This is a static multi-page site (no bundler, no
+  `package.json`). Verify changes by serving the folder locally
+  (`python -m http.server`) and checking in-browser — there is no compile step
+  to catch mistakes for you.
+- **Phased changes.** Structural/visual changes land in small, independently
+  verifiable phases with their own commit — not one large rewrite.

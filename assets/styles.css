@@ -888,53 +888,6 @@ input,select,textarea{font-family:inherit}
   background:radial-gradient(circle at 30% 25%,rgba(232,213,163,.14),transparent 70%);
 }
 
-/* ---------- Testimonios (Swiper) ---------- */
-.testimonial-swiper{padding:20px 0 50px;width:100%}
-.swiper{width:100%}
-.swiper-slide{height:auto;display:flex}
-.testimonial-swiper .swiper-pagination{bottom:0}
-.swiper-pagination-bullet{background:var(--gold);opacity:.3}
-.swiper-pagination-bullet-active{opacity:1;background:var(--gold-bright)}
-.testimonial{
-  border:1px solid var(--line);
-  padding:36px 28px;
-  background:var(--surface);
-  position:relative;
-  transition:all .5s var(--ease);
-  display:flex;
-  flex-direction:column;
-  height:100%;
-}
-.testimonial:hover{border-color:var(--line-strong);transform:translateY(-5px)}
-.testimonial::before{
-  content:"“";
-  font-family:var(--serif);
-  font-size:90px;
-  color:var(--gold);
-  opacity:.35;
-  line-height:.6;
-  position:absolute;
-  top:26px;right:28px;
-}
-.testimonial .stars{color:var(--gold);letter-spacing:4px;font-size:12px;margin-bottom:20px}
-.testimonial p{
-  font-family:var(--serif);
-  font-size:19px;
-  line-height:1.55;
-  color:var(--cream);
-  flex:1;
-}
-.testimonial .who{
-  margin-top:26px;
-  padding-top:20px;
-  border-top:1px solid var(--line);
-  font-size:10.5px;
-  letter-spacing:.22em;
-  text-transform:uppercase;
-  color:var(--muted2);
-}
-.testimonial .who b{color:var(--gold-bright);font-weight:500;display:block;letter-spacing:.26em;margin-bottom:3px}
-
 /* ---------- Journal ---------- */
 .editorial-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:26px}
 .editorial-card{border:1px solid var(--line);transition:all .55s var(--ease);background:var(--surface);overflow:hidden}
@@ -2187,9 +2140,6 @@ input,select,textarea{font-family:inherit}
   .cart-panel-head{padding:18px 16px}
   .cart-total{padding:20px 16px}
   .search-item .s-price{display:none}
-  .testimonial-swiper{padding:20px 10px 40px}
-  .swiper{overflow:hidden}
-  .testimonial p{font-size:17px}
   .back-to-top{right:16px;bottom:88px}
   .wa-float{width:52px;height:52px;right:16px;bottom:16px}
 }
@@ -2221,8 +2171,6 @@ input,select,textarea{font-family:inherit}
   .collection-card p{font-size:10.5px;margin-bottom:10px}
   .step{padding:34px 20px 26px}
   .step::before{font-size:52px}
-  .testimonial{padding:30px 22px}
-  .testimonial p{font-size:17px}
   .editorial-body{padding:22px 18px 26px}
   .editorial-body h3{font-size:20px}
   .faq summary{font-size:18px;padding:20px 18px}

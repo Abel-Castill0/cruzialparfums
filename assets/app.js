@@ -370,7 +370,6 @@ function initCatalog(){
   const grid = document.getElementById("catalog-grid"); if(!grid) return;
   const gender = document.getElementById("gender-filter"), family = document.getElementById("family-filter"),
         type = document.getElementById("type-filter"), format = document.getElementById("format-filter"),
-        sale = document.getElementById("sale-filter"),
         sort = document.getElementById("sort-filter"), count = document.getElementById("result-count");
   const qs = new URLSearchParams(location.search);
   if(qs.get("family")) family.value = qs.get("family");
@@ -383,7 +382,6 @@ function initCatalog(){
     if(family.value!=="all") items = items.filter(p=>p.family===family.value);
     if(type.value!=="all") items = items.filter(p=>p.type===type.value);
     if(format.value==="bottle") items = items.filter(p=>p.bottle);
-    if(sale.checked) items = items.filter(p=>p.bestseller);
     const minP = p => Math.min(...Object.values(p.price));
     if(sort.value==="priceAsc") items.sort((a,b)=>minP(a)-minP(b));
     if(sort.value==="priceDesc") items.sort((a,b)=>minP(b)-minP(a));
@@ -393,9 +391,9 @@ function initCatalog(){
       : `<div class="empty-state"><strong>Sin resultados</strong>Prueba ajustando los filtros o buscando otra familia olfativa.</div>`;
     attachAddHandlers();
   };
-  [gender,family,type,format,sale,sort].forEach(x=>x?.addEventListener("change",run));
+  [gender,family,type,format,sort].forEach(x=>x?.addEventListener("change",run));
   document.querySelector("[data-clear-filters]")?.addEventListener("click",()=>{
-    gender.value=family.value=type.value=format.value="all"; sale.checked=false; sort.value="featured"; run();
+    gender.value=family.value=type.value=format.value="all"; sort.value="featured"; run();
   });
   run();
 }

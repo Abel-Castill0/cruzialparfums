@@ -43,6 +43,10 @@ const P = (id, brand, name, gender, type, family, conc, price, notes, mood, extr
   tag: extra && extra.tag || (type === "combo" ? "Combo" : type === "arab" ? "Árabe" : type === "niche" ? "Nicho" : "Designer"),
   desc: extra && extra.desc || `${name} — fragancia de la familia ${family.toLowerCase()}, concentración ${conc}. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.`,
   bottle: extra && extra.bottle || null,
+  /* bestseller: editorial/curatorial flag set by the team (products worth highlighting
+     for scent profile, availability, margin, etc.) — NOT a claim of verified sales volume
+     or demand. It is kept as internal data only: no UI surface (filter, badge, sort)
+     may present it as a commercial fact until real sales data confirms it. */
   bestseller: !!(extra && extra.bestseller),
   discontinued: !!(extra && extra.discontinued)
 });
