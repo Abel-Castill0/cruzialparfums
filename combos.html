@@ -121,9 +121,15 @@
               <div class="cb-size-select" style="display:flex;align-items:center;gap:14px">
                 <span class="cb-label" style="font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--muted2)">Tamaño</span>
                 <div class="pills" id="cb-size-pills" style="display:flex;gap:8px">
-                  <button type="button" class="pill active" data-size="3" aria-pressed="true" style="padding:8px 18px;border:1px solid var(--line);background:var(--bg);border-radius:20px;font-size:12px;letter-spacing:.1em;cursor:pointer;transition:all .3s var(--ease)">3 ml</button>
-                  <button type="button" class="pill" data-size="5" aria-pressed="false" style="padding:8px 18px;border:1px solid var(--line);background:var(--bg);border-radius:20px;font-size:12px;letter-spacing:.1em;cursor:pointer;transition:all .3s var(--ease)">5 ml</button>
-                  <button type="button" class="pill" data-size="10" aria-pressed="false" style="padding:8px 18px;border:1px solid var(--line);background:var(--bg);border-radius:20px;font-size:12px;letter-spacing:.1em;cursor:pointer;transition:all .3s var(--ease)">10 ml</button>
+                  <!-- El background:var(--bg) inline (mayor especificidad que
+                       la clase) pisaba .pill.active{background:var(--gold)}
+                       dejando el fondo blanco mientras .pill.active{color:#fff}
+                       sí se aplicaba -- texto blanco sobre fondo blanco,
+                       estado seleccionado invisible. Quitado: el fondo ahora
+                       lo controla por completo la clase .pill/.pill.active. -->
+                  <button type="button" class="pill active" data-size="3" aria-pressed="true" style="padding:8px 18px;border:1px solid var(--line);border-radius:20px;font-size:12px;letter-spacing:.1em;cursor:pointer;transition:all .3s var(--ease)">3 ml</button>
+                  <button type="button" class="pill" data-size="5" aria-pressed="false" style="padding:8px 18px;border:1px solid var(--line);border-radius:20px;font-size:12px;letter-spacing:.1em;cursor:pointer;transition:all .3s var(--ease)">5 ml</button>
+                  <button type="button" class="pill" data-size="10" aria-pressed="false" style="padding:8px 18px;border:1px solid var(--line);border-radius:20px;font-size:12px;letter-spacing:.1em;cursor:pointer;transition:all .3s var(--ease)">10 ml</button>
                 </div>
               </div>
               <input type="search" id="cb-search" class="cb-search" placeholder="Buscar perfume para añadir…" aria-label="Buscar perfume para tu combo" autocomplete="off" style="flex:1;min-width:200px;background:var(--bg);border:1px solid var(--line);color:var(--text);padding:12px 16px;font-size:13.5px;letter-spacing:.03em;outline:none;transition:border-color .3s var(--ease);font-family:var(--sans)">
