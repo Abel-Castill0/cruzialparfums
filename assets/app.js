@@ -424,6 +424,27 @@ function initCatalog(){
     grid.innerHTML = items.length ? items.map(p => productCard(p, cardMode)).join("")
       : `<div class="empty-state"><strong>Sin resultados</strong>Prueba ajustando los filtros o buscando otra familia olfativa.</div>`;
     attachAddHandlers();
+    renderChips();
+  };
+  /* Chips de filtro activo: un <select> con borde dorado sigue leyéndose
+     como formulario. Resumir la selección como chips removibles (un
+     patrón real de descubrimiento editorial) sin reconstruir el dropdown
+     nativo -- misma accesibilidad de teclado, cero riesgo nuevo. */
+  const activeFiltersEl = document.getElementById("active-filters");
+  const filterDefs = [
+    {el: gender, label: "Género"}, {el: family, label: "Familia"},
+    {el: type, label: "Tipo"}, {el: format, label: "Formato"}, {el: price, label: "Presupuesto"}
+  ];
+  const renderChips = () => {
+    if(!activeFiltersEl) return;
+    const active = filterDefs.filter(f => f.el && f.el.value !== "all");
+    activeFiltersEl.innerHTML = active.map(f => `
+      <span class="filter-chip"><b>${f.label}:</b> ${f.el.selectedOptions[0].textContent}
+        <button type="button" data-reset-filter aria-label="Quitar filtro ${f.label}">×</button>
+      </span>`).join("");
+    activeFiltersEl.querySelectorAll("[data-reset-filter]").forEach((btn,i)=>{
+      btn.addEventListener("click",()=>{ active[i].el.value="all"; run(); });
+    });
   };
   [gender,family,type,format,price,sort].forEach(x=>x?.addEventListener("change",run));
   document.querySelector("[data-clear-filters]")?.addEventListener("click",()=>{

@@ -77,6 +77,16 @@
     .clear-filters { padding: 10px 20px; border-radius: 100px; border: 1px solid rgba(242,233,216,.25); background: transparent; font-size: 13px; font-weight: 500; color: #f2e9d8; cursor: pointer; transition: all var(--transition); }
     .clear-filters:hover { border-color: #c9a84c; color: #c9a84c; box-shadow: 0 0 10px rgba(201,168,76,.3); }
 
+    /* ACTIVE FILTER CHIPS — resumen editorial de la selección actual, no
+       solo un formulario de <select>s. Aparece únicamente cuando hay algún
+       filtro distinto de "Todos"; cada chip limpia SOLO ese filtro. */
+    .active-filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+    .active-filters:empty { display: none; margin-bottom: 0; }
+    .filter-chip { display: inline-flex; align-items: center; gap: 8px; padding: 7px 8px 7px 16px; border-radius: 100px; background: #1a1715; border: 1px solid #c9a84c; color: #f2e9d8; font-size: 12px; font-weight: 500; letter-spacing: .02em; }
+    .filter-chip b { font-weight: 600; color: #c9a84c; }
+    .filter-chip button { display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: rgba(242,233,216,.1); color: #f2e9d8; font-size: 13px; line-height: 1; transition: background .3s ease, color .3s ease; }
+    .filter-chip button:hover { background: #c9a84c; color: #1a1715; }
+
     /* RESULTS TOP */
     .results-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; }
     .results-top span { font-size: 14px; color: var(--text-light); font-weight: 400; }
@@ -287,6 +297,7 @@
 
       <!-- RESULTS -->
       <div class="container">
+        <div id="active-filters" class="active-filters" aria-live="polite"></div>
         <div class="results-top">
           <span id="result-count">0 perfumes</span>
           <select id="sort-filter" aria-label="Ordenar resultados">
