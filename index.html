@@ -144,7 +144,13 @@
        redundante). El scrim en ::before garantiza contraste del texto
        blanco sin depender de qué parte exacta de la imagen quede visible
        al recortar con cover en cada viewport. */
-    .hero { position: relative; min-height: calc(100vh - 110px); display: flex; align-items: center; background: #0a0806 url('img/hero/hero2.webp') center right / cover no-repeat; overflow: hidden; padding: 56px 0; }
+    /* background-position: top right, no center right -- a la altura típica
+       de hero (viewport - header) el cover recortaba ~100px repartidos
+       arriba/abajo con "center", cortando justo el aro dorado y el borde
+       superior del wordmark de hero2.png. Anclar arriba conserva ese
+       encuadre completo y deja que el recorte caiga sobre la base de
+       piedra (menos crítica) en su lugar. */
+    .hero { position: relative; min-height: calc(100vh - 110px); display: flex; align-items: center; background: #0a0806 url('img/hero/hero2.webp') top right / cover no-repeat; overflow: hidden; padding: 56px 0; }
     .hero::before { content: ''; position: absolute; inset: 0; background: linear-gradient(100deg, rgba(8,7,5,.92) 0%, rgba(8,7,5,.72) 32%, rgba(8,7,5,.15) 56%, rgba(8,7,5,0) 72%); pointer-events: none; }
     .hero-inner { display: block; width: 100%; position: relative; z-index: 1; }
     .hero-copy { max-width: 560px; background: none; padding: 0; border: none; }
@@ -153,6 +159,14 @@
     .hero h1 em { font-style: italic; color: var(--gold); }
     .hero-sub { font-size: 17px; color: rgba(255,255,255,.72); line-height: 1.7; margin-bottom: 40px; max-width: 440px; text-shadow: 0 2px 12px rgba(0,0,0,.4); }
     .hero-actions { display: flex; gap: 16px; flex-wrap: wrap; }
+    /* El CTA principal (.btn-dark) es #0a0806 sobre #fff -- perfecto en el
+       resto del sitio, pero invisible sobre este hero oscuro (fondo casi
+       idéntico, solo el texto blanco flotaba sin contorno de botón). Fondo
+       claro sólido para contraste inmediato; el dorado queda para el hover,
+       no para el estado por defecto, así no compite con el wordmark dorado
+       de la propia foto. */
+    .hero .btn-dark { background: #fff; color: var(--darker); box-shadow: 0 8px 24px -8px rgba(0,0,0,.5); }
+    .hero .btn-dark:hover { background: var(--gold); color: #fff; transform: translateY(-1px); }
     .hero .btn-outline { border-color: rgba(255,255,255,.35); color: #fff; }
     .hero .btn-outline:hover { background: #fff; color: var(--darker); }
     @media (max-width: 900px) {
@@ -213,8 +227,15 @@
     .category-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(10,8,6,.7) 0%, rgba(10,8,6,.1) 50%, transparent 100%); display: flex; flex-direction: column; justify-content: flex-end; padding: 40px; transition: background var(--transition); }
     .category-card:hover .category-overlay { background: linear-gradient(to top, rgba(10,8,6,.85) 0%, rgba(10,8,6,.3) 60%, rgba(10,8,6,.1) 100%); }
     .category-overlay h3 { font-family: var(--serif); font-size: 28px; color: #fff; font-weight: 500; margin-bottom: 8px; }
-    .category-overlay .cat-btn { display: inline-flex; align-items: center; gap: 8px; color: var(--gold); font-size: 14px; font-weight: 500; letter-spacing: .5px; opacity: 0; transform: translateY(12px); transition: all .4s ease; }
-    .category-card:hover .cat-btn { opacity: 1; transform: translateY(0); }
+    /* opacity:0 por defecto solo tenía sentido si :hover pudiera revelarlo
+       -- en touch (mobile/tablet) :hover no se activa de forma persistente,
+       así que el CTA quedaba invisible para siempre. Visible por defecto en
+       todos los dispositivos; el hover en desktop solo añade el desplazamiento. */
+    .category-overlay .cat-btn { display: inline-flex; align-items: center; gap: 8px; color: var(--gold); font-size: 14px; font-weight: 500; letter-spacing: .5px; transform: translateY(0); transition: transform .4s ease; }
+    @media (hover: hover) {
+      .category-overlay .cat-btn { opacity: 0; transform: translateY(12px); }
+      .category-card:hover .cat-btn { opacity: 1; transform: translateY(0); }
+    }
 
     /* HOW IT WORKS */
     .how-it-works { background: var(--bg-ivory); padding: clamp(60px,8vh,100px) 0; }
@@ -390,7 +411,7 @@
           <p class="hero-sub">Decants de fragancias originales de nicho y designer. Prueba, rota y encuentra tu aroma sin comprometer el bolsillo. De Lima a todo el Perú.</p>
           <div class="hero-actions">
             <a class="btn btn-dark" href="catalog.html">Explorar Colección <span>→</span></a>
-            <a class="btn btn-outline" href="https://wa.me/51924590921" target="_blank" rel="noopener">WhatsApp <span>↗</span></a>
+            <button type="button" class="btn btn-outline" data-open-finder>Encontrar mi fragancia <span>→</span></button>
           </div>
         </div>
       </div>
@@ -429,28 +450,10 @@
     </section>
 
     <!-- BESTSELLERS -->
-    <section class="section-ivory" style="padding: clamp(60px,8vh,100px) 0;">
-      <div class="container">
-        <div class="section-heading reveal">
-          <div>
-            <p class="eyebrow">Selección Cruzial</p>
-            <h2>Los Más <em>Deseados</em></h2>
-          </div>
-          <a class="text-link" href="catalog.html">Ver catálogo completo <span>→</span></a>
-        </div>
-        <div class="pills reveal" style="margin-bottom: 34px;">
-          <button class="pill active" data-filter="all">Todos</button>
-          <button class="pill" data-filter="women">Mujer</button>
-          <button class="pill" data-filter="men">Hombre</button>
-          <button class="pill" data-filter="unisex">Unisex</button>
-          <button class="pill" data-filter="niche">Nicho</button>
-        </div>
-        <div id="featured-grid" class="product-grid"></div>
-      </div>
-    </section>
-
-    <!-- CATEGORY SPLIT -->
-    <section style="padding: clamp(40px,6vh,80px) 0;">
+    <!-- CATEGORY SPLIT: primero para que el usuario elija tipo de perfume
+         antes de ver una selección/recomendación (mejor secuencia UX que
+         mostrar "Los Más Deseados" sin haber orientado la elección aún). -->
+    <section style="padding: clamp(48px,7vh,88px) 0 clamp(40px,6vh,80px);">
       <div class="container">
         <div class="category-split">
           <a href="catalog.html" class="category-card reveal">
@@ -468,6 +471,26 @@
             </div>
           </a>
         </div>
+      </div>
+    </section>
+
+    <section class="section-ivory" style="padding: clamp(60px,8vh,100px) 0;">
+      <div class="container">
+        <div class="section-heading reveal">
+          <div>
+            <p class="eyebrow">Selección Cruzial</p>
+            <h2>Los Más <em>Deseados</em></h2>
+          </div>
+          <a class="text-link" href="catalog.html">Ver catálogo completo <span>→</span></a>
+        </div>
+        <div class="pills reveal" style="margin-bottom: 34px;">
+          <button class="pill active" data-filter="all">Todos</button>
+          <button class="pill" data-filter="women">Mujer</button>
+          <button class="pill" data-filter="men">Hombre</button>
+          <button class="pill" data-filter="unisex">Unisex</button>
+          <button class="pill" data-filter="niche">Nicho</button>
+        </div>
+        <div id="featured-grid" class="product-grid"></div>
       </div>
     </section>
 
