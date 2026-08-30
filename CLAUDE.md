@@ -27,6 +27,12 @@ When source is unavailable:
 
 Never convert derived values into factual commercial claims without validation.
 
+Authenticity claims are commercial claims. "100% originales" and language like
+it are not exempt because they read as operational description rather than a
+number or a status — they require explicit client confirmation or a documented
+source, exactly like a price or a bestseller flag. Do not treat a claim as
+safe just because it isn't quantitative.
+
 **In practice:** if you cannot point to where a commercial fact came from (the
 client, `assets/data.js`, an official price list), it does not go on the site as
 fact. Use "Consultar" / WhatsApp handoff, or write it as clearly editorial
@@ -49,7 +55,10 @@ figures across multiple files when they can be derived from `data.js`.
 **In practice:** counts, prices, and product-status figures that appear in
 `README.md` or in page copy must be derived from `assets/data.js` (ideally by
 actually counting the array, not by memory/estimate) — never hand-maintained as
-a separate number that can drift out of sync.
+a separate number that can drift out of sync. `README.md` is descriptive only
+and never authoritative for product data — it summarizes `data.js`, it does
+not compete with it. When the two disagree, `data.js` is right and the README
+is stale; fix the README, never the other way around.
 
 ## Working conventions this project uses
 
