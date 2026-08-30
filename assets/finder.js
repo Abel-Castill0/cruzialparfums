@@ -42,7 +42,7 @@ const INTENSITY_LABELS = ["", "Sutil", "Moderado", "Intenso", "Muy intenso"];
 
 /* ---------- Universo de respuestas — derivado de PRODUCTS, nunca hardcodeado ---------- */
 function finderCatalog(){
-  return PRODUCTS.filter(p => !p.discontinued && p.type !== "combo");
+  return PRODUCTS.filter(p => !p.discontinued && p.type !== "combo" && finderDataQuality(p) !== "insufficient");
 }
 function finderAvailableFamilies(){
   const set = new Set(finderCatalog().map(p => p.family));
@@ -65,71 +65,116 @@ function finderProductIntensity(p){
   return Math.max(1, Math.min(4, tier));
 }
 
-/* ---------- Familias "deseadas" a partir de selección directa + feelings ---------- */
-function finderDesiredFamilies(answers){
-  const set = new Set(answers.families || []);
-  (answers.feelings || []).forEach(feel => {
-    Object.entries(FAMILY_TRAITS).forEach(([fam, t]) => {
-      if(t.feelings.includes(feel)) set.add(fam);
-    });
-  });
-  return set;
+/* ---------- Calidad de datos por producto — política antes de puntuar ----------
+   COMPLETE: tiene family, notes, conc y gender — los 4 campos reales que usa
+   el scoring. PARTIAL: le falta alguno pero conserva señal usable — participa
+   con el resultado final atenuado (×0.85), nunca con la misma confianza que
+   uno completo. INSUFFICIENT: sin family y sin notes — no hay nada real que
+   comparar, se excluye del Finder (nunca del catálogo ni de ninguna otra
+   parte del sitio). Verificado hoy: los 93 productos activos están COMPLETE
+   — esto es una red de seguridad para cuando el catálogo crezca, no una
+   corrección de datos actuales. */
+function finderDataQuality(p){
+  const hasFamily = !!p.family;
+  const hasNotes = Array.isArray(p.notes) && p.notes.length > 0;
+  const hasConc = !!p.conc;
+  const hasGender = !!p.gender;
+  if(hasFamily && hasNotes && hasConc && hasGender) return "complete";
+  if(hasFamily || hasNotes) return "partial";
+  return "insufficient";
 }
 
-/* ---------- Scoring determinista, 0–100, cada eje con peso fijo y justificado ----------
-   familia 40 · notas 30 · intensidad 20 · contexto (regalo/unisex) 10 = 100 posible.
-   Un eje sin respuesta del usuario no penaliza: aporta un crédito neutro parcial,
-   así el total nunca queda inflado ni castigado por preguntas que el usuario saltó. */
-function finderScore(p, answers){
-  let score = 0;
-  const reasons = [];
+/* ---------- Pesos — datos directos pesan más que heurísticas editoriales ----------
+   family (selección directa) 25 + notes (selección directa) 30 = 55 de datos
+   reales, contra feelings (afinidad editorial) 20 + intensity (heurística
+   family+conc) 15 = 35, más context (desempate) 10. Family y feelings quedan
+   separados a propósito — antes "¿qué quieres sentir?" se expandía en un
+   conjunto de familias y sumaba dentro del mismo eje que "¿qué familia
+   eliges?", contando la misma preferencia dos veces sin que se notara. */
+const FINDER_WEIGHTS = { family:25, notes:30, feelings:20, intensity:15, context:10 };
+const FINDER_LOW_CONFIDENCE = 55;
 
-  const desiredFamilies = finderDesiredFamilies(answers);
-  if(desiredFamilies.size){
-    if(desiredFamilies.has(p.family)){
-      score += 40;
-      reasons.push(`familia ${p.family.toLowerCase()}`);
-    } else {
-      const pw = (FAMILY_TRAITS[p.family] || {}).warmth;
-      const clusterMatch = [...desiredFamilies].some(f => (FAMILY_TRAITS[f]||{}).warmth === pw);
-      if(clusterMatch) score += 16;
+/* ---------- Scoring — normalizado sobre lo realmente respondido ----------
+   score = (puntos obtenidos ÷ puntos disponibles según lo que el usuario SÍ
+   contestó) × 100. Una pregunta que el usuario saltó no suma un crédito
+   neutro inventado ni resta — simplemente no entra al denominador. Así un
+   "72% afinidad" siempre significa lo mismo: 72% de lo que pudimos medir con
+   las respuestas que diste, nunca un número inflado o reducido por preguntas
+   opcionales que decidiste no responder. */
+function finderScore(p, answers){
+  let obtained = 0, available = 0;
+  const reasons = { direct: [], editorial: [] };
+
+  if(answers.families && answers.families.length){
+    available += FINDER_WEIGHTS.family;
+    if(answers.families.includes(p.family)){
+      obtained += FINDER_WEIGHTS.family;
+      reasons.direct.push(`familia ${p.family.toLowerCase()}`);
     }
-  } else {
-    score += 20;
   }
 
   if(answers.notes && answers.notes.length){
+    available += FINDER_WEIGHTS.notes;
     const overlap = p.notes.filter(n => answers.notes.includes(n));
     if(overlap.length){
-      score += Math.min(30, Math.round((overlap.length / answers.notes.length) * 30));
-      reasons.push(`notas de ${overlap.slice(0,2).join(" y ").toLowerCase()}`);
+      obtained += (overlap.length / answers.notes.length) * FINDER_WEIGHTS.notes;
+      reasons.direct.push(`notas de ${overlap.slice(0,2).join(" y ").toLowerCase()}`);
     }
-  } else {
-    score += 15;
+  }
+
+  if(answers.feelings && answers.feelings.length){
+    available += FINDER_WEIGHTS.feelings;
+    const traits = FAMILY_TRAITS[p.family] || { feelings: [] };
+    const matched = answers.feelings.filter(f => traits.feelings.includes(f));
+    if(matched.length){
+      obtained += (matched.length / answers.feelings.length) * FINDER_WEIGHTS.feelings;
+      reasons.editorial.push(matched.map(f => FEELING_LABELS[f].toLowerCase()).join(" y "));
+    }
   }
 
   if(answers.intensity){
+    available += FINDER_WEIGHTS.intensity;
     const diff = Math.abs(finderProductIntensity(p) - answers.intensity);
-    score += diff === 0 ? 20 : diff === 1 ? 10 : 0;
-  } else {
-    score += 10;
+    const frac = diff === 0 ? 1 : diff === 1 ? 0.5 : 0;
+    obtained += frac * FINDER_WEIGHTS.intensity;
+    if(diff === 0) reasons.editorial.push(`intensidad ${INTENSITY_LABELS[answers.intensity].toLowerCase()}`);
   }
 
-  if(answers.forWhom === "regalar"){
-    score += p.gender === "unisex" ? 10 : 5;
-  } else {
-    score += 8;
+  if(answers.forWhom){
+    available += FINDER_WEIGHTS.context;
+    // Desempate suave, no señal fuerte: un unisex es una apuesta de regalo
+    // ligeramente más segura, pero nunca decide la recomendación por sí solo.
+    obtained += (answers.forWhom === "regalar" ? (p.gender === "unisex" ? 1 : 0.7) : 0.8) * FINDER_WEIGHTS.context;
   }
 
-  return { score: Math.max(0, Math.min(100, Math.round(score))), reasons };
+  const quality = finderDataQuality(p);
+  let score = available > 0 ? (obtained / available) * 100 : 0;
+  if(quality === "partial") score *= 0.85;
+
+  return { score: Math.max(0, Math.min(100, Math.round(score))), reasons, quality };
 }
-
-const FINDER_LOW_CONFIDENCE = 55;
 
 function finderResults(answers){
   const scored = finderCatalog().map(p => ({ p, ...finderScore(p, answers) }));
   scored.sort((a,b) => b.score - a.score);
   return scored.slice(0, 4);
+}
+
+/* "clear": el top tiene ventaja real sobre el segundo · "close": van casi
+   empatados, ninguno es claramente "el mejor" · "weak": el propio top no
+   llega al umbral de confianza. Cada caso usa un lenguaje de resultado
+   distinto — ver finderRenderResults(). */
+function finderConfidence(results){
+  if(!results.length || results[0].score < FINDER_LOW_CONFIDENCE) return "weak";
+  const gap = results[0].score - (results[1] ? results[1].score : 0);
+  return gap < 8 ? "close" : "clear";
+}
+
+function finderScoreLabel(score){
+  if(score >= 85) return "Excelente coincidencia";
+  if(score >= 70) return "Muy buena coincidencia";
+  if(score >= FINDER_LOW_CONFIDENCE) return "Buena coincidencia";
+  return "Coincidencia parcial";
 }
 
 /* ============================================================
@@ -191,7 +236,7 @@ function finderRenderStep(){
   }
   else if(key === "families"){
     title = "¿Qué familias olfativas te atraen?";
-    sub = "Opcional — si no las conoces, sáltalo y decidimos por tu respuesta anterior.";
+    sub = "Opcional — si no las conoces, sáltalo: lo que respondiste sobre cómo quieres sentirte ya cuenta.";
     const fams = finderAvailableFamilies();
     body = `<div class="finder-grid finder-grid-2">
       ${fams.map(f => finderOptionButton(f, f, a.families.includes(f), true)).join("")}
@@ -221,9 +266,16 @@ function finderRenderStep(){
   `;
 }
 
+/* Frase humana construida SOLO con las señales que realmente coincidieron —
+   nunca describe una característica del perfume que no venga de un match real. */
 function finderWhyText(reasons){
-  if(!reasons.length) return "Una opción equilibrada dentro de lo que nos contaste.";
-  return "Coincide en " + reasons.join(" y ") + ".";
+  const editorial = reasons.editorial || [];
+  const direct = reasons.direct || [];
+  if(!editorial.length && !direct.length) return "Una opción equilibrada dentro de lo que nos contaste.";
+  const parts = [];
+  if(editorial.length) parts.push(`buscabas algo ${editorial.join(" y ")}`);
+  if(direct.length) parts.push(`comparte ${direct.join(" y ")} con tu selección`);
+  return "Coincide porque " + parts.join("; ") + ".";
 }
 
 function finderProductMini(p, score, reasons){
@@ -235,7 +287,7 @@ function finderProductMini(p, score, reasons){
       ${img ? `<img src="${img}" alt="${p.brand} ${p.name}" loading="lazy" decoding="async">` : ""}
     </a>
     <div class="finder-result-body">
-      <span class="finder-score">${score}% afinidad</span>
+      <span class="finder-score">${finderScoreLabel(score)} <em>${score}/100</em></span>
       ${p.brand ? `<span class="finder-brand">${p.brand}</span>` : ""}
       <h4><a href="product.html?id=${p.id}">${p.name}</a></h4>
       <p class="finder-why">${finderWhyText(reasons)}</p>
@@ -252,15 +304,22 @@ function finderRenderResults(){
   const results = finderResults(finderState.answers);
   const top = results[0];
   const rest = results.slice(1,4);
-  const lowConfidence = !top || top.score < FINDER_LOW_CONFIDENCE;
+  const confidence = finderConfidence(results);
+
+  const heading = confidence === "weak" ? "No encontramos una coincidencia perfecta"
+    : confidence === "close" ? "Estas opciones encajan bien contigo"
+    : "Tu mejor coincidencia";
+  const sub = confidence === "weak"
+    ? "Estas son las opciones que más se acercan a lo que nos contaste — vale la pena revisarlas de cerca."
+    : confidence === "close"
+    ? "Varias fragancias respondieron igual de bien a tus respuestas; te mostramos las mejores."
+    : "Resultado calculado a partir de tus preferencias y los datos del catálogo, con una clasificación editorial de intensidad.";
 
   return `
     <div class="finder-results">
       <p class="finder-results-eyebrow">Tu selección Cruzial</p>
-      <h3 class="finder-q">${lowConfidence ? "No encontramos una coincidencia perfecta" : "Tu mejor coincidencia"}</h3>
-      <p class="finder-sub">${lowConfidence
-        ? "Estas son las opciones que más se acercan a lo que nos contaste — vale la pena revisarlas de cerca."
-        : "Calculada solo con datos reales del catálogo: familia, notas e intensidad."}</p>
+      <h3 class="finder-q">${heading}</h3>
+      <p class="finder-sub">${sub}</p>
 
       ${top ? `<div class="finder-top">${finderProductMini(top.p, top.score, top.reasons)}</div>` : `<p class="finder-sub">No hay productos activos que evaluar en este momento.</p>`}
 

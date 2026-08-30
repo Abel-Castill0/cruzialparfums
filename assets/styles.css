@@ -2559,6 +2559,7 @@ html{
 .finder-result-body{min-width:0}
 .finder-result-media img{width:100%;height:100%;object-fit:cover}
 .finder-score{display:inline-block;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold-bright);margin-bottom:6px}
+.finder-score em{font-style:normal;color:var(--muted2);letter-spacing:.02em;margin-left:4px}
 .finder-brand{display:block;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted2)}
 .finder-result-body h4{font-family:var(--serif);font-weight:500;font-size:19px;margin:2px 0 6px}
 .finder-result-body h4 a{color:var(--cream)}
@@ -2578,7 +2579,6 @@ html{
   .finder-result-media{width:72px;height:90px}
   .finder-invite{flex-direction:column;align-items:flex-start;text-align:left}
   .finder-result-actions{flex-direction:column}
-  .finder-result-actions .btn{white-space:nowrap}
 }
 @media (prefers-reduced-motion:reduce){
   .finder-modal,.finder-panel{transition:none}
