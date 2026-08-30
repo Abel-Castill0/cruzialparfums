@@ -182,16 +182,13 @@
     .back-to-top.show { opacity: 1; visibility: visible; }
     .back-to-top:hover { background: var(--gold); }
 
-    /* FINDERS */
-    .finder-modal { position: fixed; inset: 0; z-index: 250; opacity: 0; visibility: hidden; transition: all .4s ease; }
-    .finder-modal.open { opacity: 1; visibility: visible; }
-    .finder-modal-overlay { position: absolute; inset: 0; background: rgba(0,0,0,.5); }
-    .finder-panel { position: absolute; top: 0; right: 0; bottom: 0; width: 520px; max-width: 95vw; background: #fff; transform: translateX(100%); transition: transform .4s cubic-bezier(.4,0,.2,1); overflow-y: auto; }
-    .finder-modal.open .finder-panel { transform: translateX(0); }
-    .finder-head { display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; border-bottom: 1px solid var(--border); }
-    .finder-kicker { font-size: 12px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); font-weight: 600; }
-    .finder-close { font-size: 24px; }
-    .finder-body { padding: 24px; }
+    /* FINDER: hereda de assets/styles.css (.finder-modal/.finder-panel etc.)
+       para que sea idéntico en todas las páginas. Este override local lo
+       redefinía como un drawer lateral de 520px sin display:flex, mientras
+       que el contenido interno (.finder-q, .finder-opt, .finder-grid...)
+       seguía viniendo del CSS compartido pensado para el modal centrado
+       flex-column — la combinación rota era la causa real del Finder
+       "desordenado" en catálogo. Ver CLAUDE.md, sección de clases duplicadas. */
 
     /* RESPONSIVE */
     @media (max-width: 900px) {

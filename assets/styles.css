@@ -826,7 +826,13 @@ input,select,textarea{font-family:inherit}
 .finder-invite-cta{flex-shrink:0}
 .finder-secondary-link{display:inline-flex;align-items:center;gap:8px;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--line-strong);padding-bottom:3px;transition:color .3s,border-color .3s}
 .finder-secondary-link:hover{color:var(--gold);border-color:var(--gold)}
-.finder-modal{position:fixed;inset:0;z-index:98;opacity:0;pointer-events:none;transition:opacity .4s var(--ease);display:flex;align-items:center;justify-content:center;padding:20px}
+/* z-index:250, no 98: catalog.html/index.html suben .site-header a
+   z-index:100 en su <style> local (más que el header base de 50 de este
+   archivo), así que 98 quedaba por DEBAJO del header en esas dos páginas
+   y el modal se veía tapado por él. 250 queda por encima de cualquier
+   header conocido y en línea con el resto de overlays a pantalla completa
+   del sitio (drawer 190, search 200, mobile-menu 300). */
+.finder-modal{position:fixed;inset:0;z-index:250;opacity:0;pointer-events:none;transition:opacity .4s var(--ease);display:flex;align-items:center;justify-content:center;padding:20px}
 .finder-modal.open{opacity:1;pointer-events:auto}
 .finder-modal-overlay{position:absolute;inset:0;background:rgba(0,0,0,.4);backdrop-filter:blur(6px)}
 .finder-panel{position:relative;width:min(640px,100%);max-height:min(720px,92vh);background:#FFF;border:1px solid var(--line-strong);display:flex;flex-direction:column;transform:translateY(16px) scale(.98);transition:transform .4s var(--ease);box-shadow:var(--shadow)}
@@ -864,12 +870,19 @@ input,select,textarea{font-family:inherit}
 .finder-result-body h4 a{color:#1A1A1A}
 .finder-why{color:var(--muted);font-size:12.5px;margin-bottom:12px;line-height:1.5}
 .finder-result-actions{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:8px}
-.finder-result-actions .btn{padding:10px 14px;font-size:9.5px;white-space:normal;text-align:center;flex:1 1 auto;min-width:0}
+.finder-result-actions .btn{padding:10px 14px;font-size:11.5px;white-space:normal;text-align:center;flex:1 1 auto;min-width:0}
 .finder-result-price{display:flex;flex-direction:column;gap:2px;font-size:11px;color:var(--muted2);line-height:1.5}
 .finder-result-price b{color:#1A1A1A;font-weight:500;font-size:12px}
 .finder-alt-grid{display:grid;grid-template-columns:1fr;gap:14px}
 .finder-result-footer{display:flex;flex-wrap:wrap;gap:14px;margin-top:32px;padding-top:22px;border-top:1px solid var(--line)}
 @media(min-width:640px){.finder-alt-grid{grid-template-columns:1fr 1fr}}
+/* Modal a pantalla completa por debajo de 640px: en vez de una tarjeta
+   centrada con margen de 20px (se sentía apretada/desordenada en mobile),
+   el panel ocupa todo el viewport como una hoja nativa. */
+@media(max-width:640px){
+  .finder-modal{padding:0}
+  .finder-panel{width:100%;max-width:none;height:100dvh;max-height:none;border:none}
+}
 @media(max-width:560px){.finder-grid-2,.finder-grid-3{grid-template-columns:1fr 1fr}.finder-result-card{grid-template-columns:72px minmax(0,1fr)}.finder-result-media{width:72px;height:90px}.finder-invite{flex-direction:column;align-items:flex-start;text-align:left}.finder-result-actions{flex-direction:column}}
 @media(prefers-reduced-motion:reduce){.finder-modal,.finder-panel{transition:none}}
 
