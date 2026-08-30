@@ -167,79 +167,36 @@ function productCard(p, mode){
       </a>
     </article>`;
   }
+  /* Estructura sin <button>/<a> anidados dentro de otro <a> (HTML5 no
+     permite contenido interactivo anidado; antes funcionaba solo porque
+     JS hacía stopPropagation en el quick-add, pero rompía semántica y
+     lectores de pantalla). El link de imagen queda aria-hidden porque
+     el link del cuerpo ya anuncia el producto; el quick-add y el cross-
+     sell de frasco completo son ahora enlaces/botones hermanos reales,
+     no anidados. */
+  const bottleCrossSell = isBottle && p.price
+    ? `<a class="card-bottle" href="product.html?id=${p.id}">Prueba antes en decant · desde ${money(Math.min(...Object.values(p.price)))} <span>→</span></a>`
+    : !isBottle && bottle
+    ? `<a class="card-bottle" href="product.html?id=${p.id}&variant=bottle">Frasco completo · desde ${money(bottle)} (${bSize} ml) <span>→</span></a>`
+    : "";
   return `<article class="product-card">
-    <a href="product.html?id=${p.id}">
-      <div class="card-media${mediaClass}" style="--glow:${glow(p)}">
-        ${media}
-        <span class="tag">${p.tag}</span>
-        <button class="quick-add" data-add="${p.id}" data-size="${qSize}" data-group="${qGroup}" aria-label="Añadir ${p.name}">+</button>
-      </div>
-      <div class="card-body">
+    <div class="card-media${mediaClass}" style="--glow:${glow(p)}">
+      <a class="card-media-link" href="product.html?id=${p.id}" tabindex="-1" aria-hidden="true">${media}</a>
+      <span class="tag">${p.tag}</span>
+      <button class="quick-add" data-add="${p.id}" data-size="${qSize}" data-group="${qGroup}" aria-label="Añadir ${p.name}">+</button>
+    </div>
+    <div class="card-body">
+      <a class="card-body-link" href="product.html?id=${p.id}">
         ${brand}
         <h3 class="card-name">${p.name}</h3>
         ${p.type === "combo" ? comboThumbsHTML(p) : ""}
         <div class="card-meta"><span>${isBottle?`frasco ${minSize} ml`:"desde 3 ml"}</span><b>${money(min)}</b></div>
-        ${isBottle && p.price ? `<div class="card-bottle">Prueba antes en decant · desde ${money(Math.min(...Object.values(p.price)))}</div>` : ""}
-        ${!isBottle && bottle ? `<div class="card-bottle">Frasco completo · desde ${money(bottle)} (${bSize} ml)</div>` : ""}
-        ${!isBottle ? `<div class="card-gift">${GIFT_MESSAGE}</div>` : ""}
-      </div>
-    </a>
+      </a>
+      ${bottleCrossSell}
+      ${!isBottle ? `<div class="card-gift">${GIFT_MESSAGE}</div>` : ""}
+    </div>
   </article>`;
 }
-/* ---------- Tarjeta de frasco completo (perfumes-enteros.html) ---------- */
-function bottleCard(p){
-  const brand = p.brand ? `<span class="card-brand">${p.brand}</span>` : "";
-  const cardImg = p.imgBottle || p.imgSet || p.img;
-  const mediaClass = cardImg ? " has-photo" : "";
-  const media = cardImg
-    ? `<img src="${cardImg}" alt="${p.brand} ${p.name}" class="card-img" loading="lazy" decoding="async">`
-    : bottleSVG(p);
-  if(p.discontinued){
-    return `<article class="product-card bottle-card is-discontinued">
-      <a href="product.html?id=${p.id}">
-        <div class="card-media${mediaClass}" style="--glow:${glow(p)}">${media}<span class="tag tag-discontinued">Descontinuado</span></div>
-        <div class="card-body">
-          ${brand}
-          <h3 class="card-name">${p.name}</h3>
-          <div class="card-meta"><span>Sin reposición</span><b class="muted">Agotado</b></div>
-        </div>
-      </a>
-    </article>`;
-  }
-  if(!p.bottle){
-    const waMsg = encodeURIComponent(`Hola ${CONFIG.STORE}, quiero el precio del frasco completo de ${p.brand} ${p.name}.`);
-    return `<article class="product-card bottle-card no-price">
-      <a href="product.html?id=${p.id}">
-        <div class="card-media${mediaClass}" style="--glow:${glow(p)}">${media}<span class="tag">${p.tag}</span></div>
-        <div class="card-body">
-          ${brand}
-          <h3 class="card-name">${p.name}</h3>
-          <div class="card-meta"><span>Frasco completo</span><b class="price-consult">Consultar</b></div>
-        </div>
-      </a>
-      <a class="btn btn-outline full bottle-consult-btn" target="_blank" rel="noopener" href="https://wa.me/${WA}?text=${waMsg}">Preguntar precio <span>↗</span></a>
-    </article>`;
-  }
-  const sizeKeys = Object.keys(p.bottle).map(Number).sort((a,b)=>a-b);
-  const size = sizeKeys[0];
-  const unit = p.bottle[size];
-  return `<article class="product-card bottle-card">
-    <a href="product.html?id=${p.id}">
-      <div class="card-media${mediaClass}" style="--glow:${glow(p)}">
-        ${media}
-        <span class="tag">${p.tag}</span>
-        <button class="quick-add" data-add="${p.id}" data-size="${size}" data-group="bottle" aria-label="Añadir ${p.name}">+</button>
-      </div>
-      <div class="card-body">
-        ${brand}
-        <h3 class="card-name">${p.name}</h3>
-        <div class="card-meta"><span>frasco ${size} ml · 1 unidad</span><b>${money(unit)}</b></div>
-        <div class="bottle-volume-note">¿Varias unidades? Cotización según cantidad.</div>
-      </div>
-    </a>
-  </article>`;
-}
-
 function attachAddHandlers(){
   document.querySelectorAll("[data-add]").forEach(b=>{
     b.addEventListener("click",e=>{
@@ -559,35 +516,6 @@ function initWholesaleTable(){
   renderRows(rows);
 }
 
-/* ---------- Perfumes enteros (perfumes-enteros.html) ---------- */
-function initWholesaleCatalog(){
-  const grid = document.getElementById("wholesale-grid"); if(!grid) return;
-  const gender = document.getElementById("w-gender-filter"), family = document.getElementById("w-family-filter"),
-        avail = document.getElementById("w-avail-filter"), sort = document.getElementById("w-sort-filter"),
-        count = document.getElementById("w-result-count");
-  const run = () => {
-    let items = PRODUCTS.filter(p => p.type !== "combo");
-    if (gender.value !== "all") items = items.filter(p => p.gender === gender.value);
-    if (family.value !== "all") items = items.filter(p => p.family === family.value);
-    if (avail.value === "priced") items = items.filter(p => p.bottle && !p.discontinued);
-    if (avail.value === "consult") items = items.filter(p => !p.bottle && !p.discontinued);
-    const unitPrice = p => p.bottle ? Math.min(...Object.values(p.bottle)) : Infinity;
-    if (sort.value === "priceAsc") items.sort((a, b) => unitPrice(a) - unitPrice(b));
-    if (sort.value === "priceDesc") items.sort((a, b) => (unitPrice(b) === Infinity ? -1 : unitPrice(b)) - (unitPrice(a) === Infinity ? -1 : unitPrice(a)));
-    if (sort.value === "name") items.sort((a, b) => a.name.localeCompare(b.name));
-    // Descontinuados siempre al final, sin importar el orden elegido.
-    items.sort((a, b) => (a.discontinued === b.discontinued) ? 0 : a.discontinued ? 1 : -1);
-    count.textContent = items.length + (items.length === 1 ? " perfume" : " perfumes");
-    grid.innerHTML = items.length ? items.map(bottleCard).join("")
-      : `<div class="empty-state"><strong>Sin resultados</strong>Prueba ajustando los filtros.</div>`;
-    attachAddHandlers();
-  };
-  [gender, family, avail, sort].forEach(x => x?.addEventListener("change", run));
-  document.querySelector("[data-clear-w-filters]")?.addEventListener("click", () => {
-    gender.value = family.value = avail.value = "all"; sort.value = "featured"; run();
-  });
-  run();
-}
 
 /* ---------- Página de producto ---------- */
 function initProduct(){
@@ -660,13 +588,17 @@ function initProduct(){
     schemaScript.textContent = JSON.stringify(schemaData);
   }
   const typeLabel = p.type==="arab" ? "PERFUMERÍA ÁRABE" : p.type==="combo" ? "COMBO ÁRABE" : p.type==="niche" ? "NICHO" : "DESIGNER";
+  /* ?variant=bottle: enlace directo desde el catálogo/cross-sell para
+     elegir frasco completo sellado (venta minorista, una unidad) sin
+     pasar por Mayorista, que es venta por volumen. */
+  const wantsBottle = new URLSearchParams(location.search).get("variant") === "bottle" && !!p.bottle;
   const decantSizes = Object.keys(p.price).map(Number).sort((a,b)=>a-b);
   const decantBtns = decantSizes.map((s,i)=>`
-    <button class="size-btn ${i===0?"active":""}" data-size="${s}" data-group="decant" data-price="${p.price[s]}">
+    <button class="size-btn ${i===0 && !wantsBottle?"active":""}" data-size="${s}" data-group="decant" data-price="${p.price[s]}">
       <b>${s} ml</b><span>${money(p.price[s])}</span>
     </button>`).join("");
-  const bottleBtns = p.bottle ? Object.entries(p.bottle).map(([s,v])=>`
-    <button class="size-btn" data-size="${s}" data-group="bottle" data-price="${v}">
+  const bottleBtns = p.bottle ? Object.entries(p.bottle).map(([s,v],i)=>`
+    <button class="size-btn ${i===0 && wantsBottle?"active":""}" data-size="${s}" data-group="bottle" data-price="${v}">
       <b>${s} ml</b><span>${money(v)}</span>
     </button>`).join("") : "";
   const hasStagePhoto = !!(p.imgBottle || p.img);
@@ -730,10 +662,10 @@ function initProduct(){
       <div class="cross-sell-bottle">
         <div class="cross-sell-icon">✦</div>
         <div>
-          <strong>¿Te gustó? Llévalo en frasco completo.</strong>
-          <p>Precio referencial desde ${money(Math.min(...Object.values(p.bottle)))}. Cotiza por WhatsApp para precio exacto por volumen.</p>
+          <strong>¿Necesitas varias unidades?</strong>
+          <p>Para pedidos por volumen (tiendas, barberías, revendedores) tenemos tarifas especiales en Mayorista.</p>
         </div>
-        <a class="btn btn-outline btn-sm" href="mayorista.html">Ver en Mayorista <span>→</span></a>
+        <a class="btn btn-outline btn-sm" href="mayorista.html">Ver Mayorista <span>→</span></a>
       </div>` : ""}
       `}
     </div>
@@ -745,7 +677,8 @@ function initProduct(){
     </div>
     <div class="product-grid">${rel.map(productCard).join("")}</div>
   </section>`;
-  let size = decantSizes[0], qty = 1, group = "decant";
+  let size = wantsBottle ? Math.min(...Object.keys(p.bottle).map(Number)) : decantSizes[0],
+      qty = 1, group = wantsBottle ? "bottle" : "decant";
   const atomNote = document.querySelector(".atom-note");
   const updateAtom = ()=>{
     if(!atomNote) return;
@@ -753,6 +686,8 @@ function initProduct(){
     const pres = p.type==="arab" ? "decant clásico" : size===3 ? "decant clásico" : "decant premium";
     atomNote.textContent = `≈ ${CONFIG.ATOMIZACIONES[size]} atomizaciones · ${pres}`;
   };
+  updateAtom();
+  if(wantsBottle) document.querySelector(".bottle-label")?.scrollIntoView?.({block:"center",behavior:"smooth"});
   const stageImg = document.getElementById("product-stage-img");
   const updateStageImage = ()=>{
     if(!stageImg || !p.imgBottle) return;
@@ -1149,7 +1084,6 @@ initSearch();
 initCatalog();
 initComboBuilder();
 initWholesaleTable();
-initWholesaleCatalog();
 initProduct();
 renderCart();
 initCartActions();
