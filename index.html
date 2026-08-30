@@ -106,10 +106,7 @@
         <span class="brand-word"><strong>CRUZIAL</strong><small>PARFUMS</small></span>
       </a>
       <nav class="main-nav" aria-label="Navegación principal">
-        <a href="catalog.html">Decants</a>
-        <a href="perfumes-enteros.html">Perfumes</a>
-        <a href="index.html#colecciones">Colecciones</a>
-        <a href="catalog.html#arma-combo">Crea tu Colección</a>
+        <a href="catalog.html">Catálogo</a>
         <a href="mayorista.html">Mayorista</a>
       </nav>
       <div class="header-actions">
@@ -122,40 +119,33 @@
   </header>
 
   <main>
-    <!-- HERO
+    <!-- HERO — fotográfico.
          Full-bleed: la sección ocupa todo el ancho del viewport (por eso NO
-         lleva class="container"); el contenido interno sí se alinea al
-         ancho de lectura habitual vía .hero-inner.container. Así el brillo
-         ambiental y el "PARFUMS" fantasma respiran en pantallas anchas en
-         vez de quedar encerrados en una caja de 1240px con vacío a los
-         lados — eso es lo que pedía el cliente con "que se vea grande de
-         anchos".
-         Para poner la foto de perfumes que el cliente va a editar: agrega
-         --hero-photo:url('img/hero/tu-foto.jpg') como estilo inline en
-         este <section>, o defínelo dentro de .hero en styles.css. Ya está
-         cableado (ver .hero::before) — no hace falta tocar nada más. -->
-    <section class="hero">
+         lleva class="container"); el texto sí se alinea al ancho de lectura
+         habitual vía .hero-inner.container.
+         hero-crop.jpg = hero.png (foto entregada por el cliente) recortada:
+         se removieron la franja superior (nav propia — "Inicio · Perfumes
+         Caballero · Perfumes Dama · Contacto") y la franja inferior (botón
+         "Ver Colección" incrustado) para que no duplique el header/CTA
+         reales del sitio. Ver nota de límites conocidos junto a esta imagen
+         en el reporte de este cambio: 2 de los 6 frascos que aparecen
+         (Tom Ford, Valentino) no están hoy en el catálogo de Cruzial —
+         pendiente de confirmación del cliente, no se ocultó ni se inventó
+         nada al respecto. -->
+    <!-- OJO al fijar --hero-photo: la url() se resuelve relativa a
+         assets/styles.css (donde vive "background-image:var(--hero-photo)"),
+         NO relativa a esta página — de ahí el "../" delante de img/. Sin él,
+         el navegador pide assets/img/hero/... y falla en 404 (bug real que
+         esta misma foto destapó: la infraestructura de Fase 1 nunca se
+         había probado con una imagen real hasta ahora). -->
+    <section class="hero" style="--hero-photo:url('../img/hero/hero-crop.jpg')">
       <div class="hero-inner container">
         <div class="hero-copy reveal">
           <p class="eyebrow">Fragrance Curators · Lima / Perú</p>
           <h1 class="h1">Una fragancia no se usa.<br><em>Se recuerda.</em></h1>
           <p class="hero-text">Decants originales, en 3, 5 y 10 ml. De Lima a todo el Perú.</p>
           <div class="hero-actions">
-            <a class="btn btn-primary" href="catalog.html">Explorar Decants <span>→</span></a>
-          </div>
-          <div class="hero-proof">
-            <div><strong>100%</strong><span>Originales</span></div>
-            <div><strong>3 · 5 · 10 ml</strong><span>Formatos</span></div>
-            <div><strong>Contraentrega</strong><span>Lima Metropolitana</span></div>
-          </div>
-        </div>
-        <div class="hero-visual reveal reveal-d2">
-          <div class="hero-aura"></div>
-          <div class="hero-bottle" data-bottle="erba-pura"></div>
-          <div class="hero-card">
-            <span>Editor's Pick</span>
-            <strong>Erba Pura</strong>
-            <small>La firma de Xerjoff que se recuerda desde cualquier rincón de la sala.</small>
+            <a class="btn btn-primary" href="catalog.html">Explorar catálogo <span>→</span></a>
           </div>
         </div>
       </div>
@@ -169,22 +159,18 @@
       </div>
     </div>
 
-    <!-- 02 · DECANTS / PERFUMES COMPLETOS -->
+    <!-- 02 · CATÁLOGO / DESCUBRIMIENTO
+         Un solo camino claro al catálogo (decants-first). El frasco completo
+         no compite aquí como categoría paralela — aparece más abajo como
+         cross-sell ("¿Te conquistó? Llévalo completo") y dentro de cada
+         producto, tal como pediste. -->
     <section class="section-ivory">
-      <div class="entry-split">
-        <a class="entry-panel reveal" href="catalog.html">
-          <span class="entry-index">01 · Decants</span>
-          <h2 class="entry-title">Descubre antes<br>de decidir.</h2>
-          <p class="entry-desc">96 fragancias en 3, 5 y 10&nbsp;ml, desde S/&nbsp;11. Prueba, rota y arma tu colección.</p>
-          <span class="entry-link">Descubrir Decants <span>→</span></span>
-        </a>
-        <a class="entry-panel reveal reveal-d1" href="perfumes-enteros.html">
-          <span class="entry-index">02 · Perfumes Completos</span>
-          <h2 class="entry-title">Llévalo<br>contigo.</h2>
-          <p class="entry-desc">Frasco original sellado. Por unidad, o cotización por volumen para tu negocio.</p>
-          <span class="entry-link">Ver Perfumes Completos <span>→</span></span>
-        </a>
-      </div>
+      <a class="entry-panel entry-panel-solo reveal" href="catalog.html">
+        <span class="entry-index">Catálogo Cruzial</span>
+        <h2 class="entry-title">Descubre antes<br>de decidir.</h2>
+        <p class="entry-desc">96 fragancias en decants de 3, 5 y 10&nbsp;ml, desde S/&nbsp;11. Prueba, rota y arma tu colección — con el frasco completo disponible cuando ya lo tengas claro.</p>
+        <span class="entry-link">Explorar catálogo <span>→</span></span>
+      </a>
     </section>
 
     <!-- 02.5 · CRUZIAL PERFUME FINDER — entrada -->
@@ -350,10 +336,7 @@
         </div>
         <div class="footer-col">
           <h4>Explorar</h4>
-          <a href="catalog.html">Decants</a>
-          <a href="perfumes-enteros.html">Perfumes</a>
-          <a href="index.html#colecciones">Colecciones</a>
-          <a href="catalog.html#arma-combo">Crea tu Colección</a>
+          <a href="catalog.html">Catálogo</a>
           <a href="mayorista.html">Mayorista</a>
         </div>
         <div class="footer-col">
@@ -409,10 +392,7 @@
   <div class="mobile-menu" id="mobile-menu" role="dialog" aria-label="Menú de navegación" aria-modal="true">
     <img src="logo.jpeg" alt="Cruzial Parfums" class="menu-logo">
     <button class="close-mobile" data-close-menu aria-label="Cerrar menú">×</button>
-    <a href="catalog.html">Decants</a>
-    <a href="perfumes-enteros.html">Perfumes</a>
-    <a href="index.html#colecciones">Colecciones</a>
-    <a href="catalog.html#arma-combo">Crea tu Colección</a>
+    <a href="catalog.html">Catálogo</a>
     <a href="mayorista.html">Mayorista</a>
     <div class="menu-sep" aria-hidden="true"></div>
     <a href="nosotros.html" class="menu-secondary">Nosotros</a>
