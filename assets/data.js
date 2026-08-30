@@ -68,43 +68,122 @@ const T404889 = { 3: 40, 5: 48, 10: 89 };
 /* Mapa de imágenes reales del catálogo
    bottle = frasco solo · set = frasco + decants (3, 5, 10 ml) */
 const IMG_MAP = {
+  // ÁRABE - Lattafa Khamrah
   "khamrah-clasico": { bottle: "img/perfumes/LATTAFA - KHAMRAH CLASICO.png", set: "img/perfumes/LATTAFA - KHAMRAH CLASICO (2).png" },
   "khamrah-qahwa": { bottle: "img/perfumes/LATTAFA - KHAMRAH QAHWA.png", set: "img/perfumes/LATTAFA - KHAMRAH QAHWA (2).png" },
   "khamrah-dukhan": { bottle: "img/perfumes/LATTAFA - KHAMRAH DUKHAN.png", set: "img/perfumes/LATTAFA - KHAMRAH DUKHAN (2).png" },
+  "khamrah-waha": { bottle: "img/perfumes/Khamrah Waha.png", set: "img/perfumes/Khamrah Waha (2).png" },
+
+  // ÁRABE - Lattafa otros
+  "mashrabya": { bottle: "img/perfumes/Mashrabya.png", set: "img/perfumes/Mashrabya (2).png" },
+  "asad-elixir": { bottle: "img/perfumes/Asad Elixir.png", set: "img/perfumes/Asad Elixir (2).png" },
   "asad-clasico": { bottle: "img/perfumes/LATTAFA - ASAD CLASICO.png", set: "img/perfumes/LATTAFA - ASAD CLASICO (2).png" },
   "asad-bourbon": { bottle: "img/perfumes/LATTAFA - ASAD BOURBON.png", set: "img/perfumes/LATTAFA - ASAD BOURBON (2).png" },
+  "zanzibar-limited-e": { bottle: "img/perfumes/Zanzibar Limited Edition.png", set: "img/perfumes/Zanzibar Limited Edition (2).png" },
   "yara-pink": { bottle: "img/perfumes/LATTAFA - YARA PINK.png", set: "img/perfumes/LATTAFA - YARA PINK (2).png" },
+  "yara-candy": { bottle: "img/perfumes/Yara Candy.png", set: "img/perfumes/Yara Candy (2).png" },
   "yara-elixir": { bottle: "img/perfumes/LATTAFA - YARA ELIXIR.png", set: "img/perfumes/LATTAFA - YARA ELIXIR (2).png" },
-  "mandarin-sky": { bottle: "img/perfumes/ARMAF - MANDARIN SKY.png", set: "img/perfumes/ARMAF - MANDARIN SKY (2).png" },
-  "odyssey-aqua": { bottle: "img/perfumes/ARMAF - ODYSSEY AQUA.png", set: "img/perfumes/ARMAF - ODYSSEY AQUA (2).png" },
+  "sublime": { bottle: "img/perfumes/LATTAFA - SUBLIME.png", set: "img/perfumes/LATTAFA - SUBLIME (2).png" },
+  "oud-for-glory": { bottle: "img/perfumes/Oud For Glory.png", set: "img/perfumes/Oud For Glory (2).png" },
   "honor-and-glory": { bottle: "img/perfumes/LATTAFA - HONOR AND GLORY.png", set: "img/perfumes/LATTAFA - HONOR AND GLORY (2).png" },
   "eclaire": { bottle: "img/perfumes/LATTAFA - ECLAIRE.png", set: "img/perfumes/LATTAFA - ECLAIRE (2).png" },
-  "sublime": { bottle: "img/perfumes/LATTAFA - SUBLIME.png", set: "img/perfumes/LATTAFA - SUBLIME (2).png" },
-  "hawas-fire": { bottle: "img/perfumes/RASASI - HAWAS FIRE.png", set: "img/perfumes/RASASI - HAWAS FIRE (2).png" },
-  "hawas-ice": { bottle: "img/perfumes/RASASI - HAWAS ICE.png", set: "img/perfumes/RASASI - HAWAS ICE (2).png" },
-  "hawas-kobra": { bottle: "img/perfumes/RASASI - HAWAS KOBRA.png", set: "img/perfumes/RASASI - HAWAS KOBRA (2).png" },
-  "hawas-tropical": { bottle: "img/perfumes/RASASI - HAWAS TROPICAL.png", set: "img/perfumes/RASASI - HAWAS TROPICAL (2).png" },
-  "hawas-chrome": { bottle: "img/perfumes/RASASI - HAWAS CHROME.png", set: "img/perfumes/RASASI - HAWAS CHROME (2).png" },
+  "eclaire-banoffi": { bottle: "img/perfumes/Lattafa Eclaire Banoffi.png", set: "img/perfumes/Lattafa Eclaire Banoffi (2).png" },
+  "eclaire-pistache": { bottle: "img/perfumes/Lattafa Eclaire Pistache.png", set: "img/perfumes/Lattafa Eclaire Pistache (2).png" },
+  "yum-yum": { bottle: "img/perfumes/Lattafa Yum Yum.png", set: "img/perfumes/Lattafa Yum Yum (2).png" },
+  "angham": { bottle: "img/perfumes/Lattafa Angham.png", set: "img/perfumes/Lattafa Angham (2).png" },
+  "fakhar-black": { bottle: "img/perfumes/Lattafa Fakhar Black.png", set: "img/perfumes/Lattafa Fakhar Black (2).png" },
+  "qaed-al-fursan": { bottle: "img/perfumes/Lattafa Qaed Al Fursan.png", set: "img/perfumes/Lattafa Qaed Al Fursan (2).png" },
+  "red-intensely": { bottle: "img/perfumes/Lattafa Red Intensely.png", set: "img/perfumes/Lattafa Red Intensely (2).png" },
+
+  // ÁRABE - Afnan
+  "mandarin-sky": { bottle: "img/perfumes/ARMAF - MANDARIN SKY.png", set: "img/perfumes/ARMAF - MANDARIN SKY (2).png" },
+  "m-sky-elixir": { bottle: "img/perfumes/Mandarin Sky Elixir.png", set: "img/perfumes/Mandarin Sky Elixir (2).png" },
+  "m-sky-vintage": { bottle: "img/perfumes/Mandarin Sky Vintage.png", set: "img/perfumes/Mandarin Sky Vintage (2).png" },
   "9pm": { bottle: "img/perfumes/AFNAN - 9PM.png", set: "img/perfumes/AFNAN - 9PM (2).png" },
+  "9pm-rebel": { bottle: "img/perfumes/9 PM Rebel.png", set: "img/perfumes/9 PM Rebel (2).png" },
   "9pm-elixir": { bottle: "img/perfumes/AFNAN - 9PM ELIXIR.png", set: "img/perfumes/AFNAN - 9PM ELIXIR (2).png" },
   "9pm-night-out": { bottle: "img/perfumes/AFNAN - 9PM NIGHT OUT.png", set: "img/perfumes/AFNAN - 9PM NIGHT OUT (2).png" },
+  "9am": { bottle: "img/perfumes/Afnan 9 AM.png", set: "img/perfumes/Afnan 9 AM (2).png" },
   "9am-dive": { bottle: "img/perfumes/AFNAN - 9AM DIVE.png", set: "img/perfumes/AFNAN - 9AM DIVE (2).png" },
+  "supremacy-colle": { bottle: "img/perfumes/Afnan Supremacy Collection.png", set: "img/perfumes/Afnan Supremacy Collection (2).png" },
+  "supremacy-noi": { bottle: "img/perfumes/Afnan Supremacy NOIR.png", set: "img/perfumes/Afnan Supremacy NOIR (2).png" },
+
+  // ÁRABE - Lattafa Odyssey
+  "odyssey-aqua": { bottle: "img/perfumes/ARMAF - ODYSSEY AQUA.png", set: "img/perfumes/ARMAF - ODYSSEY AQUA (2).png" },
+  "odyssey-homme": { bottle: "img/perfumes/Lattafa Odyssey Homme.png", set: "img/perfumes/Lattafa Odyssey Homme (2).png" },
+  "homme-white": { bottle: "img/perfumes/Lattafa Homme White.png", set: "img/perfumes/Lattafa Homme White (2).png" },
+  "odyssey-spectra": { bottle: "img/perfumes/Lattafa Odyssey Spectra.png", set: "img/perfumes/Lattafa Odyssey Spectra (2).png" },
+  "odyssey-mega": { bottle: "img/perfumes/Lattafa Odyssey Mega.png", set: "img/perfumes/Lattafa Odyssey Mega (2).png" },
+  "odyssey-limoni": { bottle: "img/perfumes/Lattafa Odyssey Limoni.png", set: "img/perfumes/Lattafa Odyssey Limoni (2).png" },
+  "odyssey-artisto": { bottle: "img/perfumes/Lattafa Odyssey Artisto.png", set: "img/perfumes/Lattafa Odyssey Artisto (2).png" },
+
+  // ÁRABE - Lattafa Mayar
+  "mayar": { bottle: "img/perfumes/Lattafa Mayar.png", set: "img/perfumes/Lattafa Mayar (2).png" },
+  "mayar-cherry-i": { bottle: "img/perfumes/Lattafa Mayar Cherry Intense.png", set: "img/perfumes/Lattafa Mayar Cherry Intense (2).png" },
+
+  // ÁRABE - Rasasi Hawas
+  "hawas-exotic": { bottle: "img/perfumes/Hawas Exotic.png", set: "img/perfumes/Hawas Exotic (2).png" },
+  "hawas-ice": { bottle: "img/perfumes/RASASI - HAWAS ICE.png", set: "img/perfumes/RASASI - HAWAS ICE (2).png" },
+  "hawas-fire": { bottle: "img/perfumes/RASASI - HAWAS FIRE.png", set: "img/perfumes/RASASI - HAWAS FIRE (2).png" },
+  "hawas-kobra": { bottle: "img/perfumes/RASASI - HAWAS KOBRA.png", set: "img/perfumes/RASASI - HAWAS KOBRA (2).png" },
+  "hawas-verde": { bottle: "img/perfumes/Hawas Verde.png", set: "img/perfumes/Hawas Verde (2).png" },
+  "hawas-elixir": { bottle: "img/perfumes/Hawas Elixir.png", set: "img/perfumes/Hawas Elixir (2).png" },
+  "hawas-tropical": { bottle: "img/perfumes/RASASI - HAWAS TROPICAL.png", set: "img/perfumes/RASASI - HAWAS TROPICAL (2).png" },
+  "hawas-chrome": { bottle: "img/perfumes/RASASI - HAWAS CHROME.png", set: "img/perfumes/RASASI - HAWAS CHROME (2).png" },
+
+  // ÁRABE - Otros
+  "art-of-universe": { bottle: "img/perfumes/Art Of Universe.png", set: "img/perfumes/Art Of Universe (2).png" },
   "vulcan-feu": { bottle: "img/perfumes/FRENCH AVENUE - VULCAN FEU.png", set: "img/perfumes/FRENCH AVENUE - VULCAN FEU (2).png" },
   "amber-o-gold-e": { bottle: "img/perfumes/AL HARAMAIN - AMBER OUD GOLD EDITION.png", set: "img/perfumes/AL HARAMAIN - AMBER OUD GOLD EDITION (2).png" },
+  "ao-aqua-dubai": { bottle: "img/perfumes/Amber Oud Aqua Dubai.png", set: "img/perfumes/Amber Oud Aqua Dubai (2).png" },
+  "ao-dubai-night": { bottle: "img/perfumes/Amber Oud Dubai Night.png", set: "img/perfumes/Amber Oud Dubai Night (2).png" },
   "nitro-red": { bottle: "img/perfumes/DUMONT PARIS - NITRO RED.png", set: "img/perfumes/DUMONT PARIS - NITRO RED (2).png" },
+  "liquid-brun": { bottle: "img/perfumes/liquid brun.png", set: "img/perfumes/liquid brun (2).png" },
+  "jean-lowe-vibe": { bottle: "img/perfumes/Maison Alhambra Jean Lowe Vibe.png", set: "img/perfumes/Maison Alhambra Jean Lowe Vibe (2).png" },
+  "jean-lowe-inmotel": { bottle: "img/perfumes/Maison Alhambra Jean Lowe Inmotel.png", set: "img/perfumes/Maison Alhambra Jean Lowe Inmotel (2).png" },
+  "rayhaan-italia": { bottle: "img/perfumes/Rayhaan Italia.png", set: "img/perfumes/Rayhaan Italia (2).png" },
+
+  // ÁRABE - Armaf Club de Nuit
   "cdn-intense-man": { bottle: "img/perfumes/ARMAF - CLUB DE NUIT INTENSE EDT.png", set: "img/perfumes/ARMAF - CLUB DE NUIT INTENSE EDT (2).png" },
   "cdn-urban-man-e": { bottle: "img/perfumes/ARMAF - CLUB DE NUIT URBAN MAN ELIXIR.png", set: "img/perfumes/ARMAF - CLUB DE NUIT URBAN MAN ELIXIR (2).png" },
+  "cdn-preciux-i": { bottle: "img/perfumes/Club de Nuit Precieux I.png", set: "img/perfumes/Club de Nuit Precieux I (2).png" },
+
+  // ÁRABE - Maison Alhambra / Otros
   "sceptre-malachite": { bottle: "img/perfumes/MAISON ALHAMBRA - SCEPTRE MALACHITE.png", set: "img/perfumes/MAISON ALHAMBRA - SCEPTRE MALACHITE (2).png" },
+  "bright-peach": { bottle: "img/perfumes/Bright Peach.png", set: "img/perfumes/Bright Peach (2).png" },
+  "paradise-garden": { bottle: "img/perfumes/Lattafa Paradise Garden.png", set: "img/perfumes/Lattafa Paradise Garden (2).png" },
+
+  // COMBOS
+  "combo-cuarteto": { bottle: "img/perfumes/Cuarteto Oriental Vainilla Freak.png", set: "img/perfumes/Cuarteto Oriental Vainilla Freak (2).png" },
+  "combo-vainilla": { bottle: "img/perfumes/Cuarteto Oriental Vainilla Freak.png", set: "img/perfumes/Cuarteto Oriental Vainilla Freak (2).png" },
+
+  // DESIGNER / NICHO
+  "212-edt": { bottle: "img/perfumes/Carolina Herrera 212 EDT.png", set: "img/perfumes/Carolina Herrera 212 EDT (2).png" },
+  "eros-edt": { bottle: "img/perfumes/Versace Eros EDT.png", set: "img/perfumes/Versace Eros EDT (2).png" },
   "eros-flame": { bottle: "img/perfumes/VERSACE - EROS FLAME.png", set: "img/perfumes/VERSACE - EROS FLAME (2).png" },
-  "swy-intensely": { bottle: "img/perfumes/EMPORIO ARMANI - STRONGER WITH YOU INTENSELY.png", set: "img/perfumes/EMPORIO ARMANI - STRONGER WITH YOU INTENSELY (2).png" },
-  "swy-absolutely": { bottle: "img/perfumes/EMPORIO ARMANI - STRONGER WITH YOU ABSOLUTELY.png", set: "img/perfumes/EMPORIO ARMANI - STRONGER WITH YOU ABSOLUTELY (2).png" },
-  "le-male-elixir": { bottle: "img/perfumes/JEAN PAUL GAULTIER - LE MALE ELIXIR.png", set: "img/perfumes/JEAN PAUL GAULTIER - LE MALE ELIXIR EDT.png" },
-  "le-beau-le-parfum": { bottle: "img/perfumes/JEAN PAUL GAULTIER - LE BEAU LE PARFUM.png", set: "img/perfumes/JEAN PAUL GAULTIER - LE BEAU LE PARFUM (2).png" },
+  "spicebomb-extreme": { bottle: "img/perfumes/Spicebomb Extreme.png", set: "img/perfumes/Spicebomb Extreme (2).png" },
   "azzaro-tmw-edp": { bottle: "img/perfumes/AZZARO.-AZZARO THE MOSTH WANTED INTENSE EDP.png", set: "img/perfumes/AZZARO.-AZZARO THE MOSTH WANTED INTENSE EDP (2).png" },
   "tmw-parfum": { bottle: "img/perfumes/AZZARO.-AZZARO THE MOSTH WANTED PARFUM.png", set: "img/perfumes/AZZARO.-AZZARO THE MOSTH WANTED PARFUM (2).png" },
+  "swy-intensely": { bottle: "img/perfumes/EMPORIO ARMANI - STRONGER WITH YOU INTENSELY.png", set: "img/perfumes/EMPORIO ARMANI - STRONGER WITH YOU INTENSELY (2).png" },
+  "swy-absolutely": { bottle: "img/perfumes/EMPORIO ARMANI - STRONGER WITH YOU ABSOLUTELY.png", set: "img/perfumes/EMPORIO ARMANI - STRONGER WITH YOU ABSOLUTELY (2).png" },
+  "ultra-male": { bottle: "img/perfumes/Jean Paul Gaultier Ultra Male.png", set: "img/perfumes/Jean Paul Gaultier Ultra Male (2).png" },
+  "le-male-elixir": { bottle: "img/perfumes/JEAN PAUL GAULTIER - LE MALE ELIXIR.png", set: "img/perfumes/JEAN PAUL GAULTIER - LE MALE ELIXIR EDT.png" },
+  "le-beau-le-parfum": { bottle: "img/perfumes/JEAN PAUL GAULTIER - LE BEAU LE PARFUM.png", set: "img/perfumes/JEAN PAUL GAULTIER - LE BEAU LE PARFUM (2).png" },
+  "victory-elixir": { bottle: "img/perfumes/Paco Rabanne Victory Elixir.png", set: "img/perfumes/Paco Rabanne Victory Elixir (2).png" },
+  "purple-melancholia": { bottle: "img/perfumes/Purple Melancholia.png", set: "img/perfumes/Purple Melancholia (2).png" },
+  "bir-intense": { bottle: "img/perfumes/Burberry Burberry Brit Intense.png", set: "img/perfumes/Burberry Burberry Brit Intense (2).png" },
+  "b-man-in-black": { bottle: "img/perfumes/Bvlgari Bvlgari Man In Black.png", set: "img/perfumes/Bvlgari Bvlgari Man In Black (2).png" },
+  "sauvage-edt": { bottle: "img/perfumes/Dior Sauvage EDT.png", set: "img/perfumes/Dior Sauvage EDT (2).png" },
+  "dylan-blue": { bottle: "img/perfumes/Versace Dylan Blue.png", set: "img/perfumes/Versace Dylan Blue (2).png" },
   "adg-profondo-edp": { bottle: "img/perfumes/GIORGIO ARMANI .-ACQUA DI GIO PROFONDO EDP.png", set: "img/perfumes/GIORGIO ARMANI .-ACQUA DI GIO PROFONDO EDP (2).png" },
+  "1-million-lucky": { bottle: "img/perfumes/Paco Rabanne 1 Million Lucky.png", set: "img/perfumes/Paco Rabanne 1 Million Lucky (2).png" },
   "invictus-elixir": { bottle: "img/perfumes/PACO RABANNE -INVICTUS ELIXIR.png", set: "img/perfumes/PACO RABANNE -INVICTUS ELIXIR (2).png" },
-  "liquid-brun": { bottle: "img/perfumes/liquid brun.png", set: "img/perfumes/liquid brun (2).png" }
+  "reserve-privee": { bottle: "img/perfumes/Armani Reserve Privée.png", set: "img/perfumes/Armani Reserve Privée (2).png" },
+  "cedrat-boise-int": { bottle: "img/perfumes/Mancera Cedrat Boise Intense.png", set: "img/perfumes/Mancera Cedrat Boise Intense (2).png" },
+  "m-red-tobacco": { bottle: "img/perfumes/Mancera Mancera Red Tobacco.png", set: "img/perfumes/Mancera Mancera Red Tobacco (2).png" },
+  "by-the-fireplace": { bottle: "img/perfumes/Maison Margiela By The Fireplace.png", set: "img/perfumes/Maison Margiela By The Fireplace (2).png" },
+  "erba-pura": { bottle: "img/perfumes/Xerjoff Erba Pura.png", set: "img/perfumes/Xerjoff Erba Pura (2).png" },
+  "nautica-voyage": { bottle: "img/perfumes/Nautica Nautica Voyage.png", set: "img/perfumes/Nautica Nautica Voyage (2).png" }
 };
 
 /* Mensaje regalo por compra al detal */

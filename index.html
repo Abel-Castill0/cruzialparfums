@@ -123,15 +123,15 @@
          Full-bleed: la sección ocupa todo el ancho del viewport (por eso NO
          lleva class="container"); el texto sí se alinea al ancho de lectura
          habitual vía .hero-inner.container.
-         hero-crop.jpg = hero.png (foto entregada por el cliente) recortada:
-         se removieron la franja superior (nav propia — "Inicio · Perfumes
-         Caballero · Perfumes Dama · Contacto") y la franja inferior (botón
-         "Ver Colección" incrustado) para que no duplique el header/CTA
-         reales del sitio. Ver nota de límites conocidos junto a esta imagen
-         en el reporte de este cambio: 2 de los 6 frascos que aparecen
-         (Tom Ford, Valentino) no están hoy en el catálogo de Cruzial —
-         pendiente de confirmación del cliente, no se ocultó ni se inventó
-         nada al respecto. -->
+         hero-crop.jpg viene de una versión actualizada de hero.png (1672×941,
+         ya sin la franja de navegación propia que traía la primera versión) —
+         se recortó solo la franja inferior con el botón "Ver Colección"
+         incrustado, para que no duplique el CTA real del sitio. Sigue por
+         debajo de los 1920px que pide el contrato del hero — se verá algo
+         suave en monitores muy grandes hasta que llegue una versión de mayor
+         resolución. 2 de los 6 frascos que aparecen (Tom Ford, Valentino) no
+         están hoy en el catálogo de Cruzial — pendiente de confirmación del
+         cliente, no se ocultó ni se inventó nada al respecto. -->
     <!-- OJO al fijar --hero-photo: la url() se resuelve relativa a
          assets/styles.css (donde vive "background-image:var(--hero-photo)"),
          NO relativa a esta página — de ahí el "../" delante de img/. Sin él,
@@ -174,7 +174,7 @@
     </section>
 
     <!-- 02.5 · CRUZIAL PERFUME FINDER — entrada -->
-    <section class="section" style="padding-top:0">
+    <section class="section-ivory" style="padding-top:0">
       <div class="container">
         <div class="finder-invite reveal">
           <div class="finder-invite-copy">
@@ -190,7 +190,7 @@
     </section>
 
     <!-- 03 · SELECCIÓN CRUZIAL -->
-    <section class="section section-obsidian" id="destacados">
+    <section class="section section-ivory" id="destacados">
       <div class="container">
         <div class="section-heading reveal">
           <div>
@@ -266,7 +266,7 @@
     </section>
 
     <!-- 07 · FRASCO COMPLETO -->
-    <section class="section section-obsidian" id="frascos">
+    <section class="section section-ivory" id="frascos">
       <div class="container">
         <div class="section-heading reveal">
           <div>

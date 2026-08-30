@@ -108,12 +108,15 @@ input,select,textarea{font-family:inherit}
 /* ---------- Tipografía decorativa ---------- */
 /* Dorado retirado del texto del eyebrow — aparecía en cabeza de casi cada
    sección del sitio, exactamente el "gold everywhere" que la dirección
-   black+white prohíbe. Queda solo como micro-acento en la línea de 34px. */
+   black+white prohíbe. Queda solo como micro-acento en la línea de 34px.
+   Nota de contraste: --muted2 (usado en un primer intento) da solo 3.36:1
+   sobre obsidian — falla AA para texto pequeño. --muted da 7.41:1 sobre
+   obsidian; .section-ivory ya tenía su propio override correcto. */
 .eyebrow{
   font-size:11px;
   letter-spacing:.38em;
   text-transform:uppercase;
-  color:var(--muted2);
+  color:var(--muted);
   font-weight:500;
   display:flex;
   align-items:center;
@@ -2414,9 +2417,14 @@ html{
    ============================================================ */
 
 /* --- Bloque de entrada (home / catálogo) --- */
+/* Tarjeta siempre oscura, autocontenida — independiente de si la sección que
+   la envuelve es .section-ivory u obsidiana (ahora que el home es
+   mayormente ivory, esta es la única forma segura de que el h2 heredado no
+   quede oscuro-sobre-oscuro dentro de la tarjeta). */
 .finder-invite{
   border:1px solid var(--line);
   background:var(--surface);
+  color:var(--text);
   padding:clamp(36px,5vw,56px) clamp(24px,4vw,56px);
   display:flex;
   align-items:center;
@@ -2424,6 +2432,7 @@ html{
   gap:32px;
   flex-wrap:wrap;
 }
+.finder-invite .h2{color:var(--cream)}
 .finder-invite-copy{max-width:520px}
 .finder-invite .script{display:block;margin-bottom:10px}
 .finder-invite p{color:var(--muted);margin-top:12px;font-size:15px;max-width:46ch}
