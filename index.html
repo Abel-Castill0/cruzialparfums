@@ -241,16 +241,14 @@
     .testimonial-author { font-size: 13px; font-weight: 600; color: var(--darker); letter-spacing: .5px; }
     .testimonial-author small { font-weight: 400; color: var(--text-light); display: block; margin-top: 2px; }
 
-    /* NEWSLETTER */
+    /* FINDER INVITE (clase .newsletter heredada de un rediseño anterior
+       que reemplazó el formulario de newsletter por la invitación al
+       Finder -- ver CLAUDE.md, "No newsletter form". Los estilos de
+       .newsletter-form/input/button quedaron huérfanos, sin <form> que
+       los use en ningún HTML, y se eliminaron.) */
     .newsletter { background: var(--darker); padding: clamp(60px,8vh,100px) 0; text-align: center; }
     .newsletter h2 { font-family: var(--serif); font-size: clamp(32px,4vw,44px); font-weight: 500; color: #fff; margin-bottom: 12px; }
     .newsletter p { font-size: 16px; color: rgba(255,255,255,.6); margin-bottom: 36px; }
-    .newsletter-form { display: flex; gap: 12px; max-width: 460px; margin: 0 auto; }
-    .newsletter-form input { flex: 1; padding: 14px 20px; border-radius: var(--radius); border: 1px solid rgba(255,255,255,.15); background: rgba(255,255,255,.08); color: #fff; font-size: 14px; font-family: var(--sans); outline: none; transition: border var(--transition); }
-    .newsletter-form input::placeholder { color: rgba(255,255,255,.4); }
-    .newsletter-form input:focus { border-color: var(--gold); }
-    .newsletter-form button { padding: 14px 28px; border-radius: var(--radius); background: var(--gold); color: #fff; font-size: 14px; font-weight: 500; letter-spacing: .5px; border: none; cursor: pointer; transition: background var(--transition); white-space: nowrap; }
-    .newsletter-form button:hover { background: var(--gold-light); }
 
     /* FAQ */
     .faq-section { padding: clamp(60px,8vh,100px) 0; background: var(--bg); }

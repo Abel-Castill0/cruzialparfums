@@ -995,16 +995,6 @@ function toast(text){
 }
 
 /* ---------- Newsletter ---------- */
-function initNewsletter(){
-  const form = document.getElementById("newsletter-form");
-  if(!form) return;
-  form.addEventListener("submit",e=>{
-    e.preventDefault();
-    toast("Bienvenido a Cruzial Parfums");
-    form.reset();
-  });
-}
-
 /* ---------- Botellas en arte estático ---------- */
 function initArt(){
   /* Estas imágenes visten el hero, las tarjetas de "La Colección" y los
@@ -1094,7 +1084,6 @@ initDrawer();
 initMobileMenu();
 initHeader();
 initReveal();
-initNewsletter();
 initTilt();
 initRipple();
 initAnalytics();
