@@ -416,10 +416,25 @@
   <!-- Volver arriba -->
   <button class="back-to-top" id="back-to-top" aria-label="Volver arriba">↑</button>
 
-  <!-- GSAP Scroll Animations -->
+  <!-- GSAP Scroll Animations —
+       FASE 4 / PACKAGE 01 (reduced-motion baseline): GSAP anima con estilos
+       inline, así que el @media (prefers-reduced-motion:reduce) de
+       styles.css (que solo acorta transiciones CSS) no lo alcanza. Con
+       reduced-motion activo nos salimos antes de registrar cualquier tween;
+       .reveal / .product-card quedan visibles igual, vía el IntersectionObserver
+       de app.js (que sí respeta esa media query) — mismo camino que usan
+       todas las demás páginas, que nunca cargan GSAP. -->
   <script>
   document.addEventListener("DOMContentLoaded",function(){
-    if(typeof gsap==="undefined"||typeof ScrollTrigger==="undefined") return;
+    var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    var backToTop=document.getElementById("back-to-top");
+    if(backToTop){
+      window.addEventListener("scroll",function(){
+        backToTop.classList.toggle("show",window.scrollY>600);
+      },{passive:true});
+      backToTop.addEventListener("click",function(){window.scrollTo({top:0,behavior:reduceMotion?"auto":"smooth"})});
+    }
+    if(reduceMotion || typeof gsap==="undefined" || typeof ScrollTrigger==="undefined") return;
     gsap.registerPlugin(ScrollTrigger);
     gsap.utils.toArray(".reveal").forEach(function(el){
       gsap.fromTo(el,{opacity:0,y:40},{opacity:1,y:0,duration:1,ease:"power3.out",scrollTrigger:{trigger:el,start:"top 88%",toggleActions:"play none none none"}});
@@ -431,13 +446,6 @@
     if(hero) gsap.fromTo(hero,{opacity:0,x:-40},{opacity:1,x:0,duration:1.2,ease:"power3.out"});
     var heroV=document.querySelector(".hero-visual");
     if(heroV) gsap.fromTo(heroV,{opacity:0,scale:.9},{opacity:1,scale:1,duration:1.4,delay:.2,ease:"power3.out"});
-    var backToTop=document.getElementById("back-to-top");
-    if(backToTop){
-      window.addEventListener("scroll",function(){
-        backToTop.classList.toggle("show",window.scrollY>600);
-      },{passive:true});
-      backToTop.addEventListener("click",function(){window.scrollTo({top:0,behavior:"smooth"})});
-    }
   });
   </script>
 

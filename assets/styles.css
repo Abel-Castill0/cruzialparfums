@@ -3,18 +3,21 @@
    ============================================================ */
 
 :root{
-  --bg:#0a0806;
-  --bg2:#0f0c09;
+  --bg:var(--obsidian);
+  --bg2:var(--obsidian-2);
   --surface:#15110c;
   --surface2:#1d1812;
-  --line:rgba(201,169,98,.16);
-  --line-strong:rgba(201,169,98,.42);
-  --gold:#c9b187;
+  /* FASE 4 / PACKAGE 01 — hairlines ya no llevan tinte dorado por defecto
+     (rgba(201,169,98,…) era "borde dorado en cada tarjeta", justo el patrón
+     que ZERO GENERIC LUXURY prohíbe). Mismo tinte neutro que --line-on-obsidian. */
+  --line:rgba(241,237,228,.14);
+  --line-strong:rgba(241,237,228,.28);
+  --gold:var(--gold-accent);
   --gold-bright:#e8d5a3;
   --gold-deep:#8f743c;
   --cream:#f2ead7;
-  --text:#f2ead7;
-  --muted:#a89c84;
+  --text:var(--ink-on-obsidian);
+  --muted:var(--ink-on-obsidian-muted);
   --muted2:#6e6350;
   --serif:'Cormorant Garamond',Georgia,'Times New Roman',serif;
   --sans:'Jost',system-ui,-apple-system,'Segoe UI',sans-serif;
@@ -143,24 +146,31 @@ input,select,textarea{font-family:inherit}
 }
 .btn span{transition:transform .45s var(--ease)}
 .btn:hover span{transform:translateX(4px)}
+
+/* ---------- Button grammar — FASE 4 / PACKAGE 01 ----------
+   Solo 4 variantes: PRIMARY (relleno sólido, opuesto al fondo de su
+   sección) · SECONDARY/outline (borde neutro, dorado solo en hover) ·
+   TEXT/ghost (sin fondo) · ICON (.icon-btn, ya existía aparte).
+   Dorado deja de ser el relleno por defecto de PRIMARY y el borde por
+   defecto de SECONDARY — ver CLAUDE.md → ZERO GENERIC LUXURY. El acento
+   dorado se conserva únicamente como estado de interacción (hover),
+   nunca como apariencia en reposo. */
 .btn-primary{
-  background:linear-gradient(120deg,var(--gold-bright),var(--gold) 45%,var(--gold-deep));
-  color:#14100a;
-  box-shadow:0 10px 34px -12px rgba(201,169,98,.55);
+  background:var(--btn-fill-on-obsidian);
+  color:var(--btn-ink-on-obsidian);
 }
-.btn-primary:hover{box-shadow:0 16px 44px -12px rgba(201,169,98,.75);transform:translateY(-2px)}
+.btn-primary:hover{box-shadow:0 14px 34px -16px rgba(0,0,0,.55);transform:translateY(-2px)}
+.section-ivory .btn-primary{background:var(--btn-fill-on-ivory);color:var(--btn-ink-on-ivory)}
+
 .btn-outline{
   border:1px solid var(--line-strong);
-  color:var(--gold-bright);
-  background:rgba(201,169,98,.04);
+  color:var(--text);
+  background:transparent;
 }
-.btn-outline:hover{background:rgba(201,169,98,.12);border-color:var(--gold)}
-.btn-dark{
-  background:#14100a;
-  color:var(--gold-bright);
-  border:1px solid rgba(242,234,215,.14);
-}
-.btn-dark:hover{border-color:var(--gold)}
+.btn-outline:hover{background:rgba(201,169,98,.08);border-color:var(--gold-accent);color:var(--gold-bright)}
+.section-ivory .btn-outline{color:var(--ink-on-ivory)}
+.section-ivory .btn-outline:hover{color:var(--gold)}
+
 .btn-ghost{color:var(--text);padding:17px 10px}
 .btn-ghost:hover{color:var(--gold-bright)}
 .btn.full{width:100%}
