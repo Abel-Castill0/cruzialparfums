@@ -663,11 +663,11 @@ function initProduct(){
         <div><span>Desde</span><b>${money(p.price[Math.min(...Object.keys(p.price).map(Number))])}</b></div>
       </div>
       ${p.type === "combo" ? `
-      <div class="note-block">
+      <div class="note-block notes-block">
         <div class="note-title">INCLUYE</div>
         ${comboThumbsHTML(p)}
       </div>` : `
-      <div class="note-block">
+      <div class="note-block notes-block">
         <div class="note-title">NOTAS PRINCIPALES</div>
         <div class="note-chips">${p.notes.map(n=>`<span>${n}</span>`).join("")}</div>
       </div>`}
@@ -679,7 +679,7 @@ function initProduct(){
       <div class="detail-actions">
         <a class="btn btn-outline full" target="_blank" rel="noopener" href="https://wa.me/${WA}?text=${encodeURIComponent(`Hola ${CONFIG.STORE}, quiero saber si aún queda ${p.brand} ${p.name} (descontinuado), o una alternativa similar.`)}">Consultar disponibilidad <span>↗</span></a>
       </div>` : `
-      <div class="note-block">
+      <div class="note-block size-block">
         <div class="note-title">DECANT · ${decantSizes.join(" · ")} ML</div>
         <div class="size-row">${decantBtns}</div>
         <div class="atom-note">

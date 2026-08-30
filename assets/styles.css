@@ -939,6 +939,22 @@ input,select,textarea{font-family:inherit}
   .filters .filter-head,.filters .check-row{grid-column:1/-1}
   .product-detail{grid-template-columns:1fr}
   .product-stage{position:static;aspect-ratio:1/.9}
+  /* En una sola columna, el selector de tamaño quedaba después de
+     eyebrow+marca+nombre+descripción+meta-row+notas -- mucho scroll
+     antes de poder elegir formato. Se reordena (mismo DOM, sin
+     duplicar marcado) para que foto -> identidad mínima -> tamaño ->
+     precio -> CTA queden juntos; la descripción/notas/meta pasan
+     después de la compra, no antes. */
+  .product-info{display:flex;flex-direction:column}
+  .product-info .eyebrow,.product-info .brandline,.product-info h1,.product-info .subline{order:1}
+  .product-info .size-block,.product-info .discontinued-notice{order:2}
+  .product-info .total-line{order:3}
+  .product-info .detail-actions{order:4;margin-top:4px}
+  .product-info .desc{order:5;margin-top:28px}
+  .product-info .meta-row{order:6}
+  .product-info .notes-block{order:7}
+  .product-info .detail-note,.product-info .gift-banner{order:8}
+  .product-info .cross-sell-bottle{order:9}
   .checkout-grid{grid-template-columns:1fr}
   .order-form{position:static}
   .editorial-grid{grid-template-columns:1fr 1fr}
