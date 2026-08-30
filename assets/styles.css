@@ -215,6 +215,10 @@ input,select,textarea{font-family:inherit}
 .combo-thumb-svg{display:grid;place-items:center;background:var(--bg2)}
 .combo-thumb-svg svg{width:70%;height:70%}
 .combo-thumb-caption{font-size:10.5px;letter-spacing:.03em;color:var(--muted2);line-height:1.5;margin-bottom:10px}
+/* Composición del combo en carrito/drawer/checkout: una línea compacta,
+   mismo dato confirmado por el cliente que .combo-thumb-caption, sin
+   espacio para miniaturas. Ver comboContentsLine() en app.js. */
+.cart-combo-contents{font-size:10.5px;font-style:italic;letter-spacing:.02em;color:var(--muted2);line-height:1.4;margin-top:4px}
 
 /* --- Gift banner --- */
 .card-gift{margin-top:6px;padding:8px 12px;background:#FBF8F3;border:1px solid #EDE5D4;font-size:8.5px;letter-spacing:.1em;color:var(--muted);line-height:1.5}

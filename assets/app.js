@@ -111,6 +111,13 @@ function comboThumbsHTML(p){
   </div>
   <p class="combo-thumb-caption">${contents.perfumes.join(" · ")}</p>`;
 }
+/* Versión compacta (una línea) para carrito/drawer/checkout, donde no hay
+   espacio para las miniaturas — mismo dato confirmado por el cliente. */
+function comboContentsLine(p){
+  const contents = window.CRUZIAL_COMBO_CONTENTS && window.CRUZIAL_COMBO_CONTENTS[p.id];
+  if(!contents || !contents.perfumes?.length) return "";
+  return `<div class="cart-combo-contents">Incluye: ${contents.perfumes.join(" · ")}</div>`;
+}
 
 /* ---------- Tarjeta de producto ---------- */
 function productCard(p, mode){
@@ -766,6 +773,7 @@ function renderCart(){
         <span class="brand">${p.brand}</span>
         <h3>${p.name}</h3>
         <div class="variant">${label} · ${money(i.price)}</div>
+        ${p.type === "combo" ? comboContentsLine(p) : ""}
         <div class="cart-controls">
           <button data-minus="${i.key}" aria-label="Menos">−</button>
           <span class="qty">${i.qty}</span>
@@ -816,7 +824,9 @@ function initOrderForm(){
       const lines = cart.map(i=>{
         const p = PRODUCTS.find(x=>x.id===i.id); total += i.price*i.qty;
         const label = i.group==="bottle" ? `Frasco ${i.size} ml` : `${i.size} ml`;
-        return `${label} ${p.brand} ${p.name} ×${i.qty} = ${money(i.price*i.qty)}`;
+        const contents = p.type === "combo" && window.CRUZIAL_COMBO_CONTENTS?.[p.id];
+        const comboLine = contents?.perfumes?.length ? `\n   Incluye: ${contents.perfumes.join(" · ")}` : "";
+        return `${label} ${p.brand} ${p.name} ×${i.qty} = ${money(i.price*i.qty)}${comboLine}`;
       });
       const msg =
 `Hola ${CONFIG.STORE}. Quiero realizar este pedido:
@@ -881,6 +891,7 @@ function renderDrawer(){
       <div>
         <h4>${p.name}</h4>
         <small>${p.brand} · ${i.group==="bottle"?"frasco ":""}${i.size} ml</small>
+        ${p.type === "combo" ? comboContentsLine(p) : ""}
         <div class="d-qty">
           <button data-dminus="${i.key}" aria-label="Menos">−</button>
           <span>${i.qty}</span>
