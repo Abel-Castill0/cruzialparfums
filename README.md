@@ -28,40 +28,21 @@ si el catálogo cambia, esta sección puede desactualizarse; confirmar contra `d
 
 | Archivo | Descripción |
 | --- | --- |
-| `index.html` | Home: hero → separación Decants / Perfumes Completos → Selección Cruzial (curaduría editorial) → Colecciones (combos) → La Experiencia Decant (formatos) → "arma tu combo" → Frasco Completo → Compra por Volumen (teaser mayorista) → CTA final |
+| `index.html` | Home: hero (foto real) → marquee → entrada catálogo (decants) → descubrir fragancia → selección editorial → colecciones (combos) → experiencia decant → mayorista teaser → FAQ (6 ítems) → CTA final |
 | `catalog.html` | Catálogo de decants (**96 fragancias**: 69 árabes + 23 designer + 4 nicho) con filtros (género, familia, tipo, formato) y ordenamiento; incluye el armador de combos ("arma tu combo") |
-| `perfumes-enteros.html` | Catálogo de frascos completos (perfume original sellado, por unidad o cotización por volumen) |
-| `product.html?id=...` | Detalle: notas, concentración, decants 3/5/10 ml, frasco completo, atomizaciones y presentación |
+| `product.html?id=...` | Detalle: notas, concentración, decants 3/5/10 ml, cross-sell frasco completo, atomizaciones y presentación |
 | `checkout.html` | Carrito + datos del pedido → WhatsApp, con opciones de entrega reales y nota del 50% |
-| `nosotros.html` | Historia y valores de la casa; también aloja Cruzial Journal, Cómo Comprar, FAQ y Newsletter (ver nota de arquitectura abajo) |
-| `mayorista.html` | Tarifas de referencia (3/5/10 ml y combos) y formulario de cotización |
+| `nosotros.html` | Historia y valores de la casa; también aloja Cómo Comprar y FAQ |
+| `mayorista.html` | Frascos completos: formulario de cotización por WhatsApp (sin precios fijos), 3 pasos, beneficios |
 | `contacto.html` | Contacto: WhatsApp 924 590 921, Instagram @Cruzial_parfum, envíos y contraentrega |
+| `perfumes-enteros.html` | Redirect a `mayorista.html` (noindex, nofollow) —安全に置き換え |
 | `logo.jpeg` | Logo oficial del cliente (medallón en header, footer y menú móvil) |
 | `CATALOGO DE DECANTS.pdf` | Fuente oficial de productos y precios |
 | `CLAUDE.md` | Reglas permanentes del proyecto (zero invented commerce, single source of truth) |
 | `assets/data.js` | Configuración + **99 productos** (96 individuales + 3 combos) con precios 3/5/10 ml — única fuente de verdad comercial |
-| `assets/styles.css` | Sistema de diseño noir + ivory + acento dorado, con tokens en `:root` y variantes `.section-obsidian` / `.section-ivory` |
-| `assets/app.js` | Carrito, buscador, drawer, botellas SVG, combos, frascos, WhatsApp |
-
-### Nota de arquitectura pendiente: FAQ / Cómo Comprar / Newsletter en `nosotros.html`
-
-Estos tres bloques viven hoy en `nosotros.html` porque se removieron del home en la
-reestructuración de Fase 3 (para que el home no cargara con contenido de soporte)
-y se reubicaron ahí como destino temporal. Quedó documentado como una decisión
-**pendiente de revisión**, no definitiva:
-
-- FAQ no debería sentirse "escondida" bajo Nosotros — la opción evaluada es un
-  bloque corto de FAQ en el home (`index.html#faq`) con enlace desde el footer,
-  o una página propia `faq.html` si el catálogo crece lo suficiente para justificarla.
-- Newsletter no tiene backend real (el `<form id="newsletter-form">` no envía a
-  ningún servicio) — evaluar si eliminarlo del todo hasta tener uno, en vez de
-  mantenerlo como formulario inerte en cualquier página.
-- Cómo Comprar es contenido de conversión (reduce fricción antes de comprar) y
-  probablemente pertenece más cerca del catálogo/checkout que de la página
-  institucional "Nosotros".
-
-No implementar esta reubicación sin decisión explícita — ver `CLAUDE.md` sobre
-cambios estructurales por fases.
+| `assets/styles.css` | Sistema de diseño black + white, acento dorado micro, tipografía editorial (Cormorant Garamond, Jost, Italianno) |
+| `assets/app.js` | Carrito, buscador, drawer, combos, frascos, WhatsApp builder |
+| `assets/finder.js` | Perfume Finder: scoring por familia olfativa, mood, intensidad |
 
 ## Notas sobre el catálogo digital
 
@@ -93,9 +74,8 @@ cambios estructurales por fases.
 3. **Redes sociales**: TikTok no tiene usuario oficial en el PDF (enlace genérico); completar si el cliente lo facilita.
 4. **Políticas reales**: envíos, 50% de adelanto y métodos de pago ya reflejan el PDF; ajustar solo si el cliente indica cambios.
 5. **Dominio y analítica**: añadir cuando se despliegue.
-6. **Foto de hero real**: el hero usa arte generado (SVG) como placeholder hasta
-   que el cliente entregue fotografía de producto real; ver especificación
-   técnica del hero (formato, resolución, zonas seguras) antes de reemplazarlo.
+6. **Foto de hero**: `img/hero/hero-crop.jpg` (~250KB, JPEG optimizado). Si se necesita reemplazar, mantener dimensions similares y comprimir para web.
+7. **Mosaico del home**: `img/hero/tile-erba-pura.jpg`, `img/hero/tile-9pm-night-out.jpg` (galería `.hero-visual`, 960×1280) y `img/hero/category-arabe.jpg`, `img/hero/category-designer.jpg` (`.category-split`, 960×1200) son recortes JPEG generados desde fotos reales del catálogo (`.claude/scripts/make_hero_tiles.py` y `make_category_tiles.py`) — no fotos de stock. Si el producto destacado cambia, regenerar con el mismo script apuntando al nuevo PNG de `img/perfumes/`.
 
 ## Flujo de compra
 

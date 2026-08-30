@@ -83,3 +83,40 @@ is stale; fix the README, never the other way around.
   per-product `intensity`/`sweetness`/`freshness` scores to `data.js` — if the
   Finder needs a new signal, it must be derived transparently at runtime from
   confirmed fields, the same way, never hand-authored per product.
+
+## Confirmed claims log
+
+Claims that required explicit client confirmation under ZERO INVENTED COMMERCE,
+and the outcome, so they aren't re-flagged as unverified on a future audit:
+
+- **"100% originales / 100% auténticos"** (announcement bars, hero badge, FAQ,
+  default product `desc` in `data.js`, `nosotros.html` "Originalidad absoluta"):
+  **CLIENT_CONFIRMED** — confirmed by the business owner on 2026-08-30 that
+  decants are prepared from authentic bottles of the official houses. Safe to
+  keep as stated; do not soften without a new instruction from the client.
+- **Fake testimonials** (`index.html`, "Experiencias reales" — three 5-star
+  reviews with invented names/cities/order counts): removed on 2026-08-30, no
+  documented source existed. Replaced with an editorial "Nuestro compromiso"
+  block describing the real prep/advisory/shipping process — no names, no
+  ratings, nothing presented as a customer quote. If real testimonials are
+  collected later (WhatsApp screenshots, Instagram reviews), reintroduce them
+  citing the actual source, not generic names.
+
+## Site architecture
+
+- **Navigation:** `CRUZIAL | CATÁLOGO | ARMA TU COMBO | MAYORISTA` (header). Secondary
+  links (Nosotros, FAQ, Contacto) live in the footer and mobile menu only.
+- **Footer:** 4-column layout (Brand, Explorar, Ayuda, Legal) with social links
+  and WhatsApp direct link.
+- **Mobile menu:** Primary links (Catálogo, Arma tu combo, Mayorista) + separator +
+  secondary links (Nosotros, FAQ, Contacto).
+- **FAQ:** Lives in `index.html#faq` (6 accordion items). Footer links point to
+  `index.html#faq`, not `nosotros.html#faq`.
+- **combos.html:** Dedicated page for pre-built sets ("Sets ya armados") and
+  the combo builder ("Arma tu propio combo"). Replaced the combo sections that
+  were previously in catalog.html.
+- **perfumes-enteros.html:** Redirects to `mayorista.html` (full bottles are now
+  in the Mayorista section). Has `noindex, nofollow` and `meta http-equiv="refresh"`.
+- **No newsletter form.** Removed during redesign — no backend service configured.
+- **WhatsApp is the primary CTA** on every page (header icon, floating button,
+  checkout flow). No payment gateway.

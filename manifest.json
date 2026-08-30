@@ -2,7 +2,7 @@
   "name": "Cruzial Parfums — Perfumes que dejan presencia",
   "short_name": "Cruzial Parfums",
   "description": "Decants de perfumes originales de nicho y designer. 3, 5 y 10 ml. Compra fácil por WhatsApp.",
-  "start_url": "/cruzialparfums/",
+  "start_url": ".",
   "display": "standalone",
   "background_color": "#0a0806",
   "theme_color": "#0a0806",

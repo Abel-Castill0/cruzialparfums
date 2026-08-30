@@ -37,7 +37,10 @@ const M = {
 };
 
 /* Fábrica compacta de productos.
-   extra: { tag, desc, bottle, bestseller, discontinued } */
+   extra: { tag, desc, bottle, bestseller, discontinued }
+   Provenance del claim "100% original" en la desc por defecto: CLIENT_CONFIRMED
+   (dueño del negocio, 2026-08-30) — cumple el requisito de CLAUDE.md de que un
+   claim de autenticidad necesita confirmación explícita, igual que un precio. */
 const P = (id, brand, name, gender, type, family, conc, price, notes, mood, extra) => ({
   id, brand, name, gender, type, family, conc, price, notes, mood,
   tag: extra && extra.tag || (type === "combo" ? "Combo" : type === "arab" ? "Árabe" : type === "niche" ? "Nicho" : "Designer"),
@@ -185,6 +188,156 @@ const IMG_MAP = {
   "erba-pura": { bottle: "img/perfumes/Xerjoff Erba Pura.png", set: "img/perfumes/Xerjoff Erba Pura (2).png" },
   "nautica-voyage": { bottle: "img/perfumes/Nautica Nautica Voyage.png", set: "img/perfumes/Nautica Nautica Voyage (2).png" }
 };
+
+/* ============================================================
+   PRECIOS MAYORISTAS — Frascos completos (ml)
+   Fuente: HOJA DE PRECIOS MAYORISTAS.xlsx (junio 2026).
+   Valores por unidad — REFERENCIALES, no definitivos.
+   Cada单元行: { unit, m4, m12 } = precio unitario / 4+ uds / 12+ uds
+   ============================================================ */
+window.CRUZIAL_WHOLESALE = {
+  /* Lattafa */
+  "khamrah-clasico":    { unit: 130, m4: 122, m12: 114 },
+  "khamrah-qahwa":      { unit: 130, m4: 122, m12: 114 },
+  "khamrah-dukhan":     { unit: 130, m4: 122, m12: 114 },
+  "khamrah-waha":       { unit: 145, m4: 137, m12: 129 },
+  "eclaire":            { unit: 130, m4: 118, m12: 106 },
+  "eclaire-banoffi":    { unit: 120, m4: 108, m12: 96 },
+  "eclaire-pistache":   { unit: 120, m4: 108, m12: 96 },
+  "oud-for-glory":      { unit: 130, m4: 118, m12: 106 },
+  "fakhar-black":       { unit: 130, m4: 118, m12: 106 },
+  "angham":             { unit: 130, m4: 118, m12: 106 },
+  "yara-pink":          { unit: 120, m4: 108, m12: 96 },
+  "yara-candy":         { unit: 120, m4: 108, m12: 96 },
+  "yara-elixir":        { unit: 130, m4: 118, m12: 106 },
+  "honor-and-glory":    { unit: 130, m4: 118, m12: 106 },
+  "sublime":            { unit: 130, m4: 118, m12: 106 },
+  "red-intensely":      { unit: 145, m4: 133, m12: 121 },
+  "mashrabya":          { unit: 120, m4: 108, m12: 96 },
+  "mayar":              { unit: 130, m4: 118, m12: 106 },
+  "mayar-cherry-i":     { unit: 130, m4: 118, m12: 106 },
+  "yum-yum":            { unit: 130, m4: 118, m12: 106 },
+  "qaed-al-fursan":     { unit: 120, m4: 108, m12: 96 },
+  "odyssey-homme":      { unit: 120, m4: 108, m12: 96 },
+  "homme-white":        { unit: 120, m4: 108, m12: 96 },
+  "odyssey-spectra":    { unit: 120, m4: 108, m12: 96 },
+  "odyssey-mega":       { unit: 120, m4: 108, m12: 96 },
+  "odyssey-limoni":     { unit: 120, m4: 108, m12: 96 },
+  "odyssey-artisto":    { unit: 130, m4: 118, m12: 106 },
+  "zanzibar-limited-e": { unit: 120, m4: 108, m12: 96 },
+  "asad-clasico":       { unit: 120, m4: 108, m12: 96 },
+  "asad-bourbon":       { unit: 130, m4: 118, m12: 106 },
+
+  /* Afnan */
+  "9pm":                { unit: 130, m4: 118, m12: 106 },
+  "9pm-rebel":          { unit: 130, m4: 118, m12: 106 },
+  "9pm-elixir":         { unit: 130, m4: 118, m12: 106 },
+  "9pm-night-out":      { unit: 145, m4: 133, m12: 121 },
+  "9am":                { unit: 120, m4: 108, m12: 96 },
+  "9am-dive":           { unit: 160, m4: 148, m12: 136 },
+  "mandarin-sky":       { unit: 125, m4: 113, m12: 101 },
+  "m-sky-elixir":       { unit: 130, m4: 118, m12: 106 },
+  "m-sky-vintage":      { unit: 125, m4: 113, m12: 101 },
+  "supremacy-colle":    { unit: 130, m4: 118, m12: 106 },
+  "supremacy-noi":      { unit: 125, m4: 113, m12: 101 },
+
+  /* Armaf */
+  "cdn-intense-man":    { unit: 130, m4: 118, m12: 106 },
+  "cdn-urban-man-e":    { unit: 160, m4: 148, m12: 136 },
+  "cdn-preciux-i":      { unit: 185, m4: 173, m12: 161 },
+  "odyssey-aqua":       { unit: 125, m4: 113, m12: 101 },
+
+  /* Rasasi */
+  "hawas-ice":          { unit: 155, m4: 143, m12: 131 },
+  "hawas-exotic":       { unit: 165, m4: 153, m12: 141 },
+  "hawas-fire":         { unit: 145, m4: 133, m12: 121 },
+  "hawas-kobra":        { unit: 145, m4: 133, m12: 121 },
+  "hawas-verde":        { unit: 155, m4: 143, m12: 131 },
+  "hawas-elixir":       { unit: 145, m4: 133, m12: 121 },
+  "hawas-tropical":     { unit: 145, m4: 133, m12: 121 },
+  "hawas-chrome":       { unit: 155, m4: 143, m12: 131 },
+
+  /* Otros árabes */
+  "art-of-universe":    { unit: 155, m4: 143, m12: 131 },
+  "vulcan-feu":         { unit: 145, m4: 133, m12: 121 },
+  "amber-o-gold-e":     { unit: 165, m4: 153, m12: 141 },
+  "ao-aqua-dubai":      { unit: 165, m4: 153, m12: 141 },
+  "ao-dubai-night":     { unit: 175, m4: 163, m12: 151 },
+  "nitro-red":          { unit: 130, m4: 118, m12: 106 },
+  "liquid-brun":        { unit: 130, m4: 118, m12: 106 },
+  "jean-lowe-vibe":     { unit: 125, m4: 113, m12: 101 },
+  "jean-lowe-inmotel":  { unit: 125, m4: 113, m12: 101 },
+  "rayhaan-italia":     { unit: 125, m4: 113, m12: 101 },
+  "sceptre-malachite":  { unit: 120, m4: 108, m12: 96 },
+  "bharara-king":       { unit: 200, m4: 188, m12: 176 },
+  "lovely-cherry":      { unit: 145, m4: 133, m12: 121 },
+  "bright-peach":       { unit: 145, m4: 133, m12: 121 },
+
+  /* Designer / Nicho */
+  "eros-edt":           { unit: 350, m4: 335, m12: 320 },
+  "eros-flame":         { unit: 350, m4: 335, m12: 320 },
+  "sauvage-edt":        { unit: 380, m4: 364, m12: 348 },
+  "dylan-blue":         { unit: 370, m4: 354, m12: 338 },
+  "adg-profondo-edp":   { unit: 420, m4: 404, m12: 388 },
+  "spicebomb-extreme":  { unit: 420, m4: 404, m12: 388 },
+  "azzaro-tmw-edp":     { unit: 350, m4: 335, m12: 320 },
+  "tmw-parfum":         { unit: 420, m4: 404, m12: 388 },
+  "swy-intensely":      { unit: 420, m4: 404, m12: 388 },
+  "swy-absolutely":     { unit: 420, m4: 404, m12: 388 },
+  "le-male-elixir":     { unit: 380, m4: 364, m12: 348 },
+  "le-beau-le-parfum":  { unit: 420, m4: 404, m12: 388 },
+  "victory-elixir":     { unit: 400, m4: 384, m12: 368 },
+  "invictus-elixir":    { unit: 400, m4: 384, m12: 368 },
+  "1-million-lucky":    { unit: 420, m4: 404, m12: 388 },
+  "purple-melancholia": { unit: 435, m4: 419, m12: 403 },
+  "bir-intense":        { unit: 430, m4: 414, m12: 398 },
+  "b-man-in-black":     { unit: 430, m4: 414, m12: 398 },
+  "cedrat-boise-int":   { unit: 480, m4: 464, m12: 448 },
+  "m-red-tobacco":      { unit: 480, m4: 464, m12: 448 },
+  "erba-pura":          { unit: 750, m4: 730, m12: 710 },
+  "by-the-fireplace":   { unit: 430, m4: 414, m12: 398 },
+  "nautica-voyage":     { unit: 120, m4: 108, m12: 96 },
+  "212-edt":            { unit: 350, m4: 335, m12: 320 },
+  "reserve-privee":     { unit: 420, m4: 404, m12: 388 },
+  "paradise-garden":    { unit: 380, m4: 364, m12: 348 }
+};
+
+/* Contenido explícito de combos (confirmed by client) */
+window.CRUZIAL_COMBO_CONTENTS = {
+  "combo-cuarteto": {
+    name: "Cuarteto Oriental",
+    desc: "4 fragancias árabes seleccionadas por Cruzial",
+    perfumes: ["Khamrah Clásico", "Khamrah Qahwa", "Khamrah Dukhan", "Khamrah Waha"],
+    ml: 10,
+    atomizaciones: "560–600"
+  },
+  "combo-vainilla": {
+    name: "Vainilla Freak",
+    desc: "2 Yara + Eclaire — para amantes de la vainilla",
+    perfumes: ["Yara Pink", "Yara Elixir", "Eclaire"],
+    ml: 10,
+    atomizaciones: "420–450"
+  },
+  "combo-tulum": {
+    name: "Set Tulum",
+    desc: "Fresco y playero — para clima cálido",
+    perfumes: ["Odyssey Aqua", "Hawas Tropical", "Supremacy Collection"],
+    ml: 10,
+    atomizaciones: "420–450"
+  }
+};
+
+/* ============================================================
+   REGLAS DE REGALO — Decant de cortesía
+   1 frasco → 1 decant 2 ml gratis
+   2–3 frascos → 1 decant 2 ml gratis
+   4+ frascos → 2 decants 2 ml gratis
+   El cliente elige qué perfumes quiere como regalo.
+   ============================================================ */
+window.CRUZIAL_GIFT_RULES = [
+  { min: 1, max: 3, freeDecants: 1, label: "1 DECANT 2 ML" },
+  { min: 4, max: Infinity, freeDecants: 2, label: "2 DECANTS 2 ML" }
+];
 
 /* Mensaje regalo por compra al detal */
 const GIFT_MESSAGE = "🎁 Regalo: Decant de 2 ml de cualquier perfume árabe del catálogo, a tu elección.";

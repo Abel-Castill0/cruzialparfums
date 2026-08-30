@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Catálogo completo de decants Cruzial Parfums. Filtra por género, familia olfativa y tipo. Formatos de 3, 5 y 10 ml.">
-  <meta name="theme-color" content="#0a0806">
+  <meta name="theme-color" content="#FFFFFF">
   <meta name="robots" content="index, follow">
   <meta http-equiv="X-Content-Type-Options" content="nosniff">
   <meta name="referrer" content="strict-origin-when-cross-origin">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; img-src 'self' data: blob:; font-src 'self' https://fonts.gstatic.com;">
-  <title>Decants — Cruzial Parfums</title>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob:; font-src 'self' https://fonts.gstatic.com;">
+  <title>Catálogo — Cruzial Parfums</title>
   <link rel="canonical" href="https://abel-castill0.github.io/cruzialparfums/catalog.html">
   <meta property="og:type" content="website">
   <meta property="og:title" content="Catálogo — Cruzial Parfums">
@@ -17,17 +17,213 @@
   <meta property="og:url" content="https://abel-castill0.github.io/cruzialparfums/catalog.html">
   <meta property="og:site_name" content="Cruzial Parfums">
   <meta property="og:locale" content="es_PE">
+  <meta property="og:image" content="https://abel-castill0.github.io/cruzialparfums/logo.jpeg">
+  <meta name="twitter:image" content="https://abel-castill0.github.io/cruzialparfums/logo.jpeg">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%230a0806' stroke='%23c9a962' stroke-width='2'/%3E%3Ctext x='32' y='42' font-family='Georgia' font-size='30' fill='%23e8d5a3' text-anchor='middle'%3EC%3C/text%3E%3C/svg%3E">
   <link rel="icon" type="image/jpeg" href="logo.jpeg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Jost:wght@300;400;500;600&family=Italianno&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/styles.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --gold: #c9a962;
+      --gold-light: #d4b872;
+      --dark: #1a1a1a;
+      --darker: #0a0806;
+      --text: #2c2c2c;
+      --text-light: #6b6b6b;
+      --bg: #ffffff;
+      --bg-ivory: #f8f6f3;
+      --bg-warm: #f5f0eb;
+      --border: #e8e4df;
+      --radius: 8px;
+      --radius-lg: 16px;
+      --transition: .35s cubic-bezier(.4,0,.2,1);
+      --serif: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+      --sans: 'Jost', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --script: 'Italianno', cursive;
+      --container: 1200px;
+    }
+    html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+    body { font-family: var(--sans); color: var(--text); background: var(--bg); line-height: 1.6; overflow-x: hidden; }
+    img { max-width: 100%; display: block; }
+    a { color: inherit; text-decoration: none; }
+    button { cursor: pointer; border: none; background: none; font-family: inherit; }
+    .container { max-width: var(--container); margin: 0 auto; padding: 0 clamp(16px, 4vw, 48px); }
+
+    /* ANNOUNCEMENT */
+    .announcement-bar { background: var(--dark); color: #fff; text-align: center; padding: 10px 16px; font-size: 13px; font-weight: 400; letter-spacing: .5px; }
+    .announcement-bar span { opacity: .5; margin: 0 12px; }
+
+    /* HEADER */
+    .site-header { position: sticky; top: 0; z-index: 100; background: var(--bg); transition: box-shadow var(--transition); }
+    .site-header.scrolled { box-shadow: 0 1px 20px rgba(0,0,0,.08); }
+    .header-inner { display: flex; align-items: center; justify-content: space-between; max-width: var(--container); margin: 0 auto; padding: 0 clamp(16px,4vw,48px); height: 72px; }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .brand-mark img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+    .brand-word { display: flex; flex-direction: column; line-height: 1.1; }
+    .brand-word strong { font-family: var(--serif); font-size: 18px; font-weight: 600; letter-spacing: 2px; color: var(--darker); }
+    .brand-word small { font-size: 9px; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); font-weight: 500; }
+    .main-nav { display: flex; gap: 36px; }
+    .main-nav a { font-size: 13px; font-weight: 500; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text); position: relative; padding: 4px 0; transition: color var(--transition); }
+    .main-nav a::after { content: ''; position: absolute; bottom: 0; left: 0; width: 0; height: 1px; background: var(--gold); transition: width var(--transition); }
+    .main-nav a:hover { color: var(--gold); }
+    .main-nav a:hover::after { width: 100%; }
+    .main-nav a.active { color: var(--gold); }
+    .main-nav a.active::after { width: 100%; }
+    .header-actions { display: flex; align-items: center; gap: 8px; }
+    .icon-btn { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 18px; color: var(--text); transition: background var(--transition), color var(--transition); position: relative; }
+    .icon-btn:hover { background: var(--bg-warm); color: var(--gold); }
+    .cart-count { position: absolute; top: 2px; right: 2px; background: var(--gold); color: #fff; font-size: 10px; font-weight: 600; width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+    .mobile-toggle { display: none; font-size: 22px; }
+
+    /* PAGE HERO */
+    .catalog-hero { padding: clamp(48px,8vh,80px) 0 clamp(32px,4vh,48px); text-align: center; }
+    .catalog-hero h1 { font-family: var(--serif); font-size: clamp(36px,5vw,56px); font-weight: 500; color: var(--darker); line-height: 1.1; margin-bottom: 12px; }
+    .catalog-hero h1 em { font-style: italic; color: var(--gold); }
+    .catalog-hero p { font-size: 16px; color: var(--text-light); max-width: 480px; margin: 0 auto; }
+
+    /* FILTER BAR */
+    .filter-bar { padding: 0 0 clamp(16px,2vh,24px); border-bottom: 1px solid var(--border); margin-bottom: 32px; }
+    .filter-bar-inner { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .filter-group { position: relative; }
+    .filter-group select { appearance: none; -webkit-appearance: none; padding: 10px 36px 10px 16px; border-radius: 100px; border: 1px solid var(--border); background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b6b6b' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 14px center; font-family: var(--sans); font-size: 13px; font-weight: 500; color: var(--text); cursor: pointer; transition: border-color var(--transition), background var(--transition); }
+    .filter-group select:hover { border-color: var(--gold); }
+    .filter-group select:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px rgba(201,169,98,.12); }
+    .clear-filters { padding: 10px 20px; border-radius: 100px; border: 1px solid var(--border); background: transparent; font-size: 13px; font-weight: 500; color: var(--text-light); cursor: pointer; transition: all var(--transition); }
+    .clear-filters:hover { border-color: var(--darker); color: var(--darker); }
+
+    /* RESULTS TOP */
+    .results-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; }
+    .results-top span { font-size: 14px; color: var(--text-light); font-weight: 400; }
+    .results-top select { appearance: none; -webkit-appearance: none; padding: 8px 32px 8px 14px; border-radius: 100px; border: 1px solid var(--border); background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b6b6b' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 12px center; font-family: var(--sans); font-size: 13px; font-weight: 500; color: var(--text); cursor: pointer; transition: border-color var(--transition); }
+    .results-top select:hover { border-color: var(--gold); }
+    .results-top select:focus { outline: none; border-color: var(--gold); }
+
+    /* PRODUCT GRID */
+    .catalog-layout { padding: 0 clamp(16px,4vw,48px) clamp(60px,8vh,100px); }
+    .product-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+
+    /* NO RESULTS */
+    .no-results { grid-column: 1 / -1; text-align: center; padding: 80px 24px; }
+    .no-results h3 { font-family: var(--serif); font-size: 28px; color: var(--darker); margin-bottom: 12px; }
+    .no-results p { font-size: 15px; color: var(--text-light); margin-bottom: 24px; }
+    .no-results .btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 28px; border-radius: var(--radius); font-size: 14px; font-weight: 500; background: var(--darker); color: #fff; transition: all var(--transition); }
+    .no-results .btn:hover { background: #1a1a1a; transform: translateY(-1px); }
+
+    /* BUTTONS */
+    .btn { display: inline-flex; align-items: center; gap: 8px; padding: 14px 32px; border-radius: var(--radius); font-size: 14px; font-weight: 500; letter-spacing: .5px; transition: all var(--transition); }
+    .btn-dark { background: var(--darker); color: #fff; }
+    .btn-dark:hover { background: #1a1a1a; transform: translateY(-1px); }
+    .btn-outline { border: 1.5px solid var(--dark); color: var(--dark); background: transparent; }
+    .btn-outline:hover { background: var(--dark); color: #fff; }
+    .btn span { transition: transform var(--transition); }
+    .btn:hover span { transform: translateX(3px); }
+
+    /* FOOTER */
+    .site-footer { background: var(--darker); padding: 64px 0 32px; color: rgba(255,255,255,.7); }
+    .footer-grid { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 48px; padding-bottom: 48px; border-bottom: 1px solid rgba(255,255,255,.1); }
+    .footer-brand p { font-size: 14px; line-height: 1.7; margin-top: 16px; color: rgba(255,255,255,.5); max-width: 280px; }
+    .footer-social { display: flex; gap: 12px; margin-top: 20px; }
+    .footer-social a { width: 36px; height: 36px; border-radius: 50%; border: 1px solid rgba(255,255,255,.15); display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,.6); transition: all var(--transition); }
+    .footer-social a:hover { border-color: var(--gold); color: var(--gold); background: rgba(201,169,98,.1); }
+    .footer-col h4 { font-size: 12px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); margin-bottom: 20px; font-weight: 600; }
+    .footer-col a { display: block; font-size: 14px; color: rgba(255,255,255,.55); padding: 6px 0; transition: color var(--transition); }
+    .footer-col a:hover { color: #fff; }
+    .footer-bottom { display: flex; justify-content: space-between; align-items: center; padding-top: 32px; font-size: 13px; color: rgba(255,255,255,.35); flex-wrap: wrap; gap: 12px; }
+    .footer-bottom a { color: rgba(255,255,255,.5); }
+    .footer-bottom a:hover { color: var(--gold); }
+
+    /* SEARCH PANEL */
+    .search-panel { position: fixed; inset: 0; z-index: 200; background: rgba(255,255,255,.97); backdrop-filter: blur(20px); display: flex; flex-direction: column; align-items: center; padding-top: 120px; opacity: 0; visibility: hidden; transition: all .4s ease; }
+    .search-panel.active { opacity: 1; visibility: visible; }
+    .search-panel .close-panel { position: absolute; top: 24px; right: 32px; font-size: 28px; color: var(--text); }
+    .search-input { width: 100%; max-width: 600px; padding: 16px 0; border: none; border-bottom: 2px solid var(--border); font-size: 22px; font-family: var(--serif); background: transparent; outline: none; transition: border-color var(--transition); }
+    .search-input:focus { border-color: var(--gold); }
+    .search-results { width: 100%; max-width: 600px; margin-top: 24px; }
+    .eyebrow { font-size: 12px; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); font-weight: 500; margin-bottom: 12px; }
+
+    /* OVERLAY */
+    .overlay { position: fixed; inset: 0; z-index: 150; background: rgba(0,0,0,.4); opacity: 0; visibility: hidden; transition: all .3s ease; }
+    .overlay.active { opacity: 1; visibility: visible; }
+
+    /* DRAWER */
+    .drawer-overlay { position: fixed; inset: 0; z-index: 180; background: rgba(0,0,0,.4); opacity: 0; visibility: hidden; transition: all .3s ease; }
+    .drawer-overlay.active { opacity: 1; visibility: visible; }
+    .drawer { position: fixed; top: 0; right: 0; bottom: 0; width: 400px; max-width: 90vw; z-index: 190; background: #fff; transform: translateX(100%); transition: transform .4s cubic-bezier(.4,0,.2,1); display: flex; flex-direction: column; }
+    .drawer.active { transform: translateX(0); }
+    .drawer-head { display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; border-bottom: 1px solid var(--border); }
+    .drawer-head strong { font-size: 16px; }
+    .drawer-close { font-size: 24px; color: var(--text); }
+    .drawer-items { flex: 1; overflow-y: auto; padding: 16px 24px; }
+    .drawer-foot { padding: 20px 24px; border-top: 1px solid var(--border); }
+    .drawer-total { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .drawer-total span { font-size: 14px; color: var(--text-light); }
+    .btn.full { width: 100%; justify-content: center; }
+
+    /* MOBILE MENU */
+    .mobile-menu { position: fixed; inset: 0; z-index: 300; background: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 28px; opacity: 0; visibility: hidden; transition: all .4s ease; }
+    .mobile-menu.active { opacity: 1; visibility: visible; }
+    .mobile-menu .menu-logo { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; margin-bottom: 20px; }
+    .close-mobile { position: absolute; top: 24px; right: 24px; font-size: 28px; }
+    .mobile-menu a { font-family: var(--serif); font-size: 26px; color: var(--darker); }
+    .mobile-menu a.active { color: var(--gold); }
+    .mobile-menu .menu-secondary { font-size: 16px; color: var(--text-light); }
+    .mobile-menu .menu-sep { width: 40px; height: 1px; background: var(--border); margin: 8px 0; }
+    .mobile-menu small { font-size: 11px; letter-spacing: 2px; color: var(--text-light); margin-top: 20px; }
+
+    /* WA FLOAT */
+    .wa-float { position: fixed; bottom: 24px; right: 24px; z-index: 90; width: 56px; height: 56px; border-radius: 50%; background: #25d366; color: #fff; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 20px rgba(37,211,102,.35); transition: transform var(--transition); }
+    .wa-float:hover { transform: scale(1.08); }
+
+    /* BACK TO TOP */
+    .back-to-top { position: fixed; bottom: 96px; right: 28px; z-index: 90; width: 40px; height: 40px; border-radius: 50%; background: var(--dark); color: #fff; font-size: 18px; display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: all var(--transition); }
+    .back-to-top.show { opacity: 1; visibility: visible; }
+    .back-to-top:hover { background: var(--gold); }
+
+    /* FINDERS */
+    .finder-modal { position: fixed; inset: 0; z-index: 250; opacity: 0; visibility: hidden; transition: all .4s ease; }
+    .finder-modal.active { opacity: 1; visibility: visible; }
+    .finder-modal-overlay { position: absolute; inset: 0; background: rgba(0,0,0,.5); }
+    .finder-panel { position: absolute; top: 0; right: 0; bottom: 0; width: 520px; max-width: 95vw; background: #fff; transform: translateX(100%); transition: transform .4s cubic-bezier(.4,0,.2,1); overflow-y: auto; }
+    .finder-modal.active .finder-panel { transform: translateX(0); }
+    .finder-head { display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; border-bottom: 1px solid var(--border); }
+    .finder-kicker { font-size: 12px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); font-weight: 600; }
+    .finder-close { font-size: 24px; }
+    .finder-body { padding: 24px; }
+
+    /* RESPONSIVE */
+    @media (max-width: 900px) {
+      .main-nav { display: none; }
+      .mobile-toggle { display: flex; }
+      .product-grid { grid-template-columns: repeat(2, 1fr); }
+      .filter-bar-inner { gap: 8px; }
+      .filter-group select { font-size: 12px; padding: 9px 32px 9px 14px; }
+    }
+    @media (max-width: 560px) {
+      .product-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+      .filter-bar-inner { gap: 6px; }
+      .filter-group select { font-size: 11px; padding: 8px 28px 8px 12px; }
+      .results-top { flex-direction: column; gap: 12px; align-items: flex-start; }
+      .footer-grid { grid-template-columns: 1fr; }
+      .footer-bottom { flex-direction: column; text-align: center; }
+    }
+
+    /* Reveal animation classes */
+    .reveal { opacity: 0; transform: translateY(40px); }
+    .reveal.revealed { opacity: 1; transform: translateY(0); transition: opacity .8s ease, transform .8s ease; }
+  </style>
 </head>
 <body>
-  <div class="announcement">Decants 3 · 5 · 10 ml · Frascos originales · Envíos a todo el país</div>
+  <!-- Announcement Bar -->
+  <div class="announcement-bar">
+    Envíos a todo el Perú <span>·</span> 100% Originales <span>·</span> Decants Premium
+  </div>
 
-  <header class="site-header">
+  <!-- Header -->
+  <header class="site-header" id="site-header">
     <div class="header-inner">
       <a href="index.html" class="brand" aria-label="Cruzial Parfums inicio">
         <span class="brand-mark"><img src="logo.jpeg" alt="Cruzial Parfums" class="logo-img"></span>
@@ -35,128 +231,80 @@
       </a>
       <nav class="main-nav" aria-label="Navegación principal">
         <a href="catalog.html" class="active">Catálogo</a>
+        <a href="combos.html">Arma tu combo</a>
         <a href="mayorista.html">Mayorista</a>
       </nav>
       <div class="header-actions">
-        <button class="icon-btn" data-open-search aria-label="Buscar fragancias" title="Buscar">⌕</button>
-        <a class="icon-btn" href="https://wa.me/51924590921" target="_blank" rel="noopener" aria-label="WhatsApp" title="WhatsApp"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm5.4 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.6-4-4.7-4.2-.1-.2-1.1-1.5-1.1-2.9s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5s.8 1.9.8 2c.1.1.1.3 0 .4-.4.8-.9 1-.7 1.4.6 1.1 1.9 2.3 2.9 2.8.4.2.6.1.9-.1.2-.3.9-1 1.1-1.4.2-.3.4-.3.7-.2l2 .9c.3.2.5.3.6.4.1.2.1.8-.1 1.4Z"/></svg></a>
-        <button class="icon-btn" data-open-cart aria-label="Abrir carrito" title="Carrito">◈<span class="cart-count">0</span></button>
+        <button class="icon-btn" data-open-search aria-label="Buscar fragancias" title="Buscar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </button>
+        <a class="icon-btn" href="https://wa.me/51924590921" target="_blank" rel="noopener" aria-label="WhatsApp" title="WhatsApp"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm5.4 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.6-4-4.7-4.2-.1-.2-1.1-1.5-1.1-2.9s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5s.8 1.9.8 2c.1.1.1.3 0 .4-.4.8-.9 1-.7 1.4.6 1.1 1.9 2.3 2.9 2.8.4.2.6.1.9-.1.2-.3.9-1 1.1-1.4.2-.3.4-.3.7-.2l2 .9c.3.2.5.3.6.4.1.2.1.8-.1 1.4Z"/></svg></a>
+        <button class="icon-btn" data-open-cart aria-label="Abrir carrito" title="Carrito">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+          <span class="cart-count">0</span>
+        </button>
         <button class="mobile-toggle" data-open-menu aria-label="Abrir menú">☰</button>
       </div>
     </div>
   </header>
 
   <main>
-    <section class="page-hero">
+    <!-- PAGE HERO -->
+    <section class="catalog-hero">
       <div class="container reveal">
-        <p class="eyebrow">Catálogo de Decants</p>
-        <h1 class="h1">Una biblioteca de<br><em>aromas memorables.</em></h1>
-        <p>96 fragancias en decants de 3, 5 y 10 ml. Filtra por estilo, familia olfativa y presupuesto — o arma tu propio combo más abajo.</p>
-        <div style="display:flex;flex-wrap:wrap;gap:14px 28px;margin-top:22px;align-items:center">
-          <a class="text-link" href="#arma-combo">Ir a "Arma tu combo" <span>↓</span></a>
-          <button class="finder-secondary-link" data-open-finder type="button">¿No sabes cuál elegir? Encuentra tu fragancia <span>→</span></button>
-        </div>
+        <h1>Nuestra <em>Colección</em></h1>
+        <p>Explora nuestra selección de decants y frascos completos. Filtra por estilo, familia olfativa o presupuesto.</p>
       </div>
     </section>
 
-    <section class="section combos-section" style="padding-top:0">
-      <div class="container">
-        <div class="section-heading reveal">
-          <div>
-            <p class="eyebrow">Combos Cruzial</p>
-            <h2 class="h2">Sets ya <em>armados</em>.</h2>
-          </div>
-          <div class="side">Selecciones curadas con el mejor rendimiento por mililitro. El contenido exacto de cada combo se confirma por WhatsApp.</div>
-        </div>
-        <div id="combo-grid" class="product-grid"></div>
-      </div>
-    </section>
-
-    <section class="section combo-builder-section" style="padding-top:0" id="arma-combo">
-      <div class="container">
-        <div class="section-heading reveal">
-          <div>
-            <p class="eyebrow">Hazlo a tu manera</p>
-            <h2 class="h2">Arma tu propio <em>combo</em>.</h2>
-          </div>
-          <div class="side">Elige un tamaño y selecciona 3 o más fragancias. Te armamos el pedido exacto y lo enviamos a WhatsApp.</div>
-        </div>
-        <div class="combo-builder reveal">
-          <div class="cb-picker-col">
-            <div class="cb-controls">
-              <div class="cb-size-select">
-                <span class="cb-label">Tamaño</span>
-                <div class="pills" id="cb-size-pills">
-                  <button type="button" class="pill active" data-size="3" aria-pressed="true">3 ml</button>
-                  <button type="button" class="pill" data-size="5" aria-pressed="false">5 ml</button>
-                  <button type="button" class="pill" data-size="10" aria-pressed="false">10 ml</button>
-                </div>
-              </div>
-              <input type="search" id="cb-search" class="cb-search" placeholder="Buscar perfume para añadir…" aria-label="Buscar perfume para tu combo" autocomplete="off">
+    <!-- CATALOG LAYOUT -->
+    <section class="catalog-layout">
+      <!-- FILTER BAR -->
+      <div class="filter-bar">
+        <div class="container">
+          <div class="filter-bar-inner">
+            <div class="filter-group">
+              <select id="gender-filter" aria-label="Género">
+                <option value="all">Todos</option>
+                <option value="women">Mujer</option>
+                <option value="men">Hombre</option>
+                <option value="unisex">Unisex</option>
+              </select>
             </div>
-            <div class="cb-picker" id="cb-picker" role="listbox" aria-label="Selecciona fragancias para tu combo"></div>
-          </div>
-          <aside class="cb-summary" aria-live="polite">
-            <div class="cb-summary-head">
-              <strong>Tu combo</strong>
-              <span id="cb-count">0 fragancias</span>
+            <div class="filter-group">
+              <select id="family-filter" aria-label="Familia olfativa">
+                <option value="all">Todas las familias</option>
+                <option value="woody">Amaderado</option>
+                <option value="floral">Floral</option>
+                <option value="amber">Ámbar</option>
+                <option value="citrus">Cítrico</option>
+                <option value="fresh">Fresco</option>
+                <option value="gourmand">Gourmand</option>
+                <option value="spicy">Especiado</option>
+              </select>
             </div>
-            <ul class="cb-selected" id="cb-selected"></ul>
-            <p class="cb-empty" id="cb-empty-hint">Toca las fragancias de la izquierda para añadirlas aquí.</p>
-            <p class="cb-limit-note" id="cb-limit-note" style="display:none">Llegaste al máximo de 6. Quita una para cambiarla.</p>
-            <div class="cb-total"><span>Total estimado</span><strong id="cb-total">S/ 0.00</strong></div>
-            <p class="cb-hint">Mínimo 3 fragancias para armar tu combo.</p>
-            <button class="btn btn-primary full" id="cb-send" type="button" disabled>Pedir mi combo por WhatsApp <span>↗</span></button>
-          </aside>
+            <div class="filter-group">
+              <select id="type-filter" aria-label="Tipo">
+                <option value="all">Todos los tipos</option>
+                <option value="arab">Árabe</option>
+                <option value="designer">Designer</option>
+                <option value="niche">Nicho</option>
+                <option value="combo">Combos</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <select id="format-filter" aria-label="Formato">
+                <option value="all">Todos los formatos</option>
+                <option value="bottle">Frasco completo</option>
+              </select>
+            </div>
+            <button class="clear-filters" data-clear-filters>Limpiar filtros</button>
+          </div>
         </div>
       </div>
-    </section>
 
-    <section class="catalog-layout container">
-      <aside class="filters" aria-label="Filtros del catálogo">
-        <div class="filter-head"><strong>Filtrar</strong><button data-clear-filters>Limpiar</button></div>
-        <div class="filter-group">
-          <label for="gender-filter">Género</label>
-          <select id="gender-filter">
-            <option value="all">Todos</option>
-            <option value="women">Mujer</option>
-            <option value="men">Hombre</option>
-            <option value="unisex">Unisex</option>
-          </select>
-        </div>
-        <div class="filter-group">
-          <label for="family-filter">Familia olfativa</label>
-          <select id="family-filter">
-            <option value="all">Todas</option>
-            <option value="woody">Amaderado</option>
-            <option value="floral">Floral</option>
-            <option value="amber">Ámbar</option>
-            <option value="citrus">Cítrico</option>
-            <option value="fresh">Fresco</option>
-            <option value="gourmand">Gourmand</option>
-            <option value="spicy">Especiado</option>
-          </select>
-        </div>
-        <div class="filter-group">
-          <label for="type-filter">Tipo</label>
-          <select id="type-filter">
-            <option value="all">Todos</option>
-            <option value="arab">Árabe</option>
-            <option value="designer">Designer</option>
-            <option value="niche">Nicho</option>
-            <option value="combo">Combos</option>
-          </select>
-        </div>
-        <div class="filter-group">
-          <label for="format-filter">Formato</label>
-          <select id="format-filter">
-            <option value="all">Todos</option>
-            <option value="bottle">Frasco completo</option>
-          </select>
-        </div>
-      </aside>
-
-      <section class="catalog-results">
+      <!-- RESULTS -->
+      <div class="container">
         <div class="results-top">
           <span id="result-count">0 perfumes</span>
           <select id="sort-filter" aria-label="Ordenar resultados">
@@ -167,18 +315,12 @@
           </select>
         </div>
         <div id="catalog-grid" class="product-grid"></div>
-      </section>
-    </section>
-
-    <section class="trust-strip">
-      <div class="trust-item"><span>100%</span><strong>Originales</strong><p>Decants preparados desde frascos auténticos de las casas oficiales.</p></div>
-      <div class="trust-item"><span>3–10 ml</span><strong>Formatos</strong><p>Desde la prueba de 3 ml hasta el formato comercial de 10 ml.</p></div>
-      <div class="trust-item"><span>WhatsApp</span><strong>Confirmación</strong><p>Stock, envío y total final confirmados antes de cerrar tu pedido.</p></div>
-      <div class="trust-item"><span>Mayor</span><strong>Volumen</strong><p>Tarifas especiales para revendedores y negocios.</p></div>
+      </div>
     </section>
   </main>
 
-  <footer class="footer">
+  <!-- Footer -->
+  <footer class="site-footer">
     <div class="container">
       <div class="footer-grid">
         <div class="footer-brand">
@@ -188,20 +330,27 @@
           </a>
           <p>Perfumería de descubrimiento. Menos volumen, más criterio. Del frasco original a tu piel.</p>
           <div class="footer-social">
-            <a href="https://wa.me/51924590921" target="_blank" rel="noopener" aria-label="WhatsApp"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm5.4 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.6-4-4.7-4.2-.1-.2-1.1-1.5-1.1-2.9s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5s.8 1.9.8 2c.1.1.1.3 0 .4-.4.8-.9 1-.7 1.4.6 1.1 1.9 2.3 2.9 2.8.4.2.6.1.9-.1.2-.3.9-1 1.1-1.4.2-.3.4-.3.7-.2l2 .9c.3.2.5.3.6.4.1.2.1.8-.1 1.4Z"/></svg></a>
-            <a href="https://www.instagram.com/Cruzial_parfum/" target="_blank" rel="noopener" aria-label="Instagram"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1" fill="currentColor" stroke="none"/></svg></a>
-            <a href="https://tiktok.com" target="_blank" rel="noopener" aria-label="TikTok"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M16.6 3c.4 2.2 1.8 3.6 4 3.9v3c-1.5 0-2.9-.5-4-1.3v5.7c0 4-2.6 6.4-6.1 6.4A5.9 5.9 0 0 1 4.6 14c0-3.5 2.8-6.2 6.5-6.1v3.1c-.3 0-.6-.1-.9-.1a3 3 0 0 0-3.1 3c0 1.8 1.4 3 3.1 3s3.1-1.2 3.1-3.4V3h3.3Z"/></svg></a>
+            <a href="https://wa.me/51924590921" target="_blank" rel="noopener" aria-label="WhatsApp">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm5.4 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.6-4-4.7-4.2-.1-.2-1.1-1.5-1.1-2.9s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5s.8 1.9.8 2c.1.1.1.3 0 .4-.4.8-.9 1-.7 1.4.6 1.1 1.9 2.3 2.9 2.8.4.2.6.1.9-.1.2-.3.9-1 1.1-1.4.2-.3.4-.3.7-.2l2 .9c.3.2.5.3.6.4.1.2.1.8-.1 1.4Z"/></svg>
+            </a>
+            <a href="https://www.instagram.com/Cruzial_parfum/" target="_blank" rel="noopener" aria-label="Instagram">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1" fill="currentColor" stroke="none"/></svg>
+            </a>
+            <a href="https://tiktok.com" target="_blank" rel="noopener" aria-label="TikTok">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M16.6 3c.4 2.2 1.8 3.6 4 3.9v3c-1.5 0-2.9-.5-4-1.3v5.7c0 4-2.6 6.4-6.1 6.4A5.9 5.9 0 0 1 4.6 14c0-3.5 2.8-6.2 6.5-6.1v3.1c-.3 0-.6-.1-.9-.1a3 3 0 0 0-3.1 3c0 1.8 1.4 3 3.1 3s3.1-1.2 3.1-3.4V3h3.3Z"/></svg>
+            </a>
           </div>
         </div>
         <div class="footer-col">
           <h4>Explorar</h4>
           <a href="catalog.html">Catálogo</a>
+          <a href="combos.html">Arma tu combo</a>
           <a href="mayorista.html">Mayorista</a>
         </div>
         <div class="footer-col">
           <h4>Ayuda</h4>
           <a href="nosotros.html">Nosotros</a>
-          <a href="nosotros.html#faq">FAQ</a>
+          <a href="index.html#faq">FAQ</a>
           <a href="nosotros.html#como-comprar">Cómo comprar</a>
           <a href="contacto.html">Contacto</a>
         </div>
@@ -212,14 +361,15 @@
         </div>
       </div>
       <div class="footer-bottom">
-        <span>© 2026 Cruzial Parfums</span>
+        <span>&copy; 2026 Cruzial Parfums</span>
         <a href="https://wa.me/51924590921" target="_blank" rel="noopener">WhatsApp directo</a>
         <span>Hecho con carácter en Perú</span>
       </div>
     </div>
   </footer>
 
-  <div class="search-panel" data-search-panel>
+  <!-- Buscador -->
+  <div class="search-panel" data-search-panel role="search" aria-label="Buscar fragancias">
     <button class="close-panel" data-close-search aria-label="Cerrar búsqueda">×</button>
     <div class="container">
       <p class="eyebrow">Buscar en Cruzial</p>
@@ -228,10 +378,12 @@
     </div>
   </div>
 
+  <!-- Overlay -->
   <div class="overlay" data-overlay></div>
 
+  <!-- Drawer carrito -->
   <div class="drawer-overlay" id="drawer-overlay" data-close-cart></div>
-  <aside class="drawer" id="cart-drawer" aria-label="Carrito de compras">
+  <aside class="drawer" id="cart-drawer" aria-label="Carrito de compras" role="dialog" aria-modal="true">
     <div class="drawer-head">
       <strong>Tu selección</strong>
       <button class="drawer-close" data-close-cart aria-label="Cerrar carrito">×</button>
@@ -239,20 +391,22 @@
     <div class="drawer-items" id="drawer-items"></div>
     <div class="drawer-foot">
       <div class="drawer-total"><span>Total estimado</span><strong id="drawer-total">S/ 0.00</strong></div>
-      <a class="btn btn-primary full" href="checkout.html">Ir al checkout <span>→</span></a>
+      <a class="btn btn-dark full" href="checkout.html">Ir al checkout <span>→</span></a>
       <a class="btn btn-outline full" href="catalog.html" style="margin-top:10px">Seguir explorando</a>
     </div>
   </aside>
 
-  <div class="mobile-menu" id="mobile-menu" role="dialog" aria-modal="true" aria-label="Menú de navegación">
+  <!-- Menú móvil -->
+  <div class="mobile-menu" id="mobile-menu" role="dialog" aria-label="Menú de navegación" aria-modal="true">
     <img src="logo.jpeg" alt="Cruzial Parfums" class="menu-logo">
     <button class="close-mobile" data-close-menu aria-label="Cerrar menú">×</button>
     <a href="catalog.html" class="active">Catálogo</a>
+    <a href="combos.html">Arma tu combo</a>
     <a href="mayorista.html">Mayorista</a>
     <div class="menu-sep" aria-hidden="true"></div>
     <a href="nosotros.html" class="menu-secondary">Nosotros</a>
+    <a href="index.html#faq" class="menu-secondary">FAQ</a>
     <a href="contacto.html" class="menu-secondary">Contacto</a>
-    <a href="nosotros.html#faq" class="menu-secondary">FAQ</a>
     <small>CRUZIAL PARFUMS · LIMA / PERÚ</small>
   </div>
 
@@ -268,10 +422,36 @@
     </div>
   </div>
 
+  <!-- WhatsApp flotante -->
   <a class="wa-float" href="https://wa.me/51924590921?text=Hola%20Cruzial%20Parfums%2C%20tengo%20una%20consulta." target="_blank" rel="noopener" aria-label="Escríbenos por WhatsApp">
     <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm5.4 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.6-4-4.7-4.2-.1-.2-1.1-1.5-1.1-2.9s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5s.8 1.9.8 2c.1.1.1.3 0 .4-.4.8-.9 1-.7 1.4.6 1.1 1.9 2.3 2.9 2.8.4.2.6.1.9-.1.2-.3.9-1 1.1-1.4.2-.3.4-.3.7-.2l2 .9c.3.2.5.3.6.4.1.2.1.8-.1 1.4Z"/></svg>
   </a>
 
+  <!-- Volver arriba -->
+  <button class="back-to-top" id="back-to-top" aria-label="Volver arriba">↑</button>
+
+  <!-- Scripts -->
+  <script>
+  document.addEventListener("DOMContentLoaded",function(){
+    var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    var backToTop=document.getElementById("back-to-top");
+    if(backToTop){
+      window.addEventListener("scroll",function(){
+        backToTop.classList.toggle("show",window.scrollY>600);
+      },{passive:true});
+      backToTop.addEventListener("click",function(){window.scrollTo({top:0,behavior:reduceMotion?"auto":"smooth"})});
+    }
+    var header=document.getElementById("site-header");
+    if(header){
+      window.addEventListener("scroll",function(){
+        header.classList.toggle("scrolled",window.scrollY>10);
+      },{passive:true});
+    }
+    /* initReveal() en assets/app.js resuelve el fade-in con stagger de forma
+       nativa (IntersectionObserver + CSS); se retiró GSAP/ScrollTrigger de
+       esta página por robustez y peso — ver nota de auditoría. */
+  });
+  </script>
   <script src="assets/data.js"></script>
   <script src="assets/app.js"></script>
   <script src="assets/finder.js"></script>

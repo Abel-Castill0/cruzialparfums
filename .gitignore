@@ -1,0 +1,7 @@
+# Claude Code tooling — installed skill bundles and their lockfile, not project source
+.agents/
+skills-lock.json
+
+# OS/editor junk
+.DS_Store
+Thumbs.db

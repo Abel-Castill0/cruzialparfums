@@ -107,13 +107,14 @@ function productCard(p, mode){
   const qGroup = isBottle ? "bottle" : "decant";
   const brand = p.brand ? `<span class="card-brand">${p.brand}</span>` : "";
   const cardImg = p.imgBottle || p.imgSet || p.img;
+  const mediaClass = cardImg ? " has-photo" : "";
   const media = cardImg
     ? `<img src="${cardImg}" alt="${p.brand} ${p.name}" class="card-img" loading="lazy" decoding="async">`
     : bottleSVG(p);
   if(p.discontinued){
     return `<article class="product-card is-discontinued">
       <a href="product.html?id=${p.id}">
-        <div class="card-media" style="--glow:${glow(p)}">
+        <div class="card-media${mediaClass}" style="--glow:${glow(p)}">
           ${media}
           <span class="tag tag-discontinued">Descontinuado</span>
         </div>
@@ -127,7 +128,7 @@ function productCard(p, mode){
   }
   return `<article class="product-card">
     <a href="product.html?id=${p.id}">
-      <div class="card-media" style="--glow:${glow(p)}">
+      <div class="card-media${mediaClass}" style="--glow:${glow(p)}">
         ${media}
         <span class="tag">${p.tag}</span>
         <button class="quick-add" data-add="${p.id}" data-size="${qSize}" data-group="${qGroup}" aria-label="Añadir ${p.name}">+</button>
@@ -147,13 +148,14 @@ function productCard(p, mode){
 function bottleCard(p){
   const brand = p.brand ? `<span class="card-brand">${p.brand}</span>` : "";
   const cardImg = p.imgBottle || p.imgSet || p.img;
+  const mediaClass = cardImg ? " has-photo" : "";
   const media = cardImg
     ? `<img src="${cardImg}" alt="${p.brand} ${p.name}" class="card-img" loading="lazy" decoding="async">`
     : bottleSVG(p);
   if(p.discontinued){
     return `<article class="product-card bottle-card is-discontinued">
       <a href="product.html?id=${p.id}">
-        <div class="card-media" style="--glow:${glow(p)}">${media}<span class="tag tag-discontinued">Descontinuado</span></div>
+        <div class="card-media${mediaClass}" style="--glow:${glow(p)}">${media}<span class="tag tag-discontinued">Descontinuado</span></div>
         <div class="card-body">
           ${brand}
           <h3 class="card-name">${p.name}</h3>
@@ -166,7 +168,7 @@ function bottleCard(p){
     const waMsg = encodeURIComponent(`Hola ${CONFIG.STORE}, quiero el precio del frasco completo de ${p.brand} ${p.name}.`);
     return `<article class="product-card bottle-card no-price">
       <a href="product.html?id=${p.id}">
-        <div class="card-media" style="--glow:${glow(p)}">${media}<span class="tag">${p.tag}</span></div>
+        <div class="card-media${mediaClass}" style="--glow:${glow(p)}">${media}<span class="tag">${p.tag}</span></div>
         <div class="card-body">
           ${brand}
           <h3 class="card-name">${p.name}</h3>
@@ -181,7 +183,7 @@ function bottleCard(p){
   const unit = p.bottle[size];
   return `<article class="product-card bottle-card">
     <a href="product.html?id=${p.id}">
-      <div class="card-media" style="--glow:${glow(p)}">
+      <div class="card-media${mediaClass}" style="--glow:${glow(p)}">
         ${media}
         <span class="tag">${p.tag}</span>
         <button class="quick-add" data-add="${p.id}" data-size="${size}" data-group="bottle" aria-label="Añadir ${p.name}">+</button>
@@ -398,6 +400,86 @@ function initCatalog(){
   run();
 }
 
+/* ---------- Wholesale table (mayorista.html) ---------- */
+function initWholesaleTable(){
+  const tbody = document.getElementById("wholesale-tbody");
+  const searchInput = document.getElementById("wholesale-search");
+  const filterBtns = document.querySelectorAll("#wholesale-filters .filter-tag");
+  if(!tbody) return;
+
+  const WA = window.CRUZIAL_CONFIG?.WA_NUMBER || "51924590921";
+  const WHOLESALE = window.CRUZIAL_WHOLESALE || {};
+  const PRODUCTS = window.CRUZIAL_PRODUCTS || [];
+
+  /* Build rows from products that have wholesale pricing */
+  const rows = PRODUCTS.filter(p => WHOLESALE[p.id] && p.type !== "combo").map(p => {
+    const w = WHOLESALE[p.id];
+    const waText = encodeURIComponent(
+      `Hola, quiero cotizar ${p.name} (${p.brand || "Cruzial"}).\n` +
+      `Cantidad: ___ unidades.\n` +
+      `Precio referencial: S/${w.unit} (unit.) / S/${w.m4} (4+ uds) / S/${w.m12} (12+ uds).\n` +
+      `Tipo de compra: Mayorista.\n` +
+      `¿Tiene decants de cortesía?`
+    );
+    return {
+      id: p.id,
+      brand: p.brand || "—",
+      name: p.name,
+      type: p.type,
+      unit: w.unit,
+      m4: w.m4,
+      m12: w.m12,
+      waUrl: `https://wa.me/${WA}?text=${waText}`
+    };
+  });
+
+  /* Sort by brand then name */
+  rows.sort((a, b) => a.brand.localeCompare(b.brand) || a.name.localeCompare(b.name));
+
+  function renderRows(list){
+    tbody.innerHTML = list.map(r => `
+      <tr data-type="${r.type}">
+        <td class="brand-col">${r.brand}</td>
+        <td class="name-col">${r.name}</td>
+        <td class="price-col">S/ ${r.unit}</td>
+        <td class="price-col">S/ ${r.m4}</td>
+        <td class="price-col">S/ ${r.m12}</td>
+        <td class="action-col"><a href="${r.waUrl}" target="_blank" rel="noopener" class="wa-link" aria-label="Cotizar ${r.name} por WhatsApp">↗</a></td>
+      </tr>
+    `).join("");
+  }
+
+  /* Filter + search */
+  let activeFilter = "all";
+  let searchTerm = "";
+
+  function applyFilters(){
+    let filtered = rows;
+    if(activeFilter !== "all") filtered = filtered.filter(r => r.type === activeFilter);
+    if(searchTerm){
+      const q = searchTerm.toLowerCase();
+      filtered = filtered.filter(r => r.brand.toLowerCase().includes(q) || r.name.toLowerCase().includes(q));
+    }
+    renderRows(filtered);
+  }
+
+  searchInput?.addEventListener("input", e => {
+    searchTerm = e.target.value;
+    applyFilters();
+  });
+
+  filterBtns.forEach(btn => {
+    btn.addEventListener("click", () => {
+      filterBtns.forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      activeFilter = btn.dataset.filter;
+      applyFilters();
+    });
+  });
+
+  renderRows(rows);
+}
+
 /* ---------- Perfumes enteros (perfumes-enteros.html) ---------- */
 function initWholesaleCatalog(){
   const grid = document.getElementById("wholesale-grid"); if(!grid) return;
@@ -437,6 +519,48 @@ function initProduct(){
   const fallback = PRODUCTS.filter(x=>x.id!==p.id).slice(0,4);
   const rel = (related.length?related:fallback).slice(0,4);
   document.title = `${p.name}${p.brand ? " — " + p.brand : ""} · Cruzial Parfums`;
+  const metaDesc = document.querySelector('meta[name="description"]');
+  if(metaDesc) metaDesc.content = `${p.name}${p.brand ? " de " + p.brand : ""} — Decants de 3, 5 y 10 ml. Notas, concentración y compra por WhatsApp. Cruzial Parfums.`;
+  const ogTitle = document.querySelector('meta[property="og:title"]');
+  if(ogTitle) ogTitle.content = `${p.name}${p.brand ? " — " + p.brand : ""} · Cruzial Parfums`;
+  const ogDesc = document.querySelector('meta[property="og:description"]');
+  if(ogDesc) ogDesc.content = `Decants de ${p.name}${p.brand ? " de " + p.brand : ""}. 3, 5 y 10 ml. Compra por WhatsApp.`;
+  const ogImage = document.querySelector('meta[property="og:image"]');
+  if(ogImage && p.imgBottle) ogImage.content = location.origin + '/' + p.imgBottle;
+  else if(ogImage && p.img) ogImage.content = location.origin + '/' + p.img;
+  const canonical = document.querySelector('link[rel="canonical"]');
+  if(canonical) canonical.href = location.origin + '/product.html?id=' + p.id;
+  const twImage = document.querySelector('meta[name="twitter:image"]');
+  if(twImage && p.imgBottle) twImage.content = location.origin + '/' + p.imgBottle;
+  else if(twImage && p.img) twImage.content = location.origin + '/' + p.img;
+  const schemaScript = document.querySelector('script[type="application/ld+json"]');
+  if(schemaScript) {
+    const productUrl = location.origin + '/product.html?id=' + p.id;
+    const productImage = p.imgBottle ? location.origin + '/' + p.imgBottle : p.img ? location.origin + '/' + p.img : location.origin + '/logo.jpeg';
+    const minPrice = Math.min(...Object.values(p.price));
+    const maxPrice = Math.max(...Object.values(p.price));
+    const schemaData = {
+      "@context": "https://schema.org",
+      "@type": "Product",
+      "name": p.name + (p.brand ? " — " + p.brand : ""),
+      "description": p.desc || (p.name + " — Decants de 3, 5 y 10 ml. Compra por WhatsApp en Cruzial Parfums."),
+      "brand": {"@type": "Brand", "name": p.brand || "Cruzial Parfums"},
+      "image": productImage,
+      "url": productUrl,
+      "offers": {
+        "@type": "AggregateOffer",
+        "priceCurrency": "PEN",
+        "lowPrice": String(minPrice),
+        "highPrice": String(maxPrice),
+        "offerCount": "3",
+        "availability": p.discontinued ? "https://schema.org/Discontinued" : "https://schema.org/InStock",
+        "seller": {"@type": "Organization", "name": "Cruzial Parfums"}
+      }
+    };
+    if(p.family) schemaData.category = p.family;
+    if(p.gender) schemaData.additionalProperty = [{"@type": "PropertyValue", "name": "Género", "value": p.gender}];
+    schemaScript.textContent = JSON.stringify(schemaData);
+  }
   const typeLabel = p.type==="arab" ? "PERFUMERÍA ÁRABE" : p.type==="combo" ? "COMBO ÁRABE" : p.type==="niche" ? "NICHO" : "DESIGNER";
   const decantSizes = Object.keys(p.price).map(Number).sort((a,b)=>a-b);
   const decantBtns = decantSizes.map((s,i)=>`
@@ -447,6 +571,7 @@ function initProduct(){
     <button class="size-btn" data-size="${s}" data-group="bottle" data-price="${v}">
       <b>${s} ml</b><span>${money(v)}</span>
     </button>`).join("") : "";
+  const hasStagePhoto = !!(p.imgBottle || p.img);
   const stageMedia = p.imgBottle
     ? `<img id="product-stage-img" src="${p.imgBottle}" alt="${p.brand} ${p.name}" class="product-img" loading="lazy" decoding="async">`
     : p.img
@@ -454,7 +579,7 @@ function initProduct(){
     : bottleSVG(p);
   box.innerHTML = `
   <section class="product-detail">
-    <div class="product-stage" style="--glow:${glow(p)}">
+    <div class="product-stage${hasStagePhoto ? " has-photo" : ""}" style="--glow:${glow(p)}">
       ${stageMedia}
       <span class="tag${p.discontinued?" tag-discontinued":""}">${p.discontinued?"Descontinuado":p.tag}</span>
     </div>
@@ -497,9 +622,17 @@ function initProduct(){
         <a class="btn btn-outline" target="_blank" rel="noopener" href="https://wa.me/${WA}?text=${encodeURIComponent(`Hola ${CONFIG.STORE}, quiero consultar por ${p.brand} ${p.name}.`)}">Consultar <span>↗</span></a>
       </div>
       <p class="detail-note">Envío, disponibilidad y total final se confirman por WhatsApp. Sin pagos dentro de la web.</p>
-      <div class="gift-banner">${GIFT_MESSAGE}</div>`}
-    </div>
-  </section>
+      <div class="gift-banner">${GIFT_MESSAGE}</div>
+      ${p.bottle ? `
+      <div class="cross-sell-bottle">
+        <div class="cross-sell-icon">✦</div>
+        <div>
+          <strong>¿Te gustó? Llévalo en frasco completo.</strong>
+          <p>Precio referencial desde ${money(Math.min(...Object.values(p.bottle)))}. Cotiza por WhatsApp para precio exacto por volumen.</p>
+        </div>
+        <a class="btn btn-outline btn-sm" href="mayorista.html">Ver en Mayorista <span>→</span></a>
+      </div>` : ""}
+      `}
   <section class="relacionados">
     <div class="section-heading">
       <div><p class="eyebrow">COMPLETA TU SELECCIÓN</p><h2 class="h2">También te <em>interesará</em></h2></div>
@@ -763,6 +896,20 @@ function initHeader(){
   onScroll(); window.addEventListener("scroll", onScroll, {passive:true});
 }
 function initReveal(){
+  /* Tarjetas y grillas (producto, colección, combo, testimonio, editorial...) no
+     llevan la clase .reveal en su HTML porque se renderizan en runtime — se la
+     asignamos aquí, con un stagger calculado por posición dentro de su grilla,
+     para que entren en cascada al hacer scroll. Nativo, sin dependencias externas:
+     mismo efecto que un stagger de ScrollTrigger, sin el peso ni la fragilidad
+     de animar por rAF en una librería de terceros (ver nota en el reporte de auditoría). */
+  const CARD_SELECTOR = ".product-card, .collection-card, .combo-card, .testimonial-card, .editorial-card, .badge-item, .step, .step-item, .contact-card, .info-card, .value-card, .feature-card, .team-card, .mini-stat";
+  document.querySelectorAll(CARD_SELECTOR).forEach(el=>{
+    if(el.classList.contains("reveal")) return;
+    el.classList.add("reveal");
+    const siblings = Array.from(el.parentElement ? el.parentElement.children : []).filter(s=>s.matches(CARD_SELECTOR));
+    const i = siblings.indexOf(el);
+    if(i > 0) el.style.transitionDelay = Math.min(i * 70, 420) + "ms";
+  });
   const obs = new IntersectionObserver(entries=>{
     entries.forEach(en=>{ if(en.isIntersecting){ en.target.classList.add("in"); obs.unobserve(en.target); } });
   },{threshold:.12});
@@ -875,6 +1022,7 @@ renderBottles();
 initSearch();
 initCatalog();
 initComboBuilder();
+initWholesaleTable();
 initWholesaleCatalog();
 initProduct();
 renderCart();
