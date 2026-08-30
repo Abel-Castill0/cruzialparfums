@@ -130,30 +130,12 @@
     @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.05); } }
 
     /* ANNOUNCEMENT BAR */
-    .announcement-bar { background: var(--dark); color: #fff; text-align: center; padding: 10px 16px; font-size: 13px; font-weight: 400; letter-spacing: .5px; }
-    .announcement-bar span { opacity: .5; margin: 0 12px; }
-
-    /* HEADER */
-    .site-header { position: sticky; top: 0; z-index: 100; background: var(--bg); transition: box-shadow var(--transition); }
-    .site-header.scrolled { box-shadow: 0 1px 20px rgba(0,0,0,.08); }
-    .header-inner { display: flex; align-items: center; justify-content: space-between; max-width: var(--container); margin: 0 auto; padding: 0 clamp(16px,4vw,48px); height: 72px; }
-    .brand { display: flex; align-items: center; gap: 10px; }
-    .brand-mark img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
-    .brand-word { display: flex; flex-direction: column; line-height: 1.1; }
-    .brand-word strong { font-family: var(--serif); font-size: 18px; font-weight: 600; letter-spacing: 2px; color: var(--darker); }
-    .brand-word small { font-size: 9px; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); font-weight: 500; }
-
-    .main-nav { display: flex; gap: 36px; }
-    .main-nav a { font-size: 13px; font-weight: 500; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text); position: relative; padding: 4px 0; transition: color var(--transition); }
-    .main-nav a::after { content: ''; position: absolute; bottom: 0; left: 0; width: 0; height: 1px; background: var(--gold); transition: width var(--transition); }
-    .main-nav a:hover { color: var(--gold); }
-    .main-nav a:hover::after { width: 100%; }
-
-    .header-actions { display: flex; align-items: center; gap: 8px; }
-    .icon-btn { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 18px; color: var(--text); transition: background var(--transition), color var(--transition); position: relative; }
-    .icon-btn:hover { background: var(--bg-warm); color: var(--gold); }
-    .cart-count { position: absolute; top: 2px; right: 2px; background: var(--gold); color: #fff; font-size: 10px; font-weight: 600; width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
-    .mobile-toggle { display: none; font-size: 22px; }
+    /* ANNOUNCEMENT + HEADER: heredan de assets/styles.css (.announcement,
+       .site-header, .brand, .main-nav, .icon-btn...) para que sean
+       idénticos en todas las páginas. Este override local usaba una altura
+       fija de 72px sin el header de vidrio (blur + reduce en scroll) del
+       resto del sitio, un badge de carrito sin ocultar en 0, y una clase
+       .announcement-bar distinta de .announcement -- ver CLAUDE.md. */
 
     /* HERO — a sangre completa, 1 foto, fondo oscuro */
     /* Hero2.png ya trae 4 frascos + wordmark Cruzial + composición floral
@@ -368,7 +350,7 @@
   </div>
 
   <!-- Announcement Bar -->
-  <div class="announcement-bar">
+  <div class="announcement">
     Envíos a todo el Perú <span>·</span> 100% Originales <span>·</span> Decants Premium
   </div>
 

@@ -120,6 +120,7 @@ input,select,textarea{font-family:inherit}
 .main-nav a:hover{color:var(--gold)}
 .main-nav a:hover::after{width:100%}
 .main-nav a.active{color:var(--gold)}
+.main-nav a.active::after{width:100%}
 .header-actions{display:flex;align-items:center;gap:4px}
 .icon-btn{width:36px;height:36px;display:grid;place-items:center;border:1px solid transparent;border-radius:50%;color:var(--text);position:relative;transition:all .35s var(--ease);font-size:14px}
 .icon-btn:hover{border-color:var(--line);color:var(--gold);transform:translateY(-1px)}
