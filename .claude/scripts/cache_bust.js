@@ -1,0 +1,18 @@
+const fs = require("fs");
+const V = "20260830";
+const files = fs.readdirSync(".").filter(f => f.endsWith(".html"));
+let total = 0;
+files.forEach(f => {
+  let src = fs.readFileSync(f, "utf8");
+  const before = src;
+  src = src.replace(/(href="assets\/styles\.css)(")/g, `$1?v=${V}$2`);
+  src = src.replace(/(src="assets\/(?:data|app|finder)\.js)(")/g, `$1?v=${V}$2`);
+  if (src !== before) {
+    fs.writeFileSync(f, src);
+    const re = new RegExp("\\?v=" + V, "g");
+    const n = (src.match(re) || []).length;
+    total += n;
+    console.log(f, n);
+  }
+});
+console.log("TOTAL", total);
