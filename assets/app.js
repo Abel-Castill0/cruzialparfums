@@ -392,7 +392,8 @@ function initCatalog(){
   const gender = document.getElementById("gender-filter"), family = document.getElementById("family-filter"),
         type = document.getElementById("type-filter"), format = document.getElementById("format-filter"),
         price = document.getElementById("price-filter"),
-        sort = document.getElementById("sort-filter"), count = document.getElementById("result-count");
+        sort = document.getElementById("sort-filter"), count = document.getElementById("result-count"),
+        search = document.getElementById("catalog-search");
   const qs = new URLSearchParams(location.search);
   if(qs.get("family")) family.value = qs.get("family");
   if(qs.get("gender")) gender.value = qs.get("gender");
@@ -402,6 +403,10 @@ function initCatalog(){
   const minP = p => Math.min(...Object.values(p.price));
   const run = ()=>{
     let items = [...PRODUCTS];
+    if(search && search.value.trim()){
+      const q = search.value.trim().toLowerCase();
+      items = items.filter(p=>(p.brand+" "+p.name+" "+p.notes.join(" ")+" "+p.family).toLowerCase().includes(q));
+    }
     if(gender.value!=="all") items = items.filter(p=>p.gender===gender.value);
     if(family.value!=="all") items = items.filter(p=>p.family===family.value);
     if(type.value!=="all") items = items.filter(p=>p.type===type.value);
@@ -447,9 +452,21 @@ function initCatalog(){
     });
   };
   [gender,family,type,format,price,sort].forEach(x=>x?.addEventListener("change",run));
+  search?.addEventListener("input",debounce(run,150));
   document.querySelector("[data-clear-filters]")?.addEventListener("click",()=>{
-    gender.value=family.value=type.value=format.value=price.value="all"; sort.value="featured"; run();
+    gender.value=family.value=type.value=format.value=price.value="all"; sort.value="featured";
+    if(search) search.value="";
+    run();
   });
+  /* Hoja inferior de filtros en mobile: mismo bloque de controles del DOM,
+     solo se le agrega/quita .open (ver CSS, @media max-width:900px). */
+  const sheet = document.getElementById("toolbar-controls");
+  const sheetOverlay = document.querySelector("[data-close-filter-sheet]");
+  const openSheet = ()=>{ sheet.classList.add("open"); sheetOverlay.classList.add("open"); document.body.style.overflow="hidden"; };
+  const closeSheet = ()=>{ sheet.classList.remove("open"); sheetOverlay.classList.remove("open"); document.body.style.overflow=""; };
+  document.querySelector("[data-open-filter-sheet]")?.addEventListener("click",openSheet);
+  sheetOverlay?.addEventListener("click",closeSheet);
+  document.addEventListener("keydown",e=>{ if(e.key==="Escape") closeSheet(); });
   run();
 }
 

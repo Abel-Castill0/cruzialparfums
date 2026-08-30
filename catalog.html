@@ -24,7 +24,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Jost:wght@300;400;500;600&family=Italianno&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/styles.css">
+  <link rel="stylesheet" href="assets/styles.css?v=20260830">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -63,36 +63,44 @@
     .catalog-hero h1 em { font-style: italic; color: var(--gold); }
     .catalog-hero p { font-size: 16px; color: var(--text-light); max-width: 480px; margin: 0 auto; }
 
-    /* FILTER BAR — franja oscura premium: fondo #1a1715, borde dorado #c9a84c,
-       flecha SVG dorada, glow dorado al enfocar/hover, <option> oscuros con
-       texto claro. Pedido explícitamente dos veces por el cliente con estos
-       hex exactos — no sustituir por una variante clara. */
-    .filter-bar { background: #1a1715; padding: clamp(18px,2.4vh,26px) 0; margin-bottom: 32px; }
-    .filter-bar-inner { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    /* TOOLBAR EDITORIAL — reemplaza el panel oscuro anterior (probado dos
+       veces, rechazado dos veces: "sigue sin encajar"). Integrado con la
+       superficie clara de la página en vez de un bloque negro separado;
+       controles nativos (mismo <select>, mismo teclado/accesibilidad) con
+       tratamiento de pill refinado, no de formulario. Un único conjunto de
+       controles en el DOM: en mobile ese mismo bloque se convierte en una
+       hoja inferior (position:fixed + translateY), no una copia duplicada. */
+    .catalog-toolbar { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); background: var(--bg2); padding: 20px 0; margin-bottom: 32px; }
+    .toolbar-row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+    .search-field { position: relative; flex: 1 1 220px; min-width: 200px; }
+    .search-field svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--muted2); pointer-events: none; }
+    .search-field input { width: 100%; padding: 10px 16px 10px 40px; border-radius: 100px; border: 1px solid var(--line-strong); background: #fff; font-family: var(--sans); font-size: 13px; color: var(--text); transition: border-color .3s ease, box-shadow .3s ease; }
+    .search-field input:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px rgba(201,169,98,.16); }
+    .toolbar-controls { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
     .filter-group { position: relative; }
-    .filter-group select { appearance: none; -webkit-appearance: none; min-width: 178px; width: auto; padding: 10px 38px 10px 16px; border-radius: 100px; border: 1px solid #c9a84c; background: #1a1715 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23c9a84c' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 15px center; font-family: var(--sans); font-size: 13px; font-weight: 500; letter-spacing: .02em; color: #f2e9d8; cursor: pointer; transition: box-shadow .3s ease, background-color .3s ease; }
-    .filter-group select option { background: #1a1715; color: #f2e9d8; }
-    .filter-group select:hover { box-shadow: 0 0 10px rgba(201,168,76,.3); }
-    .filter-group select:focus { outline: none; box-shadow: 0 0 0 3px rgba(201,168,76,.16), 0 0 10px rgba(201,168,76,.3); }
-    .clear-filters { padding: 10px 20px; border-radius: 100px; border: 1px solid rgba(242,233,216,.25); background: transparent; font-size: 13px; font-weight: 500; color: #f2e9d8; cursor: pointer; transition: all var(--transition); }
-    .clear-filters:hover { border-color: #c9a84c; color: #c9a84c; box-shadow: 0 0 10px rgba(201,168,76,.3); }
+    .filter-group select, #sort-filter { appearance: none; -webkit-appearance: none; min-width: 0; width: auto; padding: 9px 32px 9px 16px; border-radius: 100px; border: 1px solid var(--line-strong); background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 12px center; font-family: var(--sans); font-size: 12.5px; font-weight: 500; color: var(--text); cursor: pointer; transition: border-color .3s ease, box-shadow .3s ease; }
+    .filter-group select:hover, #sort-filter:hover { border-color: var(--gold); }
+    .filter-group select:focus, #sort-filter:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px rgba(201,169,98,.16); }
+    .clear-filters { padding: 9px 18px; border-radius: 100px; border: none; background: transparent; font-size: 12.5px; font-weight: 500; color: var(--muted); cursor: pointer; transition: color var(--transition); text-decoration: underline; text-underline-offset: 3px; }
+    .clear-filters:hover { color: var(--gold); }
 
-    /* ACTIVE FILTER CHIPS — resumen editorial de la selección actual, no
-       solo un formulario de <select>s. Aparece únicamente cuando hay algún
-       filtro distinto de "Todos"; cada chip limpia SOLO ese filtro. */
-    .active-filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
-    .active-filters:empty { display: none; margin-bottom: 0; }
-    .filter-chip { display: inline-flex; align-items: center; gap: 8px; padding: 7px 8px 7px 16px; border-radius: 100px; background: #1a1715; border: 1px solid #c9a84c; color: #f2e9d8; font-size: 12px; font-weight: 500; letter-spacing: .02em; }
-    .filter-chip b { font-weight: 600; color: #c9a84c; }
-    .filter-chip button { display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: rgba(242,233,216,.1); color: #f2e9d8; font-size: 13px; line-height: 1; transition: background .3s ease, color .3s ease; }
-    .filter-chip button:hover { background: #c9a84c; color: #1a1715; }
+    /* ACTIVE FILTER CHIPS — se mantienen (el problema era el panel negro,
+       no el concepto de chip), ahora sobre la superficie clara del toolbar. */
+    .active-filters { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 14px; }
+    .active-filters:empty { display: none; margin-top: 0; }
+    .filter-chip { display: inline-flex; align-items: center; gap: 8px; padding: 6px 6px 6px 14px; border-radius: 100px; background: #fff; border: 1px solid var(--gold); color: var(--text); font-size: 11.5px; font-weight: 500; letter-spacing: .02em; }
+    .filter-chip b { font-weight: 600; color: var(--gold-deep); }
+    .filter-chip button { display: grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; background: var(--bg2); color: var(--text); font-size: 12px; line-height: 1; transition: background .3s ease, color .3s ease; }
+    .filter-chip button:hover { background: var(--gold); color: #fff; }
+
+    /* Botón "Filtrar y ordenar" — solo visible en mobile (ver breakpoint) */
+    .mobile-filter-trigger { display: none; align-items: center; gap: 8px; padding: 10px 20px; border-radius: 100px; border: 1px solid var(--line-strong); background: #fff; font-family: var(--sans); font-size: 13px; font-weight: 500; color: var(--text); }
+    .filter-sheet-overlay { position: fixed; inset: 0; z-index: 210; background: rgba(0,0,0,.4); opacity: 0; visibility: hidden; transition: opacity .35s ease, visibility .35s ease; }
+    .filter-sheet-overlay.open { opacity: 1; visibility: visible; }
 
     /* RESULTS TOP */
     .results-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; }
     .results-top span { font-size: 14px; color: var(--text-light); font-weight: 400; }
-    .results-top select { appearance: none; -webkit-appearance: none; padding: 8px 34px 8px 14px; border-radius: 100px; border: 1px solid rgba(201,169,98,.35); background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23c9a962' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 13px center; font-family: var(--sans); font-size: 13px; font-weight: 500; color: var(--text); cursor: pointer; transition: border-color .3s ease, box-shadow .3s ease; }
-    .results-top select:hover { border-color: var(--gold); box-shadow: 0 2px 14px -4px rgba(201,169,98,.35); }
-    .results-top select:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px rgba(201,169,98,.16); }
 
     /* PRODUCT GRID */
     /* assets/styles.css define .catalog-layout como grid de 250px 1fr (pensado
@@ -183,15 +191,29 @@
       .main-nav { display: none; }
       .mobile-toggle { display: flex; }
       .product-grid { grid-template-columns: repeat(2, 1fr); }
-      .filter-bar-inner { gap: 8px; }
-      .filter-group select { font-size: 12px; padding: 9px 32px 9px 14px; min-width: 150px; }
+
+      /* Toolbar mobile: la búsqueda queda visible en la superficie; "Filtrar
+         y ordenar" abre .toolbar-controls como hoja inferior en vez de
+         amontonar 6 selects en una barra angosta. Un solo bloque de
+         controles en el DOM -- se reposiciona con CSS, no se duplica. */
+      .toolbar-row { gap: 10px; }
+      .mobile-filter-trigger { display: inline-flex; }
+      .toolbar-controls {
+        position: fixed; left: 0; right: 0; bottom: 0; z-index: 220;
+        background: #fff; border-radius: 20px 20px 0 0; box-shadow: 0 -12px 40px rgba(0,0,0,.18);
+        flex-direction: column; align-items: stretch; gap: 10px;
+        padding: 20px 20px calc(20px + env(safe-area-inset-bottom));
+        max-height: 80vh; overflow-y: auto;
+        transform: translateY(100%); transition: transform .4s var(--ease, ease);
+      }
+      .toolbar-controls.open { transform: translateY(0); }
+      .toolbar-controls::before { content: 'Filtrar y ordenar'; display: block; font-family: var(--serif); font-size: 18px; color: var(--darker); margin-bottom: 4px; }
+      .filter-group, .toolbar-controls #sort-filter { width: 100%; }
+      .filter-group select, .toolbar-controls #sort-filter { width: 100%; font-size: 14px; padding: 12px 36px 12px 16px; }
+      .clear-filters { order: 99; }
     }
     @media (max-width: 560px) {
       .product-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
-      .filter-bar-inner { gap: 8px; flex-direction: column; align-items: stretch; }
-      .filter-group select { font-size: 12px; padding: 10px 32px 10px 14px; min-width: 0; width: 100%; }
-      .filter-group { flex: 1 1 auto; width: 100%; }
-      .clear-filters { width: 100%; text-align: center; }
       .results-top { flex-direction: column; gap: 12px; align-items: flex-start; }
     }
 
@@ -243,69 +265,80 @@
 
     <!-- CATALOG LAYOUT -->
     <section class="catalog-layout">
-      <!-- FILTER BAR -->
-      <div class="filter-bar">
+      <!-- TOOLBAR -->
+      <div class="catalog-toolbar">
         <div class="container">
-          <div class="filter-bar-inner">
-            <div class="filter-group">
-              <select id="gender-filter" aria-label="Género">
-                <option value="all">Todos</option>
-                <option value="women">Mujer</option>
-                <option value="men">Hombre</option>
-                <option value="unisex">Unisex</option>
-              </select>
+          <div class="toolbar-row">
+            <div class="search-field">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="search" id="catalog-search" aria-label="Buscar fragancia" placeholder="Buscar fragancia…">
             </div>
-            <div class="filter-group">
-              <select id="family-filter" aria-label="Familia olfativa">
-                <option value="all">Todas las familias</option>
-                <option value="woody">Amaderado</option>
-                <option value="floral">Floral</option>
-                <option value="amber">Ámbar</option>
-                <option value="citrus">Cítrico</option>
-                <option value="fresh">Fresco</option>
-                <option value="gourmand">Gourmand</option>
-                <option value="spicy">Especiado</option>
+            <button type="button" class="mobile-filter-trigger" data-open-filter-sheet>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/><circle cx="9" cy="7" r="1.6" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="1.6" fill="currentColor" stroke="none"/><circle cx="11" cy="17" r="1.6" fill="currentColor" stroke="none"/></svg>
+              Filtrar y ordenar
+            </button>
+            <div class="toolbar-controls" id="toolbar-controls">
+              <div class="filter-group">
+                <select id="gender-filter" aria-label="Género">
+                  <option value="all">Todos</option>
+                  <option value="women">Mujer</option>
+                  <option value="men">Hombre</option>
+                  <option value="unisex">Unisex</option>
+                </select>
+              </div>
+              <div class="filter-group">
+                <select id="family-filter" aria-label="Familia olfativa">
+                  <option value="all">Todas las familias</option>
+                  <option value="woody">Amaderado</option>
+                  <option value="floral">Floral</option>
+                  <option value="amber">Ámbar</option>
+                  <option value="citrus">Cítrico</option>
+                  <option value="fresh">Fresco</option>
+                  <option value="gourmand">Gourmand</option>
+                  <option value="spicy">Especiado</option>
+                </select>
+              </div>
+              <div class="filter-group">
+                <select id="type-filter" aria-label="Tipo">
+                  <option value="all">Todos los tipos</option>
+                  <option value="arab">Árabe</option>
+                  <option value="designer">Designer</option>
+                  <option value="niche">Nicho</option>
+                  <option value="combo">Combos</option>
+                </select>
+              </div>
+              <div class="filter-group">
+                <select id="format-filter" aria-label="Formato">
+                  <option value="all">Todos los formatos</option>
+                  <option value="bottle">Frasco completo</option>
+                </select>
+              </div>
+              <div class="filter-group">
+                <select id="price-filter" aria-label="Presupuesto">
+                  <option value="all">Todos los precios</option>
+                  <option value="15">Hasta S/ 15</option>
+                  <option value="25">S/ 16 – S/ 25</option>
+                  <option value="26+">S/ 26 a más</option>
+                </select>
+              </div>
+              <select id="sort-filter" aria-label="Ordenar resultados">
+                <option value="featured">Destacados</option>
+                <option value="priceAsc">Precio: menor a mayor</option>
+                <option value="priceDesc">Precio: mayor a menor</option>
+                <option value="name">Nombre A–Z</option>
               </select>
+              <button class="clear-filters" data-clear-filters>Limpiar filtros</button>
             </div>
-            <div class="filter-group">
-              <select id="type-filter" aria-label="Tipo">
-                <option value="all">Todos los tipos</option>
-                <option value="arab">Árabe</option>
-                <option value="designer">Designer</option>
-                <option value="niche">Nicho</option>
-                <option value="combo">Combos</option>
-              </select>
-            </div>
-            <div class="filter-group">
-              <select id="format-filter" aria-label="Formato">
-                <option value="all">Todos los formatos</option>
-                <option value="bottle">Frasco completo</option>
-              </select>
-            </div>
-            <div class="filter-group">
-              <select id="price-filter" aria-label="Presupuesto">
-                <option value="all">Todos los precios</option>
-                <option value="15">Hasta S/ 15</option>
-                <option value="25">S/ 16 – S/ 25</option>
-                <option value="26+">S/ 26 a más</option>
-              </select>
-            </div>
-            <button class="clear-filters" data-clear-filters>Limpiar filtros</button>
           </div>
+          <div id="active-filters" class="active-filters" aria-live="polite"></div>
         </div>
       </div>
+      <div class="filter-sheet-overlay" data-close-filter-sheet></div>
 
       <!-- RESULTS -->
       <div class="container">
-        <div id="active-filters" class="active-filters" aria-live="polite"></div>
         <div class="results-top">
           <span id="result-count">0 perfumes</span>
-          <select id="sort-filter" aria-label="Ordenar resultados">
-            <option value="featured">Destacados</option>
-            <option value="priceAsc">Precio: menor a mayor</option>
-            <option value="priceDesc">Precio: mayor a menor</option>
-            <option value="name">Nombre A–Z</option>
-          </select>
         </div>
         <div id="catalog-grid" class="product-grid"></div>
       </div>
@@ -445,8 +478,8 @@
        esta página por robustez y peso — ver nota de auditoría. */
   });
   </script>
-  <script src="assets/data.js"></script>
-  <script src="assets/app.js"></script>
-  <script src="assets/finder.js"></script>
+  <script src="assets/data.js?v=20260830"></script>
+  <script src="assets/app.js?v=20260830"></script>
+  <script src="assets/finder.js?v=20260830"></script>
 </body>
 </html>
