@@ -210,11 +210,18 @@ input,select,textarea{font-family:inherit}
 .card-img{width:62%;height:auto;object-fit:contain;transition:transform .8s var(--ease);filter:drop-shadow(0 22px 34px rgba(0,0,0,.1));position:relative;z-index:1}
 .product-card:hover .card-img{transform:translateY(-6px) scale(1.03)}
 /* Fotografía real: llena la card de borde a borde, sin marco ni fondo visible alrededor */
-.card-media.has-photo .card-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:none;transition:transform 1s var(--ease)}
+/* object-fit:contain, no cover: las fotos nuevas son estudio con fondo
+   blanco real (no procesado/recortado -- ver CLAUDE.md). "cover" las
+   recortaba para llenar el marco cuadrado, lo que en una botella angosta
+   significaba invadir el producto o dejarlo casi sin margen. "contain"
+   muestra la botella completa siempre; el fondo blanco de la foto se
+   funde con --bg2 de .card-media (ambos casi idénticos) sin costura
+   visible. El inset:16px da aire a la composición en vez de tocar el borde. */
+.card-media.has-photo .card-img{position:absolute;inset:16px;width:calc(100% - 32px);height:calc(100% - 32px);object-fit:contain;filter:none;transition:transform 1s var(--ease)}
 .product-card:hover .card-media.has-photo .card-img{transform:scale(1.045)}
 .product-img{width:min(70%,420px);height:auto;object-fit:contain;animation:float 7s ease-in-out infinite;filter:drop-shadow(0 36px 60px rgba(0,0,0,.12));position:relative;z-index:1;transition:opacity .3s ease,transform .3s ease}
 /* Stage de producto: misma fotografía a sangre completa cuando hay foto real */
-.product-stage.has-photo .product-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;animation:none;filter:none}
+.product-stage.has-photo .product-img{position:absolute;inset:32px;width:calc(100% - 64px);height:calc(100% - 64px);object-fit:contain;animation:none;filter:none}
 @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
 .search-img{width:36px;height:52px;object-fit:contain;border-radius:2px}
 .cart-thumb-img{width:76px;height:92px;object-fit:contain;border:1px solid var(--line);background:var(--bg);padding:4px}
