@@ -668,6 +668,8 @@ function initProduct(){
         <a class="btn btn-outline btn-sm" href="mayorista.html">Ver en Mayorista <span>→</span></a>
       </div>` : ""}
       `}
+    </div>
+  </section>
   <section class="relacionados">
     <div class="section-heading">
       <div><p class="eyebrow">COMPLETA TU SELECCIÓN</p><h2 class="h2">También te <em>interesará</em></h2></div>
