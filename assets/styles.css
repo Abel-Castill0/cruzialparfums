@@ -722,6 +722,12 @@ input,select,textarea{font-family:inherit}
 .search-item .s-name{font-family:var(--serif);font-size:17px;color:#1A1A1A}
 .search-item .s-brand{font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted2)}
 .search-item .s-price{margin-left:auto;font-family:var(--serif);font-size:16px;color:var(--gold);white-space:nowrap}
+/* Mismo tratamiento que .product-card.is-discontinued en el catálogo:
+   el buscador no debe mostrar un descontinuado como si estuviera
+   disponible (ver comentario en initSearch(), assets/app.js). */
+.search-item.is-discontinued{opacity:.6}
+.search-item.is-discontinued .search-img,.search-item.is-discontinued svg{filter:grayscale(.6)}
+.search-item .s-price.s-discontinued{font-family:var(--sans);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted2)}
 .search-empty{grid-column:1/-1;padding:30px 12px;text-align:center;color:var(--muted);font-size:14px}
 
 /* --- Toast --- */
@@ -981,6 +987,7 @@ input,select,textarea{font-family:inherit}
   .cart-panel-head{padding:18px 16px}
   .cart-total{padding:20px 16px}
   .search-item .s-price{display:none}
+  .search-item .s-price.s-discontinued{display:block;margin-left:auto}
   .back-to-top{right:16px;bottom:88px}
   .wa-float{width:52px;height:52px;right:16px;bottom:16px}
   .wholesale-table-wrap{margin:0 -16px}

@@ -265,13 +265,21 @@ function initSearch(){
     const list = q
       ? PRODUCTS.filter(p=>(p.brand+" "+p.name+" "+p.notes.join(" ")+" "+p.family).toLowerCase().includes(q))
       : PRODUCTS.slice(0,6);
+    /* El buscador no excluía descontinuados y los mostraba sin ninguna
+       marca visual ni distinción del catálogo (donde sí se atenúan y se
+       etiquetan) -- un usuario podía buscar, encontrar un producto sin
+       reposición y no tener forma de saberlo hasta entrar. Mismo
+       tratamiento que .product-card.is-discontinued, no ocultarlos. */
     results.innerHTML = list.length ? list.map(p=>{
       const searchImg = p.imgBottle || p.imgSet || p.img;
+      const priceOrStatus = p.discontinued
+        ? `<span class="s-price s-discontinued">Descontinuado</span>`
+        : `<span class="s-price">${money(Math.min(...Object.values(p.price)))}</span>`;
       return `
-      <a class="search-item" href="product.html?id=${p.id}">
+      <a class="search-item${p.discontinued ? " is-discontinued" : ""}" href="product.html?id=${p.id}">
         ${searchImg ? `<img src="${searchImg}" alt="${p.brand} ${p.name}" class="search-img" loading="lazy" decoding="async">` : bottleSVG(p)}
         <span><span class="s-brand">${p.brand}</span><span class="s-name">${p.name}</span></span>
-        <span class="s-price">${money(Math.min(...Object.values(p.price)))}</span>
+        ${priceOrStatus}
       </a>`;
     }).join("") : `<p class="search-empty">No encontramos nada con "${input.value.trim()}". Prueba con otra marca o nota olfativa.</p>`;
   },150));
@@ -426,7 +434,12 @@ function initCatalog(){
     if(sort.value==="priceDesc") items.sort((a,b)=>minP(b)-minP(a));
     if(sort.value==="name") items.sort((a,b)=>a.name.localeCompare(b.name));
     count.textContent = items.length + (items.length===1?" perfume":" perfumes");
-    grid.innerHTML = items.length ? items.map(productCard).join("")
+    /* Bug real: items.map(productCard) pasa el índice del array como 2º
+       argumento (semántica implícita de Array.map), así que productCard
+       recibía un número en vez de "bottle"/"decant" y el filtro "Frasco
+       completo" no cambiaba nada — la card seguía en modo decant siempre. */
+    const cardMode = format.value === "bottle" ? "bottle" : "decant";
+    grid.innerHTML = items.length ? items.map(p => productCard(p, cardMode)).join("")
       : `<div class="empty-state"><strong>Sin resultados</strong>Prueba ajustando los filtros o buscando otra familia olfativa.</div>`;
     attachAddHandlers();
   };
@@ -554,8 +567,27 @@ function initWholesaleCatalog(){
 /* ---------- Página de producto ---------- */
 function initProduct(){
   const box = document.getElementById("product-page"); if(!box) return;
-  const id = new URLSearchParams(location.search).get("id") || "aventus";
-  const p = PRODUCTS.find(x=>x.id===id) || PRODUCTS[0];
+  const id = new URLSearchParams(location.search).get("id");
+  const p = id ? PRODUCTS.find(x=>x.id===id) : null;
+  /* Antes: sin id caía en "aventus" y un id inexistente caía en
+     PRODUCTS[0] -- un enlace roto mostraba OTRO perfume real en
+     silencio, en vez de un estado "no encontrado". Eso es incorrecto
+     para SEO (contenido duplicado bajo muchas URLs) y para confianza
+     del usuario (cree que ve el producto que buscaba). */
+  if(!p){
+    document.title = "Fragancia no encontrada · Cruzial Parfums";
+    const metaRobots = document.querySelector('meta[name="robots"]');
+    if(metaRobots) metaRobots.content = "noindex, follow";
+    box.innerHTML = `<div class="empty-state" style="margin:60px auto;max-width:520px">
+      <strong>Fragancia no encontrada</strong>
+      <p>Esta fragancia ya no está disponible o el enlace es incorrecto.</p>
+      <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:24px">
+        <a class="btn btn-dark" href="catalog.html">Volver al catálogo <span>→</span></a>
+        <button type="button" class="btn btn-outline" data-open-finder>Encontrar una fragancia similar</button>
+      </div>
+    </div>`;
+    return;
+  }
   const related = PRODUCTS.filter(x=>x.id!==p.id && (x.gender===p.gender || x.family===p.family)).slice(0,4);
   const fallback = PRODUCTS.filter(x=>x.id!==p.id).slice(0,4);
   const rel = (related.length?related:fallback).slice(0,4);
