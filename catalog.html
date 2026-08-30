@@ -85,15 +85,19 @@
     .catalog-hero h1 em { font-style: italic; color: var(--gold); }
     .catalog-hero p { font-size: 16px; color: var(--text-light); max-width: 480px; margin: 0 auto; }
 
-    /* FILTER BAR — borde dorado sutil, flecha dorada, glow al enfocar */
-    .filter-bar { padding: 0 0 clamp(16px,2vh,24px); border-bottom: 1px solid var(--border); margin-bottom: 32px; }
+    /* FILTER BAR — franja oscura premium: fondo #1a1715, borde dorado #c9a84c,
+       flecha SVG dorada, glow dorado al enfocar/hover, <option> oscuros con
+       texto claro. Pedido explícitamente dos veces por el cliente con estos
+       hex exactos — no sustituir por una variante clara. */
+    .filter-bar { background: #1a1715; padding: clamp(18px,2.4vh,26px) 0; margin-bottom: 32px; }
     .filter-bar-inner { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
     .filter-group { position: relative; }
-    .filter-group select { appearance: none; -webkit-appearance: none; min-width: 178px; width: auto; padding: 10px 38px 10px 16px; border-radius: 100px; border: 1px solid rgba(201,169,98,.35); background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23c9a962' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 15px center; font-family: var(--sans); font-size: 13px; font-weight: 500; letter-spacing: .02em; color: var(--text); cursor: pointer; transition: border-color .3s ease, box-shadow .3s ease; }
-    .filter-group select:hover { border-color: var(--gold); box-shadow: 0 2px 14px -4px rgba(201,169,98,.35); }
-    .filter-group select:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px rgba(201,169,98,.16), 0 2px 14px -4px rgba(201,169,98,.35); }
-    .clear-filters { padding: 10px 20px; border-radius: 100px; border: 1px solid var(--border); background: transparent; font-size: 13px; font-weight: 500; color: var(--text-light); cursor: pointer; transition: all var(--transition); }
-    .clear-filters:hover { border-color: var(--darker); color: var(--darker); }
+    .filter-group select { appearance: none; -webkit-appearance: none; min-width: 178px; width: auto; padding: 10px 38px 10px 16px; border-radius: 100px; border: 1px solid #c9a84c; background: #1a1715 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23c9a84c' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 15px center; font-family: var(--sans); font-size: 13px; font-weight: 500; letter-spacing: .02em; color: #f2e9d8; cursor: pointer; transition: box-shadow .3s ease, background-color .3s ease; }
+    .filter-group select option { background: #1a1715; color: #f2e9d8; }
+    .filter-group select:hover { box-shadow: 0 0 10px rgba(201,168,76,.3); }
+    .filter-group select:focus { outline: none; box-shadow: 0 0 0 3px rgba(201,168,76,.16), 0 0 10px rgba(201,168,76,.3); }
+    .clear-filters { padding: 10px 20px; border-radius: 100px; border: 1px solid rgba(242,233,216,.25); background: transparent; font-size: 13px; font-weight: 500; color: #f2e9d8; cursor: pointer; transition: all var(--transition); }
+    .clear-filters:hover { border-color: #c9a84c; color: #c9a84c; box-shadow: 0 0 10px rgba(201,168,76,.3); }
 
     /* RESULTS TOP */
     .results-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; }
@@ -103,7 +107,13 @@
     .results-top select:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px rgba(201,169,98,.16); }
 
     /* PRODUCT GRID */
-    .catalog-layout { padding: 0 clamp(16px,4vw,48px) clamp(60px,8vh,100px); }
+    /* assets/styles.css define .catalog-layout como grid de 250px 1fr (pensado
+       para un patrón de sidebar vertical). El markup real de esta página es
+       una barra horizontal (.filter-bar) seguida de los resultados — no un
+       sidebar — así que hay que anular ese grid o .filter-bar queda aplastado
+       en la primera columna de 250px. Root cause de que la barra de filtros
+       se viera mal en TODAS las versiones anteriores, no solo el color. */
+    .catalog-layout { display: block; padding: 0 clamp(16px,4vw,48px) clamp(60px,8vh,100px); }
     .product-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
 
     /* NO RESULTS */
@@ -193,9 +203,10 @@
     }
     @media (max-width: 560px) {
       .product-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
-      .filter-bar-inner { gap: 6px; }
-      .filter-group select { font-size: 11px; padding: 8px 28px 8px 12px; min-width: 0; width: 100%; }
-      .filter-group { flex: 1 1 calc(50% - 6px); }
+      .filter-bar-inner { gap: 8px; flex-direction: column; align-items: stretch; }
+      .filter-group select { font-size: 12px; padding: 10px 32px 10px 14px; min-width: 0; width: 100%; }
+      .filter-group { flex: 1 1 auto; width: 100%; }
+      .clear-filters { width: 100%; text-align: center; }
       .results-top { flex-direction: column; gap: 12px; align-items: flex-start; }
     }
 
