@@ -95,6 +95,23 @@ function changeQty(key,delta){
   i.qty += delta; if(i.qty<=0){ saveCart(c.filter(x=>x.key!==key)); renderCart(); } else { saveCart(c); renderCart(); }
 }
 
+/* ---------- Composición visual de combos (confirmed by client, ver CRUZIAL_COMBO_CONTENTS en data.js) ---------- */
+function comboThumbsHTML(p){
+  const contents = window.CRUZIAL_COMBO_CONTENTS && window.CRUZIAL_COMBO_CONTENTS[p.id];
+  if(!contents) return "";
+  const items = contents.perfumes.map(name => PRODUCTS.find(x => x.name === name)).filter(Boolean);
+  if(!items.length) return "";
+  return `<div class="combo-thumbs" aria-hidden="true">
+    ${items.map(item => {
+      const img = item.imgBottle || item.imgSet || item.img;
+      return img
+        ? `<span class="combo-thumb"><img src="${img}" alt="" loading="lazy" decoding="async"></span>`
+        : `<span class="combo-thumb combo-thumb-svg">${bottleSVG(item)}</span>`;
+    }).join("")}
+  </div>
+  <p class="combo-thumb-caption">${contents.perfumes.join(" · ")}</p>`;
+}
+
 /* ---------- Tarjeta de producto ---------- */
 function productCard(p, mode){
   const isBottle = mode === "bottle";
@@ -136,6 +153,7 @@ function productCard(p, mode){
       <div class="card-body">
         ${brand}
         <h3 class="card-name">${p.name}</h3>
+        ${p.type === "combo" ? comboThumbsHTML(p) : ""}
         <div class="card-meta"><span>${isBottle?`frasco ${minSize} ml`:"desde 3 ml"}</span><b>${money(min)}</b></div>
         ${isBottle && p.price ? `<div class="card-bottle">Prueba antes en decant · desde ${money(Math.min(...Object.values(p.price)))}</div>` : ""}
         ${!isBottle && bottle ? `<div class="card-bottle">Frasco completo · desde ${money(bottle)} (${bSize} ml)</div>` : ""}
@@ -296,14 +314,21 @@ function initComboBuilder(){
     picker.innerHTML = list.map(p => {
       const isSelected = selected.has(p.id);
       const disabled = atLimit && !isSelected;
+      const thumbImg = p.imgBottle || p.imgSet || p.img;
+      const thumb = thumbImg
+        ? `<img src="${thumbImg}" alt="" loading="lazy" decoding="async">`
+        : bottleSVG(p);
       return `
       <button type="button" class="cb-item${isSelected ? " selected" : ""}" data-id="${p.id}" role="option"
         aria-selected="${isSelected}" aria-pressed="${isSelected}" aria-label="${isSelected ? `Quitar ${p.name} de tu combo` : `Añadir ${p.name} a tu combo`}"
         ${disabled ? "disabled" : ""}>
         <span class="cb-item-check" aria-hidden="true">✓</span>
-        <span class="cb-item-brand">${p.brand || p.tag}</span>
-        <span class="cb-item-name">${p.name}</span>
-        <span class="cb-item-price">${money(p.price[size])}</span>
+        <span class="cb-item-thumb">${thumb}</span>
+        <span class="cb-item-info">
+          <span class="cb-item-brand">${p.brand || p.tag}</span>
+          <span class="cb-item-name">${p.name}</span>
+          <span class="cb-item-price">${money(p.price[size])}</span>
+        </span>
       </button>`;
     }).join("") || `<p class="cb-no-results">No encontramos fragancias con ese nombre.</p>`;
     picker.querySelectorAll(".cb-item").forEach(btn => {
@@ -326,12 +351,17 @@ function initComboBuilder(){
     countEl.textContent = `${items.length}/${MAX_ITEMS} fragancias`;
     emptyHint.style.display = items.length ? "none" : "block";
     if(limitNote) limitNote.style.display = items.length >= MAX_ITEMS ? "block" : "none";
-    selectedList.innerHTML = items.map(p => `
+    selectedList.innerHTML = items.map(p => {
+      const thumbImg = p.imgBottle || p.imgSet || p.img;
+      const thumb = thumbImg ? `<img src="${thumbImg}" alt="" loading="lazy" decoding="async">` : bottleSVG(p);
+      return `
       <li>
-        <span>${p.name}</span>
+        <span class="cb-selected-thumb">${thumb}</span>
+        <span class="cb-selected-name">${p.name}</span>
         <span class="cb-item-line-price">${money(p.price[size])}</span>
         <button type="button" class="cb-remove" data-id="${p.id}" aria-label="Quitar ${p.name}">×</button>
-      </li>`).join("");
+      </li>`;
+    }).join("");
     selectedList.querySelectorAll(".cb-remove").forEach(b => {
       b.addEventListener("click", () => toggle(b.dataset.id));
     });

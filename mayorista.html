@@ -19,8 +19,8 @@
   <meta property="og:locale" content="es_PE">
   <meta property="og:image" content="https://abel-castill0.github.io/cruzialparfums/logo.jpeg">
   <meta name="twitter:image" content="https://abel-castill0.github.io/cruzialparfums/logo.jpeg">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%230a0806' stroke='%23c9a962' stroke-width='2'/%3E%3Ctext x='32' y='42' font-family='Georgia' font-size='30' fill='%23e8d5a3' text-anchor='middle'%3EC%3C/text%3E%3C/svg%3E">
-  <link rel="icon" type="image/jpeg" href="logo.jpeg">
+  <link rel="icon" type="image/png" href="img/favicon-32.png">
+  
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Jost:wght@300;400;500;600&family=Italianno&display=swap" rel="stylesheet">
@@ -32,7 +32,8 @@
     .wholesale-hero h1{font-family:'Cormorant Garamond',serif;font-size:clamp(2.6rem,6vw,4.4rem);font-weight:400;color:#fff;line-height:1.1;max-width:680px;margin:0 auto 24px}
     .wholesale-hero h1 em{font-style:italic;color:#c9a962}
     .wholesale-hero p{color:rgba(255,255,255,.6);font-family:'Jost',sans-serif;font-size:1.05rem;max-width:520px;margin:0 auto;line-height:1.7}
-    .wholesale-features{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#e8e4de;border:1px solid #e8e4de;margin:0 auto;max-width:1100px}
+    .wholesale-features{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#e8e4de;border:1px solid #e8e4de;margin:clamp(40px,6vw,64px) auto 0;max-width:1100px;position:relative}
+    .wholesale-features::before{content:'';position:absolute;top:calc(-1 * clamp(40px,6vw,64px) / 2);left:50%;transform:translateX(-50%);width:min(600px,80%);height:1px;background:linear-gradient(90deg,transparent,#c9a962 30%,#c9a962 70%,transparent)}
     .wholesale-features .feat{text-align:center;padding:48px 24px;background:#fff;transition:background .3s}
     .wholesale-features .feat:hover{background:#faf9f7}
     .wholesale-features .feat-icon{font-size:1.6rem;margin-bottom:14px;display:block}
@@ -44,8 +45,8 @@
     .table-section .section-head h2{font-family:'Cormorant Garamond',serif;font-size:clamp(2rem,4vw,2.8rem);font-weight:400;color:#0a0806;margin:0 0 16px}
     .table-section .section-head h2 em{font-style:italic;color:#c9a962}
     .table-section .section-head p{color:#6b6560;font-size:.95rem;max-width:520px;margin:0 auto;line-height:1.7}
-    .wholesale-filters{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:28px}
-    .wholesale-filters .search-input{flex:1 1 280px;padding:12px 16px;border:1px solid #ddd;border-radius:6px;font-family:'Jost',sans-serif;font-size:.9rem;outline:none;transition:border-color .3s;background:#faf9f7}
+    .wholesale-filters{display:flex;flex-direction:row;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:28px}
+    .wholesale-filters .search-input{flex:1 1 auto;width:100%;min-width:220px;height:auto;padding:12px 16px;border:1px solid #ddd;border-radius:6px;font-family:'Jost',sans-serif;font-size:.9rem;outline:none;transition:border-color .3s;background:#faf9f7}
     .wholesale-filters .search-input:focus{border-color:#c9a962}
     .filter-tags{display:flex;gap:8px;flex-wrap:wrap}
     .filter-tag{padding:8px 18px;border:1px solid #ddd;border-radius:100px;background:#fff;font-family:'Jost',sans-serif;font-size:.8rem;color:#6b6560;cursor:pointer;transition:all .25s;letter-spacing:.03em}
@@ -117,7 +118,7 @@
     }
     @media(max-width:600px){
       .wholesale-features{grid-template-columns:1fr}
-      .wholesale-filters{flex-direction:column}
+      .wholesale-filters .search-input{min-width:100%}
     }
   </style>
 </head>
@@ -127,7 +128,7 @@
   <header class="site-header">
     <div class="header-inner">
       <a href="index.html" class="brand" aria-label="Cruzial Parfums inicio">
-        <span class="brand-mark"><img src="logo.jpeg" alt="Cruzial Parfums" class="logo-img"></span>
+        <span class="brand-mark"><img src="img/logo-mark.png" alt="Cruzial Parfums" class="logo-img"></span>
         <span class="brand-word"><strong>CRUZIAL</strong><small>PARFUMS</small></span>
       </a>
       <nav class="main-nav" aria-label="Navegación principal">
@@ -328,7 +329,7 @@
       <div class="footer-grid">
         <div class="footer-brand">
           <a href="index.html" class="brand">
-            <span class="brand-mark"><img src="logo.jpeg" alt="Cruzial Parfums" class="logo-img"></span>
+            <span class="brand-mark"><img src="img/logo-mark.png" alt="Cruzial Parfums" class="logo-img"></span>
             <span class="brand-word"><strong>CRUZIAL</strong><small>PARFUMS</small></span>
           </a>
           <p>Perfumería de descubrimiento. Menos volumen, más criterio. Del frasco original a tu piel.</p>
@@ -391,7 +392,7 @@
   </aside>
 
   <div class="mobile-menu" id="mobile-menu" role="dialog" aria-modal="true" aria-label="Menú de navegación">
-    <img src="logo.jpeg" alt="Cruzial Parfums" class="menu-logo">
+    <img src="img/logo-mark.png" alt="Cruzial Parfums" class="menu-logo">
     <button class="close-mobile" data-close-menu aria-label="Cerrar menú">×</button>
     <a href="catalog.html">Catálogo</a>
     <a href="combos.html">Arma tu combo</a>

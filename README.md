@@ -74,8 +74,8 @@ si el catálogo cambia, esta sección puede desactualizarse; confirmar contra `d
 3. **Redes sociales**: TikTok no tiene usuario oficial en el PDF (enlace genérico); completar si el cliente lo facilita.
 4. **Políticas reales**: envíos, 50% de adelanto y métodos de pago ya reflejan el PDF; ajustar solo si el cliente indica cambios.
 5. **Dominio y analítica**: añadir cuando se despliegue.
-6. **Foto de hero**: `img/hero/hero-crop.jpg` (~250KB, JPEG optimizado). Si se necesita reemplazar, mantener dimensions similares y comprimir para web.
-7. **Mosaico del home**: `img/hero/tile-erba-pura.jpg`, `img/hero/tile-9pm-night-out.jpg` (galería `.hero-visual`, 960×1280) y `img/hero/category-arabe.jpg`, `img/hero/category-designer.jpg` (`.category-split`, 960×1200) son recortes JPEG generados desde fotos reales del catálogo (`.claude/scripts/make_hero_tiles.py` y `make_category_tiles.py`) — no fotos de stock. Si el producto destacado cambia, regenerar con el mismo script apuntando al nuevo PNG de `img/perfumes/`.
+6. **Foto de hero**: `img/hero/khamrah-hero-cutout.webp` (con fallback `.png`) — Khamrah Clásico con el fondo de estudio quitado (`.claude/scripts/remove_bg_hero.py`, flood-fill por gradiente desde el borde, no IA externa) sobre el fondo oscuro del `.hero`. Si el perfume destacado cambia, correr ese script apuntando al nuevo PNG de `img/perfumes/` y ajustar la ruta en `index.html`. `img/hero/hero-crop.jpg` (banner ancho "CRUZIAL PERFUMERÍA") ya no se usa en el home pero se conserva por si se reutiliza en otra pieza de marca.
+7. **Cards de categoría** (home, `.category-split`): `img/hero/category-arabe.jpg` y `img/hero/category-designer.jpg` son recortes JPEG generados desde fotos reales del catálogo (`.claude/scripts/make_category_tiles.py`) — no fotos de stock. Si el producto destacado cambia, regenerar con el mismo script apuntando al nuevo PNG de `img/perfumes/`.
 
 ## Flujo de compra
 

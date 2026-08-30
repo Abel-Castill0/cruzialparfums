@@ -21,7 +21,7 @@
   <meta property="og:image" content="https://abel-castill0.github.io/cruzialparfums/logo.jpeg">
   <meta name="twitter:image" content="https://abel-castill0.github.io/cruzialparfums/logo.jpeg">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%23ffffff' stroke='%23c9a962' stroke-width='2'/%3E%3Ctext x='32' y='42' font-family='Georgia' font-size='30' fill='%23c9a962' text-anchor='middle'%3EC%3C/text%3E%3C/svg%3E">
-  <link rel="icon" type="image/jpeg" href="logo.jpeg">
+  
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Jost:wght@300;400;500;600&family=Italianno&display=swap" rel="stylesheet">
@@ -30,7 +30,7 @@
 <body>
 
   <!-- Announcement Bar -->
-  <div class="announcement-bar">
+  <div class="announcement">
     Decants <span>·</span> 3 · 5 · 10 ml <span>·</span> Frascos originales <span>·</span> Envíos a todo el país
   </div>
 
@@ -38,7 +38,7 @@
   <header class="site-header">
     <div class="header-inner">
       <a href="index.html" class="brand" aria-label="Cruzial Parfums inicio">
-        <span class="brand-mark"><img src="logo.jpeg" alt="Cruzial Parfums" class="logo-img"></span>
+        <span class="brand-mark"><img src="img/logo-mark.png" alt="Cruzial Parfums" class="logo-img"></span>
         <span class="brand-word"><strong>CRUZIAL</strong><small>PARFUMS</small></span>
       </a>
       <nav class="main-nav" aria-label="Navegación principal">
@@ -68,20 +68,16 @@
     <!-- Page Hero -->
     <section class="hero" style="padding:clamp(60px,10vh,100px) 0">
       <div class="container" style="text-align:center;max-width:680px">
-        <p class="hero-eyebrow">Combos Cruzial</p>
+        <p class="eyebrow" style="justify-content:center">Combos Cruzial</p>
         <h1 style="font-family:var(--serif);font-size:clamp(36px,5vw,56px);font-weight:500;line-height:1.1;color:var(--darker);margin-bottom:20px">
           Arma tu selección,<br><em style="font-style:italic;color:var(--gold)">tu regla.</em>
         </h1>
         <p style="font-size:16px;color:var(--text-light);line-height:1.7;max-width:520px;margin:0 auto 32px">
           Elige un set ya curado o combina 3 a 6 fragancias a tu gusto. El contenido exacto se confirma por WhatsApp antes de cerrar tu pedido.
         </p>
-        <div style="display:flex;flex-wrap:wrap;gap:16px 32px;justify-content:center">
-          <a href="#sets-armados" style="font-size:13px;font-weight:500;letter-spacing:1px;text-transform:uppercase;color:var(--gold);display:inline-flex;align-items:center;gap:6px;transition:opacity .3s">
-            Sets ya armados <span style="font-size:16px">↓</span>
-          </a>
-          <a href="#arma-combo" style="font-size:13px;font-weight:500;letter-spacing:1px;text-transform:uppercase;color:var(--gold);display:inline-flex;align-items:center;gap:6px;transition:opacity .3s">
-            Arma tu propio combo <span style="font-size:16px">↓</span>
-          </a>
+        <div style="display:flex;flex-wrap:wrap;gap:16px;justify-content:center">
+          <a href="#sets-armados" class="btn btn-primary">Sets ya armados <span>↓</span></a>
+          <a href="#arma-combo" class="btn btn-outline">Arma tu propio combo <span>↓</span></a>
         </div>
       </div>
     </section>
@@ -152,8 +148,8 @@
               <strong id="cb-total" style="font-family:var(--serif);font-size:24px;font-weight:500;color:var(--gold)">S/ 0.00</strong>
             </div>
             <p class="cb-hint" style="font-size:11.5px;color:var(--muted2);margin-bottom:16px">Mínimo 3 fragancias para armar tu combo.</p>
-            <button class="btn btn-primary full" id="cb-send" type="button" disabled style="width:100%;justify-content:center;display:inline-flex;align-items:center;gap:8px;padding:14px 32px;border-radius:8px;font-size:14px;font-weight:500;letter-spacing:.5px;background:var(--gold);color:#fff;border:none;cursor:pointer;transition:all .35s cubic-bezier(.4,0,.2,1)">
-              Pedir mi combo por WhatsApp <span style="transition:transform .35s cubic-bezier(.4,0,.2,1)">↗</span>
+            <button class="btn btn-primary full" id="cb-send" type="button" disabled>
+              Pedir mi combo por WhatsApp <span>↗</span>
             </button>
           </aside>
         </div>
@@ -186,12 +182,12 @@
   </main>
 
   <!-- Footer -->
-  <footer class="site-footer">
+  <footer class="footer">
     <div class="container">
       <div class="footer-grid">
         <div class="footer-brand">
           <a href="index.html" class="brand">
-            <span class="brand-mark"><img src="logo.jpeg" alt="Cruzial Parfums" class="logo-img"></span>
+            <span class="brand-mark"><img src="img/logo-mark.png" alt="Cruzial Parfums" class="logo-img"></span>
             <span class="brand-word"><strong>CRUZIAL</strong><small>PARFUMS</small></span>
           </a>
           <p>Perfumería de descubrimiento. Menos volumen, más criterio. Del frasco original a tu piel.</p>
@@ -258,7 +254,7 @@
 
   <!-- Mobile Menu -->
   <div class="mobile-menu" id="mobile-menu" role="dialog" aria-modal="true" aria-label="Menú de navegación">
-    <img src="logo.jpeg" alt="Cruzial Parfums" class="menu-logo">
+    <img src="img/logo-mark.png" alt="Cruzial Parfums" class="menu-logo">
     <button class="close-mobile" data-close-menu aria-label="Cerrar menú">×</button>
     <a href="catalog.html">Catálogo</a>
     <a href="combos.html" class="active">Arma tu combo</a>

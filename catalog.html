@@ -19,8 +19,8 @@
   <meta property="og:locale" content="es_PE">
   <meta property="og:image" content="https://abel-castill0.github.io/cruzialparfums/logo.jpeg">
   <meta name="twitter:image" content="https://abel-castill0.github.io/cruzialparfums/logo.jpeg">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%230a0806' stroke='%23c9a962' stroke-width='2'/%3E%3Ctext x='32' y='42' font-family='Georgia' font-size='30' fill='%23e8d5a3' text-anchor='middle'%3EC%3C/text%3E%3C/svg%3E">
-  <link rel="icon" type="image/jpeg" href="logo.jpeg">
+  <link rel="icon" type="image/png" href="img/favicon-32.png">
+  
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Jost:wght@300;400;500;600&family=Italianno&display=swap" rel="stylesheet">
@@ -89,7 +89,7 @@
     .filter-bar { padding: 0 0 clamp(16px,2vh,24px); border-bottom: 1px solid var(--border); margin-bottom: 32px; }
     .filter-bar-inner { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
     .filter-group { position: relative; }
-    .filter-group select { appearance: none; -webkit-appearance: none; padding: 10px 36px 10px 16px; border-radius: 100px; border: 1px solid var(--border); background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b6b6b' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 14px center; font-family: var(--sans); font-size: 13px; font-weight: 500; color: var(--text); cursor: pointer; transition: border-color var(--transition), background var(--transition); }
+    .filter-group select { appearance: none; -webkit-appearance: none; min-width: 178px; width: auto; padding: 10px 36px 10px 16px; border-radius: 100px; border: 1px solid var(--border); background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b6b6b' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 14px center; font-family: var(--sans); font-size: 13px; font-weight: 500; color: var(--text); cursor: pointer; transition: border-color var(--transition), background var(--transition); }
     .filter-group select:hover { border-color: var(--gold); }
     .filter-group select:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px rgba(201,169,98,.12); }
     .clear-filters { padding: 10px 20px; border-radius: 100px; border: 1px solid var(--border); background: transparent; font-size: 13px; font-weight: 500; color: var(--text-light); cursor: pointer; transition: all var(--transition); }
@@ -138,7 +138,7 @@
 
     /* SEARCH PANEL */
     .search-panel { position: fixed; inset: 0; z-index: 200; background: rgba(255,255,255,.97); backdrop-filter: blur(20px); display: flex; flex-direction: column; align-items: center; padding-top: 120px; opacity: 0; visibility: hidden; transition: all .4s ease; }
-    .search-panel.active { opacity: 1; visibility: visible; }
+    .search-panel.open { opacity: 1; visibility: visible; }
     .search-panel .close-panel { position: absolute; top: 24px; right: 32px; font-size: 28px; color: var(--text); }
     .search-input { width: 100%; max-width: 600px; padding: 16px 0; border: none; border-bottom: 2px solid var(--border); font-size: 22px; font-family: var(--serif); background: transparent; outline: none; transition: border-color var(--transition); }
     .search-input:focus { border-color: var(--gold); }
@@ -165,7 +165,7 @@
 
     /* MOBILE MENU */
     .mobile-menu { position: fixed; inset: 0; z-index: 300; background: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 28px; opacity: 0; visibility: hidden; transition: all .4s ease; }
-    .mobile-menu.active { opacity: 1; visibility: visible; }
+    .mobile-menu.open { opacity: 1; visibility: visible; }
     .mobile-menu .menu-logo { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; margin-bottom: 20px; }
     .close-mobile { position: absolute; top: 24px; right: 24px; font-size: 28px; }
     .mobile-menu a { font-family: var(--serif); font-size: 26px; color: var(--darker); }
@@ -175,7 +175,7 @@
     .mobile-menu small { font-size: 11px; letter-spacing: 2px; color: var(--text-light); margin-top: 20px; }
 
     /* WA FLOAT */
-    .wa-float { position: fixed; bottom: 24px; right: 24px; z-index: 90; width: 56px; height: 56px; border-radius: 50%; background: #25d366; color: #fff; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 20px rgba(37,211,102,.35); transition: transform var(--transition); }
+    .wa-float { position: fixed; bottom: 24px; right: 24px; z-index: 90; width: 56px; height: 56px; border-radius: 50%; background: var(--darker); color: var(--gold); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 24px rgba(0,0,0,.4); transition: transform var(--transition); }
     .wa-float:hover { transform: scale(1.08); }
 
     /* BACK TO TOP */
@@ -185,10 +185,10 @@
 
     /* FINDERS */
     .finder-modal { position: fixed; inset: 0; z-index: 250; opacity: 0; visibility: hidden; transition: all .4s ease; }
-    .finder-modal.active { opacity: 1; visibility: visible; }
+    .finder-modal.open { opacity: 1; visibility: visible; }
     .finder-modal-overlay { position: absolute; inset: 0; background: rgba(0,0,0,.5); }
     .finder-panel { position: absolute; top: 0; right: 0; bottom: 0; width: 520px; max-width: 95vw; background: #fff; transform: translateX(100%); transition: transform .4s cubic-bezier(.4,0,.2,1); overflow-y: auto; }
-    .finder-modal.active .finder-panel { transform: translateX(0); }
+    .finder-modal.open .finder-panel { transform: translateX(0); }
     .finder-head { display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; border-bottom: 1px solid var(--border); }
     .finder-kicker { font-size: 12px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); font-weight: 600; }
     .finder-close { font-size: 24px; }
@@ -200,12 +200,13 @@
       .mobile-toggle { display: flex; }
       .product-grid { grid-template-columns: repeat(2, 1fr); }
       .filter-bar-inner { gap: 8px; }
-      .filter-group select { font-size: 12px; padding: 9px 32px 9px 14px; }
+      .filter-group select { font-size: 12px; padding: 9px 32px 9px 14px; min-width: 150px; }
     }
     @media (max-width: 560px) {
       .product-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
       .filter-bar-inner { gap: 6px; }
-      .filter-group select { font-size: 11px; padding: 8px 28px 8px 12px; }
+      .filter-group select { font-size: 11px; padding: 8px 28px 8px 12px; min-width: 0; width: 100%; }
+      .filter-group { flex: 1 1 calc(50% - 6px); }
       .results-top { flex-direction: column; gap: 12px; align-items: flex-start; }
       .footer-grid { grid-template-columns: 1fr; }
       .footer-bottom { flex-direction: column; text-align: center; }
@@ -226,7 +227,7 @@
   <header class="site-header" id="site-header">
     <div class="header-inner">
       <a href="index.html" class="brand" aria-label="Cruzial Parfums inicio">
-        <span class="brand-mark"><img src="logo.jpeg" alt="Cruzial Parfums" class="logo-img"></span>
+        <span class="brand-mark"><img src="img/logo-mark.png" alt="Cruzial Parfums" class="logo-img"></span>
         <span class="brand-word"><strong>CRUZIAL</strong><small>PARFUMS</small></span>
       </a>
       <nav class="main-nav" aria-label="Navegación principal">
@@ -325,7 +326,7 @@
       <div class="footer-grid">
         <div class="footer-brand">
           <a href="index.html" class="brand">
-            <span class="brand-mark"><img src="logo.jpeg" alt="Cruzial Parfums" class="logo-img"></span>
+            <span class="brand-mark"><img src="img/logo-mark.png" alt="Cruzial Parfums" class="logo-img"></span>
             <span class="brand-word"><strong>CRUZIAL</strong><small>PARFUMS</small></span>
           </a>
           <p>Perfumería de descubrimiento. Menos volumen, más criterio. Del frasco original a tu piel.</p>
@@ -398,7 +399,7 @@
 
   <!-- Menú móvil -->
   <div class="mobile-menu" id="mobile-menu" role="dialog" aria-label="Menú de navegación" aria-modal="true">
-    <img src="logo.jpeg" alt="Cruzial Parfums" class="menu-logo">
+    <img src="img/logo-mark.png" alt="Cruzial Parfums" class="menu-logo">
     <button class="close-mobile" data-close-menu aria-label="Cerrar menú">×</button>
     <a href="catalog.html" class="active">Catálogo</a>
     <a href="combos.html">Arma tu combo</a>
