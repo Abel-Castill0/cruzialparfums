@@ -1748,6 +1748,7 @@ input,select,textarea{font-family:inherit}
   text-transform:uppercase;
   color:var(--muted2);
 }
+.footer-bottom a:hover{color:var(--gold-bright)}
 
 /* ---------- Overlay buscador ---------- */
 .overlay{
@@ -2253,7 +2254,22 @@ input,select,textarea{font-family:inherit}
   align-items:center;
   transition:color .3s;
 }
-.mobile-menu a:hover{color:var(--gold-bright)}
+.mobile-menu a:hover,.mobile-menu a.active{color:var(--gold-bright)}
+/* PACKAGE 02 — separa visualmente lo primario (Decants…Mayorista) de lo
+   secundario (Nosotros/Contacto/FAQ): distinto peso tipográfico y tamaño,
+   no un botón/color nuevo — la jerarquía se lee sin depender de dorado. */
+.menu-sep{width:56px;height:1px;background:var(--line-strong);margin:10px 0}
+.mobile-menu a.menu-secondary{
+  font-family:var(--sans);
+  font-size:12px;
+  font-weight:500;
+  letter-spacing:.18em;
+  text-transform:uppercase;
+  color:var(--muted);
+  padding:8px 24px;
+  min-height:auto;
+}
+.mobile-menu a.menu-secondary:hover{color:var(--gold-bright)}
 .mobile-menu .close-mobile{
   position:absolute;
   top:26px;right:26px;

@@ -22,16 +22,15 @@
         <span class="brand-word"><strong>CRUZIAL</strong><small>PARFUMS</small></span>
       </a>
       <nav class="main-nav" aria-label="Navegación principal">
-        <a href="index.html">Inicio</a>
         <a href="catalog.html">Decants</a>
-        <a href="perfumes-enteros.html">Perfumes Enteros</a>
-        <a href="nosotros.html">Nosotros</a>
+        <a href="perfumes-enteros.html">Perfumes</a>
+        <a href="index.html#colecciones">Colecciones</a>
+        <a href="catalog.html#arma-combo">Crea tu Colección</a>
         <a href="mayorista.html">Mayorista</a>
-        <a href="contacto.html">Contacto</a>
       </nav>
       <div class="header-actions">
         <button class="icon-btn" data-open-search aria-label="Buscar fragancias" title="Buscar">⌕</button>
-        <a class="icon-btn" href="catalog.html" aria-label="Decants" title="Decants">◆</a>
+        <a class="icon-btn" href="https://wa.me/51924590921" target="_blank" rel="noopener" aria-label="WhatsApp" title="WhatsApp"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm5.4 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.6-4-4.7-4.2-.1-.2-1.1-1.5-1.1-2.9s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5s.8 1.9.8 2c.1.1.1.3 0 .4-.4.8-.9 1-.7 1.4.6 1.1 1.9 2.3 2.9 2.8.4.2.6.1.9-.1.2-.3.9-1 1.1-1.4.2-.3.4-.3.7-.2l2 .9c.3.2.5.3.6.4.1.2.1.8-.1 1.4Z"/></svg></a>
         <button class="icon-btn" data-open-cart aria-label="Abrir carrito" title="Carrito">◈<span class="cart-count">0</span></button>
         <button class="mobile-toggle" data-open-menu aria-label="Abrir menú">☰</button>
       </div>
@@ -121,31 +120,52 @@
     </section>
   </main>
 
-  <footer class="site-footer">
-    <div class="container footer-grid">
-      <div class="footer-col">
-        <img src="logo.jpeg" alt="Cruzial Parfums" class="footer-logo">
-        <p>Perfumería de descubrimiento. Menos volumen, más criterio. Del frasco original a tu piel.</p>
+  <!-- PACKAGE 02: reemplaza el footer "site-footer" — sin ninguna regla CSS
+       en todo el proyecto (.site-footer/.footer-logo/.footer-copy no existían
+       en styles.css), es decir esta página renderizaba un footer 100% sin
+       estilo. Ahora usa el mismo footer canónico que el resto del sitio. -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="index.html" class="brand">
+            <span class="brand-mark"><img src="logo.jpeg" alt="Cruzial Parfums" class="logo-img"></span>
+            <span class="brand-word"><strong>CRUZIAL</strong><small>PARFUMS</small></span>
+          </a>
+          <p>Perfumería de descubrimiento. Menos volumen, más criterio. Del frasco original a tu piel.</p>
+          <div class="footer-social">
+            <a href="https://wa.me/51924590921" target="_blank" rel="noopener" aria-label="WhatsApp"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm5.4 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.6-4-4.7-4.2-.1-.2-1.1-1.5-1.1-2.9s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5s.8 1.9.8 2c.1.1.1.3 0 .4-.4.8-.9 1-.7 1.4.6 1.1 1.9 2.3 2.9 2.8.4.2.6.1.9-.1.2-.3.9-1 1.1-1.4.2-.3.4-.3.7-.2l2 .9c.3.2.5.3.6.4.1.2.1.8-.1 1.4Z"/></svg></a>
+            <a href="https://www.instagram.com/Cruzial_parfum/" target="_blank" rel="noopener" aria-label="Instagram"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1" fill="currentColor" stroke="none"/></svg></a>
+            <a href="https://tiktok.com" target="_blank" rel="noopener" aria-label="TikTok"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M16.6 3c.4 2.2 1.8 3.6 4 3.9v3c-1.5 0-2.9-.5-4-1.3v5.7c0 4-2.6 6.4-6.1 6.4A5.9 5.9 0 0 1 4.6 14c0-3.5 2.8-6.2 6.5-6.1v3.1c-.3 0-.6-.1-.9-.1a3 3 0 0 0-3.1 3c0 1.8 1.4 3 3.1 3s3.1-1.2 3.1-3.4V3h3.3Z"/></svg></a>
+          </div>
+        </div>
+        <div class="footer-col">
+          <h4>Explorar</h4>
+          <a href="catalog.html">Decants</a>
+          <a href="perfumes-enteros.html">Perfumes</a>
+          <a href="index.html#colecciones">Colecciones</a>
+          <a href="catalog.html#arma-combo">Crea tu Colección</a>
+          <a href="mayorista.html">Mayorista</a>
+        </div>
+        <div class="footer-col">
+          <h4>Ayuda</h4>
+          <a href="nosotros.html">Nosotros</a>
+          <a href="nosotros.html#faq">FAQ</a>
+          <a href="nosotros.html#como-comprar">Cómo comprar</a>
+          <a href="contacto.html">Contacto</a>
+        </div>
+        <div class="footer-col">
+          <h4>Legal</h4>
+          <a href="privacidad.html">Privacidad</a>
+          <a href="terminos.html">Términos</a>
+        </div>
       </div>
-      <div class="footer-col">
-        <h4>Tienda</h4>
-        <a href="catalog.html">Catálogo de decants</a>
-        <a href="perfumes-enteros.html">Perfumes enteros</a>
-        <a href="catalog.html?gender=women">Para ella</a>
-        <a href="catalog.html?gender=men">Para él</a>
-        <a href="catalog.html?gender=unisex">Unisex</a>
-        <a href="catalog.html?type=niche">Nicho</a>
-      </div>
-      <div class="footer-col">
-        <h4>Información</h4>
-        <a href="nosotros.html">Nosotros</a>
-        <a href="mayorista.html">Venta por mayor</a>
-        <a href="contacto.html">Contacto</a>
-        <a href="privacidad.html">Política de privacidad</a>
-        <a href="terminos.html">Términos y condiciones</a>
+      <div class="footer-bottom">
+        <span>© 2026 Cruzial Parfums</span>
+        <a href="https://wa.me/51924590921" target="_blank" rel="noopener">WhatsApp directo</a>
+        <span>Hecho con carácter en Perú</span>
       </div>
     </div>
-    <div class="footer-copy">CRUZIAL PARFUMS · © 2026 · LIMA / PERÚ</div>
   </footer>
 
   <script src="assets/data.js"></script>

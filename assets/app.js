@@ -741,6 +741,16 @@ function initMobileMenu(){
       menu.classList.remove("open"); document.body.style.overflow="";
       triggers.forEach(function(t){t.setAttribute("aria-expanded","false")});
       if(lastFocused) lastFocused.focus();
+      return;
+    }
+    // PACKAGE 02 — trampa de foco: mientras el menú está abierto, Tab/Shift+Tab
+    // se quedan dentro de él en lugar de escapar hacia el contenido de fondo.
+    if(e.key==="Tab" && menu.classList.contains("open")){
+      var focusable = menu.querySelectorAll("a[href], button:not([disabled])");
+      if(!focusable.length) return;
+      var first = focusable[0], last = focusable[focusable.length-1];
+      if(e.shiftKey && document.activeElement===first){ e.preventDefault(); last.focus(); }
+      else if(!e.shiftKey && document.activeElement===last){ e.preventDefault(); first.focus(); }
     }
   });
 }
