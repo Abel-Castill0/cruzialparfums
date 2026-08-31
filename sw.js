@@ -13,7 +13,7 @@
    first, la primera vez que una página real los pide con su ?v= actual.
    ============================================================ */
 
-const CACHE_VERSION = "v4";
+const CACHE_VERSION = "v5"; // logo-mark.png changed bytes at the same bare URL (512px/108KB -> 256px/33KB) -- precached without a ?v=, so old clients keep the stale copy until this bumps.
 const CACHE_NAME = "cruzial-" + CACHE_VERSION;
 const PRECACHE = "cruzial-precache-" + CACHE_VERSION;
 
