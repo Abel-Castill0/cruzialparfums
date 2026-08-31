@@ -1,13 +1,19 @@
 /* ============================================================
-   CRUZIAL PARFUMS — Service Worker v3
+   CRUZIAL PARFUMS — Service Worker v4
    Network-first for HTML (precios y catálogo nunca deben quedar
    pegados a una versión vieja del caché — ver ZERO INVENTED COMMERCE
    en CLAUDE.md: mostrar un precio desactualizado por un caché
-   agresivo es tan grave como inventarlo). Cache-first para
-   CSS/JS/imágenes, que sí cambian de nombre de archivo cuando cambian.
+   agresivo es tan grave como inventarlo). Cache-first para CSS/JS/
+   imágenes: su identidad ahora es la URL completa con ?v=... (ver
+   .claude/scripts/cache_bust.js), así que cache-first + esa versión
+   en la URL ES la invalidación -- no precachear estos archivos por su
+   ruta desnuda (sin ?v=) aquí abajo, sería una segunda estrategia de
+   invalidación en paralelo y nadie volvería a pedir esa URL exacta
+   (quedaría como peso muerto en el caché). Se cachean solos, cache-
+   first, la primera vez que una página real los pide con su ?v= actual.
    ============================================================ */
 
-const CACHE_VERSION = "v3";
+const CACHE_VERSION = "v4";
 const CACHE_NAME = "cruzial-" + CACHE_VERSION;
 const PRECACHE = "cruzial-precache-" + CACHE_VERSION;
 
@@ -23,10 +29,6 @@ const STATIC_ASSETS = [
   "/cruzialparfums/contacto.html",
   "/cruzialparfums/terminos.html",
   "/cruzialparfums/privacidad.html",
-  "/cruzialparfums/assets/styles.css",
-  "/cruzialparfums/assets/data.js",
-  "/cruzialparfums/assets/app.js",
-  "/cruzialparfums/assets/finder.js",
   "/cruzialparfums/img/logo-mark.png",
   "/cruzialparfums/manifest.json"
 ];
