@@ -24,7 +24,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Jost:wght@300;400;500;600&family=Italianno&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/styles.css?v=20260831b">
+  <link rel="stylesheet" href="assets/styles.css?v=20260831c">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -112,21 +112,15 @@
     .catalog-layout { display: block; padding: 0 clamp(16px,4vw,48px) clamp(60px,8vh,100px); }
     .product-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
 
-    /* NO RESULTS */
-    .no-results { grid-column: 1 / -1; text-align: center; padding: 80px 24px; }
-    .no-results h3 { font-family: var(--serif); font-size: 28px; color: var(--darker); margin-bottom: 12px; }
-    .no-results p { font-size: 15px; color: var(--text-light); margin-bottom: 24px; }
-    .no-results .btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 28px; border-radius: var(--radius); font-size: 14px; font-weight: 500; background: var(--darker); color: #fff; transition: all var(--transition); }
-    .no-results .btn:hover { background: #1a1a1a; transform: translateY(-1px); }
+    /* .no-results y su .btn interno eran CSS muerto: el estado vacío real
+       del catálogo lo genera initCatalog() en app.js con class="empty-state"
+       (compartida, assets/styles.css línea 457) -- ninguna ruta del código
+       emite jamás class="no-results". Confirmado revisando el JS, no solo
+       con grep del nombre. */
 
-    /* BUTTONS */
-    .btn { display: inline-flex; align-items: center; gap: 8px; padding: 14px 32px; border-radius: var(--radius); font-size: 14px; font-weight: 500; letter-spacing: .5px; transition: all var(--transition); }
-    .btn-dark { background: var(--darker); color: #fff; }
-    .btn-dark:hover { background: #1a1a1a; transform: translateY(-1px); }
-    .btn-outline { border: 1.5px solid var(--dark); color: var(--dark); background: transparent; }
-    .btn-outline:hover { background: var(--dark); color: #fff; }
-    .btn span { transition: transform var(--transition); }
-    .btn:hover span { transform: translateX(3px); }
+    /* Sistema de botones: unificado en assets/styles.css (ver
+       docs/known-issues.md) -- esta página tenía su propia copia completa
+       de .btn/.btn-dark/.btn-outline en paralelo al sistema compartido. */
 
     /* FOOTER: hereda de assets/styles.css (.footer) para que sea idéntico en
        todas las páginas — ver CLAUDE.md, sección de clases .active vs .open. */
@@ -156,7 +150,6 @@
     .drawer-foot { padding: 20px 24px; border-top: 1px solid var(--border); }
     .drawer-total { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
     .drawer-total span { font-size: 14px; color: var(--text-light); }
-    .btn.full { width: 100%; justify-content: center; }
 
     /* MOBILE MENU */
     .mobile-menu { position: fixed; inset: 0; z-index: 300; background: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 28px; opacity: 0; visibility: hidden; transition: all .4s ease; }
@@ -417,7 +410,7 @@
     <div class="drawer-items" id="drawer-items"></div>
     <div class="drawer-foot">
       <div class="drawer-total"><span>Total estimado</span><strong id="drawer-total">S/ 0.00</strong></div>
-      <a class="btn btn-dark full" href="checkout.html">Ir al checkout <span>→</span></a>
+      <a class="btn btn-primary full" href="checkout.html">Ir al checkout <span>→</span></a>
       <a class="btn btn-outline full" href="catalog.html" style="margin-top:10px">Seguir explorando</a>
     </div>
   </aside>
@@ -478,8 +471,8 @@
        esta página por robustez y peso — ver nota de auditoría. */
   });
   </script>
-  <script src="assets/data.js?v=20260831b"></script>
-  <script src="assets/app.js?v=20260831b"></script>
-  <script src="assets/finder.js?v=20260831b"></script>
+  <script src="assets/data.js?v=20260831c"></script>
+  <script src="assets/app.js?v=20260831c"></script>
+  <script src="assets/finder.js?v=20260831c"></script>
 </body>
 </html>

@@ -43,7 +43,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Jost:wght@300;400;500;600&family=Italianno&display=swap" rel="stylesheet">
   <!-- Styles -->
-  <link rel="stylesheet" href="assets/styles.css?v=20260831b">
+  <link rel="stylesheet" href="assets/styles.css?v=20260831c">
   <!-- Schema.org LocalBusiness -->
   <script type="application/ld+json">
   {
@@ -171,14 +171,14 @@
     .hero-inner { display: block; width: 100%; position: relative; z-index: 1; }
     .hero-copy { max-width: 560px; background: none; padding: 0; border: none; }
     .hero-actions { display: flex; gap: 16px; flex-wrap: wrap; }
-    /* El CTA principal (.btn-dark) es #0a0806 sobre #fff -- perfecto en el
-       resto del sitio, pero invisible sobre este hero oscuro (fondo casi
+    /* El CTA principal (.btn-primary) es #1A1A1A sobre blanco -- perfecto en
+       el resto del sitio, pero invisible sobre este hero oscuro (fondo casi
        idéntico, solo el texto blanco flotaba sin contorno de botón). Fondo
        claro sólido para contraste inmediato; el dorado queda para el hover,
        no para el estado por defecto, así no compite con el wordmark dorado
        de la propia foto. */
-    .hero .btn-dark { background: #fff; color: var(--darker); box-shadow: 0 8px 24px -8px rgba(0,0,0,.5); }
-    .hero .btn-dark:hover { background: var(--gold); color: #fff; transform: translateY(-1px); }
+    .hero .btn-primary { background: #fff; color: var(--darker); box-shadow: 0 8px 24px -8px rgba(0,0,0,.5); }
+    .hero .btn-primary:hover { background: var(--gold); color: #fff; transform: translateY(-1px); }
     .hero .btn-outline { border-color: rgba(255,255,255,.35); color: #fff; }
     .hero .btn-outline:hover { background: #fff; color: var(--darker); }
     @media (max-width: 900px) {
@@ -202,15 +202,15 @@
       .hero-actions { justify-content: center; }
     }
 
-    .btn { display: inline-flex; align-items: center; gap: 8px; padding: 14px 32px; border-radius: var(--radius); font-size: 14px; font-weight: 500; letter-spacing: .5px; transition: all var(--transition); }
-    .btn-dark { background: var(--darker); color: #fff; }
-    .btn-dark:hover { background: #1a1a1a; transform: translateY(-1px); }
-    .btn-outline { border: 1.5px solid var(--dark); color: var(--dark); background: transparent; }
-    .btn-outline:hover { background: var(--dark); color: #fff; }
-    .btn-gold { background: var(--gold); color: #fff; }
-    .btn-gold:hover { background: var(--gold-light); transform: translateY(-1px); }
-    .btn span { transition: transform var(--transition); }
-    .btn:hover span { transform: translateX(3px); }
+    /* Sistema de botones: ahora vive solo en assets/styles.css
+       (.btn/.btn-primary/.btn-outline/.btn-gold) -- esta página tenía su
+       propia copia completa (padding, radius, tracking, colores todos
+       distintos), un segundo sistema en paralelo detectado y documentado
+       en docs/known-issues.md. Fuera de index.html/catalog.html esa copia
+       nunca existió, así que .btn-dark en product.html renderizaba sin
+       ningún relleno/color -- un botón "Ir al checkout" invisible en el
+       drawer del carrito. Eliminada la copia local; solo quedan arriba
+       las excepciones reales de contraste sobre la foto oscura del hero. */
 
     /* TRUST BADGES */
     .trust-badges { padding: 48px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
@@ -318,7 +318,6 @@
     .drawer-foot { padding: 20px 24px; border-top: 1px solid var(--border); }
     .drawer-total { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
     .drawer-total span { font-size: 14px; color: var(--text-light); }
-    .btn.full { width: 100%; justify-content: center; }
 
     /* MOBILE MENU */
     .mobile-menu { position: fixed; inset: 0; z-index: 300; background: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 28px; opacity: 0; visibility: hidden; transition: all .4s ease; }
@@ -417,7 +416,7 @@
       <div class="hero-inner container">
         <div class="hero-copy reveal">
           <div class="hero-actions">
-            <a class="btn btn-dark" href="catalog.html">Explorar Colección <span>→</span></a>
+            <a class="btn btn-primary" href="catalog.html">Explorar Colección <span>→</span></a>
             <button type="button" class="btn btn-outline" data-open-finder>Encontrar mi fragancia <span>→</span></button>
           </div>
         </div>
@@ -696,7 +695,7 @@
     <div class="drawer-items" id="drawer-items"></div>
     <div class="drawer-foot">
       <div class="drawer-total"><span>Total estimado</span><strong id="drawer-total">S/ 0.00</strong></div>
-      <a class="btn btn-dark full" href="checkout.html">Ir al checkout <span>→</span></a>
+      <a class="btn btn-primary full" href="checkout.html">Ir al checkout <span>→</span></a>
       <a class="btn btn-outline full" href="catalog.html" style="margin-top:10px">Seguir explorando</a>
     </div>
   </aside>
@@ -761,9 +760,9 @@
   });
   </script>
 
-  <script src="assets/data.js?v=20260831b"></script>
-  <script src="assets/app.js?v=20260831b"></script>
-  <script src="assets/finder.js?v=20260831b"></script>
+  <script src="assets/data.js?v=20260831c"></script>
+  <script src="assets/app.js?v=20260831c"></script>
+  <script src="assets/finder.js?v=20260831c"></script>
   <script>
   if("serviceWorker" in navigator){
     window.addEventListener("load",function(){

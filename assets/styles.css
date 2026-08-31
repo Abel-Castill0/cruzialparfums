@@ -88,6 +88,15 @@ input,select,textarea{font-family:inherit}
 .section-ivory .btn-outline:hover{color:var(--gold);border-color:var(--gold)}
 .btn-ghost{color:var(--text);padding:17px 10px}
 .btn-ghost:hover{color:var(--gold)}
+/* .btn-gold: variante añadida al fusionar el sistema de botones duplicado
+   de index.html/catalog.html a este único sistema compartido (ver
+   docs/known-issues.md) -- antes era una regla local que solo existía en
+   esas dos páginas, junto con .btn-dark (equivalente a .btn-primary, ya
+   cubierto abajo). Fondo dorado sólido para el único CTA del sitio que lo
+   necesita (invitación al Finder sobre fondo oscuro). */
+.btn-gold{background:var(--gold);color:#fff}
+.btn-gold:hover{background:var(--gold-deep);box-shadow:0 14px 34px -16px rgba(0,0,0,.25);transform:translateY(-2px)}
+.btn-gold:active{transform:scale(.97);transition-duration:.1s}
 .btn.full{width:100%}
 @media(max-width:480px){.btn.full{white-space:normal;text-align:center;row-gap:4px}}
 .btn:disabled{cursor:default;opacity:.85}
@@ -315,11 +324,12 @@ input,select,textarea{font-family:inherit}
 .newsletter .script{font-size:clamp(44px,6vw,64px);display:block;margin-bottom:6px}
 .newsletter h2,.newsletter .h2{margin-bottom:14px}
 .newsletter p{color:var(--muted);max-width:460px;margin-inline:auto;font-size:14.5px}
-.newsletter form{display:flex;gap:0;max-width:520px;margin:34px auto 0;border:1px solid var(--line-strong);background:#FFF}
-.newsletter input{flex:1;background:transparent;border:none;padding:18px 22px;color:var(--text);font-size:14px;letter-spacing:.05em;outline:none}
-.newsletter input::placeholder{color:var(--muted2)}
-.newsletter button{padding:0 28px;background:var(--gold);color:#fff;font-size:10.5px;font-weight:600;letter-spacing:.24em;text-transform:uppercase;transition:filter .3s var(--ease)}
-.newsletter button:hover{filter:brightness(1.08)}
+/* .newsletter form/input/button (formulario de newsletter reemplazado por
+   la invitación al Finder, ver CLAUDE.md "No newsletter form") quedaron sin
+   <form> que los use -- pero ".newsletter button" seguía coincidiendo por
+   selector de etiqueta con el <button class="btn btn-gold"> real del
+   Finder (misma sección, mismo tag), aplastándolo a padding:0 28px. Bug
+   real encontrado al fusionar el sistema de botones, no solo CSS muerto. */
 
 /* --- Trust strip --- */
 .trust-strip{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
@@ -1062,9 +1072,6 @@ input,select,textarea{font-family:inherit}
   .editorial-body h3{font-size:20px}
   .faq summary{font-size:18px;padding:20px 18px}
   .faq details p{padding:0 18px 22px}
-  .newsletter form{flex-direction:column}
-  .newsletter button{padding:16px}
-  .newsletter input{text-align:center}
   .wholesale-band{padding:34px 20px}
   .wholesale-feats div{font-size:11.5px;padding:14px 16px}
   .trust-item{padding:24px 18px}
