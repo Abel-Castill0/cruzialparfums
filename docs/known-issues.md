@@ -43,3 +43,26 @@ fix, not patching the symptom.
 Unifying whatever *remains* of these two parallel systems (hero, filter-bar,
 and other section-specific local styles not yet audited) is still open,
 unscheduled work.
+
+- **Two `.btn` systems, confirmed still live (found in a V8 audit pass,
+  2026-08-31, not yet fixed):** `assets/styles.css` defines the shared
+  button system (`.btn-primary`/`.btn-outline`/`.btn-ghost`, sharp corners
+  `border-radius:0`, 17px/34px padding, 11px font, `.28em`/3.08px letter-
+  spacing, uppercase) and is what every page renders EXCEPT `index.html`
+  and `catalog.html`, which carry a second, independent local `.btn` block
+  (`.btn-dark`/`.btn-outline`/`.btn-gold`, rounded `8px` corners, 14px/32px
+  padding, 14px font, 0.5px letter-spacing). Confirmed via
+  `getComputedStyle` on a live button on each: home/catalog buttons are
+  visibly rounded-pill with tight tracking; every other page's buttons
+  (product, checkout, combos, mayorista, nosotros, contacto, legal pages,
+  404) are sharp-cornered with dramatic small-caps tracking. Same collision
+  class name (`.btn-outline`) resolves to two different visual results
+  depending only on which page you're on. Not fixed in this pass because a
+  sitewide merge changes CTA appearance everywhere and needs a full visual
+  smoke test across every page before shipping — flagged here instead of
+  rushed, per the standing rule above (fix the actual duplication, don't
+  patch around it) and the project's own "no cambio sin revisar coherencia
+  global" instruction for this phase. Next time either component system is
+  touched, resolve this by deleting the local override and adopting the
+  shared system (the established pattern for every prior incident above),
+  not the reverse.
