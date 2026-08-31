@@ -43,7 +43,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Jost:wght@300;400;500;600&family=Italianno&display=swap" rel="stylesheet">
   <!-- Styles -->
-  <link rel="stylesheet" href="assets/styles.css?v=20260830d">
+  <link rel="stylesheet" href="assets/styles.css?v=20260831">
   <!-- Schema.org LocalBusiness -->
   <script type="application/ld+json">
   {
@@ -154,14 +154,15 @@
        aspect-ratio en vez de min-height:100vh, así "cover" no necesita
        recortar (o recorta un margen mínimo solo en pantallas ultra
        anchas, ver max-height más abajo). */
-    .hero { position: relative; aspect-ratio: 1376 / 768; min-height: 460px; max-height: 1000px; display: flex; align-items: center; background: #0a0806 url('img/hero/hero2.webp') center / cover no-repeat; overflow: hidden; padding: 56px 0; }
+    /* Sin headline/eyebrow/párrafo: instrucción explícita del cliente --
+       el hero es solo fotografía + navegación + CTA, la propia foto
+       construye la primera impresión (ver historial de rondas de diseño).
+       align-items:flex-end ancla el único elemento (las acciones) abajo,
+       lectura editorial en vez de flotar centrado sobre la composición. */
+    .hero { position: relative; aspect-ratio: 1376 / 768; min-height: 460px; max-height: 1000px; display: flex; align-items: flex-end; background: #0a0806 url('img/hero/hero2.webp') center / cover no-repeat; overflow: hidden; padding: 0 0 56px; }
     .hero::before { content: ''; position: absolute; inset: 0; background: linear-gradient(100deg, rgba(8,7,5,.92) 0%, rgba(8,7,5,.72) 32%, rgba(8,7,5,.15) 56%, rgba(8,7,5,0) 72%); pointer-events: none; }
     .hero-inner { display: block; width: 100%; position: relative; z-index: 1; }
     .hero-copy { max-width: 560px; background: none; padding: 0; border: none; }
-    .hero-eyebrow { font-size: 12px; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); font-weight: 500; margin-bottom: 20px; }
-    .hero h1 { font-family: var(--serif); font-size: clamp(42px, 5.5vw, 76px); font-weight: 500; line-height: 1.08; color: #fff; margin-bottom: 24px; }
-    .hero h1 em { font-style: italic; color: var(--gold); }
-    .hero-sub { font-size: 17px; color: rgba(255,255,255,.72); line-height: 1.7; margin-bottom: 40px; max-width: 440px; text-shadow: 0 2px 12px rgba(0,0,0,.4); }
     .hero-actions { display: flex; gap: 16px; flex-wrap: wrap; }
     /* El CTA principal (.btn-dark) es #0a0806 sobre #fff -- perfecto en el
        resto del sitio, pero invisible sobre este hero oscuro (fondo casi
@@ -181,11 +182,16 @@
          (top center, ancho 100%, alto automático según su propia relación
          de aspecto) y el texto vive debajo en un panel sólido del mismo
          tono oscuro, con un degradado que funde una zona con la otra. */
-      .hero { min-height: auto; display: block; background: #0a0806 url('img/hero/hero2.webp') top center / 100% auto no-repeat; padding: 0 0 40px; align-items: initial; }
+      /* aspect-ratio de la regla base NO se resetea solo -- el layout
+         apilado necesita alto por contenido (imagen + panel de texto),
+         no la relación de aspecto del hero desktop. Sin este reset el
+         box queda fijo a ~218px en 390px de ancho y overflow:hidden
+         recorta el CTA entero por debajo del borde. Bug real, no
+         cosmético: se detectó midiendo getBoundingClientRect, no a ojo. */
+      .hero { aspect-ratio: auto; min-height: auto; display: block; background: #0a0806 url('img/hero/hero2.webp') top center / 100% auto no-repeat; padding: 0 0 40px; align-items: initial; }
       .hero::before { top: 0; height: 56vw; bottom: auto; background: linear-gradient(180deg, rgba(8,7,5,0) 62%, rgba(8,7,5,.96) 100%); }
       .hero-inner { padding-top: 48vw; }
       .hero-copy { max-width: 100%; text-align: center; margin: 0 auto; padding: 0 24px; }
-      .hero-sub { margin-left: auto; margin-right: auto; }
       .hero-actions { justify-content: center; }
     }
 
@@ -198,12 +204,6 @@
     .btn-gold:hover { background: var(--gold-light); transform: translateY(-1px); }
     .btn span { transition: transform var(--transition); }
     .btn:hover span { transform: translateX(3px); }
-
-    .hero-visual { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; position: relative; }
-    .hero-visual .hero-img { border-radius: var(--radius-lg); overflow: hidden; background: var(--bg-warm); aspect-ratio: 3/4; }
-    .hero-visual .hero-img img { width: 100%; height: 100%; object-fit: cover; }
-    .hero-visual .hero-img:nth-child(2) { transform: translateY(40px); }
-    .hero-visual .hero-img:nth-child(3) { grid-column: span 2; aspect-ratio: 16/9; }
 
     /* TRUST BADGES */
     .trust-badges { padding: 48px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
@@ -347,11 +347,6 @@
     @media (max-width: 900px) {
       .main-nav { display: none; }
       .mobile-toggle { display: flex; }
-      .hero-inner { grid-template-columns: 1fr; gap: 40px; min-height: auto; }
-      .hero-visual { order: -1; }
-      .hero-copy { text-align: center; max-width: 100%; }
-      .hero-sub { margin-left: auto; margin-right: auto; }
-      .hero-actions { justify-content: center; }
       .trust-badges-grid { grid-template-columns: repeat(2, 1fr); }
       .product-grid { grid-template-columns: repeat(2, 1fr); }
       .category-split { grid-template-columns: 1fr; }
@@ -363,9 +358,13 @@
       .product-grid { grid-template-columns: 1fr; }
     }
 
-    /* Reveal animation classes */
+    /* Reveal animation: solo el estado base (0,0,1,0 -- transform de esta
+       página). El estado "revelado" y su transición vienen de .reveal.in
+       en assets/styles.css -- initReveal() en app.js añade la clase "in"
+       vía IntersectionObserver, nunca "revealed"; había una regla
+       .reveal.revealed aquí que ninguna línea de JS disparaba jamás
+       (CSS muerto, ver CLAUDE.md/docs/known-issues.md). */
     .reveal { opacity: 0; transform: translateY(40px); }
-    .reveal.revealed { opacity: 1; transform: translateY(0); transition: opacity .8s ease, transform .8s ease; }
   </style>
 </head>
 <body>
@@ -410,9 +409,6 @@
     <section class="hero">
       <div class="hero-inner container">
         <div class="hero-copy reveal">
-          <p class="hero-eyebrow">Fragrance Curators · Lima / Perú</p>
-          <h1>Descubre tu <em>Firma Olfativa</em></h1>
-          <p class="hero-sub">Decants de fragancias originales de nicho y designer. Prueba, rota y encuentra tu aroma sin comprometer el bolsillo. De Lima a todo el Perú.</p>
           <div class="hero-actions">
             <a class="btn btn-dark" href="catalog.html">Explorar Colección <span>→</span></a>
             <button type="button" class="btn btn-outline" data-open-finder>Encontrar mi fragancia <span>→</span></button>
@@ -758,9 +754,9 @@
   });
   </script>
 
-  <script src="assets/data.js?v=20260830d"></script>
-  <script src="assets/app.js?v=20260830d"></script>
-  <script src="assets/finder.js?v=20260830d"></script>
+  <script src="assets/data.js?v=20260831"></script>
+  <script src="assets/app.js?v=20260831"></script>
+  <script src="assets/finder.js?v=20260831"></script>
   <script>
   if("serviceWorker" in navigator){
     window.addEventListener("load",function(){
