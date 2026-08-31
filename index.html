@@ -43,7 +43,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Jost:wght@300;400;500;600&family=Italianno&display=swap" rel="stylesheet">
   <!-- Styles -->
-  <link rel="stylesheet" href="assets/styles.css?v=20260831c">
+  <link rel="stylesheet" href="assets/styles.css?v=20260831d">
   <!-- Schema.org LocalBusiness -->
   <script type="application/ld+json">
   {
@@ -310,7 +310,9 @@
     .drawer-overlay { position: fixed; inset: 0; z-index: 180; background: rgba(0,0,0,.4); opacity: 0; visibility: hidden; transition: all .3s ease; }
     .drawer-overlay.active { opacity: 1; visibility: visible; }
     .drawer { position: fixed; top: 0; right: 0; bottom: 0; width: 400px; max-width: 90vw; z-index: 190; background: #fff; transform: translateX(100%); transition: transform .4s cubic-bezier(.4,0,.2,1); display: flex; flex-direction: column; }
-    .drawer.active { transform: translateX(0); }
+    /* .drawer.active nunca se dispara -- initDrawer() en app.js añade la
+       clase "open" (ver .drawer.open en assets/styles.css, especificidad
+       más alta, esa es la que realmente abre el carrito aquí también). */
     .drawer-head { display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; border-bottom: 1px solid var(--border); }
     .drawer-head strong { font-size: 16px; }
     .drawer-close { font-size: 24px; color: var(--text); }
@@ -343,11 +345,13 @@
        catalog.html. Este override local (drawer de 520px sin flex-column)
        era incompatible con el CSS de contenido interno compartido. */
 
-    /* PILL FILTERS */
-    .pills { display: flex; gap: 8px; flex-wrap: wrap; }
-    .pill { padding: 8px 20px; border-radius: 100px; font-size: 13px; font-weight: 500; border: 1px solid var(--border); background: transparent; color: var(--text-light); cursor: pointer; transition: all var(--transition); }
-    .pill.active { background: var(--gold); color: #fff; border-color: var(--gold); }
-    .pill:hover { border-color: var(--gold); color: var(--gold); }
+    /* .pills/.pill: copia local encontrada en la auditoría de componentes
+       (ver docs/known-issues.md) -- combos.html ya usa el .pill de
+       assets/styles.css sin copia propia (uppercase, tracking ancho,
+       radius 100px); esta página tenía la suya (normal-case, tracking
+       normal, radius 100px pero padding/font distintos), así que el
+       filtro de humor de home y el selector de tamaño del combo builder
+       se veían como dos componentes distintos sin ninguna razón real. */
 
     /* RESPONSIVE */
     @media (max-width: 900px) {
@@ -760,9 +764,9 @@
   });
   </script>
 
-  <script src="assets/data.js?v=20260831c"></script>
-  <script src="assets/app.js?v=20260831c"></script>
-  <script src="assets/finder.js?v=20260831c"></script>
+  <script src="assets/data.js?v=20260831d"></script>
+  <script src="assets/app.js?v=20260831d"></script>
+  <script src="assets/finder.js?v=20260831d"></script>
   <script>
   if("serviceWorker" in navigator){
     window.addEventListener("load",function(){

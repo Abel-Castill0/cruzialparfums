@@ -44,25 +44,43 @@ Unifying whatever *remains* of these two parallel systems (hero, filter-bar,
 and other section-specific local styles not yet audited) is still open,
 unscheduled work.
 
-- **Two `.btn` systems, confirmed still live (found in a V8 audit pass,
-  2026-08-31, not yet fixed):** `assets/styles.css` defines the shared
-  button system (`.btn-primary`/`.btn-outline`/`.btn-ghost`, sharp corners
-  `border-radius:0`, 17px/34px padding, 11px font, `.28em`/3.08px letter-
-  spacing, uppercase) and is what every page renders EXCEPT `index.html`
-  and `catalog.html`, which carry a second, independent local `.btn` block
-  (`.btn-dark`/`.btn-outline`/`.btn-gold`, rounded `8px` corners, 14px/32px
-  padding, 14px font, 0.5px letter-spacing). Confirmed via
-  `getComputedStyle` on a live button on each: home/catalog buttons are
-  visibly rounded-pill with tight tracking; every other page's buttons
-  (product, checkout, combos, mayorista, nosotros, contacto, legal pages,
-  404) are sharp-cornered with dramatic small-caps tracking. Same collision
-  class name (`.btn-outline`) resolves to two different visual results
-  depending only on which page you're on. Not fixed in this pass because a
-  sitewide merge changes CTA appearance everywhere and needs a full visual
-  smoke test across every page before shipping — flagged here instead of
-  rushed, per the standing rule above (fix the actual duplication, don't
-  patch around it) and the project's own "no cambio sin revisar coherencia
-  global" instruction for this phase. Next time either component system is
-  touched, resolve this by deleting the local override and adopting the
-  shared system (the established pattern for every prior incident above),
-  not the reverse.
+- **Two `.btn` systems (FIXED, 2026-08-31, same day as the finding
+  above):** `assets/styles.css` had the shared button system
+  (`.btn-primary`/`.btn-outline`/`.btn-ghost`, sharp corners, 17px/34px
+  padding, 11px font, `.28em` tracking, uppercase); `index.html` and
+  `catalog.html` carried an independent local `.btn` block
+  (`.btn-dark`/`.btn-outline`/`.btn-gold`, rounded 8px corners, 14px/32px
+  padding, 0.5px tracking) that every other page never had. Consolidated:
+  local blocks deleted, `.btn-dark` usages renamed to `.btn-primary`,
+  `.btn-gold` added properly to the shared system. Verified via
+  `getComputedStyle` across all 12 HTML pages. Fusing it surfaced two real
+  bugs the duplication had been hiding, not just a cosmetic mismatch:
+  1. `product.html` has no local `<style>` block at all, so its cart-drawer
+     "Ir al checkout" link (`class="btn btn-dark"`) had never had a
+     background or text color — invisible on white.
+  2. `assets/styles.css` still had `.newsletter button{padding:0 28px;...}`
+     orphaned from the newsletter form removed rounds ago (see "No
+     newsletter form" in `CLAUDE.md`). By tag-selector specificity it beat
+     the new `.btn-gold` and crushed the Finder-invite button to 15px tall.
+  Both fixed alongside the merge.
+
+- **Same parallel-system pattern, found again in a systematic component
+  audit (2026-08-31): `.pill`.** `combos.html`'s 3/5/10ml selector already
+  used the shared `.pill`/`.pill.active` (uppercase, wide tracking, 100px
+  radius). `index.html`'s "Todos/Mujer/Hombre/Unisex/Nicho" mood filter
+  had its own local `.pill`/`.pill.active` (normal case, tighter tracking,
+  different padding) — same class name, two different-looking components
+  a few clicks apart. Fixed the same way: local override deleted. Also
+  removed a confirmed-dead `.drawer.active` rule in both files (`initDrawer()`
+  in `app.js` only ever toggles `.open`, never `.active` — `.drawer.open`
+  in the shared stylesheet is what actually opens the cart drawer on every
+  page, including these two; `.drawer.active` never fired). Checked
+  `.overlay.active` before touching anything near it: that one IS live
+  (`initSearch()` toggles it on the search-panel overlay), left alone.
+  Audited the same way and found no collision: `.badge-*` (index-only, no
+  shared equivalent), form `<input>`/`<select>` (no `.input`/`.select`
+  component class exists anywhere to collide with). `.container`,
+  `.drawer`, `.mobile-menu`, `.wa-float`, `.back-to-top`, `.search-input`
+  are duplicated word-for-word between `index.html`/`catalog.html` (harmless
+  DRY violation, not a visual bug — flagged here as a known "copy exists in
+  two places" spot, not urgent) rather than genuinely conflicting.
