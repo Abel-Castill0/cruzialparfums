@@ -186,12 +186,21 @@
        drawer del carrito. Eliminada la copia local; solo quedan arriba
        las excepciones reales de contraste sobre la foto oscura del hero. */
 
-    /* TRUST BADGES */
-    .trust-badges { padding: 48px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
-    .trust-badges-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 32px; text-align: center; }
-    .badge-item { display: flex; flex-direction: column; align-items: center; gap: 12px; }
-    .badge-icon { width: 48px; height: 48px; border-radius: 50%; background: var(--bg-warm); display: flex; align-items: center; justify-content: center; font-size: 22px; color: var(--gold); }
-    .badge-text { font-size: 14px; font-weight: 500; letter-spacing: .5px; color: var(--text); }
+    /* TRUST BADGES — página 2 del mockup: superficie clara, aire, iconos
+       sueltos (sin círculo beige "bubble"), divisores finos en vez de
+       tarjetas. Antes era 4 círculos idénticos con icono+label -- leía a
+       landing SaaS/e-commerce genérica. Ahora cada bloque suma una
+       descripción de una línea (datos reales: SIZES/DELIVERY en
+       assets/data.js, no texto inventado) y el divisor reemplaza el
+       borde-caja que encerraba todo el strip. */
+    .trust-badges { padding: clamp(56px,7vh,84px) 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .trust-badges-grid { display: grid; grid-template-columns: repeat(4, 1fr); }
+    .badge-item { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 14px; padding: 0 clamp(12px,2vw,28px); position: relative; }
+    .badge-item:not(:nth-child(4n+1))::before { content: ''; position: absolute; left: 0; top: 4px; bottom: 4px; width: 1px; background: var(--border); }
+    .badge-icon { width: 28px; height: 28px; color: var(--gold); }
+    .badge-icon svg { width: 100%; height: 100%; }
+    .badge-text { font-family: var(--serif); font-size: 17px; font-weight: 500; color: var(--darker); }
+    .badge-desc { font-size: 12.5px; color: var(--text-light); line-height: 1.55; max-width: 200px; }
 
     /* SECTION HEADINGS */
     .section-heading { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 48px; flex-wrap: wrap; gap: 16px; }
@@ -203,6 +212,25 @@
 
     /* PRODUCT GRID */
     .product-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+    /* "Los Más Deseados" reutiliza productCard()/.product-card tal cual
+       (misma card que catalog.html a propósito -- una sola fuente de
+       verdad visual) pero necesitaba dejar de ser un grid 4-up idéntico
+       al catálogo, o pierde el sentido de "selección". Escala solo el
+       primer resultado -- funciona con cualquier conteo que devuelva el
+       filtro de género/tipo (incluida una sola coincidencia), a
+       diferencia de un layout fijo "1 grande + 3 chicas" que se rompe en
+       cuanto el filtro no da exactamente 4. Scoped a #featured-grid: NO
+       toca .product-card ni .product-grid en catalog.html. */
+    #featured-grid.product-grid { grid-template-columns: repeat(4, 1fr); grid-auto-rows: 1fr; }
+    #featured-grid .product-card:first-child { grid-column: span 2; grid-row: span 2; }
+    #featured-grid .product-card:first-child .card-media { aspect-ratio: auto; height: 100%; }
+    #featured-grid .product-card:first-child .card-name { font-size: 27px; }
+    /* top-right, no top-left: .tag (bestseller/descontinuado) ya vive ahí */
+    #featured-grid .product-card:first-child::after { content: 'Selección Cruzial'; position: absolute; top: 16px; right: 16px; z-index: 2; font-family: var(--sans); font-size: 9.5px; font-weight: 500; letter-spacing: .22em; text-transform: uppercase; color: #fff; background: var(--darker); padding: 7px 12px; }
+    @media (max-width: 900px) {
+      #featured-grid .product-card:first-child { grid-column: span 2; grid-row: span 1; }
+      #featured-grid .product-card:first-child .card-media { aspect-ratio: 1/1.05; height: auto; }
+    }
 
     /* CATEGORY SPLIT — dos mundos editoriales, no dos cards de producto.
        border-radius:16px (var(--radius-lg)) era la única esquina redondeada
@@ -211,11 +239,19 @@
        radius de 16px aquí leía a "card de app", no a la misma marca.
        Corregido a 0 para hablar el mismo idioma visual que el resto. */
     .category-split { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
-    .category-card { position: relative; overflow: hidden; aspect-ratio: 4/5; cursor: pointer; }
-    .category-card img { width: 100%; height: 100%; object-fit: cover; transition: transform .8s var(--ease, cubic-bezier(.22,1,.36,1)), filter .8s ease; filter: brightness(.94); }
-    .category-card:hover img { transform: scale(1.045); filter: brightness(1); }
-    .category-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(8,7,5,.92) 0%, rgba(8,7,5,.45) 42%, rgba(8,7,5,.05) 75%); display: flex; flex-direction: column; justify-content: flex-end; padding: 40px; transition: background var(--transition); }
-    .category-card:hover .category-overlay { background: linear-gradient(to top, rgba(8,7,5,.96) 0%, rgba(8,7,5,.55) 46%, rgba(8,7,5,.08) 78%); }
+    .category-card { position: relative; overflow: hidden; aspect-ratio: 4/5; cursor: pointer; background: var(--darker); }
+    /* category-arabe.jpg / category-designer.jpg son recortes de foto de
+       producto sobre fondo gris de estudio (ver .claude/scripts/
+       make_category_tiles.py) -- no la fotografía editorial oscura de
+       ambiente que pide la página 3 del mockup. Sin un asset nuevo del
+       cliente no hay contenido que sustituya eso, así que el peso oscuro
+       tiene que venir de aquí: brightness bajo + overlay parejo en todo
+       el marco (no solo degradado hacia el borde inferior, que dejaba el
+       60% superior en gris claro de estudio). */
+    .category-card img { width: 100%; height: 100%; object-fit: cover; transition: transform .8s var(--ease, cubic-bezier(.22,1,.36,1)), filter .8s ease; filter: brightness(.5) saturate(1.1) contrast(1.05); }
+    .category-card:hover img { transform: scale(1.045); filter: brightness(.58) saturate(1.1) contrast(1.05); }
+    .category-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(8,7,5,.95) 0%, rgba(8,7,5,.68) 45%, rgba(8,7,5,.5) 100%); display: flex; flex-direction: column; justify-content: flex-end; padding: 40px; transition: background var(--transition); }
+    .category-card:hover .category-overlay { background: linear-gradient(to top, rgba(8,7,5,.97) 0%, rgba(8,7,5,.74) 48%, rgba(8,7,5,.56) 100%); }
     /* Eyebrow editorial por categoría -- adapta el patrón del mockup
        (micro-label dorado sobre el título) a la propia lógica olfativa de
        Cruzial, no es texto copiado de ahí. Puramente atmosférico/
@@ -246,19 +282,37 @@
     .step-item p { font-size: 15px; color: #B8B3AA; line-height: 1.6; max-width: 280px; margin: 0 auto; }
 
     /* BRAND LOGOS */
-    .brand-logos { padding: 48px 0; overflow: hidden; }
-    .brand-logos-track { display: flex; gap: 56px; align-items: center; justify-content: center; flex-wrap: wrap; }
-    .brand-logos-track span { font-family: var(--serif); font-size: 22px; font-weight: 500; color: var(--text-light); opacity: .45; letter-spacing: 1px; white-space: nowrap; transition: opacity var(--transition); }
-    .brand-logos-track span:hover { opacity: .8; }
+    /* BRAND RAIL — opacity:.45 sobre un gris ya medio (--text-light) caía
+       muy por debajo de un contraste legible; leía a "deshabilitado" en
+       vez de "marca discreta". Un solo tono sólido, sin opacity, resuelve
+       el contraste; row-gap explícito + un ancho mínimo por item
+       balancea el salto de línea de "Yves Saint Laurent" en vez de
+       dejarlo colgando con menos aire que el resto. */
+    .brand-logos { padding: clamp(40px,6vh,64px) 0; overflow: hidden; }
+    .brand-logos-track { display: flex; column-gap: clamp(28px,4vw,56px); row-gap: 22px; align-items: center; justify-content: center; flex-wrap: wrap; }
+    .brand-logos-track span { font-family: var(--serif); font-size: 21px; font-weight: 500; color: #5C5C5C; letter-spacing: .5px; white-space: nowrap; transition: color var(--transition); }
+    .brand-logos-track span:hover { color: var(--gold); }
 
     /* TESTIMONIALS */
-    .testimonials { padding: clamp(60px,8vh,100px) 0; background: var(--bg); }
-    .testimonials-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; margin-top: 48px; }
-    .testimonial-card { background: var(--bg-ivory); border-radius: var(--radius-lg); padding: 36px 32px; }
+    /* NUESTRO COMPROMISO — split dark/light, no otra fila de 3 cards
+       redondeadas sobre fondo claro (mismo problema de radius-lg que ya
+       se corrigió en .category-split). El panel oscuro da el segundo
+       punto de peso negro sin encadenar tres bloques 100% negros
+       seguidos (Cómo trabajamos → Compromiso → Finder); el panel claro
+       mantiene los 3 compromisos como lista con divisores finos, no
+       burbujas -- mismo lenguaje que .badge-item de la value strip. */
+    .commitment-grid { display: grid; grid-template-columns: 1fr 1.15fr; }
+    .commitment-intro { background: var(--ink-deep); color: var(--on-dark); display: flex; flex-direction: column; justify-content: center; padding: clamp(48px,6vw,88px); }
+    .commitment-intro .eyebrow { color: var(--gold); }
+    .commitment-intro h2 { font-family: var(--serif); font-size: clamp(30px,3.2vw,42px); font-weight: 500; color: var(--on-dark); margin: 20px 0 18px; line-height: 1.15; }
+    .commitment-intro h2 em { font-style: italic; color: var(--gold); }
+    .commitment-lead { color: var(--on-dark-muted); font-size: 15px; line-height: 1.7; max-width: 320px; }
+    .commitment-list { background: var(--bg-ivory); display: flex; flex-direction: column; justify-content: center; padding: clamp(40px,6vw,80px); }
+    .commitment-item { padding: 24px 0; border-bottom: 1px solid var(--border); }
+    .commitment-item:last-child { border-bottom: none; }
+    .commitment-label { font-family: var(--serif); font-size: 19px; font-weight: 500; color: var(--darker); display: block; margin-bottom: 8px; }
+    .commitment-item p { font-size: 14.5px; line-height: 1.7; color: var(--text-light); max-width: 460px; }
     .testimonial-stars { color: var(--gold); font-size: 16px; margin-bottom: 16px; letter-spacing: 2px; }
-    .testimonial-text { font-size: 15px; line-height: 1.7; color: var(--text); margin-bottom: 20px; font-style: italic; }
-    .testimonial-author { font-size: 13px; font-weight: 600; color: var(--darker); letter-spacing: .5px; }
-    .testimonial-author small { font-weight: 400; color: var(--text-light); display: block; margin-top: 2px; }
 
     /* FINDER INVITE (clase .newsletter heredada de un rediseño anterior
        que reemplazó el formulario de newsletter por la invitación al
@@ -346,11 +400,14 @@
     @media (max-width: 900px) {
       .main-nav { display: none; }
       .mobile-toggle { display: flex; }
-      .trust-badges-grid { grid-template-columns: repeat(2, 1fr); }
+      .trust-badges-grid { grid-template-columns: repeat(2, 1fr); row-gap: 32px; }
+      .badge-item:not(:nth-child(4n+1))::before { display: none; }
+      .badge-item:nth-child(2n)::before { content: ''; display: block; position: absolute; left: 0; top: 4px; bottom: 4px; width: 1px; background: var(--border); }
       .product-grid { grid-template-columns: repeat(2, 1fr); }
       .category-split { grid-template-columns: 1fr; }
       .steps-grid { grid-template-columns: 1fr; gap: 40px; }
-      .testimonials-grid { grid-template-columns: 1fr; }
+      .commitment-grid { grid-template-columns: 1fr; }
+      .commitment-lead { max-width: none; }
       .section-heading { flex-direction: column; align-items: flex-start; }
     }
     @media (max-width: 560px) {
@@ -419,27 +476,31 @@
         <div class="trust-badges-grid">
           <div class="badge-item reveal">
             <div class="badge-icon">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8l4-2v10l-4-2"/></svg>
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8l4-2v10l-4-2"/></svg>
             </div>
             <span class="badge-text">Envío en 24h</span>
+            <p class="badge-desc">A todo el Perú vía Shalom y Olva</p>
           </div>
           <div class="badge-item reveal">
             <div class="badge-icon">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
             </div>
             <span class="badge-text">100% Auténticos</span>
+            <p class="badge-desc">Preparados desde frascos originales</p>
           </div>
           <div class="badge-item reveal">
             <div class="badge-icon">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"><path d="M9 2h6v4.5l3.5 9A2 2 0 0116.7 19H7.3a2 2 0 01-1.8-3.5L9 6.5V2z"/><path d="M6.5 14h11" stroke-width="1.1"/></svg>
             </div>
             <span class="badge-text">Decants Premium</span>
+            <p class="badge-desc">Fraccionados en 3, 5 y 10 ml</p>
           </div>
           <div class="badge-item reveal">
             <div class="badge-icon">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
             </div>
             <span class="badge-text">Asesoría Personalizada</span>
+            <p class="badge-desc">Resuelve tus dudas por WhatsApp</p>
           </div>
         </div>
       </div>
@@ -542,25 +603,24 @@
 
     <!-- COMPROMISO -->
     <section class="testimonials">
-      <div class="container">
-        <div class="section-heading reveal" style="justify-content: center; text-align: center;">
-          <div>
-            <p class="eyebrow" style="text-align:center">Cómo trabajamos</p>
-            <h2>Nuestro <em>compromiso</em></h2>
-          </div>
+      <div class="commitment-grid">
+        <div class="commitment-intro reveal">
+          <p class="eyebrow">Detrás de cada pedido</p>
+          <h2>Nuestro <em>compromiso</em></h2>
+          <p class="commitment-lead">Tres cosas que no negociamos, pedido tras pedido.</p>
         </div>
-        <div class="testimonials-grid">
-          <div class="testimonial-card reveal">
-            <p class="testimonial-text">Cada decant se prepara desde un frasco auténtico de la casa oficial, con jeringa y envase nuevos por cliente y producto — nunca se reutiliza material entre pedidos.</p>
-            <div class="testimonial-author">Preparación</div>
+        <div class="commitment-list">
+          <div class="commitment-item reveal">
+            <span class="commitment-label">Preparación</span>
+            <p>Cada decant se prepara desde un frasco auténtico de la casa oficial, con jeringa y envase nuevos por cliente y producto — nunca se reutiliza material entre pedidos.</p>
           </div>
-          <div class="testimonial-card reveal">
-            <p class="testimonial-text">Un asesor responde por WhatsApp para ayudarte a elegir tamaño, familia olfativa e intensidad antes de confirmar tu pedido — sin bots ni respuestas genéricas.</p>
-            <div class="testimonial-author">Asesoría</div>
+          <div class="commitment-item reveal">
+            <span class="commitment-label">Asesoría</span>
+            <p>Un asesor responde por WhatsApp para ayudarte a elegir tamaño, familia olfativa e intensidad antes de confirmar tu pedido — sin bots ni respuestas genéricas.</p>
           </div>
-          <div class="testimonial-card reveal">
-            <p class="testimonial-text">Cada decant se empaqueta con protección para el envío y se confirma con el 50% de adelanto antes de despachar, según el método que elijas.</p>
-            <div class="testimonial-author">Envío</div>
+          <div class="commitment-item reveal">
+            <span class="commitment-label">Envío</span>
+            <p>Cada decant se empaqueta con protección para el envío y se confirma con el 50% de adelanto antes de despachar, según el método que elijas.</p>
           </div>
         </div>
       </div>
