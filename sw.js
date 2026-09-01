@@ -13,7 +13,7 @@
    first, la primera vez que una página real los pide con su ?v= actual.
    ============================================================ */
 
-const CACHE_VERSION = "v6"; // scope-relative precache URLs (was hardcoded /cruzialparfums/, broke install on any origin without that subpath -- e.g. local preview at the domain root).
+const CACHE_VERSION = "v7"; // strict scope-relative precache: missing app-shell assets must fail install.
 const CACHE_NAME = "cruzial-" + CACHE_VERSION;
 const PRECACHE = "cruzial-precache-" + CACHE_VERSION;
 
@@ -43,23 +43,19 @@ const STATIC_ASSETS = [
   "manifest.json"
 ].map(toScopeURL);
 
-/* Install: precache static assets. Cada URL se valida por separado (no
-   Cache.addAll, que aborta TODO el precache si una sola request falla)
-   -- un asset renombrado/eliminado no debe tumbar el install completo;
-   solo se registra en consola cuál faltó, y el resto sigue cacheado. */
+/* Install: todo el listado es app-shell crítico. El install debe fallar si
+   una URL no existe o devuelve un status no exitoso; ocultar ese error deja
+   una PWA parcialmente cacheada y convierte un bug de deploy en un fallo
+   offline difícil de diagnosticar. */
 self.addEventListener("install", function(e) {
   e.waitUntil(
     caches.open(PRECACHE).then(function(cache) {
-      return Promise.all(
-        STATIC_ASSETS.map(function(url) {
-          return fetch(url).then(function(res) {
-            if (res && res.status === 200) return cache.put(url, res);
-            console.warn("[sw] precache skipped (status " + (res && res.status) + "):", url);
-          }).catch(function(err) {
-            console.warn("[sw] precache failed:", url, err);
-          });
-        })
-      );
+      return Promise.all(STATIC_ASSETS.map(function(url) {
+        return fetch(url).then(function(res) {
+          if (!res || !res.ok) throw new Error("Precache failed (" + (res && res.status) + "): " + url);
+          return cache.put(url, res);
+        });
+      }));
     })
   );
   self.skipWaiting();

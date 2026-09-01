@@ -176,12 +176,12 @@ function productCard(p, mode){
     const contents = window.CRUZIAL_COMBO_CONTENTS && window.CRUZIAL_COMBO_CONTENTS[p.id];
     const perfumesLine = contents?.perfumes?.length ? contents.perfumes.join(" · ") : "";
     return `<article class="product-card is-combo" id="${p.id}">
-      <span class="combo-media-link" data-goto="product.html?id=${p.id}" aria-hidden="true">
+      <a class="combo-media-link" href="product.html?id=${p.id}">
         <div class="combo-media">
           ${cardImg ? `<img src="${cardImg}" alt="" class="combo-media-img" loading="lazy" decoding="async">` : bottleSVG(p)}
           <span class="combo-badge">Combo</span>
         </div>
-      </span>
+      </a>
       <div class="card-body">
         <a class="card-body-link" href="product.html?id=${p.id}">
           <h3 class="card-name">${p.name}</h3>
@@ -193,21 +193,9 @@ function productCard(p, mode){
     </article>`;
   }
   /* Estructura sin <button>/<a> anidados dentro de otro <a> (HTML5 no
-     permite contenido interactivo anidado; antes funcionaba solo porque
-     JS hacía stopPropagation en el quick-add, pero rompía semántica y
-     lectores de pantalla). El link de imagen es redundante a propósito
-     (el del cuerpo ya anuncia marca+nombre) y debía quedar fuera del
-     árbol de accesibilidad -- pero un <a href> real, aunque tenga
-     tabindex="-1", sigue siendo focusable al hacer click, y
-     aria-hidden="true" en un elemento focusable es justo lo que Chrome
-     bloquea con "Blocked aria-hidden on an element because its
-     descendant retained focus" (WAI-ARIA: aria-hidden nunca sobre un
-     elemento focusable). Ahora es un <span data-goto> -- nunca
-     focusable de forma nativa, así que aria-hidden vuelve a ser válido
-     sin trucos de tabindex. Navega vía el listener delegado en
-     attachAddHandlers(), el quick-add y el cross-sell de frasco
-     completo siguen siendo enlaces/botones hermanos reales, no
-     anidados. */
+     permite contenido interactivo anidado). La foto es un enlace real y
+     redundante al del nombre: conserva una ruta nativa para teclado,
+     lectores de pantalla y touch, sin aria-hidden ni tabindex artificiales. */
   /* Texto recortado ("completo"/"desde" fuera, unidad primero) -- en
      cards angostas (catálogo mobile 2 columnas) la versión larga con
      tracking ancho se partía en varias líneas de una sola palabra. Mismo
@@ -224,7 +212,7 @@ function productCard(p, mode){
      ver notas de renderCombos/renderFeatured). */
   return `<article class="product-card" id="${p.id}">
     <div class="card-media${mediaClass}" style="--glow:${glow(p)}">
-      <span class="card-media-link" data-goto="product.html?id=${p.id}" aria-hidden="true">${media}</span>
+      <a class="card-media-link" href="product.html?id=${p.id}">${media}</a>
       <span class="tag">${p.tag}</span>
       <button class="quick-add" data-add="${p.id}" data-size="${qSize}" data-group="${qGroup}" aria-label="Añadir ${p.name}">+</button>
     </div>
@@ -232,9 +220,9 @@ function productCard(p, mode){
       <a class="card-body-link" href="product.html?id=${p.id}">
         ${brand}
         <h3 class="card-name">${p.name}</h3>
-        <div class="card-meta"><span>${isBottle?`frasco ${minSize} ml`:"desde 3 ml"}</span><b>${money(min)}</b></div>
       </a>
-      ${bottleCrossSell}
+      <div class="card-meta"><span>${isBottle?`frasco ${minSize} ml`:"desde 3 ml"}</span><b>${money(min)}</b></div>
+      <div class="card-bottle-slot">${bottleCrossSell}</div>
     </div>
   </article>`;
 }
@@ -250,15 +238,6 @@ function attachAddHandlers(){
       e.preventDefault(); e.stopPropagation();
       addToCart(b.dataset.add, Number(b.dataset.size||2), 1, b.dataset.group||"decant");
     });
-  });
-  /* .card-media-link/.combo-media-link: zona clicable redundante sobre
-     la foto (ver comentario en productCard()) -- <span>, no <a>, así
-     que nunca es focusable nativamente y aria-hidden en él ya no viola
-     la regla WAI-ARIA. Navegación real vía JS, delegada aquí igual que
-     el resto de handlers de card (se re-adjunta con cada render porque
-     el DOM se reemplaza por innerHTML, no se acumula). */
-  document.querySelectorAll("[data-goto]").forEach(el=>{
-    el.addEventListener("click",()=>{ location.href = el.dataset.goto; });
   });
 }
 
@@ -1069,27 +1048,33 @@ function initMobileMenu(){
   if(!menu) return;
   var lastFocused = null;
   var triggers = document.querySelectorAll("[data-open-menu]");
+  menu.setAttribute("aria-hidden","true");
+  menu.inert = true;
   triggers.forEach(function(b){
     b.setAttribute("aria-controls","mobile-menu");
     b.setAttribute("aria-expanded","false");
   });
   triggers.forEach(b=>b.addEventListener("click",()=>{
     lastFocused = document.activeElement;
-    menu.classList.add("open"); document.body.style.overflow="hidden";
+    menu.classList.add("open");
+    menu.setAttribute("aria-hidden","false");
+    menu.inert = false;
+    document.body.style.overflow="hidden";
     triggers.forEach(function(t){t.setAttribute("aria-expanded","true")});
-    var firstLink = menu.querySelector("a");
-    if(firstLink) setTimeout(function(){firstLink.focus()},100);
+    var firstFocusable = menu.querySelector("button:not([disabled]), a[href], [tabindex]:not([tabindex='-1'])");
+    if(firstFocusable) requestAnimationFrame(function(){firstFocusable.focus()});
   }));
-  document.querySelectorAll("[data-close-menu], .mobile-menu a").forEach(b=>b.addEventListener("click",()=>{
+  var closeMenu = function(){
     menu.classList.remove("open"); document.body.style.overflow="";
+    menu.setAttribute("aria-hidden","true");
+    menu.inert = true;
     triggers.forEach(function(t){t.setAttribute("aria-expanded","false")});
     if(lastFocused) lastFocused.focus();
-  }));
+  };
+  document.querySelectorAll("[data-close-menu], .mobile-menu a").forEach(b=>b.addEventListener("click",closeMenu));
   menu.addEventListener("keydown",function(e){
     if(e.key==="Escape"){
-      menu.classList.remove("open"); document.body.style.overflow="";
-      triggers.forEach(function(t){t.setAttribute("aria-expanded","false")});
-      if(lastFocused) lastFocused.focus();
+      closeMenu();
       return;
     }
     // PACKAGE 02 — trampa de foco: mientras el menú está abierto, Tab/Shift+Tab

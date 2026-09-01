@@ -215,7 +215,8 @@ input,select,textarea{font-family:inherit}
    línea extra quedaban con 300-400px de blanco después del precio,
    exactamente el bug reportado. Con start, cada card mide según su
    propio contenido; la fila deja de forzar una altura común. */
-.product-grid{display:grid;gap:20px;align-items:start}
+.product-grid{display:grid;gap:20px;align-items:stretch}
+.product-grid#featured-grid{align-items:start}
 .product-grid>*,.collection-grid>*{min-width:0;max-width:100%}
 /* scroll-margin-top: deep link a un combo (combos.html#combo-id desde el
    hero carousel) no debe dejar la card tapada por .site-header sticky. */
@@ -225,11 +226,9 @@ input,select,textarea{font-family:inherit}
 /* .card-media-link/.card-body-link: la card ya no envuelve todo en un solo
    <a> con un <button> (quick-add) anidado dentro -- HTML5 no permite
    contenido interactivo anidado, y rompía semántica/lectores de pantalla.
-   .card-media-link es <span data-goto>, no <a> (ver app.js) -- nunca
-   focusable nativamente, así que aria-hidden es válido sin violar
-   WAI-ARIA; cursor:pointer repone la affordance visual que un <a> traía
-   gratis. .card-body-link sigue siendo el <a> real, el único que
-   lectores de pantalla y teclado necesitan encontrar. */
+   .card-media-link es un enlace nativo redundante al del cuerpo, para que
+   la foto conserve navegación real por teclado, lectores de pantalla y
+   touch. */
 .card-media-link{position:absolute;inset:0;display:grid;place-items:center;z-index:0;cursor:pointer}
 .card-body-link{display:block;color:inherit;text-decoration:none}
 .card-media svg{width:62%;height:auto;object-fit:cover;transition:transform .8s var(--ease);filter:drop-shadow(0 22px 34px rgba(0,0,0,.1))}
@@ -258,16 +257,18 @@ input,select,textarea{font-family:inherit}
    es el mismo gate que ya usa .cat-btn en .category-overlay: en touch
    (sin hover real) el botón queda visible siempre; en desktop con mouse
    se mantiene el reveal-on-hover. */
-.quick-add{position:absolute;right:14px;bottom:14px;z-index:2;width:42px;height:42px;border-radius:50%;background:var(--gold);color:#fff;font-size:20px;font-weight:400;display:grid;place-items:center;transition:all .45s var(--ease);box-shadow:0 10px 26px -8px rgba(201,169,98,.35)}
+.quick-add{position:absolute;right:13px;bottom:13px;z-index:2;width:44px;height:44px;border:0;border-radius:50%;background:transparent;color:#fff;font-size:20px;font-weight:400;display:grid;place-items:center;transition:all .45s var(--ease)}
+.quick-add::before{content:"";position:absolute;inset:3px;border-radius:50%;background:var(--gold);box-shadow:0 10px 26px -8px rgba(201,169,98,.45);z-index:-1}
 @media(hover:hover){
   .quick-add{opacity:0;transform:translateY(10px)}
   .product-card:hover .quick-add,.product-card:focus-within .quick-add{opacity:1;transform:translateY(0)}
 }
 .quick-add:hover{transform:scale(1.1)}
 .quick-add:active{transform:scale(.95)}
-.card-body{padding:20px 22px 24px;position:relative;z-index:2}
+.card-body{padding:20px 22px 24px;position:relative;z-index:2;display:grid;grid-template-rows:minmax(78px,auto) auto minmax(32px,auto);align-content:start}
+.card-body-link{min-width:0;display:flex;flex-direction:column}
 .card-brand{font-size:9.5px;letter-spacing:.3em;text-transform:uppercase;color:var(--muted2)}
-.card-name{font-family:var(--serif);font-weight:500;font-size:22px;color:#1A1A1A;margin:6px 0 12px;transition:color .35s var(--ease)}
+.card-name{font-family:var(--serif);font-weight:500;font-size:22px;color:#1A1A1A;margin:6px 0 12px;min-height:2.15em;transition:color .35s var(--ease)}
 .product-card:hover .card-name{color:var(--gold)}
 .card-meta{display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--line);padding-top:14px}
 .card-meta span{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted2)}
@@ -284,6 +285,7 @@ input,select,textarea{font-family:inherit}
    cross-sell a decant): un dato que el cliente pidió que se viera, no
    que se perciba como texto deshabilitado. */
 .card-bottle{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--line);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-light);line-height:1.5;text-decoration:none;transition:color .3s var(--ease)}
+.card-bottle-slot{min-width:0;min-height:32px}
 .card-bottle:hover{color:var(--gold)}
 .card-bottle span{font-size:11px;transition:transform var(--transition)}
 .card-bottle:hover span{transform:translateX(3px)}
@@ -324,7 +326,9 @@ input,select,textarea{font-family:inherit}
    card-media/padding/quick-add pensado para una botella sobre fondo
    blanco la metía dentro de un marco y competía con su propio diseño. */
 .product-card.is-combo{overflow:visible}
-/* <span data-goto>, no <a> -- mismo motivo que .card-media-link arriba. */
+.product-card.is-combo{align-self:start}
+.product-card.is-combo .card-body{display:block}
+/* El arte del combo también conserva navegación nativa. */
 .combo-media-link{display:block;cursor:pointer}
 .combo-media{position:relative;display:block}
 .combo-media-img{display:block;width:100%;height:auto}
@@ -358,7 +362,7 @@ input,select,textarea{font-family:inherit}
 .split-form{grid-template-columns:.9fr 1.1fr}
 .split-form .order-form{min-width:0;overflow:hidden}
 .split-art{position:relative;min-height:520px;border:1px solid var(--line);background:var(--bg2);overflow:hidden;display:grid;place-items:center}
-.split-art svg,.split-art .art-media{width:52%;animation:float 8s ease-in-out infinite;filter:drop-shadow(0 30px 50px rgba(0,0,0,.12))}
+.split-art svg,.split-art .art-media{width:min(72%,420px);max-height:78%;object-fit:contain;animation:float 8s ease-in-out infinite;filter:drop-shadow(0 30px 50px rgba(0,0,0,.12))}
 .split-art .art-number{position:absolute;top:26px;left:30px;font-family:var(--serif);font-size:clamp(60px,7vw,110px);color:transparent;-webkit-text-stroke:1px rgba(201,169,98,.2);font-weight:600}
 .split-art .art-caption{position:absolute;bottom:0;left:0;right:0;padding:20px 30px;background:linear-gradient(transparent,rgba(255,255,255,.9));font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:#1A1A1A}
 .split-copy h2,.split-copy .h2{margin:20px 0 22px}
@@ -1172,7 +1176,7 @@ input,select,textarea{font-family:inherit}
   .hero{min-height:auto;padding:26px 0 50px}
   .hero h1{margin:18px 0 18px}
   .hero-text{font-size:15px}
-  .card-body{padding:14px 14px 18px}
+  .card-body{padding:14px 14px 18px;grid-template-rows:minmax(68px,auto) auto minmax(28px,auto)}
   .card-name{font-size:18px}
   .card-meta b{font-size:16px}
   .collection-grid{grid-template-columns:1fr 1fr;gap:14px}
@@ -1284,6 +1288,7 @@ input,select,textarea{font-family:inherit}
   .product-stage{position:static;aspect-ratio:1/1}
   .note-chips span{font-size:14px;padding:8px 14px}
   .split-art{min-height:300px}
+  .split-art .art-media{width:78%;max-height:76%}
   .split-art .art-number{font-size:70px}
   .search-input{font-size:16px;padding:18px 4px}
   .search-results{grid-template-columns:1fr;max-height:60vh;overflow-y:auto}
@@ -1300,7 +1305,7 @@ input,select,textarea{font-family:inherit}
   .hero-text{font-size:14px}
   .card-name{font-size:16px}
   .card-meta b{font-size:14px}
-  .card-body{padding:12px 12px 16px}
+  .card-body{padding:12px 12px 16px;grid-template-rows:minmax(60px,auto) auto minmax(26px,auto)}
   .collection-grid{grid-template-columns:1fr 1fr;gap:8px}
   .collection-card{padding:14px 10px}
   .collection-card h3{font-size:18px;margin:8px 0 4px}

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -44,7 +44,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Jost:wght@300;400;500;600&family=Italianno&display=swap" rel="stylesheet">
   <!-- Styles -->
-  <link rel="stylesheet" href="assets/styles.css?v=20260901o">
+  <link rel="stylesheet" href="assets/styles.css?v=20260901p">
   <!-- Schema.org LocalBusiness -->
   <script type="application/ld+json">
   {
@@ -496,8 +496,6 @@
 
     /* RESPONSIVE */
     @media (max-width: 900px) {
-      .main-nav { display: none; }
-      .mobile-toggle { display: flex; }
       .trust-badges-grid { grid-template-columns: repeat(2, 1fr); row-gap: 32px; }
       .badge-item:not(:nth-child(4n+1))::before { display: none; }
       .badge-item:nth-child(2n)::before { content: ''; display: block; position: absolute; left: 0; top: 4px; bottom: 4px; width: 1px; background: var(--border); }
@@ -983,9 +981,9 @@
   });
   </script>
 
-  <script src="assets/data.js?v=20260901o"></script>
-  <script src="assets/app.js?v=20260901o"></script>
-  <script src="assets/finder.js?v=20260901o"></script>
+  <script src="assets/data.js?v=20260901p"></script>
+  <script src="assets/app.js?v=20260901p"></script>
+  <script src="assets/finder.js?v=20260901p"></script>
   <script>
   if("serviceWorker" in navigator){
     window.addEventListener("load",function(){

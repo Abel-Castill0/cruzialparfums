@@ -120,6 +120,8 @@ and the outcome, so they aren't re-flagged as unverified on a future audit:
 
 ## Site architecture
 
+- Never validate this project through `file://`; use HTTP localhost because `file://` produces invalid manifest/PWA/CORS results.
+
 - **Navigation:** `CRUZIAL | CATÁLOGO | ARMA TU COMBO | MAYORISTA` (header). Secondary
   links (Nosotros, FAQ, Contacto) live in the footer and mobile menu only.
 - **Footer:** 4-column layout (Brand, Explorar, Ayuda, Legal) with social links
