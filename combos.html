@@ -25,7 +25,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Jost:wght@300;400;500;600&family=Italianno&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/styles.css?v=20260901m">
+  <link rel="stylesheet" href="assets/styles.css?v=20260901n">
 </head>
 <body>
 
@@ -114,7 +114,7 @@
             Elige un tamaño y selecciona 3 o más fragancias. Te armamos el pedido exacto y lo enviamos a WhatsApp.
           </div>
         </div>
-        <div class="combo-builder reveal" style="display:grid;grid-template-columns:1.5fr 1fr;gap:clamp(24px,3vw,40px);align-items:start">
+        <div class="combo-builder reveal">
           <!-- Picker Column -->
           <div class="cb-picker-col">
             <div class="cb-controls" style="display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:20px">
@@ -134,10 +134,10 @@
               </div>
               <input type="search" id="cb-search" class="cb-search" placeholder="Buscar perfume para añadir…" aria-label="Buscar perfume para tu combo" autocomplete="off" style="flex:1;min-width:200px;background:var(--bg);border:1px solid var(--line);color:var(--text);padding:12px 16px;font-size:13.5px;letter-spacing:.03em;outline:none;transition:border-color .3s var(--ease);font-family:var(--sans)">
             </div>
-            <div class="cb-picker" id="cb-picker" role="listbox" aria-label="Selecciona fragancias para tu combo" style="border:1px solid var(--line);background:var(--bg);max-height:520px;overflow-y:auto;display:grid;grid-template-columns:1fr 1fr"></div>
+            <div class="cb-picker" id="cb-picker" role="listbox" aria-label="Selecciona fragancias para tu combo"></div>
           </div>
           <!-- Summary Column -->
-          <aside class="cb-summary" aria-live="polite" style="border:1px solid var(--line-strong);background:var(--bg);padding:26px 24px;position:sticky;top:110px">
+          <aside class="cb-summary" aria-live="polite" style="border:1px solid var(--line-strong);background:var(--bg);padding:26px 24px">
             <div class="cb-summary-head" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
               <strong style="font-family:var(--serif);font-size:19px;color:#1A1A1A;font-weight:500">Tu combo</strong>
               <span id="cb-count" style="font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted2)">0 fragancias</span>
@@ -158,6 +158,26 @@
               Pedir mi combo por WhatsApp <span>↗</span>
             </button>
           </aside>
+        </div>
+        <!-- Sticky mobile CTA: en mobile el summary cae debajo del picker
+             (ver .combo-builder <=767px) y con 96 fragancias para elegir
+             el CTA real (#cb-send) puede quedar cientos de px de scroll
+             abajo -- el cliente selecciona pero no ve cómo terminar.
+             position:sticky (no fixed) dentro de #arma-combo: se pega al
+             fondo del viewport SOLO mientras esta sección está en
+             pantalla, y se va con el resto del scroll al llegar a Trust
+             Strip -- no un overlay permanente en todo el sitio. Refleja
+             el mismo estado (selected/total/disabled), no lo duplica:
+             ver syncStickyBar() en app.js, que solo lee lo que
+             renderSummary() ya calculó. -->
+        <div class="cb-sticky-bar" id="cb-sticky-bar">
+          <div class="cb-sticky-info">
+            <strong id="cb-sticky-count">0 seleccionados</strong>
+            <span id="cb-sticky-sub">mínimo 3</span>
+          </div>
+          <button type="button" class="btn btn-primary" id="cb-sticky-send" disabled>
+            Pedir combo <span>↗</span>
+          </button>
         </div>
       </div>
     </section>
@@ -260,7 +280,6 @@
 
   <!-- Mobile Menu -->
   <div class="mobile-menu" id="mobile-menu" role="dialog" aria-modal="true" aria-label="Menú de navegación">
-    <img src="img/logo-mark.png" alt="Cruzial Parfums" class="menu-logo">
     <button class="close-mobile" data-close-menu aria-label="Cerrar menú">×</button>
     <a href="catalog.html">Catálogo</a>
     <a href="combos.html" class="active">Arma tu combo</a>
@@ -290,8 +309,8 @@
   </a>
 
   <!-- Scripts -->
-  <script src="assets/data.js?v=20260901m"></script>
-  <script src="assets/app.js?v=20260901m"></script>
-  <script src="assets/finder.js?v=20260901m"></script>
+  <script src="assets/data.js?v=20260901n"></script>
+  <script src="assets/app.js?v=20260901n"></script>
+  <script src="assets/finder.js?v=20260901n"></script>
 </body>
 </html>

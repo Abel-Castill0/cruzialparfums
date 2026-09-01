@@ -330,6 +330,10 @@ function initComboBuilder(){
   const totalEl = document.getElementById("cb-total");
   const sendBtn = document.getElementById("cb-send");
   const limitNote = document.getElementById("cb-limit-note");
+  const stickyBar = document.getElementById("cb-sticky-bar");
+  const stickyCount = document.getElementById("cb-sticky-count");
+  const stickySub = document.getElementById("cb-sticky-sub");
+  const stickySend = document.getElementById("cb-sticky-send");
   const MIN_ITEMS = 3;
   const MAX_ITEMS = 6;
 
@@ -399,7 +403,26 @@ function initComboBuilder(){
     const total = items.reduce((s, p) => s + p.price[size], 0);
     totalEl.textContent = money(total);
     sendBtn.disabled = items.length < MIN_ITEMS;
+    syncStickyBar(items.length, total);
   };
+
+  /* La barra sticky solo REFLEJA el estado ya calculado arriba -- mismo
+     conteo, mismo total, mismo MIN_ITEMS. Nada nuevo que pueda
+     desincronizarse del summary real. */
+  function syncStickyBar(count, total){
+    if(!stickyBar) return;
+    if(count === 0){
+      stickyCount.textContent = "Elige tus fragancias";
+      stickySub.textContent = `mínimo ${MIN_ITEMS}`;
+    } else if(count < MIN_ITEMS){
+      stickyCount.textContent = `${count} seleccionado${count===1?"":"s"}`;
+      stickySub.textContent = `mínimo ${MIN_ITEMS}`;
+    } else {
+      stickyCount.textContent = `${count} seleccionado${count===1?"":"s"}`;
+      stickySub.textContent = money(total);
+    }
+    stickySend.disabled = count < MIN_ITEMS;
+  }
 
   sizePills.forEach(pill => {
     pill.addEventListener("click", () => {
@@ -413,6 +436,22 @@ function initComboBuilder(){
   });
 
   search.addEventListener("input", debounce(() => renderPicker(search.value), 150));
+
+  // Mismo flujo de confirmación que el CTA real -- no una segunda copia
+  // del mensaje de WhatsApp que pueda quedar desactualizada.
+  stickySend?.addEventListener("click", () => sendBtn.click());
+
+  /* WA flotante oculto SOLO mientras la sticky bar está realmente en
+     pantalla (no todo el tiempo en la página) -- dos acciones flotantes
+     en la misma esquina inferior competían. Se restaura solo al salir
+     de la sección. IntersectionObserver, no scroll-position a mano. */
+  if(stickyBar && "IntersectionObserver" in window){
+    const waFloat = document.querySelector(".wa-float");
+    const io = new IntersectionObserver(([entry]) => {
+      waFloat?.classList.toggle("is-hidden-by-cb", entry.isIntersecting);
+    }, {threshold: 0.01});
+    io.observe(stickyBar);
+  }
 
   sendBtn.addEventListener("click", () => {
     const items = [...selected].map(id => PRODUCTS.find(p => p.id === id)).filter(Boolean);

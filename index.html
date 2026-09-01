@@ -43,7 +43,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Jost:wght@300;400;500;600&family=Italianno&display=swap" rel="stylesheet">
   <!-- Styles -->
-  <link rel="stylesheet" href="assets/styles.css?v=20260901m">
+  <link rel="stylesheet" href="assets/styles.css?v=20260901n">
   <!-- Schema.org LocalBusiness -->
   <script type="application/ld+json">
   {
@@ -235,6 +235,18 @@
     .hero-slide-cta[data-cta-theme="on-light"] .btn-primary:hover { background: var(--gold); color: #fff; }
     .hero-slide-cta[data-cta-theme="on-light"] .hero-cta-secondary { color: var(--darker); background: rgba(255,255,255,.6); }
     .hero-slide-cta[data-cta-theme="on-light"] .hero-cta-secondary:hover { background: rgba(255,255,255,.85); }
+    /* Mobile: un solo CTA sobre la foto, no dos. En institucional los dos
+       botones (Explorar Colección + Encontrar mi fragancia) tapaban
+       wordmark/perfumes en pantallas angostas -- el problema era
+       cantidad, no tamaño, así que no se resuelve encogiendo texto.
+       "Encontrar mi fragancia" ya tiene su propia sección dedicada más
+       abajo en la página (Finder), así que no hace falta un link
+       editorial redundante aquí. Mismo criterio para las promos: un
+       único CTA principal, sin "Ver todos los sets" superpuesto a la
+       fotografía en mobile (sigue disponible desde combos.html directo). */
+    @media (max-width: 767px) {
+      .hero-cta-secondary { display: none; }
+    }
 
     /* Sistema de botones: ahora vive solo en assets/styles.css
        (.btn/.btn-primary/.btn-outline/.btn-gold) -- esta página tenía su
@@ -913,7 +925,6 @@
 
   <!-- Menú móvil -->
   <div class="mobile-menu" id="mobile-menu" role="dialog" aria-label="Menú de navegación" aria-modal="true">
-    <img src="img/logo-mark.png" alt="Cruzial Parfums" class="menu-logo">
     <button class="close-mobile" data-close-menu aria-label="Cerrar menú">×</button>
     <a href="catalog.html">Catálogo</a>
     <a href="combos.html">Arma tu combo</a>
@@ -971,9 +982,9 @@
   });
   </script>
 
-  <script src="assets/data.js?v=20260901m"></script>
-  <script src="assets/app.js?v=20260901m"></script>
-  <script src="assets/finder.js?v=20260901m"></script>
+  <script src="assets/data.js?v=20260901n"></script>
+  <script src="assets/app.js?v=20260901n"></script>
+  <script src="assets/finder.js?v=20260901n"></script>
   <script>
   if("serviceWorker" in navigator){
     window.addEventListener("load",function(){

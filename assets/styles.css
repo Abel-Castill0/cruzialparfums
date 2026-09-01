@@ -502,14 +502,45 @@ input,select,textarea{font-family:inherit}
 .cb-total span{font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted2)}
 .cb-total strong{font-family:var(--serif);font-size:24px;font-weight:500;color:var(--gold)}
 .cb-hint{font-size:11.5px;color:var(--muted2);margin-bottom:16px}
+/* combo-builder/cb-summary/cb-picker: hasta ahora estas tres reglas no
+   podían ganar nunca -- combos.html tenía sus propios valores (idénticos)
+   puestos como style="" inline directamente en el HTML, y un inline
+   style gana sobre CUALQUIER regla de clase sin importar el ancho de
+   pantalla. A ~700px el summary seguía intentando compartir fila con el
+   picker en 1.5fr/1fr, se encogía hasta cortar el botón "Pedir mi
+   combo", y --picker seguía en 2 columnas incluso en mobile angosto. El
+   HTML ya no trae esos inline styles (ver combos.html); estas reglas
+   ahora sí controlan el layout real. */
 @media(max-width:1024px){.combo-builder{grid-template-columns:1fr}.cb-summary{position:static}}
-@media(max-width:640px){.cb-picker{grid-template-columns:1fr}.cb-item:nth-child(2n){border-right:1px solid var(--line)}.cb-picker{max-height:400px}
+@media(max-width:767px){.cb-picker{grid-template-columns:1fr}.cb-item:nth-child(2n){border-right:1px solid var(--line)}.cb-picker{max-height:400px}
   /* .cb-summary deja de ser sticky <=1024 (arriba) y cae al final del
      flujo normal -- su CTA "Confirmar por WhatsApp" quedaba justo donde
      .wa-float (fixed, siempre encima) lo tapa. Reserva el espacio del
-     flotante como padding real en vez de resolverlo por página. */
+     flotante como padding real en vez de resolverlo por página. La
+     barra sticky de abajo (#cb-sticky-bar) es ahora la vía principal
+     para confirmar en mobile; este padding queda como margen extra. */
   .cb-summary{padding-bottom:calc(26px + 64px + env(safe-area-inset-bottom))}
 }
+
+/* --- Combo builder: sticky mobile CTA --- */
+.cb-sticky-bar{display:none}
+@media(max-width:767px){
+  .cb-sticky-bar{
+    display:flex;align-items:center;justify-content:space-between;gap:14px;
+    position:sticky;bottom:0;z-index:60;
+    margin:24px -16px 0;padding:14px 16px calc(14px + env(safe-area-inset-bottom));
+    background:#fff;border-top:1px solid var(--line-strong);
+    box-shadow:0 -10px 28px -6px rgba(0,0,0,.12);
+  }
+  .cb-sticky-info{display:flex;flex-direction:column;gap:2px;min-width:0}
+  .cb-sticky-info strong{font-family:var(--serif);font-size:15px;font-weight:500;color:#1A1A1A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .cb-sticky-info span{font-size:11px;color:var(--muted2);letter-spacing:.02em}
+  .cb-sticky-bar .btn{flex-shrink:0;padding:13px 20px;font-size:11px}
+}
+/* Dos acciones flotantes en la misma esquina compitiendo -- ver
+   IntersectionObserver en initComboBuilder(). Solo mientras la sticky
+   bar está realmente en pantalla, no toda la página. */
+.wa-float.is-hidden-by-cb{opacity:0;pointer-events:none;transform:scale(.85)}
 
 /* --- Page hero --- */
 .page-hero{padding:clamp(70px,9vw,120px) 0 clamp(40px,5vw,70px);text-align:center;position:relative;overflow:hidden}
