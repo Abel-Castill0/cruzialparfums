@@ -43,7 +43,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Jost:wght@300;400;500;600&family=Italianno&display=swap" rel="stylesheet">
   <!-- Styles -->
-  <link rel="stylesheet" href="assets/styles.css?v=20260901l">
+  <link rel="stylesheet" href="assets/styles.css?v=20260901m">
   <!-- Schema.org LocalBusiness -->
   <script type="application/ld+json">
   {
@@ -270,42 +270,50 @@
     .section-heading .text-link { font-size: 14px; font-weight: 500; color: var(--gold); display: flex; align-items: center; gap: 6px; }
     .section-heading .text-link:hover { text-decoration: underline; }
 
-    /* PRODUCT GRID */
-    .product-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+    /* PRODUCT GRID -- grid-template-columns vive en la escalera
+       compartida (assets/styles.css, convención XS/MOBILE/TABLET/
+       DESKTOP documentada ahí). Ya NO se redefine aquí: una copia local
+       repitiendo repeat(4,1fr)/repeat(2,1fr)/1fr con SUS PROPIOS
+       breakpoints (900/560, distintos de los 767/359 compartidos) era
+       exactamente la causa del bug de "Los Más Deseados" de abajo --
+       ver docs/known-issues.md. */
+    .product-grid { display: grid; gap: 24px; }
+
     /* "Los Más Deseados" reutiliza productCard()/.product-card tal cual
        (misma card que catalog.html a propósito -- una sola fuente de
-       verdad visual) pero necesitaba dejar de ser un grid 4-up idéntico
-       al catálogo, o pierde el sentido de "selección". Escala solo el
-       primer resultado -- funciona con cualquier conteo que devuelva el
-       filtro de género/tipo (incluida una sola coincidencia), a
-       diferencia de un layout fijo "1 grande + 3 chicas" que se rompe en
-       cuanto el filtro no da exactamente 4. Scoped a #featured-grid: NO
-       toca .product-card ni .product-grid en catalog.html. */
-    #featured-grid.product-grid { grid-template-columns: repeat(4, 1fr); grid-auto-rows: 1fr; }
-    #featured-grid .product-card:first-child { grid-column: span 2; grid-row: span 2; }
-    #featured-grid .product-card:first-child .card-media { aspect-ratio: auto; height: 100%; }
-    #featured-grid .product-card:first-child .card-name { font-size: 27px; }
-    /* top-right, no top-left: .tag (bestseller/descontinuado) ya vive ahí */
+       verdad visual) pero necesita un layout propio por rango, no el
+       grid de compra del catálogo:
+         MOBILE+XS (<=767): rail horizontal, selección se hojea, no se
+           comprime.
+         TABLET (768-1199): 2 columnas limpias, sin card destacada
+           gigante -- a este ancho "grande" solo significaba angosta.
+         DESKTOP (>=1200): composición editorial, destacada + 2 cards.
+       Escala con cualquier conteo que devuelva el filtro de género/tipo
+       (incluida una sola coincidencia) porque solo estiliza :first-child,
+       a diferencia de un layout fijo "1 grande + 3 chicas" que se rompe
+       en cuanto el filtro no da exactamente 4. Scoped a #featured-grid:
+       NO toca .product-card ni .product-grid en catalog.html. */
     #featured-grid .product-card:first-child::after { content: 'Selección Cruzial'; position: absolute; top: 16px; right: 16px; z-index: 2; font-family: var(--sans); font-size: 9.5px; font-weight: 500; letter-spacing: .22em; text-transform: uppercase; color: #fff; background: var(--darker); padding: 7px 12px; }
-    @media (max-width: 900px) {
-      #featured-grid .product-card:first-child { grid-column: span 2; grid-row: span 1; }
-      #featured-grid .product-card:first-child .card-media { aspect-ratio: 1/1.05; height: auto; }
+
+    @media (min-width: 1200px) {
+      /* align-items:stretch a propósito aquí (el default de .product-grid
+         compartido ahora es start, ver assets/styles.css) -- la card
+         destacada necesita ocupar el alto completo de su grid-row:span 2
+         para que .card-media al 100% de alto funcione; solo importa en
+         esta composición editorial de escritorio. */
+      #featured-grid.product-grid { grid-template-columns: repeat(4, minmax(0,1fr)); grid-auto-rows: 1fr; align-items: stretch; }
+      #featured-grid .product-card:first-child { grid-column: span 2; grid-row: span 2; }
+      #featured-grid .product-card:first-child .card-media { aspect-ratio: auto; height: 100%; }
+      #featured-grid .product-card:first-child .card-name { font-size: 27px; }
     }
-    /* BUG real encontrado en QA responsive (2026-09-01): a <=900px, la
-       regla de arriba (#featured-grid.product-grid, id+clase) le gana en
-       especificidad a .product-grid{grid-template-columns:repeat(2,1fr)}
-       de la media query compartida de abajo -- #featured-grid se quedaba
-       forzado a 4 columnas mientras la card destacada ocupaba 2 de esas
-       4 (ya angostas). Resultado real en pantalla: 1 card "grande" que
-       en realidad mide la mitad de un móvil, más 2-3 cards de un cuarto
-       de ancho con nombre/precio/"frasco completo" partiéndose en
-       columnas de palabras -- exactamente lo que mostraban las capturas.
-       En vez de perseguir la especificidad, se resuelve como estaba
-       pensado desde el principio: en Home "Los Más Deseados" es
-       selección curada, no el grid de compra del catálogo -- en mobile
-       eso es un rail horizontal con scroll-snap, no un grid comprimido. */
-    @media (max-width: 640px) {
-      #featured-grid.product-grid { display: flex; grid-template-columns: none; overflow-x: auto; scroll-snap-type: x mandatory; gap: 14px; padding: 4px 16px 10px; margin: 0 -16px; -webkit-overflow-scrolling: touch; }
+    @media (min-width: 768px) and (max-width: 1199px) {
+      #featured-grid.product-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 20px; }
+      #featured-grid .product-card:first-child { grid-column: unset; grid-row: unset; }
+      #featured-grid .product-card:first-child .card-media { aspect-ratio: 1/1.05; height: auto; }
+      #featured-grid .product-card:first-child .card-name { font-size: 22px; }
+    }
+    @media (max-width: 767px) {
+      #featured-grid.product-grid { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; gap: 14px; padding: 4px 16px 10px; margin: 0 -16px; -webkit-overflow-scrolling: touch; }
       #featured-grid .product-card { scroll-snap-align: start; flex: 0 0 80vw; max-width: 80vw; }
       #featured-grid .product-card:first-child { grid-column: unset; grid-row: unset; }
       #featured-grid .product-card:first-child .card-media { aspect-ratio: 1/1.05; height: auto; }
@@ -480,15 +488,11 @@
       .trust-badges-grid { grid-template-columns: repeat(2, 1fr); row-gap: 32px; }
       .badge-item:not(:nth-child(4n+1))::before { display: none; }
       .badge-item:nth-child(2n)::before { content: ''; display: block; position: absolute; left: 0; top: 4px; bottom: 4px; width: 1px; background: var(--border); }
-      .product-grid { grid-template-columns: repeat(2, 1fr); }
       .category-split { grid-template-columns: 1fr; }
       .steps-grid { grid-template-columns: 1fr; gap: 40px; }
       .commitment-grid { grid-template-columns: 1fr; }
       .commitment-lead { max-width: none; }
       .section-heading { flex-direction: column; align-items: flex-start; }
-    }
-    @media (max-width: 560px) {
-      .product-grid { grid-template-columns: 1fr; }
     }
 
     /* Reveal animation: solo el estado base (0,0,1,0 -- transform de esta
@@ -967,9 +971,9 @@
   });
   </script>
 
-  <script src="assets/data.js?v=20260901l"></script>
-  <script src="assets/app.js?v=20260901l"></script>
-  <script src="assets/finder.js?v=20260901l"></script>
+  <script src="assets/data.js?v=20260901m"></script>
+  <script src="assets/app.js?v=20260901m"></script>
+  <script src="assets/finder.js?v=20260901m"></script>
   <script>
   if("serviceWorker" in navigator){
     window.addEventListener("load",function(){

@@ -556,6 +556,12 @@ function initWholesaleTable(){
   /* Sort by brand then name */
   rows.sort((a, b) => a.brand.localeCompare(b.brand) || a.name.localeCompare(b.name));
 
+  /* data-label en las celdas de precio: en desktop no se usa (la fila es
+     <table> real, el <thead> ya rotula las columnas). En mobile, CSS
+     convierte cada <tr> en una card y usa ::before{content:attr(data-label)}
+     para mostrar "Unidad/4+ uds/12+ uds" por celda -- mismo dataset,
+     mismo markup, ninguna copia paralela de precios que pueda
+     desincronizarse. */
   function renderRows(list){
     tbody.innerHTML = list.map(r => `
       <tr data-type="${r.type}">
@@ -564,10 +570,10 @@ function initWholesaleTable(){
           : `<span class="thumb-placeholder" aria-hidden="true"></span>`}</td>
         <td class="brand-col">${r.brand}</td>
         <td class="name-col">${r.name}</td>
-        <td class="price-col">S/ ${r.unit}</td>
-        <td class="price-col">S/ ${r.m4}</td>
-        <td class="price-col">S/ ${r.m12}</td>
-        <td class="action-col"><a href="${r.waUrl}" target="_blank" rel="noopener" class="wa-link" aria-label="Cotizar ${r.name} por WhatsApp">↗</a></td>
+        <td class="price-col" data-label="Unidad">S/ ${r.unit}</td>
+        <td class="price-col" data-label="4+ uds">S/ ${r.m4}</td>
+        <td class="price-col" data-label="12+ uds">S/ ${r.m12}</td>
+        <td class="action-col"><a href="${r.waUrl}" target="_blank" rel="noopener" class="wa-link" aria-label="Cotizar ${r.name} por WhatsApp">Consultar <span>↗</span></a></td>
       </tr>
     `).join("");
   }
@@ -1059,7 +1065,7 @@ function initHeroCarousel(){
   const playBtn = hero.querySelector("[data-hero-playpause]");
   if(slides.length < 2) return;
 
-  const INTERVAL = 5200; // Baymard: 5-7s razonable para slides con poco texto
+  const INTERVAL = 5000; // Baymard: 5-7s razonable para slides con poco texto
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   /* Baymard: no autorotación de carousels promocionales en mobile/touch
      -- riesgo de contenido perdido y navegación accidental. pointer:coarse

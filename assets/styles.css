@@ -206,7 +206,16 @@ input,select,textarea{font-family:inherit}
 .pill.active{background:var(--gold);color:#fff;border-color:transparent;font-weight:500}
 
 /* --- Product cards --- */
-.product-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+/* grid-template-columns vive en el bloque RESPONSIVE de abajo (una sola
+   escalera mobile-first para todo el sitio), no aquí -- evita dos
+   fuentes para el mismo conteo de columnas.
+   align-items:start (grid por defecto es stretch): sin esto, una sola
+   card con .card-bottle (frasco completo) o un nombre a 2 líneas hacía
+   que TODA la fila se estirara a esa altura -- las cards vecinas sin esa
+   línea extra quedaban con 300-400px de blanco después del precio,
+   exactamente el bug reportado. Con start, cada card mide según su
+   propio contenido; la fila deja de forzar una altura común. */
+.product-grid{display:grid;gap:20px;align-items:start}
 .product-grid>*,.collection-grid>*{min-width:0;max-width:100%}
 /* scroll-margin-top: deep link a un combo (combos.html#combo-id desde el
    hero carousel) no debe dejar la card tapada por .site-header sticky. */
@@ -260,7 +269,11 @@ input,select,textarea{font-family:inherit}
 .product-card:hover .card-name{color:var(--gold)}
 .card-meta{display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--line);padding-top:14px}
 .card-meta span{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted2)}
-.card-meta b{font-family:var(--serif);font-weight:600;font-size:18px;color:var(--gold);letter-spacing:.02em}
+/* white-space:nowrap: "S/" y el monto son un solo bloque visual -- en
+   cards angostas (tablet 3-col, mobile 2-col) el texto podía envolver
+   entre "S/" y el número, partiendo el precio en dos líneas. */
+.card-meta b{font-family:var(--serif);font-weight:600;font-size:18px;color:var(--gold);letter-spacing:.02em;white-space:nowrap}
+.card-meta span{flex:1 1 auto;min-width:0}
 /* Antes era texto plano informativo; ahora es un link real -- clic
    directo a la variante de frasco completo del MISMO producto, sin pasar
    por Mayorista (que es venta por volumen, no minorista de una unidad). */
@@ -490,7 +503,13 @@ input,select,textarea{font-family:inherit}
 .cb-total strong{font-family:var(--serif);font-size:24px;font-weight:500;color:var(--gold)}
 .cb-hint{font-size:11.5px;color:var(--muted2);margin-bottom:16px}
 @media(max-width:1024px){.combo-builder{grid-template-columns:1fr}.cb-summary{position:static}}
-@media(max-width:640px){.cb-picker{grid-template-columns:1fr}.cb-item:nth-child(2n){border-right:1px solid var(--line)}.cb-picker{max-height:400px}}
+@media(max-width:640px){.cb-picker{grid-template-columns:1fr}.cb-item:nth-child(2n){border-right:1px solid var(--line)}.cb-picker{max-height:400px}
+  /* .cb-summary deja de ser sticky <=1024 (arriba) y cae al final del
+     flujo normal -- su CTA "Confirmar por WhatsApp" quedaba justo donde
+     .wa-float (fixed, siempre encima) lo tapa. Reserva el espacio del
+     flotante como padding real en vez de resolverlo por página. */
+  .cb-summary{padding-bottom:calc(26px + 64px + env(safe-area-inset-bottom))}
+}
 
 /* --- Page hero --- */
 .page-hero{padding:clamp(70px,9vw,120px) 0 clamp(40px,5vw,70px);text-align:center;position:relative;overflow:hidden}
@@ -1039,8 +1058,36 @@ input,select,textarea{font-family:inherit}
 
 /* ============================================================
    RESPONSIVE
-   ============================================================ */
-@media(max-width:1280px){.product-grid{grid-template-columns:repeat(4,1fr);gap:18px}}
+
+   Convención de rangos para todo el sitio (sin preprocesador -- no hay
+   paso de build, ver CLAUDE.md -- así que estos son los valores
+   literales a reutilizar, no variables):
+
+     XS       <=359px
+     MOBILE   360-767px
+     TABLET   768-1199px
+     DESKTOP  >=1200px
+     WIDE     >=1600px  (solo donde aporte, no todos los componentes lo necesitan)
+
+   Antes .product-grid tenía roturas de historial acumuladas sin
+   estrategia común (1280, 1024, 900 en index.html local, 900/560 en
+   catalog.html local, 640 en el compartido...) -- cada componente había
+   heredado el breakpoint de la ronda en que se tocó por última vez, no
+   uno pensado para el contenido. Resultado real: a ~900-1024px el
+   header ya se comportaba como tablet/mobile pero los grids de producto
+   seguían intentando 3-4 columnas, produciendo cards angostísimas.
+   Consolidado a la escala de arriba; los .product-grid locales
+   duplicados en index.html/catalog.html se eliminaron (mismo patrón que
+   el bug de .mobile-menu ya corregido). */
+.product-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media(min-width:1200px){.product-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:767px){.product-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}}
+/* WhatsApp ya vive en .wa-float (flotante, siempre visible) -- repetirlo
+   en el header en mobile era ruido puro compitiendo por los ~35-45px
+   que hacen falta a 320px. Desktop/tablet lo conservan (ahí no compite
+   por espacio). */
+@media(max-width:767px){.header-actions [aria-label="WhatsApp"]{display:none}}
+@media(max-width:359px){.product-grid{grid-template-columns:1fr}}
 @media(max-width:1024px){
   .hero{padding-top:40px}
   .catalog-layout{grid-template-columns:1fr}
@@ -1078,7 +1125,6 @@ input,select,textarea{font-family:inherit}
   .main-nav{display:none}
   .mobile-toggle{display:grid}
   .pricing-mode-grid{grid-template-columns:1fr}
-  .product-grid{grid-template-columns:repeat(3,1fr)}
   .collection-grid{grid-template-columns:repeat(2,1fr)}
 }
 @media(max-width:768px){
@@ -1091,7 +1137,6 @@ input,select,textarea{font-family:inherit}
   .hero{min-height:auto;padding:26px 0 50px}
   .hero h1{margin:18px 0 18px}
   .hero-text{font-size:15px}
-  .product-grid{grid-template-columns:repeat(2,1fr);gap:14px}
   .card-body{padding:14px 14px 18px}
   .card-name{font-size:18px}
   .card-meta b{font-size:16px}

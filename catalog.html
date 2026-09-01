@@ -24,7 +24,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Jost:wght@300;400;500;600&family=Italianno&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/styles.css?v=20260901l">
+  <link rel="stylesheet" href="assets/styles.css?v=20260901m">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -110,7 +110,13 @@
        en la primera columna de 250px. Root cause de que la barra de filtros
        se viera mal en TODAS las versiones anteriores, no solo el color. */
     .catalog-layout { display: block; padding: 0 clamp(16px,4vw,48px) clamp(60px,8vh,100px); }
-    .product-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+    /* grid-template-columns vive en la escalera compartida
+       (assets/styles.css, XS/MOBILE/TABLET/DESKTOP) -- esta página
+       tenía su propia copia fija en 3 columnas sin romper nunca a 4 en
+       desktop ancho, más dos breakpoints propios (900/560) distintos de
+       los del resto del sitio. Mismo patrón que index.html: ver
+       docs/known-issues.md. */
+    .product-grid { display: grid; gap: 24px; }
 
     /* .no-results y su .btn interno eran CSS muerto: el estado vacío real
        del catálogo lo genera initCatalog() en app.js con class="empty-state"
@@ -175,7 +181,6 @@
     @media (max-width: 900px) {
       .main-nav { display: none; }
       .mobile-toggle { display: flex; }
-      .product-grid { grid-template-columns: repeat(2, 1fr); }
 
       /* Toolbar mobile: la búsqueda queda visible en la superficie; "Filtrar
          y ordenar" abre .toolbar-controls como hoja inferior en vez de
@@ -198,7 +203,6 @@
       .clear-filters { order: 99; }
     }
     @media (max-width: 560px) {
-      .product-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
       .results-top { flex-direction: column; gap: 12px; align-items: flex-start; }
     }
 
@@ -465,8 +469,8 @@
        esta página por robustez y peso — ver nota de auditoría. */
   });
   </script>
-  <script src="assets/data.js?v=20260901l"></script>
-  <script src="assets/app.js?v=20260901l"></script>
-  <script src="assets/finder.js?v=20260901l"></script>
+  <script src="assets/data.js?v=20260901m"></script>
+  <script src="assets/app.js?v=20260901m"></script>
+  <script src="assets/finder.js?v=20260901m"></script>
 </body>
 </html>
