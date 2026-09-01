@@ -43,7 +43,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Jost:wght@300;400;500;600&family=Italianno&display=swap" rel="stylesheet">
   <!-- Styles -->
-  <link rel="stylesheet" href="assets/styles.css?v=20260901f">
+  <link rel="stylesheet" href="assets/styles.css?v=20260901h">
   <!-- Schema.org LocalBusiness -->
   <script type="application/ld+json">
   {
@@ -174,31 +174,56 @@
     .hero-slide.is-active { opacity: 1; z-index: 1; }
     .hero-slide img { width: 100%; height: 100%; object-fit: cover; object-position: center; display: block; }
     @media (prefers-reduced-motion: reduce) { .hero-slide { transition: none; } }
-    .hero-controls { position: absolute; left: 0; right: 0; bottom: 20px; z-index: 2; display: flex; align-items: center; justify-content: center; gap: 16px; }
-    .hero-dots { display: flex; align-items: center; gap: 8px; }
-    .hero-dot { width: 7px; height: 7px; padding: 0; border: none; border-radius: 50%; background: rgba(255,255,255,.45); cursor: pointer; transition: all .35s var(--ease, ease); }
+    /* Controles: antes 4 círculos + botón redondo, tamaño uniforme --
+       genérico, "slider técnico". Ahora el indicador activo es una línea
+       dorada corta (más carácter, referencia clara al acento de marca);
+       inactivos quedan como líneas finas mudas. El hit-area real
+       (::before invisible, 44px) se mantiene grande para touch aunque el
+       trazo visible sea delgado -- talla visual y talla táctil son cosas
+       distintas a propósito. */
+    .hero-controls { position: absolute; left: 0; right: 0; bottom: 20px; z-index: 3; display: flex; align-items: center; justify-content: center; gap: 18px; }
+    .hero-dots { display: flex; align-items: center; gap: 10px; }
+    .hero-dot { position: relative; width: 20px; height: 2px; padding: 0; border: none; background: rgba(255,255,255,.4); cursor: pointer; transition: all .35s var(--ease, ease); }
+    .hero-dot::before { content: ''; position: absolute; inset: -19px -6px; }
     .hero-dot:hover { background: rgba(255,255,255,.7); }
-    .hero-dot.is-active { width: 22px; border-radius: 4px; background: var(--gold); }
-    .hero-playpause { width: 30px; height: 30px; flex-shrink: 0; border-radius: 50%; border: 1px solid rgba(255,255,255,.35); background: rgba(8,7,5,.4); backdrop-filter: blur(6px); color: #fff; display: grid; place-items: center; cursor: pointer; transition: all .3s ease; }
-    .hero-playpause:hover { border-color: var(--gold); color: var(--gold); }
+    .hero-dot.is-active { width: 30px; background: var(--gold); }
+    .hero-playpause { position: relative; width: 26px; height: 26px; flex-shrink: 0; border: none; background: none; color: rgba(255,255,255,.75); display: grid; place-items: center; cursor: pointer; transition: color .3s ease; }
+    .hero-playpause::before { content: ''; position: absolute; inset: -9px; }
+    .hero-playpause:hover { color: var(--gold); }
     .hero-playpause .icon-play { display: none; }
     .hero-playpause.is-paused .icon-pause { display: none; }
     .hero-playpause.is-paused .icon-play { display: block; }
-    .hero-cta-bar { background: #0a0806; padding: 28px 0; }
-    /* No usar [hidden] aquí: .hero-cta-bar .hero-actions{display:flex}
-       (2 clases) gana en especificidad a la regla [hidden] del user-agent
-       (1 selector de atributo) y el panel "oculto" se seguiría viendo.
-       Clase .is-active en vez de hidden evita esa pelea de especificidad. */
-    .hero-cta-bar .hero-actions { display: none; gap: 16px; flex-wrap: wrap; justify-content: center; }
-    .hero-cta-bar .hero-actions.is-active { display: flex; }
-    /* .btn-primary por defecto es #1A1A1A sobre blanco -- perfecto en
-       superficies claras, casi invisible sobre esta barra ya oscura
-       (#0a0806). Mismo ajuste que el hero anterior necesitaba: blanco
-       sólido para contraste inmediato, dorado solo al hover. */
-    .hero-cta-bar .btn-primary { background: #fff; color: var(--darker); }
-    .hero-cta-bar .btn-primary:hover { background: var(--gold); color: #fff; }
-    .hero-cta-bar .btn-outline { border-color: rgba(255,255,255,.35); color: #fff; }
-    .hero-cta-bar .btn-outline:hover { background: #fff; color: var(--darker); }
+    /* Sin autoplay en touch (pointer:coarse, ver initHeroCarousel) no hay
+       nada que pausar/reanudar -- el botón sobra como UI. */
+    @media (pointer: coarse) { .hero-playpause { display: none; } }
+
+    /* CTA embebido en cada slide -- ver comentario HTML sobre por qué
+       cada data-cta-placement es distinto. Hereda la transición de
+       opacity del propio .hero-slide (mismo timing, sin retraso extra):
+       el CTA aparece/desaparece con su foto, no por separado. */
+    .hero-slide-cta { position: absolute; z-index: 2; display: flex; flex-direction: column; gap: 14px; max-width: min(320px, 40%); }
+    .hero-slide:not(.is-active) .hero-slide-cta { pointer-events: none; }
+    .hero-slide-cta[data-cta-placement="center-bottom"] { left: 50%; bottom: 9%; transform: translateX(-50%); align-items: center; text-align: center; max-width: 90%; }
+    .hero-slide-cta[data-cta-placement="left-center"] { left: clamp(20px, 6%, 64px); top: 50%; transform: translateY(-50%); align-items: flex-start; text-align: left; }
+    /* text-shadow, no un scrim: es texto suelto directamente sobre la
+       foto (a diferencia del primary, que ya tiene su propio contraste
+       por ser relleno sólido) -- protección mínima y localizada al
+       propio texto en vez de una capa detrás de toda la safe zone. */
+    .hero-cta-secondary { font-size: 11px; letter-spacing: .16em; text-transform: uppercase; display: inline-flex; align-items: center; gap: 6px; border: none; background: none; padding: 0; cursor: pointer; font-family: inherit; transition: opacity .3s ease; }
+    .hero-cta-secondary:hover { opacity: .7; }
+    .hero-slide-cta[data-cta-theme="on-dark"] .hero-cta-secondary { text-shadow: 0 1px 4px rgba(0,0,0,.55); }
+    .hero-slide-cta[data-cta-theme="on-light"] .hero-cta-secondary { text-shadow: 0 1px 3px rgba(255,255,255,.5); }
+    /* on-dark: foto oscura detrás del CTA (institucional) -- botón claro
+       para contraste inmediato, texto secundario blanco. */
+    .hero-slide-cta[data-cta-theme="on-dark"] .btn-primary { background: #fff; color: var(--darker); }
+    .hero-slide-cta[data-cta-theme="on-dark"] .btn-primary:hover { background: var(--gold); color: #fff; }
+    .hero-slide-cta[data-cta-theme="on-dark"] .hero-cta-secondary { color: #fff; }
+    /* on-light: safe zone clara (pared dorada, tela, arena) -- botón
+       sólido ink-deep, nunca dorado sólido (el dorado es acento, no
+       relleno de botón). */
+    .hero-slide-cta[data-cta-theme="on-light"] .btn-primary { background: var(--darker); color: #fff; }
+    .hero-slide-cta[data-cta-theme="on-light"] .btn-primary:hover { background: var(--gold); color: #fff; }
+    .hero-slide-cta[data-cta-theme="on-light"] .hero-cta-secondary { color: var(--darker); }
 
     /* Sistema de botones: ahora vive solo en assets/styles.css
        (.btn/.btn-primary/.btn-outline/.btn-gold) -- esta página tenía su
@@ -493,19 +518,49 @@
          asset real por combo, no una segunda copia que pueda desincronizarse.
          <img> reales (no background-image) para poder marcar prioridad de
          carga por slide -- solo el 0 es eager/fetchpriority=high. -->
+    <!-- 2026-09-01: los CTA se movieron DE ADENTRO de cada foto -- la barra
+         negra separada (.hero-cta-bar) se eliminó por completo, sumaba
+         altura al primer viewport y partía "foto" de "acción" en dos
+         piezas visuales. Cada slide define su propia safe zone
+         (data-cta-placement) inspeccionando la composición real de esa
+         foto -- no una posición fija para las 4:
+           institucional: centro-inferior, sobre la piedra bajo el
+             wordmark (izq/der ocupadas por botellas).
+           cuarteto: izquierda, pared dorada vacía de borde a borde.
+           vainilla: izquierda, tela/luz clara sin producto.
+           tulum: centro-inferior, franja de arena limpia (izquierda tiene
+             coco+palma, derecha tiene los 3 frascos + caja Afnan).
+         data-cta-theme decide el color del botón según si ESA zona de ESA
+         foto es clara ú oscura -- no un tema fijo por slide. -->
     <section class="hero" aria-roledescription="carrusel" aria-label="Cruzial Parfums" data-hero-carousel>
       <div class="hero-slides">
         <div class="hero-slide is-active" data-hero-slide="0">
           <img src="img/hero/hero-crop.webp" alt="Cruzial Parfums — perfumería árabe, designer y de nicho" loading="eager" fetchpriority="high" decoding="async">
+          <div class="hero-slide-cta" data-cta-placement="center-bottom" data-cta-theme="on-dark">
+            <a class="btn btn-primary" href="catalog.html">Explorar Colección <span>→</span></a>
+            <button type="button" class="hero-cta-secondary" data-open-finder>Encontrar mi fragancia <span>→</span></button>
+          </div>
         </div>
         <div class="hero-slide" data-hero-slide="1">
           <img src="img/hero/promo-cuarteto.webp" alt="Cuarteto Oriental — Khamrah Clásico, Qahwa, Dukhan y Waha, Lattafa" loading="lazy" decoding="async">
+          <div class="hero-slide-cta" data-cta-placement="left-center" data-cta-theme="on-light">
+            <a class="btn btn-primary" href="combos.html#combo-cuarteto">Ver Cuarteto Oriental <span>→</span></a>
+            <a class="hero-cta-secondary" href="combos.html#sets-armados">Ver todos los sets</a>
+          </div>
         </div>
         <div class="hero-slide" data-hero-slide="2">
           <img src="img/hero/promo-vainilla.webp" alt="Vainilla Freak — Yara Pink, Yara Candy y Eclaire, Lattafa" loading="lazy" decoding="async">
+          <div class="hero-slide-cta" data-cta-placement="left-center" data-cta-theme="on-light">
+            <a class="btn btn-primary" href="combos.html#combo-vainilla">Ver Vainilla Freak <span>→</span></a>
+            <a class="hero-cta-secondary" href="combos.html#sets-armados">Ver todos los sets</a>
+          </div>
         </div>
         <div class="hero-slide" data-hero-slide="3">
           <img src="img/hero/promo-tulum.webp" alt="Set Tulum — Odyssey Aqua, Hawas Tropical y Supremacy Collection" loading="lazy" decoding="async">
+          <div class="hero-slide-cta" data-cta-placement="center-bottom" data-cta-theme="on-light">
+            <a class="btn btn-primary" href="combos.html#combo-tulum">Ver Set Tulum <span>→</span></a>
+            <a class="hero-cta-secondary" href="combos.html#sets-armados">Ver todos los sets</a>
+          </div>
         </div>
       </div>
       <div class="hero-controls">
@@ -521,26 +576,6 @@
         </div>
       </div>
     </section>
-    <div class="hero-cta-bar">
-      <div class="container">
-        <div class="hero-actions is-active" data-hero-actions="0">
-          <a class="btn btn-primary" href="catalog.html">Explorar Colección <span>→</span></a>
-          <button type="button" class="btn btn-outline" data-open-finder>Encontrar mi fragancia <span>→</span></button>
-        </div>
-        <div class="hero-actions" data-hero-actions="1">
-          <a class="btn btn-primary" href="combos.html#combo-cuarteto">Ver Cuarteto Oriental <span>→</span></a>
-          <a class="btn btn-outline" href="combos.html#sets-armados">Ver todos los sets</a>
-        </div>
-        <div class="hero-actions" data-hero-actions="2">
-          <a class="btn btn-primary" href="combos.html#combo-vainilla">Ver Vainilla Freak <span>→</span></a>
-          <a class="btn btn-outline" href="combos.html#sets-armados">Ver todos los sets</a>
-        </div>
-        <div class="hero-actions" data-hero-actions="3">
-          <a class="btn btn-primary" href="combos.html#combo-tulum">Ver Set Tulum <span>→</span></a>
-          <a class="btn btn-outline" href="combos.html#sets-armados">Ver todos los sets</a>
-        </div>
-      </div>
-    </div>
 
     <!-- TRUST BADGES -->
     <section class="trust-badges">
@@ -886,9 +921,9 @@
   });
   </script>
 
-  <script src="assets/data.js?v=20260901f"></script>
-  <script src="assets/app.js?v=20260901f"></script>
-  <script src="assets/finder.js?v=20260901f"></script>
+  <script src="assets/data.js?v=20260901h"></script>
+  <script src="assets/app.js?v=20260901h"></script>
+  <script src="assets/finder.js?v=20260901h"></script>
   <script>
   if("serviceWorker" in navigator){
     window.addEventListener("load",function(){
