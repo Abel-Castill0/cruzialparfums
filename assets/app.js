@@ -164,6 +164,34 @@ function productCard(p, mode){
       </a>
     </article>`;
   }
+  /* Combo: portada = arte terminado (título, composición y tipografía ya
+     resueltos en la propia foto -- ver img/combos/set-*.webp), no una
+     botella sobre fondo blanco. Estructura de card distinta a propósito:
+     full-bleed (sin el padding/fondo #fff de .card-media pensado para
+     fotos de producto), sin quick-add ("+" no comunica con claridad qué
+     tamaño/precio se añade cuando el producto es un set de 3-4
+     fragancias), badge COMBO superpuesto en vez de flotar en el margen
+     que ya no existe. */
+  if(p.type === "combo"){
+    const contents = window.CRUZIAL_COMBO_CONTENTS && window.CRUZIAL_COMBO_CONTENTS[p.id];
+    const perfumesLine = contents?.perfumes?.length ? contents.perfumes.join(" · ") : "";
+    return `<article class="product-card is-combo" id="${p.id}">
+      <a class="combo-media-link" href="product.html?id=${p.id}" aria-hidden="true" tabindex="-1">
+        <div class="combo-media">
+          ${cardImg ? `<img src="${cardImg}" alt="" class="combo-media-img" loading="lazy" decoding="async">` : bottleSVG(p)}
+          <span class="combo-badge">Combo</span>
+        </div>
+      </a>
+      <div class="card-body">
+        <a class="card-body-link" href="product.html?id=${p.id}">
+          <h3 class="card-name">${p.name}</h3>
+          ${perfumesLine ? `<p class="combo-perfumes">${perfumesLine}</p>` : ""}
+          <div class="card-meta"><span>desde 3 ml</span><b>${money(min)}</b></div>
+        </a>
+        <a class="card-bottle" href="product.html?id=${p.id}">Ver set <span>→</span></a>
+      </div>
+    </article>`;
+  }
   /* Estructura sin <button>/<a> anidados dentro de otro <a> (HTML5 no
      permite contenido interactivo anidado; antes funcionaba solo porque
      JS hacía stopPropagation en el quick-add, pero rompía semántica y
@@ -191,7 +219,6 @@ function productCard(p, mode){
       <a class="card-body-link" href="product.html?id=${p.id}">
         ${brand}
         <h3 class="card-name">${p.name}</h3>
-        ${p.type === "combo" ? comboThumbsHTML(p) : ""}
         <div class="card-meta"><span>${isBottle?`frasco ${minSize} ml`:"desde 3 ml"}</span><b>${money(min)}</b></div>
       </a>
       ${bottleCrossSell}
@@ -1026,54 +1053,73 @@ function initHeroCarousel(){
   const slides = Array.from(hero.querySelectorAll(".hero-slide"));
   const dots = Array.from(hero.querySelectorAll("[data-hero-dot]"));
   const playBtn = hero.querySelector("[data-hero-playpause]");
-  const actionPanels = Array.from(document.querySelectorAll("[data-hero-actions]"));
   if(slides.length < 2) return;
 
   const INTERVAL = 7000;
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  let index = 0, timer = null, userPaused = false;
+  /* Baymard: no autorotación de carousels promocionales en mobile/touch
+     -- riesgo de contenido perdido y navegación accidental. pointer:coarse
+     es la señal correcta (no un breakpoint de ancho: un laptop táctil con
+     mouse real sigue calificando para autoplay). El usuario sigue
+     controlando con swipe/dots/flechas en cualquier caso. */
+  const noAutoplay = window.matchMedia("(pointer: coarse)").matches;
+  let index = 0, timer = null, userPaused = noAutoplay;
 
+  function setPausedUI(paused){
+    if(!playBtn) return;
+    playBtn.setAttribute("aria-pressed", String(paused));
+    playBtn.classList.toggle("is-paused", paused);
+    playBtn.setAttribute("aria-label", paused ? "Reanudar carrusel" : "Pausar carrusel");
+  }
   function goTo(i){
     index = (i + slides.length) % slides.length;
-    slides.forEach((s,n)=> s.classList.toggle("is-active", n===index));
-    dots.forEach((d,n)=> d.classList.toggle("is-active", n===index));
-    dots.forEach((d,n)=> d.setAttribute("aria-selected", n===index ? "true":"false"));
-    actionPanels.forEach(p=> p.classList.toggle("is-active", Number(p.dataset.heroActions)===index));
+    slides.forEach((s,n)=>{
+      const active = n===index;
+      s.classList.toggle("is-active", active);
+      // inert: los CTA/enlaces de un slide inactivo no deben ser
+      // alcanzables por Tab aunque sigan en el DOM en opacity:0.
+      if(active) s.removeAttribute("inert"); else s.setAttribute("inert","");
+    });
+    dots.forEach((d,n)=>{
+      d.classList.toggle("is-active", n===index);
+      d.setAttribute("aria-selected", n===index ? "true":"false");
+    });
   }
   function stop(){ if(timer){ clearInterval(timer); timer=null; } }
   function start(){
     stop();
-    if(reduceMotion || userPaused || document.hidden) return;
+    if(noAutoplay || reduceMotion || userPaused || document.hidden) return;
     timer = setInterval(()=> goTo(index+1), INTERVAL);
   }
-  function restart(){ stop(); start(); }
+  // Interacción manual (dot/swipe) = pausa explícita, no un reinicio del
+  // timer -- "pausar en vez de cambiar otra vez inesperadamente".
+  function pauseFromInteraction(){
+    userPaused = true;
+    setPausedUI(true);
+    stop();
+  }
 
-  dots.forEach((d,n)=> d.addEventListener("click", ()=>{ goTo(n); restart(); }));
+  dots.forEach((d,n)=> d.addEventListener("click", ()=>{ goTo(n); pauseFromInteraction(); }));
 
   if(playBtn){
-    if(reduceMotion){
-      playBtn.setAttribute("aria-pressed","true");
-      playBtn.classList.add("is-paused");
-    }
+    if(reduceMotion || noAutoplay) setPausedUI(true);
     playBtn.addEventListener("click", ()=>{
       userPaused = !userPaused;
-      playBtn.setAttribute("aria-pressed", String(userPaused));
-      playBtn.classList.toggle("is-paused", userPaused);
-      playBtn.setAttribute("aria-label", userPaused ? "Reanudar carrusel" : "Pausar carrusel");
+      setPausedUI(userPaused);
       if(userPaused) stop(); else start();
     });
   }
 
-  // Pausa en hover/foco de teclado -- se reanuda al salir, sin tocar userPaused.
-  hero.addEventListener("mouseenter", stop);
-  hero.addEventListener("mouseleave", ()=>{ if(!userPaused) start(); });
-  hero.addEventListener("focusin", stop);
-  hero.addEventListener("focusout", (e)=>{ if(!userPaused && !hero.contains(e.relatedTarget)) start(); });
+  if(!noAutoplay){
+    // Pausa en hover/foco de teclado -- se reanuda al salir, sin tocar userPaused.
+    hero.addEventListener("mouseenter", stop);
+    hero.addEventListener("mouseleave", ()=>{ if(!userPaused) start(); });
+    hero.addEventListener("focusin", stop);
+    hero.addEventListener("focusout", (e)=>{ if(!userPaused && !hero.contains(e.relatedTarget)) start(); });
+    document.addEventListener("visibilitychange", ()=>{ if(document.hidden) stop(); else if(!userPaused) start(); });
+  }
 
-  // Pestaña oculta: no seguir avanzando ni acumular timers en background.
-  document.addEventListener("visibilitychange", ()=>{ if(document.hidden) stop(); else if(!userPaused) start(); });
-
-  // Swipe táctil.
+  // Swipe táctil -- disponible siempre, con o sin autoplay.
   let touchX = null;
   hero.addEventListener("touchstart", e=>{ touchX = e.touches[0].clientX; }, {passive:true});
   hero.addEventListener("touchend", e=>{
@@ -1082,7 +1128,7 @@ function initHeroCarousel(){
     touchX = null;
     if(Math.abs(dx) < 40) return;
     goTo(index + (dx < 0 ? 1 : -1));
-    restart();
+    pauseFromInteraction();
   }, {passive:true});
 
   goTo(0);

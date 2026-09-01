@@ -291,13 +291,25 @@ input,select,textarea{font-family:inherit}
 .collection-card .card-img{width:44%;position:absolute;top:2%;z-index:1;filter:drop-shadow(0 24px 36px rgba(0,0,0,.12))}
 .editorial-art .card-img{width:30%;filter:drop-shadow(0 18px 30px rgba(0,0,0,.1))}
 
-/* --- Composición de combos (thumbnails de los perfumes incluidos) --- */
-.combo-thumbs{display:flex;gap:6px;margin:2px 0 8px}
-.combo-thumb{width:34px;height:42px;border:1px solid var(--line);background:#E7E6E4;overflow:hidden;flex-shrink:0}
-.combo-thumb img{width:100%;height:100%;object-fit:cover}
-.combo-thumb-svg{display:grid;place-items:center;background:var(--bg2)}
-.combo-thumb-svg svg{width:70%;height:70%}
+/* --- Combo cards: portada full-bleed, sin marco blanco --- */
+/* .combo-thumbs/.combo-thumb/.combo-thumb-svg (fila de miniaturas por
+   perfume) quedaron muertas cuando comboThumbsHTML() se simplificó a solo
+   texto (ver app.js) -- las 3 portadas reales ya comunican el set, no
+   hacían falta dos representaciones visuales. Eliminadas aquí mismo en
+   vez de dejarlas como código muerto. */
 .combo-thumb-caption{font-size:10.5px;letter-spacing:.03em;color:var(--muted2);line-height:1.5;margin-bottom:10px}
+/* is-combo usa una estructura de card distinta (ver productCard() en
+   app.js): la foto de portada YA es la pieza de arte terminada (título,
+   composición, tipografía propios) -- envolverla en el mismo
+   card-media/padding/quick-add pensado para una botella sobre fondo
+   blanco la metía dentro de un marco y competía con su propio diseño. */
+.product-card.is-combo{overflow:visible}
+.combo-media{position:relative;display:block}
+.combo-media-img{display:block;width:100%;height:auto}
+/* Mismo look que .tag (pequeño, ivory semiopaco, tracking) -- no un
+   badge dorado grande. */
+.combo-badge{position:absolute;top:14px;left:14px;z-index:2;padding:6px 12px;background:rgba(255,255,255,.9);border:1px solid var(--line);backdrop-filter:blur(8px);font-size:9px;letter-spacing:.26em;color:var(--text);text-transform:uppercase}
+.combo-perfumes{font-size:12.5px;color:var(--text-light);line-height:1.5;margin:2px 0 12px}
 /* Composición del combo en carrito/drawer/checkout: una línea compacta,
    mismo dato confirmado por el cliente que .combo-thumb-caption, sin
    espacio para miniaturas. Ver comboContentsLine() en app.js. */
