@@ -13,31 +13,53 @@
    first, la primera vez que una página real los pide con su ?v= actual.
    ============================================================ */
 
-const CACHE_VERSION = "v5"; // logo-mark.png changed bytes at the same bare URL (512px/108KB -> 256px/33KB) -- precached without a ?v=, so old clients keep the stale copy until this bumps.
+const CACHE_VERSION = "v6"; // scope-relative precache URLs (was hardcoded /cruzialparfums/, broke install on any origin without that subpath -- e.g. local preview at the domain root).
 const CACHE_NAME = "cruzial-" + CACHE_VERSION;
 const PRECACHE = "cruzial-precache-" + CACHE_VERSION;
 
+/* Rutas relativas al SCOPE del propio SW, no absolutas al dominio.
+   self.registration.scope ya resuelve distinto según dónde se registró
+   sw.js (ver index.html: navigator.serviceWorker.register("sw.js"), ruta
+   relativa) -- "/" en un preview local servido desde la raíz del repo,
+   "/cruzialparfums/" en GitHub Pages. Antes las 13 rutas estaban escritas
+   como "/cruzialparfums/..." a mano: instalaban bien en producción pero
+   cache.addAll() fallaba por completo en local (todas piden 404 bajo un
+   subpath que no existe ahí), y addAll() rechaza el install entero si
+   UNA sola request no responde 200 -- el error real en consola. */
+const toScopeURL = path => new URL(path, self.registration.scope).href;
 const STATIC_ASSETS = [
-  "/cruzialparfums/",
-  "/cruzialparfums/index.html",
-  "/cruzialparfums/catalog.html",
-  "/cruzialparfums/product.html",
-  "/cruzialparfums/checkout.html",
-  "/cruzialparfums/combos.html",
-  "/cruzialparfums/mayorista.html",
-  "/cruzialparfums/nosotros.html",
-  "/cruzialparfums/contacto.html",
-  "/cruzialparfums/terminos.html",
-  "/cruzialparfums/privacidad.html",
-  "/cruzialparfums/img/logo-mark.png",
-  "/cruzialparfums/manifest.json"
-];
+  "",
+  "index.html",
+  "catalog.html",
+  "product.html",
+  "checkout.html",
+  "combos.html",
+  "mayorista.html",
+  "nosotros.html",
+  "contacto.html",
+  "terminos.html",
+  "privacidad.html",
+  "img/logo-mark.png",
+  "manifest.json"
+].map(toScopeURL);
 
-/* Install: precache static assets */
+/* Install: precache static assets. Cada URL se valida por separado (no
+   Cache.addAll, que aborta TODO el precache si una sola request falla)
+   -- un asset renombrado/eliminado no debe tumbar el install completo;
+   solo se registra en consola cuál faltó, y el resto sigue cacheado. */
 self.addEventListener("install", function(e) {
   e.waitUntil(
     caches.open(PRECACHE).then(function(cache) {
-      return cache.addAll(STATIC_ASSETS);
+      return Promise.all(
+        STATIC_ASSETS.map(function(url) {
+          return fetch(url).then(function(res) {
+            if (res && res.status === 200) return cache.put(url, res);
+            console.warn("[sw] precache skipped (status " + (res && res.status) + "):", url);
+          }).catch(function(err) {
+            console.warn("[sw] precache failed:", url, err);
+          });
+        })
+      );
     })
   );
   self.skipWaiting();
