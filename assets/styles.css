@@ -197,9 +197,16 @@ input,select,textarea{font-family:inherit}
 .card-media svg{width:62%;height:auto;object-fit:cover;transition:transform .8s var(--ease);filter:drop-shadow(0 22px 34px rgba(0,0,0,.1))}
 .product-card:hover .card-media svg{transform:translateY(-6px) scale(1.03)}
 .card-media::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 50%,transparent 55%,rgba(250,250,250,.4));pointer-events:none}
-/* Fotografía real de producto: ocupa toda la card (sin recuadro blanco flotando) */
-.card-media.has-photo{background:var(--bg2)}
-.card-media.has-photo::after{background:linear-gradient(180deg,rgba(0,0,0,0) 70%,rgba(0,0,0,.05) 100%)}
+/* Fotografía real de producto: ocupa toda la card (sin recuadro blanco flotando).
+   --bg2 (#FAFAFA) se eligió pensando que "casi idéntico" al blanco real
+   de la foto (255,255,255) sería indistinguible -- en pantalla sí se ve:
+   el marco de 16px alrededor de la foto queda un punto más gris que la
+   foto Y que el .card-body blanco puro justo debajo, una costura visible
+   card por card. Blanco real + degradado inferior quitado (oscurecía
+   artificialmente el fondo de la foto, lo que CLAUDE.md prohíbe para
+   fotografía de producto aunque sea un 5% de opacidad). */
+.card-media.has-photo{background:#fff}
+.card-media.has-photo::after{background:none}
 .tag{position:absolute;top:14px;left:14px;z-index:2;padding:6px 12px;background:rgba(255,255,255,.9);border:1px solid var(--line);backdrop-filter:blur(8px);font-size:9px;letter-spacing:.26em;color:var(--text);text-transform:uppercase}
 .tag-discontinued{color:#999;border-color:#E0E0E0;background:rgba(245,245,245,.9)}
 .product-card.is-discontinued .card-media{filter:grayscale(.55) brightness(.92)}
