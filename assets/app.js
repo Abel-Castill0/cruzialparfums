@@ -199,10 +199,14 @@ function productCard(p, mode){
      el link del cuerpo ya anuncia el producto; el quick-add y el cross-
      sell de frasco completo son ahora enlaces/botones hermanos reales,
      no anidados. */
+  /* Texto recortado ("completo"/"desde" fuera, unidad primero) -- en
+     cards angostas (catálogo mobile 2 columnas) la versión larga con
+     tracking ancho se partía en varias líneas de una sola palabra. Mismo
+     dato, nada inventado ni redondeado -- money() no cambia. */
   const bottleCrossSell = isBottle && p.price
-    ? `<a class="card-bottle" href="product.html?id=${p.id}">Prueba antes en decant · desde ${money(Math.min(...Object.values(p.price)))} <span>→</span></a>`
+    ? `<a class="card-bottle" href="product.html?id=${p.id}">Decant desde ${money(Math.min(...Object.values(p.price)))} <span>→</span></a>`
     : !isBottle && bottle
-    ? `<a class="card-bottle" href="product.html?id=${p.id}&variant=bottle">Frasco completo · desde ${money(bottle)} (${bSize} ml) <span>→</span></a>`
+    ? `<a class="card-bottle" href="product.html?id=${p.id}&variant=bottle">Frasco ${bSize} ml · ${money(bottle)} <span>→</span></a>`
     : "";
   /* id en el <article>: permite deep-link estable (combos.html#combo-id
      desde el hero carousel) sin depender de posición en el grid. Se le
@@ -1055,7 +1059,7 @@ function initHeroCarousel(){
   const playBtn = hero.querySelector("[data-hero-playpause]");
   if(slides.length < 2) return;
 
-  const INTERVAL = 7000;
+  const INTERVAL = 5200; // Baymard: 5-7s razonable para slides con poco texto
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   /* Baymard: no autorotación de carousels promocionales en mobile/touch
      -- riesgo de contenido perdido y navegación accidental. pointer:coarse

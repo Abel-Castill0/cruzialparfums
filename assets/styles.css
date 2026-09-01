@@ -132,7 +132,12 @@ input,select,textarea{font-family:inherit}
 .text-link:hover{border-color:var(--gold);color:var(--gold-deep);gap:14px}
 
 /* --- Announcement bar --- */
-.announcement{background:#1A1A1A;color:#CCC;font-size:9px;letter-spacing:.32em;text-transform:uppercase;text-align:center;padding:8px 16px;border-bottom:1px solid #2A2A2A;position:relative;z-index:60}
+/* text-wrap:balance evita que quede una palabra sola en la última línea
+   ("...envíos a todo el país" partiéndose y dejando "PAÍS" huérfano en
+   mobile, visto en nosotros.html) -- balancea el conteo de caracteres
+   entre líneas en vez de solo desbordar la última palabra. No-op en
+   navegadores sin soporte (sigue envolviendo como antes), no rompe nada. */
+.announcement{background:#1A1A1A;color:#CCC;font-size:9px;letter-spacing:.32em;text-transform:uppercase;text-align:center;padding:8px 16px;border-bottom:1px solid #2A2A2A;position:relative;z-index:60;text-wrap:balance}
 
 /* --- Header --- */
 .site-header{position:sticky;top:0;z-index:50;transition:all .5s var(--ease);background:rgba(255,255,255,.92);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid transparent}
@@ -838,10 +843,12 @@ input,select,textarea{font-family:inherit}
 /* WhatsApp es función, no decoración -- ver docs/known-issues.md: menos
    protagonismo (58px→54px), anillo de pulso más contenido (scale 1.7→1.4,
    opacity inicial más baja) en vez del glow grande de antes. */
-.wa-float{position:fixed;right:22px;bottom:24px;z-index:70;width:54px;height:54px;border-radius:50%;background:#1A1A1A;display:grid;place-items:center;color:var(--gold);box-shadow:0 14px 40px -10px rgba(0,0,0,.45);transition:all .4s var(--ease)}
-.wa-float:hover{transform:scale(1.08)}
-.wa-float::before{content:"";position:absolute;inset:0;border-radius:50%;border:1px solid rgba(201,169,98,.4);animation:wa-pulse 2.6s ease-out infinite}
-@keyframes wa-pulse{0%{transform:scale(1);opacity:.75}100%{transform:scale(1.4);opacity:0}}
+/* Antes tenía un anillo dorado pulsando infinito (wa-pulse) + sombra de
+   40px de blur -- "WhatsApp es función, no decoración". Se queda un
+   borde dorado fino y estático; sin animación continua compitiendo con
+   el resto de la página (ni con los controles del carousel en el hero). */
+.wa-float{position:fixed;right:22px;bottom:24px;z-index:70;width:54px;height:54px;border-radius:50%;background:#1A1A1A;border:1px solid rgba(201,169,98,.5);display:grid;place-items:center;color:var(--gold);box-shadow:0 10px 26px -10px rgba(0,0,0,.4);transition:all .35s var(--ease)}
+.wa-float:hover{transform:scale(1.06);border-color:var(--gold)}
 
 /* --- Reveal animations --- */
 .reveal{opacity:0;transform:translateY(34px);transition:opacity 1s var(--ease),transform 1s var(--ease)}
@@ -1011,15 +1018,24 @@ input,select,textarea{font-family:inherit}
 @media(prefers-reduced-motion:reduce){.finder-modal,.finder-panel{transition:none}}
 
 /* --- Mobile menu --- */
-.mobile-menu{position:fixed;inset:0;z-index:96;background:rgba(255,255,255,.98);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;opacity:0;transform:scale(.96);pointer-events:none;transition:opacity .4s var(--ease),transform .4s var(--ease)}
+/* Antes rgba(255,255,255,.98) -- casi blanco puro, pero header y el resto
+   de la home ya SON blancos: el menú se sentía como una lámina delgada
+   encima de la misma superficie, no un modo distinto. Header se queda
+   LIGHT (el logo funciona bien ahí); el menú pasa a ink-deep -- otra
+   expresión del negro de marca, cero ambigüedad de "se transparenta"
+   sea cual sea el punto de la transición de opacity en el que se mire,
+   y consistente con footer/Finder/Cómo trabajamos. */
+.mobile-menu{position:fixed;inset:0;z-index:96;background:var(--ink-deep);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;opacity:0;transform:scale(.96);pointer-events:none;transition:opacity .4s var(--ease),transform .4s var(--ease)}
 .mobile-menu.open{opacity:1;transform:scale(1);pointer-events:auto}
-.mobile-menu a{font-family:var(--serif);font-size:34px;color:#1A1A1A;padding:14px 24px;min-height:48px;display:flex;align-items:center;transition:color .3s}
+.mobile-menu a{font-family:var(--serif);font-size:34px;color:var(--on-dark);padding:14px 24px;min-height:48px;display:flex;align-items:center;transition:color .3s}
 .mobile-menu a:hover,.mobile-menu a.active{color:var(--gold)}
-.menu-sep{width:56px;height:1px;background:var(--line-strong);margin:10px 0}
-.mobile-menu a.menu-secondary{font-family:var(--sans);font-size:12px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);padding:8px 24px;min-height:auto}
+.menu-sep{width:56px;height:1px;background:var(--on-dark-line);margin:10px 0}
+.mobile-menu a.menu-secondary{font-family:var(--sans);font-size:12px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--on-dark-muted);padding:8px 24px;min-height:auto}
 .mobile-menu a.menu-secondary:hover{color:var(--gold)}
-.mobile-menu .close-mobile{position:absolute;top:26px;right:26px;width:44px;height:44px;border:1px solid var(--line);border-radius:50%;font-size:22px;color:var(--muted);display:grid;place-items:center}
-.mobile-menu small{margin-top:26px;font-size:10px;letter-spacing:.3em;color:var(--muted2);text-transform:uppercase}
+.mobile-menu .close-mobile{position:absolute;top:26px;right:26px;width:44px;height:44px;border:1px solid var(--on-dark-line);border-radius:50%;font-size:22px;color:var(--on-dark-muted);display:grid;place-items:center}
+.mobile-menu .close-mobile:hover{border-color:var(--gold);color:var(--gold)}
+.mobile-menu .menu-logo{border-color:var(--on-dark-line)}
+.mobile-menu small{margin-top:26px;font-size:10px;letter-spacing:.3em;color:var(--on-dark-faint);text-transform:uppercase}
 
 /* ============================================================
    RESPONSIVE
@@ -1118,8 +1134,13 @@ input,select,textarea{font-family:inherit}
   .cart-total{padding:20px 16px}
   .search-item .s-price{display:none}
   .search-item .s-price.s-discontinued{display:block;margin-left:auto}
-  .back-to-top{right:16px;bottom:88px}
-  .wa-float{width:52px;height:52px;right:16px;bottom:16px}
+  /* "Volver arriba" flotante + WhatsApp flotante + controles del hero en
+     una pantalla de 375px de ancho es demasiado ruido de golpe -- en
+     mobile queda solo WhatsApp, que es la acción real (función, no
+     decoración); el botón "volver arriba" no aporta lo suficiente ahí
+     para justificar el espacio/colisión. Desktop conserva ambos. */
+  .back-to-top{display:none}
+  .wa-float{width:52px;height:52px;right:16px;bottom:calc(16px + env(safe-area-inset-bottom))}
   .wholesale-table-wrap{margin:0 -16px}
   .wholesale-table{font-size:11px}
   .wholesale-table th,.wholesale-table td{padding:10px 8px}
@@ -1165,7 +1186,7 @@ input,select,textarea{font-family:inherit}
   .mobile-menu a{font-size:28px}
   .menu-logo{width:76px;height:76px}
   .toast{max-width:calc(100vw - 32px);text-align:center;padding:13px 18px;font-size:10px}
-  .wa-float{width:48px;height:48px;right:14px;bottom:14px}
+  .wa-float{width:48px;height:48px;right:14px;bottom:calc(14px + env(safe-area-inset-bottom))}
   .drawer-items{padding:6px 16px}
   .drawer-item{gap:12px;padding:15px 0}
   .drawer-foot{padding:18px 16px}

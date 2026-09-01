@@ -43,7 +43,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Jost:wght@300;400;500;600&family=Italianno&display=swap" rel="stylesheet">
   <!-- Styles -->
-  <link rel="stylesheet" href="assets/styles.css?v=20260901i">
+  <link rel="stylesheet" href="assets/styles.css?v=20260901l">
   <!-- Schema.org LocalBusiness -->
   <script type="application/ld+json">
   {
@@ -291,6 +291,26 @@
       #featured-grid .product-card:first-child { grid-column: span 2; grid-row: span 1; }
       #featured-grid .product-card:first-child .card-media { aspect-ratio: 1/1.05; height: auto; }
     }
+    /* BUG real encontrado en QA responsive (2026-09-01): a <=900px, la
+       regla de arriba (#featured-grid.product-grid, id+clase) le gana en
+       especificidad a .product-grid{grid-template-columns:repeat(2,1fr)}
+       de la media query compartida de abajo -- #featured-grid se quedaba
+       forzado a 4 columnas mientras la card destacada ocupaba 2 de esas
+       4 (ya angostas). Resultado real en pantalla: 1 card "grande" que
+       en realidad mide la mitad de un móvil, más 2-3 cards de un cuarto
+       de ancho con nombre/precio/"frasco completo" partiéndose en
+       columnas de palabras -- exactamente lo que mostraban las capturas.
+       En vez de perseguir la especificidad, se resuelve como estaba
+       pensado desde el principio: en Home "Los Más Deseados" es
+       selección curada, no el grid de compra del catálogo -- en mobile
+       eso es un rail horizontal con scroll-snap, no un grid comprimido. */
+    @media (max-width: 640px) {
+      #featured-grid.product-grid { display: flex; grid-template-columns: none; overflow-x: auto; scroll-snap-type: x mandatory; gap: 14px; padding: 4px 16px 10px; margin: 0 -16px; -webkit-overflow-scrolling: touch; }
+      #featured-grid .product-card { scroll-snap-align: start; flex: 0 0 80vw; max-width: 80vw; }
+      #featured-grid .product-card:first-child { grid-column: unset; grid-row: unset; }
+      #featured-grid .product-card:first-child .card-media { aspect-ratio: 1/1.05; height: auto; }
+      #featured-grid .product-card:first-child .card-name { font-size: 22px; }
+    }
 
     /* CATEGORY SPLIT — dos mundos editoriales, no dos cards de producto.
        border-radius:16px (var(--radius-lg)) era la única esquina redondeada
@@ -423,24 +443,22 @@
     .drawer-total { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
     .drawer-total span { font-size: 14px; color: var(--text-light); }
 
-    /* MOBILE MENU */
-    .mobile-menu { position: fixed; inset: 0; z-index: 300; background: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 28px; opacity: 0; visibility: hidden; transition: all .4s ease; }
-    .mobile-menu.open { opacity: 1; visibility: visible; }
-    .mobile-menu .menu-logo { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; margin-bottom: 20px; }
-    .close-mobile { position: absolute; top: 24px; right: 24px; font-size: 28px; }
-    .mobile-menu a { font-family: var(--serif); font-size: 26px; color: var(--darker); }
-    .mobile-menu .menu-secondary { font-size: 16px; color: var(--text-light); }
-    .mobile-menu .menu-sep { width: 40px; height: 1px; background: var(--border); margin: 8px 0; }
-    .mobile-menu small { font-size: 11px; letter-spacing: 2px; color: var(--text-light); margin-top: 20px; }
+    /* MOBILE MENU — copia local eliminada 2026-09-01: duplicaba (con
+       z-index:300 y background:#fff distintos) la regla compartida de
+       assets/styles.css. Empate de especificidad, esta ganaba por venir
+       después en el documento -- el menú se veía blanco pase lo que
+       pasara en el archivo compartido, exactamente el bug que reportó
+       el cliente ("casi transparente/se ve el contenido detrás": un
+       menú blanco de bordes suaves sobre una página ya blanca). El
+       sistema compartido (ink-deep, ver docs/known-issues.md) es ahora
+       la única fuente. */
 
-    /* WA FLOAT */
-    .wa-float { position: fixed; bottom: 24px; right: 24px; z-index: 90; width: 56px; height: 56px; border-radius: 50%; background: var(--darker); color: var(--gold); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 24px rgba(0,0,0,.4); transition: transform var(--transition); }
-    .wa-float:hover { transform: scale(1.08); }
-
-    /* BACK TO TOP */
-    .back-to-top { position: fixed; bottom: 96px; right: 28px; z-index: 90; width: 40px; height: 40px; border-radius: 50%; background: var(--dark); color: #fff; font-size: 18px; display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: all var(--transition); }
-    .back-to-top.show { opacity: 1; visibility: visible; }
-    .back-to-top:hover { background: var(--gold); }
+    /* WA FLOAT / BACK TO TOP — copias locales eliminadas 2026-09-01:
+       ninguna de las dos traía el display:none<=640px ni el borde/anillo
+       ya retirado de la versión compartida (assets/styles.css) -- "volver
+       arriba" seguía apareciendo en mobile pase lo que pasara en el
+       archivo compartido, mismo patrón que el bug de .mobile-menu de
+       arriba. Sistema compartido es ahora la única fuente para ambos. */
 
     /* FINDER: hereda de assets/styles.css (.finder-modal/.finder-panel etc.)
        para que sea idéntico en todas las páginas — ver la misma nota en
@@ -514,7 +532,9 @@
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
           <span class="cart-count">0</span>
         </button>
-        <button class="mobile-toggle" data-open-menu aria-label="Abrir menú">☰</button>
+        <button class="mobile-toggle" data-open-menu aria-label="Abrir menú">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
       </div>
     </div>
   </header>
@@ -947,9 +967,9 @@
   });
   </script>
 
-  <script src="assets/data.js?v=20260901i"></script>
-  <script src="assets/app.js?v=20260901i"></script>
-  <script src="assets/finder.js?v=20260901i"></script>
+  <script src="assets/data.js?v=20260901l"></script>
+  <script src="assets/app.js?v=20260901l"></script>
+  <script src="assets/finder.js?v=20260901l"></script>
   <script>
   if("serviceWorker" in navigator){
     window.addEventListener("load",function(){
