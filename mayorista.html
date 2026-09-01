@@ -24,7 +24,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Jost:wght@300;400;500;600&family=Italianno&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/styles.css?v=20260901l">
+  <link rel="stylesheet" href="assets/styles.css?v=20260901m">
   <style>
     .wholesale-hero{background:linear-gradient(135deg,#0a0806 0%,#1a1510 100%);padding:140px 0 80px;text-align:center;position:relative;overflow:hidden}
     .wholesale-hero::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:200%;height:1px;background:linear-gradient(90deg,transparent,#c9a962 30%,#c9a962 70%,transparent);opacity:.3}
@@ -121,6 +121,29 @@
     @media(max-width:600px){
       .wholesale-features{grid-template-columns:1fr}
       .wholesale-filters .search-input{min-width:100%}
+    }
+    /* MOBILE (<=767, misma convención que assets/styles.css): la tabla
+       de 7 columnas comprimida con overflow-x:auto obligaba a scroll
+       horizontal para ver el precio -- mismo dataset/markup, sin JS
+       nuevo ni copia paralela de precios: cada <tr> se convierte en una
+       card vía CSS, <thead> se oculta, y ::before{content:attr(data-label)}
+       (ver renderRows() en app.js) rotula cada celda de precio. Desktop
+       sigue siendo la tabla real, sin tocar. */
+    @media(max-width:767px){
+      .wholesale-table-wrap{overflow-x:visible;border:none;background:none}
+      .wholesale-table{border-collapse:separate;border-spacing:0 12px}
+      .wholesale-table thead{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
+      .wholesale-table,.wholesale-table tbody,.wholesale-table tr,.wholesale-table td{display:block;width:100%}
+      .wholesale-table tr{border:1px solid #e8e4de;border-radius:10px;background:#fff;padding:14px 16px;position:relative}
+      .wholesale-table td{border:none;padding:3px 0;text-align:left!important}
+      .wholesale-table td.thumb-col{position:absolute;top:14px;right:16px;padding:0;width:auto}
+      .wholesale-table td.thumb-col img,.wholesale-table td.thumb-col .thumb-placeholder{width:44px;height:44px}
+      .wholesale-table td.brand-col{padding-right:60px;font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:#999}
+      .wholesale-table td.name-col{padding-right:60px;font-family:'Cormorant Garamond',serif;font-size:1.15rem;color:#0a0806;margin-bottom:6px}
+      .wholesale-table td.price-col{display:flex;justify-content:space-between;font-size:.85rem;border-top:1px solid #f5f2ee;padding:7px 0}
+      .wholesale-table td.price-col::before{content:attr(data-label);color:#999;font-size:.72rem;text-transform:uppercase;letter-spacing:.06em}
+      .wholesale-table td.action-col{margin-top:8px}
+      .wholesale-table .wa-link{justify-content:center;width:100%;padding:11px;border:1px solid #c9a962;border-radius:6px;font-size:.8rem;letter-spacing:.04em;text-transform:uppercase}
     }
   </style>
 </head>
@@ -426,7 +449,7 @@
     <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm5.4 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.6-4-4.7-4.2-.1-.2-1.1-1.5-1.1-2.9s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5s.8 1.9.8 2c.1.1.1.3 0 .4-.4.8-.9 1-.7 1.4.6 1.1 1.9 2.3 2.9 2.8.4.2.6.1.9-.1.2-.3.9-1 1.1-1.4.2-.3.4-.3.7-.2l2 .9c.3.2.5.3.6.4.1.2.1.8-.1 1.4Z"/></svg>
   </a>
 
-  <script src="assets/data.js?v=20260901l"></script>
-  <script src="assets/app.js?v=20260901l"></script>
+  <script src="assets/data.js?v=20260901m"></script>
+  <script src="assets/app.js?v=20260901m"></script>
 </body>
 </html>
