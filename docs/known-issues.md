@@ -106,3 +106,36 @@ unscheduled work.
   `hawas-elixir`, `hawas-tropical`, `hawas-chrome`, `vulcan-feu`,
   `jean-lowe-vibe`, `jean-lowe-inmotel`, `rayhaan-italia`,
   `swy-absolutely`, `adg-profondo-edp`.
+  Re-verified independently on 2026-08-31 with a second, from-scratch
+  script (`.claude/scripts/audit_image_backgrounds.py`, corner+edge
+  luminance sampling, not a repeat of the same code) against the same
+  188-path `IMG_MAP` — identical 14 products, identical conclusion. Also
+  cross-checked `git log --follow` on a few of the flagged files (e.g.
+  `Lattafa Mayar.png`, `LATTAFA - YARA PINK.png`): both trace to the
+  2026-08-30 "real background removal on 194 product photos" commit — the
+  flood-fill round `CLAUDE.md` already documents as damaging — with no
+  later commit replacing them, confirming this is a genuine unresolved
+  content gap, not an incomplete search of `img/perfumes/`.
+
+## Stale `.hero::before` scrim silently washing out the full-bleed hero (fixed 2026-08-31)
+
+`assets/styles.css` still carried `.hero::before` — a
+`linear-gradient(90deg, rgba(255,255,255,.55) 0%, ... .12% 100%)` white
+scrim, `position:absolute;inset:0` — built for an *earlier* hero layout
+where `.hero-copy` (a white text card, still in the shared stylesheet,
+now unused anywhere) sat on the left third of the photo and needed help
+staying legible. When the hero was rebuilt as a full-bleed, text-free
+photo (`<section class="hero"></section>`, CTAs moved to the separate
+`.hero-cta-bar` below), nothing removed the old scrim — it kept painting
+a 55%-opacity-on-the-left-fading-to-12%-on-the-right white haze directly
+over the new photo, on every load, because `.hero::before` has no gating
+class and index.html's local `<style>` block never mentioned `::before`.
+Confirmed with evidence, not assumption, per the standing rule of
+diffing local overrides against the shared file before touching them:
+compared `img/hero/hero-crop.jpg` RAW (deep, high-contrast, no haze) against
+the live render (visibly washed, worse on the left — exactly matching the
+gradient's own 55%→12% left-to-right falloff) before concluding it was
+CSS and not the source photo. Fix: deleted the `.hero::before` rule.
+`.hero-copy`/`.hero-inner` are dead in the same way (no page references
+them) but left alone in this change — cleanup, not a visual bug, and out
+of scope for this fix.

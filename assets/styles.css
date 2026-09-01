@@ -35,6 +35,15 @@
   --shadow-sm: 0 2px 8px rgba(0,0,0,0.04);
   --shadow-md: 0 8px 30px -8px rgba(0,0,0,0.06);
   --radius: 2px;
+  /* Superficies negras — el negro como identidad de marca (ver CLAUDE.md /
+     PRODUCT.md: "lujo editorial, frío"), no solo un color de texto. Mismo
+     tono que --darker en index.html/catalog.html para que el negro sea
+     idéntico en toda la página, no dos negros ligeramente distintos. */
+  --ink-deep: #0A0806;
+  --on-dark: #FFFFFF;
+  --on-dark-muted: #C4BFB6;
+  --on-dark-faint: #8F8A83;
+  --on-dark-line: rgba(255,255,255,.14);
   --ease: cubic-bezier(0.22,1,0.36,1);
   --ease-out: cubic-bezier(0,0,0.2,1);
   --ease-spring: cubic-bezier(0.34,1.56,0.64,1);
@@ -152,7 +161,11 @@ input,select,textarea{font-family:inherit}
 /* --- Hero --- */
 .hero{--hero-photo:none;position:relative;min-height:calc(100vh - 120px);padding:80px 0 100px;overflow:hidden;will-change:transform;background-image:var(--hero-photo);background-size:cover;background-position:center}
 .hero-inner{display:block;position:relative;z-index:2}
-.hero::before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(255,255,255,.55) 0%,rgba(255,255,255,.3) 45%,rgba(255,255,255,.12) 100%);pointer-events:none}
+/* .hero::before white gradient scrim removed 2026-08-31: it existed to keep
+   .hero-copy text legible over the photo in the old hero layout. The current
+   hero (index.html) is photo-only — no text sits on it, CTAs live in the
+   separate .hero-cta-bar below — so the scrim was silently washing out the
+   full-bleed photo with no text to protect. See docs/known-issues.md. */
 .hero::after{display:none}
 .hero-copy{position:relative;z-index:2;max-width:640px;background:rgba(255,255,255,.94);padding:clamp(28px,4vw,48px);border:1px solid var(--line)}
 .hero h1{margin:22px 0 22px}
@@ -713,17 +726,23 @@ input,select,textarea{font-family:inherit}
 .legal-contact-value{font-size:14px;color:#1A1A1A}
 
 /* --- Footer --- */
-.footer{border-top:1px solid var(--line);background:var(--bg2);padding:clamp(60px,7vw,90px) 0 0}
+/* Ancla negra sitewide (todas las páginas comparten .footer vía este
+   archivo) -- ver PRODUCT.md "negro/blanco dominante, dorado como acento".
+   Antes heredaba var(--bg2), un gris casi blanco: el footer nunca cerraba
+   la identidad de marca en negro pese a ser la superficie más consistente
+   del sitio (aparece en cada página). */
+.footer{border-top:1px solid var(--on-dark-line);background:var(--ink-deep);padding:clamp(60px,7vw,90px) 0 0}
+.footer .brand-mark{border-color:var(--on-dark-line)}
 .footer-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr 1.2fr;gap:clamp(30px,4vw,60px);padding-bottom:clamp(40px,5vw,70px)}
-.footer-brand .brand-word strong{font-size:22px}
-.footer-brand p{color:var(--muted);margin-top:18px;max-width:260px;font-size:14px}
+.footer-brand .brand-word strong{font-size:22px;color:var(--on-dark)}
+.footer-brand p{color:var(--on-dark-muted);margin-top:18px;max-width:260px;font-size:14px}
 .footer-social{display:flex;gap:12px;margin-top:26px}
-.footer-social a{width:40px;height:40px;border:1px solid var(--line);border-radius:50%;display:grid;place-items:center;color:var(--muted);font-size:14px;transition:all .4s var(--ease)}
+.footer-social a{width:40px;height:40px;border:1px solid var(--on-dark-line);border-radius:50%;display:grid;place-items:center;color:var(--on-dark-muted);font-size:14px;transition:all .4s var(--ease)}
 .footer-social a:hover{border-color:var(--gold);color:var(--gold);transform:translateY(-3px)}
-.footer-col h4{font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--muted2);font-weight:500;margin-bottom:22px}
-.footer-col a,.footer-col span{display:block;color:var(--muted);font-size:14px;padding:6px 0;transition:color .3s var(--ease)}
+.footer-col h4{font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--on-dark-faint);font-weight:500;margin-bottom:22px}
+.footer-col a,.footer-col span{display:block;color:var(--on-dark-muted);font-size:14px;padding:6px 0;transition:color .3s var(--ease)}
 .footer-col a:hover{color:var(--gold);transform:translateX(4px)}
-.footer-bottom{border-top:1px solid var(--line);padding:24px 0;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted2)}
+.footer-bottom{border-top:1px solid var(--on-dark-line);padding:24px 0;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--on-dark-faint)}
 .footer-bottom a:hover{color:var(--gold)}
 
 /* --- Overlay --- */

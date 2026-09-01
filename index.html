@@ -233,13 +233,17 @@
       .category-card:hover .cat-btn { opacity: 1; transform: translateY(0); }
     }
 
-    /* HOW IT WORKS */
-    .how-it-works { background: var(--bg-ivory); padding: clamp(60px,8vh,100px) 0; }
+    /* HOW IT WORKS — ancla negra deliberada, no otra sección ivory más.
+       El resto de la página respira en blanco/ivory; esta es la superficie
+       donde el negro se declara como identidad, no como acento. */
+    .how-it-works { background: var(--darker); padding: clamp(64px,9vh,110px) 0; }
+    .how-it-works .section-heading h2 { color: #fff; }
+    .how-it-works .heading-rule { width: 64px; height: 1px; background: var(--gold); opacity: .55; margin: 28px auto 0; }
     .steps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 48px; margin-top: 56px; }
     .step-item { text-align: center; }
     .step-number { font-family: var(--serif); font-size: 56px; font-weight: 600; color: var(--gold); line-height: 1; margin-bottom: 20px; }
-    .step-item h3 { font-family: var(--serif); font-size: 22px; font-weight: 500; color: var(--darker); margin-bottom: 12px; }
-    .step-item p { font-size: 15px; color: var(--text-light); line-height: 1.6; max-width: 280px; margin: 0 auto; }
+    .step-item h3 { font-family: var(--serif); font-size: 22px; font-weight: 500; color: #fff; margin-bottom: 12px; }
+    .step-item p { font-size: 15px; color: #B8B3AA; line-height: 1.6; max-width: 280px; margin: 0 auto; }
 
     /* BRAND LOGOS */
     .brand-logos { padding: 48px 0; overflow: hidden; }
@@ -498,6 +502,7 @@
             <h2>Cómo <em>trabajamos</em></h2>
           </div>
         </div>
+        <div class="heading-rule" aria-hidden="true"></div>
         <div class="steps-grid">
           <div class="step-item reveal">
             <div class="step-number">01</div>
