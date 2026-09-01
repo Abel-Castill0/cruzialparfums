@@ -203,7 +203,9 @@ input,select,textarea{font-family:inherit}
 /* --- Product cards --- */
 .product-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
 .product-grid>*,.collection-grid>*{min-width:0;max-width:100%}
-.product-card{background:var(--bg);border:1px solid var(--line);transition:all .55s var(--ease);position:relative;overflow:hidden}
+/* scroll-margin-top: deep link a un combo (combos.html#combo-id desde el
+   hero carousel) no debe dejar la card tapada por .site-header sticky. */
+.product-card{background:var(--bg);border:1px solid var(--line);transition:all .55s var(--ease);position:relative;overflow:hidden;scroll-margin-top:140px}
 .product-card:hover{transform:translateY(-4px);border-color:var(--line-strong);box-shadow:var(--shadow)}
 .card-media{position:relative;aspect-ratio:1/1.05;display:grid;place-items:center;overflow:hidden;background:var(--bg2)}
 /* .card-media-link/.card-body-link: la card ya no envuelve todo en un solo
@@ -821,10 +823,13 @@ input,select,textarea{font-family:inherit}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 
 /* --- WhatsApp float --- */
-.wa-float{position:fixed;right:24px;bottom:24px;z-index:70;width:58px;height:58px;border-radius:50%;background:#1A1A1A;display:grid;place-items:center;color:var(--gold);box-shadow:0 14px 40px -10px rgba(0,0,0,.45);transition:all .4s var(--ease)}
+/* WhatsApp es función, no decoración -- ver docs/known-issues.md: menos
+   protagonismo (58px→54px), anillo de pulso más contenido (scale 1.7→1.4,
+   opacity inicial más baja) en vez del glow grande de antes. */
+.wa-float{position:fixed;right:22px;bottom:24px;z-index:70;width:54px;height:54px;border-radius:50%;background:#1A1A1A;display:grid;place-items:center;color:var(--gold);box-shadow:0 14px 40px -10px rgba(0,0,0,.45);transition:all .4s var(--ease)}
 .wa-float:hover{transform:scale(1.08)}
-.wa-float::before{content:"";position:absolute;inset:0;border-radius:50%;border:1px solid rgba(201,169,98,.5);animation:wa-pulse 2.6s ease-out infinite}
-@keyframes wa-pulse{0%{transform:scale(1);opacity:.9}100%{transform:scale(1.7);opacity:0}}
+.wa-float::before{content:"";position:absolute;inset:0;border-radius:50%;border:1px solid rgba(201,169,98,.4);animation:wa-pulse 2.6s ease-out infinite}
+@keyframes wa-pulse{0%{transform:scale(1);opacity:.75}100%{transform:scale(1.4);opacity:0}}
 
 /* --- Reveal animations --- */
 .reveal{opacity:0;transform:translateY(34px);transition:opacity 1s var(--ease),transform 1s var(--ease)}

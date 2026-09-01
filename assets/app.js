@@ -113,20 +113,17 @@ function changeQty(key,delta){
 }
 
 /* ---------- Composición visual de combos (confirmed by client, ver CRUZIAL_COMBO_CONTENTS en data.js) ---------- */
+/* Antes componía una fila de miniaturas individuales (una por perfume del
+   set) como refuerzo visual bajo el nombre -- tenía sentido cuando la
+   card no tenía portada propia (usaba el mismo SVG/placeholder genérico
+   para los 3 combos, ver known-issues.md). Ahora que cada combo tiene su
+   propia foto de portada real (IMG_MAP → img/combos/set-*.webp) esas
+   miniaturas quedaban de más: una card no necesita dos representaciones
+   visuales del mismo contenido. Queda solo la línea de texto. */
 function comboThumbsHTML(p){
   const contents = window.CRUZIAL_COMBO_CONTENTS && window.CRUZIAL_COMBO_CONTENTS[p.id];
-  if(!contents) return "";
-  const items = contents.perfumes.map(name => PRODUCTS.find(x => x.name === name)).filter(Boolean);
-  if(!items.length) return "";
-  return `<div class="combo-thumbs" aria-hidden="true">
-    ${items.map(item => {
-      const img = item.imgBottle || item.imgSet || item.img;
-      return img
-        ? `<span class="combo-thumb"><img src="${img}" alt="" loading="lazy" decoding="async"></span>`
-        : `<span class="combo-thumb combo-thumb-svg">${bottleSVG(item)}</span>`;
-    }).join("")}
-  </div>
-  <p class="combo-thumb-caption">${contents.perfumes.join(" · ")}</p>`;
+  if(!contents || !contents.perfumes?.length) return "";
+  return `<p class="combo-thumb-caption">${contents.perfumes.join(" · ")}</p>`;
 }
 /* Versión compacta (una línea) para carrito/drawer/checkout, donde no hay
    espacio para las miniaturas — mismo dato confirmado por el cliente. */
@@ -179,7 +176,12 @@ function productCard(p, mode){
     : !isBottle && bottle
     ? `<a class="card-bottle" href="product.html?id=${p.id}&variant=bottle">Frasco completo · desde ${money(bottle)} (${bSize} ml) <span>→</span></a>`
     : "";
-  return `<article class="product-card">
+  /* id en el <article>: permite deep-link estable (combos.html#combo-id
+     desde el hero carousel) sin depender de posición en el grid. Se le
+     pone a toda card, no solo combos -- gratis y sin riesgo de colisión
+     (cada id de producto renderiza como card en un único grid por página,
+     ver notas de renderCombos/renderFeatured). */
+  return `<article class="product-card" id="${p.id}">
     <div class="card-media${mediaClass}" style="--glow:${glow(p)}">
       <a class="card-media-link" href="product.html?id=${p.id}" tabindex="-1" aria-hidden="true">${media}</a>
       <span class="tag">${p.tag}</span>
@@ -1008,6 +1010,85 @@ function initMobileMenu(){
   });
 }
 
+/* ---------- Hero carousel ---------- */
+/* Slide 0 (institucional) es HTML estático -- fetchpriority="high" en su
+   <img> solo funciona de forma confiable si el navegador la ve en el
+   parseo inicial, no inyectada por JS después de que data.js/app.js
+   corran. Los slides 1-3 (promos de combo) también van hardcodeados en
+   el HTML por la misma razón de performance -- pero apuntan a los MISMOS
+   archivos reales que window.CRUZIAL_COMBO_CONTENTS[id].heroImage en
+   data.js, así que no hay una segunda ruta que pueda quedar desincronizada:
+   un archivo real por combo, referenciado igual en los dos lugares que lo
+   necesitan (home hero, combos.html vía IMG_MAP/productCard). */
+function initHeroCarousel(){
+  const hero = document.querySelector("[data-hero-carousel]");
+  if(!hero) return;
+  const slides = Array.from(hero.querySelectorAll(".hero-slide"));
+  const dots = Array.from(hero.querySelectorAll("[data-hero-dot]"));
+  const playBtn = hero.querySelector("[data-hero-playpause]");
+  const actionPanels = Array.from(document.querySelectorAll("[data-hero-actions]"));
+  if(slides.length < 2) return;
+
+  const INTERVAL = 7000;
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let index = 0, timer = null, userPaused = false;
+
+  function goTo(i){
+    index = (i + slides.length) % slides.length;
+    slides.forEach((s,n)=> s.classList.toggle("is-active", n===index));
+    dots.forEach((d,n)=> d.classList.toggle("is-active", n===index));
+    dots.forEach((d,n)=> d.setAttribute("aria-selected", n===index ? "true":"false"));
+    actionPanels.forEach(p=> p.classList.toggle("is-active", Number(p.dataset.heroActions)===index));
+  }
+  function stop(){ if(timer){ clearInterval(timer); timer=null; } }
+  function start(){
+    stop();
+    if(reduceMotion || userPaused || document.hidden) return;
+    timer = setInterval(()=> goTo(index+1), INTERVAL);
+  }
+  function restart(){ stop(); start(); }
+
+  dots.forEach((d,n)=> d.addEventListener("click", ()=>{ goTo(n); restart(); }));
+
+  if(playBtn){
+    if(reduceMotion){
+      playBtn.setAttribute("aria-pressed","true");
+      playBtn.classList.add("is-paused");
+    }
+    playBtn.addEventListener("click", ()=>{
+      userPaused = !userPaused;
+      playBtn.setAttribute("aria-pressed", String(userPaused));
+      playBtn.classList.toggle("is-paused", userPaused);
+      playBtn.setAttribute("aria-label", userPaused ? "Reanudar carrusel" : "Pausar carrusel");
+      if(userPaused) stop(); else start();
+    });
+  }
+
+  // Pausa en hover/foco de teclado -- se reanuda al salir, sin tocar userPaused.
+  hero.addEventListener("mouseenter", stop);
+  hero.addEventListener("mouseleave", ()=>{ if(!userPaused) start(); });
+  hero.addEventListener("focusin", stop);
+  hero.addEventListener("focusout", (e)=>{ if(!userPaused && !hero.contains(e.relatedTarget)) start(); });
+
+  // Pestaña oculta: no seguir avanzando ni acumular timers en background.
+  document.addEventListener("visibilitychange", ()=>{ if(document.hidden) stop(); else if(!userPaused) start(); });
+
+  // Swipe táctil.
+  let touchX = null;
+  hero.addEventListener("touchstart", e=>{ touchX = e.touches[0].clientX; }, {passive:true});
+  hero.addEventListener("touchend", e=>{
+    if(touchX===null) return;
+    const dx = e.changedTouches[0].clientX - touchX;
+    touchX = null;
+    if(Math.abs(dx) < 40) return;
+    goTo(index + (dx < 0 ? 1 : -1));
+    restart();
+  }, {passive:true});
+
+  goTo(0);
+  start();
+}
+
 /* ---------- Header + reveal ---------- */
 function initHeader(){
   const header = document.querySelector(".site-header");
@@ -1129,6 +1210,17 @@ initPills();
 initGiftBanner();
 renderFeatured();
 renderCombos();
+/* Deep link desde el hero (combos.html#combo-id): las cards de
+   #combo-grid se inyectan vía innerHTML arriba, así que ya no existen
+   en el DOM en el momento en que el navegador intenta el scroll nativo
+   al fragment de la URL -- ese scroll automático solo ocurre una vez,
+   contra el HTML ya parseado. Se repite a mano una vez que la card
+   existe. scroll-margin-top en .product-card (assets/styles.css) evita
+   que el header sticky la tape. */
+if(location.hash.length > 1){
+  const target = document.getElementById(location.hash.slice(1));
+  if(target) target.scrollIntoView({block:"start"});
+}
 renderBottles();
 initSearch();
 initCatalog();
@@ -1143,6 +1235,7 @@ renderDrawer();
 initDrawer();
 initMobileMenu();
 initHeader();
+initHeroCarousel();
 initReveal();
 initTilt();
 initRipple();
