@@ -43,7 +43,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Jost:wght@300;400;500;600&family=Italianno&display=swap" rel="stylesheet">
   <!-- Styles -->
-  <link rel="stylesheet" href="assets/styles.css?v=20260901d">
+  <link rel="stylesheet" href="assets/styles.css?v=20260901f">
   <!-- Schema.org LocalBusiness -->
   <script type="application/ld+json">
   {
@@ -164,9 +164,33 @@
        otro edge case de motor de layout, se prioriza la garantía real
        (cero recorte) sobre un límite de alto que no era un requisito
        explícito -- en monitores enormes el hero es más alto, no se corta. */
-    .hero { position: relative; width: 100%; aspect-ratio: 1672 / 792; overflow: hidden; background: #0a0806 url('img/hero/hero-crop.webp') center / cover no-repeat; }
+    .hero { position: relative; width: 100%; aspect-ratio: 1672 / 792; overflow: hidden; background: #0a0806; }
+    /* Carrusel: <img> reales por slide (no background-image) para poder
+       priorizar la carga -- ver comentario HTML. Crossfade por opacity,
+       nunca transform/movimiento lateral: "una foto desaparece
+       suavemente y aparece la siguiente", no un slide agresivo. */
+    .hero-slides { position: absolute; inset: 0; }
+    .hero-slide { position: absolute; inset: 0; opacity: 0; transition: opacity .8s ease; }
+    .hero-slide.is-active { opacity: 1; z-index: 1; }
+    .hero-slide img { width: 100%; height: 100%; object-fit: cover; object-position: center; display: block; }
+    @media (prefers-reduced-motion: reduce) { .hero-slide { transition: none; } }
+    .hero-controls { position: absolute; left: 0; right: 0; bottom: 20px; z-index: 2; display: flex; align-items: center; justify-content: center; gap: 16px; }
+    .hero-dots { display: flex; align-items: center; gap: 8px; }
+    .hero-dot { width: 7px; height: 7px; padding: 0; border: none; border-radius: 50%; background: rgba(255,255,255,.45); cursor: pointer; transition: all .35s var(--ease, ease); }
+    .hero-dot:hover { background: rgba(255,255,255,.7); }
+    .hero-dot.is-active { width: 22px; border-radius: 4px; background: var(--gold); }
+    .hero-playpause { width: 30px; height: 30px; flex-shrink: 0; border-radius: 50%; border: 1px solid rgba(255,255,255,.35); background: rgba(8,7,5,.4); backdrop-filter: blur(6px); color: #fff; display: grid; place-items: center; cursor: pointer; transition: all .3s ease; }
+    .hero-playpause:hover { border-color: var(--gold); color: var(--gold); }
+    .hero-playpause .icon-play { display: none; }
+    .hero-playpause.is-paused .icon-pause { display: none; }
+    .hero-playpause.is-paused .icon-play { display: block; }
     .hero-cta-bar { background: #0a0806; padding: 28px 0; }
-    .hero-cta-bar .hero-actions { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
+    /* No usar [hidden] aquí: .hero-cta-bar .hero-actions{display:flex}
+       (2 clases) gana en especificidad a la regla [hidden] del user-agent
+       (1 selector de atributo) y el panel "oculto" se seguiría viendo.
+       Clase .is-active en vez de hidden evita esa pelea de especificidad. */
+    .hero-cta-bar .hero-actions { display: none; gap: 16px; flex-wrap: wrap; justify-content: center; }
+    .hero-cta-bar .hero-actions.is-active { display: flex; }
     /* .btn-primary por defecto es #1A1A1A sobre blanco -- perfecto en
        superficies claras, casi invisible sobre esta barra ya oscura
        (#0a0806). Mismo ajuste que el hero anterior necesitaba: blanco
@@ -240,18 +264,17 @@
        Corregido a 0 para hablar el mismo idioma visual que el resto. */
     .category-split { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
     .category-card { position: relative; overflow: hidden; aspect-ratio: 4/5; cursor: pointer; background: var(--darker); }
-    /* category-arabe.jpg / category-designer.jpg son recortes de foto de
-       producto sobre fondo gris de estudio (ver .claude/scripts/
-       make_category_tiles.py) -- no la fotografía editorial oscura de
-       ambiente que pide la página 3 del mockup. Sin un asset nuevo del
-       cliente no hay contenido que sustituya eso, así que el peso oscuro
-       tiene que venir de aquí: brightness bajo + overlay parejo en todo
-       el marco (no solo degradado hacia el borde inferior, que dejaba el
-       60% superior en gris claro de estudio). */
-    .category-card img { width: 100%; height: 100%; object-fit: cover; transition: transform .8s var(--ease, cubic-bezier(.22,1,.36,1)), filter .8s ease; filter: brightness(.5) saturate(1.1) contrast(1.05); }
-    .category-card:hover img { transform: scale(1.045); filter: brightness(.58) saturate(1.1) contrast(1.05); }
-    .category-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(8,7,5,.95) 0%, rgba(8,7,5,.68) 45%, rgba(8,7,5,.5) 100%); display: flex; flex-direction: column; justify-content: flex-end; padding: 40px; transition: background var(--transition); }
-    .category-card:hover .category-overlay { background: linear-gradient(to top, rgba(8,7,5,.97) 0%, rgba(8,7,5,.74) 48%, rgba(8,7,5,.56) 100%); }
+    /* CORREGIDO 2026-08-31: la ronda anterior interpretó "fotografía
+       oscura" como brightness(.5) + overlay parejo en todo el marco --
+       resultado: Khamrah/Versace casi desaparecían, el producto perdía
+       valor. La imagen ya NO lleva filter -- se muestra tal cual. El
+       oscurecimiento vive solo donde hace falta leer texto: negro fuerte
+       pegado al borde inferior, transición corta, e imagen prácticamente
+       intacta en el 65-70% superior del marco. */
+    .category-card img { width: 100%; height: 100%; object-fit: cover; transition: transform .8s var(--ease, cubic-bezier(.22,1,.36,1)); }
+    .category-card:hover img { transform: scale(1.045); }
+    .category-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(8,7,5,.92) 0%, rgba(8,7,5,.55) 22%, rgba(8,7,5,.18) 45%, rgba(8,7,5,.02) 65%, rgba(8,7,5,0) 100%); display: flex; flex-direction: column; justify-content: flex-end; padding: 40px; transition: background var(--transition); }
+    .category-card:hover .category-overlay { background: linear-gradient(to top, rgba(8,7,5,.95) 0%, rgba(8,7,5,.6) 24%, rgba(8,7,5,.2) 47%, rgba(8,7,5,.02) 68%, rgba(8,7,5,0) 100%); }
     /* Eyebrow editorial por categoría -- adapta el patrón del mockup
        (micro-label dorado sobre el título) a la propia lógica olfativa de
        Cruzial, no es texto copiado de ahí. Puramente atmosférico/
@@ -462,11 +485,60 @@
 
   <main>
     <!-- HERO -->
-    <section class="hero" aria-label="Cruzial Parfums"></section>
+    <!-- HERO CAROUSEL: slide 0 institucional (hero-crop) + 3 promos de
+         combo reales (img/set armado */img/hero/hero promo * subidos por
+         el cliente 2026-08-31 -- ver .claude/scripts/
+         optimize_combo_promo_photos.py). Mismos archivos que
+         window.CRUZIAL_COMBO_CONTENTS[id].heroImage en data.js: un solo
+         asset real por combo, no una segunda copia que pueda desincronizarse.
+         <img> reales (no background-image) para poder marcar prioridad de
+         carga por slide -- solo el 0 es eager/fetchpriority=high. -->
+    <section class="hero" aria-roledescription="carrusel" aria-label="Cruzial Parfums" data-hero-carousel>
+      <div class="hero-slides">
+        <div class="hero-slide is-active" data-hero-slide="0">
+          <img src="img/hero/hero-crop.webp" alt="Cruzial Parfums — perfumería árabe, designer y de nicho" loading="eager" fetchpriority="high" decoding="async">
+        </div>
+        <div class="hero-slide" data-hero-slide="1">
+          <img src="img/hero/promo-cuarteto.webp" alt="Cuarteto Oriental — Khamrah Clásico, Qahwa, Dukhan y Waha, Lattafa" loading="lazy" decoding="async">
+        </div>
+        <div class="hero-slide" data-hero-slide="2">
+          <img src="img/hero/promo-vainilla.webp" alt="Vainilla Freak — Yara Pink, Yara Candy y Eclaire, Lattafa" loading="lazy" decoding="async">
+        </div>
+        <div class="hero-slide" data-hero-slide="3">
+          <img src="img/hero/promo-tulum.webp" alt="Set Tulum — Odyssey Aqua, Hawas Tropical y Supremacy Collection" loading="lazy" decoding="async">
+        </div>
+      </div>
+      <div class="hero-controls">
+        <button type="button" class="hero-playpause" data-hero-playpause aria-pressed="false" aria-label="Pausar carrusel">
+          <svg class="icon-pause" width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><rect x="5" y="4" width="5" height="16"/><rect x="14" y="4" width="5" height="16"/></svg>
+          <svg class="icon-play" width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M6 4l14 8-14 8V4z"/></svg>
+        </button>
+        <div class="hero-dots">
+          <button type="button" class="hero-dot is-active" data-hero-dot="0" aria-selected="true" aria-label="Cruzial Parfums"></button>
+          <button type="button" class="hero-dot" data-hero-dot="1" aria-selected="false" aria-label="Cuarteto Oriental"></button>
+          <button type="button" class="hero-dot" data-hero-dot="2" aria-selected="false" aria-label="Vainilla Freak"></button>
+          <button type="button" class="hero-dot" data-hero-dot="3" aria-selected="false" aria-label="Set Tulum"></button>
+        </div>
+      </div>
+    </section>
     <div class="hero-cta-bar">
-      <div class="container hero-actions">
-        <a class="btn btn-primary" href="catalog.html">Explorar Colección <span>→</span></a>
-        <button type="button" class="btn btn-outline" data-open-finder>Encontrar mi fragancia <span>→</span></button>
+      <div class="container">
+        <div class="hero-actions is-active" data-hero-actions="0">
+          <a class="btn btn-primary" href="catalog.html">Explorar Colección <span>→</span></a>
+          <button type="button" class="btn btn-outline" data-open-finder>Encontrar mi fragancia <span>→</span></button>
+        </div>
+        <div class="hero-actions" data-hero-actions="1">
+          <a class="btn btn-primary" href="combos.html#combo-cuarteto">Ver Cuarteto Oriental <span>→</span></a>
+          <a class="btn btn-outline" href="combos.html#sets-armados">Ver todos los sets</a>
+        </div>
+        <div class="hero-actions" data-hero-actions="2">
+          <a class="btn btn-primary" href="combos.html#combo-vainilla">Ver Vainilla Freak <span>→</span></a>
+          <a class="btn btn-outline" href="combos.html#sets-armados">Ver todos los sets</a>
+        </div>
+        <div class="hero-actions" data-hero-actions="3">
+          <a class="btn btn-primary" href="combos.html#combo-tulum">Ver Set Tulum <span>→</span></a>
+          <a class="btn btn-outline" href="combos.html#sets-armados">Ver todos los sets</a>
+        </div>
       </div>
     </div>
 
@@ -814,9 +886,9 @@
   });
   </script>
 
-  <script src="assets/data.js?v=20260901d"></script>
-  <script src="assets/app.js?v=20260901d"></script>
-  <script src="assets/finder.js?v=20260901d"></script>
+  <script src="assets/data.js?v=20260901f"></script>
+  <script src="assets/app.js?v=20260901f"></script>
+  <script src="assets/finder.js?v=20260901f"></script>
   <script>
   if("serviceWorker" in navigator){
     window.addEventListener("load",function(){
