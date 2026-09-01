@@ -21,8 +21,8 @@ import subprocess, sys, os
 # Critical, rarely-should-change assets. Add paths here if you want them
 # watched too -- this list is deliberately small and curated, not "all files".
 WATCHED = [
-    "img/hero/hero2.png",
-    "img/hero/hero2.webp",
+    "img/hero/hero-crop.jpg",
+    "img/hero/hero-crop.webp",
     "img/hero/category-arabe.jpg",
     "img/hero/category-designer.jpg",
     "img/logo-mark.png",

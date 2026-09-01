@@ -37,13 +37,13 @@
   <meta name="apple-mobile-web-app-title" content="Cruzial Parfums">
   <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
   <!-- Hero image preload for LCP -->
-  <link rel="preload" as="image" href="img/hero/hero2.webp" fetchpriority="high">
+  <link rel="preload" as="image" href="img/hero/hero-crop.webp" fetchpriority="high">
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Jost:wght@300;400;500;600&family=Italianno&display=swap" rel="stylesheet">
   <!-- Styles -->
-  <link rel="stylesheet" href="assets/styles.css?v=20260831h">
+  <link rel="stylesheet" href="assets/styles.css?v=20260901d">
   <!-- Schema.org LocalBusiness -->
   <script type="application/ld+json">
   {
@@ -137,70 +137,44 @@
        resto del sitio, un badge de carrito sin ocultar en 0, y una clase
        .announcement-bar distinta de .announcement -- ver CLAUDE.md. */
 
-    /* HERO — a sangre completa, 1 foto, fondo oscuro */
-    /* Hero2.png ya trae 4 frascos + wordmark Cruzial + composición floral
-       sobre piedra, con una zona negativa a la izquierda pensada para
-       texto -- no se superpone otro cutout de producto encima (se veía
-       redundante). El scrim en ::before garantiza contraste del texto
-       blanco sin depender de qué parte exacta de la imagen quede visible. */
-    /* Medido en píxeles reales sobre hero2.png: el contenido importante
-       (aro dorado, wordmark, botellas, pedestal) ocupa desde y=6 hasta
-       y=767 de una imagen de 768px de alto -- prácticamente el 100% de
-       la altura, sin margen seguro arriba NI abajo. Ningún valor de
-       background-position evita recortar algo importante si el
-       contenedor es más alto que la relación de aspecto de la imagen
-       (1376:768 ≈ 1.79:1). La solución real es que .hero NUNCA sea más
-       alto de lo que esa relación de aspecto permite mostrar completo:
-       aspect-ratio en vez de min-height:100vh, así "cover" no necesita
-       recortar (o recorta un margen mínimo solo en pantallas ultra
-       anchas, ver max-height más abajo). */
-    /* Sin headline/eyebrow/párrafo: instrucción explícita del cliente --
-       el hero es solo fotografía + navegación + CTA, la propia foto
-       construye la primera impresión (ver historial de rondas de diseño).
-       align-items:flex-end ancla el único elemento (las acciones) abajo,
-       lectura editorial en vez de flotar centrado sobre la composición. */
-    /* width:100% explícito -- sin él, Chromium recalcula el ancho a partir
-       del alto YA recortado por max-height (1000px * 1376/768 = 1791px),
-       dejando una franja en blanco a la derecha en monitores >1791px de
-       ancho (bug real, encontrado con screenshot a 1920x1080, invisible
-       en getBoundingClientRect a los anchos probados antes de esta
-       ronda). Con width:100% el ancho queda fijo al contenedor y
-       max-height solo recorta el alto, como se pretendía. */
-    .hero { position: relative; width: 100%; aspect-ratio: 1376 / 768; min-height: 460px; max-height: 1000px; display: flex; align-items: flex-end; background: #0a0806 url('img/hero/hero2.webp') center / cover no-repeat; overflow: hidden; padding: 0 0 56px; }
-    .hero::before { content: ''; position: absolute; inset: 0; background: linear-gradient(100deg, rgba(8,7,5,.92) 0%, rgba(8,7,5,.72) 32%, rgba(8,7,5,.15) 56%, rgba(8,7,5,0) 72%); pointer-events: none; }
-    .hero-inner { display: block; width: 100%; position: relative; z-index: 1; }
-    .hero-copy { max-width: 560px; background: none; padding: 0; border: none; }
-    .hero-actions { display: flex; gap: 16px; flex-wrap: wrap; }
-    /* El CTA principal (.btn-primary) es #1A1A1A sobre blanco -- perfecto en
-       el resto del sitio, pero invisible sobre este hero oscuro (fondo casi
-       idéntico, solo el texto blanco flotaba sin contorno de botón). Fondo
-       claro sólido para contraste inmediato; el dorado queda para el hover,
-       no para el estado por defecto, así no compite con el wordmark dorado
-       de la propia foto. */
-    .hero .btn-primary { background: #fff; color: var(--darker); box-shadow: 0 8px 24px -8px rgba(0,0,0,.5); }
-    .hero .btn-primary:hover { background: var(--gold); color: #fff; transform: translateY(-1px); }
-    .hero .btn-outline { border-color: rgba(255,255,255,.35); color: #fff; }
-    .hero .btn-outline:hover { background: #fff; color: var(--darker); }
-    @media (max-width: 900px) {
-      /* La imagen es panorámica (1376x768); con cover a pantalla completa
-         en un viewport angosto y alto, el recorte deja los frascos/wordmark
-         justo donde caería el texto centrado -- ilegible. En vez de forzar
-         el mismo tratamiento, se apila: la imagen se ve COMPLETA arriba
-         (top center, ancho 100%, alto automático según su propia relación
-         de aspecto) y el texto vive debajo en un panel sólido del mismo
-         tono oscuro, con un degradado que funde una zona con la otra. */
-      /* aspect-ratio de la regla base NO se resetea solo -- el layout
-         apilado necesita alto por contenido (imagen + panel de texto),
-         no la relación de aspecto del hero desktop. Sin este reset el
-         box queda fijo a ~218px en 390px de ancho y overflow:hidden
-         recorta el CTA entero por debajo del borde. Bug real, no
-         cosmético: se detectó midiendo getBoundingClientRect, no a ojo. */
-      .hero { aspect-ratio: auto; min-height: auto; display: block; background: #0a0806 url('img/hero/hero2.webp') top center / 100% auto no-repeat; padding: 0 0 40px; align-items: initial; }
-      .hero::before { top: 0; height: 56vw; bottom: auto; background: linear-gradient(180deg, rgba(8,7,5,0) 62%, rgba(8,7,5,.96) 100%); }
-      .hero-inner { padding-top: 48vw; }
-      .hero-copy { max-width: 100%; text-align: center; margin: 0 auto; padding: 0 24px; }
-      .hero-actions { justify-content: center; }
-    }
+    /* HERO — hero-crop.jpg (composición simétrica, 6 frascos + wordmark
+       Cruzial centrado, sin zona negativa a ningún lado -- a diferencia
+       del hero anterior, aquí no hay dónde superponer texto/CTA sin tapar
+       un producto). Medido en píxeles reales: el contenido llega hasta
+       ambos bordes (arriba y abajo), igual que el hero anterior -- misma
+       solución de fondo: aspect-ratio fija en vez de min-height:100vh,
+       así "cover" nunca necesita recortar nada importante. Decisión de
+       composición: en vez de forzar un CTA superpuesto (competiría con
+       las botellas o necesitaría un scrim pesado que apagaría la foto),
+       el CTA vive en una barra oscura sólida INMEDIATAMENTE debajo --
+       la fotografía queda intacta como pieza de campaña, el CTA queda
+       100% legible sin depender del brillo de la imagen en ningún punto. */
+    /* A diferencia del hero anterior, aquí .hero SOLO contiene la foto --
+       sin texto/CTA superpuesto que necesite más alto en mobile que en
+       desktop. Por eso una única aspect-ratio sirve para todos los
+       anchos: con la caja SIEMPRE en la misma proporción que la imagen,
+       "cover" nunca tiene que recortar nada, en ningún viewport -- no
+       hace falta un caso especial para mobile como con el hero anterior.
+       Sin max-height: combinado con aspect-ratio + width:100% en un
+       viewport de 2560px, Chromium calculó 960px de alto en vez de
+       respetar el max-height:900px declarado (verificado con
+       getComputedStyle, no es un error de medición) -- la misma clase de
+       comportamiento inconsistente que causó el bug de ancho del hero
+       anterior, solo que en el eje del alto esta vez. En vez de perseguir
+       otro edge case de motor de layout, se prioriza la garantía real
+       (cero recorte) sobre un límite de alto que no era un requisito
+       explícito -- en monitores enormes el hero es más alto, no se corta. */
+    .hero { position: relative; width: 100%; aspect-ratio: 1672 / 792; overflow: hidden; background: #0a0806 url('img/hero/hero-crop.webp') center / cover no-repeat; }
+    .hero-cta-bar { background: #0a0806; padding: 28px 0; }
+    .hero-cta-bar .hero-actions { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
+    /* .btn-primary por defecto es #1A1A1A sobre blanco -- perfecto en
+       superficies claras, casi invisible sobre esta barra ya oscura
+       (#0a0806). Mismo ajuste que el hero anterior necesitaba: blanco
+       sólido para contraste inmediato, dorado solo al hover. */
+    .hero-cta-bar .btn-primary { background: #fff; color: var(--darker); }
+    .hero-cta-bar .btn-primary:hover { background: var(--gold); color: #fff; }
+    .hero-cta-bar .btn-outline { border-color: rgba(255,255,255,.35); color: #fff; }
+    .hero-cta-bar .btn-outline:hover { background: #fff; color: var(--darker); }
 
     /* Sistema de botones: ahora vive solo en assets/styles.css
        (.btn/.btn-primary/.btn-outline/.btn-gold) -- esta página tenía su
@@ -427,16 +401,13 @@
 
   <main>
     <!-- HERO -->
-    <section class="hero">
-      <div class="hero-inner container">
-        <div class="hero-copy reveal">
-          <div class="hero-actions">
-            <a class="btn btn-primary" href="catalog.html">Explorar Colección <span>→</span></a>
-            <button type="button" class="btn btn-outline" data-open-finder>Encontrar mi fragancia <span>→</span></button>
-          </div>
-        </div>
+    <section class="hero" aria-label="Cruzial Parfums"></section>
+    <div class="hero-cta-bar">
+      <div class="container hero-actions">
+        <a class="btn btn-primary" href="catalog.html">Explorar Colección <span>→</span></a>
+        <button type="button" class="btn btn-outline" data-open-finder>Encontrar mi fragancia <span>→</span></button>
       </div>
-    </section>
+    </div>
 
     <!-- TRUST BADGES -->
     <section class="trust-badges">
@@ -778,9 +749,9 @@
   });
   </script>
 
-  <script src="assets/data.js?v=20260831h"></script>
-  <script src="assets/app.js?v=20260831h"></script>
-  <script src="assets/finder.js?v=20260831h"></script>
+  <script src="assets/data.js?v=20260901d"></script>
+  <script src="assets/app.js?v=20260901d"></script>
+  <script src="assets/finder.js?v=20260901d"></script>
   <script>
   if("serviceWorker" in navigator){
     window.addEventListener("load",function(){
