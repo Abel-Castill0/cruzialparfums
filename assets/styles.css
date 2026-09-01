@@ -12,7 +12,14 @@
   --cream: #FAFAFA;
   --text: #1A1A1A;
   --muted: #666666;
-  --muted2: #999999;
+  /* #999999 (2.9:1 sobre blanco) fallaba el AA 4.5:1 que pide PRODUCT.md
+     en texto real -- y --muted2 es el color de marca/talla/metadata en
+     ~60 selectores del sitio (cards, cart, checkout, mayorista, product
+     page, breadcrumbs...), no un detalle decorativo aislado. Un solo
+     token más oscuro corrige todo el sitio a la vez en vez de parchear
+     cada selector uno por uno. #707070 ≈ 4.95:1, con margen sobre el
+     mínimo. Sigue leyendo como "secundario" frente a --text/--muted. */
+  --muted2: #707070;
   --line: #E5E5E5;
   --line-strong: #CCCCCC;
   --gold: #C9A962;
@@ -228,8 +235,16 @@ input,select,textarea{font-family:inherit}
 .discontinued-notice{margin:26px 0;padding:18px 20px;border:1px solid #E8E0D0;background:#FBF8F3}
 .discontinued-notice strong{display:block;color:var(--text);font-family:var(--serif);font-size:17px;font-weight:500;margin-bottom:6px}
 .discontinued-notice p{color:var(--muted);font-size:13.5px;line-height:1.6}
-.quick-add{position:absolute;right:14px;bottom:14px;z-index:2;width:42px;height:42px;border-radius:50%;background:var(--gold);color:#fff;font-size:20px;font-weight:400;display:grid;place-items:center;opacity:0;transform:translateY(10px);transition:all .45s var(--ease);box-shadow:0 10px 26px -8px rgba(201,169,98,.35)}
-.product-card:hover .quick-add{opacity:1;transform:translateY(0)}
+/* opacity:0 + reveal solo en :hover dejaba el "+" invisible en touch --
+   la mayoría del tráfico es mobile (ver PRODUCT.md). @media(hover:hover)
+   es el mismo gate que ya usa .cat-btn en .category-overlay: en touch
+   (sin hover real) el botón queda visible siempre; en desktop con mouse
+   se mantiene el reveal-on-hover. */
+.quick-add{position:absolute;right:14px;bottom:14px;z-index:2;width:42px;height:42px;border-radius:50%;background:var(--gold);color:#fff;font-size:20px;font-weight:400;display:grid;place-items:center;transition:all .45s var(--ease);box-shadow:0 10px 26px -8px rgba(201,169,98,.35)}
+@media(hover:hover){
+  .quick-add{opacity:0;transform:translateY(10px)}
+  .product-card:hover .quick-add,.product-card:focus-within .quick-add{opacity:1;transform:translateY(0)}
+}
 .quick-add:hover{transform:scale(1.1)}
 .quick-add:active{transform:scale(.95)}
 .card-body{padding:20px 22px 24px;position:relative;z-index:2}
@@ -242,7 +257,11 @@ input,select,textarea{font-family:inherit}
 /* Antes era texto plano informativo; ahora es un link real -- clic
    directo a la variante de frasco completo del MISMO producto, sin pasar
    por Mayorista (que es venta por volumen, no minorista de una unidad). */
-.card-bottle{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--line);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted2);line-height:1.5;text-decoration:none;transition:color .3s var(--ease)}
+/* var(--muted2) #999 sobre blanco es ~2.9:1 -- por debajo del AA 4.5:1
+   que pide PRODUCT.md, y es la línea que muestra "Frasco completo" (o el
+   cross-sell a decant): un dato que el cliente pidió que se viera, no
+   que se perciba como texto deshabilitado. */
+.card-bottle{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--line);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-light);line-height:1.5;text-decoration:none;transition:color .3s var(--ease)}
 .card-bottle:hover{color:var(--gold)}
 .card-bottle span{font-size:11px;transition:transform var(--transition)}
 .card-bottle:hover span{transform:translateX(3px)}
@@ -911,47 +930,58 @@ input,select,textarea{font-family:inherit}
    del sitio (drawer 190, search 200, mobile-menu 300). */
 .finder-modal{position:fixed;inset:0;z-index:250;opacity:0;pointer-events:none;transition:opacity .4s var(--ease);display:flex;align-items:center;justify-content:center;padding:20px}
 .finder-modal.open{opacity:1;pointer-events:auto}
-.finder-modal-overlay{position:absolute;inset:0;background:rgba(0,0,0,.4);backdrop-filter:blur(6px)}
-.finder-panel{position:relative;width:min(640px,100%);max-height:min(720px,92vh);background:#FFF;border:1px solid var(--line-strong);display:flex;flex-direction:column;transform:translateY(16px) scale(.98);transition:transform .4s var(--ease);box-shadow:var(--shadow)}
+.finder-modal-overlay{position:absolute;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(6px)}
+/* Finder = "Asesoría Olfativa Cruzial", no un widget SaaS: superficie
+   charcoal (--ink-deep, mismos tokens que footer/Cómo trabajamos), texto
+   blanco/gris cálido, dorado como acento de selección -- consistente con
+   el resto de superficies oscuras del sitio en vez de inventar un negro
+   nuevo para el modal. */
+.finder-panel{position:relative;width:min(640px,100%);max-height:min(720px,92vh);background:var(--ink-deep);border:1px solid var(--on-dark-line);display:flex;flex-direction:column;transform:translateY(16px) scale(.98);transition:transform .4s var(--ease);box-shadow:0 40px 80px -20px rgba(0,0,0,.5)}
 .finder-modal.open .finder-panel{transform:translateY(0) scale(1)}
-.finder-head{display:flex;align-items:center;justify-content:space-between;padding:22px 26px;border-bottom:1px solid var(--line);flex-shrink:0}
+.finder-head{display:flex;align-items:center;justify-content:space-between;padding:22px 26px;border-bottom:1px solid var(--on-dark-line);flex-shrink:0}
 .finder-kicker{font-family:var(--serif);font-size:15px;font-style:italic;color:var(--gold)}
-.finder-close{width:36px;height:36px;border:1px solid var(--line);border-radius:50%;display:grid;place-items:center;font-size:18px;color:var(--muted);transition:all .3s;flex-shrink:0}
+.finder-close{width:36px;height:36px;border:1px solid var(--on-dark-line);border-radius:50%;display:grid;place-items:center;font-size:18px;color:var(--on-dark-muted);transition:all .3s;flex-shrink:0}
 .finder-close:hover{border-color:var(--gold);color:var(--gold);transform:rotate(90deg)}
-.finder-body{padding:28px 26px 32px;overflow-y:auto;flex:1}
+.finder-body{padding:28px 26px 32px;overflow-y:auto;flex:1;color:var(--on-dark)}
 .finder-progress{display:flex;align-items:center;gap:14px;margin-bottom:22px}
-.finder-progress span{font-size:10.5px;letter-spacing:.2em;color:var(--muted2);flex-shrink:0}
-.finder-bar{flex:1;height:1px;background:var(--line)}
+.finder-progress span{font-size:10.5px;letter-spacing:.2em;color:var(--on-dark-faint);flex-shrink:0}
+.finder-bar{flex:1;height:1px;background:var(--on-dark-line)}
 .finder-bar-fill{height:100%;background:var(--gold);transition:width .4s var(--ease)}
-.finder-q{font-size:clamp(22px,3.4vw,28px);margin-bottom:6px}
-.finder-sub{color:var(--muted);font-size:13.5px;margin-bottom:24px;max-width:50ch}
+.finder-q{font-size:clamp(22px,3.4vw,28px);margin-bottom:6px;color:var(--on-dark)}
+.finder-sub{color:var(--on-dark-muted);font-size:13.5px;margin-bottom:24px;max-width:50ch}
 .finder-grid{display:grid;gap:10px;margin-bottom:8px}
 .finder-grid-2{grid-template-columns:repeat(2,1fr)}
 .finder-grid-3{grid-template-columns:repeat(3,1fr)}
 .finder-grid-4{grid-template-columns:repeat(auto-fill,minmax(110px,1fr))}
-.finder-opt{border:1px solid var(--line);background:transparent;color:var(--text);padding:14px 16px;font-size:13.5px;text-align:left;display:flex;align-items:center;justify-content:space-between;gap:8px;transition:all .25s var(--ease);min-height:48px}
-.finder-opt:hover{border-color:var(--line-strong)}
-.finder-opt.is-selected{border-color:var(--gold);background:#FBF8F3;color:var(--gold)}
+.finder-opt{border:1px solid var(--on-dark-line);background:transparent;color:var(--on-dark-muted);padding:14px 16px;font-size:13.5px;text-align:left;display:flex;align-items:center;justify-content:space-between;gap:8px;transition:all .25s var(--ease);min-height:48px}
+.finder-opt:hover{border-color:rgba(255,255,255,.32);color:var(--on-dark)}
+.finder-opt.is-selected{border-color:var(--gold);background:rgba(201,169,98,.12);color:var(--gold)}
 .finder-check{font-size:12px;color:var(--gold)}
 .finder-nav{display:flex;justify-content:space-between;align-items:center;margin-top:28px;gap:16px}
 .finder-results-eyebrow{font-size:10.5px;letter-spacing:.26em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
-.finder-also{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted2);margin:32px 0 14px}
-.finder-result-card{display:grid;grid-template-columns:96px minmax(0,1fr);gap:18px;border:1px solid var(--line);padding:16px;max-width:100%}
-.finder-result-media{display:block;width:96px;height:120px;overflow:hidden;flex-shrink:0}
+.finder-also{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--on-dark-faint);margin:32px 0 14px}
+.finder-result-card{display:grid;grid-template-columns:96px minmax(0,1fr);gap:18px;border:1px solid var(--on-dark-line);padding:16px;max-width:100%;background:rgba(255,255,255,.03)}
+.finder-result-media{display:block;width:96px;height:120px;overflow:hidden;flex-shrink:0;background:#fff}
 .finder-result-body{min-width:0}
 .finder-result-media img{width:100%;height:100%;object-fit:cover}
 .finder-score{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#1A1A1A;background:var(--gold);padding:5px 12px;border-radius:100px;margin-bottom:8px}
 .finder-score em{font-style:normal;font-weight:500;opacity:.75;letter-spacing:.02em}
-.finder-brand{display:block;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted2)}
+.finder-brand{display:block;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--on-dark-faint)}
 .finder-result-body h4{font-family:var(--serif);font-weight:500;font-size:19px;margin:2px 0 6px}
-.finder-result-body h4 a{color:#1A1A1A}
-.finder-why{color:var(--muted);font-size:12.5px;margin-bottom:12px;line-height:1.5}
+.finder-result-body h4 a{color:var(--on-dark)}
+.finder-why{color:var(--on-dark-muted);font-size:12.5px;margin-bottom:12px;line-height:1.5}
 .finder-result-actions{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:8px}
 .finder-result-actions .btn{padding:10px 14px;font-size:11.5px;white-space:normal;text-align:center;flex:1 1 auto;min-width:0}
-.finder-result-price{display:flex;flex-direction:column;gap:2px;font-size:11px;color:var(--muted2);line-height:1.5}
-.finder-result-price b{color:#1A1A1A;font-weight:500;font-size:12px}
+/* .btn-primary/.btn-outline asumen superficie clara (mismo ajuste que
+   .hero-cta-bar ya necesitaba sobre la foto oscura del hero). */
+.finder-panel .btn-primary{background:#fff;color:var(--ink-deep)}
+.finder-panel .btn-primary:hover{background:var(--gold);color:#fff}
+.finder-panel .btn-outline{border-color:var(--on-dark-line);color:var(--on-dark)}
+.finder-panel .btn-outline:hover{border-color:var(--gold);color:var(--gold)}
+.finder-result-price{display:flex;flex-direction:column;gap:2px;font-size:11px;color:var(--on-dark-faint);line-height:1.5}
+.finder-result-price b{color:var(--on-dark);font-weight:500;font-size:12px}
 .finder-alt-grid{display:grid;grid-template-columns:1fr;gap:14px}
-.finder-result-footer{display:flex;flex-wrap:wrap;gap:14px;margin-top:32px;padding-top:22px;border-top:1px solid var(--line)}
+.finder-result-footer{display:flex;flex-wrap:wrap;gap:14px;margin-top:32px;padding-top:22px;border-top:1px solid var(--on-dark-line)}
 @media(min-width:640px){.finder-alt-grid{grid-template-columns:1fr 1fr}}
 /* Modal a pantalla completa por debajo de 640px: en vez de una tarjeta
    centrada con margen de 20px (se sentía apretada/desordenada en mobile),
