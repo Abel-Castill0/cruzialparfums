@@ -116,6 +116,22 @@ unscheduled work.
   flood-fill round `CLAUDE.md` already documents as damaging — with no
   later commit replacing them, confirming this is a genuine unresolved
   content gap, not an incomplete search of `img/perfumes/`.
+  Went one step further on 2026-08-31 with
+  `.claude/scripts/find_missing_photo_candidates.py`: walked the entire
+  filesystem under `img/` (not `IMG_MAP`, not `git status`, not any single
+  folder) — 365 image files total, tracked and untracked, every
+  extension. Excluded the 188 already claimed by some product in
+  `IMG_MAP`, leaving 177 unclaimed candidates, then fuzzy-matched each of
+  the 14 missing products' brand+name against all 177. Nothing scored as
+  a real match — every top hit is a same-brand sibling product that's
+  already correctly claimed elsewhere (e.g. `yara-pink`'s best "match" is
+  `LATTAFA - YARA ELIXIR.png`, a different fragrance, already
+  `yara-elixir`'s own photo). Also confirmed no image directory exists
+  outside `img/` at all (repo root has only `logo.jpeg`). This is as
+  exhaustive as a filesystem search gets: the 14 replacement photos the
+  client believes were uploaded are not present anywhere in the project
+  under any name. Next step is a real photo from the client, not more
+  searching.
 
 ## Stale `.hero::before` scrim silently washing out the full-bleed hero (fixed 2026-08-31)
 
