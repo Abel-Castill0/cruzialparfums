@@ -43,7 +43,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Jost:wght@300;400;500;600&family=Italianno&display=swap" rel="stylesheet">
   <!-- Styles -->
-  <link rel="stylesheet" href="assets/styles.css?v=20260901h">
+  <link rel="stylesheet" href="assets/styles.css?v=20260901i">
   <!-- Schema.org LocalBusiness -->
   <script type="application/ld+json">
   {
@@ -203,27 +203,38 @@
        el CTA aparece/desaparece con su foto, no por separado. */
     .hero-slide-cta { position: absolute; z-index: 2; display: flex; flex-direction: column; gap: 14px; max-width: min(320px, 40%); }
     .hero-slide:not(.is-active) .hero-slide-cta { pointer-events: none; }
-    .hero-slide-cta[data-cta-placement="center-bottom"] { left: 50%; bottom: 9%; transform: translateX(-50%); align-items: center; text-align: center; max-width: 90%; }
+    /* bottom:9% dejaba solo ~8px reales hasta .hero-controls en viewports
+       medianos -- CTA y dots/pause se sentían amontonados. 14% da aire
+       real entre las dos franjas (foto -> CTA -> controles) sin invadir
+       el ornamento bajo "PERFUMERÍA" en el slide institucional. */
+    .hero-slide-cta[data-cta-placement="center-bottom"] { left: 50%; bottom: 14%; transform: translateX(-50%); align-items: center; text-align: center; max-width: 90%; }
     .hero-slide-cta[data-cta-placement="left-center"] { left: clamp(20px, 6%, 64px); top: 50%; transform: translateY(-50%); align-items: flex-start; text-align: left; }
-    /* text-shadow, no un scrim: es texto suelto directamente sobre la
-       foto (a diferencia del primary, que ya tiene su propio contraste
-       por ser relleno sólido) -- protección mínima y localizada al
-       propio texto en vez de una capa detrás de toda la safe zone. */
-    .hero-cta-secondary { font-size: 11px; letter-spacing: .16em; text-transform: uppercase; display: inline-flex; align-items: center; gap: 6px; border: none; background: none; padding: 0; cursor: pointer; font-family: inherit; transition: opacity .3s ease; }
-    .hero-cta-secondary:hover { opacity: .7; }
-    .hero-slide-cta[data-cta-theme="on-dark"] .hero-cta-secondary { text-shadow: 0 1px 4px rgba(0,0,0,.55); }
-    .hero-slide-cta[data-cta-theme="on-light"] .hero-cta-secondary { text-shadow: 0 1px 3px rgba(255,255,255,.5); }
+    /* Legibilidad vía fondo propio (pill semitransparente + blur), no
+       text-shadow: un parche de sombra sobre texto suelto termina
+       pareciendo subtítulo de video, no un elemento impreso de la
+       campaña. El pill es pequeño y sigue el mismo idioma que .tag
+       (background translúcido + blur) que ya usan las cards. */
+    /* white-space:nowrap a propósito: sin él, el texto envolvía a 2
+       líneas en mobile y el contenedor absoluto (.hero-slide-cta) se
+       encogía al ancho del botón primary en vez de crecer para el
+       secondary -- las dos piezas quedaban visualmente amontonadas
+       (~14px de separación real, pero el pill de 2 líneas se sentía
+       pegado al botón de arriba). */
+    .hero-cta-secondary { font-size: 11px; letter-spacing: .16em; text-transform: uppercase; white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; border: none; padding: 8px 14px; cursor: pointer; font-family: inherit; transition: all .3s ease; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+    .hero-cta-secondary:hover { gap: 10px; }
     /* on-dark: foto oscura detrás del CTA (institucional) -- botón claro
-       para contraste inmediato, texto secundario blanco. */
+       para contraste inmediato, pill secundario oscuro translúcido. */
     .hero-slide-cta[data-cta-theme="on-dark"] .btn-primary { background: #fff; color: var(--darker); }
     .hero-slide-cta[data-cta-theme="on-dark"] .btn-primary:hover { background: var(--gold); color: #fff; }
-    .hero-slide-cta[data-cta-theme="on-dark"] .hero-cta-secondary { color: #fff; }
+    .hero-slide-cta[data-cta-theme="on-dark"] .hero-cta-secondary { color: #fff; background: rgba(10,8,6,.4); }
+    .hero-slide-cta[data-cta-theme="on-dark"] .hero-cta-secondary:hover { background: rgba(10,8,6,.6); }
     /* on-light: safe zone clara (pared dorada, tela, arena) -- botón
        sólido ink-deep, nunca dorado sólido (el dorado es acento, no
-       relleno de botón). */
+       relleno de botón). Pill secundario claro translúcido. */
     .hero-slide-cta[data-cta-theme="on-light"] .btn-primary { background: var(--darker); color: #fff; }
     .hero-slide-cta[data-cta-theme="on-light"] .btn-primary:hover { background: var(--gold); color: #fff; }
-    .hero-slide-cta[data-cta-theme="on-light"] .hero-cta-secondary { color: var(--darker); }
+    .hero-slide-cta[data-cta-theme="on-light"] .hero-cta-secondary { color: var(--darker); background: rgba(255,255,255,.6); }
+    .hero-slide-cta[data-cta-theme="on-light"] .hero-cta-secondary:hover { background: rgba(255,255,255,.85); }
 
     /* Sistema de botones: ahora vive solo en assets/styles.css
        (.btn/.btn-primary/.btn-outline/.btn-gold) -- esta página tenía su
@@ -517,7 +528,22 @@
          window.CRUZIAL_COMBO_CONTENTS[id].heroImage en data.js: un solo
          asset real por combo, no una segunda copia que pueda desincronizarse.
          <img> reales (no background-image) para poder marcar prioridad de
-         carga por slide -- solo el 0 es eager/fetchpriority=high. -->
+         carga por slide -- solo el 0 es eager/fetchpriority=high.
+         2026-09-01: los slides 1-3 usan data-src, NO src+loading="lazy".
+         Medido con performance.getEntriesByType('resource') en vivo:
+         loading="lazy" SÍ evitaba la descarga inicial (bien), pero al
+         navegar manualmente a un slide antes de que el navegador
+         decidiera cargarlo por su cuenta, ese slide quedaba con
+         complete:false/naturalWidth:0 -- un slide activo (opacity:1) sin
+         foto todavía. initHeroCarousel() controla la carga a mano:
+         siguiente slide precargado en idle tras el slide 0, y cualquier
+         goTo() fuerza data-src->src del slide destino Y precarga el
+         siguiente antes de que el usuario llegue a él. -->
+    <!-- Nota de compatibilidad: no se pudo instalar Playwright con
+         Firefox/WebKit en este entorno (sin acceso de red para
+         `playwright install`) -- verificado solo en el motor Chromium de
+         esta sesión de preview. No se afirma compatibilidad no probada
+         en Firefox/Safari real. -->
     <!-- 2026-09-01: los CTA se movieron DE ADENTRO de cada foto -- la barra
          negra separada (.hero-cta-bar) se eliminó por completo, sumaba
          altura al primer viewport y partía "foto" de "acción" en dos
@@ -542,21 +568,21 @@
           </div>
         </div>
         <div class="hero-slide" data-hero-slide="1">
-          <img src="img/hero/promo-cuarteto.webp" alt="Cuarteto Oriental — Khamrah Clásico, Qahwa, Dukhan y Waha, Lattafa" loading="lazy" decoding="async">
+          <img data-src="img/hero/promo-cuarteto.webp" alt="Cuarteto Oriental — Khamrah Clásico, Qahwa, Dukhan y Waha, Lattafa" decoding="async">
           <div class="hero-slide-cta" data-cta-placement="left-center" data-cta-theme="on-light">
             <a class="btn btn-primary" href="combos.html#combo-cuarteto">Ver Cuarteto Oriental <span>→</span></a>
             <a class="hero-cta-secondary" href="combos.html#sets-armados">Ver todos los sets</a>
           </div>
         </div>
         <div class="hero-slide" data-hero-slide="2">
-          <img src="img/hero/promo-vainilla.webp" alt="Vainilla Freak — Yara Pink, Yara Candy y Eclaire, Lattafa" loading="lazy" decoding="async">
+          <img data-src="img/hero/promo-vainilla.webp" alt="Vainilla Freak — Yara Pink, Yara Candy y Eclaire, Lattafa" decoding="async">
           <div class="hero-slide-cta" data-cta-placement="left-center" data-cta-theme="on-light">
             <a class="btn btn-primary" href="combos.html#combo-vainilla">Ver Vainilla Freak <span>→</span></a>
             <a class="hero-cta-secondary" href="combos.html#sets-armados">Ver todos los sets</a>
           </div>
         </div>
         <div class="hero-slide" data-hero-slide="3">
-          <img src="img/hero/promo-tulum.webp" alt="Set Tulum — Odyssey Aqua, Hawas Tropical y Supremacy Collection" loading="lazy" decoding="async">
+          <img data-src="img/hero/promo-tulum.webp" alt="Set Tulum — Odyssey Aqua, Hawas Tropical y Supremacy Collection" decoding="async">
           <div class="hero-slide-cta" data-cta-placement="center-bottom" data-cta-theme="on-light">
             <a class="btn btn-primary" href="combos.html#combo-tulum">Ver Set Tulum <span>→</span></a>
             <a class="hero-cta-secondary" href="combos.html#sets-armados">Ver todos los sets</a>
@@ -921,9 +947,9 @@
   });
   </script>
 
-  <script src="assets/data.js?v=20260901h"></script>
-  <script src="assets/app.js?v=20260901h"></script>
-  <script src="assets/finder.js?v=20260901h"></script>
+  <script src="assets/data.js?v=20260901i"></script>
+  <script src="assets/app.js?v=20260901i"></script>
+  <script src="assets/finder.js?v=20260901i"></script>
   <script>
   if("serviceWorker" in navigator){
     window.addEventListener("load",function(){

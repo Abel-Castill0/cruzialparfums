@@ -1065,6 +1065,27 @@ function initHeroCarousel(){
   const noAutoplay = window.matchMedia("(pointer: coarse)").matches;
   let index = 0, timer = null, userPaused = noAutoplay;
 
+  /* Carga bajo demanda de los 3 slides promo (data-src, no src+lazy): con
+     loading="lazy" medido en vivo via performance.getEntriesByType
+     ("resource"), el navegador SÍ evitaba la descarga inicial, pero si el
+     usuario saltaba a un slide (dot/swipe) antes de que el navegador
+     decidiera cargarlo por su cuenta, ese slide quedaba activo
+     (opacity:1) con la imagen todavía sin pedir -- un hueco visible.
+     ensureLoaded() fuerza data-src->src en el momento exacto en que un
+     slide se vuelve el destino de goTo(), nunca antes; idle() adelanta el
+     SIGUIENTE una vez que el actual ya está resuelto, para que en la
+     mayoría de los casos ya esté listo cuando el usuario/autoplay llegue. */
+  function ensureLoaded(i){
+    const img = slides[i] && slides[i].querySelector("img[data-src]");
+    if(!img) return;
+    img.src = img.dataset.src;
+    img.removeAttribute("data-src");
+  }
+  function idle(fn){
+    if("requestIdleCallback" in window) requestIdleCallback(fn, {timeout: 2000});
+    else setTimeout(fn, 300);
+  }
+
   function setPausedUI(paused){
     if(!playBtn) return;
     playBtn.setAttribute("aria-pressed", String(paused));
@@ -1073,6 +1094,7 @@ function initHeroCarousel(){
   }
   function goTo(i){
     index = (i + slides.length) % slides.length;
+    ensureLoaded(index);
     slides.forEach((s,n)=>{
       const active = n===index;
       s.classList.toggle("is-active", active);
@@ -1084,6 +1106,7 @@ function initHeroCarousel(){
       d.classList.toggle("is-active", n===index);
       d.setAttribute("aria-selected", n===index ? "true":"false");
     });
+    idle(()=> ensureLoaded((index+1) % slides.length));
   }
   function stop(){ if(timer){ clearInterval(timer); timer=null; } }
   function start(){
