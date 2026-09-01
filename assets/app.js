@@ -214,7 +214,11 @@ function attachAddHandlers(){
 /* ---------- Home: destacados ---------- */
 function renderFeatured(filter="all"){
   const el = document.getElementById("featured-grid"); if(!el) return;
-  const items = PRODUCTS.filter(p=>!p.discontinued && (filter==="all"||p.gender===filter||p.type===filter)).slice(0,8);
+  /* "Los Más Deseados" es selección de fragancias individuales, igual que
+     el catálogo -- type!=="combo" excluido siempre, no solo cuando el
+     filtro activo sea justo "niche" (el mismo campo p.type también sirve
+     para esa píldora, así que la exclusión va aparte). */
+  const items = PRODUCTS.filter(p=>!p.discontinued && p.type!=="combo" && (filter==="all"||p.gender===filter||p.type===filter)).slice(0,8);
   el.innerHTML = items.map(productCard).join("");
   attachAddHandlers();
 }
@@ -407,7 +411,14 @@ function initCatalog(){
   if(qs.get("price")) price.value = qs.get("price");
   const minP = p => Math.min(...Object.values(p.price));
   const run = ()=>{
-    let items = [...PRODUCTS];
+    /* catalog.html es solo fragancias -- los packs/sets armados viven en
+       combos.html y no deben duplicarse aquí. Antes no había exclusión
+       base: con el filtro de tipo en "Todos" (el valor por defecto),
+       PRODUCTS entraba completo, combos incluidos. Se excluyen siempre,
+       independientemente de qué filtro elija el usuario después -- el
+       contador de resultados ya deriva de este mismo array, así que
+       cuenta solo fragancias sin hardcodear ningún número. */
+    let items = PRODUCTS.filter(p=>p.type!=="combo");
     if(search && search.value.trim()){
       const q = search.value.trim().toLowerCase();
       items = items.filter(p=>(p.brand+" "+p.name+" "+p.notes.join(" ")+" "+p.family).toLowerCase().includes(q));

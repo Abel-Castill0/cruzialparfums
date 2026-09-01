@@ -84,3 +84,25 @@ unscheduled work.
   are duplicated word-for-word between `index.html`/`catalog.html` (harmless
   DRY violation, not a visual bug — flagged here as a known "copy exists in
   two places" spot, not urgent) rather than genuinely conflicting.
+
+- **14 products still on pre-migration photography (confirmed
+  programmatically, 2026-09-01, NOT a CSS/display bug — a real content
+  gap).** `assets/data.js`'s `IMG_MAP` has 190 image path references; 160
+  point at the canonical `img/perfumes/webp/` set (white background,
+  confirmed via corner-pixel sampling: 255,255,255), but 28 paths (14
+  products × 2 images) still point directly at `img/perfumes/*.png` —
+  sampled corners on those come back `(166,166,166)`, a visibly gray
+  studio background, not the new white one. Checked programmatically
+  (path extraction + `os.path.exists` + corner-pixel sampling across all
+  190 refs, not a manual scan) and confirmed none of the 14 have a
+  matching file anywhere in `img/perfumes/webp/` under any plausible name
+  — this isn't a migration-script bug that skipped them, it's that no new
+  photo was ever provided for these 14, same situation as the already-
+  documented `sceptre-malachite` exception in `CLAUDE.md`, just a bigger
+  list. Do NOT paper over this with CSS (background-color tricks, filters
+  to fake white) — these products need real replacement photography from
+  the client before they'll look consistent with the rest of the catalog.
+  The 14: `yara-pink`, `eclaire`, `yum-yum`, `angham`, `mayar`,
+  `hawas-elixir`, `hawas-tropical`, `hawas-chrome`, `vulcan-feu`,
+  `jean-lowe-vibe`, `jean-lowe-inmotel`, `rayhaan-italia`,
+  `swy-absolutely`, `adg-profondo-edp`.
