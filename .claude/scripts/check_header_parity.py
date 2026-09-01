@@ -25,15 +25,24 @@ def extract_header_actions(html):
     return re.sub(r'>\s+<', '><', m.group(0).strip())
 
 def main():
+    # Descubrimiento real, no una lista escrita a mano: cualquier .html
+    # nuevo en la raiz del repo entra a la auditoria automaticamente la
+    # proxima vez que esto corra.
+    all_pages = sorted(ROOT.glob("*.html"))
+    print(f"Discovered: {len(all_pages)} HTML files in repo root")
+    for f in all_pages:
+        tag = " (redirect stub, no header)" if f.name in SKIP else ""
+        print(f"  {f.name}{tag}")
+    print()
+
     ref_html = (ROOT / REFERENCE).read_text(encoding="utf-8")
     ref_block = extract_header_actions(ref_html)
     if not ref_block:
         print(f"COULD NOT EXTRACT reference block from {REFERENCE} -- fix the regex first")
         return
     ok, diverged = [], []
-    for f in sorted(ROOT.glob("*.html")):
-        if f.name == REFERENCE or f.name in SKIP:
-            continue
+    checked = [f for f in all_pages if f.name != REFERENCE and f.name not in SKIP]
+    for f in checked:
         html = f.read_text(encoding="utf-8")
         block = extract_header_actions(html)
         if block is None:
@@ -42,11 +51,14 @@ def main():
             diverged.append((f.name, "differs from index.html"))
         else:
             ok.append(f.name)
+    print(f"Checked against reference ({REFERENCE}): {len(checked)} pages")
+    print(f"{REFERENCE:<22} PASS (reference)")
     for name in ok:
         print(f"{name:<22} PASS")
     for name, reason in diverged:
         print(f"{name:<22} DIVERGED -- {reason}")
-    print(f"\n{len(ok)} PASS / {len(diverged)} DIVERGED")
+    print(f"\n{len(ok)+1} PASS / {len(diverged)} DIVERGED / {len(all_pages)} discovered total"
+          f" ({len(SKIP)} excluded: {', '.join(sorted(SKIP))})")
 
 if __name__ == "__main__":
     main()
