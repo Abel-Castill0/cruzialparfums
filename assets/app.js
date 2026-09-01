@@ -193,9 +193,14 @@ function productCard(p, mode){
         <div class="card-meta"><span>${isBottle?`frasco ${minSize} ml`:"desde 3 ml"}</span><b>${money(min)}</b></div>
       </a>
       ${bottleCrossSell}
-      ${!isBottle ? `<div class="card-gift">${GIFT_MESSAGE}</div>` : ""}
     </div>
   </article>`;
+}
+/* El aviso de regalo mostraba la misma frase en cada card del grid (ver
+   .grid-gift-note en styles.css) -- una sola vez por grid, en el/los
+   elemento(s) placeholder que existan en la página actual. */
+function initGiftBanner(){
+  document.querySelectorAll("[data-gift-note]").forEach(el=>{ el.textContent = GIFT_MESSAGE; });
 }
 function attachAddHandlers(){
   document.querySelectorAll("[data-add]").forEach(b=>{
@@ -1110,6 +1115,7 @@ document.addEventListener("error",function(e){
 initArt();
 updateCartCount();
 initPills();
+initGiftBanner();
 renderFeatured();
 renderCombos();
 renderBottles();

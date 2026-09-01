@@ -102,6 +102,17 @@ input,select,textarea{font-family:inherit}
 .btn:disabled{cursor:default;opacity:.85}
 .btn:disabled span{transform:none}
 .text-link{font-size:11px;letter-spacing:.26em;text-transform:uppercase;color:var(--gold);display:inline-flex;align-items:center;gap:10px;padding-bottom:4px;border-bottom:1px solid transparent;transition:all .35s var(--ease)}
+/* .grid-gift-note: el mensaje de regalo se repetía en CADA card del grid
+   (Los Más Deseados y catálogo completo) -- la misma frase 6-12 veces en
+   una sola pantalla competía con el propio producto (marca/nombre/precio)
+   por atención, y leía más a spam que a oferta especial. Se muestra una
+   sola vez por grid; product.html conserva su .gift-banner propio, que sí
+   tiene sentido repetir porque ahí es la única fragancia en pantalla. */
+.grid-gift-note{font-size:12px;color:var(--muted);letter-spacing:.01em}
+/* Especificidad extra necesaria: ".results-top span" (0,1,1) le gana a
+   ".grid-gift-note" sola (0,1,0) y la ponía en mayúsculas con tracking de
+   etiqueta -- correcto para "99 PERFUMES", ilegible para una frase completa. */
+.results-top .grid-gift-note{text-transform:none;letter-spacing:.01em;font-size:12px}
 .text-link:hover{border-color:var(--gold);color:var(--gold-deep);gap:14px}
 
 /* --- Announcement bar --- */
@@ -252,7 +263,6 @@ input,select,textarea{font-family:inherit}
 .cart-combo-contents{font-size:10.5px;font-style:italic;letter-spacing:.02em;color:var(--muted2);line-height:1.4;margin-top:4px}
 
 /* --- Gift banner --- */
-.card-gift{margin-top:6px;padding:8px 12px;background:#FBF8F3;border:1px solid #EDE5D4;font-size:8.5px;letter-spacing:.1em;color:var(--muted);line-height:1.5}
 .gift-banner{margin-top:20px;padding:16px 20px;background:#FBF8F3;border:1px solid #EDE5D4;font-size:12px;letter-spacing:.06em;color:#1A1A1A;line-height:1.6}
 
 /* --- Collections --- */
