@@ -156,9 +156,14 @@ const IMG_MAP = {
   "bright-peach": { bottle: "img/perfumes/webp/Bright Peach.webp", set: "img/perfumes/webp/Bright Peach (2).webp" },
   "paradise-garden": { bottle: "img/perfumes/webp/Lattafa Paradise Garden.webp", set: "img/perfumes/webp/Lattafa Paradise Garden (2).webp" },
 
-  // COMBOS
-  "combo-cuarteto": { bottle: "img/perfumes/webp/Cuarteto Oriental Vainilla Freak.webp", set: "img/perfumes/webp/Cuarteto Oriental Vainilla Freak (2).webp" },
-  "combo-vainilla": { bottle: "img/perfumes/webp/Cuarteto Oriental Vainilla Freak.webp", set: "img/perfumes/webp/Cuarteto Oriental Vainilla Freak (2).webp" },
+  // COMBOS — antes combo-cuarteto y combo-vainilla apuntaban los DOS al
+  // mismo archivo genérico ("Cuarteto Oriental Vainilla Freak.webp") y
+  // combo-tulum no tenía entrada -- caía a bottleSVG() como fallback.
+  // Portadas reales del cliente (2026-08-31), una por set. Ver
+  // window.CRUZIAL_COMBO_CONTENTS más abajo para heroImage (carousel).
+  "combo-cuarteto": { bottle: "img/combos/set-cuarteto.webp", set: "img/combos/set-cuarteto.webp" },
+  "combo-vainilla": { bottle: "img/combos/set-vainilla.webp", set: "img/combos/set-vainilla.webp" },
+  "combo-tulum": { bottle: "img/combos/set-tulum.webp", set: "img/combos/set-tulum.webp" },
 
   // DESIGNER / NICHO
   "212-edt": { bottle: "img/perfumes/webp/Carolina Herrera 212 EDT.webp", set: "img/perfumes/webp/Carolina Herrera 212 EDT (2).webp" },
@@ -302,28 +307,38 @@ window.CRUZIAL_WHOLESALE = {
   "paradise-garden":    { unit: 380, m4: 364, m12: 348 }
 };
 
-/* Contenido explícito de combos (confirmed by client) */
+/* Contenido explícito de combos (confirmed by client).
+   heroImage/heroCta: fuente única para el hero carousel de index.html --
+   home consume heroImage (foto ambientada, ancho completo), combos.html
+   consume IMG_MAP[id] vía productCard() (portada de card, ver arriba).
+   Un solo lugar por rol de imagen, nada hardcodeado en el HTML. */
 window.CRUZIAL_COMBO_CONTENTS = {
   "combo-cuarteto": {
     name: "Cuarteto Oriental",
     desc: "4 fragancias árabes seleccionadas por Cruzial",
     perfumes: ["Khamrah Clásico", "Khamrah Qahwa", "Khamrah Dukhan", "Khamrah Waha"],
     ml: 10,
-    atomizaciones: "560–600"
+    atomizaciones: "560–600",
+    heroImage: "img/hero/promo-cuarteto.webp",
+    heroCta: "Ver Cuarteto Oriental"
   },
   "combo-vainilla": {
     name: "Vainilla Freak",
     desc: "2 Yara + Eclaire — para amantes de la vainilla",
     perfumes: ["Yara Pink", "Yara Candy", "Eclaire"],
     ml: 10,
-    atomizaciones: "420–450"
+    atomizaciones: "420–450",
+    heroImage: "img/hero/promo-vainilla.webp",
+    heroCta: "Ver Vainilla Freak"
   },
   "combo-tulum": {
     name: "Set Tulum",
     desc: "Fresco y playero — para clima cálido",
     perfumes: ["Odyssey Aqua", "Hawas Tropical", "Supremacy Collection"],
     ml: 10,
-    atomizaciones: "420–450"
+    atomizaciones: "420–450",
+    heroImage: "img/hero/promo-tulum.webp",
+    heroCta: "Ver Set Tulum"
   }
 };
 
