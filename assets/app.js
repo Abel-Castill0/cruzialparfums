@@ -176,12 +176,12 @@ function productCard(p, mode){
     const contents = window.CRUZIAL_COMBO_CONTENTS && window.CRUZIAL_COMBO_CONTENTS[p.id];
     const perfumesLine = contents?.perfumes?.length ? contents.perfumes.join(" · ") : "";
     return `<article class="product-card is-combo" id="${p.id}">
-      <a class="combo-media-link" href="product.html?id=${p.id}" aria-hidden="true" tabindex="-1">
+      <span class="combo-media-link" data-goto="product.html?id=${p.id}" aria-hidden="true">
         <div class="combo-media">
           ${cardImg ? `<img src="${cardImg}" alt="" class="combo-media-img" loading="lazy" decoding="async">` : bottleSVG(p)}
           <span class="combo-badge">Combo</span>
         </div>
-      </a>
+      </span>
       <div class="card-body">
         <a class="card-body-link" href="product.html?id=${p.id}">
           <h3 class="card-name">${p.name}</h3>
@@ -195,10 +195,19 @@ function productCard(p, mode){
   /* Estructura sin <button>/<a> anidados dentro de otro <a> (HTML5 no
      permite contenido interactivo anidado; antes funcionaba solo porque
      JS hacía stopPropagation en el quick-add, pero rompía semántica y
-     lectores de pantalla). El link de imagen queda aria-hidden porque
-     el link del cuerpo ya anuncia el producto; el quick-add y el cross-
-     sell de frasco completo son ahora enlaces/botones hermanos reales,
-     no anidados. */
+     lectores de pantalla). El link de imagen es redundante a propósito
+     (el del cuerpo ya anuncia marca+nombre) y debía quedar fuera del
+     árbol de accesibilidad -- pero un <a href> real, aunque tenga
+     tabindex="-1", sigue siendo focusable al hacer click, y
+     aria-hidden="true" en un elemento focusable es justo lo que Chrome
+     bloquea con "Blocked aria-hidden on an element because its
+     descendant retained focus" (WAI-ARIA: aria-hidden nunca sobre un
+     elemento focusable). Ahora es un <span data-goto> -- nunca
+     focusable de forma nativa, así que aria-hidden vuelve a ser válido
+     sin trucos de tabindex. Navega vía el listener delegado en
+     attachAddHandlers(), el quick-add y el cross-sell de frasco
+     completo siguen siendo enlaces/botones hermanos reales, no
+     anidados. */
   /* Texto recortado ("completo"/"desde" fuera, unidad primero) -- en
      cards angostas (catálogo mobile 2 columnas) la versión larga con
      tracking ancho se partía en varias líneas de una sola palabra. Mismo
@@ -215,7 +224,7 @@ function productCard(p, mode){
      ver notas de renderCombos/renderFeatured). */
   return `<article class="product-card" id="${p.id}">
     <div class="card-media${mediaClass}" style="--glow:${glow(p)}">
-      <a class="card-media-link" href="product.html?id=${p.id}" tabindex="-1" aria-hidden="true">${media}</a>
+      <span class="card-media-link" data-goto="product.html?id=${p.id}" aria-hidden="true">${media}</span>
       <span class="tag">${p.tag}</span>
       <button class="quick-add" data-add="${p.id}" data-size="${qSize}" data-group="${qGroup}" aria-label="Añadir ${p.name}">+</button>
     </div>
@@ -241,6 +250,15 @@ function attachAddHandlers(){
       e.preventDefault(); e.stopPropagation();
       addToCart(b.dataset.add, Number(b.dataset.size||2), 1, b.dataset.group||"decant");
     });
+  });
+  /* .card-media-link/.combo-media-link: zona clicable redundante sobre
+     la foto (ver comentario en productCard()) -- <span>, no <a>, así
+     que nunca es focusable nativamente y aria-hidden en él ya no viola
+     la regla WAI-ARIA. Navegación real vía JS, delegada aquí igual que
+     el resto de handlers de card (se re-adjunta con cada render porque
+     el DOM se reemplaza por innerHTML, no se acumula). */
+  document.querySelectorAll("[data-goto]").forEach(el=>{
+    el.addEventListener("click",()=>{ location.href = el.dataset.goto; });
   });
 }
 

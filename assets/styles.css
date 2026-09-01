@@ -225,10 +225,12 @@ input,select,textarea{font-family:inherit}
 /* .card-media-link/.card-body-link: la card ya no envuelve todo en un solo
    <a> con un <button> (quick-add) anidado dentro -- HTML5 no permite
    contenido interactivo anidado, y rompía semántica/lectores de pantalla.
-   Ahora son dos <a> hermanos (imagen + cuerpo) que cubren las mismas áreas
-   clicables que antes; el de la imagen queda oculto para lectores de
-   pantalla porque el del cuerpo ya anuncia marca+nombre. */
-.card-media-link{position:absolute;inset:0;display:grid;place-items:center;z-index:0}
+   .card-media-link es <span data-goto>, no <a> (ver app.js) -- nunca
+   focusable nativamente, así que aria-hidden es válido sin violar
+   WAI-ARIA; cursor:pointer repone la affordance visual que un <a> traía
+   gratis. .card-body-link sigue siendo el <a> real, el único que
+   lectores de pantalla y teclado necesitan encontrar. */
+.card-media-link{position:absolute;inset:0;display:grid;place-items:center;z-index:0;cursor:pointer}
 .card-body-link{display:block;color:inherit;text-decoration:none}
 .card-media svg{width:62%;height:auto;object-fit:cover;transition:transform .8s var(--ease);filter:drop-shadow(0 22px 34px rgba(0,0,0,.1))}
 .product-card:hover .card-media svg{transform:translateY(-6px) scale(1.03)}
@@ -322,6 +324,8 @@ input,select,textarea{font-family:inherit}
    card-media/padding/quick-add pensado para una botella sobre fondo
    blanco la metía dentro de un marco y competía con su propio diseño. */
 .product-card.is-combo{overflow:visible}
+/* <span data-goto>, no <a> -- mismo motivo que .card-media-link arriba. */
+.combo-media-link{display:block;cursor:pointer}
 .combo-media{position:relative;display:block}
 .combo-media-img{display:block;width:100%;height:auto}
 /* Mismo look que .tag (pequeño, ivory semiopaco, tracking) -- no un
