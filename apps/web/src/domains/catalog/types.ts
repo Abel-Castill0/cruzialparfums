@@ -74,6 +74,18 @@ export type CatalogProduct = {
   comboContent: CatalogComboContent | null;
 };
 
+export type LegacyWholesalePrice = {
+  unit: number;
+  m4: number;
+  m12: number;
+};
+
+export type CatalogWholesaleProduct = {
+  product: CatalogProduct;
+  prices: LegacyWholesalePrice;
+  verificationStatus: LegacyVerificationStatus;
+};
+
 export type LegacyCatalogFixture = {
   metadata: {
     notice: string;
@@ -103,5 +115,6 @@ export type LegacyCatalogFixture = {
     ATOMIZACIONES?: Record<string, string>;
   };
   comboContents: Record<string, LegacyComboContent>;
+  wholesale: Record<string, LegacyWholesalePrice>;
   products: LegacyProductRecord[];
 };

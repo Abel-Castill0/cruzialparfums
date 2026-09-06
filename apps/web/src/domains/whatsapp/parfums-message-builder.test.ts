@@ -4,6 +4,8 @@ import {
   buildCheckoutMessage,
   buildCustomComboMessage,
   buildWhatsAppUrl,
+  buildWholesaleInquiryMessage,
+  buildWholesaleProductMessage,
 } from "./parfums-message-builder";
 
 describe("Parfums WhatsApp message builder", () => {
@@ -61,5 +63,30 @@ describe("Parfums WhatsApp message builder", () => {
     expect(message).toContain("combo de 3 fragancias en 3 ml cada una");
     expect(message).toContain("TOTAL ESTIMADO: S/ 36.00");
     expect(decodeURIComponent(buildWhatsAppUrl("51924590921", message))).toContain("Khamrah Clásico");
+  });
+
+  it("labels wholesale row pricing as referential legacy data", () => {
+    const message = buildWholesaleProductMessage({
+      storeName: "Cruzial Parfums",
+      brand: "Lattafa",
+      productName: "Khamrah Clásico",
+      prices: { unit: 130, m4: 122, m12: 114 },
+    });
+
+    expect(message).toContain("Precios referenciales legacy");
+    expect(message).toContain("S/ 122.00 (4+ uds)");
+    expect(message).toContain("confirmar disponibilidad y tarifa exacta");
+  });
+
+  it("builds a wholesale inquiry without an unverified response-time promise", () => {
+    const message = buildWholesaleInquiryMessage({
+      storeName: "Cruzial Parfums",
+      name: "Ana",
+      phone: "999 111 222",
+      volume: "20 – 50 unidades",
+    });
+
+    expect(message).toContain("Nombre: Ana");
+    expect(message).not.toMatch(/respuesta en/i);
   });
 });

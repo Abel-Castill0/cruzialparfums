@@ -97,3 +97,53 @@ export function buildCustomComboMessage({
     "Continúo en WhatsApp para confirmar stock y total final.",
   ].join("\n");
 }
+
+export function buildWholesaleProductMessage({
+  storeName,
+  brand,
+  productName,
+  prices,
+}: {
+  storeName: string;
+  brand: string;
+  productName: string;
+  prices: { unit: number; m4: number; m12: number };
+}) {
+  return [
+    `Hola ${storeName}. Quiero cotizar ${brand} ${productName}.`,
+    "Cantidad: ___ unidades.",
+    `Precios referenciales legacy: ${money(prices.unit)} (unidad) / ${money(prices.m4)} (4+ uds) / ${money(prices.m12)} (12+ uds).`,
+    "Tipo de compra: Mayorista.",
+    "¿Tiene decants de cortesía?",
+    "",
+    "Continúo en WhatsApp para confirmar disponibilidad y tarifa exacta.",
+  ].join("\n");
+}
+
+export function buildWholesaleInquiryMessage({
+  storeName,
+  name,
+  business,
+  phone,
+  volume,
+  message,
+}: {
+  storeName: string;
+  name: string;
+  business?: string;
+  phone: string;
+  volume: string;
+  message?: string;
+}) {
+  return [
+    `Hola ${storeName}. Quiero información sobre precios por MAYOR.`,
+    "",
+    `Nombre: ${name.trim()}`,
+    `Negocio: ${business?.trim() || "—"}`,
+    `WhatsApp: ${phone.trim()}`,
+    `Volumen estimado: ${volume}`,
+    `Fragancias de interés: ${message?.trim() || "—"}`,
+    "",
+    "Continúo en WhatsApp para confirmar disponibilidad y tarifa exacta.",
+  ].join("\n");
+}

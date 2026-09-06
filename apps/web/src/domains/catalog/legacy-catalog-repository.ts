@@ -5,6 +5,7 @@ import {
 } from "./product-media-source";
 import type {
   CatalogProduct,
+  CatalogWholesaleProduct,
   LegacyCatalogFixture,
   CatalogComboContent,
   LegacyProductRecord,
@@ -82,6 +83,18 @@ export class LegacyCatalogRepository {
 
   listCombos(): CatalogProduct[] {
     return this.list().filter((product) => product.type === "combo");
+  }
+
+  listWholesale(): CatalogWholesaleProduct[] {
+    return this.listFragrances()
+      .flatMap((product) => {
+        const prices = catalogFixture.wholesale[product.legacyId];
+        return prices ? [{ product, prices, verificationStatus: "legacy" as const }] : [];
+      })
+      .sort((a, b) =>
+        a.product.brand.localeCompare(b.product.brand) ||
+        a.product.name.localeCompare(b.product.name),
+      );
   }
 
   findByLegacyId(legacyId: string): CatalogProduct | null {

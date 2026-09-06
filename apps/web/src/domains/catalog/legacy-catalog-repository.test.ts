@@ -38,4 +38,13 @@ describe("LegacyCatalogRepository", () => {
         "client_provided_pending_reconfirmation"
     )).toBe(true);
   });
+
+  it("joins all legacy wholesale tiers without promoting verification", () => {
+    const wholesale = repository.listWholesale();
+
+    expect(wholesale).toHaveLength(93);
+    expect(wholesale.every((entry) => entry.verificationStatus === "legacy")).toBe(true);
+    expect(wholesale.find((entry) => entry.product.legacyId === "khamrah-clasico")?.prices)
+      .toEqual({ unit: 130, m4: 122, m12: 114 });
+  });
 });
