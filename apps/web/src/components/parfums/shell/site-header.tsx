@@ -21,10 +21,12 @@ export function SiteHeader({
   logoUrl,
   whatsappNumber,
   searchProducts,
+  cartProducts,
 }: {
   logoUrl: string | null;
   whatsappNumber: string;
   searchProducts: HeaderSearchProduct[];
+  cartProducts: CatalogProduct[];
 }) {
   return (
     <header className={styles.siteHeader}>
@@ -41,7 +43,7 @@ export function SiteHeader({
           <span className={styles.headerWhatsApp}>
             <WhatsAppAction number={whatsappNumber} />
           </span>
-          <HeaderActions products={searchProducts} navItems={navItems} />
+          <HeaderActions products={searchProducts} cartProducts={cartProducts} navItems={navItems} />
         </div>
       </div>
     </header>

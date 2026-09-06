@@ -329,12 +329,43 @@
 }
 
 .drawerEmpty {
+  min-height: 100%;
   display: grid;
   align-content: center;
   justify-items: center;
   gap: 10px;
   color: #756f66;
   text-align: center;
+}
+
+.drawerItems {
+  min-height: 0;
+  padding: 0 28px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.drawerEmpty a {
+  min-height: 42px;
+  margin-top: 8px;
+  padding: 0 18px;
+  display: flex;
+  align-items: center;
+  border: 1px solid rgba(26, 22, 18, 0.18);
+  color: #17130f;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.drawerError {
+  margin: 14px 0;
+  padding: 11px 12px;
+  color: #7c3028;
+  background: #fff2ef;
+  font-size: 11px;
+  line-height: 1.45;
 }
 
 .drawerEmpty strong {
@@ -345,7 +376,7 @@
 }
 
 .drawerFoot {
-  padding: 24px 28px 30px;
+  padding: 24px 28px max(30px, env(safe-area-inset-bottom));
   border-top: 1px solid rgba(26, 22, 18, 0.12);
 }
 
@@ -356,8 +387,11 @@
   font-size: 12px;
 }
 
-.drawerFoot > a {
+.drawerFoot > a,
+.drawerFoot > button {
+  width: 100%;
   min-height: 50px;
+  border: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -368,6 +402,21 @@
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
+}
+
+.drawerFoot > button:disabled {
+  color: #9d9890;
+  background: #eceae6;
+  cursor: not-allowed;
+}
+
+.drawerFoot > small {
+  margin-top: 12px;
+  display: block;
+  color: #756f66;
+  font-size: 9px;
+  line-height: 1.5;
+  text-align: center;
 }
 
 .mobileMenu {

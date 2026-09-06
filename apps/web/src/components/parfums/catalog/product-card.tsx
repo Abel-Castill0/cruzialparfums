@@ -47,11 +47,15 @@ export function ProductCard({
 
   function addQuickVariant() {
     const group = mode === "bottle" ? "bottle" : "decant";
-    addParfumsCartLine(localStorage, {
+    const mutation = addParfumsCartLine(localStorage, {
       productId: product.legacyId,
       variantId: `${group}-${currentVariant.size}ml`,
       quantity: 1,
     });
+    if (!mutation.persisted) {
+      onAdded("No pudimos guardar tu selección. Revisa el almacenamiento del navegador.");
+      return;
+    }
     window.dispatchEvent(new Event(PARFUMS_CART_UPDATED_EVENT));
     onAdded(
       `${product.brand} ${product.name} · ${currentVariant.size} ml añadido`,

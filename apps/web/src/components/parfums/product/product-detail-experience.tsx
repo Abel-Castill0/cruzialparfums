@@ -79,11 +79,15 @@ export function ProductDetailExperience({
   }
 
   function addSelection() {
-    addParfumsCartLine(localStorage, {
+    const mutation = addParfumsCartLine(localStorage, {
       productId: product.legacyId,
       variantId: selected.variantId,
       quantity,
     });
+    if (!mutation.persisted) {
+      announce("No pudimos guardar tu selección. Revisa el almacenamiento del navegador.");
+      return;
+    }
     window.dispatchEvent(new Event(PARFUMS_CART_UPDATED_EVENT));
     announce(
       `${quantity} × ${product.brand} ${product.name}, ${selected.size} ml añadido`,

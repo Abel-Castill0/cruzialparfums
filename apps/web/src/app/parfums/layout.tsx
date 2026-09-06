@@ -19,11 +19,12 @@ export default function ParfumsLayout({
   const whatsappNumber = config.WA_NUMBER ?? "51924590921";
   const instagramUrl = config.INSTAGRAM_URL ?? "https://www.instagram.com/Cruzial_parfum/";
   const searchProducts = catalog.listFragrances().map(({ slug, brand, name, notes, family, discontinued }) => ({ slug, brand, name, notes, family, discontinued }));
+  const cartProducts = catalog.list();
 
   return (
     <div data-storefront="parfums">
       <AnnouncementBar />
-      <SiteHeader logoUrl={logoUrl} whatsappNumber={whatsappNumber} searchProducts={searchProducts} />
+      <SiteHeader logoUrl={logoUrl} whatsappNumber={whatsappNumber} searchProducts={searchProducts} cartProducts={cartProducts} />
       {children}
       <SiteFooter logoUrl={logoUrl} whatsappNumber={whatsappNumber} instagramUrl={instagramUrl} />
       <WhatsAppAction number={whatsappNumber} floating />

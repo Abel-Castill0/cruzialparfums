@@ -11,10 +11,13 @@ import {
   type RefObject,
 } from "react";
 import {
-  countParfumsCart,
   PARFUMS_CART_UPDATED_EVENT,
   readParfumsCart,
 } from "@/domains/carts/parfums-cart";
+import { resolveParfumsCart } from "@/domains/carts/parfums-cart-pricing";
+import type { CatalogProduct } from "@/domains/catalog/types";
+import { CartLine } from "@/components/parfums/cart/cart-line";
+import { useParfumsCart } from "@/components/parfums/cart/use-parfums-cart";
 import type { HeaderSearchProduct } from "./site-header";
 import { BagIcon, MenuIcon, SearchIcon } from "./shell-icons";
 import styles from "./parfums-shell.module.css";
@@ -88,11 +91,14 @@ export function SearchTrigger({ onOpen }: { onOpen: () => void }) {
   );
 }
 
-export function CartTrigger({ onOpen }: { onOpen: () => void }) {
+export function CartTrigger({ onOpen, products }: { onOpen: () => void; products: readonly CatalogProduct[] }) {
   const [count, setCount] = useState(0);
 
   useEffect(() => {
-    const update = () => setCount(countParfumsCart(readParfumsCart(localStorage)));
+    const update = () => setCount(
+      resolveParfumsCart(readParfumsCart(localStorage), products)
+        .reduce((sum, line) => sum + line.quantity, 0),
+    );
     update();
     window.addEventListener("storage", update);
     window.addEventListener(PARFUMS_CART_UPDATED_EVENT, update);
@@ -100,7 +106,7 @@ export function CartTrigger({ onOpen }: { onOpen: () => void }) {
       window.removeEventListener("storage", update);
       window.removeEventListener(PARFUMS_CART_UPDATED_EVENT, update);
     };
-  }, []);
+  }, [products]);
 
   return (
     <button className={styles.iconButton} type="button" onClick={onOpen} aria-label={`Abrir carrito, ${count} ${count === 1 ? "producto" : "productos"}`} title="Carrito">
@@ -152,25 +158,49 @@ function SearchPanel({ products, open, onClose }: { products: HeaderSearchProduc
   );
 }
 
-function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
+function money(value: number) {
+  return `S/ ${value.toFixed(2)}`;
+}
+
+function CartDrawer({ open, onClose, products }: { open: boolean; onClose: () => void; products: readonly CatalogProduct[] }) {
   const drawerRef = useRef<HTMLElement>(null);
+  const { lines, total, persistenceError, setQuantity, remove } = useParfumsCart(products);
   useDialogAccessibility(open, onClose, drawerRef);
   return (
     <>
       <button type="button" aria-label="Cerrar carrito" className={`${styles.drawerOverlay} ${open ? styles.drawerOpen : ""}`} onClick={onClose} />
-      <aside ref={drawerRef} className={`${styles.drawer} ${open ? styles.drawerOpen : ""}`} aria-label="Carrito de compras" aria-modal="true" role="dialog" aria-hidden={!open}>
+      <aside ref={drawerRef} className={`${styles.drawer} ${open ? styles.drawerOpen : ""}`} data-cart-drawer aria-label="Carrito de compras" aria-modal="true" role="dialog" aria-hidden={!open}>
         <div className={styles.drawerHead}>
           <strong>Tu selección</strong>
           <button data-autofocus type="button" onClick={onClose} aria-label="Cerrar carrito">×</button>
         </div>
-        <div className={styles.drawerEmpty}>
-          <BagIcon size={28} />
-          <strong>Tu selección está vacía</strong>
-          <p>Añade una fragancia para comenzar.</p>
+        <div className={styles.drawerItems} aria-live="polite">
+          {lines.length === 0 ? (
+            <div className={styles.drawerEmpty}>
+              <BagIcon size={28} />
+              <strong>Tu selección está vacía</strong>
+              <p>Explora la colección y añade tu primera fragancia.</p>
+              <Link href={"/parfums/catalogo" as Route} onClick={onClose}>Ver catálogo</Link>
+            </div>
+          ) : lines.map((line) => (
+            <CartLine
+              key={line.key}
+              line={line}
+              compact
+              onQuantity={(quantity) => setQuantity(line.product.legacyId, line.variant.variantId, quantity)}
+              onRemove={() => remove(line.product.legacyId, line.variant.variantId)}
+            />
+          ))}
+          {persistenceError ? <p className={styles.drawerError} role="alert">No pudimos guardar el cambio. Revisa el almacenamiento del navegador.</p> : null}
         </div>
         <div className={styles.drawerFoot}>
-          <div><span>Total estimado</span><strong>S/ 0.00</strong></div>
-          <Link href={"/parfums/checkout" as Route}>Ir al checkout <span aria-hidden="true">→</span></Link>
+          <div><span>Total estimado</span><strong>{money(total)}</strong></div>
+          {lines.length > 0 ? (
+            <Link href={"/parfums/checkout" as Route} onClick={onClose}>Revisar y continuar <span aria-hidden="true">→</span></Link>
+          ) : (
+            <button type="button" disabled>Revisar y continuar</button>
+          )}
+          <small>El total final, stock y envío se confirman en WhatsApp.</small>
         </div>
       </aside>
     </>
@@ -192,17 +222,17 @@ export function MobileMenu({ navItems, open, onClose }: { navItems: readonly Nav
   );
 }
 
-export function HeaderActions({ products, navItems }: { products: HeaderSearchProduct[]; navItems: readonly NavItem[] }) {
+export function HeaderActions({ products, cartProducts, navItems }: { products: HeaderSearchProduct[]; cartProducts: CatalogProduct[]; navItems: readonly NavItem[] }) {
   const search = useDialogState();
   const cart = useDialogState();
   const menu = useDialogState();
   return (
     <>
       <SearchTrigger onOpen={search.openDialog} />
-      <CartTrigger onOpen={cart.openDialog} />
+      <CartTrigger onOpen={cart.openDialog} products={cartProducts} />
       <button className={`${styles.iconButton} ${styles.mobileToggle}`} type="button" onClick={menu.openDialog} aria-label="Abrir menú"><MenuIcon /></button>
       <SearchPanel products={products} open={search.open} onClose={search.closeDialog} />
-      <CartDrawer open={cart.open} onClose={cart.closeDialog} />
+      <CartDrawer open={cart.open} onClose={cart.closeDialog} products={cartProducts} />
       <MobileMenu navItems={navItems} open={menu.open} onClose={menu.closeDialog} />
     </>
   );
