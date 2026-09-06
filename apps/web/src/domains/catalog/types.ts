@@ -50,6 +50,8 @@ export type CatalogProduct = {
   discontinued: boolean;
   bestseller: boolean;
   imageUrl: string | null;
+  decantImageUrl: string | null;
+  bottleImageUrl: string | null;
   imageAlt: string;
   verificationStatus: LegacyVerificationStatus;
   bottlePricingVerificationStatus: LegacyVerificationStatus | null;
@@ -81,6 +83,8 @@ export type LegacyCatalogFixture = {
     INSTAGRAM_URL?: string;
     STORE?: string;
     CITY?: string;
+    SIZES?: number[];
+    ATOMIZACIONES?: Record<string, string>;
   };
   products: LegacyProductRecord[];
 };

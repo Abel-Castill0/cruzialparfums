@@ -1,0 +1,56 @@
+.page {
+  min-height: 58svh;
+  padding: clamp(76px, 11vw, 150px) 24px;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 15px;
+  color: #2c2925;
+  background: #fff;
+  text-align: center;
+}
+
+.eyebrow {
+  color: #a78542;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+}
+
+.page h1 {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: clamp(38px, 6vw, 62px);
+  font-weight: 500;
+}
+
+.page > p:not(.eyebrow) {
+  max-width: 470px;
+  color: #756f66;
+}
+
+.page div {
+  margin-top: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+}
+
+.page a {
+  min-height: 48px;
+  padding: 13px 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  border: 1px solid #17130f;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.page a:first-child {
+  color: #fff;
+  background: #17130f;
+}

@@ -17,6 +17,12 @@ function toCatalogProduct(
 ): CatalogProduct {
   const legacyImage = product.imgBottle ?? product.imgSet ?? product.img;
   const media = mediaSource.resolve(legacyImage);
+  const decantMedia = mediaSource.resolve(
+    product.imgSet ?? product.imgBottle ?? product.img,
+  );
+  const bottleMedia = mediaSource.resolve(
+    product.imgBottle ?? product.imgSet ?? product.img,
+  );
 
   return {
     legacyId: product.legacy_id,
@@ -35,6 +41,8 @@ function toCatalogProduct(
     discontinued: Boolean(product.discontinued),
     bestseller: Boolean(product.bestseller),
     imageUrl: media?.url ?? null,
+    decantImageUrl: decantMedia?.url ?? null,
+    bottleImageUrl: bottleMedia?.url ?? null,
     imageAlt: [product.brand, product.name].filter(Boolean).join(" "),
     verificationStatus: product.verificationStatus,
     bottlePricingVerificationStatus: product.bottlePricingVerificationStatus,
@@ -64,6 +72,24 @@ export class LegacyCatalogRepository {
       (candidate) => candidate.legacy_id === legacyId,
     );
     return product ? toCatalogProduct(product, this.mediaSource) : null;
+  }
+
+  findBySlug(slug: string): CatalogProduct | null {
+    const product = catalogFixture.products.find(
+      (candidate) => candidate.id === slug,
+    );
+    return product ? toCatalogProduct(product, this.mediaSource) : null;
+  }
+
+  listRelated(product: CatalogProduct, limit = 4): CatalogProduct[] {
+    const candidates = this.listFragrances().filter(
+      (candidate) => candidate.legacyId !== product.legacyId,
+    );
+    const related = candidates.filter(
+      (candidate) =>
+        candidate.gender === product.gender || candidate.family === product.family,
+    );
+    return (related.length > 0 ? related : candidates).slice(0, limit);
   }
 
   getMetadata(): LegacyCatalogFixture["metadata"] {
