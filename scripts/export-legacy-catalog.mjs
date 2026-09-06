@@ -17,11 +17,12 @@ const expectedCounts = Object.freeze({
   active: 96,
   discontinued: 3,
   arab: 69,
-  designer: 23,
-  niche: 4,
+  designer: 24,
+  niche: 3,
   combo: 3,
   duplicateIds: 0,
   bottlePrices: 23,
+  hidden: 1,
 });
 
 function countCatalog(products) {
@@ -43,6 +44,7 @@ function countCatalog(products) {
     combo: products.filter((product) => product.type === "combo").length,
     duplicateIds,
     bottlePrices: products.filter((product) => product.bottle).length,
+    hidden: products.filter((product) => product.hidden).length,
   };
 }
 

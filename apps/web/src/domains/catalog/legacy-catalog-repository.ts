@@ -53,6 +53,7 @@ function toCatalogProduct(
     description: product.desc,
     discontinued: Boolean(product.discontinued),
     bestseller: Boolean(product.bestseller),
+    hidden: Boolean(product.hidden),
     imageUrl: media?.url ?? null,
     decantImageUrl: decantMedia?.url ?? null,
     bottleImageUrl: bottleMedia?.url ?? null,
@@ -71,10 +72,17 @@ export class LegacyCatalogRepository {
       new LegacyProductionMediaSource(),
   ) {}
 
+  /**
+   * Public surfaces only. `hidden` products (client-confirmed: not in
+   * inventory, e.g. `bir-intense`) are excluded from catalog, Finder,
+   * related, search, mayorista and any future sitemap — but the legacy
+   * record is preserved (never deleted) for provenance. See
+   * docs/client-decisions.md.
+   */
   list(): CatalogProduct[] {
-    return catalogFixture.products.map((product) =>
-      toCatalogProduct(product, this.mediaSource),
-    );
+    return catalogFixture.products
+      .filter((product) => !product.hidden)
+      .map((product) => toCatalogProduct(product, this.mediaSource));
   }
 
   listFragrances(): CatalogProduct[] {
@@ -99,14 +107,14 @@ export class LegacyCatalogRepository {
 
   findByLegacyId(legacyId: string): CatalogProduct | null {
     const product = catalogFixture.products.find(
-      (candidate) => candidate.legacy_id === legacyId,
+      (candidate) => candidate.legacy_id === legacyId && !candidate.hidden,
     );
     return product ? toCatalogProduct(product, this.mediaSource) : null;
   }
 
   findBySlug(slug: string): CatalogProduct | null {
     const product = catalogFixture.products.find(
-      (candidate) => candidate.id === slug,
+      (candidate) => candidate.id === slug && !candidate.hidden,
     );
     return product ? toCatalogProduct(product, this.mediaSource) : null;
   }

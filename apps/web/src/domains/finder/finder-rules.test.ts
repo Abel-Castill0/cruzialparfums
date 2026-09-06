@@ -20,7 +20,9 @@ describe("deterministic perfume finder", () => {
   };
 
   it("derives its option universe from the active catalog", () => {
-    expect(listFinderProducts(products)).toHaveLength(93);
+    // 95 visible fragrances (96 active minus hidden `bir-intense`) minus the
+    // 3 discontinued = 92 candidates for the Finder.
+    expect(listFinderProducts(products)).toHaveLength(92);
     expect(listFinderFamilies(products)).toEqual([
       "Fresco", "Acuático", "Cítrico", "Floral", "Gourmand", "Ámbar", "Amaderado", "Especiado",
     ]);

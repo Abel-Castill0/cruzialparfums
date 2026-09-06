@@ -15,7 +15,7 @@ window.CRUZIAL_CONFIG = {
   SIZES: [3, 5, 10],
   ATOMIZACIONES: { 3: "50–60", 5: "70–80", 10: "140–150" },
   ADELANTO: "50% de adelanto",
-  DELIVERY: "Línea 1 del tren eléctrico · Motorizado · Contraentrega Lima · Shalom / Olva"
+  DELIVERY: "Línea 1 del tren eléctrico · Motorizado · Contraentrega Lima · Shalom" // CLIENT_CONFIRMED 2026-09-06 — Olva retirado
   /* Perfumes enteros (frasco sellado): se muestra el precio de 1 unidad
      cuando está confirmado en cada producto (ver `bottle` más abajo).
      Para volumen no se publica un número — el precio se cotiza por
@@ -37,15 +37,20 @@ const M = {
 };
 
 /* Fábrica compacta de productos.
-   extra: { tag, desc, bottle, bestseller, discontinued }
+   extra: { tag, desc, bottle, bestseller, discontinued, hidden }
    Provenance del claim "100% original" en la desc por defecto: CLIENT_CONFIRMED
    (dueño del negocio, 2026-08-30) — cumple el requisito de CLAUDE.md de que un
-   claim de autenticidad necesita confirmación explícita, igual que un precio. */
+   claim de autenticidad necesita confirmación explícita, igual que un precio.
+   hidden: CLIENT_CONFIRMED — el cliente no tiene el producto en inventario.
+   Se retira de catálogo/Finder/relacionados/búsqueda/mayorista/sitemap sin
+   borrar el registro (se preserva legacy_id y procedencia). Distinto de
+   `discontinued` (ya no se fabrica, pero puede seguir habiendo unidades). */
 const P = (id, brand, name, gender, type, family, conc, price, notes, mood, extra) => ({
   id, brand, name, gender, type, family, conc, price, notes, mood,
   tag: extra && extra.tag || (type === "combo" ? "Combo" : type === "arab" ? "Árabe" : type === "niche" ? "Nicho" : "Designer"),
   desc: extra && extra.desc || `${name} — fragancia de la familia ${family.toLowerCase()}, concentración ${conc}. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.`,
   bottle: extra && extra.bottle || null,
+  hidden: !!(extra && extra.hidden),
   /* UNVERIFIED — INTERNAL ONLY — DO NOT EXPOSE AS A COMMERCIAL CLAIM.
      bestseller: editorial/curatorial flag set by the team (products worth highlighting
      for scent profile, availability, margin, etc.) — NOT a claim of verified sales volume
@@ -407,16 +412,16 @@ window.CRUZIAL_PRODUCTS = [
   P("art-of-universe", "Lattafa", "Art Of Universe", "men", "arab", "Especiado", "EDP", T131728, ["Especias", "Ámbar", "Cuero"], M.m6),
   P("liquid-brun", "French Avenue", "Liquid Brun", "men", "arab", "Especiado", "EDP", T121626, ["Canela", "Ámbar", "Vainilla"], M.m7, { bestseller: true, bottle: { 100: 450 } }),
   P("vulcan-feu", "French Avenue", "Vulcan Feu", "men", "arab", "Especiado", "EDP", T131728, ["Fuego", "Especias", "Ámbar"], M.m8),
-  P("amber-o-gold-e", "Al Haramain", "Amber Oud Gold Elixir", "unisex", "arab", "Ámbar", "EDP", T131728, ["Ámbar", "Coco", "Vainilla"], M.m1),
+  P("amber-o-gold-e", "Al Haramain", "Amber Oud Gold Edition", "unisex", "arab", "Ámbar", "EDP", T131728, ["Ámbar", "Coco", "Vainilla"], M.m1), // name: DERIVED_VALIDATED (foto) 2026-09-06 — "Edition" no "Elixir"
   P("ao-aqua-dubai", "Al Haramain", "Amber Oud Aqua Dubai", "men", "arab", "Fresco", "EDP", T131728, ["Acuático", "Bergamota", "Ámbar"], M.m2),
   P("ao-dubai-night", "Al Haramain", "Amber Oud Dubai Night", "men", "arab", "Ámbar", "EDP", T141830, ["Ámbar", "Cuero", "Especias"], M.m3),
   P("nitro-red", "Dumont Paris", "Nitro Red", "men", "arab", "Fresco", "EDP", T121626, ["Frutal", "Acuático", "Ámbar"], M.m4),
-  P("red-intensely", "Lattafa", "Red Intensely", "men", "arab", "Gourmand", "EDP", T131728, ["Frutos rojos", "Vainilla", "Ámbar"], M.m5),
+  P("red-intensely", "Dumont Paris", "Nitro Red Intensely", "men", "arab", "Gourmand", "EDP", T131728, ["Frutos rojos", "Vainilla", "Ámbar"], M.m5), // brand/name: CLIENT_CONFIRMED + DERIVED_VALIDATED (foto) 2026-09-06 — no es Lattafa
   P("cdn-intense-man", "Armaf", "Club de Nuit Intense Man", "men", "arab", "Cítrico", "EDP", T121626, ["Piña", "Abedul", "Ámbar"], M.m6, { bestseller: true, bottle: { 105: 420 } }),
   P("cdn-urban-man-e", "Armaf", "Club de Nuit Urban Man Elixir", "men", "arab", "Fresco", "EDP", T121729, ["Cítricos", "Verde", "Ámbar"], M.m7),
-  P("cdn-preciux-i", "Armaf", "Club de Nuit Precious I", "men", "arab", "Amaderado", "EDP", T223048, ["Piña", "Cedro", "Ámbar"], M.m8),
+  P("cdn-preciux-i", "Armaf", "Club de Nuit Precieux I", "men", "arab", "Amaderado", "EDP", T223048, ["Piña", "Cedro", "Ámbar"], M.m8), // name: DERIVED_VALIDATED (foto) 2026-09-06 — spelling, no es Moudon Précieux
   P("supremacy-colle", "Afnan", "Supremacy Collection", "men", "arab", "Cítrico", "EDP", T131728, ["Piña", "Madera", "Ámbar"], M.m8),
-  P("supremacy-noi", "Afnan", "Supremacy NOI", "men", "arab", "Cítrico", "EDP", T121626, ["Piña", "Cedro", "Almizcle"], M.m1),
+  P("supremacy-noi", "Afnan", "Supremacy Not Only Intense", "men", "arab", "Cítrico", "EDP", T121626, ["Piña", "Cedro", "Almizcle"], M.m1), // name: CLIENT_CONFIRMED 2026-09-06 — nombre completo
   P("sceptre-malachite", "Maison Alhambra", "Sceptre Malachite", "men", "arab", "Amaderado", "EDP", T111424, ["Madera", "Ámbar", "Especias"], M.m2),
   P("lovely-cherry", "Maison Alhambra", "Lovely Cherry", "women", "arab", "Gourmand", "EDP", T131728, ["Cereza", "Almendra", "Vainilla"], M.m6, { discontinued: true, desc: "Cereza, almendra y vainilla sobre una base golosa. Producto descontinuado: ya no se repone al agotar el stock restante." }),
   P("bright-peach", "Maison Alhambra", "Bright Peach", "women", "arab", "Gourmand", "EDP", T131728, ["Melocotón", "Flores", "Vainilla"], M.m3, { discontinued: true, desc: "Melocotón, flores blancas y vainilla en una composición dulce y luminosa. Producto descontinuado: ya no se repone al agotar el stock restante." }),
@@ -447,15 +452,15 @@ window.CRUZIAL_PRODUCTS = [
   P("le-beau-le-parfum", "Jean Paul Gaultier", "Le Beau Le Parfum", "men", "designer", "Fresco", "EDP", T243251, ["Coco", "Madera", "Especias"], M.m2, { bottle: { 100: 680 } }),
   P("paradise-garden", "Lattafa", "Paradise Garden", "unisex", "designer", "Floral", "EDP", T243251, ["Flores", "Coco", "Ámbar"], M.m3),
   P("victory-elixir", "Paco Rabanne", "Victory Elixir", "men", "designer", "Especiado", "EDP", T243251, ["Especias", "Ámbar", "Café"], M.m4, { bottle: { 100: 650 } }),
-  P("purple-melancholia", "Valentino", "Purple Melancholia", "unisex", "niche", "Floral", "EDP", T263456, ["Violeta", "Flores", "Ámbar"], M.m5), // brand: CLIENT_CONFIRMED 2026-08-30
-  P("bir-intense", "Burberry", "Burberry Brit Intense", "men", "designer", "Amaderado", "EDP", T263456, ["Romero", "Cedro", "Ámbar"], M.m6, { bottle: { 100: 720 } }),
+  P("purple-melancholia", "Valentino", "Purple Melancholia", "unisex", "designer", "Floral", "EDP", T263456, ["Violeta", "Flores", "Ámbar"], M.m5), // brand: CLIENT_CONFIRMED 2026-08-30; type: CLIENT_CONFIRMED 2026-09-06 (designer, no niche)
+  P("bir-intense", "Burberry", "Burberry Brit Intense", "men", "designer", "Amaderado", "EDP", T263456, ["Romero", "Cedro", "Ámbar"], M.m6, { bottle: { 100: 720 }, hidden: true }), // hidden: CLIENT_CONFIRMED 2026-09-06 — no lo tienen en inventario
   P("b-man-in-black", "Bvlgari", "Bvlgari Man In Black", "men", "designer", "Amaderado", "EDP", T263456, ["Ron", "Cuero", "Especias"], M.m7, { bottle: { 100: 760 } }),
   P("sauvage-edt", "Dior", "Sauvage EDT", "men", "designer", "Fresco", "EDT", T223048, ["Bergamota", "Pimienta", "Ámbar"], M.m8, { bestseller: true, bottle: { 100: 650 } }),
   P("dylan-blue", "Versace", "Dylan Blue", "men", "designer", "Fresco", "EDP", T303869, ["Bergamota", "Agua", "Almizcle"], M.m1, { bottle: { 100: 620 } }),
   P("adg-profondo-edp", "Armani", "Acqua di Gio Profondo EDP", "men", "designer", "Fresco", "EDP", T263456, ["Marino", "Bergamota", "Madera"], M.m2, { bottle: { 100: 700 } }),
   P("1-million-lucky", "Paco Rabanne", "1 Million Lucky", "men", "designer", "Gourmand", "EDT", T263456, ["Ciruela", "Avellana", "Ámbar"], M.m3, { bottle: { 100: 780 } }),
   P("invictus-elixir", "Paco Rabanne", "Invictus Elixir", "men", "designer", "Fresco", "EDP", T243251, ["Acuático", "Ámbar", "Madera"], M.m1),
-  P("reserve-privee", "Armani", "Reserve Privée", "men", "designer", "Amaderado", "EDP", T263456, ["Madera", "Ámbar", "Vainilla"], M.m4),
+  P("reserve-privee", "Givenchy", "Gentleman Réserve Privée", "men", "designer", "Amaderado", "EDP", T263456, ["Madera", "Ámbar", "Vainilla"], M.m4), // brand/name: CLIENT_CONFIRMED + DERIVED_VALIDATED (foto) 2026-09-06 — no es Armani
   P("cedrat-boise-int", "Mancera", "Cedrat Boise Intense", "men", "niche", "Cítrico", "EDP", T263456, ["Limón", "Cedro", "Almizcle"], M.m5, { bottle: { 100: 820 } }),
   P("m-red-tobacco", "Mancera", "Mancera Red Tobacco", "men", "niche", "Especiado", "EDP", T263456, ["Tabaco", "Canela", "Ámbar"], M.m6, { bottle: { 100: 850 } }),
   P("tmw-parfum", "Azzaro", "The Most Wanted Parfum", "men", "designer", "Especiado", "Parfum", T243251, ["Manzana", "Toffee", "Ámbar"], M.m7, { bottle: { 100: 700 } }),

@@ -28,6 +28,7 @@ export type LegacyProductRecord = {
   bottle: Record<string, number> | null;
   bestseller?: boolean;
   discontinued?: boolean;
+  hidden?: boolean;
   img: string | null;
   imgBottle: string | null;
   imgSet: string | null;
@@ -64,6 +65,7 @@ export type CatalogProduct = {
   description: string;
   discontinued: boolean;
   bestseller: boolean;
+  hidden: boolean;
   imageUrl: string | null;
   decantImageUrl: string | null;
   bottleImageUrl: string | null;
@@ -104,6 +106,7 @@ export type LegacyCatalogFixture = {
       combo: number;
       duplicateIds: number;
       bottlePrices: number;
+      hidden: number;
     };
   };
   config: {

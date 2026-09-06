@@ -8,7 +8,7 @@ describe("wholesale catalog", () => {
   it("filters the legacy inventory by type", () => {
     expect(filterWholesaleCatalog(entries, "", "arab")).toHaveLength(67);
     expect(filterWholesaleCatalog(entries, "", "designer")).toHaveLength(22);
-    expect(filterWholesaleCatalog(entries, "", "niche")).toHaveLength(4);
+    expect(filterWholesaleCatalog(entries, "", "niche")).toHaveLength(3);
   });
 
   it("searches brand and fragrance names case-insensitively", () => {

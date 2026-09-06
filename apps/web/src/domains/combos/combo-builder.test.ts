@@ -12,7 +12,9 @@ describe("custom combo rules", () => {
   const eligible = listComboEligibleProducts(new LegacyCatalogRepository().list());
 
   it("offers active fragrances only", () => {
-    expect(eligible).toHaveLength(93);
+    // 95 visible fragrances (96 active minus hidden `bir-intense`) minus the
+    // 3 discontinued = 92 eligible for the combo builder.
+    expect(eligible).toHaveLength(92);
     expect(eligible.some((product) => product.type === "combo" || product.discontinued)).toBe(false);
   });
 
