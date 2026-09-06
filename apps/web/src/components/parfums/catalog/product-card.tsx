@@ -3,12 +3,14 @@
 import type { Route } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
 import {
   addParfumsCartLine,
   PARFUMS_CART_UPDATED_EVENT,
 } from "@/domains/carts/parfums-cart";
 import { isProductPurchasable } from "@/domains/catalog/availability";
 import { minimumPrice } from "@/domains/catalog/catalog-query";
+import { clampPurchaseQuantity } from "@/domains/catalog/product-purchase";
 import type { CatalogProduct } from "@/domains/catalog/types";
 import styles from "./catalog.module.css";
 
@@ -45,13 +47,14 @@ export function ProductCard({
     mode === "bottle" && product.bottlePrices
       ? product.bottlePrices
       : product.decantPrices;
+  const [quantity, setQuantity] = useState(1);
 
-  function addQuickVariant() {
+  function addSelection() {
     const group = mode === "bottle" ? "bottle" : "decant";
     const mutation = addParfumsCartLine(localStorage, {
       productId: product.legacyId,
       variantId: `${group}-${currentVariant.size}ml`,
-      quantity: 1,
+      quantity,
     });
     if (!mutation.persisted) {
       onAdded("No pudimos guardar tu selección. Revisa el almacenamiento del navegador.");
@@ -59,8 +62,9 @@ export function ProductCard({
     }
     window.dispatchEvent(new Event(PARFUMS_CART_UPDATED_EVENT));
     onAdded(
-      `${product.brand} ${product.name} · ${currentVariant.size} ml añadido`,
+      `${quantity} × ${product.brand} ${product.name} · ${currentVariant.size} ml añadido`,
     );
+    setQuantity(1);
   }
 
   if (!isProductPurchasable(product)) {
@@ -89,6 +93,7 @@ export function ProductCard({
               <span>Sin stock disponible</span>
               <strong data-price className={styles.soldOut}>Agotado</strong>
             </div>
+            <div className={styles.quantityRow} />
             <div className={styles.bottleSlot} />
           </div>
         </Link>
@@ -127,7 +132,6 @@ export function ProductCard({
         <span className={`${styles.tag} ${product.discontinued ? styles.discontinuedTag : ""}`}>
           {product.discontinued ? "Descontinuado" : product.tag}
         </span>
-        <button type="button" className={styles.quickAdd} onClick={addQuickVariant} aria-label={`Añadir ${product.name}, ${currentVariant.size} ml`} title="Añadir al carrito">+</button>
       </div>
       <div className={styles.cardBody}>
         <Link className={styles.identity} href={detailHref}>
@@ -137,6 +141,30 @@ export function ProductCard({
         <div className={styles.cardMeta}>
           <span>{mode === "bottle" ? `frasco ${currentVariant.size} ml` : "desde 3 ml"}</span>
           <strong data-price>{money(minimumPrice(currentPrices))}</strong>
+        </div>
+        <div className={styles.quantityRow} data-quantity-row>
+          <div className={styles.stepper} role="group" aria-label={`Cantidad de ${product.name}`}>
+            <button
+              type="button"
+              onClick={() => setQuantity((value) => clampPurchaseQuantity(value - 1))}
+              disabled={quantity === 1}
+              aria-label={`Reducir cantidad de ${product.name}`}
+            >
+              −
+            </button>
+            <output aria-label="Cantidad seleccionada">{quantity}</output>
+            <button
+              type="button"
+              onClick={() => setQuantity((value) => clampPurchaseQuantity(value + 1))}
+              disabled={quantity === 99}
+              aria-label={`Aumentar cantidad de ${product.name}`}
+            >
+              +
+            </button>
+          </div>
+          <button type="button" className={styles.addButton} onClick={addSelection} aria-label={`Añadir ${quantity} × ${product.name}, ${currentVariant.size} ml`}>
+            Añadir
+          </button>
         </div>
         <div className={styles.bottleSlot}>
           {crossSell ? (
