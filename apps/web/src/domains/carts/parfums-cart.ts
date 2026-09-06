@@ -9,6 +9,7 @@ export type ParfumsCartLine = {
 };
 
 type StorageReader = Pick<Storage, "getItem">;
+type StorageWriter = Pick<Storage, "getItem" | "setItem">;
 
 export function readParfumsCart(storage: StorageReader): ParfumsCartLine[] {
   try {
@@ -34,4 +35,22 @@ export function readParfumsCart(storage: StorageReader): ParfumsCartLine[] {
 
 export function countParfumsCart(lines: readonly ParfumsCartLine[]): number {
   return lines.reduce((total, line) => total + line.quantity, 0);
+}
+
+export function addParfumsCartLine(
+  storage: StorageWriter,
+  line: ParfumsCartLine,
+): ParfumsCartLine[] {
+  const lines = readParfumsCart(storage);
+  const existing = lines.find(
+    (candidate) =>
+      candidate.productId === line.productId &&
+      candidate.variantId === line.variantId,
+  );
+
+  if (existing) existing.quantity += line.quantity;
+  else lines.push({ ...line });
+
+  storage.setItem(CART_STORAGE_KEYS.parfums, JSON.stringify(lines));
+  return lines;
 }

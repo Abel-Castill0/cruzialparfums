@@ -10,23 +10,30 @@
 - Fase 1: Next.js 16 + TypeScript estricto aislado en `apps/web`.
 - Rutas Foundation `/`, `/parfums`, `/import` y `noindex` global implementados.
 - Contratos iniciales de unidad, sales mode, campañas y carritos separados creados.
+- Fase 2A: export determinista de 99 registros legacy con checksum/procedencia y gate.
+- `LegacyCatalogRepository` + `ProductMediaSource`; 188 assets no fueron duplicados.
+- Shell Parfums anidado: announcement, header, footer, búsqueda, carrito, menú y WhatsApp.
+- ProductCard y `/parfums/catalogo`: 96 fragancias, filtros, chips, quick-add y estados.
 
 ## CURRENT
-- Fase 1 cerrada y lista para revisión en Preview cuando exista proyecto Vercel.
+- Fase 2 detenida deliberadamente después de Catalog, según el alcance de esta ronda.
 
 ## NEXT
-- Fase 2: inventario visual y migración Parfums con paridad.
-- Solicitar decisiones P0 antes de publicar datos en Supabase/Preview público.
+- Fase 2: Product detail → Cart → Checkout → Combos → Finder → Mayorista → institucionales.
+- Mantener Preview `noindex`; validar datos comerciales antes de Supabase/cutover.
 
 ## BLOCKED
 - Publicación/cutover: falta confirmar cuentas, dominio y reglas comerciales P0.
 - Import: faltan catálogo, políticas y operación de campañas/pedidos.
-- 23 precios de frasco requieren validación antes de migrar como públicos.
+- 23 precios de frasco y composiciones combo son solo paridad legacy, no seed verificado.
+- Bootstrap/MFA/recuperación/roles admin continúan sin definición operativa.
 
 ## TESTED
 - `node scripts/frontend-gate.mjs`: PASS (12 páginas; header/footer/cards/assets/ARIA/PWA).
 - Browser portada: 320/390/430/768/1024/1440/1920 sin overflow horizontal.
 - Browser portada: sin errores/warnings de consola.
 - Catálogo: 99 total, 96 activos, 3 descontinuados, 0 IDs duplicados.
-- V2 `npm run check`: lint + typecheck + 3 tests + build PASS.
-- V2: 3 rutas estáticas, navegación validada y 7 anchos sin overflow.
+- V2: export check + lint + typecheck + 25 tests + build PASS.
+- Catálogo V2: 320/360/390/768/1024/1280/1440; 1/2/3/4 columnas, sin overflow.
+- Catálogo V2: precios sin wrap, alturas por fila uniformes, fondo blanco, 0 controles anidados.
+- Menú/búsqueda/carrito/filtros: foco, Escape, restauración y consola validados.

@@ -103,7 +103,7 @@ export function CartTrigger({ onOpen }: { onOpen: () => void }) {
   }, []);
 
   return (
-    <button className={styles.iconButton} type="button" onClick={onOpen} aria-label={`Abrir carrito, ${count} productos`} title="Carrito">
+    <button className={styles.iconButton} type="button" onClick={onOpen} aria-label={`Abrir carrito, ${count} ${count === 1 ? "producto" : "productos"}`} title="Carrito">
       <BagIcon />
       <span className={`${styles.cartCount} ${count > 0 ? styles.cartCountVisible : ""}`}>{count}</span>
     </button>

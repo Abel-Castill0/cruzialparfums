@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { CART_STORAGE_KEYS } from "../platform/contracts";
-import { countParfumsCart, readParfumsCart } from "./parfums-cart";
+import {
+  addParfumsCartLine,
+  countParfumsCart,
+  readParfumsCart,
+} from "./parfums-cart";
 
 describe("Parfums cart persistence boundary", () => {
   it("reads only the Parfums key and ignores malformed lines", () => {
@@ -28,5 +32,27 @@ describe("Parfums cart persistence boundary", () => {
 
   it("fails closed on corrupt persisted JSON", () => {
     expect(readParfumsCart({ getItem: () => "not json" })).toEqual([]);
+  });
+
+  it("adds only to the Parfums store", () => {
+    const values = new Map<string, string>();
+    const storage = {
+      getItem: (key: string) => values.get(key) ?? null,
+      setItem: (key: string, value: string) => values.set(key, value),
+    };
+
+    addParfumsCartLine(storage, {
+      productId: "khamrah-clasico",
+      variantId: "decant-3ml",
+      quantity: 1,
+    });
+    addParfumsCartLine(storage, {
+      productId: "khamrah-clasico",
+      variantId: "decant-3ml",
+      quantity: 1,
+    });
+
+    expect(values.has(CART_STORAGE_KEYS.import)).toBe(false);
+    expect(countParfumsCart(readParfumsCart(storage))).toBe(2);
   });
 });
