@@ -79,3 +79,15 @@
 - Los 23 precios de frasco y los demás precios de `assets/data.js` pueden mostrarse para
   paridad con `verificationStatus: legacy`; no quedan aprobados para carga automática a
   Supabase.
+
+## LEGACY_LEGAL_PENDING_REVIEW (por revisar humano/legal)
+
+- El sitio legacy declara en legal el uso de Google Analytics, Meta Pixel y herramientas
+  de IA. En V2 esas integraciones aún no existen en runtime; se omitieron de las páginas
+  de Privacidad/Términos para no publicar servicios inactivos. Si en cutover se introducen
+  (analytics, pixel o IA), reintroducir las cláusulas correspondientes tras confirmación.
+- Cláusulas de Términos legacy que requieren revisión legal antes de publicarse como
+  hecho operativo: tiempos de entrega ("mismo día / siguiente día hábil", "2-7 días"),
+  política de devoluciones (sin cambios una vez sellado; reemplazo solo por defecto o
+  envío incorrecto) y promoción de decant 2 ml. Se conservan por parity con copy legacy,
+  marcadas para reconfirmación.
