@@ -55,6 +55,9 @@ export function CheckoutExperience({
       variantLabel: formatParfumsVariant(line),
       quantity: line.quantity,
       subtotal: line.subtotal,
+      ...(line.product.comboContent
+        ? { contents: line.product.comboContent.perfumes }
+        : {}),
     })),
     total,
     customer,

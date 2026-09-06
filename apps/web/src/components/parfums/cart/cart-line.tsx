@@ -36,6 +36,9 @@ export function CartLine({
         <span className={styles.brand}>{product.brand}</span>
         <Link href={`/parfums/productos/${product.slug}` as Route} className={styles.name}>{product.name}</Link>
         <span className={styles.variant}>{formatParfumsVariant(line)} · {money(variant.price)}</span>
+        {product.comboContent ? (
+          <span className={styles.contents}>Incluye: {product.comboContent.perfumes.join(" · ")}</span>
+        ) : null}
         <div className={styles.actions}>
           <div className={styles.quantity} aria-label={`Cantidad de ${product.name}`}>
             <button type="button" disabled={quantity <= 1} onClick={() => onQuantity(quantity - 1)} aria-label={`Reducir cantidad de ${product.name}`}>−</button>

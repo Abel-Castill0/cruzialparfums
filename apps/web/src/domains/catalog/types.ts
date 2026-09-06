@@ -33,6 +33,21 @@ export type LegacyProductRecord = {
   imgSet: string | null;
 };
 
+export type LegacyComboContent = {
+  name: string;
+  desc: string;
+  perfumes: string[];
+  ml: number;
+  atomizaciones: string;
+  heroImage: string;
+  heroCta: string;
+};
+
+export type CatalogComboContent = Omit<LegacyComboContent, "heroImage"> & {
+  heroImageUrl: string | null;
+  verificationStatus: "client_provided_pending_reconfirmation";
+};
+
 export type CatalogProduct = {
   legacyId: string;
   slug: string;
@@ -56,6 +71,7 @@ export type CatalogProduct = {
   verificationStatus: LegacyVerificationStatus;
   bottlePricingVerificationStatus: LegacyVerificationStatus | null;
   comboCompositionVerificationStatus: ComboCompositionVerificationStatus;
+  comboContent: CatalogComboContent | null;
 };
 
 export type LegacyCatalogFixture = {
@@ -86,5 +102,6 @@ export type LegacyCatalogFixture = {
     SIZES?: number[];
     ATOMIZACIONES?: Record<string, string>;
   };
+  comboContents: Record<string, LegacyComboContent>;
   products: LegacyProductRecord[];
 };

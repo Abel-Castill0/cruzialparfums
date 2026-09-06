@@ -6,6 +6,7 @@ import {
 import type {
   CatalogProduct,
   LegacyCatalogFixture,
+  CatalogComboContent,
   LegacyProductRecord,
 } from "./types";
 
@@ -23,6 +24,17 @@ function toCatalogProduct(
   const bottleMedia = mediaSource.resolve(
     product.imgBottle ?? product.imgSet ?? product.img,
   );
+  const legacyComboContent = catalogFixture.comboContents[product.legacy_id];
+  const comboContent: CatalogComboContent | null = legacyComboContent ? {
+    name: legacyComboContent.name,
+    desc: legacyComboContent.desc,
+    perfumes: [...legacyComboContent.perfumes],
+    ml: legacyComboContent.ml,
+    atomizaciones: legacyComboContent.atomizaciones,
+    heroImageUrl: mediaSource.resolve(legacyComboContent.heroImage)?.url ?? null,
+    heroCta: legacyComboContent.heroCta,
+    verificationStatus: "client_provided_pending_reconfirmation",
+  } : null;
 
   return {
     legacyId: product.legacy_id,
@@ -48,6 +60,7 @@ function toCatalogProduct(
     bottlePricingVerificationStatus: product.bottlePricingVerificationStatus,
     comboCompositionVerificationStatus:
       product.comboCompositionVerificationStatus,
+    comboContent,
   };
 }
 
@@ -65,6 +78,10 @@ export class LegacyCatalogRepository {
 
   listFragrances(): CatalogProduct[] {
     return this.list().filter((product) => product.type !== "combo");
+  }
+
+  listCombos(): CatalogProduct[] {
+    return this.list().filter((product) => product.type === "combo");
   }
 
   findByLegacyId(legacyId: string): CatalogProduct | null {

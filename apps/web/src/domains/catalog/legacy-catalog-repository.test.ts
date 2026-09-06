@@ -25,4 +25,17 @@ describe("LegacyCatalogRepository", () => {
     expect(repository.list().every((product) => product.verificationStatus === "legacy"))
       .toBe(true);
   });
+
+  it("exposes exactly the three legacy combos without verifying their composition", () => {
+    const combos = repository.listCombos();
+    expect(combos.map((combo) => combo.name)).toEqual([
+      "Cuarteto Oriental",
+      "Vainilla Freak",
+      "Set Tulum",
+    ]);
+    expect(combos.every((combo) =>
+      combo.comboContent?.verificationStatus ===
+        "client_provided_pending_reconfirmation"
+    )).toBe(true);
+  });
 });

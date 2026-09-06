@@ -75,3 +75,25 @@ export function buildCheckoutMessage({
     "Continúo en WhatsApp para confirmar stock, envío y total final.",
   ].join("\n");
 }
+
+export function buildCustomComboMessage({
+  storeName,
+  size,
+  lines,
+  total,
+}: {
+  storeName: string;
+  size: number;
+  lines: readonly Pick<ParfumsCheckoutMessageLine, "brand" | "name" | "subtotal">[];
+  total: number;
+}) {
+  return [
+    `Hola ${storeName}. Quiero solicitar un combo de ${lines.length} fragancias en ${size} ml cada una:`,
+    "",
+    ...lines.map((line) => `- ${line.brand} ${line.name} — ${money(line.subtotal)}`),
+    "",
+    `TOTAL ESTIMADO: ${money(total)}`,
+    "",
+    "Continúo en WhatsApp para confirmar stock y total final.",
+  ].join("\n");
+}

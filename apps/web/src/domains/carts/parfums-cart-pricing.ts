@@ -45,8 +45,11 @@ export function calculateParfumsCartTotal(
 }
 
 export function formatParfumsVariant(
-  line: Pick<ResolvedParfumsCartLine, "variant">,
+  line: Pick<ResolvedParfumsCartLine, "variant" | "product">,
 ) {
+  if (line.product.type === "combo") {
+    return `Set · ${line.variant.size} ml c/u`;
+  }
   return line.variant.group === "bottle"
     ? `Frasco ${line.variant.size} ml`
     : `Decant ${line.variant.size} ml`;

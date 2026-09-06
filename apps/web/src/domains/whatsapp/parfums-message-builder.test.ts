@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildProductConsultationMessage,
   buildCheckoutMessage,
+  buildCustomComboMessage,
   buildWhatsAppUrl,
 } from "./parfums-message-builder";
 
@@ -44,5 +45,21 @@ describe("Parfums WhatsApp message builder", () => {
     expect(message).toContain("Continúo en WhatsApp para confirmar stock");
     expect(message.toLocaleLowerCase("es")).not.toContain("pedido confirmado");
     expect(decodeURIComponent(buildWhatsAppUrl("51924590921", message))).toContain("Ana Pérez");
+  });
+
+  it("encodes a custom combo from its selected catalog lines", () => {
+    const message = buildCustomComboMessage({
+      storeName: "Cruzial Parfums",
+      size: 3,
+      lines: [
+        { brand: "Lattafa", name: "Khamrah Clásico", subtotal: 12 },
+        { brand: "Lattafa", name: "Khamrah Qahwa", subtotal: 12 },
+        { brand: "Lattafa", name: "Khamrah Dukhan", subtotal: 12 },
+      ],
+      total: 36,
+    });
+    expect(message).toContain("combo de 3 fragancias en 3 ml cada una");
+    expect(message).toContain("TOTAL ESTIMADO: S/ 36.00");
+    expect(decodeURIComponent(buildWhatsAppUrl("51924590921", message))).toContain("Khamrah Clásico");
   });
 });

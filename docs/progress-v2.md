@@ -18,12 +18,15 @@
 - SEO de producto seguro: metadata única, canonical solo con origen explícito y JSON-LD sin precios.
 - Cart Parfums robusto: vacío, variantes, botella, cantidad, eliminar, total y persistencia aislada.
 - Checkout: revisión editable y mensaje central de WhatsApp sin afirmar pedido confirmado.
+- Combos: tres sets legacy, composición reconfirmable, variantes 3/5/10 ml y carrito real.
+- Combo Builder: catálogo elegible, búsqueda, selección 3–6, total único y consulta WhatsApp central.
+- Finder: cinco pasos, reglas deterministas sobre catálogo, resultados explicables y decant al carrito.
 
 ## CURRENT
-- Fase 2 Block 2 en curso; Product Detail y Cart/Checkout cerrados para continuar con Combos.
+- Fase 2 Block 2 en curso; Product Detail, Cart/Checkout y Combos/Finder cerrados.
 
 ## NEXT
-- Fase 2: Combos → Finder → Mayorista → institucionales.
+- Fase 2: Mayorista → institucionales → 404 → gate final de paridad.
 - Mantener Preview `noindex`; validar datos comerciales antes de Supabase/cutover.
 
 ## BLOCKED
@@ -37,7 +40,7 @@
 - Browser portada: 320/390/430/768/1024/1440/1920 sin overflow horizontal.
 - Browser portada: sin errores/warnings de consola.
 - Catálogo: 99 total, 96 activos, 3 descontinuados, 0 IDs duplicados.
-- V2: export check + lint + typecheck + 37 tests + build PASS.
+- V2: export check + lint + typecheck + 45 tests + build PASS.
 - Catálogo V2: 320/360/390/768/1024/1280/1440; 1/2/3/4 columnas, sin overflow.
 - Catálogo V2: precios sin wrap, alturas por fila uniformes, fondo blanco, 0 controles anidados.
 - Menú/búsqueda/carrito/filtros: foco, Escape, restauración y consola validados.
@@ -45,3 +48,7 @@
 - Producto normal, frasco, cantidad, carrito, discontinuado, 404, metadata y schema validados.
 - Cart: vacío/una/múltiples, variante/frasco, cantidad/eliminar y total derivados validados.
 - Checkout: mensaje codificado y 320/360/390/430/768/1024/1440/1920 sin overflow.
+- Combos: tres sets exactos, contenido legacy visible, builder 3/5/10 ml y WhatsApp validados.
+- Combos: 320/360/390/430/768/1024/1440/1920 sin overflow; CTA móvil separado de WhatsApp.
+- Finder: flujo completo, límites, ranking, carrito, foco, Tab, Escape y ausencia de lenguaje IA validados.
+- Finder: inicio y resultados en 320/360/390/430/768/1024/1440/1920 sin overflow.
