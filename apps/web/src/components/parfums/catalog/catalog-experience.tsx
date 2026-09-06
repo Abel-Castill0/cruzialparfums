@@ -9,6 +9,10 @@ import {
   type CatalogFilters,
   type CatalogSort,
 } from "@/domains/catalog/catalog-query";
+import {
+  BOTTLE_GIFT_MESSAGE,
+  isBottleGiftEligible,
+} from "@/domains/catalog/promotion-eligibility";
 import type { CatalogProduct } from "@/domains/catalog/types";
 import { SearchIcon } from "@/components/parfums/shell/shell-icons";
 import { ProductCard } from "./product-card";
@@ -175,7 +179,9 @@ export function CatalogExperience({ products, initialFilters }: { products: Cata
         <div className={styles.container}>
           <div className={styles.resultsTop}>
             <span>{results.length} {results.length === 1 ? "perfume" : "perfumes"}</span>
-            <span className={styles.giftNote}>🎁 Regalo: Decant de 2 ml de cualquier perfume árabe del catálogo, a tu elección.</span>
+            {isBottleGiftEligible(filters.format === "bottle" ? "bottle" : "decant") ? (
+              <span className={styles.giftNote} data-bottle-gift-note>{BOTTLE_GIFT_MESSAGE}</span>
+            ) : null}
           </div>
           {results.length > 0 ? (
             <div data-product-grid className={styles.productGrid}>

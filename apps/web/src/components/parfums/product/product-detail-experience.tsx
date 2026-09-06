@@ -16,6 +16,10 @@ import {
   resolveInitialProductVariant,
   type ProductPurchaseVariant,
 } from "@/domains/catalog/product-purchase";
+import {
+  BOTTLE_GIFT_MESSAGE,
+  isBottleGiftEligible,
+} from "@/domains/catalog/promotion-eligibility";
 import type { CatalogProduct } from "@/domains/catalog/types";
 import {
   buildProductConsultationMessage,
@@ -190,7 +194,9 @@ export function ProductDetailExperience({
                 <a className={styles.secondaryAction} target="_blank" rel="noopener noreferrer" href={buildWhatsAppUrl(whatsappNumber, consultation)}>Consultar <span aria-hidden="true">↗</span></a>
               </div>
               <p className={styles.actionNote}>Se añadirá esta presentación al carrito. Envío, disponibilidad y total final se confirman en WhatsApp; la web no procesa pagos.</p>
-              <p className={styles.giftNote}>🎁 Regalo: Decant de 2 ml de cualquier perfume árabe del catálogo, a tu elección.</p>
+              {isBottleGiftEligible(selected.group) ? (
+                <p className={styles.giftNote} data-bottle-gift-note>{BOTTLE_GIFT_MESSAGE}</p>
+              ) : null}
             </div>
           )}
 
