@@ -1,6 +1,59 @@
 # Cruzial Platform V2 — Client decisions
 
-Última actualización: 2026-09-06. Una entrada `UNKNOWN` nunca es una regla de negocio.
+Última actualización: 2026-09-06 (Fase 2.5 — Business Reconciliation). Una entrada
+`UNKNOWN` nunca es una regla de negocio.
+
+## CONFIRMED — 2026-09-06 (Fase 2.5, catálogo)
+
+Verificadas contra `assets/data.js` y, donde aplica, contra fotografía real del
+producto (`img/perfumes/webp/*`) antes de aplicarse. Provenance: `CLIENT_CONFIRMED`
++ `DERIVED_VALIDATED` (foto) donde se indica.
+
+- **`red-intensely`**: la etiqueta de la botella dice "NITRO Pour Homme red
+  intensely" (`img/perfumes/webp/Lattafa Red Intensely.webp`, nombre de archivo
+  heredado engañoso). Marca corregida `Lattafa` → `Dumont Paris`; nombre
+  `Red Intensely` → `Nitro Red Intensely`. No confundir con `nitro-red`
+  (Dumont Paris, "Nitro Red" sin "Intensely"), que ya era correcto y no cambia.
+  DERIVED_VALIDATED (foto) + CLIENT_CONFIRMED.
+- **`reserve-privee`**: la etiqueta de la botella dice "GENTLEMAN GIVENCHY"
+  (`img/perfumes/webp/Armani Reserve Privée.webp`, nombre de archivo heredado
+  engañoso). Marca corregida `Armani` → `Givenchy`; nombre
+  `Reserve Privée` → `Gentleman Réserve Privée`. `legacy_id` sin cambios.
+  DERIVED_VALIDATED (foto) + CLIENT_CONFIRMED.
+- **`purple-melancholia`** (Valentino, ya `CLIENT_CONFIRMED` 2026-08-30 en
+  marca): clasificación comercial `type` corregida `niche` → `designer`.
+  CLIENT_CONFIRMED 2026-09-06.
+- **`bir-intense`** (Burberry Brit Intense): el cliente confirmó que no lo
+  tiene en inventario. Se marca `hidden: true` (nuevo campo) y se retira de
+  catálogo, Finder, relacionados, búsqueda, mayorista y sitemap futuro. No se
+  borra el registro — se preserva procedencia legacy. CLIENT_CONFIRMED.
+- **`cdn-preciux-i`** (Armaf): la etiqueta de la botella dice
+  "club de nuit precieux I" — el campo `name` decía "Club de Nuit Precious I"
+  (error de ortografía, no de marca). Corregido a "Club de Nuit Precieux I"
+  para igualar la propia botella del producto. No es "Moudon Précieux" (marca
+  distinta) — ver UNKNOWN abajo sobre esa confusión. DERIVED_VALIDATED (foto).
+- **`amber-o-gold-e`** (Al Haramain): la etiqueta de la botella dice
+  "HARAMAIN AMBER OUD GOLD EDITION" — el campo `name` decía
+  "Amber Oud Gold Elixir" (coincide con el archivo de imagen existente, que ya
+  usaba "EDITION"). Corregido a "Amber Oud Gold Edition". Esto probablemente
+  explica la nota ambigua del cliente "Amber Gold Elixir es E[dition]" — ver
+  UNKNOWN abajo para la parte de esa nota que sigue sin poder confirmarse con
+  certeza. DERIVED_VALIDATED (foto + nombre de archivo).
+- **`supremacy-noi`** (Afnan, marca ya correcta): nombre expandido
+  `Supremacy NOI` → `Supremacy Not Only Intense` para igualar el nombre
+  completo que confirmó el cliente. CLIENT_CONFIRMED.
+- **`sceptre-malachite`** (Maison Alhambra): foto verificada contra
+  `img/perfumes/transparent/MAISON ALHAMBRA - SCEPTRE MALACHITE.webp` — la
+  etiqueta dice "SCEPTRE MALACHITE / MAISON ALHAMBRA", coincide exactamente
+  con marca/nombre ya almacenados. La foto NO está dañada ni es incorrecta;
+  no se modifica nada. La nota "cambiar la foto incorrecta" del cliente ya
+  estaba resuelta por una ronda anterior de reemplazo de fotos originales
+  (ver `img/perfumes/*.png` sin procesar, AGENTS.md).
+- **Envíos Parfums**: `Olva` no se usa en ningún runtime de V2 (`apps/web/src`
+  no lo menciona). El sitio legacy estático (`assets/data.js`,
+  `checkout.html`, `index.html`, etc.) sí lo menciona junto a Shalom; se
+  corrige `CRUZIAL_CONFIG.DELIVERY` en `assets/data.js` para mostrar solo
+  Shalom. Se añade un grep-gate en V2 para evitar que reaparezca.
 
 ## CONFIRMED
 
@@ -21,6 +74,37 @@
 - Legal de Import no hereda automáticamente las políticas de Parfums.
 - n8n y automatización masiva quedan fuera del núcleo V1.
 - Paleta compartida: negro, blanco/ivory y dorado; storefront editorial de lujo.
+
+## CONFIRMED — 2026-09-06 (Fase 2.5, reglas de negocio)
+
+- **Descontinuado ≠ agotado**: "los descontinuados ya no se fabrican pero
+  nosotros sí lo tenemos". `productionStatus: discontinued` no implica
+  `availabilityStatus: out_of_stock`. Un producto puede ser
+  `discontinued` + `available` y debe seguir siendo comprable. Ningún
+  producto actual tiene evidencia de `out_of_stock` real; no se inventa esa
+  cantidad.
+- **Promoción de regalo (decant 2 ml) solo aplica a frasco completo**: "la
+  promo que aparece en la página de producto solamente es por el frasco
+  completo". No es elegible con 3/5/10 ml. Regla centralizada en
+  `domains/catalog/promotion-eligibility.ts`, consumida por Product Detail y
+  el banner de catálogo — no duplicada.
+- **Product Card**: el cliente quiere elegir cantidad desde la card
+  (control `- N +`, mínimo 1, mismas reglas de merge que el carrito).
+- **Combo Builder**: el tamaño es por línea/fragancia, no global. Cambiar el
+  tamaño de una fragancia no debe afectar a las demás del mismo combo.
+- **Mayorista — nueva línea de producto confirmada**: 9PM, Mandarin Sky,
+  Khamrah Clásico, Khamrah Qahwa, Sublime, Yara Candy, Yara Pink.
+- **Mayorista — descuentos por categoría confirmados**: árabe −S/5,
+  designer −S/7, nicho −S/10, sobre 40 unidades. Ver UNKNOWN abajo sobre el
+  alcance exacto de "40 unidades" (combinadas vs. por SKU) — no se calcula
+  como regla contractual hasta confirmar el alcance.
+- **Import — adelanto**: cliente nuevo 50%, cliente antiguo 70%. Vive en
+  configuración comercial de Import, no de Parfums. La verificación de
+  "cliente antiguo" no puede depender solo de una declaración del navegador;
+  requiere `customerStatus: new | returning | unverified` sujeto a
+  validación server-side/admin cuando exista historial de pedidos.
+- **Import — envío**: "delivery privado" (`private_delivery`), no hereda
+  Shalom de Parfums. Shipping methods modelados por unidad de negocio.
 
 ## UNKNOWN
 
@@ -49,6 +133,30 @@
 - Reglas de archive/hard-delete, retención de pedidos, PII y audit logs.
 - Si los pedidos requieren fecha de nacimiento u otro dato adicional del comprador.
 - Políticas legales finales de Import y fecha de aprobación del cliente.
+- **UNKNOWN_CLIENT_CLARIFICATION — `1-million-lucky`**: el cliente pidió
+  mostrar "One Million", pero el producto real y su foto son "1 Million
+  **Lucky**" (Paco Rabanne), una fragancia distinta al "1 Million" base. No
+  se renombra: haría pasar la variante Lucky por el perfume base, que sería
+  una falsedad comercial. Pendiente: ¿el cliente se refiere a este registro,
+  a un producto "1 Million" base que no existe en el catálogo, o quiere que
+  el decant physical corresponda a otro frasco?
+- **UNKNOWN_CLIENT_CLARIFICATION — `cdn-preciux-i` / "Précieux"**: el
+  producto real es "Club de Nuit Precieux I" (Armaf); no hay ningún registro
+  "Moudon Précieux" en el catálogo. Se corrigió solo la ortografía de la
+  propia botella (Precious → Precieux); no se reasigna a otra marca por
+  fuzzy match.
+- **UNKNOWN_CLIENT_CLARIFICATION — "Amber Gold Elixir es E."**: se corrigió
+  el nombre a "Amber Oud Gold Edition" por evidencia fotográfica directa
+  (coincide con archivo de imagen ya existente), pero no puede confirmarse
+  con certeza si la nota "E." del cliente se refería además a marca,
+  categoría o género — no se infiere nada adicional sobre esos campos.
+- **UNKNOWN — fragmento "reserva para..."**: no existe ningún texto con ese
+  fragmento en el repositorio (grep sin resultados en HTML, `data.js` ni
+  docs). No se puede completar sin que el cliente aporte el texto completo.
+- **`wholesaleThresholdScope`**: si "40 unidades" del mayorista es
+  combinado por pedido o por SKU. No se implementa el motor de descuento
+  hasta confirmarse; la UI puede mencionar la modalidad de 40 unidades sin
+  fijar el alcance.
 - Eventos analytics, proveedor, consentimiento/cookies y criterio de éxito.
 - Emails de waitlist/campaña/pedido que realmente se usarán y dominio remitente.
 - Si se mantiene PWA/offline en V2.

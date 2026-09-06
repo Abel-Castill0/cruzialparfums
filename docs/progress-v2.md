@@ -22,11 +22,33 @@
 - Combo Builder: catálogo elegible, búsqueda, selección 3–6, total único y consulta WhatsApp central.
 - Finder: cinco pasos, reglas deterministas sobre catálogo, resultados explicables y decant al carrito.
 
-## CURRENT
-- Fase 2: Mayorista e institucionales (Nosotros / Contacto / Privacidad / Términos) y
-  custom 404 cerrados. Queda el gate final de parity de Parfums.
+## CURRENT — FASE 2.5: BUSINESS RECONCILIATION + STOREFRONT COMPLETION
+"Fase 2 parity PASS" ya NO se interpreta como cierre comercial de Parfums:
+llegaron nuevas decisiones de cliente (2026-09-06) que reabren contratos de
+datos y reglas ya dados por cerrados. Ver `docs/client-decisions.md` para el
+detalle CONFIRMED/UNKNOWN de esta fase. Capacidades técnicas de Fase 2
+(Product Detail, Cart, Checkout, Combos, Finder, Mayorista, Institucional,
+404) se conservan y se reconcilian, no se reescriben desde cero.
+
+Bloques de Fase 2.5 (orden de ejecución):
+1. Docs: reconciliar reglas (este commit).
+2. Datos de catálogo: `red-intensely`→Dumont Paris, `reserve-privee`→Givenchy,
+   `purple-melancholia`→designer, `bir-intense`→hidden, spelling de
+   `cdn-preciux-i`/`amber-o-gold-e`, Olva→Shalom.
+3. Descontinuado≠agotado (`productionStatus`/`availabilityStatus`).
+4. Promoción de regalo solo elegible en frasco completo (regla centralizada).
+5. Product Card: control de cantidad.
+6. Combo Builder: tamaño por línea, no global.
+7. Mayorista: nueva línea + política configurable por categoría.
+8. Gateway público `/`, Home real `/parfums`, ComboCarousel.
+9. Cruzial Import (storefront, consolidado, checkout/delivery propios).
+10. Admin gateway `/admin`.
+11. Actualizar `docs/supabase-schema-v2.md` con los contratos reconciliados.
+12. Segunda auditoría (Olva, "Más Deseados", promo en decants, copy viejo,
+    a11y, responsive, hydration, console errors).
 
 ## NEXT
+- Completar los bloques de Fase 2.5 pendientes en el orden anterior.
 - Gate final de parity de Parfums (global responsive/SEO/a11y) antes de Supabase/cutover.
 - Mantener Preview `noindex`; validar datos comerciales antes de Supabase/cutover.
 
@@ -35,6 +57,10 @@
 - Import: faltan catálogo, políticas y operación de campañas/pedidos.
 - 23 precios de frasco y composiciones combo son solo paridad legacy, no seed verificado.
 - Bootstrap/MFA/recuperación/roles admin continúan sin definición operativa.
+- `wholesaleThresholdScope` (40 unidades combinadas vs. por SKU): no confirmado.
+- Ambigüedades registradas 2026-09-06: `1-million-lucky` ("One Million"),
+  "Amber Gold Elixir es E.", fragmento "reserva para...". Ver
+  `docs/client-decisions.md` → UNKNOWN_CLIENT_CLARIFICATION.
 
 ## TESTED
 - `node scripts/frontend-gate.mjs`: PASS (12 páginas; header/footer/cards/assets/ARIA/PWA).
