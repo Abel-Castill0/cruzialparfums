@@ -109,6 +109,7 @@ export type LegacyCatalogFixture = {
   config: {
     WA_NUMBER?: string;
     INSTAGRAM_URL?: string;
+    INSTAGRAM_HANDLE?: string;
     STORE?: string;
     CITY?: string;
     SIZES?: number[];

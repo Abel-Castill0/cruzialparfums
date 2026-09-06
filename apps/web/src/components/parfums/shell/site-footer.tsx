@@ -7,7 +7,7 @@ import styles from "./parfums-shell.module.css";
 const columns = [
   { title: "Explorar", links: [["Catálogo", "/parfums/catalogo"], ["Arma tu combo", "/parfums/combos"], ["Mayorista", "/parfums/mayorista"]] },
   { title: "Ayuda", links: [["Nosotros", "/parfums/nosotros"], ["FAQ", "/parfums#faq"], ["Cómo comprar", "/parfums/nosotros#como-comprar"], ["Contacto", "/parfums/contacto"]] },
-  { title: "Legal", links: [["Privacidad", "/parfums/legal/privacidad"], ["Términos", "/parfums/legal/terminos"]] },
+  { title: "Legal", links: [["Privacidad", "/parfums/privacidad"], ["Términos", "/parfums/terminos"]] },
 ] as const;
 
 export function SiteFooter({ logoUrl, whatsappNumber, instagramUrl }: { logoUrl: string | null; whatsappNumber: string; instagramUrl: string }) {

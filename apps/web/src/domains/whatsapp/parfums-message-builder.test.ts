@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildProductConsultationMessage,
   buildCheckoutMessage,
+  buildContactMessage,
   buildCustomComboMessage,
   buildWhatsAppUrl,
   buildWholesaleInquiryMessage,
@@ -88,5 +89,20 @@ describe("Parfums WhatsApp message builder", () => {
 
     expect(message).toContain("Nombre: Ana");
     expect(message).not.toMatch(/respuesta en/i);
+  });
+
+  it("builds a contact message without claiming an order or a response time", () => {
+    const message = buildContactMessage({
+      storeName: "Cruzial Parfums",
+      name: "Lucía",
+      phone: "987 654 321",
+      topic: "Recomendación de fragancia",
+      message: "Busco algo amaderado para regalo.",
+    });
+
+    expect(message).toContain("Nombre: Lucía");
+    expect(message).toContain("Motivo: Recomendación de fragancia");
+    expect(message).not.toMatch(/respuesta en|en minutos/i);
+    expect(message).not.toMatch(/pedido confirmado|confirmado/i);
   });
 });

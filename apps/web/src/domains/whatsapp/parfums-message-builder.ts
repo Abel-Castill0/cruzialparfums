@@ -98,6 +98,31 @@ export function buildCustomComboMessage({
   ].join("\n");
 }
 
+export function buildContactMessage({
+  storeName,
+  name,
+  phone,
+  topic,
+  message,
+}: {
+  storeName: string;
+  name: string;
+  phone: string;
+  topic: string;
+  message: string;
+}) {
+  return [
+    `Hola ${storeName}. Quiero hacer una consulta.`,
+    "",
+    `Nombre: ${name.trim()}`,
+    `WhatsApp: ${phone.trim()}`,
+    `Motivo: ${topic.trim()}`,
+    `Mensaje: ${message.trim()}`,
+    "",
+    "Continúo en WhatsApp para que me orienten.",
+  ].join("\n");
+}
+
 export function buildWholesaleProductMessage({
   storeName,
   brand,
