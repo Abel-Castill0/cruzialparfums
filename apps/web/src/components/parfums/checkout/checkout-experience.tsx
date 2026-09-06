@@ -19,7 +19,7 @@ const deliveryOptions = [
   "Lima Metropolitana — Línea 1 (delivery gratis)",
   "Lima Metropolitana — Motorizado",
   "Lima Metropolitana — Contraentrega",
-  "Provincias — Agencia Shalom / Olva",
+  "Provincias — Agencia Shalom",
 ] as const;
 
 const emptyCustomer: ParfumsCheckoutCustomer = {

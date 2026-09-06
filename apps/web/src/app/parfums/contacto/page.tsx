@@ -55,7 +55,7 @@ export default function ContactoPage() {
             <div className={styles.contactCard}>
               <div className={styles.contactIcon} aria-hidden="true">✈</div>
               <h3>Envíos</h3>
-              <p>Delivery por la Línea 1 del tren eléctrico, motorizado para otras zonas de Lima y agencia Shalom u Olva a todo el Perú.</p>
+              <p>Delivery por la Línea 1 del tren eléctrico, motorizado para otras zonas de Lima y agencia Shalom a todo el Perú.</p>
               <span className={styles.contactValue}>Contraentrega en Lima</span>
             </div>
             <div className={styles.contactCard}>

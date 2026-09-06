@@ -65,7 +65,7 @@ const faqs = [
   },
   {
     q: "¿Cómo son los envíos?",
-    a: "Delivery por la Línea 1 del tren eléctrico en Lima, motorizado para otras zonas y envío a provincias por agencia Shalom u Olva.",
+    a: "Delivery por la Línea 1 del tren eléctrico en Lima, motorizado para otras zonas y envío a provincias por agencia Shalom.",
   },
   {
     q: "¿Qué presentación tienen los decants?",
