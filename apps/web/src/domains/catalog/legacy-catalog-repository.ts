@@ -73,4 +73,10 @@ export class LegacyCatalogRepository {
   getStorefrontConfig(): LegacyCatalogFixture["config"] {
     return catalogFixture.config;
   }
+
+  getBrandMedia() {
+    return {
+      logoUrl: this.mediaSource.resolve("img/logo-mark.png")?.url ?? null,
+    };
+  }
 }
