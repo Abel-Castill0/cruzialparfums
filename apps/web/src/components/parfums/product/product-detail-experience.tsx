@@ -16,6 +16,7 @@ import {
   resolveInitialProductVariant,
   type ProductPurchaseVariant,
 } from "@/domains/catalog/product-purchase";
+import { isProductPurchasable } from "@/domains/catalog/availability";
 import {
   BOTTLE_GIFT_MESSAGE,
   isBottleGiftEligible,
@@ -104,11 +105,12 @@ export function ProductDetailExperience({
 
   const decants = variants.filter((variant) => variant.group === "decant");
   const bottles = variants.filter((variant) => variant.group === "bottle");
+  const purchasable = isProductPurchasable(product);
 
   return (
     <>
       <section className={styles.productDetail} data-product-detail>
-        <div className={`${styles.productStage} ${product.discontinued ? styles.stageDiscontinued : ""}`} data-product-stage>
+        <div className={`${styles.productStage} ${!purchasable ? styles.stageDiscontinued : ""}`} data-product-stage>
           {stageImage ? (
             <div className={styles.imageFrame}>
               <Image
@@ -121,8 +123,8 @@ export function ProductDetailExperience({
               />
             </div>
           ) : null}
-          <span className={`${styles.tag} ${product.discontinued ? styles.discontinuedTag : ""}`}>
-            {product.discontinued ? "Descontinuado" : product.tag}
+          <span className={`${styles.tag} ${!purchasable ? styles.discontinuedTag : ""}`}>
+            {!purchasable ? "Agotado" : product.discontinued ? "Descontinuado" : product.tag}
           </span>
         </div>
 
@@ -134,11 +136,11 @@ export function ProductDetailExperience({
             <p className={styles.subline}>{genderLabel(product.gender)} · {product.family}</p>
           </div>
 
-          {product.discontinued ? (
-            <div className={styles.discontinuedBlock}>
+          {!purchasable ? (
+            <div className={styles.discontinuedBlock} data-out-of-stock-block>
               <div className={styles.discontinuedNotice}>
-                <strong>Este perfume fue descontinuado.</strong>
-                <p>Ya no se repone al agotar el stock restante. Consulta si aún queda una unidad o pide una alternativa similar.</p>
+                <strong>Este perfume está agotado.</strong>
+                <p>No queda stock disponible por ahora. Consulta si hay una alternativa similar.</p>
               </div>
               <a className={styles.secondaryAction} target="_blank" rel="noopener noreferrer" href={buildWhatsAppUrl(whatsappNumber, consultation)}>
                 Consultar disponibilidad <span aria-hidden="true">↗</span>
@@ -146,6 +148,12 @@ export function ProductDetailExperience({
             </div>
           ) : (
             <div className={styles.purchaseBlock} aria-label="Selecciona una presentación" data-purchase-block>
+              {product.discontinued ? (
+                <div className={styles.discontinuedNotice} data-discontinued-notice>
+                  <strong>Este perfume fue descontinuado.</strong>
+                  <p>Ya no se fabrica, pero seguimos teniendo unidades disponibles mientras dure el stock.</p>
+                </div>
+              ) : null}
               <div className={styles.variantSection}>
                 <p className={styles.sectionLabel}>Decant · 3 · 5 · 10 ml</p>
                 <div className={styles.sizeRow}>

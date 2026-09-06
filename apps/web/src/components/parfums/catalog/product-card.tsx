@@ -7,6 +7,7 @@ import {
   addParfumsCartLine,
   PARFUMS_CART_UPDATED_EVENT,
 } from "@/domains/carts/parfums-cart";
+import { isProductPurchasable } from "@/domains/catalog/availability";
 import { minimumPrice } from "@/domains/catalog/catalog-query";
 import type { CatalogProduct } from "@/domains/catalog/types";
 import styles from "./catalog.module.css";
@@ -62,7 +63,7 @@ export function ProductCard({
     );
   }
 
-  if (product.discontinued) {
+  if (!isProductPurchasable(product)) {
     return (
       <article data-product-card className={`${styles.productCard} ${styles.discontinued}`} id={product.slug}>
         <Link href={detailHref} className={styles.discontinuedLink}>
@@ -77,7 +78,7 @@ export function ProductCard({
                 loading={eager ? "eager" : "lazy"}
               />
             ) : null}
-            <span className={`${styles.tag} ${styles.discontinuedTag}`}>Descontinuado</span>
+            <span className={`${styles.tag} ${styles.discontinuedTag}`}>Agotado</span>
           </div>
           <div className={styles.cardBody}>
             <div className={styles.identity}>
@@ -85,7 +86,7 @@ export function ProductCard({
               <h2 className={styles.cardName}>{product.name}</h2>
             </div>
             <div className={styles.cardMeta}>
-              <span>Sin reposición</span>
+              <span>Sin stock disponible</span>
               <strong data-price className={styles.soldOut}>Agotado</strong>
             </div>
             <div className={styles.bottleSlot} />
@@ -123,7 +124,9 @@ export function ProductCard({
             />
           ) : null}
         </Link>
-        <span className={styles.tag}>{product.tag}</span>
+        <span className={`${styles.tag} ${product.discontinued ? styles.discontinuedTag : ""}`}>
+          {product.discontinued ? "Descontinuado" : product.tag}
+        </span>
         <button type="button" className={styles.quickAdd} onClick={addQuickVariant} aria-label={`Añadir ${product.name}, ${currentVariant.size} ml`} title="Añadir al carrito">+</button>
       </div>
       <div className={styles.cardBody}>

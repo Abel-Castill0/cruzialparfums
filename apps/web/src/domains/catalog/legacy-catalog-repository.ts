@@ -54,6 +54,7 @@ function toCatalogProduct(
     discontinued: Boolean(product.discontinued),
     bestseller: Boolean(product.bestseller),
     hidden: Boolean(product.hidden),
+    availabilityStatus: product.outOfStock ? "out_of_stock" : "available",
     imageUrl: media?.url ?? null,
     decantImageUrl: decantMedia?.url ?? null,
     bottleImageUrl: bottleMedia?.url ?? null,

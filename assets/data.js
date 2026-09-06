@@ -37,20 +37,24 @@ const M = {
 };
 
 /* Fábrica compacta de productos.
-   extra: { tag, desc, bottle, bestseller, discontinued, hidden }
+   extra: { tag, desc, bottle, bestseller, discontinued, hidden, outOfStock }
    Provenance del claim "100% original" en la desc por defecto: CLIENT_CONFIRMED
    (dueño del negocio, 2026-08-30) — cumple el requisito de CLAUDE.md de que un
    claim de autenticidad necesita confirmación explícita, igual que un precio.
    hidden: CLIENT_CONFIRMED — el cliente no tiene el producto en inventario.
    Se retira de catálogo/Finder/relacionados/búsqueda/mayorista/sitemap sin
    borrar el registro (se preserva legacy_id y procedencia). Distinto de
-   `discontinued` (ya no se fabrica, pero puede seguir habiendo unidades). */
+   `discontinued` (ya no se fabrica, pero puede seguir habiendo unidades).
+   outOfStock: CLIENT_CONFIRMED 2026-09-06 — "descontinuado" ≠ "agotado".
+   Solo bloquea la compra si hay evidencia real de que no queda stock; no se
+   marca por defecto en ningún producto descontinuado sin esa confirmación. */
 const P = (id, brand, name, gender, type, family, conc, price, notes, mood, extra) => ({
   id, brand, name, gender, type, family, conc, price, notes, mood,
   tag: extra && extra.tag || (type === "combo" ? "Combo" : type === "arab" ? "Árabe" : type === "niche" ? "Nicho" : "Designer"),
   desc: extra && extra.desc || `${name} — fragancia de la familia ${family.toLowerCase()}, concentración ${conc}. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.`,
   bottle: extra && extra.bottle || null,
   hidden: !!(extra && extra.hidden),
+  outOfStock: !!(extra && extra.outOfStock),
   /* UNVERIFIED — INTERNAL ONLY — DO NOT EXPOSE AS A COMMERCIAL CLAIM.
      bestseller: editorial/curatorial flag set by the team (products worth highlighting
      for scent profile, availability, margin, etc.) — NOT a claim of verified sales volume

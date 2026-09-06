@@ -6,6 +6,17 @@ export type ComboCompositionVerificationStatus =
 export type LegacyProductType = "arab" | "designer" | "niche" | "combo";
 export type LegacyGender = "women" | "men" | "unisex";
 
+/**
+ * Client-confirmed 2026-09-06 (see docs/client-decisions.md): "descontinuado"
+ * (production stopped) and "agotado" (no stock) are independent facts. A
+ * discontinued product can still be `available` and must remain purchasable.
+ * `discontinued` on the record models production status; `outOfStock` is the
+ * only thing that blocks a purchase. No current product has evidence of
+ * `outOfStock: true` — it exists so real inventory can be modeled later
+ * without inventing a number today.
+ */
+export type AvailabilityStatus = "available" | "out_of_stock";
+
 export type LegacyProductRecord = {
   id: string;
   legacy_id: string;
@@ -29,6 +40,7 @@ export type LegacyProductRecord = {
   bestseller?: boolean;
   discontinued?: boolean;
   hidden?: boolean;
+  outOfStock?: boolean;
   img: string | null;
   imgBottle: string | null;
   imgSet: string | null;
@@ -66,6 +78,7 @@ export type CatalogProduct = {
   discontinued: boolean;
   bestseller: boolean;
   hidden: boolean;
+  availabilityStatus: AvailabilityStatus;
   imageUrl: string | null;
   decantImageUrl: string | null;
   bottleImageUrl: string | null;
