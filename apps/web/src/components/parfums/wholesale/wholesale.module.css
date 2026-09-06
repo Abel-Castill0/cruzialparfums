@@ -106,9 +106,46 @@
 }
 
 .catalog,
-.steps {
+.steps,
+.policyLine {
   padding: clamp(58px, 8vw, 100px) 0;
   border-top: 1px solid rgba(26, 22, 18, 0.12);
+}
+
+.policyLine .sectionHead {
+  align-items: start;
+}
+
+.policyGrid {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  list-style: none;
+}
+
+.policyChip {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 16px;
+  border: 1px solid rgba(26, 22, 18, 0.14);
+  background: #fff;
+}
+
+.policyBrand {
+  color: #756f66;
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.policyName {
+  color: #1a1a1a;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 16px;
+  font-weight: 500;
 }
 
 .sectionHead {

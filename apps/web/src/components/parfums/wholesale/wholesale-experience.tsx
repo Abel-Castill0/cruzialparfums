@@ -9,6 +9,11 @@ import {
   type WholesaleFilter,
 } from "@/domains/wholesale/wholesale-catalog";
 import {
+  getWholesaleCategoryDiscount,
+  isWholesalePolicyEligible,
+  WHOLESALE_MIN_QUANTITY,
+} from "@/domains/wholesale/wholesale-policy";
+import {
   buildWholesaleInquiryMessage,
   buildWholesaleProductMessage,
   buildWhatsAppUrl,
@@ -40,6 +45,10 @@ export function WholesaleExperience({
   const visible = useMemo(
     () => filterWholesaleCatalog(entries, query, filter),
     [entries, query, filter],
+  );
+  const policyLine = useMemo(
+    () => entries.filter((entry) => isWholesalePolicyEligible(entry.product.legacyId)),
+    [entries],
   );
 
   function productUrl(entry: CatalogWholesaleProduct) {
@@ -85,6 +94,29 @@ export function WholesaleExperience({
         <div><span>◈</span><strong>Atención directa</strong><p>Cotización final por WhatsApp.</p></div>
         <div><span>✦</span><strong>Envío nacional</strong><p>Coordinación para todo el Perú.</p></div>
       </section>
+
+      {policyLine.length > 0 ? (
+        <section className={styles.policyLine} aria-labelledby="linea-mayorista-heading">
+          <div className={styles.sectionHead}>
+            <div>
+              <p className={styles.eyebrow}>Línea mayorista confirmada</p>
+              <h2 id="linea-mayorista-heading">Descuento por <em>categoría</em>.</h2>
+            </div>
+            <p>
+              Árabe −S/ {getWholesaleCategoryDiscount("arab")} · Designer −S/ {getWholesaleCategoryDiscount("designer")} · Nicho −S/ {getWholesaleCategoryDiscount("niche")} por unidad.
+              Existe una modalidad desde {WHOLESALE_MIN_QUANTITY} unidades — el detalle de cómo se cuentan se confirma al cotizar por WhatsApp.
+            </p>
+          </div>
+          <ul className={styles.policyGrid}>
+            {policyLine.map((entry) => (
+              <li key={entry.product.legacyId} className={styles.policyChip}>
+                <span className={styles.policyBrand}>{entry.product.brand}</span>
+                <span className={styles.policyName}>{entry.product.name}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       <section className={styles.catalog} id="tarifas">
         <div className={styles.sectionHead}>
