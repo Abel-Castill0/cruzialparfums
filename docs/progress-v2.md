@@ -23,10 +23,11 @@
 - Finder: cinco pasos, reglas deterministas sobre catálogo, resultados explicables y decant al carrito.
 
 ## CURRENT
-- Fase 2 Block 2 en curso; Product Detail, Cart/Checkout y Combos/Finder cerrados.
+- Fase 2: Mayorista e institucionales (Nosotros / Contacto / Privacidad / Términos) y
+  custom 404 cerrados. Queda el gate final de parity de Parfums.
 
 ## NEXT
-- Fase 2: Mayorista → institucionales → 404 → gate final de paridad.
+- Gate final de parity de Parfums (global responsive/SEO/a11y) antes de Supabase/cutover.
 - Mantener Preview `noindex`; validar datos comerciales antes de Supabase/cutover.
 
 ## BLOCKED
