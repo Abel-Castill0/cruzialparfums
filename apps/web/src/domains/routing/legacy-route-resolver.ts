@@ -16,8 +16,8 @@ const staticLegacyRoutes = new Map<string, string>([
   ["/mayorista.html", "/parfums/mayorista"],
   ["/nosotros.html", "/parfums/nosotros"],
   ["/contacto.html", "/parfums/contacto"],
-  ["/privacidad.html", "/parfums/legal/privacidad"],
-  ["/terminos.html", "/parfums/legal/terminos"],
+  ["/privacidad.html", "/parfums/privacidad"],
+  ["/terminos.html", "/parfums/terminos"],
 ]);
 
 function withQueryAndHash(destination: string, legacyUrl: URL): string {

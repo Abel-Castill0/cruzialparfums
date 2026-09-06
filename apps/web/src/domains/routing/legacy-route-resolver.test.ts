@@ -13,8 +13,8 @@ describe("legacy route compatibility contract", () => {
     ["/mayorista.html", "/parfums/mayorista"],
     ["/nosotros.html", "/parfums/nosotros"],
     ["/contacto.html", "/parfums/contacto"],
-    ["/privacidad.html", "/parfums/legal/privacidad"],
-    ["/terminos.html", "/parfums/legal/terminos"],
+    ["/privacidad.html", "/parfums/privacidad"],
+    ["/terminos.html", "/parfums/terminos"],
   ])("maps %s without a permanent redirect", (legacy, expected) => {
     expect(resolveLegacyRoute(legacy, products)).toEqual({
       destination: expected,
