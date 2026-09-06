@@ -1,0 +1,4474 @@
+{
+  "metadata": {
+    "notice": "AUTO-GENERATED — DO NOT EDIT",
+    "purpose": "legacy_visual_parity_only",
+    "futureSeedEligible": false,
+    "sourcePath": "assets/data.js",
+    "sourceSha256": "04e34fcedeb8166df30516aa8f3469fa9646cd135e874835f2826555f653a140",
+    "verificationStatus": "legacy",
+    "counts": {
+      "total": 99,
+      "active": 96,
+      "discontinued": 3,
+      "arab": 69,
+      "designer": 23,
+      "niche": 4,
+      "combo": 3,
+      "duplicateIds": 0,
+      "bottlePrices": 23
+    }
+  },
+  "config": {
+    "WA_NUMBER": "51924590921",
+    "PHONE_DISPLAY": "924 590 921",
+    "INSTAGRAM_HANDLE": "@Cruzial_parfum",
+    "INSTAGRAM_URL": "https://www.instagram.com/Cruzial_parfum/",
+    "STORE": "Cruzial Parfums",
+    "CITY": "Lima · Perú",
+    "SIZES": [
+      3,
+      5,
+      10
+    ],
+    "ATOMIZACIONES": {
+      "3": "50–60",
+      "5": "70–80",
+      "10": "140–150"
+    },
+    "ADELANTO": "50% de adelanto",
+    "DELIVERY": "Línea 1 del tren eléctrico · Motorizado · Contraentrega Lima · Shalom / Olva"
+  },
+  "wholesale": {
+    "khamrah-clasico": {
+      "unit": 130,
+      "m4": 122,
+      "m12": 114
+    },
+    "khamrah-qahwa": {
+      "unit": 130,
+      "m4": 122,
+      "m12": 114
+    },
+    "khamrah-dukhan": {
+      "unit": 130,
+      "m4": 122,
+      "m12": 114
+    },
+    "khamrah-waha": {
+      "unit": 145,
+      "m4": 137,
+      "m12": 129
+    },
+    "eclaire": {
+      "unit": 130,
+      "m4": 118,
+      "m12": 106
+    },
+    "eclaire-banoffi": {
+      "unit": 120,
+      "m4": 108,
+      "m12": 96
+    },
+    "eclaire-pistache": {
+      "unit": 120,
+      "m4": 108,
+      "m12": 96
+    },
+    "oud-for-glory": {
+      "unit": 130,
+      "m4": 118,
+      "m12": 106
+    },
+    "fakhar-black": {
+      "unit": 130,
+      "m4": 118,
+      "m12": 106
+    },
+    "angham": {
+      "unit": 130,
+      "m4": 118,
+      "m12": 106
+    },
+    "yara-pink": {
+      "unit": 120,
+      "m4": 108,
+      "m12": 96
+    },
+    "yara-candy": {
+      "unit": 120,
+      "m4": 108,
+      "m12": 96
+    },
+    "yara-elixir": {
+      "unit": 130,
+      "m4": 118,
+      "m12": 106
+    },
+    "honor-and-glory": {
+      "unit": 130,
+      "m4": 118,
+      "m12": 106
+    },
+    "sublime": {
+      "unit": 130,
+      "m4": 118,
+      "m12": 106
+    },
+    "red-intensely": {
+      "unit": 145,
+      "m4": 133,
+      "m12": 121
+    },
+    "mashrabya": {
+      "unit": 120,
+      "m4": 108,
+      "m12": 96
+    },
+    "mayar": {
+      "unit": 130,
+      "m4": 118,
+      "m12": 106
+    },
+    "mayar-cherry-i": {
+      "unit": 130,
+      "m4": 118,
+      "m12": 106
+    },
+    "yum-yum": {
+      "unit": 130,
+      "m4": 118,
+      "m12": 106
+    },
+    "qaed-al-fursan": {
+      "unit": 120,
+      "m4": 108,
+      "m12": 96
+    },
+    "odyssey-homme": {
+      "unit": 120,
+      "m4": 108,
+      "m12": 96
+    },
+    "homme-white": {
+      "unit": 120,
+      "m4": 108,
+      "m12": 96
+    },
+    "odyssey-spectra": {
+      "unit": 120,
+      "m4": 108,
+      "m12": 96
+    },
+    "odyssey-mega": {
+      "unit": 120,
+      "m4": 108,
+      "m12": 96
+    },
+    "odyssey-limoni": {
+      "unit": 120,
+      "m4": 108,
+      "m12": 96
+    },
+    "odyssey-artisto": {
+      "unit": 130,
+      "m4": 118,
+      "m12": 106
+    },
+    "zanzibar-limited-e": {
+      "unit": 120,
+      "m4": 108,
+      "m12": 96
+    },
+    "asad-clasico": {
+      "unit": 120,
+      "m4": 108,
+      "m12": 96
+    },
+    "asad-bourbon": {
+      "unit": 130,
+      "m4": 118,
+      "m12": 106
+    },
+    "9pm": {
+      "unit": 130,
+      "m4": 118,
+      "m12": 106
+    },
+    "9pm-rebel": {
+      "unit": 130,
+      "m4": 118,
+      "m12": 106
+    },
+    "9pm-elixir": {
+      "unit": 130,
+      "m4": 118,
+      "m12": 106
+    },
+    "9pm-night-out": {
+      "unit": 145,
+      "m4": 133,
+      "m12": 121
+    },
+    "9am": {
+      "unit": 120,
+      "m4": 108,
+      "m12": 96
+    },
+    "9am-dive": {
+      "unit": 160,
+      "m4": 148,
+      "m12": 136
+    },
+    "mandarin-sky": {
+      "unit": 125,
+      "m4": 113,
+      "m12": 101
+    },
+    "m-sky-elixir": {
+      "unit": 130,
+      "m4": 118,
+      "m12": 106
+    },
+    "m-sky-vintage": {
+      "unit": 125,
+      "m4": 113,
+      "m12": 101
+    },
+    "supremacy-colle": {
+      "unit": 130,
+      "m4": 118,
+      "m12": 106
+    },
+    "supremacy-noi": {
+      "unit": 125,
+      "m4": 113,
+      "m12": 101
+    },
+    "cdn-intense-man": {
+      "unit": 130,
+      "m4": 118,
+      "m12": 106
+    },
+    "cdn-urban-man-e": {
+      "unit": 160,
+      "m4": 148,
+      "m12": 136
+    },
+    "cdn-preciux-i": {
+      "unit": 185,
+      "m4": 173,
+      "m12": 161
+    },
+    "odyssey-aqua": {
+      "unit": 125,
+      "m4": 113,
+      "m12": 101
+    },
+    "hawas-ice": {
+      "unit": 155,
+      "m4": 143,
+      "m12": 131
+    },
+    "hawas-exotic": {
+      "unit": 165,
+      "m4": 153,
+      "m12": 141
+    },
+    "hawas-fire": {
+      "unit": 145,
+      "m4": 133,
+      "m12": 121
+    },
+    "hawas-kobra": {
+      "unit": 145,
+      "m4": 133,
+      "m12": 121
+    },
+    "hawas-verde": {
+      "unit": 155,
+      "m4": 143,
+      "m12": 131
+    },
+    "hawas-elixir": {
+      "unit": 145,
+      "m4": 133,
+      "m12": 121
+    },
+    "hawas-tropical": {
+      "unit": 145,
+      "m4": 133,
+      "m12": 121
+    },
+    "hawas-chrome": {
+      "unit": 155,
+      "m4": 143,
+      "m12": 131
+    },
+    "art-of-universe": {
+      "unit": 155,
+      "m4": 143,
+      "m12": 131
+    },
+    "vulcan-feu": {
+      "unit": 145,
+      "m4": 133,
+      "m12": 121
+    },
+    "amber-o-gold-e": {
+      "unit": 165,
+      "m4": 153,
+      "m12": 141
+    },
+    "ao-aqua-dubai": {
+      "unit": 165,
+      "m4": 153,
+      "m12": 141
+    },
+    "ao-dubai-night": {
+      "unit": 175,
+      "m4": 163,
+      "m12": 151
+    },
+    "nitro-red": {
+      "unit": 130,
+      "m4": 118,
+      "m12": 106
+    },
+    "liquid-brun": {
+      "unit": 130,
+      "m4": 118,
+      "m12": 106
+    },
+    "jean-lowe-vibe": {
+      "unit": 125,
+      "m4": 113,
+      "m12": 101
+    },
+    "jean-lowe-inmotel": {
+      "unit": 125,
+      "m4": 113,
+      "m12": 101
+    },
+    "rayhaan-italia": {
+      "unit": 125,
+      "m4": 113,
+      "m12": 101
+    },
+    "sceptre-malachite": {
+      "unit": 120,
+      "m4": 108,
+      "m12": 96
+    },
+    "bharara-king": {
+      "unit": 200,
+      "m4": 188,
+      "m12": 176
+    },
+    "lovely-cherry": {
+      "unit": 145,
+      "m4": 133,
+      "m12": 121
+    },
+    "bright-peach": {
+      "unit": 145,
+      "m4": 133,
+      "m12": 121
+    },
+    "eros-edt": {
+      "unit": 350,
+      "m4": 335,
+      "m12": 320
+    },
+    "eros-flame": {
+      "unit": 350,
+      "m4": 335,
+      "m12": 320
+    },
+    "sauvage-edt": {
+      "unit": 380,
+      "m4": 364,
+      "m12": 348
+    },
+    "dylan-blue": {
+      "unit": 370,
+      "m4": 354,
+      "m12": 338
+    },
+    "adg-profondo-edp": {
+      "unit": 420,
+      "m4": 404,
+      "m12": 388
+    },
+    "spicebomb-extreme": {
+      "unit": 420,
+      "m4": 404,
+      "m12": 388
+    },
+    "azzaro-tmw-edp": {
+      "unit": 350,
+      "m4": 335,
+      "m12": 320
+    },
+    "tmw-parfum": {
+      "unit": 420,
+      "m4": 404,
+      "m12": 388
+    },
+    "swy-intensely": {
+      "unit": 420,
+      "m4": 404,
+      "m12": 388
+    },
+    "swy-absolutely": {
+      "unit": 420,
+      "m4": 404,
+      "m12": 388
+    },
+    "le-male-elixir": {
+      "unit": 380,
+      "m4": 364,
+      "m12": 348
+    },
+    "le-beau-le-parfum": {
+      "unit": 420,
+      "m4": 404,
+      "m12": 388
+    },
+    "victory-elixir": {
+      "unit": 400,
+      "m4": 384,
+      "m12": 368
+    },
+    "invictus-elixir": {
+      "unit": 400,
+      "m4": 384,
+      "m12": 368
+    },
+    "1-million-lucky": {
+      "unit": 420,
+      "m4": 404,
+      "m12": 388
+    },
+    "purple-melancholia": {
+      "unit": 435,
+      "m4": 419,
+      "m12": 403
+    },
+    "bir-intense": {
+      "unit": 430,
+      "m4": 414,
+      "m12": 398
+    },
+    "b-man-in-black": {
+      "unit": 430,
+      "m4": 414,
+      "m12": 398
+    },
+    "cedrat-boise-int": {
+      "unit": 480,
+      "m4": 464,
+      "m12": 448
+    },
+    "m-red-tobacco": {
+      "unit": 480,
+      "m4": 464,
+      "m12": 448
+    },
+    "erba-pura": {
+      "unit": 750,
+      "m4": 730,
+      "m12": 710
+    },
+    "by-the-fireplace": {
+      "unit": 430,
+      "m4": 414,
+      "m12": 398
+    },
+    "nautica-voyage": {
+      "unit": 120,
+      "m4": 108,
+      "m12": 96
+    },
+    "212-edt": {
+      "unit": 350,
+      "m4": 335,
+      "m12": 320
+    },
+    "reserve-privee": {
+      "unit": 420,
+      "m4": 404,
+      "m12": 388
+    },
+    "paradise-garden": {
+      "unit": 380,
+      "m4": 364,
+      "m12": 348
+    }
+  },
+  "comboContents": {
+    "combo-cuarteto": {
+      "name": "Cuarteto Oriental",
+      "desc": "4 fragancias árabes seleccionadas por Cruzial",
+      "perfumes": [
+        "Khamrah Clásico",
+        "Khamrah Qahwa",
+        "Khamrah Dukhan",
+        "Khamrah Waha"
+      ],
+      "ml": 10,
+      "atomizaciones": "560–600",
+      "heroImage": "img/hero/promo-cuarteto.webp",
+      "heroCta": "Ver Cuarteto Oriental"
+    },
+    "combo-vainilla": {
+      "name": "Vainilla Freak",
+      "desc": "2 Yara + Eclaire — para amantes de la vainilla",
+      "perfumes": [
+        "Yara Pink",
+        "Yara Candy",
+        "Eclaire"
+      ],
+      "ml": 10,
+      "atomizaciones": "420–450",
+      "heroImage": "img/hero/promo-vainilla.webp",
+      "heroCta": "Ver Vainilla Freak"
+    },
+    "combo-tulum": {
+      "name": "Set Tulum",
+      "desc": "Fresco y playero — para clima cálido",
+      "perfumes": [
+        "Odyssey Aqua",
+        "Hawas Tropical",
+        "Supremacy Collection"
+      ],
+      "ml": 10,
+      "atomizaciones": "420–450",
+      "heroImage": "img/hero/promo-tulum.webp",
+      "heroCta": "Ver Set Tulum"
+    }
+  },
+  "giftRules": [
+    {
+      "min": 1,
+      "max": 3,
+      "freeDecants": 1,
+      "label": "1 DECANT 2 ML"
+    },
+    {
+      "min": 4,
+      "max": null,
+      "freeDecants": 2,
+      "label": "2 DECANTS 2 ML"
+    }
+  ],
+  "products": [
+    {
+      "id": "khamrah-clasico",
+      "brand": "Lattafa",
+      "name": "Khamrah Clásico",
+      "gender": "unisex",
+      "type": "arab",
+      "family": "Gourmand",
+      "conc": "EDP",
+      "price": {
+        "3": 12,
+        "5": 16,
+        "10": 26
+      },
+      "notes": [
+        "Vainilla",
+        "Canela",
+        "Ámbar"
+      ],
+      "mood": {
+        "a": "#f2e3bd",
+        "b": "#8a6d3b",
+        "liquid": "#d9a441",
+        "glow": "rgba(217,164,65,.45)"
+      },
+      "tag": "Árabe",
+      "desc": "Dulce, cálido y boozy: vainilla con canela sobre una base de ámbar. Un clásico de la perfumería árabe que se siente abrigador.",
+      "bottle": {
+        "100": 380
+      },
+      "bestseller": true,
+      "discontinued": false,
+      "img": "img/perfumes/webp/LATTAFA - KHAMRAH CLASICO (2).webp",
+      "imgBottle": "img/perfumes/webp/LATTAFA - KHAMRAH CLASICO.webp",
+      "imgSet": "img/perfumes/webp/LATTAFA - KHAMRAH CLASICO (2).webp",
+      "legacy_id": "khamrah-clasico",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": "legacy",
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "khamrah-qahwa",
+      "brand": "Lattafa",
+      "name": "Khamrah Qahwa",
+      "gender": "unisex",
+      "type": "arab",
+      "family": "Gourmand",
+      "conc": "EDP",
+      "price": {
+        "3": 12,
+        "5": 16,
+        "10": 26
+      },
+      "notes": [
+        "Café",
+        "Vainilla",
+        "Ámbar"
+      ],
+      "mood": {
+        "a": "#f5ecd6",
+        "b": "#7a5a2e",
+        "liquid": "#c9a25e",
+        "glow": "rgba(201,162,94,.4)"
+      },
+      "tag": "Árabe",
+      "desc": "Khamrah Qahwa — fragancia de la familia gourmand, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": null,
+      "bestseller": true,
+      "discontinued": false,
+      "img": "img/perfumes/webp/LATTAFA - KHAMRAH QAHWA (2).webp",
+      "imgBottle": "img/perfumes/webp/LATTAFA - KHAMRAH QAHWA.webp",
+      "imgSet": "img/perfumes/webp/LATTAFA - KHAMRAH QAHWA (2).webp",
+      "legacy_id": "khamrah-qahwa",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "khamrah-dukhan",
+      "brand": "Lattafa",
+      "name": "Khamrah Dukhan",
+      "gender": "unisex",
+      "type": "arab",
+      "family": "Especiado",
+      "conc": "EDP",
+      "price": {
+        "3": 12,
+        "5": 16,
+        "10": 26
+      },
+      "notes": [
+        "Incienso",
+        "Vainilla",
+        "Humo"
+      ],
+      "mood": {
+        "a": "#efe0c2",
+        "b": "#6b4d26",
+        "liquid": "#b8860b",
+        "glow": "rgba(184,134,11,.4)"
+      },
+      "tag": "Árabe",
+      "desc": "Khamrah Dukhan — fragancia de la familia especiado, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/webp/LATTAFA - KHAMRAH DUKHAN (2).webp",
+      "imgBottle": "img/perfumes/webp/LATTAFA - KHAMRAH DUKHAN.webp",
+      "imgSet": "img/perfumes/webp/LATTAFA - KHAMRAH DUKHAN (2).webp",
+      "legacy_id": "khamrah-dukhan",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "khamrah-waha",
+      "brand": "Lattafa",
+      "name": "Khamrah Waha",
+      "gender": "unisex",
+      "type": "arab",
+      "family": "Ámbar",
+      "conc": "EDP",
+      "price": {
+        "3": 13,
+        "5": 17,
+        "10": 28
+      },
+      "notes": [
+        "Ámbar",
+        "Coco",
+        "Vainilla"
+      ],
+      "mood": {
+        "a": "#f8eede",
+        "b": "#8f6a35",
+        "liquid": "#d4a24c",
+        "glow": "rgba(212,162,76,.45)"
+      },
+      "tag": "Árabe",
+      "desc": "Khamrah Waha — fragancia de la familia ámbar, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/webp/Khamrah Waha (2).webp",
+      "imgBottle": "img/perfumes/webp/Khamrah Waha.webp",
+      "imgSet": "img/perfumes/webp/Khamrah Waha (2).webp",
+      "legacy_id": "khamrah-waha",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "mashrabya",
+      "brand": "Lattafa",
+      "name": "Mashrabya",
+      "gender": "unisex",
+      "type": "arab",
+      "family": "Amaderado",
+      "conc": "EDP",
+      "price": {
+        "3": 11,
+        "5": 15,
+        "10": 24
+      },
+      "notes": [
+        "Madera",
+        "Rosas",
+        "Ámbar"
+      ],
+      "mood": {
+        "a": "#f3e8cd",
+        "b": "#5f4520",
+        "liquid": "#a87c32",
+        "glow": "rgba(168,124,50,.42)"
+      },
+      "tag": "Árabe",
+      "desc": "Mashrabya — fragancia de la familia amaderado, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/webp/Mashrabya (2).webp",
+      "imgBottle": "img/perfumes/webp/Mashrabya.webp",
+      "imgSet": "img/perfumes/webp/Mashrabya (2).webp",
+      "legacy_id": "mashrabya",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "asad-elixir",
+      "brand": "Lattafa",
+      "name": "Asad Elixir",
+      "gender": "men",
+      "type": "arab",
+      "family": "Especiado",
+      "conc": "EDP",
+      "price": {
+        "3": 12,
+        "5": 16,
+        "10": 26
+      },
+      "notes": [
+        "Especias",
+        "Café",
+        "Cuero"
+      ],
+      "mood": {
+        "a": "#f9f1e0",
+        "b": "#96713a",
+        "liquid": "#e0b253",
+        "glow": "rgba(224,178,83,.45)"
+      },
+      "tag": "Árabe",
+      "desc": "Asad Elixir — fragancia de la familia especiado, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": {
+        "100": 360
+      },
+      "bestseller": true,
+      "discontinued": false,
+      "img": "img/perfumes/webp/Asad Elixir (2).webp",
+      "imgBottle": "img/perfumes/webp/Asad Elixir.webp",
+      "imgSet": "img/perfumes/webp/Asad Elixir (2).webp",
+      "legacy_id": "asad-elixir",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": "legacy",
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "asad-clasico",
+      "brand": "Lattafa",
+      "name": "Asad Clásico",
+      "gender": "men",
+      "type": "arab",
+      "family": "Especiado",
+      "conc": "EDP",
+      "price": {
+        "3": 11,
+        "5": 15,
+        "10": 24
+      },
+      "notes": [
+        "Especias",
+        "Vainilla",
+        "Ámbar"
+      ],
+      "mood": {
+        "a": "#eddfc0",
+        "b": "#7a5f2e",
+        "liquid": "#c08a2e",
+        "glow": "rgba(192,138,46,.4)"
+      },
+      "tag": "Árabe",
+      "desc": "Asad Clásico — fragancia de la familia especiado, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/webp/LATTAFA - ASAD CLASICO (2).webp",
+      "imgBottle": "img/perfumes/webp/LATTAFA - ASAD CLASICO.webp",
+      "imgSet": "img/perfumes/webp/LATTAFA - ASAD CLASICO (2).webp",
+      "legacy_id": "asad-clasico",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "asad-bourbon",
+      "brand": "Lattafa",
+      "name": "Asad Bourbon",
+      "gender": "men",
+      "type": "arab",
+      "family": "Especiado",
+      "conc": "EDP",
+      "price": {
+        "3": 12,
+        "5": 16,
+        "10": 26
+      },
+      "notes": [
+        "Ron",
+        "Especias",
+        "Madera"
+      ],
+      "mood": {
+        "a": "#f7ecd3",
+        "b": "#8d6a30",
+        "liquid": "#d9b054",
+        "glow": "rgba(217,176,84,.4)"
+      },
+      "tag": "Árabe",
+      "desc": "Asad Bourbon — fragancia de la familia especiado, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/webp/LATTAFA - ASAD BOURBON (2).webp",
+      "imgBottle": "img/perfumes/webp/LATTAFA - ASAD BOURBON.webp",
+      "imgSet": "img/perfumes/webp/LATTAFA - ASAD BOURBON (2).webp",
+      "legacy_id": "asad-bourbon",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "zanzibar-limited-e",
+      "brand": "Lattafa",
+      "name": "Zanzibar Limited Edition",
+      "gender": "men",
+      "type": "arab",
+      "family": "Amaderado",
+      "conc": "EDP",
+      "price": {
+        "3": 11,
+        "5": 15,
+        "10": 24
+      },
+      "notes": [
+        "Madera",
+        "Ámbar",
+        "Especias"
+      ],
+      "mood": {
+        "a": "#f2e3bd",
+        "b": "#8a6d3b",
+        "liquid": "#d9a441",
+        "glow": "rgba(217,164,65,.45)"
+      },
+      "tag": "Árabe",
+      "desc": "Zanzibar Limited Edition — fragancia de la familia amaderado, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/webp/Zanzibar Limited Edition (2).webp",
+      "imgBottle": "img/perfumes/webp/Zanzibar Limited Edition.webp",
+      "imgSet": "img/perfumes/webp/Zanzibar Limited Edition (2).webp",
+      "legacy_id": "zanzibar-limited-e",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "yara-pink",
+      "brand": "Lattafa",
+      "name": "Yara Pink",
+      "gender": "women",
+      "type": "arab",
+      "family": "Floral",
+      "conc": "EDP",
+      "price": {
+        "3": 11,
+        "5": 15,
+        "10": 24
+      },
+      "notes": [
+        "Flores",
+        "Frutos rojos",
+        "Vainilla"
+      ],
+      "mood": {
+        "a": "#f5ecd6",
+        "b": "#7a5a2e",
+        "liquid": "#c9a25e",
+        "glow": "rgba(201,162,94,.4)"
+      },
+      "tag": "Árabe",
+      "desc": "Yara Pink — fragancia de la familia floral, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/LATTAFA - YARA PINK (2).png",
+      "imgBottle": "img/perfumes/LATTAFA - YARA PINK.png",
+      "imgSet": "img/perfumes/LATTAFA - YARA PINK (2).png",
+      "legacy_id": "yara-pink",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "yara-candy",
+      "brand": "Lattafa",
+      "name": "Yara Candy",
+      "gender": "women",
+      "type": "arab",
+      "family": "Gourmand",
+      "conc": "EDP",
+      "price": {
+        "3": 11,
+        "5": 15,
+        "10": 24
+      },
+      "notes": [
+        "Algodón dulce",
+        "Fresa",
+        "Vainilla"
+      ],
+      "mood": {
+        "a": "#efe0c2",
+        "b": "#6b4d26",
+        "liquid": "#b8860b",
+        "glow": "rgba(184,134,11,.4)"
+      },
+      "tag": "Árabe",
+      "desc": "Yara Candy — fragancia de la familia gourmand, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/webp/Yara Candy (2).webp",
+      "imgBottle": "img/perfumes/webp/Yara Candy.webp",
+      "imgSet": "img/perfumes/webp/Yara Candy (2).webp",
+      "legacy_id": "yara-candy",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "yara-elixir",
+      "brand": "Lattafa",
+      "name": "Yara Elixir",
+      "gender": "women",
+      "type": "arab",
+      "family": "Floral",
+      "conc": "EDP",
+      "price": {
+        "3": 12,
+        "5": 16,
+        "10": 26
+      },
+      "notes": [
+        "Flores blancas",
+        "Ámbar",
+        "Vainilla"
+      ],
+      "mood": {
+        "a": "#f8eede",
+        "b": "#8f6a35",
+        "liquid": "#d4a24c",
+        "glow": "rgba(212,162,76,.45)"
+      },
+      "tag": "Árabe",
+      "desc": "Yara Elixir — fragancia de la familia floral, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/webp/LATTAFA - YARA ELIXIR (2).webp",
+      "imgBottle": "img/perfumes/webp/LATTAFA - YARA ELIXIR.webp",
+      "imgSet": "img/perfumes/webp/LATTAFA - YARA ELIXIR (2).webp",
+      "legacy_id": "yara-elixir",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "mandarin-sky",
+      "brand": "Afnan",
+      "name": "Mandarin Sky",
+      "gender": "men",
+      "type": "arab",
+      "family": "Gourmand",
+      "conc": "EDP",
+      "price": {
+        "3": 12,
+        "5": 16,
+        "10": 26
+      },
+      "notes": [
+        "Mandarina",
+        "Vainilla",
+        "Caramelo"
+      ],
+      "mood": {
+        "a": "#f3e8cd",
+        "b": "#5f4520",
+        "liquid": "#a87c32",
+        "glow": "rgba(168,124,50,.42)"
+      },
+      "tag": "Árabe",
+      "desc": "Mandarin Sky — fragancia de la familia gourmand, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/webp/ARMAF - MANDARIN SKY (2).webp",
+      "imgBottle": "img/perfumes/webp/ARMAF - MANDARIN SKY.webp",
+      "imgSet": "img/perfumes/webp/ARMAF - MANDARIN SKY (2).webp",
+      "legacy_id": "mandarin-sky",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "m-sky-elixir",
+      "brand": "Afnan",
+      "name": "Mandarin Sky Elixir",
+      "gender": "men",
+      "type": "arab",
+      "family": "Gourmand",
+      "conc": "EDP",
+      "price": {
+        "3": 12,
+        "5": 16,
+        "10": 26
+      },
+      "notes": [
+        "Mandarina",
+        "Ámbar",
+        "Cacao"
+      ],
+      "mood": {
+        "a": "#f9f1e0",
+        "b": "#96713a",
+        "liquid": "#e0b253",
+        "glow": "rgba(224,178,83,.45)"
+      },
+      "tag": "Árabe",
+      "desc": "Mandarin Sky Elixir — fragancia de la familia gourmand, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/webp/Mandarin Sky Elixir (2).webp",
+      "imgBottle": "img/perfumes/webp/Mandarin Sky Elixir.webp",
+      "imgSet": "img/perfumes/webp/Mandarin Sky Elixir (2).webp",
+      "legacy_id": "m-sky-elixir",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "m-sky-vintage",
+      "brand": "Afnan",
+      "name": "Mandarin Sky Vintage",
+      "gender": "men",
+      "type": "arab",
+      "family": "Amaderado",
+      "conc": "EDP",
+      "price": {
+        "3": 12,
+        "5": 16,
+        "10": 26
+      },
+      "notes": [
+        "Madera",
+        "Ámbar",
+        "Cítricos"
+      ],
+      "mood": {
+        "a": "#eddfc0",
+        "b": "#7a5f2e",
+        "liquid": "#c08a2e",
+        "glow": "rgba(192,138,46,.4)"
+      },
+      "tag": "Árabe",
+      "desc": "Mandarin Sky Vintage — fragancia de la familia amaderado, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/webp/Mandarin Sky Vintage (2).webp",
+      "imgBottle": "img/perfumes/webp/Mandarin Sky Vintage.webp",
+      "imgSet": "img/perfumes/webp/Mandarin Sky Vintage (2).webp",
+      "legacy_id": "m-sky-vintage",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "odyssey-aqua",
+      "brand": "Lattafa",
+      "name": "Odyssey Aqua",
+      "gender": "men",
+      "type": "arab",
+      "family": "Fresco",
+      "conc": "EDP",
+      "price": {
+        "3": 12,
+        "5": 16,
+        "10": 26
+      },
+      "notes": [
+        "Acuático",
+        "Cítricos",
+        "Madera"
+      ],
+      "mood": {
+        "a": "#f7ecd3",
+        "b": "#8d6a30",
+        "liquid": "#d9b054",
+        "glow": "rgba(217,176,84,.4)"
+      },
+      "tag": "Árabe",
+      "desc": "Odyssey Aqua — fragancia de la familia fresco, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/webp/ARMAF - ODYSSEY AQUA (2).webp",
+      "imgBottle": "img/perfumes/webp/ARMAF - ODYSSEY AQUA.webp",
+      "imgSet": "img/perfumes/webp/ARMAF - ODYSSEY AQUA (2).webp",
+      "legacy_id": "odyssey-aqua",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "odyssey-homme",
+      "brand": "Lattafa",
+      "name": "Odyssey Homme",
+      "gender": "men",
+      "type": "arab",
+      "family": "Fresco",
+      "conc": "EDP",
+      "price": {
+        "3": 11,
+        "5": 15,
+        "10": 24
+      },
+      "notes": [
+        "Lavanda",
+        "Ámbar",
+        "Madera"
+      ],
+      "mood": {
+        "a": "#f2e3bd",
+        "b": "#8a6d3b",
+        "liquid": "#d9a441",
+        "glow": "rgba(217,164,65,.45)"
+      },
+      "tag": "Árabe",
+      "desc": "Odyssey Homme — fragancia de la familia fresco, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/webp/Lattafa Odyssey Homme (2).webp",
+      "imgBottle": "img/perfumes/webp/Lattafa Odyssey Homme.webp",
+      "imgSet": "img/perfumes/webp/Lattafa Odyssey Homme (2).webp",
+      "legacy_id": "odyssey-homme",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "homme-white",
+      "brand": "Lattafa",
+      "name": "Homme White",
+      "gender": "men",
+      "type": "arab",
+      "family": "Cítrico",
+      "conc": "EDP",
+      "price": {
+        "3": 11,
+        "5": 15,
+        "10": 24
+      },
+      "notes": [
+        "Bergamota",
+        "Especias",
+        "Ámbar"
+      ],
+      "mood": {
+        "a": "#f5ecd6",
+        "b": "#7a5a2e",
+        "liquid": "#c9a25e",
+        "glow": "rgba(201,162,94,.4)"
+      },
+      "tag": "Árabe",
+      "desc": "Homme White — fragancia de la familia cítrico, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/webp/Lattafa Homme White (2).webp",
+      "imgBottle": "img/perfumes/webp/Lattafa Homme White.webp",
+      "imgSet": "img/perfumes/webp/Lattafa Homme White (2).webp",
+      "legacy_id": "homme-white",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "odyssey-spectra",
+      "brand": "Lattafa",
+      "name": "Odyssey Spectra",
+      "gender": "men",
+      "type": "arab",
+      "family": "Fresco",
+      "conc": "EDP",
+      "price": {
+        "3": 11,
+        "5": 15,
+        "10": 24
+      },
+      "notes": [
+        "Acuático",
+        "Jazmín",
+        "Ámbar"
+      ],
+      "mood": {
+        "a": "#efe0c2",
+        "b": "#6b4d26",
+        "liquid": "#b8860b",
+        "glow": "rgba(184,134,11,.4)"
+      },
+      "tag": "Árabe",
+      "desc": "Odyssey Spectra — fragancia de la familia fresco, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/webp/Lattafa Odyssey Spectra (2).webp",
+      "imgBottle": "img/perfumes/webp/Lattafa Odyssey Spectra.webp",
+      "imgSet": "img/perfumes/webp/Lattafa Odyssey Spectra (2).webp",
+      "legacy_id": "odyssey-spectra",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "odyssey-mega",
+      "brand": "Lattafa",
+      "name": "Odyssey Mega",
+      "gender": "men",
+      "type": "arab",
+      "family": "Amaderado",
+      "conc": "EDP",
+      "price": {
+        "3": 11,
+        "5": 15,
+        "10": 24
+      },
+      "notes": [
+        "Madera",
+        "Ámbar",
+        "Cítricos"
+      ],
+      "mood": {
+        "a": "#f8eede",
+        "b": "#8f6a35",
+        "liquid": "#d4a24c",
+        "glow": "rgba(212,162,76,.45)"
+      },
+      "tag": "Árabe",
+      "desc": "Odyssey Mega — fragancia de la familia amaderado, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/webp/Lattafa Odyssey Mega (2).webp",
+      "imgBottle": "img/perfumes/webp/Lattafa Odyssey Mega.webp",
+      "imgSet": "img/perfumes/webp/Lattafa Odyssey Mega (2).webp",
+      "legacy_id": "odyssey-mega",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "odyssey-limoni",
+      "brand": "Lattafa",
+      "name": "Odyssey Limoni",
+      "gender": "men",
+      "type": "arab",
+      "family": "Cítrico",
+      "conc": "EDP",
+      "price": {
+        "3": 11,
+        "5": 15,
+        "10": 24
+      },
+      "notes": [
+        "Limón",
+        "Cedro",
+        "Menta"
+      ],
+      "mood": {
+        "a": "#f3e8cd",
+        "b": "#5f4520",
+        "liquid": "#a87c32",
+        "glow": "rgba(168,124,50,.42)"
+      },
+      "tag": "Árabe",
+      "desc": "Odyssey Limoni — fragancia de la familia cítrico, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/webp/Lattafa Odyssey Limoni (2).webp",
+      "imgBottle": "img/perfumes/webp/Lattafa Odyssey Limoni.webp",
+      "imgSet": "img/perfumes/webp/Lattafa Odyssey Limoni (2).webp",
+      "legacy_id": "odyssey-limoni",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "odyssey-artisto",
+      "brand": "Lattafa",
+      "name": "Odyssey Artisto",
+      "gender": "men",
+      "type": "arab",
+      "family": "Especiado",
+      "conc": "EDP",
+      "price": {
+        "3": 12,
+        "5": 16,
+        "10": 26
+      },
+      "notes": [
+        "Especias",
+        "Cuero",
+        "Ámbar"
+      ],
+      "mood": {
+        "a": "#f9f1e0",
+        "b": "#96713a",
+        "liquid": "#e0b253",
+        "glow": "rgba(224,178,83,.45)"
+      },
+      "tag": "Árabe",
+      "desc": "Odyssey Artisto — fragancia de la familia especiado, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/webp/Lattafa Odyssey Artisto (2).webp",
+      "imgBottle": "img/perfumes/webp/Lattafa Odyssey Artisto.webp",
+      "imgSet": "img/perfumes/webp/Lattafa Odyssey Artisto (2).webp",
+      "legacy_id": "odyssey-artisto",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "mayar",
+      "brand": "Lattafa",
+      "name": "Mayar",
+      "gender": "women",
+      "type": "arab",
+      "family": "Floral",
+      "conc": "EDP",
+      "price": {
+        "3": 12,
+        "5": 16,
+        "10": 26
+      },
+      "notes": [
+        "Flores blancas",
+        "Ámbar",
+        "Vainilla"
+      ],
+      "mood": {
+        "a": "#eddfc0",
+        "b": "#7a5f2e",
+        "liquid": "#c08a2e",
+        "glow": "rgba(192,138,46,.4)"
+      },
+      "tag": "Árabe",
+      "desc": "Mayar — fragancia de la familia floral, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/Lattafa Mayar (2).png",
+      "imgBottle": "img/perfumes/Lattafa Mayar.png",
+      "imgSet": "img/perfumes/Lattafa Mayar (2).png",
+      "legacy_id": "mayar",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "mayar-cherry-i",
+      "brand": "Lattafa",
+      "name": "Mayar Cherry Intense",
+      "gender": "women",
+      "type": "arab",
+      "family": "Gourmand",
+      "conc": "EDP",
+      "price": {
+        "3": 12,
+        "5": 16,
+        "10": 26
+      },
+      "notes": [
+        "Cereza",
+        "Flores",
+        "Vainilla"
+      ],
+      "mood": {
+        "a": "#f7ecd3",
+        "b": "#8d6a30",
+        "liquid": "#d9b054",
+        "glow": "rgba(217,176,84,.4)"
+      },
+      "tag": "Árabe",
+      "desc": "Mayar Cherry Intense — fragancia de la familia gourmand, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/webp/Lattafa Mayar Cherry Intense (2).webp",
+      "imgBottle": "img/perfumes/webp/Lattafa Mayar Cherry Intense.webp",
+      "imgSet": "img/perfumes/webp/Lattafa Mayar Cherry Intense (2).webp",
+      "legacy_id": "mayar-cherry-i",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "sublime",
+      "brand": "Lattafa",
+      "name": "Sublime",
+      "gender": "women",
+      "type": "arab",
+      "family": "Floral",
+      "conc": "EDP",
+      "price": {
+        "3": 12,
+        "5": 16,
+        "10": 26
+      },
+      "notes": [
+        "Flores",
+        "Ámbar",
+        "Almizcle"
+      ],
+      "mood": {
+        "a": "#f2e3bd",
+        "b": "#8a6d3b",
+        "liquid": "#d9a441",
+        "glow": "rgba(217,164,65,.45)"
+      },
+      "tag": "Árabe",
+      "desc": "Sublime — fragancia de la familia floral, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/webp/LATTAFA - SUBLIME (2).webp",
+      "imgBottle": "img/perfumes/webp/LATTAFA - SUBLIME.webp",
+      "imgSet": "img/perfumes/webp/LATTAFA - SUBLIME (2).webp",
+      "legacy_id": "sublime",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "oud-for-glory",
+      "brand": "Lattafa",
+      "name": "Oud For Glory",
+      "gender": "men",
+      "type": "arab",
+      "family": "Amaderado",
+      "conc": "EDP",
+      "price": {
+        "3": 12,
+        "5": 16,
+        "10": 26
+      },
+      "notes": [
+        "Oud",
+        "Especias",
+        "Ámbar"
+      ],
+      "mood": {
+        "a": "#f5ecd6",
+        "b": "#7a5a2e",
+        "liquid": "#c9a25e",
+        "glow": "rgba(201,162,94,.4)"
+      },
+      "tag": "Árabe",
+      "desc": "Oud For Glory — fragancia de la familia amaderado, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/webp/Oud For Glory (2).webp",
+      "imgBottle": "img/perfumes/webp/Oud For Glory.webp",
+      "imgSet": "img/perfumes/webp/Oud For Glory (2).webp",
+      "legacy_id": "oud-for-glory",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "honor-and-glory",
+      "brand": "Lattafa",
+      "name": "Honor And Glory",
+      "gender": "men",
+      "type": "arab",
+      "family": "Gourmand",
+      "conc": "EDP",
+      "price": {
+        "3": 12,
+        "5": 16,
+        "10": 26
+      },
+      "notes": [
+        "Piña",
+        "Caramelo",
+        "Especias"
+      ],
+      "mood": {
+        "a": "#efe0c2",
+        "b": "#6b4d26",
+        "liquid": "#b8860b",
+        "glow": "rgba(184,134,11,.4)"
+      },
+      "tag": "Árabe",
+      "desc": "Honor And Glory — fragancia de la familia gourmand, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/webp/LATTAFA - HONOR AND GLORY (2).webp",
+      "imgBottle": "img/perfumes/webp/LATTAFA - HONOR AND GLORY.webp",
+      "imgSet": "img/perfumes/webp/LATTAFA - HONOR AND GLORY (2).webp",
+      "legacy_id": "honor-and-glory",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "eclaire",
+      "brand": "Lattafa",
+      "name": "Eclaire",
+      "gender": "women",
+      "type": "arab",
+      "family": "Gourmand",
+      "conc": "EDP",
+      "price": {
+        "3": 12,
+        "5": 16,
+        "10": 26
+      },
+      "notes": [
+        "Vainilla",
+        "Caramelo",
+        "Ámbar"
+      ],
+      "mood": {
+        "a": "#f8eede",
+        "b": "#8f6a35",
+        "liquid": "#d4a24c",
+        "glow": "rgba(212,162,76,.45)"
+      },
+      "tag": "Árabe",
+      "desc": "Eclaire — fragancia de la familia gourmand, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": null,
+      "bestseller": true,
+      "discontinued": false,
+      "img": "img/perfumes/LATTAFA - ECLAIRE (2).png",
+      "imgBottle": "img/perfumes/LATTAFA - ECLAIRE.png",
+      "imgSet": "img/perfumes/LATTAFA - ECLAIRE (2).png",
+      "legacy_id": "eclaire",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "eclaire-banoffi",
+      "brand": "Lattafa",
+      "name": "Eclaire Banoffi",
+      "gender": "women",
+      "type": "arab",
+      "family": "Gourmand",
+      "conc": "EDP",
+      "price": {
+        "3": 11,
+        "5": 15,
+        "10": 24
+      },
+      "notes": [
+        "Plátano",
+        "Caramelo",
+        "Vainilla"
+      ],
+      "mood": {
+        "a": "#f3e8cd",
+        "b": "#5f4520",
+        "liquid": "#a87c32",
+        "glow": "rgba(168,124,50,.42)"
+      },
+      "tag": "Árabe",
+      "desc": "Eclaire Banoffi — fragancia de la familia gourmand, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/webp/Lattafa Eclaire Banoffi (2).webp",
+      "imgBottle": "img/perfumes/webp/Lattafa Eclaire Banoffi.webp",
+      "imgSet": "img/perfumes/webp/Lattafa Eclaire Banoffi (2).webp",
+      "legacy_id": "eclaire-banoffi",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "eclaire-pistache",
+      "brand": "Lattafa",
+      "name": "Eclaire Pistache",
+      "gender": "women",
+      "type": "arab",
+      "family": "Gourmand",
+      "conc": "EDP",
+      "price": {
+        "3": 11,
+        "5": 15,
+        "10": 24
+      },
+      "notes": [
+        "Pistacho",
+        "Vainilla",
+        "Almendra"
+      ],
+      "mood": {
+        "a": "#f9f1e0",
+        "b": "#96713a",
+        "liquid": "#e0b253",
+        "glow": "rgba(224,178,83,.45)"
+      },
+      "tag": "Árabe",
+      "desc": "Eclaire Pistache — fragancia de la familia gourmand, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/webp/Lattafa Eclaire Pistache (2).webp",
+      "imgBottle": "img/perfumes/webp/Lattafa Eclaire Pistache.webp",
+      "imgSet": "img/perfumes/webp/Lattafa Eclaire Pistache (2).webp",
+      "legacy_id": "eclaire-pistache",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "yum-yum",
+      "brand": "Lattafa",
+      "name": "Yum Yum",
+      "gender": "women",
+      "type": "arab",
+      "family": "Gourmand",
+      "conc": "EDP",
+      "price": {
+        "3": 12,
+        "5": 16,
+        "10": 26
+      },
+      "notes": [
+        "Praliné",
+        "Flores",
+        "Vainilla"
+      ],
+      "mood": {
+        "a": "#eddfc0",
+        "b": "#7a5f2e",
+        "liquid": "#c08a2e",
+        "glow": "rgba(192,138,46,.4)"
+      },
+      "tag": "Árabe",
+      "desc": "Yum Yum — fragancia de la familia gourmand, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/Lattafa Yum Yum (2).png",
+      "imgBottle": "img/perfumes/Lattafa Yum Yum.png",
+      "imgSet": "img/perfumes/Lattafa Yum Yum (2).png",
+      "legacy_id": "yum-yum",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "angham",
+      "brand": "Lattafa",
+      "name": "Angham",
+      "gender": "women",
+      "type": "arab",
+      "family": "Gourmand",
+      "conc": "EDP",
+      "price": {
+        "3": 12,
+        "5": 16,
+        "10": 26
+      },
+      "notes": [
+        "Vainilla",
+        "Ámbar",
+        "Flores"
+      ],
+      "mood": {
+        "a": "#f7ecd3",
+        "b": "#8d6a30",
+        "liquid": "#d9b054",
+        "glow": "rgba(217,176,84,.4)"
+      },
+      "tag": "Árabe",
+      "desc": "Angham — fragancia de la familia gourmand, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/Lattafa Angham (2).png",
+      "imgBottle": "img/perfumes/Lattafa Angham.png",
+      "imgSet": "img/perfumes/Lattafa Angham (2).png",
+      "legacy_id": "angham",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "hawas-exotic",
+      "brand": "Rasasi",
+      "name": "Hawas Exotic",
+      "gender": "men",
+      "type": "arab",
+      "family": "Fresco",
+      "conc": "EDP",
+      "price": {
+        "3": 13,
+        "5": 17,
+        "10": 28
+      },
+      "notes": [
+        "Acuático",
+        "Mango",
+        "Ámbar"
+      ],
+      "mood": {
+        "a": "#f2e3bd",
+        "b": "#8a6d3b",
+        "liquid": "#d9a441",
+        "glow": "rgba(217,164,65,.45)"
+      },
+      "tag": "Árabe",
+      "desc": "Hawas Exotic — fragancia de la familia fresco, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/webp/Hawas Exotic (2).webp",
+      "imgBottle": "img/perfumes/webp/Hawas Exotic.webp",
+      "imgSet": "img/perfumes/webp/Hawas Exotic (2).webp",
+      "legacy_id": "hawas-exotic",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "hawas-ice",
+      "brand": "Rasasi",
+      "name": "Hawas Ice",
+      "gender": "men",
+      "type": "arab",
+      "family": "Fresco",
+      "conc": "EDP",
+      "price": {
+        "3": 12,
+        "5": 16,
+        "10": 26
+      },
+      "notes": [
+        "Acuático",
+        "Menta",
+        "Ámbar"
+      ],
+      "mood": {
+        "a": "#f5ecd6",
+        "b": "#7a5a2e",
+        "liquid": "#c9a25e",
+        "glow": "rgba(201,162,94,.4)"
+      },
+      "tag": "Árabe",
+      "desc": "Hawas Ice — fragancia de la familia fresco, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": {
+        "100": 380
+      },
+      "bestseller": true,
+      "discontinued": false,
+      "img": "img/perfumes/webp/RASASI - HAWAS ICE (2).webp",
+      "imgBottle": "img/perfumes/webp/RASASI - HAWAS ICE.webp",
+      "imgSet": "img/perfumes/webp/RASASI - HAWAS ICE (2).webp",
+      "legacy_id": "hawas-ice",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": "legacy",
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "hawas-fire",
+      "brand": "Rasasi",
+      "name": "Hawas Fire",
+      "gender": "men",
+      "type": "arab",
+      "family": "Especiado",
+      "conc": "EDP",
+      "price": {
+        "3": 12,
+        "5": 16,
+        "10": 26
+      },
+      "notes": [
+        "Especias",
+        "Ámbar",
+        "Madera"
+      ],
+      "mood": {
+        "a": "#efe0c2",
+        "b": "#6b4d26",
+        "liquid": "#b8860b",
+        "glow": "rgba(184,134,11,.4)"
+      },
+      "tag": "Árabe",
+      "desc": "Hawas Fire — fragancia de la familia especiado, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/webp/RASASI - HAWAS FIRE (2).webp",
+      "imgBottle": "img/perfumes/webp/RASASI - HAWAS FIRE.webp",
+      "imgSet": "img/perfumes/webp/RASASI - HAWAS FIRE (2).webp",
+      "legacy_id": "hawas-fire",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "hawas-kobra",
+      "brand": "Rasasi",
+      "name": "Hawas Kobra",
+      "gender": "men",
+      "type": "arab",
+      "family": "Fresco",
+      "conc": "EDP",
+      "price": {
+        "3": 12,
+        "5": 16,
+        "10": 26
+      },
+      "notes": [
+        "Acuático",
+        "Cítricos",
+        "Ámbar"
+      ],
+      "mood": {
+        "a": "#f8eede",
+        "b": "#8f6a35",
+        "liquid": "#d4a24c",
+        "glow": "rgba(212,162,76,.45)"
+      },
+      "tag": "Árabe",
+      "desc": "Hawas Kobra — fragancia de la familia fresco, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/webp/RASASI - HAWAS KOBRA (2).webp",
+      "imgBottle": "img/perfumes/webp/RASASI - HAWAS KOBRA.webp",
+      "imgSet": "img/perfumes/webp/RASASI - HAWAS KOBRA (2).webp",
+      "legacy_id": "hawas-kobra",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "hawas-verde",
+      "brand": "Rasasi",
+      "name": "Hawas Verde",
+      "gender": "men",
+      "type": "arab",
+      "family": "Fresco",
+      "conc": "EDP",
+      "price": {
+        "3": 13,
+        "5": 17,
+        "10": 28
+      },
+      "notes": [
+        "Verde",
+        "Acuático",
+        "Cítricos"
+      ],
+      "mood": {
+        "a": "#f3e8cd",
+        "b": "#5f4520",
+        "liquid": "#a87c32",
+        "glow": "rgba(168,124,50,.42)"
+      },
+      "tag": "Árabe",
+      "desc": "Hawas Verde — fragancia de la familia fresco, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/webp/Hawas Verde (2).webp",
+      "imgBottle": "img/perfumes/webp/Hawas Verde.webp",
+      "imgSet": "img/perfumes/webp/Hawas Verde (2).webp",
+      "legacy_id": "hawas-verde",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "hawas-elixir",
+      "brand": "Rasasi",
+      "name": "Hawas Elixir",
+      "gender": "men",
+      "type": "arab",
+      "family": "Fresco",
+      "conc": "EDP",
+      "price": {
+        "3": 12,
+        "5": 16,
+        "10": 26
+      },
+      "notes": [
+        "Acuático",
+        "Ámbar",
+        "Especias"
+      ],
+      "mood": {
+        "a": "#f9f1e0",
+        "b": "#96713a",
+        "liquid": "#e0b253",
+        "glow": "rgba(224,178,83,.45)"
+      },
+      "tag": "Árabe",
+      "desc": "Hawas Elixir — fragancia de la familia fresco, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/Hawas Elixir (2).png",
+      "imgBottle": "img/perfumes/Hawas Elixir.png",
+      "imgSet": "img/perfumes/Hawas Elixir (2).png",
+      "legacy_id": "hawas-elixir",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "hawas-tropical",
+      "brand": "Rasasi",
+      "name": "Hawas Tropical",
+      "gender": "men",
+      "type": "arab",
+      "family": "Fresco",
+      "conc": "EDP",
+      "price": {
+        "3": 12,
+        "5": 16,
+        "10": 26
+      },
+      "notes": [
+        "Coco",
+        "Fruta tropical",
+        "Ámbar"
+      ],
+      "mood": {
+        "a": "#eddfc0",
+        "b": "#7a5f2e",
+        "liquid": "#c08a2e",
+        "glow": "rgba(192,138,46,.4)"
+      },
+      "tag": "Árabe",
+      "desc": "Hawas Tropical — fragancia de la familia fresco, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/RASASI - HAWAS TROPICAL (2).png",
+      "imgBottle": "img/perfumes/RASASI - HAWAS TROPICAL.png",
+      "imgSet": "img/perfumes/RASASI - HAWAS TROPICAL (2).png",
+      "legacy_id": "hawas-tropical",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "9pm",
+      "brand": "Afnan",
+      "name": "9 PM",
+      "gender": "men",
+      "type": "arab",
+      "family": "Gourmand",
+      "conc": "EDP",
+      "price": {
+        "3": 12,
+        "5": 16,
+        "10": 26
+      },
+      "notes": [
+        "Manzana",
+        "Canela",
+        "Vainilla"
+      ],
+      "mood": {
+        "a": "#f7ecd3",
+        "b": "#8d6a30",
+        "liquid": "#d9b054",
+        "glow": "rgba(217,176,84,.4)"
+      },
+      "tag": "Árabe",
+      "desc": "9 PM — fragancia de la familia gourmand, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": {
+        "100": 350
+      },
+      "bestseller": true,
+      "discontinued": false,
+      "img": "img/perfumes/webp/AFNAN - 9PM (2).webp",
+      "imgBottle": "img/perfumes/webp/AFNAN - 9PM.webp",
+      "imgSet": "img/perfumes/webp/AFNAN - 9PM (2).webp",
+      "legacy_id": "9pm",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": "legacy",
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "9pm-rebel",
+      "brand": "Afnan",
+      "name": "9 PM Rebel",
+      "gender": "men",
+      "type": "arab",
+      "family": "Especiado",
+      "conc": "EDP",
+      "price": {
+        "3": 12,
+        "5": 16,
+        "10": 26
+      },
+      "notes": [
+        "Especias",
+        "Vainilla",
+        "Ámbar"
+      ],
+      "mood": {
+        "a": "#f2e3bd",
+        "b": "#8a6d3b",
+        "liquid": "#d9a441",
+        "glow": "rgba(217,164,65,.45)"
+      },
+      "tag": "Árabe",
+      "desc": "9 PM Rebel — fragancia de la familia especiado, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/webp/9 PM Rebel (2).webp",
+      "imgBottle": "img/perfumes/webp/9 PM Rebel.webp",
+      "imgSet": "img/perfumes/webp/9 PM Rebel (2).webp",
+      "legacy_id": "9pm-rebel",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "9pm-elixir",
+      "brand": "Afnan",
+      "name": "9 PM Elixir",
+      "gender": "men",
+      "type": "arab",
+      "family": "Gourmand",
+      "conc": "EDP",
+      "price": {
+        "3": 12,
+        "5": 16,
+        "10": 26
+      },
+      "notes": [
+        "Vainilla",
+        "Ámbar",
+        "Especias"
+      ],
+      "mood": {
+        "a": "#f5ecd6",
+        "b": "#7a5a2e",
+        "liquid": "#c9a25e",
+        "glow": "rgba(201,162,94,.4)"
+      },
+      "tag": "Árabe",
+      "desc": "9 PM Elixir — fragancia de la familia gourmand, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/webp/AFNAN - 9PM ELIXIR (2).webp",
+      "imgBottle": "img/perfumes/webp/AFNAN - 9PM ELIXIR.webp",
+      "imgSet": "img/perfumes/webp/AFNAN - 9PM ELIXIR (2).webp",
+      "legacy_id": "9pm-elixir",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "9pm-night-out",
+      "brand": "Afnan",
+      "name": "9 PM Night Out",
+      "gender": "men",
+      "type": "arab",
+      "family": "Especiado",
+      "conc": "EDP",
+      "price": {
+        "3": 13,
+        "5": 17,
+        "10": 28
+      },
+      "notes": [
+        "Especias",
+        "Cuero",
+        "Ámbar"
+      ],
+      "mood": {
+        "a": "#efe0c2",
+        "b": "#6b4d26",
+        "liquid": "#b8860b",
+        "glow": "rgba(184,134,11,.4)"
+      },
+      "tag": "Árabe",
+      "desc": "9 PM Night Out — fragancia de la familia especiado, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/webp/AFNAN - 9PM NIGHT OUT (2).webp",
+      "imgBottle": "img/perfumes/webp/AFNAN - 9PM NIGHT OUT.webp",
+      "imgSet": "img/perfumes/webp/AFNAN - 9PM NIGHT OUT (2).webp",
+      "legacy_id": "9pm-night-out",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "9am",
+      "brand": "Afnan",
+      "name": "9 AM",
+      "gender": "men",
+      "type": "arab",
+      "family": "Fresco",
+      "conc": "EDP",
+      "price": {
+        "3": 11,
+        "5": 15,
+        "10": 24
+      },
+      "notes": [
+        "Cítricos",
+        "Acuático",
+        "Ámbar"
+      ],
+      "mood": {
+        "a": "#f8eede",
+        "b": "#8f6a35",
+        "liquid": "#d4a24c",
+        "glow": "rgba(212,162,76,.45)"
+      },
+      "tag": "Árabe",
+      "desc": "9 AM — fragancia de la familia fresco, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/webp/Afnan 9 AM (2).webp",
+      "imgBottle": "img/perfumes/webp/Afnan 9 AM.webp",
+      "imgSet": "img/perfumes/webp/Afnan 9 AM (2).webp",
+      "legacy_id": "9am",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "9am-dive",
+      "brand": "Afnan",
+      "name": "9 AM Dive",
+      "gender": "men",
+      "type": "arab",
+      "family": "Fresco",
+      "conc": "EDP",
+      "price": {
+        "3": 12,
+        "5": 16,
+        "10": 26
+      },
+      "notes": [
+        "Acuático",
+        "Verde",
+        "Madera"
+      ],
+      "mood": {
+        "a": "#f3e8cd",
+        "b": "#5f4520",
+        "liquid": "#a87c32",
+        "glow": "rgba(168,124,50,.42)"
+      },
+      "tag": "Árabe",
+      "desc": "9 AM Dive — fragancia de la familia fresco, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/webp/AFNAN - 9AM DIVE (2).webp",
+      "imgBottle": "img/perfumes/webp/AFNAN - 9AM DIVE.webp",
+      "imgSet": "img/perfumes/webp/AFNAN - 9AM DIVE (2).webp",
+      "legacy_id": "9am-dive",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "art-of-universe",
+      "brand": "Lattafa",
+      "name": "Art Of Universe",
+      "gender": "men",
+      "type": "arab",
+      "family": "Especiado",
+      "conc": "EDP",
+      "price": {
+        "3": 13,
+        "5": 17,
+        "10": 28
+      },
+      "notes": [
+        "Especias",
+        "Ámbar",
+        "Cuero"
+      ],
+      "mood": {
+        "a": "#f9f1e0",
+        "b": "#96713a",
+        "liquid": "#e0b253",
+        "glow": "rgba(224,178,83,.45)"
+      },
+      "tag": "Árabe",
+      "desc": "Art Of Universe — fragancia de la familia especiado, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/webp/Art Of Universe (2).webp",
+      "imgBottle": "img/perfumes/webp/Art Of Universe.webp",
+      "imgSet": "img/perfumes/webp/Art Of Universe (2).webp",
+      "legacy_id": "art-of-universe",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "liquid-brun",
+      "brand": "French Avenue",
+      "name": "Liquid Brun",
+      "gender": "men",
+      "type": "arab",
+      "family": "Especiado",
+      "conc": "EDP",
+      "price": {
+        "3": 12,
+        "5": 16,
+        "10": 26
+      },
+      "notes": [
+        "Canela",
+        "Ámbar",
+        "Vainilla"
+      ],
+      "mood": {
+        "a": "#eddfc0",
+        "b": "#7a5f2e",
+        "liquid": "#c08a2e",
+        "glow": "rgba(192,138,46,.4)"
+      },
+      "tag": "Árabe",
+      "desc": "Liquid Brun — fragancia de la familia especiado, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": {
+        "100": 450
+      },
+      "bestseller": true,
+      "discontinued": false,
+      "img": "img/perfumes/webp/liquid brun (2).webp",
+      "imgBottle": "img/perfumes/webp/liquid brun.webp",
+      "imgSet": "img/perfumes/webp/liquid brun (2).webp",
+      "legacy_id": "liquid-brun",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": "legacy",
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "vulcan-feu",
+      "brand": "French Avenue",
+      "name": "Vulcan Feu",
+      "gender": "men",
+      "type": "arab",
+      "family": "Especiado",
+      "conc": "EDP",
+      "price": {
+        "3": 13,
+        "5": 17,
+        "10": 28
+      },
+      "notes": [
+        "Fuego",
+        "Especias",
+        "Ámbar"
+      ],
+      "mood": {
+        "a": "#f7ecd3",
+        "b": "#8d6a30",
+        "liquid": "#d9b054",
+        "glow": "rgba(217,176,84,.4)"
+      },
+      "tag": "Árabe",
+      "desc": "Vulcan Feu — fragancia de la familia especiado, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/FRENCH AVENUE - VULCAN FEU (2).png",
+      "imgBottle": "img/perfumes/FRENCH AVENUE - VULCAN FEU.png",
+      "imgSet": "img/perfumes/FRENCH AVENUE - VULCAN FEU (2).png",
+      "legacy_id": "vulcan-feu",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "amber-o-gold-e",
+      "brand": "Al Haramain",
+      "name": "Amber Oud Gold Elixir",
+      "gender": "unisex",
+      "type": "arab",
+      "family": "Ámbar",
+      "conc": "EDP",
+      "price": {
+        "3": 13,
+        "5": 17,
+        "10": 28
+      },
+      "notes": [
+        "Ámbar",
+        "Coco",
+        "Vainilla"
+      ],
+      "mood": {
+        "a": "#f2e3bd",
+        "b": "#8a6d3b",
+        "liquid": "#d9a441",
+        "glow": "rgba(217,164,65,.45)"
+      },
+      "tag": "Árabe",
+      "desc": "Amber Oud Gold Elixir — fragancia de la familia ámbar, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/webp/AL HARAMAIN - AMBER OUD GOLD EDITION (2).webp",
+      "imgBottle": "img/perfumes/webp/AL HARAMAIN - AMBER OUD GOLD EDITION.webp",
+      "imgSet": "img/perfumes/webp/AL HARAMAIN - AMBER OUD GOLD EDITION (2).webp",
+      "legacy_id": "amber-o-gold-e",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "ao-aqua-dubai",
+      "brand": "Al Haramain",
+      "name": "Amber Oud Aqua Dubai",
+      "gender": "men",
+      "type": "arab",
+      "family": "Fresco",
+      "conc": "EDP",
+      "price": {
+        "3": 13,
+        "5": 17,
+        "10": 28
+      },
+      "notes": [
+        "Acuático",
+        "Bergamota",
+        "Ámbar"
+      ],
+      "mood": {
+        "a": "#f5ecd6",
+        "b": "#7a5a2e",
+        "liquid": "#c9a25e",
+        "glow": "rgba(201,162,94,.4)"
+      },
+      "tag": "Árabe",
+      "desc": "Amber Oud Aqua Dubai — fragancia de la familia fresco, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/webp/Amber Oud Aqua Dubai (2).webp",
+      "imgBottle": "img/perfumes/webp/Amber Oud Aqua Dubai.webp",
+      "imgSet": "img/perfumes/webp/Amber Oud Aqua Dubai (2).webp",
+      "legacy_id": "ao-aqua-dubai",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "ao-dubai-night",
+      "brand": "Al Haramain",
+      "name": "Amber Oud Dubai Night",
+      "gender": "men",
+      "type": "arab",
+      "family": "Ámbar",
+      "conc": "EDP",
+      "price": {
+        "3": 14,
+        "5": 18,
+        "10": 30
+      },
+      "notes": [
+        "Ámbar",
+        "Cuero",
+        "Especias"
+      ],
+      "mood": {
+        "a": "#efe0c2",
+        "b": "#6b4d26",
+        "liquid": "#b8860b",
+        "glow": "rgba(184,134,11,.4)"
+      },
+      "tag": "Árabe",
+      "desc": "Amber Oud Dubai Night — fragancia de la familia ámbar, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/webp/Amber Oud Dubai Night (2).webp",
+      "imgBottle": "img/perfumes/webp/Amber Oud Dubai Night.webp",
+      "imgSet": "img/perfumes/webp/Amber Oud Dubai Night (2).webp",
+      "legacy_id": "ao-dubai-night",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "nitro-red",
+      "brand": "Dumont Paris",
+      "name": "Nitro Red",
+      "gender": "men",
+      "type": "arab",
+      "family": "Fresco",
+      "conc": "EDP",
+      "price": {
+        "3": 12,
+        "5": 16,
+        "10": 26
+      },
+      "notes": [
+        "Frutal",
+        "Acuático",
+        "Ámbar"
+      ],
+      "mood": {
+        "a": "#f8eede",
+        "b": "#8f6a35",
+        "liquid": "#d4a24c",
+        "glow": "rgba(212,162,76,.45)"
+      },
+      "tag": "Árabe",
+      "desc": "Nitro Red — fragancia de la familia fresco, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/webp/DUMONT PARIS - NITRO RED (2).webp",
+      "imgBottle": "img/perfumes/webp/DUMONT PARIS - NITRO RED.webp",
+      "imgSet": "img/perfumes/webp/DUMONT PARIS - NITRO RED (2).webp",
+      "legacy_id": "nitro-red",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "red-intensely",
+      "brand": "Lattafa",
+      "name": "Red Intensely",
+      "gender": "men",
+      "type": "arab",
+      "family": "Gourmand",
+      "conc": "EDP",
+      "price": {
+        "3": 13,
+        "5": 17,
+        "10": 28
+      },
+      "notes": [
+        "Frutos rojos",
+        "Vainilla",
+        "Ámbar"
+      ],
+      "mood": {
+        "a": "#f3e8cd",
+        "b": "#5f4520",
+        "liquid": "#a87c32",
+        "glow": "rgba(168,124,50,.42)"
+      },
+      "tag": "Árabe",
+      "desc": "Red Intensely — fragancia de la familia gourmand, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/webp/Lattafa Red Intensely (2).webp",
+      "imgBottle": "img/perfumes/webp/Lattafa Red Intensely.webp",
+      "imgSet": "img/perfumes/webp/Lattafa Red Intensely (2).webp",
+      "legacy_id": "red-intensely",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "cdn-intense-man",
+      "brand": "Armaf",
+      "name": "Club de Nuit Intense Man",
+      "gender": "men",
+      "type": "arab",
+      "family": "Cítrico",
+      "conc": "EDP",
+      "price": {
+        "3": 12,
+        "5": 16,
+        "10": 26
+      },
+      "notes": [
+        "Piña",
+        "Abedul",
+        "Ámbar"
+      ],
+      "mood": {
+        "a": "#f9f1e0",
+        "b": "#96713a",
+        "liquid": "#e0b253",
+        "glow": "rgba(224,178,83,.45)"
+      },
+      "tag": "Árabe",
+      "desc": "Club de Nuit Intense Man — fragancia de la familia cítrico, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": {
+        "105": 420
+      },
+      "bestseller": true,
+      "discontinued": false,
+      "img": "img/perfumes/webp/ARMAF - CLUB DE NUIT INTENSE EDT (2).webp",
+      "imgBottle": "img/perfumes/webp/ARMAF - CLUB DE NUIT INTENSE EDT.webp",
+      "imgSet": "img/perfumes/webp/ARMAF - CLUB DE NUIT INTENSE EDT (2).webp",
+      "legacy_id": "cdn-intense-man",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": "legacy",
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "cdn-urban-man-e",
+      "brand": "Armaf",
+      "name": "Club de Nuit Urban Man Elixir",
+      "gender": "men",
+      "type": "arab",
+      "family": "Fresco",
+      "conc": "EDP",
+      "price": {
+        "3": 12,
+        "5": 17,
+        "10": 29
+      },
+      "notes": [
+        "Cítricos",
+        "Verde",
+        "Ámbar"
+      ],
+      "mood": {
+        "a": "#eddfc0",
+        "b": "#7a5f2e",
+        "liquid": "#c08a2e",
+        "glow": "rgba(192,138,46,.4)"
+      },
+      "tag": "Árabe",
+      "desc": "Club de Nuit Urban Man Elixir — fragancia de la familia fresco, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/webp/ARMAF - CLUB DE NUIT URBAN MAN ELIXIR (2).webp",
+      "imgBottle": "img/perfumes/webp/ARMAF - CLUB DE NUIT URBAN MAN ELIXIR.webp",
+      "imgSet": "img/perfumes/webp/ARMAF - CLUB DE NUIT URBAN MAN ELIXIR (2).webp",
+      "legacy_id": "cdn-urban-man-e",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "cdn-preciux-i",
+      "brand": "Armaf",
+      "name": "Club de Nuit Precious I",
+      "gender": "men",
+      "type": "arab",
+      "family": "Amaderado",
+      "conc": "EDP",
+      "price": {
+        "3": 22,
+        "5": 30,
+        "10": 48
+      },
+      "notes": [
+        "Piña",
+        "Cedro",
+        "Ámbar"
+      ],
+      "mood": {
+        "a": "#f7ecd3",
+        "b": "#8d6a30",
+        "liquid": "#d9b054",
+        "glow": "rgba(217,176,84,.4)"
+      },
+      "tag": "Árabe",
+      "desc": "Club de Nuit Precious I — fragancia de la familia amaderado, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/webp/Club de Nuit Precieux I (2).webp",
+      "imgBottle": "img/perfumes/webp/Club de Nuit Precieux I.webp",
+      "imgSet": "img/perfumes/webp/Club de Nuit Precieux I (2).webp",
+      "legacy_id": "cdn-preciux-i",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "supremacy-colle",
+      "brand": "Afnan",
+      "name": "Supremacy Collection",
+      "gender": "men",
+      "type": "arab",
+      "family": "Cítrico",
+      "conc": "EDP",
+      "price": {
+        "3": 13,
+        "5": 17,
+        "10": 28
+      },
+      "notes": [
+        "Piña",
+        "Madera",
+        "Ámbar"
+      ],
+      "mood": {
+        "a": "#f7ecd3",
+        "b": "#8d6a30",
+        "liquid": "#d9b054",
+        "glow": "rgba(217,176,84,.4)"
+      },
+      "tag": "Árabe",
+      "desc": "Supremacy Collection — fragancia de la familia cítrico, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/webp/Afnan Supremacy Collection (2).webp",
+      "imgBottle": "img/perfumes/webp/Afnan Supremacy Collection.webp",
+      "imgSet": "img/perfumes/webp/Afnan Supremacy Collection (2).webp",
+      "legacy_id": "supremacy-colle",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "supremacy-noi",
+      "brand": "Afnan",
+      "name": "Supremacy NOI",
+      "gender": "men",
+      "type": "arab",
+      "family": "Cítrico",
+      "conc": "EDP",
+      "price": {
+        "3": 12,
+        "5": 16,
+        "10": 26
+      },
+      "notes": [
+        "Piña",
+        "Cedro",
+        "Almizcle"
+      ],
+      "mood": {
+        "a": "#f2e3bd",
+        "b": "#8a6d3b",
+        "liquid": "#d9a441",
+        "glow": "rgba(217,164,65,.45)"
+      },
+      "tag": "Árabe",
+      "desc": "Supremacy NOI — fragancia de la familia cítrico, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/webp/Afnan Supremacy NOIR (2).webp",
+      "imgBottle": "img/perfumes/webp/Afnan Supremacy NOIR.webp",
+      "imgSet": "img/perfumes/webp/Afnan Supremacy NOIR (2).webp",
+      "legacy_id": "supremacy-noi",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "sceptre-malachite",
+      "brand": "Maison Alhambra",
+      "name": "Sceptre Malachite",
+      "gender": "men",
+      "type": "arab",
+      "family": "Amaderado",
+      "conc": "EDP",
+      "price": {
+        "3": 11,
+        "5": 14,
+        "10": 24
+      },
+      "notes": [
+        "Madera",
+        "Ámbar",
+        "Especias"
+      ],
+      "mood": {
+        "a": "#f5ecd6",
+        "b": "#7a5a2e",
+        "liquid": "#c9a25e",
+        "glow": "rgba(201,162,94,.4)"
+      },
+      "tag": "Árabe",
+      "desc": "Sceptre Malachite — fragancia de la familia amaderado, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/transparent/MAISON ALHAMBRA - SCEPTRE MALACHITE (2).webp",
+      "imgBottle": "img/perfumes/transparent/MAISON ALHAMBRA - SCEPTRE MALACHITE.webp",
+      "imgSet": "img/perfumes/transparent/MAISON ALHAMBRA - SCEPTRE MALACHITE (2).webp",
+      "legacy_id": "sceptre-malachite",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "lovely-cherry",
+      "brand": "Maison Alhambra",
+      "name": "Lovely Cherry",
+      "gender": "women",
+      "type": "arab",
+      "family": "Gourmand",
+      "conc": "EDP",
+      "price": {
+        "3": 13,
+        "5": 17,
+        "10": 28
+      },
+      "notes": [
+        "Cereza",
+        "Almendra",
+        "Vainilla"
+      ],
+      "mood": {
+        "a": "#f9f1e0",
+        "b": "#96713a",
+        "liquid": "#e0b253",
+        "glow": "rgba(224,178,83,.45)"
+      },
+      "tag": "Árabe",
+      "desc": "Cereza, almendra y vainilla sobre una base golosa. Producto descontinuado: ya no se repone al agotar el stock restante.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": true,
+      "img": null,
+      "imgBottle": null,
+      "imgSet": null,
+      "legacy_id": "lovely-cherry",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "bright-peach",
+      "brand": "Maison Alhambra",
+      "name": "Bright Peach",
+      "gender": "women",
+      "type": "arab",
+      "family": "Gourmand",
+      "conc": "EDP",
+      "price": {
+        "3": 13,
+        "5": 17,
+        "10": 28
+      },
+      "notes": [
+        "Melocotón",
+        "Flores",
+        "Vainilla"
+      ],
+      "mood": {
+        "a": "#efe0c2",
+        "b": "#6b4d26",
+        "liquid": "#b8860b",
+        "glow": "rgba(184,134,11,.4)"
+      },
+      "tag": "Árabe",
+      "desc": "Melocotón, flores blancas y vainilla en una composición dulce y luminosa. Producto descontinuado: ya no se repone al agotar el stock restante.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": true,
+      "img": "img/perfumes/webp/Bright Peach (2).webp",
+      "imgBottle": "img/perfumes/webp/Bright Peach.webp",
+      "imgSet": "img/perfumes/webp/Bright Peach (2).webp",
+      "legacy_id": "bright-peach",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "qaed-al-fursan",
+      "brand": "Lattafa",
+      "name": "Qaed Al Fursan",
+      "gender": "men",
+      "type": "arab",
+      "family": "Amaderado",
+      "conc": "EDP",
+      "price": {
+        "3": 11,
+        "5": 15,
+        "10": 24
+      },
+      "notes": [
+        "Azafrán",
+        "Madera",
+        "Ámbar"
+      ],
+      "mood": {
+        "a": "#f8eede",
+        "b": "#8f6a35",
+        "liquid": "#d4a24c",
+        "glow": "rgba(212,162,76,.45)"
+      },
+      "tag": "Árabe",
+      "desc": "Qaed Al Fursan — fragancia de la familia amaderado, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/webp/Lattafa Qaed Al Fursan (2).webp",
+      "imgBottle": "img/perfumes/webp/Lattafa Qaed Al Fursan.webp",
+      "imgSet": "img/perfumes/webp/Lattafa Qaed Al Fursan (2).webp",
+      "legacy_id": "qaed-al-fursan",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "bharara-king",
+      "brand": "Bharara",
+      "name": "Bharara King",
+      "gender": "men",
+      "type": "arab",
+      "family": "Amaderado",
+      "conc": "EDP",
+      "price": {
+        "3": 13,
+        "5": 17,
+        "10": 28
+      },
+      "notes": [
+        "Especias",
+        "Cuero",
+        "Ámbar"
+      ],
+      "mood": {
+        "a": "#f2e3bd",
+        "b": "#8a6d3b",
+        "liquid": "#d9a441",
+        "glow": "rgba(217,164,65,.45)"
+      },
+      "tag": "Árabe",
+      "desc": "Bharara King — fragancia de la familia amaderado, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": false,
+      "img": null,
+      "imgBottle": null,
+      "imgSet": null,
+      "legacy_id": "bharara-king",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "jean-lowe-vibe",
+      "brand": "Maison Alhambra",
+      "name": "Jean Lowe Vibe",
+      "gender": "men",
+      "type": "arab",
+      "family": "Fresco",
+      "conc": "EDP",
+      "price": {
+        "3": 12,
+        "5": 16,
+        "10": 26
+      },
+      "notes": [
+        "Cítricos",
+        "Acuático",
+        "Madera"
+      ],
+      "mood": {
+        "a": "#f3e8cd",
+        "b": "#5f4520",
+        "liquid": "#a87c32",
+        "glow": "rgba(168,124,50,.42)"
+      },
+      "tag": "Árabe",
+      "desc": "Jean Lowe Vibe — fragancia de la familia fresco, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/Maison Alhambra Jean Lowe Vibe (2).png",
+      "imgBottle": "img/perfumes/Maison Alhambra Jean Lowe Vibe.png",
+      "imgSet": "img/perfumes/Maison Alhambra Jean Lowe Vibe (2).png",
+      "legacy_id": "jean-lowe-vibe",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "jean-lowe-inmotel",
+      "brand": "Maison Alhambra",
+      "name": "Jean Lowe Inmotel",
+      "gender": "men",
+      "type": "arab",
+      "family": "Cítrico",
+      "conc": "EDP",
+      "price": {
+        "3": 12,
+        "5": 16,
+        "10": 26
+      },
+      "notes": [
+        "Bergamota",
+        "Ámbar",
+        "Vainilla"
+      ],
+      "mood": {
+        "a": "#f9f1e0",
+        "b": "#96713a",
+        "liquid": "#e0b253",
+        "glow": "rgba(224,178,83,.45)"
+      },
+      "tag": "Árabe",
+      "desc": "Jean Lowe Inmotel — fragancia de la familia cítrico, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/Maison Alhambra Jean Lowe Inmotel (2).png",
+      "imgBottle": "img/perfumes/Maison Alhambra Jean Lowe Inmotel.png",
+      "imgSet": "img/perfumes/Maison Alhambra Jean Lowe Inmotel (2).png",
+      "legacy_id": "jean-lowe-inmotel",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "fakhar-black",
+      "brand": "Lattafa",
+      "name": "Fakhar Black",
+      "gender": "men",
+      "type": "arab",
+      "family": "Floral",
+      "conc": "EDP",
+      "price": {
+        "3": 12,
+        "5": 16,
+        "10": 26
+      },
+      "notes": [
+        "Lavanda",
+        "Geranio",
+        "Vainilla"
+      ],
+      "mood": {
+        "a": "#eddfc0",
+        "b": "#7a5f2e",
+        "liquid": "#c08a2e",
+        "glow": "rgba(192,138,46,.4)"
+      },
+      "tag": "Árabe",
+      "desc": "Fakhar Black — fragancia de la familia floral, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/webp/Lattafa Fakhar Black (2).webp",
+      "imgBottle": "img/perfumes/webp/Lattafa Fakhar Black.webp",
+      "imgSet": "img/perfumes/webp/Lattafa Fakhar Black (2).webp",
+      "legacy_id": "fakhar-black",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "rayhaan-italia",
+      "brand": "Rayhaan",
+      "name": "Rayhaan Italia",
+      "gender": "men",
+      "type": "arab",
+      "family": "Cítrico",
+      "conc": "EDP",
+      "price": {
+        "3": 12,
+        "5": 16,
+        "10": 26
+      },
+      "notes": [
+        "Cítricos",
+        "Especias",
+        "Ámbar"
+      ],
+      "mood": {
+        "a": "#f7ecd3",
+        "b": "#8d6a30",
+        "liquid": "#d9b054",
+        "glow": "rgba(217,176,84,.4)"
+      },
+      "tag": "Árabe",
+      "desc": "Rayhaan Italia — fragancia de la familia cítrico, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/Rayhaan Italia (2).png",
+      "imgBottle": "img/perfumes/Rayhaan Italia.png",
+      "imgSet": "img/perfumes/Rayhaan Italia (2).png",
+      "legacy_id": "rayhaan-italia",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "hawas-chrome",
+      "brand": "Rasasi",
+      "name": "Hawas Chrome",
+      "gender": "men",
+      "type": "arab",
+      "family": "Fresco",
+      "conc": "EDP",
+      "price": {
+        "3": 13,
+        "5": 17,
+        "10": 28
+      },
+      "notes": [
+        "Acuático",
+        "Cítricos",
+        "Metálico"
+      ],
+      "mood": {
+        "a": "#f2e3bd",
+        "b": "#8a6d3b",
+        "liquid": "#d9a441",
+        "glow": "rgba(217,164,65,.45)"
+      },
+      "tag": "Árabe",
+      "desc": "Hawas Chrome — fragancia de la familia fresco, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/RASASI - HAWAS CHROME (2).png",
+      "imgBottle": "img/perfumes/RASASI - HAWAS CHROME.png",
+      "imgSet": "img/perfumes/RASASI - HAWAS CHROME (2).png",
+      "legacy_id": "hawas-chrome",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "royal-blend-sequoia",
+      "brand": "Maison Alhambra",
+      "name": "Royal Blend Sequoia",
+      "gender": "men",
+      "type": "arab",
+      "family": "Amaderado",
+      "conc": "EDP",
+      "price": {
+        "3": 12,
+        "5": 16,
+        "10": 26
+      },
+      "notes": [
+        "Cedro",
+        "Especias",
+        "Ámbar"
+      ],
+      "mood": {
+        "a": "#f3e8cd",
+        "b": "#5f4520",
+        "liquid": "#a87c32",
+        "glow": "rgba(168,124,50,.42)"
+      },
+      "tag": "Árabe",
+      "desc": "Royal Blend Sequoia — fragancia de la familia amaderado, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": false,
+      "img": null,
+      "imgBottle": null,
+      "imgSet": null,
+      "legacy_id": "royal-blend-sequoia",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "combo-cuarteto",
+      "brand": "",
+      "name": "Cuarteto Oriental",
+      "gender": "unisex",
+      "type": "combo",
+      "family": "Ámbar",
+      "conc": "EDP",
+      "price": {
+        "3": 40,
+        "5": 55,
+        "10": 89
+      },
+      "notes": [
+        "4 fragancias",
+        "Orientales",
+        "Selección"
+      ],
+      "mood": {
+        "a": "#f8eede",
+        "b": "#8f6a35",
+        "liquid": "#d4a24c",
+        "glow": "rgba(212,162,76,.45)"
+      },
+      "tag": "Combo",
+      "desc": "Khamrah Clásico, Khamrah Qahwa, Khamrah Dukhan y Khamrah Waha — 4 fragancias árabes de la línea Khamrah (Lattafa). Rinde hasta 600 atomizaciones en su formato 10 ml.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/combos/set-cuarteto.webp",
+      "imgBottle": "img/combos/set-cuarteto.webp",
+      "imgSet": "img/combos/set-cuarteto.webp",
+      "legacy_id": "combo-cuarteto",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": "client_provided_pending_reconfirmation"
+    },
+    {
+      "id": "combo-vainilla",
+      "brand": "",
+      "name": "Vainilla Freak",
+      "gender": "unisex",
+      "type": "combo",
+      "family": "Gourmand",
+      "conc": "EDP",
+      "price": {
+        "3": 27,
+        "5": 39,
+        "10": 65
+      },
+      "notes": [
+        "Vainilla",
+        "Gourmand",
+        "Dulce"
+      ],
+      "mood": {
+        "a": "#f5ecd6",
+        "b": "#7a5a2e",
+        "liquid": "#c9a25e",
+        "glow": "rgba(201,162,94,.4)"
+      },
+      "tag": "Combo",
+      "desc": "Yara Pink, Yara Candy y Eclaire — 3 fragancias gourmand para amantes de la vainilla. Rinde hasta 450 atomizaciones en su formato 10 ml.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/combos/set-vainilla.webp",
+      "imgBottle": "img/combos/set-vainilla.webp",
+      "imgSet": "img/combos/set-vainilla.webp",
+      "legacy_id": "combo-vainilla",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": "client_provided_pending_reconfirmation"
+    },
+    {
+      "id": "combo-tulum",
+      "brand": "",
+      "name": "Set Tulum",
+      "gender": "unisex",
+      "type": "combo",
+      "family": "Fresco",
+      "conc": "EDP",
+      "price": {
+        "3": 31,
+        "5": 42,
+        "10": 71
+      },
+      "notes": [
+        "Fresco",
+        "Cálido",
+        "Veraniego"
+      ],
+      "mood": {
+        "a": "#f9f1e0",
+        "b": "#96713a",
+        "liquid": "#e0b253",
+        "glow": "rgba(224,178,83,.45)"
+      },
+      "tag": "Combo",
+      "desc": "Odyssey Aqua, Hawas Tropical y Supremacy Collection — 3 fragancias frescas con espíritu playero. Rinde hasta 450 atomizaciones en su formato 10 ml.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/combos/set-tulum.webp",
+      "imgBottle": "img/combos/set-tulum.webp",
+      "imgSet": "img/combos/set-tulum.webp",
+      "legacy_id": "combo-tulum",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": "client_provided_pending_reconfirmation"
+    },
+    {
+      "id": "212-edt",
+      "brand": "Carolina Herrera",
+      "name": "212 EDT",
+      "gender": "men",
+      "type": "designer",
+      "family": "Fresco",
+      "conc": "EDT",
+      "price": {
+        "3": 22,
+        "5": 30,
+        "10": 48
+      },
+      "notes": [
+        "Bergamota",
+        "Flor de naranjo",
+        "Madera"
+      ],
+      "mood": {
+        "a": "#f2e3bd",
+        "b": "#8a6d3b",
+        "liquid": "#d9a441",
+        "glow": "rgba(217,164,65,.45)"
+      },
+      "tag": "Designer",
+      "desc": "212 EDT — fragancia de la familia fresco, concentración EDT. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/webp/Carolina Herrera 212 EDT (2).webp",
+      "imgBottle": "img/perfumes/webp/Carolina Herrera 212 EDT.webp",
+      "imgSet": "img/perfumes/webp/Carolina Herrera 212 EDT (2).webp",
+      "legacy_id": "212-edt",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "eros-edt",
+      "brand": "Versace",
+      "name": "Eros EDT",
+      "gender": "men",
+      "type": "designer",
+      "family": "Fresco",
+      "conc": "EDT",
+      "price": {
+        "3": 22,
+        "5": 30,
+        "10": 48
+      },
+      "notes": [
+        "Menta",
+        "Manzana",
+        "Vainilla"
+      ],
+      "mood": {
+        "a": "#f5ecd6",
+        "b": "#7a5a2e",
+        "liquid": "#c9a25e",
+        "glow": "rgba(201,162,94,.4)"
+      },
+      "tag": "Designer",
+      "desc": "Eros EDT — fragancia de la familia fresco, concentración EDT. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": {
+        "100": 580
+      },
+      "bestseller": true,
+      "discontinued": false,
+      "img": "img/perfumes/webp/Versace Eros EDT (2).webp",
+      "imgBottle": "img/perfumes/webp/Versace Eros EDT.webp",
+      "imgSet": "img/perfumes/webp/Versace Eros EDT (2).webp",
+      "legacy_id": "eros-edt",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": "legacy",
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "eros-flame",
+      "brand": "Versace",
+      "name": "Eros Flame",
+      "gender": "men",
+      "type": "designer",
+      "family": "Especiado",
+      "conc": "EDP",
+      "price": {
+        "3": 22,
+        "5": 30,
+        "10": 48
+      },
+      "notes": [
+        "Mandarina",
+        "Rosas",
+        "Vainilla"
+      ],
+      "mood": {
+        "a": "#efe0c2",
+        "b": "#6b4d26",
+        "liquid": "#b8860b",
+        "glow": "rgba(184,134,11,.4)"
+      },
+      "tag": "Designer",
+      "desc": "Eros Flame — fragancia de la familia especiado, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/webp/VERSACE - EROS FLAME (2).webp",
+      "imgBottle": "img/perfumes/webp/VERSACE - EROS FLAME.webp",
+      "imgSet": "img/perfumes/webp/VERSACE - EROS FLAME (2).webp",
+      "legacy_id": "eros-flame",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "spicebomb-extreme",
+      "brand": "Viktor & Rolf",
+      "name": "Spicebomb Extreme",
+      "gender": "men",
+      "type": "designer",
+      "family": "Especiado",
+      "conc": "EDP",
+      "price": {
+        "3": 24,
+        "5": 32,
+        "10": 51
+      },
+      "notes": [
+        "Canela",
+        "Tabaco",
+        "Vainilla"
+      ],
+      "mood": {
+        "a": "#f8eede",
+        "b": "#8f6a35",
+        "liquid": "#d4a24c",
+        "glow": "rgba(212,162,76,.45)"
+      },
+      "tag": "Designer",
+      "desc": "Spicebomb Extreme — fragancia de la familia especiado, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": {
+        "90": 680
+      },
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/webp/Spicebomb Extreme (2).webp",
+      "imgBottle": "img/perfumes/webp/Spicebomb Extreme.webp",
+      "imgSet": "img/perfumes/webp/Spicebomb Extreme (2).webp",
+      "legacy_id": "spicebomb-extreme",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": "legacy",
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "azzaro-tmw-edp",
+      "brand": "Azzaro",
+      "name": "The Most Wanted EDP",
+      "gender": "men",
+      "type": "designer",
+      "family": "Especiado",
+      "conc": "EDP",
+      "price": {
+        "3": 22,
+        "5": 30,
+        "10": 48
+      },
+      "notes": [
+        "Manzana",
+        "Cardamomo",
+        "Ámbar"
+      ],
+      "mood": {
+        "a": "#f3e8cd",
+        "b": "#5f4520",
+        "liquid": "#a87c32",
+        "glow": "rgba(168,124,50,.42)"
+      },
+      "tag": "Designer",
+      "desc": "The Most Wanted EDP — fragancia de la familia especiado, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/webp/AZZARO.-AZZARO THE MOSTH WANTED INTENSE EDP (2).webp",
+      "imgBottle": "img/perfumes/webp/AZZARO.-AZZARO THE MOSTH WANTED INTENSE EDP.webp",
+      "imgSet": "img/perfumes/webp/AZZARO.-AZZARO THE MOSTH WANTED INTENSE EDP (2).webp",
+      "legacy_id": "azzaro-tmw-edp",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "swy-intensely",
+      "brand": "Armani",
+      "name": "Stronger With You Intensely",
+      "gender": "men",
+      "type": "designer",
+      "family": "Gourmand",
+      "conc": "EDP",
+      "price": {
+        "3": 24,
+        "5": 32,
+        "10": 51
+      },
+      "notes": [
+        "Canela",
+        "Ron",
+        "Vainilla"
+      ],
+      "mood": {
+        "a": "#f9f1e0",
+        "b": "#96713a",
+        "liquid": "#e0b253",
+        "glow": "rgba(224,178,83,.45)"
+      },
+      "tag": "Designer",
+      "desc": "Stronger With You Intensely — fragancia de la familia gourmand, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/webp/EMPORIO ARMANI - STRONGER WITH YOU INTENSELY (2).webp",
+      "imgBottle": "img/perfumes/webp/EMPORIO ARMANI - STRONGER WITH YOU INTENSELY.webp",
+      "imgSet": "img/perfumes/webp/EMPORIO ARMANI - STRONGER WITH YOU INTENSELY (2).webp",
+      "legacy_id": "swy-intensely",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "swy-absolutely",
+      "brand": "Armani",
+      "name": "Stronger With You Absolutely",
+      "gender": "men",
+      "type": "designer",
+      "family": "Amaderado",
+      "conc": "EDP",
+      "price": {
+        "3": 26,
+        "5": 34,
+        "10": 56
+      },
+      "notes": [
+        "Madera",
+        "Ámbar",
+        "Café"
+      ],
+      "mood": {
+        "a": "#eddfc0",
+        "b": "#7a5f2e",
+        "liquid": "#c08a2e",
+        "glow": "rgba(192,138,46,.4)"
+      },
+      "tag": "Designer",
+      "desc": "Stronger With You Absolutely — fragancia de la familia amaderado, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/EMPORIO ARMANI - STRONGER WITH YOU ABSOLUTELY (2).png",
+      "imgBottle": "img/perfumes/EMPORIO ARMANI - STRONGER WITH YOU ABSOLUTELY.png",
+      "imgSet": "img/perfumes/EMPORIO ARMANI - STRONGER WITH YOU ABSOLUTELY (2).png",
+      "legacy_id": "swy-absolutely",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "ultra-male",
+      "brand": "Jean Paul Gaultier",
+      "name": "Ultra Male",
+      "gender": "men",
+      "type": "designer",
+      "family": "Fresco",
+      "conc": "EDT",
+      "price": {
+        "3": 24,
+        "5": 32,
+        "10": 51
+      },
+      "notes": [
+        "Pera",
+        "Vainilla",
+        "Lavanda"
+      ],
+      "mood": {
+        "a": "#f7ecd3",
+        "b": "#8d6a30",
+        "liquid": "#d9b054",
+        "glow": "rgba(217,176,84,.4)"
+      },
+      "tag": "Designer",
+      "desc": "Pera, vainilla y lavanda sobre una base ambarina golosa. Producto descontinuado: ya no se repone al agotar el stock restante.",
+      "bottle": {
+        "125": 650
+      },
+      "bestseller": false,
+      "discontinued": true,
+      "img": "img/perfumes/webp/Jean Paul Gaultier Ultra Male (2).webp",
+      "imgBottle": "img/perfumes/webp/Jean Paul Gaultier Ultra Male.webp",
+      "imgSet": "img/perfumes/webp/Jean Paul Gaultier Ultra Male (2).webp",
+      "legacy_id": "ultra-male",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": "legacy",
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "le-male-elixir",
+      "brand": "Jean Paul Gaultier",
+      "name": "Le Male Elixir",
+      "gender": "men",
+      "type": "designer",
+      "family": "Especiado",
+      "conc": "EDP",
+      "price": {
+        "3": 24,
+        "5": 32,
+        "10": 51
+      },
+      "notes": [
+        "Miel",
+        "Canela",
+        "Tabaco"
+      ],
+      "mood": {
+        "a": "#f2e3bd",
+        "b": "#8a6d3b",
+        "liquid": "#d9a441",
+        "glow": "rgba(217,164,65,.45)"
+      },
+      "tag": "Designer",
+      "desc": "Le Male Elixir — fragancia de la familia especiado, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": {
+        "75": 600
+      },
+      "bestseller": true,
+      "discontinued": false,
+      "img": "img/perfumes/webp/JEAN PAUL GAULTIER - LE MALE ELIXIR EDT.webp",
+      "imgBottle": "img/perfumes/webp/JEAN PAUL GAULTIER - LE MALE ELIXIR.webp",
+      "imgSet": "img/perfumes/webp/JEAN PAUL GAULTIER - LE MALE ELIXIR EDT.webp",
+      "legacy_id": "le-male-elixir",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": "legacy",
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "le-beau-le-parfum",
+      "brand": "Jean Paul Gaultier",
+      "name": "Le Beau Le Parfum",
+      "gender": "men",
+      "type": "designer",
+      "family": "Fresco",
+      "conc": "EDP",
+      "price": {
+        "3": 24,
+        "5": 32,
+        "10": 51
+      },
+      "notes": [
+        "Coco",
+        "Madera",
+        "Especias"
+      ],
+      "mood": {
+        "a": "#f5ecd6",
+        "b": "#7a5a2e",
+        "liquid": "#c9a25e",
+        "glow": "rgba(201,162,94,.4)"
+      },
+      "tag": "Designer",
+      "desc": "Le Beau Le Parfum — fragancia de la familia fresco, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": {
+        "100": 680
+      },
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/webp/JEAN PAUL GAULTIER - LE BEAU LE PARFUM (2).webp",
+      "imgBottle": "img/perfumes/webp/JEAN PAUL GAULTIER - LE BEAU LE PARFUM.webp",
+      "imgSet": "img/perfumes/webp/JEAN PAUL GAULTIER - LE BEAU LE PARFUM (2).webp",
+      "legacy_id": "le-beau-le-parfum",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": "legacy",
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "paradise-garden",
+      "brand": "Lattafa",
+      "name": "Paradise Garden",
+      "gender": "unisex",
+      "type": "designer",
+      "family": "Floral",
+      "conc": "EDP",
+      "price": {
+        "3": 24,
+        "5": 32,
+        "10": 51
+      },
+      "notes": [
+        "Flores",
+        "Coco",
+        "Ámbar"
+      ],
+      "mood": {
+        "a": "#efe0c2",
+        "b": "#6b4d26",
+        "liquid": "#b8860b",
+        "glow": "rgba(184,134,11,.4)"
+      },
+      "tag": "Designer",
+      "desc": "Paradise Garden — fragancia de la familia floral, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/webp/Lattafa Paradise Garden (2).webp",
+      "imgBottle": "img/perfumes/webp/Lattafa Paradise Garden.webp",
+      "imgSet": "img/perfumes/webp/Lattafa Paradise Garden (2).webp",
+      "legacy_id": "paradise-garden",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "victory-elixir",
+      "brand": "Paco Rabanne",
+      "name": "Victory Elixir",
+      "gender": "men",
+      "type": "designer",
+      "family": "Especiado",
+      "conc": "EDP",
+      "price": {
+        "3": 24,
+        "5": 32,
+        "10": 51
+      },
+      "notes": [
+        "Especias",
+        "Ámbar",
+        "Café"
+      ],
+      "mood": {
+        "a": "#f8eede",
+        "b": "#8f6a35",
+        "liquid": "#d4a24c",
+        "glow": "rgba(212,162,76,.45)"
+      },
+      "tag": "Designer",
+      "desc": "Victory Elixir — fragancia de la familia especiado, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": {
+        "100": 650
+      },
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/webp/Paco Rabanne Victory Elixir (2).webp",
+      "imgBottle": "img/perfumes/webp/Paco Rabanne Victory Elixir.webp",
+      "imgSet": "img/perfumes/webp/Paco Rabanne Victory Elixir (2).webp",
+      "legacy_id": "victory-elixir",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": "legacy",
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "purple-melancholia",
+      "brand": "Valentino",
+      "name": "Purple Melancholia",
+      "gender": "unisex",
+      "type": "niche",
+      "family": "Floral",
+      "conc": "EDP",
+      "price": {
+        "3": 26,
+        "5": 34,
+        "10": 56
+      },
+      "notes": [
+        "Violeta",
+        "Flores",
+        "Ámbar"
+      ],
+      "mood": {
+        "a": "#f3e8cd",
+        "b": "#5f4520",
+        "liquid": "#a87c32",
+        "glow": "rgba(168,124,50,.42)"
+      },
+      "tag": "Nicho",
+      "desc": "Purple Melancholia — fragancia de la familia floral, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/webp/Purple Melancholia (2).webp",
+      "imgBottle": "img/perfumes/webp/Purple Melancholia.webp",
+      "imgSet": "img/perfumes/webp/Purple Melancholia (2).webp",
+      "legacy_id": "purple-melancholia",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "bir-intense",
+      "brand": "Burberry",
+      "name": "Burberry Brit Intense",
+      "gender": "men",
+      "type": "designer",
+      "family": "Amaderado",
+      "conc": "EDP",
+      "price": {
+        "3": 26,
+        "5": 34,
+        "10": 56
+      },
+      "notes": [
+        "Romero",
+        "Cedro",
+        "Ámbar"
+      ],
+      "mood": {
+        "a": "#f9f1e0",
+        "b": "#96713a",
+        "liquid": "#e0b253",
+        "glow": "rgba(224,178,83,.45)"
+      },
+      "tag": "Designer",
+      "desc": "Burberry Brit Intense — fragancia de la familia amaderado, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": {
+        "100": 720
+      },
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/webp/Burberry Burberry Brit Intense (2).webp",
+      "imgBottle": "img/perfumes/webp/Burberry Burberry Brit Intense.webp",
+      "imgSet": "img/perfumes/webp/Burberry Burberry Brit Intense (2).webp",
+      "legacy_id": "bir-intense",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": "legacy",
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "b-man-in-black",
+      "brand": "Bvlgari",
+      "name": "Bvlgari Man In Black",
+      "gender": "men",
+      "type": "designer",
+      "family": "Amaderado",
+      "conc": "EDP",
+      "price": {
+        "3": 26,
+        "5": 34,
+        "10": 56
+      },
+      "notes": [
+        "Ron",
+        "Cuero",
+        "Especias"
+      ],
+      "mood": {
+        "a": "#eddfc0",
+        "b": "#7a5f2e",
+        "liquid": "#c08a2e",
+        "glow": "rgba(192,138,46,.4)"
+      },
+      "tag": "Designer",
+      "desc": "Bvlgari Man In Black — fragancia de la familia amaderado, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": {
+        "100": 760
+      },
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/webp/Bvlgari Bvlgari Man In Black (2).webp",
+      "imgBottle": "img/perfumes/webp/Bvlgari Bvlgari Man In Black.webp",
+      "imgSet": "img/perfumes/webp/Bvlgari Bvlgari Man In Black (2).webp",
+      "legacy_id": "b-man-in-black",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": "legacy",
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "sauvage-edt",
+      "brand": "Dior",
+      "name": "Sauvage EDT",
+      "gender": "men",
+      "type": "designer",
+      "family": "Fresco",
+      "conc": "EDT",
+      "price": {
+        "3": 22,
+        "5": 30,
+        "10": 48
+      },
+      "notes": [
+        "Bergamota",
+        "Pimienta",
+        "Ámbar"
+      ],
+      "mood": {
+        "a": "#f7ecd3",
+        "b": "#8d6a30",
+        "liquid": "#d9b054",
+        "glow": "rgba(217,176,84,.4)"
+      },
+      "tag": "Designer",
+      "desc": "Sauvage EDT — fragancia de la familia fresco, concentración EDT. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": {
+        "100": 650
+      },
+      "bestseller": true,
+      "discontinued": false,
+      "img": "img/perfumes/webp/Dior Sauvage EDT (2).webp",
+      "imgBottle": "img/perfumes/webp/Dior Sauvage EDT.webp",
+      "imgSet": "img/perfumes/webp/Dior Sauvage EDT (2).webp",
+      "legacy_id": "sauvage-edt",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": "legacy",
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "dylan-blue",
+      "brand": "Versace",
+      "name": "Dylan Blue",
+      "gender": "men",
+      "type": "designer",
+      "family": "Fresco",
+      "conc": "EDP",
+      "price": {
+        "3": 30,
+        "5": 38,
+        "10": 69
+      },
+      "notes": [
+        "Bergamota",
+        "Agua",
+        "Almizcle"
+      ],
+      "mood": {
+        "a": "#f2e3bd",
+        "b": "#8a6d3b",
+        "liquid": "#d9a441",
+        "glow": "rgba(217,164,65,.45)"
+      },
+      "tag": "Designer",
+      "desc": "Dylan Blue — fragancia de la familia fresco, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": {
+        "100": 620
+      },
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/webp/Versace Dylan Blue (2).webp",
+      "imgBottle": "img/perfumes/webp/Versace Dylan Blue.webp",
+      "imgSet": "img/perfumes/webp/Versace Dylan Blue (2).webp",
+      "legacy_id": "dylan-blue",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": "legacy",
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "adg-profondo-edp",
+      "brand": "Armani",
+      "name": "Acqua di Gio Profondo EDP",
+      "gender": "men",
+      "type": "designer",
+      "family": "Fresco",
+      "conc": "EDP",
+      "price": {
+        "3": 26,
+        "5": 34,
+        "10": 56
+      },
+      "notes": [
+        "Marino",
+        "Bergamota",
+        "Madera"
+      ],
+      "mood": {
+        "a": "#f5ecd6",
+        "b": "#7a5a2e",
+        "liquid": "#c9a25e",
+        "glow": "rgba(201,162,94,.4)"
+      },
+      "tag": "Designer",
+      "desc": "Acqua di Gio Profondo EDP — fragancia de la familia fresco, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": {
+        "100": 700
+      },
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/GIORGIO ARMANI .-ACQUA DI GIO PROFONDO EDP (2).png",
+      "imgBottle": "img/perfumes/GIORGIO ARMANI .-ACQUA DI GIO PROFONDO EDP.png",
+      "imgSet": "img/perfumes/GIORGIO ARMANI .-ACQUA DI GIO PROFONDO EDP (2).png",
+      "legacy_id": "adg-profondo-edp",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": "legacy",
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "1-million-lucky",
+      "brand": "Paco Rabanne",
+      "name": "1 Million Lucky",
+      "gender": "men",
+      "type": "designer",
+      "family": "Gourmand",
+      "conc": "EDT",
+      "price": {
+        "3": 26,
+        "5": 34,
+        "10": 56
+      },
+      "notes": [
+        "Ciruela",
+        "Avellana",
+        "Ámbar"
+      ],
+      "mood": {
+        "a": "#efe0c2",
+        "b": "#6b4d26",
+        "liquid": "#b8860b",
+        "glow": "rgba(184,134,11,.4)"
+      },
+      "tag": "Designer",
+      "desc": "1 Million Lucky — fragancia de la familia gourmand, concentración EDT. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": {
+        "100": 780
+      },
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/webp/Paco Rabanne 1 Million Lucky (2).webp",
+      "imgBottle": "img/perfumes/webp/Paco Rabanne 1 Million Lucky.webp",
+      "imgSet": "img/perfumes/webp/Paco Rabanne 1 Million Lucky (2).webp",
+      "legacy_id": "1-million-lucky",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": "legacy",
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "invictus-elixir",
+      "brand": "Paco Rabanne",
+      "name": "Invictus Elixir",
+      "gender": "men",
+      "type": "designer",
+      "family": "Fresco",
+      "conc": "EDP",
+      "price": {
+        "3": 24,
+        "5": 32,
+        "10": 51
+      },
+      "notes": [
+        "Acuático",
+        "Ámbar",
+        "Madera"
+      ],
+      "mood": {
+        "a": "#f2e3bd",
+        "b": "#8a6d3b",
+        "liquid": "#d9a441",
+        "glow": "rgba(217,164,65,.45)"
+      },
+      "tag": "Designer",
+      "desc": "Invictus Elixir — fragancia de la familia fresco, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/webp/PACO RABANNE -INVICTUS ELIXIR (2).webp",
+      "imgBottle": "img/perfumes/webp/PACO RABANNE -INVICTUS ELIXIR.webp",
+      "imgSet": "img/perfumes/webp/PACO RABANNE -INVICTUS ELIXIR (2).webp",
+      "legacy_id": "invictus-elixir",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "reserve-privee",
+      "brand": "Armani",
+      "name": "Reserve Privée",
+      "gender": "men",
+      "type": "designer",
+      "family": "Amaderado",
+      "conc": "EDP",
+      "price": {
+        "3": 26,
+        "5": 34,
+        "10": 56
+      },
+      "notes": [
+        "Madera",
+        "Ámbar",
+        "Vainilla"
+      ],
+      "mood": {
+        "a": "#f8eede",
+        "b": "#8f6a35",
+        "liquid": "#d4a24c",
+        "glow": "rgba(212,162,76,.45)"
+      },
+      "tag": "Designer",
+      "desc": "Reserve Privée — fragancia de la familia amaderado, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/webp/Armani Reserve Privée (2).webp",
+      "imgBottle": "img/perfumes/webp/Armani Reserve Privée.webp",
+      "imgSet": "img/perfumes/webp/Armani Reserve Privée (2).webp",
+      "legacy_id": "reserve-privee",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "cedrat-boise-int",
+      "brand": "Mancera",
+      "name": "Cedrat Boise Intense",
+      "gender": "men",
+      "type": "niche",
+      "family": "Cítrico",
+      "conc": "EDP",
+      "price": {
+        "3": 26,
+        "5": 34,
+        "10": 56
+      },
+      "notes": [
+        "Limón",
+        "Cedro",
+        "Almizcle"
+      ],
+      "mood": {
+        "a": "#f3e8cd",
+        "b": "#5f4520",
+        "liquid": "#a87c32",
+        "glow": "rgba(168,124,50,.42)"
+      },
+      "tag": "Nicho",
+      "desc": "Cedrat Boise Intense — fragancia de la familia cítrico, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": {
+        "100": 820
+      },
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/webp/Mancera Cedrat Boise Intense (2).webp",
+      "imgBottle": "img/perfumes/webp/Mancera Cedrat Boise Intense.webp",
+      "imgSet": "img/perfumes/webp/Mancera Cedrat Boise Intense (2).webp",
+      "legacy_id": "cedrat-boise-int",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": "legacy",
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "m-red-tobacco",
+      "brand": "Mancera",
+      "name": "Mancera Red Tobacco",
+      "gender": "men",
+      "type": "niche",
+      "family": "Especiado",
+      "conc": "EDP",
+      "price": {
+        "3": 26,
+        "5": 34,
+        "10": 56
+      },
+      "notes": [
+        "Tabaco",
+        "Canela",
+        "Ámbar"
+      ],
+      "mood": {
+        "a": "#f9f1e0",
+        "b": "#96713a",
+        "liquid": "#e0b253",
+        "glow": "rgba(224,178,83,.45)"
+      },
+      "tag": "Nicho",
+      "desc": "Mancera Red Tobacco — fragancia de la familia especiado, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": {
+        "100": 850
+      },
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/webp/Mancera Mancera Red Tobacco (2).webp",
+      "imgBottle": "img/perfumes/webp/Mancera Mancera Red Tobacco.webp",
+      "imgSet": "img/perfumes/webp/Mancera Mancera Red Tobacco (2).webp",
+      "legacy_id": "m-red-tobacco",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": "legacy",
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "tmw-parfum",
+      "brand": "Azzaro",
+      "name": "The Most Wanted Parfum",
+      "gender": "men",
+      "type": "designer",
+      "family": "Especiado",
+      "conc": "Parfum",
+      "price": {
+        "3": 24,
+        "5": 32,
+        "10": 51
+      },
+      "notes": [
+        "Manzana",
+        "Toffee",
+        "Ámbar"
+      ],
+      "mood": {
+        "a": "#eddfc0",
+        "b": "#7a5f2e",
+        "liquid": "#c08a2e",
+        "glow": "rgba(192,138,46,.4)"
+      },
+      "tag": "Designer",
+      "desc": "The Most Wanted Parfum — fragancia de la familia especiado, concentración Parfum. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": {
+        "100": 700
+      },
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/webp/AZZARO.-AZZARO THE MOSTH WANTED PARFUM (2).webp",
+      "imgBottle": "img/perfumes/webp/AZZARO.-AZZARO THE MOSTH WANTED PARFUM.webp",
+      "imgSet": "img/perfumes/webp/AZZARO.-AZZARO THE MOSTH WANTED PARFUM (2).webp",
+      "legacy_id": "tmw-parfum",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": "legacy",
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "by-the-fireplace",
+      "brand": "Maison Margiela",
+      "name": "By The Fireplace",
+      "gender": "unisex",
+      "type": "designer",
+      "family": "Gourmand",
+      "conc": "EDP",
+      "price": {
+        "3": 26,
+        "5": 34,
+        "10": 56
+      },
+      "notes": [
+        "Castaña",
+        "Vainilla",
+        "Madera"
+      ],
+      "mood": {
+        "a": "#f7ecd3",
+        "b": "#8d6a30",
+        "liquid": "#d9b054",
+        "glow": "rgba(217,176,84,.4)"
+      },
+      "tag": "Designer",
+      "desc": "By The Fireplace — fragancia de la familia gourmand, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": {
+        "100": 750
+      },
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/webp/Maison Margiela By The Fireplace (2).webp",
+      "imgBottle": "img/perfumes/webp/Maison Margiela By The Fireplace.webp",
+      "imgSet": "img/perfumes/webp/Maison Margiela By The Fireplace (2).webp",
+      "legacy_id": "by-the-fireplace",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": "legacy",
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "erba-pura",
+      "brand": "Xerjoff",
+      "name": "Erba Pura",
+      "gender": "unisex",
+      "type": "niche",
+      "family": "Gourmand",
+      "conc": "EDP",
+      "price": {
+        "3": 40,
+        "5": 48,
+        "10": 89
+      },
+      "notes": [
+        "Fruta",
+        "Vainilla",
+        "Almizcle"
+      ],
+      "mood": {
+        "a": "#f5ecd6",
+        "b": "#7a5a2e",
+        "liquid": "#c9a25e",
+        "glow": "rgba(201,162,94,.4)"
+      },
+      "tag": "Nicho",
+      "desc": "Erba Pura — fragancia de la familia gourmand, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": {
+        "50": 900,
+        "100": 1350
+      },
+      "bestseller": true,
+      "discontinued": false,
+      "img": "img/perfumes/webp/Xerjoff Erba Pura (2).webp",
+      "imgBottle": "img/perfumes/webp/Xerjoff Erba Pura.webp",
+      "imgSet": "img/perfumes/webp/Xerjoff Erba Pura (2).webp",
+      "legacy_id": "erba-pura",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": "legacy",
+      "comboCompositionVerificationStatus": null
+    },
+    {
+      "id": "nautica-voyage",
+      "brand": "Nautica",
+      "name": "Nautica Voyage",
+      "gender": "men",
+      "type": "designer",
+      "family": "Acuático",
+      "conc": "EDT",
+      "price": {
+        "3": 12,
+        "5": 16,
+        "10": 26
+      },
+      "notes": [
+        "Marino",
+        "Manzana",
+        "Madera"
+      ],
+      "mood": {
+        "a": "#f3e8cd",
+        "b": "#5f4520",
+        "liquid": "#a87c32",
+        "glow": "rgba(168,124,50,.42)"
+      },
+      "tag": "Designer",
+      "desc": "Nautica Voyage — fragancia de la familia acuático, concentración EDT. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "bottle": null,
+      "bestseller": false,
+      "discontinued": false,
+      "img": "img/perfumes/webp/Nautica Nautica Voyage (2).webp",
+      "imgBottle": "img/perfumes/webp/Nautica Nautica Voyage.webp",
+      "imgSet": "img/perfumes/webp/Nautica Nautica Voyage (2).webp",
+      "legacy_id": "nautica-voyage",
+      "source": "assets/data.js",
+      "verificationStatus": "legacy",
+      "pricingVerificationStatus": "legacy",
+      "bottlePricingVerificationStatus": null,
+      "comboCompositionVerificationStatus": null
+    }
+  ]
+}

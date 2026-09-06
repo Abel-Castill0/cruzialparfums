@@ -1,5 +1,9 @@
 import type { Metadata } from "next";
 import { Cormorant_Garamond, Jost } from "next/font/google";
+import {
+  resolveIndexingPolicy,
+  type DeploymentEnvironment,
+} from "@/lib/seo/indexing-policy";
 import "./globals.css";
 
 const display = Cormorant_Garamond({
@@ -20,10 +24,12 @@ export const metadata: Metadata = {
     template: "%s — Cruzial",
   },
   description: "Cruzial Parfums y Cruzial Import en una sola plataforma.",
-  robots: {
-    index: false,
-    follow: false,
-  },
+  robots: resolveIndexingPolicy({
+    deploymentEnvironment: (process.env.VERCEL_ENV ??
+      "development") as DeploymentEnvironment,
+    cutoverApproved:
+      process.env.CRUZIAL_PRODUCTION_CUTOVER_APPROVED === "true",
+  }),
 };
 
 export default function RootLayout({

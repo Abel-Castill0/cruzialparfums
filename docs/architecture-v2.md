@@ -103,6 +103,10 @@ extraerse sin cambiar las rutas.
 Los nombres internos pueden estar en inglés; las URLs públicas se mantendrán en español
 salvo compatibilidad legacy. Route groups separan layouts sin añadir segmentos.
 
+Existe un único root layout en `src/app/layout.tsx`. Los shells se anidan en
+`parfums/layout.tsx`, `import/layout.tsx` y, más adelante, `admin/layout.tsx`; no se
+crean roots alternativos.
+
 ## Límites de dominio
 
 - **Catalog:** unidades, categorías, productos, variantes, medios y publicación.
@@ -115,6 +119,11 @@ salvo compatibilidad legacy. Route groups separan layouts sin añadir segmentos.
 Los componentes no consultan Supabase directamente. Usan queries/commands del dominio,
 lo que permite fixtures en Foundation y políticas coherentes al conectar Postgres.
 
+Durante paridad, `LegacyCatalogRepository` consume un JSON generado de forma
+determinista desde `assets/data.js`. El fixture es `legacy_visual_parity_only`, conserva
+checksum/procedencia y nunca se reutiliza automáticamente como seed comercial. El
+reemplazo posterior se hace detrás del mismo contrato de repositorio.
+
 ## Lectura y escritura
 
 ```text
@@ -123,6 +132,9 @@ Admin UI → Server Action/Route Handler → auth + autorización → validació
 Upload admin → endpoint firmado de servidor → Cloudinary → product_media → audit_log
 CSV → staging + diff → aprobación admin → transacción → catálogo + audit_log
 ```
+
+Los únicos puntos futuros de creación de clientes serán `lib/supabase/client` y
+`lib/supabase/server`. Ningún dominio o componente instancia un cliente Supabase.
 
 - El cliente público recibe solo columnas públicas y filas publicadas.
 - El navegador puede usar la anon key; nunca recibe `service_role` ni secretos Cloudinary.
@@ -171,12 +183,17 @@ se requiere una regla de cliente o una referencia explícita en settings.
 
 ## Media
 
+- La UI recibe media resuelta mediante `ProductMediaSource`; no conoce si el origen es
+  legacy, Cloudinary o un fixture. En paridad se permite la URL de producción legacy.
 - Original preservado; no background removal automático.
 - Upload firmado y restringido desde admin.
 - DB guarda provider, `public_id`, URL segura, dimensiones, bytes, formato, alt y orden.
 - Transformaciones de entrega usan tamaños responsive, formato automático y calidad auto.
 - Migración con manifiesto `legacy_path → public_id`, checksum y reporte de faltantes.
 - El corte a Cloudinary se hace por lotes reversibles; no se borran originales al migrar.
+- Los 188 assets originales (~421 MiB) permanecen fuera de `apps/web` y no se duplican.
+  La futura ingestión usará un directorio de source-assets ignorado por Git, manifiesto
+  `legacy_path → public_id` y checksum; este paso se documenta pero no se ejecuta ahora.
 
 ## URLs, SEO y caché
 
@@ -184,6 +201,8 @@ se requiere una regla de cliente o una referencia explícita en settings.
   ruta de compatibilidad con `legacy_id`.
 - Primero redirects temporales en Preview; `308` solo tras validar matriz completa.
 - Metadata/JSON-LD se generan en servidor por producto.
+- Development y Preview permanecen `noindex,nofollow`. Solo producción con cutover
+  aprobado puede habilitar indexación; la paridad actual no activa ese flag.
 - Sitemap separado por unidad y solo con contenido público indexable.
 - No registrar el service worker V2 hasta definir scope/versionado. En cutover se sirve
   una estrategia que retire caches legacy sin dejar precios obsoletos.

@@ -42,13 +42,23 @@ describe claves admitidas; no convierte atributos no confirmados en contenido.
 
 Los tamaños 3/5/10 ml y el frasco completo se modelan como variantes; no como columnas.
 
+### `variant_price_tiers`
+
+`id`, `variant_id`, `min_quantity`, `price_amount`, `currency`, `context`, timestamps,
+`archived_at`.
+
+El mayorista usa tramos flexibles por variante. `context` distingue, por ejemplo,
+`retail` y `wholesale`; no se crean columnas rígidas `price_4`/`price_10` ni equivalentes.
+
 ### `inventory`
 
-`id`, `product_variant_id`, `track_quantity`, `quantity_on_hand`, `availability_status`,
-`updated_by`, `updated_at`.
+`id`, `product_variant_id`, `inventory_mode`, `quantity_on_hand nullable`,
+`availability_status`, `updated_by`, `updated_at`.
 
-Permite stock booleano sin inventar cantidades. Reservas/backorders quedan fuera hasta
-confirmar el flujo de órdenes.
+`availability_status`: `available | out_of_stock | discontinued | hidden`.
+`inventory_mode`: `status_only | tracked_quantity`. No se decide aún cuál usa la
+operación; `status_only` permite migrar el estado visible sin inventar cantidades.
+Reservas, oversell y backorders quedan fuera hasta confirmar el flujo de órdenes.
 
 ### `product_media`
 
@@ -63,6 +73,14 @@ timestamps, `archived_at`.
 
 No sembrar contenido de combos hasta confirmarlo. El builder personalizado es un tipo de
 línea/pedido, no necesariamente un combo publicado.
+
+## Promociones candidatas
+
+### `promotions`, `promotion_rules` y `promotion_rewards`
+
+Se reservan como modelo candidato para promociones auditables: cabecera/ventana de la
+promoción, condiciones y recompensas. No se implementa un motor complejo ni se fijan
+reglas comerciales durante paridad; cualquier migración requiere reconfirmación.
 
 ## Campañas
 

@@ -12,6 +12,8 @@
 - Sales modes: campaign, always_available y catalog_only (o equivalente).
 - Carritos Parfums e Import deben permanecer separados.
 - V1 tiene admin-only auth y no ofrece signup público.
+- El email del primer administrador es `cruzialof@gmail.com`. Es un dato de
+  aprovisionamiento y no debe quedar hardcodeado en la aplicación pública.
 - RLS, autorización server-side, migraciones Git, audit log y snapshots de precio son
   obligatorios.
 - Cloudinary preserva originales; no hay background removal automático/destructivo.
@@ -22,10 +24,11 @@
 
 ## UNKNOWN
 
-- Correo exacto del primer admin y procedimiento operativo de bootstrap/recuperación.
+- Procedimiento seguro de bootstrap del primer admin, contraseña inicial, MFA,
+  recuperación, alta de administradores adicionales y futuros roles/permisos.
 - Dominio final, cuentas/proyectos de Vercel, Supabase, Cloudinary y Resend.
 - Cuáles de los 23 precios de frasco actuales están confirmados para publicar.
-- Contenido exacto confirmado de cada combo y reglas del builder personalizado.
+- Reglas comerciales futuras del builder personalizado.
 - Categorías y catálogo inicial de Import; datos comerciales y fuente de cada registro.
 - Campos definitivos para relojes u otras categorías.
 - Moneda(s), impuestos y si Import muestra precio final, estimado o solo consulta.
@@ -44,7 +47,7 @@
 - SKU/barcode y clave estable usada para matching de CSV.
 - Quién aprueba un diff CSV y política de conflictos/unmatched.
 - Reglas de archive/hard-delete, retención de pedidos, PII y audit logs.
-- Requisitos de sesión admin, MFA, recuperación y futuros roles/permisos.
+- Si los pedidos requieren fecha de nacimiento u otro dato adicional del comprador.
 - Políticas legales finales de Import y fecha de aprobación del cliente.
 - Eventos analytics, proveedor, consentimiento/cookies y criterio de éxito.
 - Emails de waitlist/campaña/pedido que realmente se usarán y dominio remitente.
@@ -68,3 +71,11 @@
 - CSV usa staging + diff + confirmación + transacción + audit log.
 - Redirects temporales en Preview; permanentes solo después del gate completo.
 - No se implementan reglas automáticas de campaña, emails o analytics sin confirmar.
+
+## CLIENT_PROVIDED_PENDING_RECONFIRMATION
+
+- Las composiciones actuales de los tres combos pueden reproducirse durante la paridad
+  legacy, pero no se consideran catálogo comercial verificado ni seed futuro.
+- Los 23 precios de frasco y los demás precios de `assets/data.js` pueden mostrarse para
+  paridad con `verificationStatus: legacy`; no quedan aprobados para carga automática a
+  Supabase.
