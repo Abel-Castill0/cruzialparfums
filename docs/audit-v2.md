@@ -125,6 +125,9 @@ No se debe marcar como permanente un destino hasta validar el mapa completo en P
 - TikTok usa una URL genérica sin cuenta confirmada.
 - No hay CI, pruebas unitarias, E2E, auditoría de links ni visual regression.
 - No hay analytics implementada; los eventos solo deben añadirse después del núcleo V1.
+- La plantilla Next.js 16.3.4 fija ESLint 9.39.5, ya marcado como no soportado; ESLint 10
+  aún contradice los peer ranges de plugins transitivos. Mantener el pin y revalidar al
+  actualizar `eslint-config-next`, sin instalar con `--force`.
 
 ## Evidencia de baseline
 

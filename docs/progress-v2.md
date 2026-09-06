@@ -7,13 +7,14 @@
 - Arquitectura de carpetas, schema Supabase y roadmap propuestos.
 - Reglas confirmadas, desconocidas y técnicas separadas.
 - Riesgos P0/P1/P2 documentados; assets untracked preservados.
+- Fase 1: Next.js 16 + TypeScript estricto aislado en `apps/web`.
+- Rutas Foundation `/`, `/parfums`, `/import` y `noindex` global implementados.
+- Contratos iniciales de unidad, sales mode, campañas y carritos separados creados.
 
 ## CURRENT
-- Fase 1: scaffold Next.js aislado en `apps/web`.
-- Preparar gates reproducibles: lint, typecheck, tests y build.
+- Fase 1 cerrada y lista para revisión en Preview cuando exista proyecto Vercel.
 
 ## NEXT
-- Cerrar Foundation sin conectar servicios ni inventar datos.
 - Fase 2: inventario visual y migración Parfums con paridad.
 - Solicitar decisiones P0 antes de publicar datos en Supabase/Preview público.
 
@@ -27,3 +28,5 @@
 - Browser portada: 320/390/430/768/1024/1440/1920 sin overflow horizontal.
 - Browser portada: sin errores/warnings de consola.
 - Catálogo: 99 total, 96 activos, 3 descontinuados, 0 IDs duplicados.
+- V2 `npm run check`: lint + typecheck + 3 tests + build PASS.
+- V2: 3 rutas estáticas, navegación validada y 7 anchos sin overflow.

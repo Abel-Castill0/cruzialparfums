@@ -1,0 +1,56 @@
+.page {
+  min-height: 100svh;
+  padding: clamp(1.25rem, 4vw, 4rem);
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  background: var(--color-ivory);
+}
+
+.page[data-unit="import"] {
+  color: var(--color-paper);
+  background: var(--color-ink);
+}
+
+.brand,
+.phase,
+.scope,
+.page > a {
+  font-size: var(--text-label);
+  font-weight: 600;
+  letter-spacing: 0.17em;
+  text-transform: uppercase;
+}
+
+.brand,
+.phase {
+  color: var(--color-gold);
+}
+
+.content {
+  align-self: center;
+  display: grid;
+  gap: 1rem;
+}
+
+.content h1 {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: clamp(3.5rem, 11vw, 10rem);
+  font-weight: 500;
+  letter-spacing: -0.05em;
+  line-height: 0.85;
+}
+
+.content > p:not(.phase, .scope) {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: clamp(1.8rem, 4vw, 4rem);
+}
+
+.scope {
+  opacity: 0.66;
+}
+
+.page > a {
+  width: fit-content;
+  border-bottom: 1px solid currentColor;
+  padding-bottom: 0.4rem;
+}
