@@ -139,6 +139,14 @@ export class LegacyCatalogRepository {
     return catalogFixture.config;
   }
 
+  getHeroMedia() {
+    return {
+      // Client-provided homepage hero photo, unchanged since launch — see
+      // AGENTS.md "Product photography". Not to be regenerated/reprocessed.
+      heroUrl: this.mediaSource.resolve("img/hero/hero-crop.webp")?.url ?? null,
+    };
+  }
+
   getBrandMedia() {
     return {
       logoUrl: this.mediaSource.resolve("img/logo-mark.png")?.url ?? null,
