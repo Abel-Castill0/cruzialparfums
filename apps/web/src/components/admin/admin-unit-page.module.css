@@ -1,0 +1,104 @@
+.page {
+  min-height: 100svh;
+  background: #f4f3f0;
+  color: #17130f;
+}
+
+.header {
+  padding: 20px clamp(20px, 4vw, 48px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border-bottom: 1px solid rgba(23, 19, 15, 0.14);
+}
+
+.header strong {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.header a {
+  color: #5c574f;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.header a:hover {
+  color: #17130f;
+}
+
+.notice {
+  padding: 8px clamp(20px, 4vw, 48px);
+  border-bottom: 1px solid rgba(23, 19, 15, 0.14);
+  color: #5c574f;
+  background: #ece9e2;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+}
+
+.main {
+  width: min(980px, calc(100% - 48px));
+  margin-inline: auto;
+  padding: clamp(40px, 6vw, 72px) 0;
+}
+
+.main h1 {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: clamp(1.6rem, 3.4vw, 2.4rem);
+  font-weight: 500;
+}
+
+.main > p {
+  max-width: 60ch;
+  margin-top: 10px;
+  color: #5c574f;
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.areaGrid {
+  margin-top: 34px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.areaCard {
+  padding: 16px 18px;
+  border: 1px solid rgba(23, 19, 15, 0.14);
+  background: #fff;
+}
+
+.areaCard strong {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.areaCard span {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 3px 8px;
+  border: 1px solid rgba(23, 19, 15, 0.16);
+  color: #8a8378;
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 720px) {
+  .areaGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .areaGrid {
+    grid-template-columns: 1fr;
+  }
+}
