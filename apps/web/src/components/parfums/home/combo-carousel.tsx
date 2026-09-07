@@ -114,8 +114,7 @@ export function ComboCarousel({ combos }: { combos: CatalogProduct[] }) {
                   fill
                   sizes="(max-width: 767px) 100vw, 1200px"
                   className={styles.slideImage}
-                  priority={slideIndex === 0}
-                  loading={slideIndex === 0 ? "eager" : "lazy"}
+                  loading="lazy"
                 />
               ) : null}
               <div className={styles.scrim} aria-hidden="true" />
