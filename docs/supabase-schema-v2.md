@@ -1,6 +1,25 @@
 # Cruzial Platform V2 — Propuesta de schema Supabase
 
-Estado: diseño de Fase 0. No es una migración ejecutable ni crea reglas comerciales.
+Estado: diseño de Fase 2.5. No es una migración ejecutable ni crea reglas comerciales.
+
+## Estado de implementación
+
+- **IMPLEMENTED (runtime, no DB):** adapter legacy de catálogo, separación de
+  settings Parfums/Import y contrato editorial temporal
+  `isFeatured/featuredRank/featuredFrom/featuredUntil`.
+- **PROPOSED (DB):** todas las tablas y políticas descritas debajo. No existe
+  todavía `supabase/` ni una migration, por lo que ninguna tabla se declara
+  implementada.
+- **UNKNOWN:** valores o reglas que dependen de decisión del cliente, incluidos
+  alcance mayorista, estados finales de pedido, retención de PII, automatización
+  de campañas y operación de waitlist. Un `UNKNOWN` no se convierte en constraint
+  ni seed comercial.
+
+Inventario mínimo **PROPOSED**: `business_units`, `products`,
+`product_variants`, `categories`, `product_categories`, `product_media`,
+`promotions`, `combos`, `combo_items`, `wholesale_policies`, `campaigns`,
+`campaign_products`, `customers`, `orders`, `order_lines`, `shipping_methods`,
+`deposit_policies`, `settings`, `admin_memberships`, `audit_log` y `waitlist`.
 
 ## Convenciones
 
@@ -40,10 +59,16 @@ categorización — no se siembra contenido de ejemplo.
 
 `id`, `business_unit_id`, `category_id`, `legacy_id`, `slug`, `name`, `brand`,
 `short_description`, `description`, `sales_mode`, `publication_status`,
-`lifecycle_status`, `specs jsonb`, timestamps, `archived_at`.
+`production_status`, `is_featured`, `featured_rank nullable`,
+`featured_from nullable`, `featured_until nullable`, `specs jsonb`, timestamps,
+`archived_at`.
 
 `sales_mode`: `campaign | always_available | catalog_only`.
-`lifecycle_status`: `active | out_of_stock | discontinued | archived`.
+`production_status`: `active | discontinued`. No representa stock ni visibilidad.
+`publication_status`: `draft | published | hidden`; `hidden` retira un producto de
+superficies públicas sin borrarlo. `is_featured` es curación editorial, no una
+afirmación de ventas. `featured_rank` ordena el rail y la ventana opcional
+`featured_from`/`featured_until` permite activarlo sin una lista permanente.
 
 ### `product_variants`
 
@@ -78,10 +103,12 @@ del cliente; el enum ya prevé el valor final para evitar una migración de tipo
 `id`, `product_variant_id`, `inventory_mode`, `quantity_on_hand nullable`,
 `availability_status`, `updated_by`, `updated_at`.
 
-`availability_status`: `available | out_of_stock | discontinued | hidden`.
+`availability_status`: `available | out_of_stock`.
 `inventory_mode`: `status_only | tracked_quantity`. No se decide aún cuál usa la
 operación; `status_only` permite migrar el estado visible sin inventar cantidades.
 Reservas, oversell y backorders quedan fuera hasta confirmar el flujo de órdenes.
+Disponibilidad, producción y publicación son ejes independientes: un producto
+`discontinued` puede seguir `available`, y `hidden` no significa agotado.
 
 ### `product_media`
 
@@ -180,7 +207,7 @@ decisión del cliente. Los snapshots (`customer_snapshot`, `delivery_snapshot`,
 del pedido una vez confirmado — no se recalculan si `customers`/`deposit_policies` cambian
 después.
 
-### `order_items`
+### `order_lines`
 
 `id`, `order_id`, `product_id nullable`, `product_variant_id nullable`,
 `campaign_product_id nullable`, `product_name_snapshot`, `variant_snapshot jsonb`,
@@ -199,13 +226,14 @@ trazabilidad, no fuente para reescribir la historia.
 
 Campos requeridos, consentimiento, doble opt-in y retención están pendientes.
 
-### `site_settings`
+### `settings`
 
-`id`, `business_unit_id nullable`, `key`, `value jsonb`, `is_public`, timestamps,
+`id`, `business_unit_id`, `key`, `value jsonb`, `is_public`, timestamps,
 `updated_by`. Unique `(business_unit_id, key)`.
 
 Claves iniciales previstas: WhatsApp por unidad, templates por flujo, campaña destacada,
-contacto y banderas operativas. Valores sensibles no pertenecen aquí.
+contacto y banderas operativas. Cada fila pertenece a una unidad: no hay fallback
+comercial global que pueda mezclar Parfums e Import. Valores sensibles no pertenecen aquí.
 
 ### `admin_memberships`
 
@@ -219,7 +247,7 @@ lectura en Import) sin necesitar cuentas distintas. El primer usuario se provisi
 fuera del navegador público mediante un procedimiento seguro y luego queda auditado; su
 email inicial viene de variable de entorno/config, no hardcodeado en el código fuente.
 
-### `audit_logs`
+### `audit_log`
 
 `id`, `actor_user_id`, `action`, `entity_type`, `entity_id`, `before jsonb`,
 `after jsonb`, `request_id`, `created_at`.
@@ -239,9 +267,13 @@ No se actualiza catálogo directamente desde el upload.
 
 - Unicidad de `business_units.code`, SKU no nulo, slugs por contexto y número de campaña.
 - Unicidad de `deposit_policies(business_unit_id, customer_status, effective_from)`,
-  `shipping_methods(business_unit_id, code)` y `admin_memberships(user_id, business_unit_id)`.
+  `shipping_methods(business_unit_id, code)`, `settings(business_unit_id, key)` y
+  `admin_memberships(user_id, business_unit_id)`.
 - Check de dinero no negativo, cantidad de línea mayor que cero y
   `deposit_percentage` entre 0 y 100.
+- Check de ventana editorial: `featured_until` es posterior a `featured_from`
+  cuando ambas existen; índice parcial por unidad/rank para productos publicados
+  con `is_featured = true`.
 - Índices en publicación/categoría, `sales_mode`, campaña/status/fechas, order number,
   `orders(customer_id)`, `customers(business_unit_id, phone)`, audit entity+fecha y
   búsquedas normalizadas.
@@ -258,12 +290,13 @@ No se actualiza catálogo directamente desde el upload.
 | Unidades/categorías/product_categories/productos/variantes/media | SELECT solo público | CRUD autorizado |
 | Campañas/campaign products | SELECT solo visible públicamente | CRUD + transiciones |
 | Wholesale policies/price tiers | SELECT solo público (mayorista) | CRUD autorizado |
-| Shipping methods/deposit policies | SELECT solo `is_active` | CRUD autorizado |
+| Shipping methods | SELECT solo `is_active` | CRUD autorizado |
+| Deposit policies | Sin acceso directo; resolución server-side | CRUD autorizado |
 | Settings | SELECT solo `is_public` | CRUD autorizado |
 | Customers | Sin acceso directo | Acceso autorizado por unidad |
-| Orders/order items | Sin acceso directo | Acceso autorizado por unidad |
+| Orders/order lines | Sin acceso directo | Acceso autorizado por unidad |
 | Waitlist | Sin SELECT/INSERT directo | Acceso autorizado |
-| Admin memberships/audit/import staging | Sin acceso | Acceso autorizado según función |
+| Admin memberships/audit log/import staging | Sin acceso | Acceso autorizado según función |
 
 La inscripción a waitlist entra por Route Handler con validación y rate limit. RLS se
 habilita en toda tabla del schema expuesto; grants y policies se prueban por separado.

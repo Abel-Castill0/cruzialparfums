@@ -1,5 +1,14 @@
 # CRUZIAL PLATFORM V2 — PROGRESS
 
+## BRANCH
+
+`codex/feature/cruzial-platform-v2`. `master` permanece intacto para GitHub Pages.
+
+## HEAD
+
+Baseline recuperado al iniciar este handoff: `3f93924`. El commit de cierre de
+recovery se registra en el reporte final; no se reescribió historial.
+
 ## DONE
 - Fase 0: baseline Git, stack, rutas, datos, media, SEO/PWA y deploy auditados.
 - Tag local `pre-v2-stable-2026-09-06` creado en `5fba38f`.
@@ -21,6 +30,17 @@
 - Combos: tres sets legacy, composición reconfirmable, variantes 3/5/10 ml y carrito real.
 - Combo Builder: catálogo elegible, búsqueda, selección 3–6, total único y consulta WhatsApp central.
 - Finder: cinco pasos, reglas deterministas sobre catálogo, resultados explicables y decant al carrito.
+- `.env` raíz ignorado; ningún `.env` tracked ni exposición histórica de su ruta.
+- Contacto público actualizado y centralizado: WhatsApp/email confirmados, con
+  objetos de settings separados para Parfums e Import.
+- Parfums migrado a negro/blanco; Home completa con FeaturedPerfumeRail editorial
+  administrable, sin “Más Deseados”, “HOT” ni claims de ventas.
+- Import Home completa a nivel foundation en azul profundo/blanco/plata, sin
+  catálogo, fechas, evidencia o precios inventados.
+- Gateway público y Admin permiten escoger Parfums/Import; Admin sigue sin auth/CRUD
+  simulado y siempre `noindex,nofollow`.
+- Schema Supabase reconciliado como propuesta, con estado explícito
+  `IMPLEMENTED | PROPOSED | UNKNOWN`; no existen migrations todavía.
 
 ## CURRENT — FASE 2.5: BUSINESS RECONCILIATION + STOREFRONT COMPLETION
 "Fase 2 parity PASS" ya NO se interpreta como cierre comercial de Parfums:
@@ -64,27 +84,30 @@ Bloques de Fase 2.5 (orden de ejecución) — estado 2026-09-06/07:
     `robots: noindex` forzado en todo `/admin/*` independientemente de la
     política de indexación pública, áreas listadas como "Próximamente" sin
     auth ni CRUD simulado (`ddb9fa3`).
-13. 🟡 Segunda auditoría: grep de Más Deseados/Olva/TODO/console.log/
-    tamaño-global-combo/marcas viejas — limpio. 4 páginas nuevas (`/`,
-    `/parfums`, `/import`, `/admin`) verificadas sin errores de consola en
-    pestaña nueva. Responsive verificado en 320/375/768/1280/1440 para
-    Gateway/Home/Carousel/Import/Admin (no las 9 anchuras completas del
-    contrato en una sola pasada).
-14. ⬜ Actualizar `docs/supabase-schema-v2.md` con los contratos
-    reconciliados — NO iniciado.
+13. ✅ Segunda auditoría: grep de Más Deseados/Olva/TODO/console.log/
+    tamaño-global-combo/marcas viejas — limpio. Build de producción inspeccionada
+    en `/`, `/parfums`, `/import`, `/admin` a 320/390/430/768/1024/1440/1920:
+    sin overflow horizontal, enlaces nativos correctos y sin warnings/errors de
+    consola. Capturas normales confirmaron hero, secciones, FAQ, CTA y gateways.
+14. ✅ `docs/supabase-schema-v2.md` reconciliado (`3f93924` + cierre recovery):
+    estado real por capa, entidades mínimas, rail administrable, separación
+    producción/disponibilidad/visibilidad, snapshots, RLS e índices/constraints.
 
-`apps/web`: 18 test files, 79 tests, `npm run check` (export+lint+typecheck+
-test+build) en PASS tras cada commit de este bloque y del anterior.
+`apps/web`: 19 test files, 82 tests; `npm run check` completo en PASS al cierre
+de recovery (catálogo + lint + typecheck + tests + build).
 
-## NEXT
-- Bloque 14: actualizar `docs/supabase-schema-v2.md` con los contratos de
-  esta fase (hidden, availabilityStatus, wholesale policy, combo lines).
+## PARTIAL
+
+- Ningún trabajo parcial del último bloque Claude después del cierre de recovery.
+- Import y Admin siguen siendo foundations deliberadas; no se presentan como
+  checkout/carrito/auth/CRUD terminados.
+
+## TODO
+
 - Import: consolidado real, checkout/carrito propio, delivery privado y
   regla de adelanto 50/70 con `customerStatus` server-verificado (nada de
   esto existe todavía — solo la home/shell foundation).
 - Admin: bootstrap de autenticación real antes de cualquier CRUD.
-- Matriz responsive completa (320/360/390/430/768/1024/1280/1440/1920) para
-  Gateway/Home/Carousel/Import/Admin — este bloque verificó un subconjunto.
 - Gate final de parity de Parfums (global responsive/SEO/a11y) antes de Supabase/cutover.
 - Mantener Preview `noindex`; validar datos comerciales antes de Supabase/cutover.
 
@@ -98,7 +121,7 @@ test+build) en PASS tras cada commit de este bloque y del anterior.
   "Amber Gold Elixir es E.", fragmento "reserva para...". Ver
   `docs/client-decisions.md` → UNKNOWN_CLIENT_CLARIFICATION.
 
-## TESTED
+## TESTS
 - `node scripts/frontend-gate.mjs`: PASS (12 páginas; header/footer/cards/assets/ARIA/PWA).
 - Browser portada: 320/390/430/768/1024/1440/1920 sin overflow horizontal.
 - Browser portada: sin errores/warnings de consola.
@@ -115,3 +138,22 @@ test+build) en PASS tras cada commit de este bloque y del anterior.
 - Combos: 320/360/390/430/768/1024/1440/1920 sin overflow; CTA móvil separado de WhatsApp.
 - Finder: flujo completo, límites, ranking, carrito, foco, Tab, Escape y ausencia de lenguaje IA validados.
 - Finder: inicio y resultados en 320/360/390/430/768/1024/1440/1920 sin overflow.
+- Recovery 2026-09-07: catálogo determinista; 5 archivos dirigidos/22 tests;
+  lint, typecheck, build y `git diff --check` PASS antes del checkpoint global.
+- Recovery visual: `/`, `/parfums`, `/import`, `/admin` en
+  320/390/430/768/1024/1440/1920, sin overflow de documento ni consola.
+
+## PREVIEW
+
+- No se realizó deploy durante recovery. La política de Preview sigue
+  `noindex,nofollow`; cualquier despliegue futuro será Preview antes de Production.
+
+## PRODUCTION
+
+- No se realizó deploy ni cutover. `master` y GitHub Pages no se modificaron.
+
+## NEXT
+
+Gate global de parity de Parfums: matriz completa responsive + SEO + accesibilidad
+de las superficies ya implementadas, antes de iniciar Supabase, Import operativo o
+cutover.
