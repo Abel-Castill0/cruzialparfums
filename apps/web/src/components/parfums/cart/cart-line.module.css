@@ -68,13 +68,13 @@
 
 .quantity {
   display: grid;
-  grid-template-columns: 32px 34px 32px;
+  grid-template-columns: 44px 34px 44px;
   align-items: center;
   border: 1px solid rgba(26, 22, 18, 0.14);
 }
 
 .quantity button {
-  min-height: 40px;
+  min-height: 44px;
   border: 0;
   color: #17130f;
   background: transparent;
@@ -92,7 +92,7 @@
 }
 
 .remove {
-  min-height: 40px;
+  min-height: 44px;
   padding: 0;
   border: 0;
   border-bottom: 1px solid transparent;

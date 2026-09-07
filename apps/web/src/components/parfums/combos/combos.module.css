@@ -203,7 +203,7 @@
 
 .comboSizes button {
   min-width: 58px;
-  min-height: 39px;
+  min-height: 44px;
   padding: 0 12px;
   border: 1px solid rgba(26, 22, 18, 0.16);
   color: #5f5952;
@@ -232,8 +232,8 @@
 }
 
 .summaryLineSizes button {
-  min-width: 36px;
-  min-height: 28px;
+  min-width: 44px;
+  min-height: 44px;
   padding: 0 6px;
   border: 1px solid rgba(26, 22, 18, 0.16);
   color: #5f5952;
@@ -504,8 +504,8 @@
 }
 
 .summary li button {
-  width: 30px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
   border: 0;
   background: transparent;
   font-size: 18px;

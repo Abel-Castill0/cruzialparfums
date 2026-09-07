@@ -44,6 +44,8 @@
 
 .brand {
   width: fit-content;
+  min-width: 44px;
+  min-height: 44px;
   display: inline-flex;
   align-items: center;
   gap: 11px;
@@ -199,6 +201,8 @@
 .closePanel,
 .closeMobile,
 .drawerHead button {
+  width: 44px;
+  height: 44px;
   border: 0;
   color: inherit;
   background: transparent;
@@ -346,7 +350,7 @@
 }
 
 .drawerEmpty a {
-  min-height: 42px;
+  min-height: 44px;
   margin-top: 8px;
   padding: 0 18px;
   display: flex;
@@ -459,7 +463,7 @@
 }
 
 .mobileMenu > a.menuSecondary {
-  min-height: auto;
+  min-height: 44px;
   color: rgba(247, 243, 234, 0.72);
   font-family: var(--font-body), sans-serif;
   font-size: 11px;
@@ -525,8 +529,8 @@
 }
 
 .footerSocial a {
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
   display: grid;
   place-items: center;
   border: 1px solid rgba(238, 232, 221, 0.2);
@@ -641,8 +645,8 @@
   }
 
   .iconButton {
-    width: 37px;
-    height: 37px;
+    width: 44px;
+    height: 44px;
   }
 
   .searchPanel {
