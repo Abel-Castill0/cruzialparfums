@@ -1,5 +1,11 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import styles from "@/components/parfums/institutional/institutional.module.css";
+
+export const metadata: Metadata = {
+  title: "Página no encontrada",
+  description: "Esta página no existe. Explora el catálogo de Cruzial Parfums o vuelve al inicio.",
+};
 
 export default function ParfumsNotFound() {
   return (
