@@ -12,8 +12,9 @@ reemplazo, no se borra el historial a ciegas.
   unidad tiene su propio objeto de settings
   (`domains/platform/settings.ts`) — no un valor global compartido —
   para poder divergir sin tocar la otra unidad.
-- **Correo público**: `dominiocruzial@gmail.com` (nuevo campo, no existía
-  antes en `CRUZIAL_CONFIG`).
+- **`PUBLIC_CONTACT_EMAIL`**: `dominiocruzial@gmail.com`, correo comercial
+  visible para contacto público (nuevo campo, no existía antes en
+  `CRUZIAL_CONFIG`).
 - **Paleta Parfums**: **negro + blanco**. El dorado deja de ser color de
   UI dominante (pills/botones/precios/bordes); puede permanecer dentro del
   logo o de fotografías. Aplicado progresivamente — ver
@@ -97,15 +98,22 @@ producto (`img/perfumes/webp/*`) antes de aplicarse. Provenance: `CLIENT_CONFIRM
 - Sales modes: campaign, always_available y catalog_only (o equivalente).
 - Carritos Parfums e Import deben permanecer separados.
 - V1 tiene admin-only auth y no ofrece signup público.
-- El email del primer administrador es `cruzialof@gmail.com`. Es un dato de
-  aprovisionamiento y no debe quedar hardcodeado en la aplicación pública.
+- **`ADMIN_BOOTSTRAP_EMAIL`**: `cruzialof@gmail.com`. Es exclusivamente un
+  dato de aprovisionamiento del primer administrador y no debe quedar
+  hardcodeado en el frontend público ni confundirse con `PUBLIC_CONTACT_EMAIL`.
 - RLS, autorización server-side, migraciones Git, audit log y snapshots de precio son
   obligatorios.
 - Cloudinary preserva originales; no hay background removal automático/destructivo.
 - WhatsApp/config/templates se separan por unidad y viven en settings.
 - Legal de Import no hereda automáticamente las políticas de Parfums.
 - n8n y automatización masiva quedan fuera del núcleo V1.
-- Paleta compartida: negro, blanco/ivory y dorado; storefront editorial de lujo.
+
+## SUPERSEDED — reemplazado por decisiones LATEST de 2026-09-07
+
+- **Paleta compartida negro/blanco/ivory/dorado:** fue una dirección histórica
+  de Fase 0 y ya no es una regla visual vigente. Parfums usa negro + blanco con
+  dorado no dominante; Import usa azul profundo + blanco + plata y no es
+  Parfums recoloreado.
 
 ## CONFIRMED — 2026-09-06 (Fase 2.5, reglas de negocio)
 
@@ -158,7 +166,10 @@ producto (`img/perfumes/webp/*`) antes de aplicarse. Provenance: `CLIENT_CONFIRM
 - Alcance/unicidad de `campaign.number` y regla para “duplicate previous”.
 - Qué campaña/fecha mostrar como “próximo consolidado” cuando hay varias programadas.
 - Campos requeridos, consentimiento, retención y canal de la waitlist.
-- WhatsApp final de Parfums e Import y texto aprobado de cada template.
+- Si en el futuro Parfums e Import tendrán números distintos y cuál será el
+  texto aprobado de cada template por flujo. El número operativo actual de
+  ambas unidades sí está **CONFIRMED**: `+51 926 390 591` / `51926390591`;
+  los objetos de settings permanecen separados para permitir divergencia.
 - Regla de inventario: cantidad exacta, solo estado, reservas, oversell o backorder.
 - SKU/barcode y clave estable usada para matching de CSV.
 - Quién aprueba un diff CSV y política de conflictos/unmatched.

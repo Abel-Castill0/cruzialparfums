@@ -1,6 +1,7 @@
 # Cruzial Platform V2 — Arquitectura propuesta
 
-Estado: decisión técnica de Fase 0; sujeta solo a restricciones de negocio pendientes.
+Estado: arquitectura vigente de V2, con runtime implementado y extensiones futuras
+separadas explícitamente.
 
 ## Principios
 
@@ -16,6 +17,8 @@ Estado: decisión técnica de Fase 0; sujeta solo a restricciones de negocio pen
 
 La raíz estática existente queda intacta durante Foundation y paridad. Vercel debe usar
 `apps/web` como Root Directory en la rama V2. `master` continúa publicando GitHub Pages.
+
+Árbol objetivo **PROPOSED**; no implica que estos archivos o servicios ya existan:
 
 ```text
 cruzialparfums/
@@ -63,7 +66,9 @@ No se propone Turborepo ni paquetes separados en V1: una sola app no justifica e
 costo. Si más adelante existe un segundo runtime real, los módulos puros pueden
 extraerse sin cambiar las rutas.
 
-## Árbol de rutas
+## Rutas
+
+### IMPLEMENTED
 
 ```text
 /
@@ -72,22 +77,36 @@ extraerse sin cambiar las rutas.
 │   ├── productos/[slug]
 │   ├── combos
 │   ├── finder
+│   ├── checkout
 │   ├── mayorista
-│   ├── carrito
-│   ├── checkout            (nombre final pendiente)
 │   ├── nosotros
 │   ├── contacto
-│   └── legal/*
-├── import/
+│   ├── privacidad
+│   └── terminos
+├── import
+└── admin/
+    ├── parfums
+    └── import
+```
+
+El carrito Parfums implementado es un drawer persistente que continúa a
+`/parfums/checkout`; no existe ni se necesita actualmente `/parfums/carrito`.
+Las rutas legales existentes son `/parfums/privacidad` y
+`/parfums/terminos`; no existe un segmento `/parfums/legal/*`.
+
+### PROPOSED
+
+Las siguientes rutas son extensiones futuras y no forman parte del runtime actual:
+
+```text
+import/
 │   ├── categorias/[slug]
 │   ├── productos/[slug]
 │   ├── consolidado/[number]
 │   ├── carrito
 │   └── lista-de-espera
-└── admin/
+admin/
     ├── dashboard
-    ├── parfums
-    ├── import
     ├── products
     ├── categories
     ├── inventory
@@ -104,7 +123,7 @@ Los nombres internos pueden estar en inglés; las URLs públicas se mantendrán 
 salvo compatibilidad legacy. Route groups separan layouts sin añadir segmentos.
 
 Existe un único root layout en `src/app/layout.tsx`. Los shells se anidan en
-`parfums/layout.tsx`, `import/layout.tsx` y, más adelante, `admin/layout.tsx`; no se
+`parfums/layout.tsx`, `import/layout.tsx` y `admin/layout.tsx`; no se
 crean roots alternativos.
 
 ## Límites de dominio

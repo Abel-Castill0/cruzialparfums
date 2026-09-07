@@ -1,5 +1,10 @@
 # CLAUDE.md — Cruzial Parfums
 
+> **Alcance:** este archivo documenta el storefront estático legacy de la raíz.
+> Para Cruzial Platform V2 (`apps/web`, Next.js con build y tests), prevalece
+> `AGENTS.md`. Las reglas compartidas de datos, claims y assets siguen aplicando
+> a ambos; las instrucciones legacy como “No build step” no describen V2.
+
 Project rules for anyone (human or AI) making changes to this repo. These are not
 style preferences — they are constraints established after real errors were caught
 in this project (invented commercial claims, duplicated/conflicting data across

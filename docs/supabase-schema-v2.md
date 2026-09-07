@@ -17,7 +17,7 @@ Estado: diseño de Fase 2.5. No es una migración ejecutable ni crea reglas come
 
 Inventario mínimo **PROPOSED**: `business_units`, `products`,
 `product_variants`, `categories`, `product_categories`, `product_media`,
-`promotions`, `combos`, `combo_items`, `wholesale_policies`, `campaigns`,
+`inventory`, `promotions`, `combos`, `combo_items`, `wholesale_policies`, `campaigns`,
 `campaign_products`, `customers`, `orders`, `order_lines`, `shipping_methods`,
 `deposit_policies`, `settings`, `admin_memberships`, `audit_log` y `waitlist`.
 
@@ -277,7 +277,7 @@ No se actualiza catálogo directamente desde el upload.
 - Índices en publicación/categoría, `sales_mode`, campaña/status/fechas, order number,
   `orders(customer_id)`, `customers(business_unit_id, phone)`, audit entity+fecha y
   búsquedas normalizadas.
-- FK restrictiva desde order items cuando borrar rompería trazabilidad; el flujo normal
+- FK restrictiva desde `order_lines` cuando borrar rompería trazabilidad; el flujo normal
   archiva productos. `orders.customer_id` usa `set null` — el snapshot ya conserva los
   datos del cliente al momento del pedido, así que borrar/archivar un cliente no rompe
   pedidos históricos.
