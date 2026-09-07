@@ -94,6 +94,46 @@
   font-weight: 500;
 }
 
+.body {
+  max-width: 52ch;
+  color: #5c574f;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.body code {
+  padding: 1px 5px;
+  border: 1px solid rgba(23, 19, 15, 0.16);
+  background: #fff;
+  font-size: 12px;
+}
+
+.selectorRole {
+  color: #8a8378;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.signOut {
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid rgba(23, 19, 15, 0.18);
+  background: transparent;
+  color: #5c574f;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.signOut:hover {
+  border-color: #17130f;
+  color: #17130f;
+}
+
 .footer {
   padding: 16px clamp(20px, 4vw, 48px);
   color: #8a8378;

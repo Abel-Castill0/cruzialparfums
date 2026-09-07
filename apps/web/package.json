@@ -11,9 +11,15 @@
     "lint": "eslint . --max-warnings=0",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "check": "npm run catalog:check && npm run lint && npm run typecheck && npm run test && npm run build"
+    "check": "npm run catalog:check && npm run lint && npm run typecheck && npm run test && npm run build",
+    "etl:legacy": "node ../../scripts/etl-legacy-catalog.mjs",
+    "etl:check": "node ../../scripts/etl-legacy-catalog.mjs --check",
+    "db:reset": "npx supabase db reset",
+    "db:test": "npx supabase test db"
   },
   "dependencies": {
+    "@supabase/ssr": "^0.12.6",
+    "@supabase/supabase-js": "^2.115.0",
     "next": "16.3.4",
     "react": "19.2.8",
     "react-dom": "19.2.8"
