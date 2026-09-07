@@ -7,6 +7,14 @@
   --color-gold-deep: #a78542;
   --color-ink-muted: #756f66;
   --color-line: rgba(10, 9, 8, 0.16);
+  /* Cruzial Import palette — deep blue + white + silver. Kept out of
+     Parfums' black/ivory/gold system on purpose: the two units share
+     typography and structure, never a paint job. */
+  --color-import-navy: #0b1f3d;
+  --color-import-navy-deep: #061527;
+  --color-import-white: #f4f7fb;
+  --color-import-silver: #aebbc9;
+  --color-import-silver-deep: #7c8b9c;
   --text-label: 0.6875rem;
   --focus-ring: 0 0 0 3px rgba(201, 169, 98, 0.42);
 }

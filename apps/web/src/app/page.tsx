@@ -8,15 +8,15 @@ export default function Home() {
     <main className={styles.gateway}>
       <header className={styles.header}>
         <BrandLockup />
-        <p className={styles.phase}>Platform V2 · Foundation</p>
+        <p className={styles.phase}>Parfums · Import</p>
       </header>
 
       <section className={styles.intro} aria-labelledby="gateway-title">
-        <p className={styles.eyebrow}>Una sola plataforma</p>
-        <h1 id="gateway-title">Dos experiencias. Una misma casa.</h1>
+        <p className={styles.eyebrow}>Cruzial</p>
+        <h1 id="gateway-title">Dos negocios. Una casa.</h1>
         <p className={styles.summary}>
-          Cruzial reúne entrega inmediata e importaciones bajo una identidad
-          compartida, manteniendo cada operación en su propio flujo.
+          Parfums e Import comparten identidad y plataforma, no catálogo ni
+          carrito. Elige a qué mundo entrar.
         </p>
       </section>
 

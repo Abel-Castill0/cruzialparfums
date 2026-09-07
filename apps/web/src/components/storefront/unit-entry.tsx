@@ -9,7 +9,7 @@ type UnitEntryProps = {
 
 export function UnitEntry({ index, unit }: UnitEntryProps) {
   return (
-    <article className={styles.entry} data-unit={unit.code}>
+    <Link className={styles.entry} data-unit={unit.code} href={unit.href}>
       <span className={styles.index} aria-hidden="true">
         {String(index).padStart(2, "0")}
       </span>
@@ -18,10 +18,10 @@ export function UnitEntry({ index, unit }: UnitEntryProps) {
         <h2>{unit.promise}</h2>
         <p className={styles.scope}>{unit.scope.join(" · ")}</p>
       </div>
-      <Link className={styles.link} href={unit.href}>
+      <span className={styles.link}>
         Entrar a {unit.shortName}
         <span aria-hidden="true">→</span>
-      </Link>
-    </article>
+      </span>
+    </Link>
   );
 }

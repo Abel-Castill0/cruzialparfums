@@ -6,6 +6,7 @@
   gap: 2rem;
   position: relative;
   overflow: hidden;
+  color: inherit;
   transition: color 280ms ease, background-color 280ms ease;
 }
 
@@ -31,8 +32,27 @@
 }
 
 .entry[data-unit="import"] {
-  color: var(--color-paper);
-  background: var(--color-ink);
+  color: var(--color-import-white);
+  background: var(--color-import-navy);
+}
+
+.entry[data-unit="import"] .kicker {
+  color: var(--color-import-silver);
+}
+
+.entry[data-unit="import"] .index,
+.entry[data-unit="import"] .scope {
+  color: var(--color-import-silver);
+  opacity: 0.85;
+}
+
+.entry[data-unit="import"] .link span {
+  color: var(--color-import-silver);
+}
+
+.entry[data-unit="import"]:focus-visible {
+  outline-color: var(--color-import-silver);
+  box-shadow: 0 0 0 3px rgba(174, 187, 201, 0.42);
 }
 
 .index,
@@ -86,7 +106,7 @@
   transition: transform 180ms ease;
 }
 
-.link:hover span {
+.entry:hover .link span {
   transform: translateX(0.3rem);
 }
 
