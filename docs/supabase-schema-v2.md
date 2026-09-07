@@ -26,6 +26,16 @@ Estado: diseño de Fase 0. No es una migración ejecutable ni crea reglas comerc
 Una jerarquía permite relojes y futuras categorías sin nuevas tablas. `spec_schema`
 describe claves admitidas; no convierte atributos no confirmados en contenido.
 
+### `product_categories`
+
+`product_id`, `category_id`, `sort_order`. PK compuesta `(product_id, category_id)`.
+
+Un producto conserva una categoría primaria en `products.category_id` para
+navegación/breadcrumb, pero puede aparecer en categorías adicionales (p. ej. una
+fragancia Árabe incluida también en una colección temática) sin duplicar el
+registro de producto. Tabla vacía hasta que exista un caso real de doble
+categorización — no se siembra contenido de ejemplo.
+
 ### `products`
 
 `id`, `business_unit_id`, `category_id`, `legacy_id`, `slug`, `name`, `brand`,
@@ -49,6 +59,19 @@ Los tamaños 3/5/10 ml y el frasco completo se modelan como variantes; no como c
 
 El mayorista usa tramos flexibles por variante. `context` distingue, por ejemplo,
 `retail` y `wholesale`; no se crean columnas rígidas `price_4`/`price_10` ni equivalentes.
+
+### `wholesale_policies`
+
+`id`, `business_unit_id`, `name`, `scope` (`per_product | per_order | unconfirmed`),
+`min_quantity nullable`, `min_amount nullable`, `currency`, `is_active`, `notes`,
+timestamps, `archived_at`.
+
+Separa la **regla** de elegibilidad mayorista (a qué aplica el tramo: por producto,
+por total de pedido, u otro criterio) del **precio** resultante, que sigue viviendo
+en `variant_price_tiers` con `context = 'wholesale'`. `scope` se crea con el valor
+`unconfirmed` porque `wholesaleThresholdScope` está registrado como `UNKNOWN` en
+`docs/client-decisions.md` — no se fija `per_product` ni `per_order` sin confirmación
+del cliente; el enum ya prevé el valor final para evitar una migración de tipo después.
 
 ### `inventory`
 
@@ -101,15 +124,61 @@ hasta confirmar esa regla.
 El precio y disponibilidad pertenecen a la campaña. Cerrar una campaña no actualiza esta
 tabla destructivamente ni toca pedidos.
 
+## Clientes, envío y adelanto
+
+### `customers`
+
+`id`, `business_unit_id`, `full_name`, `phone`, `email nullable`, `document_id nullable`,
+`verified_customer_status` (`pending_verification | new | returning`), `verified_by nullable`,
+`verified_at nullable`, timestamps, `archived_at`.
+
+Un cliente es independiente por unidad de negocio (misma persona en Parfums e Import son
+dos filas, igual que carrito/catálogo no se comparten). `verified_customer_status` es el
+estado que administra el negocio con el tiempo — arranca en `pending_verification` y solo
+un admin lo mueve a `new`/`returning` con evidencia real de compras previas; nunca lo
+decide el propio cliente. Esta tabla existe porque el estado debe persistir entre pedidos
+para calcular el adelanto (§ `deposit_policies`), algo que un snapshot inmutable por pedido
+no puede resolver por sí solo.
+
+### `deposit_policies`
+
+`id`, `business_unit_id`, `customer_status` (`new | returning`), `deposit_percentage
+numeric(5,2)`, `effective_from`, `effective_until nullable`, `source`
+(`CLIENT_CONFIRMED | UNKNOWN`), timestamps.
+
+Fila **CLIENT_CONFIRMED** prevista para Import: `new` → 50%, `returning` → 70% (confirmado
+por el cliente, ver `docs/client-decisions.md`). El porcentaje vive en datos, no en código
+repetido — evita hardcodear "50%"/"70%" en cada punto del checkout, igual que
+`PARFUMS_SETTINGS`/`IMPORT_SETTINGS` centralizan WhatsApp/correo.
+
+### `shipping_methods`
+
+`id`, `business_unit_id`, `code`, `name`, `is_active`, `notes`, timestamps.
+
+Fila Parfums: `shalom` (agencia + motorizado/contraentrega en Lima). Fila Import:
+`private_delivery`. No existe ni se crea una fila `olva`. Cada unidad de negocio tiene su
+propio método — no se comparte configuración de envío entre Parfums e Import.
+
 ## Pedidos y snapshots
 
 ### `orders`
 
-`id`, `order_number`, `business_unit_id`, `campaign_id nullable`, `channel`, `status`,
-`customer_snapshot jsonb`, `delivery_snapshot jsonb`, `subtotal_amount`, `currency`,
-`notes`, timestamps, `archived_at`.
+`id`, `order_number`, `business_unit_id`, `campaign_id nullable`, `customer_id nullable`,
+`channel`, `status`, `customer_snapshot jsonb`, `delivery_snapshot jsonb`,
+`shipping_method_id nullable`, `claimed_customer_status` (`new | returning`,
+autodeclarado por el cliente en el checkout — no confiable por sí solo),
+`verified_customer_status_snapshot` (copia de `customers.verified_customer_status` al
+momento del pedido), `deposit_policy_snapshot jsonb` (copia inmutable de la fila de
+`deposit_policies` aplicada: porcentaje, id de política, vigencia), `subtotal_amount`,
+`currency`, `notes`, timestamps, `archived_at`.
 
-Los campos/retención de PII y estados finales de pedido requieren decisión del cliente.
+`status` incluye `pending_whatsapp_confirmation` como estado inicial tras crear el
+borrador — nunca se declara "pedido confirmado" solo por generar el mensaje de WhatsApp.
+Los campos/retención de PII y estados finales de pedido más allá de esto requieren
+decisión del cliente. Los snapshots (`customer_snapshot`, `delivery_snapshot`,
+`verified_customer_status_snapshot`, `deposit_policy_snapshot`) son la fuente de verdad
+del pedido una vez confirmado — no se recalculan si `customers`/`deposit_policies` cambian
+después.
 
 ### `order_items`
 
@@ -138,11 +207,17 @@ Campos requeridos, consentimiento, doble opt-in y retención están pendientes.
 Claves iniciales previstas: WhatsApp por unidad, templates por flujo, campaña destacada,
 contacto y banderas operativas. Valores sensibles no pertenecen aquí.
 
-### `admin_profiles`
+### `admin_memberships`
 
-`user_id` FK a `auth.users`, `display_name`, `role`, `is_active`, timestamps.
-V1 admite solo administradores. El primer usuario se provisiona fuera del navegador
-público mediante un procedimiento seguro y luego queda auditado.
+`id`, `user_id` FK a `auth.users`, `business_unit_id`, `role`, `is_active`, timestamps.
+Unique `(user_id, business_unit_id)`.
+
+Un mismo login autentica una vez; después `/admin` pregunta qué negocio administrar
+(Parfums, Import, o ambos si tiene más de una fila) — no son dos sistemas de auth
+separados. El rol puede diferir por unidad (p. ej. admin completo en Parfums, solo
+lectura en Import) sin necesitar cuentas distintas. El primer usuario se provisiona
+fuera del navegador público mediante un procedimiento seguro y luego queda auditado; su
+email inicial viene de variable de entorno/config, no hardcodeado en el código fuente.
 
 ### `audit_logs`
 
@@ -163,29 +238,40 @@ No se actualiza catálogo directamente desde el upload.
 ## Índices y constraints mínimos
 
 - Unicidad de `business_units.code`, SKU no nulo, slugs por contexto y número de campaña.
-- Check de dinero no negativo y cantidad de línea mayor que cero.
+- Unicidad de `deposit_policies(business_unit_id, customer_status, effective_from)`,
+  `shipping_methods(business_unit_id, code)` y `admin_memberships(user_id, business_unit_id)`.
+- Check de dinero no negativo, cantidad de línea mayor que cero y
+  `deposit_percentage` entre 0 y 100.
 - Índices en publicación/categoría, `sales_mode`, campaña/status/fechas, order number,
-  audit entity+fecha y búsquedas normalizadas.
+  `orders(customer_id)`, `customers(business_unit_id, phone)`, audit entity+fecha y
+  búsquedas normalizadas.
 - FK restrictiva desde order items cuando borrar rompería trazabilidad; el flujo normal
-  archiva productos.
+  archiva productos. `orders.customer_id` usa `set null` — el snapshot ya conserva los
+  datos del cliente al momento del pedido, así que borrar/archivar un cliente no rompe
+  pedidos históricos.
 - Trigger o función transaccional para `updated_at` y audit de operaciones críticas.
 
 ## Matriz RLS propuesta
 
 | Recurso | `anon` | admin autenticado |
 | --- | --- | --- |
-| Unidades/categorías/productos/variantes/media | SELECT solo público | CRUD autorizado |
+| Unidades/categorías/product_categories/productos/variantes/media | SELECT solo público | CRUD autorizado |
 | Campañas/campaign products | SELECT solo visible públicamente | CRUD + transiciones |
+| Wholesale policies/price tiers | SELECT solo público (mayorista) | CRUD autorizado |
+| Shipping methods/deposit policies | SELECT solo `is_active` | CRUD autorizado |
 | Settings | SELECT solo `is_public` | CRUD autorizado |
-| Orders/order items | Sin acceso directo | Acceso autorizado |
+| Customers | Sin acceso directo | Acceso autorizado por unidad |
+| Orders/order items | Sin acceso directo | Acceso autorizado por unidad |
 | Waitlist | Sin SELECT/INSERT directo | Acceso autorizado |
-| Admin profiles/audit/import staging | Sin acceso | Acceso autorizado según función |
+| Admin memberships/audit/import staging | Sin acceso | Acceso autorizado según función |
 
 La inscripción a waitlist entra por Route Handler con validación y rate limit. RLS se
 habilita en toda tabla del schema expuesto; grants y policies se prueban por separado.
-Una función `is_admin(auth.uid())`/claim validado centraliza la política sin confiar en
-metadata editable por el usuario. Views públicas deben usar `security_invoker` o una
-alternativa que conserve RLS.
+Con `admin_memberships` ahora scoped por `business_unit_id`, la política pasa a ser
+`is_admin_for(auth.uid(), business_unit_id)` — un admin autorizado en Parfums no debe
+poder mutar filas de Import solo por estar autenticado, y viceversa. Ninguna policy
+confía en metadata editable por el usuario. Views públicas deben usar `security_invoker`
+o una alternativa que conserve RLS.
 
 ## Gates de Fase 3
 
@@ -196,3 +282,10 @@ alternativa que conserve RLS.
 4. No hay `service_role` ni secretos en bundle cliente.
 5. Order snapshot no cambia al modificar producto/variante/campaña.
 6. Archivar un producto con pedidos conserva la historia.
+7. Un admin con `admin_memberships` solo en Parfums no puede leer ni mutar filas de
+   Import (y viceversa), verificado con un test RLS explícito por unidad.
+8. `claimed_customer_status` de un pedido nunca sustituye a
+   `verified_customer_status_snapshot` para calcular el adelanto aplicado — el cálculo
+   real usa siempre el snapshot verificado, nunca el valor autodeclarado por el cliente.
+9. Cambiar `customers.verified_customer_status` o `deposit_policies` después de un pedido
+   no altera `orders.deposit_policy_snapshot` de pedidos ya creados.
