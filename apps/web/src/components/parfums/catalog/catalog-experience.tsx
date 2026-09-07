@@ -138,9 +138,16 @@ export function CatalogExperience({ products, initialFilters }: { products: Cata
                 <input type="search" value={filters.search} onChange={(event) => updateFilter("search", event.target.value)} placeholder="Buscar fragancia…" />
               </label>
               <button ref={filterTriggerRef} type="button" className={styles.mobileFilterTrigger} onClick={() => setFiltersOpen(true)} aria-expanded={filtersOpen} aria-controls="catalog-filters">Filtrar y ordenar</button>
-              <div ref={filterPanelRef} id="catalog-filters" className={`${styles.toolbarControls} ${filtersOpen ? styles.filtersOpen : ""}`}>
+              <div
+                ref={filterPanelRef}
+                id="catalog-filters"
+                className={`${styles.toolbarControls} ${filtersOpen ? styles.filtersOpen : ""}`}
+                role={filtersOpen ? "dialog" : undefined}
+                aria-modal={filtersOpen || undefined}
+                aria-labelledby={filtersOpen ? "catalog-filters-title" : undefined}
+              >
                 <div className={styles.filterSheetHead}>
-                  <strong>Filtrar y ordenar</strong>
+                  <strong id="catalog-filters-title">Filtrar y ordenar</strong>
                   <button data-autofocus type="button" onClick={() => setFiltersOpen(false)} aria-label="Cerrar filtros">×</button>
                 </div>
                 <FilterSelect label="Género" value={filters.gender} onChange={(value) => updateFilter("gender", value)}>
