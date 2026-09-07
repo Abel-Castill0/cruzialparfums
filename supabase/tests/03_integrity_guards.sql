@@ -6,7 +6,7 @@
 
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(13);
+select plan(16);
 
 insert into auth.users (id, instance_id, aud, role, email, encrypted_password, created_at, updated_at)
 values ('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', '00000000-0000-0000-0000-000000000000',
@@ -84,6 +84,22 @@ select is(
   'archiving a product keeps its order history'
 );
 
+select throws_ok(
+  $$delete from public.order_lines
+    where id = '11111111-0000-4000-8000-0000000000e1'$$,
+  '42501',
+  null,
+  'even the owner cannot delete a historical order line'
+);
+
+select throws_ok(
+  $$delete from public.orders
+    where id = '11111111-0000-4000-8000-0000000000d1'$$,
+  '42501',
+  null,
+  'even the owner cannot delete an order and cascade its history'
+);
+
 -- ---------------------------------------------------------------------------
 -- Audit log is append-only
 -- ---------------------------------------------------------------------------
@@ -139,6 +155,14 @@ select lives_ok(
     values ('11111111-1111-4111-8111-111111111111', 'discontinued-but-in-stock',
             'Discontinued But In Stock', 'discontinued', 'available', 'published')$$,
   'a discontinued product can still be available and published'
+);
+
+select lives_ok(
+  $$insert into public.products
+      (business_unit_id, slug, name, production_status, availability_status, publication_status)
+    values ('11111111-1111-4111-8111-111111111111', 'hidden-but-available',
+            'Hidden But Available', 'active', 'available', 'hidden')$$,
+  'a hidden product can remain available without conflating publication and stock'
 );
 
 -- ---------------------------------------------------------------------------
