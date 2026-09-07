@@ -18,11 +18,9 @@ fuente de verdad; este documento las describe, no las reemplaza.
   snapshots de pedido inmutables, validación del adelanto contra estado
   verificado y protección contra suplantar el actor del audit log.
 
-  ⚠️ **IMPLEMENTED aquí significa "escrito y versionado", no "ejecutado".** El
-  stack local de Supabase no pudo arrancar en este entorno (el motor Linux de
-  Docker Desktop no inicia), así que `supabase db reset` y `supabase test db`
-  **todavía no se han corrido**. Ninguna afirmación de este documento sobre el
-  comportamiento en runtime está verificada por ejecución.
+  **RUNTIME TESTED: YES.** El 2026-09-07 se ejecutaron dos resets frescos sobre
+  PostgreSQL local, aplicando las seis migrations y el seed sin parches
+  manuales. Las 4 suites pgTAP finalizaron con 74/74 assertions PASS.
 
 - **PROPOSED (no creadas, con motivo):**
   - `promotions` / `promotion_rules` / `promotion_rewards` — la única promo
@@ -319,7 +317,7 @@ No se actualiza catálogo directamente desde el upload.
   pedidos históricos.
 - Trigger o función transaccional para `updated_at` y audit de operaciones críticas.
 
-## Matriz RLS implementada en SQL (runtime pendiente)
+## Matriz RLS implementada y verificada en runtime
 
 | Recurso | `anon` | admin autenticado |
 | --- | --- | --- |
@@ -344,11 +342,12 @@ o una alternativa que conserve RLS.
 
 ## Gates de Fase 3
 
-Estado actual: **1-3 PENDIENTES DE EJECUCIÓN** (Docker no arrancó en este
-entorno). 4 verificado por test estático. 5-9 están escritos como assertions
-en `supabase/tests/` pero comparten el mismo bloqueo: escritos, no corridos.
+Estado actual: **PASS**. Docker Linux y Supabase local iniciaron; `db:reset`
+reconstruyó el esquema desde cero dos veces y `db:test` ejecutó 4 suites con
+74/74 assertions PASS. Los tipos centrales se generaron desde esa DB mediante
+Supabase CLI `2.117.0` y sus clientes consumidores compilan con `Database`.
 
-Comandos exactos para cerrarlos cuando Docker esté sano:
+Comandos verificados:
 
 ```bash
 npx supabase start

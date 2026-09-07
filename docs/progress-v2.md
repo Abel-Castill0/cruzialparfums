@@ -25,8 +25,8 @@ Git es la fuente de verdad del hash. Recovery de Fase 3 inició en `f82e637`
   sesión SSR y autorización por membresía/unidad; no tiene CRUD todavía.
 - Supabase Foundation existe como migrations versionadas, RLS, pgTAP, seed
   estructural, provisioning manual y ETL legacy a staging `draft`/`legacy`.
-  Docker Linux no está disponible en esta máquina: SQL revisado estáticamente,
-  pero `db reset`/pgTAP continúan pendientes de ejecución real.
+  **RUNTIME TESTED: YES** — Docker Linux + PostgreSQL local, reset fresco y
+  pgTAP 74/74 verificados el 2026-09-07.
 - Preview y Admin permanecen `noindex,nofollow`; Production/cutover no autorizados.
 - **Global Parfums Quality / Parity Gate: PASS** (alcance verificado abajo;
   ningún P0/P1 abierto conocido). No se declara "sin bugs" — ver PARTIAL/
@@ -51,6 +51,11 @@ Git es la fuente de verdad del hash. Recovery de Fase 3 inició en `f82e637`
   separados, `/admin/login`, callback seguro, refresh SSR, páginas dinámicas,
   selector por membresías y ausencia de signup público. Bootstrap crea el
   usuario fuera de la app y otorga membresías mediante SQL operator-run.
+- Tipos Supabase generados desde la DB local y aplicados a clientes browser,
+  server y proxy; la consulta de membresías usa la relación tipada generada.
+- Smoke Auth local: login renderiza, signup devuelve deshabilitado, `/admin` y
+  ambas páginas de unidad redirigen sin sesión, callback no acepta destinos
+  externos y las superficies Admin responden con no-cache.
 - ETL legacy determinista e idempotente: 96 productos en staging, 3 combos
   bloqueados por reconfirmación, 0 inválidos; nunca escribe Postgres ni publica.
 - Recovery Codex→Claude cerrada (5 bugs confirmados corregidos y verificados
@@ -115,14 +120,12 @@ Git es la fuente de verdad del hash. Recovery de Fase 3 inició en `f82e637`
 
 ## PARTIAL
 
-- Supabase runtime local: `BLOCKED_RUNTIME_DOCKER`. Las migrations y 74
-  assertions pgTAP existen, pero no se etiquetan como ejecutadas.
-- Tipos TypeScript generados desde la DB quedan pendientes del primer reset
-  exitoso; no existe una DB local sana desde la cual generarlos.
+- No se probó login con credenciales del cliente ni bootstrap production; no
+  se inventaron credenciales. Autorización RLS por usuario/unidad sí fue
+  ejecutada con fixtures transaccionales pgTAP locales.
 
 ## TODO
 
-- Ejecutar `db:reset` + `db:test` y generar tipos cuando Docker esté sano.
 - Admin CRUD e Import operativo permanecen fuera de este bloque.
 - Matriz responsive/funcional de Import y Admin (este gate cubrió Parfums
   a fondo; Import/Admin solo se verificaron a nivel estructural básico:
@@ -134,8 +137,6 @@ Git es la fuente de verdad del hash. Recovery de Fase 3 inició en `f82e637`
 - Import: catálogo, operación de campañas/pedidos y políticas finales pendientes.
 - Admin: creación del primer usuario, contraseña, MFA y recuperación siguen
   pendientes de decisión; el grant de membresías ya tiene ruta operator-run.
-- Runtime DB local: Docker CLI existe, pero `dockerDesktopLinuxEngine` no
-  arrancó tras un intento acotado; bloquea reset y pgTAP, no Vitest/build.
 - 23 precios de frasco y composiciones combo son paridad legacy, no seed verificado.
 - `wholesaleThresholdScope`: 40 unidades combinadas vs. por SKU sigue UNKNOWN.
 - Reemplazo de `sceptre-malachite`: falta un asset nuevo del cliente.
@@ -163,8 +164,9 @@ Git es la fuente de verdad del hash. Recovery de Fase 3 inició en `f82e637`
   aparecen dinámicas (`ƒ`), no prerenderizadas.
 - ETL: dos escrituras consecutivas produjeron el mismo SHA-256; `etl:check`
   PASS (96 staging, 3 blocked, 0 invalid).
-- pgTAP: 4 archivos, 74 assertions con planes estáticamente consistentes;
-  **NO EJECUTADAS** porque Docker/Postgres local no está disponible.
+- Supabase CLI `2.117.0`: dos `db:reset` frescos PASS; las 6 migrations y el
+  seed estructural se aplicaron desde cero en ambos.
+- pgTAP runtime: 4 archivos, 74/74 assertions PASS en PostgreSQL local.
 - `git diff --check`: limpio.
 - Consola del navegador: 0 errores en las 16 rutas verificadas (Parfums,
   Import, Admin, 404) tras reiniciar el dev server para descartar cache
@@ -188,7 +190,6 @@ Git es la fuente de verdad del hash. Recovery de Fase 3 inició en `f82e637`
 
 ## NEXT
 
-Gate de Parfums cerrado. El siguiente bloque, solo tras revisión externa,
-es cerrar el gate runtime de Supabase (`db:reset`, pgTAP y tipos) en un host con
-Docker sano. Después: Admin CRUD por capability; no iniciar Import operativo,
-Cloudinary, pagos ni automatizaciones dentro de este mismo bloque.
+Gates de Parfums y runtime Supabase cerrados. **DETENER para revisión externa.**
+Después de aprobación explícita: Admin CRUD por capability; no iniciar Import
+operativo, Cloudinary, pagos ni automatizaciones dentro de este mismo bloque.
