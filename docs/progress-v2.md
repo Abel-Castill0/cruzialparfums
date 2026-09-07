@@ -47,23 +47,44 @@ Bloques de Fase 2.5 (orden de ejecución) — estado 2026-09-06/07:
 6. ✅ Combo Builder: tamaño por línea (`ComboLine`), ya no global (`bea08d5`).
 7. ✅ Mayorista: línea confirmada + descuento por categoría, `wholesale-policy.ts`
    (`331f84f`); `wholesaleThresholdScope` queda `UNKNOWN` a propósito.
-8. ⬜ Gateway público `/`, Home real `/parfums`, ComboCarousel — NO iniciado.
-9. ⬜ Cruzial Import (storefront, consolidado, checkout/delivery propios) — NO iniciado.
-10. ⬜ Admin gateway `/admin` — NO iniciado (bloqueado además por bootstrap/roles UNKNOWN).
-11. ⬜ Actualizar `docs/supabase-schema-v2.md` con los contratos reconciliados — NO iniciado.
-12. 🟡 Segunda auditoría: barrida rápida hecha (grep Olva ya cubierto por el
-    gate del bloque 2; sin TODO/FIXME, sin `console.log`, sin "Más Deseados"
-    en `apps/web/src`). Falta: revisión completa de responsive/a11y/perf/
-    hydration en las páginas nuevas de este bloque y en las que aún no
-    existen (8–11).
+8. ✅ Gateway público `/`: paleta Import (azul/blanco/plata) separada de
+   Parfums, card entera como `<Link>` nativo (`d1664df`).
+9. ✅ Home real `/parfums` + `ComboCarousel`: hero/trust/discovery/combos/
+   finder/autenticidad/mayorista en el orden pedido; "Más Deseados" no se
+   reintrodujo (`995ebcd`).
+10. ✅ Reconciliación de datos P1 (Valentino/Sceptre/One Million) — investigada
+    y cerrada antes del resto del bloque (`3a40173`).
+11. ✅ Cruzial Import — **solo foundation**: shell navy/blanco/plata,
+    `/import` con estado de consolidado honesto ("sin consolidado activo",
+    nunca fecha inventada) y categorías como datos, no CRUD ni catálogo
+    falso (`da61c65`). Checkout/adelanto/delivery de Import quedan sin
+    construir — no hay carrito Import todavía, así que no hay nada que
+    conecte a un canal/regla no confirmados.
+12. ✅ Admin gateway `/admin` — **solo foundation**: selector de unidad,
+    `robots: noindex` forzado en todo `/admin/*` independientemente de la
+    política de indexación pública, áreas listadas como "Próximamente" sin
+    auth ni CRUD simulado (`ddb9fa3`).
+13. 🟡 Segunda auditoría: grep de Más Deseados/Olva/TODO/console.log/
+    tamaño-global-combo/marcas viejas — limpio. 4 páginas nuevas (`/`,
+    `/parfums`, `/import`, `/admin`) verificadas sin errores de consola en
+    pestaña nueva. Responsive verificado en 320/375/768/1280/1440 para
+    Gateway/Home/Carousel/Import/Admin (no las 9 anchuras completas del
+    contrato en una sola pasada).
+14. ⬜ Actualizar `docs/supabase-schema-v2.md` con los contratos
+    reconciliados — NO iniciado.
 
-`apps/web`: 20 test files, 79 tests, `npm run check` (export+lint+typecheck+
-test+build) en PASS tras cada commit de este bloque.
+`apps/web`: 18 test files, 79 tests, `npm run check` (export+lint+typecheck+
+test+build) en PASS tras cada commit de este bloque y del anterior.
 
 ## NEXT
-- Bloques 8–11 de Fase 2.5 (Gateway, Home, Carousel, Import, Admin, schema)
-  siguen pendientes — son builds nuevos grandes, no fixes; cada uno necesita
-  su propio ciclo diseño→implementación→test→verificación visual.
+- Bloque 14: actualizar `docs/supabase-schema-v2.md` con los contratos de
+  esta fase (hidden, availabilityStatus, wholesale policy, combo lines).
+- Import: consolidado real, checkout/carrito propio, delivery privado y
+  regla de adelanto 50/70 con `customerStatus` server-verificado (nada de
+  esto existe todavía — solo la home/shell foundation).
+- Admin: bootstrap de autenticación real antes de cualquier CRUD.
+- Matriz responsive completa (320/360/390/430/768/1024/1280/1440/1920) para
+  Gateway/Home/Carousel/Import/Admin — este bloque verificó un subconjunto.
 - Gate final de parity de Parfums (global responsive/SEO/a11y) antes de Supabase/cutover.
 - Mantener Preview `noindex`; validar datos comerciales antes de Supabase/cutover.
 
