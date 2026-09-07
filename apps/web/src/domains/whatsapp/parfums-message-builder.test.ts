@@ -50,19 +50,21 @@ describe("Parfums WhatsApp message builder", () => {
     expect(decodeURIComponent(buildWhatsAppUrl("51924590921", message))).toContain("Ana Pérez");
   });
 
-  it("encodes a custom combo from its selected catalog lines", () => {
+  it("encodes a custom combo with an independent size per line", () => {
     const message = buildCustomComboMessage({
       storeName: "Cruzial Parfums",
-      size: 3,
       lines: [
-        { brand: "Lattafa", name: "Khamrah Clásico", subtotal: 12 },
-        { brand: "Lattafa", name: "Khamrah Qahwa", subtotal: 12 },
-        { brand: "Lattafa", name: "Khamrah Dukhan", subtotal: 12 },
+        { brand: "Lattafa", name: "Khamrah Clásico", subtotal: 26, variantLabel: "10 ml" },
+        { brand: "Lattafa", name: "Khamrah Qahwa", subtotal: 12, variantLabel: "3 ml" },
+        { brand: "Lattafa", name: "Yara Candy", subtotal: 15, variantLabel: "5 ml" },
       ],
-      total: 36,
+      total: 53,
     });
-    expect(message).toContain("combo de 3 fragancias en 3 ml cada una");
-    expect(message).toContain("TOTAL ESTIMADO: S/ 36.00");
+    expect(message).toContain("combo personalizado de 3 fragancias, cada una con su propio tamaño");
+    expect(message).toContain("Khamrah Clásico (10 ml) — S/ 26.00");
+    expect(message).toContain("Khamrah Qahwa (3 ml) — S/ 12.00");
+    expect(message).toContain("Yara Candy (5 ml) — S/ 15.00");
+    expect(message).toContain("TOTAL ESTIMADO: S/ 53.00");
     expect(decodeURIComponent(buildWhatsAppUrl("51924590921", message))).toContain("Khamrah Clásico");
   });
 

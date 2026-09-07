@@ -195,15 +195,13 @@
   line-height: 1.45;
 }
 
-.comboSizes,
-.sizeControl > div {
+.comboSizes {
   margin-top: 16px;
   display: flex;
   gap: 7px;
 }
 
-.comboSizes button,
-.sizeControl button {
+.comboSizes button {
   min-width: 58px;
   min-height: 39px;
   padding: 0 12px;
@@ -214,8 +212,37 @@
   cursor: pointer;
 }
 
-.comboSizes button.selected,
-.sizeControl button.selected {
+.comboSizes button.selected {
+  border-color: #a78542;
+  color: #fff;
+  background: #a78542;
+}
+
+.summaryLineHead {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto 30px;
+  gap: 8px;
+  align-items: center;
+}
+
+.summaryLineSizes {
+  margin-top: 6px;
+  display: flex;
+  gap: 4px;
+}
+
+.summaryLineSizes button {
+  min-width: 36px;
+  min-height: 28px;
+  padding: 0 6px;
+  border: 1px solid rgba(26, 22, 18, 0.16);
+  color: #5f5952;
+  background: #fff;
+  font-size: 9px;
+  cursor: pointer;
+}
+
+.summaryLineSizes button.selected {
   border-color: #a78542;
   color: #fff;
   background: #a78542;
@@ -295,22 +322,6 @@
 
 .controls {
   margin-bottom: 20px;
-  display: grid;
-  grid-template-columns: auto minmax(230px, 1fr);
-  gap: 20px;
-  align-items: end;
-}
-
-.sizeControl > span {
-  color: #756f66;
-  font-size: 8px;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
-.sizeControl > div {
-  margin-top: 8px;
 }
 
 .search input {
@@ -474,11 +485,7 @@
 }
 
 .summary li {
-  min-height: 47px;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto 30px;
-  gap: 8px;
-  align-items: center;
+  padding: 9px 0;
   border-bottom: 1px solid rgba(26, 22, 18, 0.09);
   font-size: 11px;
 }
@@ -591,7 +598,6 @@ button.send:disabled,
 
 .comboSizes button:focus-visible,
 .comboBuy button:focus-visible,
-.sizeControl button:focus-visible,
 .pickerItem:focus-visible,
 .summary button:focus-visible,
 .summary a:focus-visible,
@@ -716,19 +722,6 @@ button.send:disabled,
 
   .comboBody {
     padding: 20px 16px 22px;
-  }
-
-  .controls {
-    grid-template-columns: 1fr;
-  }
-
-  .sizeControl > div {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-  }
-
-  .sizeControl button {
-    min-height: 44px;
   }
 
   .pickerColumn {

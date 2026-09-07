@@ -10,14 +10,18 @@ import {
   PARFUMS_CART_UPDATED_EVENT,
 } from "@/domains/carts/parfums-cart";
 import {
-  calculateComboTotal,
+  addComboLine,
+  calculateComboLinesTotal,
   canSendCombo,
   COMBO_MAX_ITEMS,
   COMBO_MIN_ITEMS,
   COMBO_SIZES,
   filterComboProducts,
   listComboEligibleProducts,
-  resolveComboSelection,
+  removeComboLine,
+  resolveComboLines,
+  setComboLineSize,
+  type ComboLine,
   type ComboSize,
 } from "@/domains/combos/combo-builder";
 import type { CatalogProduct } from "@/domains/catalog/types";
@@ -91,21 +95,20 @@ export function CombosExperience({
   storeName: string;
 }) {
   const eligible = useMemo(() => listComboEligibleProducts(products), [products]);
-  const [size, setSize] = useState<ComboSize>(3);
   const [query, setQuery] = useState("");
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [lines, setLines] = useState<ComboLine[]>([]);
   const [notice, setNotice] = useState("");
   const visible = useMemo(() => filterComboProducts(eligible, query), [eligible, query]);
-  const selected = useMemo(() => resolveComboSelection(eligible, selectedIds), [eligible, selectedIds]);
-  const total = useMemo(() => calculateComboTotal(selected, size), [selected, size]);
-  const ready = canSendCombo(selected.length);
+  const resolved = useMemo(() => resolveComboLines(eligible, lines), [eligible, lines]);
+  const total = useMemo(() => calculateComboLinesTotal(resolved), [resolved]);
+  const ready = canSendCombo(resolved.length);
   const message = buildCustomComboMessage({
     storeName,
-    size,
-    lines: selected.map((product) => ({
-      brand: product.brand,
-      name: product.name,
-      subtotal: product.decantPrices[String(size)] ?? 0,
+    lines: resolved.map((entry) => ({
+      brand: entry.product.brand,
+      name: entry.product.name,
+      subtotal: entry.price,
+      variantLabel: `${entry.line.size} ml`,
     })),
     total,
   });
@@ -117,14 +120,20 @@ export function CombosExperience({
   }
 
   function toggle(productId: string) {
-    setSelectedIds((current) => {
-      if (current.includes(productId)) return current.filter((id) => id !== productId);
+    setLines((current) => {
+      if (current.some((line) => line.productId === productId)) {
+        return removeComboLine(current, productId);
+      }
       if (current.length >= COMBO_MAX_ITEMS) {
         announce(`El máximo es ${COMBO_MAX_ITEMS} fragancias. Quita una para cambiarla.`);
         return current;
       }
-      return [...current, productId];
+      return addComboLine(current, productId);
     });
+  }
+
+  function changeLineSize(productId: string, size: ComboSize) {
+    setLines((current) => setComboLineSize(current, productId, size));
   }
 
   return (
@@ -159,20 +168,12 @@ export function CombosExperience({
       <section className={styles.builderSection} id="arma-combo" aria-labelledby="builder-title">
         <div className={styles.sectionHead}>
           <div><p>Hazlo a tu manera</p><h2 id="builder-title">Arma tu propio <em>combo.</em></h2></div>
-          <span>Elige un tamaño y selecciona entre {COMBO_MIN_ITEMS} y {COMBO_MAX_ITEMS} fragancias. Cada precio se toma del catálogo actual.</span>
+          <span>Selecciona entre {COMBO_MIN_ITEMS} y {COMBO_MAX_ITEMS} fragancias y elige el tamaño de cada una por separado. Cada precio se toma del catálogo actual.</span>
         </div>
 
         <div className={styles.builder} data-combo-builder>
           <div className={styles.pickerColumn}>
             <div className={styles.controls}>
-              <div className={styles.sizeControl}>
-                <span>Tamaño por fragancia</span>
-                <div>
-                  {COMBO_SIZES.map((value) => (
-                    <button key={value} type="button" aria-pressed={size === value} className={size === value ? styles.selected : ""} onClick={() => setSize(value)}>{value} ml</button>
-                  ))}
-                </div>
-              </div>
               <label className={styles.search}>
                 <span className={styles.srOnly}>Buscar perfume para tu combo</span>
                 <input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar perfume para añadir…" />
@@ -182,8 +183,10 @@ export function CombosExperience({
             <div className={styles.picker} role="listbox" aria-label="Selecciona fragancias para tu combo" aria-multiselectable="true">
               {visible.length === 0 ? <p className={styles.noResults}>No encontramos fragancias con ese nombre.</p> : null}
               {visible.map((product) => {
-                const isSelected = selectedIds.includes(product.legacyId);
-                const disabled = selectedIds.length >= COMBO_MAX_ITEMS && !isSelected;
+                const line = lines.find((candidate) => candidate.productId === product.legacyId);
+                const isSelected = Boolean(line);
+                const disabled = lines.length >= COMBO_MAX_ITEMS && !isSelected;
+                const referenceSize = line?.size ?? COMBO_SIZES[0];
                 return (
                   <button
                     key={product.legacyId}
@@ -197,7 +200,11 @@ export function CombosExperience({
                   >
                     <span className={styles.check} aria-hidden="true">✓</span>
                     <span className={styles.thumb}>{product.imageUrl ? <Image src={product.imageUrl} alt="" fill sizes="58px" className={styles.thumbImage} /> : null}</span>
-                    <span className={styles.itemInfo}><small>{product.brand}</small><strong>{product.name}</strong><em>{money(product.decantPrices[String(size)] ?? 0)}</em></span>
+                    <span className={styles.itemInfo}>
+                      <small>{product.brand}</small>
+                      <strong>{product.name}</strong>
+                      <em>{isSelected ? `${referenceSize} ml · ` : "desde "}{money(product.decantPrices[String(referenceSize)] ?? 0)}</em>
+                    </span>
                   </button>
                 );
               })}
@@ -205,27 +212,42 @@ export function CombosExperience({
           </div>
 
           <aside className={styles.summary} aria-label="Resumen de tu combo" aria-live="polite">
-            <div className={styles.summaryHead}><strong>Tu combo</strong><span>{selected.length}/{COMBO_MAX_ITEMS} fragancias</span></div>
-            {selected.length === 0 ? <p className={styles.emptySummary}>Selecciona fragancias del listado para verlas aquí.</p> : (
+            <div className={styles.summaryHead}><strong>Tu combo</strong><span>{resolved.length}/{COMBO_MAX_ITEMS} fragancias</span></div>
+            {resolved.length === 0 ? <p className={styles.emptySummary}>Selecciona fragancias del listado para verlas aquí.</p> : (
               <ul>
-                {selected.map((product) => (
-                  <li key={product.legacyId}>
-                    <span>{product.name}</span>
-                    <strong>{money(product.decantPrices[String(size)] ?? 0)}</strong>
-                    <button type="button" onClick={() => toggle(product.legacyId)} aria-label={`Quitar ${product.name} del combo`}>×</button>
+                {resolved.map((entry) => (
+                  <li key={entry.product.legacyId}>
+                    <div className={styles.summaryLineHead}>
+                      <span>{entry.product.name}</span>
+                      <strong>{money(entry.price)}</strong>
+                      <button type="button" onClick={() => toggle(entry.product.legacyId)} aria-label={`Quitar ${entry.product.name} del combo`}>×</button>
+                    </div>
+                    <div className={styles.summaryLineSizes} role="group" aria-label={`Tamaño de ${entry.product.name}`}>
+                      {COMBO_SIZES.map((value) => (
+                        <button
+                          key={value}
+                          type="button"
+                          aria-pressed={entry.line.size === value}
+                          className={entry.line.size === value ? styles.selected : ""}
+                          onClick={() => changeLineSize(entry.product.legacyId, value)}
+                        >
+                          {value} ml
+                        </button>
+                      ))}
+                    </div>
                   </li>
                 ))}
               </ul>
             )}
-            {selected.length >= COMBO_MAX_ITEMS ? <p className={styles.limit}>Llegaste al máximo. Quita una fragancia para cambiarla.</p> : null}
+            {resolved.length >= COMBO_MAX_ITEMS ? <p className={styles.limit}>Llegaste al máximo. Quita una fragancia para cambiarla.</p> : null}
             <div className={styles.summaryTotal}><span>Total estimado</span><strong data-combo-total>{money(total)}</strong></div>
-            {!ready ? <p className={styles.minimum}>Selecciona {COMBO_MIN_ITEMS - selected.length} {COMBO_MIN_ITEMS - selected.length === 1 ? "fragancia más" : "fragancias más"} para continuar.</p> : <p className={styles.minimum}>Listo para enviar. Stock y total final se confirman en WhatsApp.</p>}
+            {!ready ? <p className={styles.minimum}>Selecciona {COMBO_MIN_ITEMS - resolved.length} {COMBO_MIN_ITEMS - resolved.length === 1 ? "fragancia más" : "fragancias más"} para continuar.</p> : <p className={styles.minimum}>Listo para enviar. Stock y total final se confirman en WhatsApp.</p>}
             {ready ? <a className={styles.send} href={whatsappUrl} target="_blank" rel="noopener noreferrer">Continuar en WhatsApp <span aria-hidden="true">↗</span></a> : <button className={styles.send} type="button" disabled>Continuar en WhatsApp</button>}
           </aside>
         </div>
 
         <div className={styles.mobileSticky} data-combo-sticky>
-          <div><strong>{selected.length ? `${selected.length} seleccionada${selected.length === 1 ? "" : "s"}` : "Elige tus fragancias"}</strong><span>{ready ? money(total) : `mínimo ${COMBO_MIN_ITEMS}`}</span></div>
+          <div><strong>{resolved.length ? `${resolved.length} seleccionada${resolved.length === 1 ? "" : "s"}` : "Elige tus fragancias"}</strong><span>{ready ? money(total) : `mínimo ${COMBO_MIN_ITEMS}`}</span></div>
           {ready ? <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">Continuar <span aria-hidden="true">↗</span></a> : <button type="button" disabled>Continuar</button>}
         </div>
       </section>

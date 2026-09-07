@@ -78,19 +78,17 @@ export function buildCheckoutMessage({
 
 export function buildCustomComboMessage({
   storeName,
-  size,
   lines,
   total,
 }: {
   storeName: string;
-  size: number;
-  lines: readonly Pick<ParfumsCheckoutMessageLine, "brand" | "name" | "subtotal">[];
+  lines: readonly Pick<ParfumsCheckoutMessageLine, "brand" | "name" | "subtotal" | "variantLabel">[];
   total: number;
 }) {
   return [
-    `Hola ${storeName}. Quiero solicitar un combo de ${lines.length} fragancias en ${size} ml cada una:`,
+    `Hola ${storeName}. Quiero solicitar un combo personalizado de ${lines.length} fragancias, cada una con su propio tamaño:`,
     "",
-    ...lines.map((line) => `- ${line.brand} ${line.name} — ${money(line.subtotal)}`),
+    ...lines.map((line) => `- ${line.brand} ${line.name} (${line.variantLabel}) — ${money(line.subtotal)}`),
     "",
     `TOTAL ESTIMADO: ${money(total)}`,
     "",
