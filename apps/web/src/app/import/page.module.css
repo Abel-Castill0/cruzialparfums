@@ -1,0 +1,160 @@
+.home {
+  color: var(--color-import-navy);
+  background: var(--color-import-white);
+}
+
+.hero {
+  background: var(--color-import-navy);
+  color: var(--color-import-white);
+  padding: clamp(64px, 9vw, 120px) 0 clamp(48px, 6vw, 80px);
+}
+
+.heroInner {
+  width: min(900px, calc(100% - 48px));
+  margin-inline: auto;
+  text-align: center;
+}
+
+.eyebrow {
+  color: var(--color-import-silver);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+
+.hero h1 {
+  margin: 14px 0 18px;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  font-weight: 500;
+  line-height: 0.98;
+  letter-spacing: -0.02em;
+}
+
+.hero > .heroInner > p {
+  max-width: 46ch;
+  margin: 0 auto;
+  color: rgba(244, 247, 251, 0.78);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.status {
+  width: min(1240px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 28px 0 0;
+}
+
+.statusCard {
+  padding: 20px 24px;
+  border: 1px solid rgba(11, 31, 61, 0.14);
+  background: #fff;
+}
+
+.statusLabel {
+  color: var(--color-import-silver-deep);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.statusValue {
+  margin-top: 6px;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 20px;
+  font-weight: 500;
+}
+
+.statusNote {
+  margin-top: 6px;
+  color: #5c6672;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.categories {
+  width: min(1240px, calc(100% - 48px));
+  margin-inline: auto;
+  padding: clamp(48px, 7vw, 82px) 0;
+}
+
+.sectionHead {
+  margin-bottom: 30px;
+}
+
+.sectionHead p {
+  color: var(--color-import-silver-deep);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.sectionHead h2 {
+  margin: 8px 0 0;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: clamp(28px, 3.6vw, 42px);
+  font-weight: 500;
+}
+
+.categoryGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.categoryCard {
+  padding: 26px 22px;
+  border: 1px solid rgba(11, 31, 61, 0.14);
+  background: #fff;
+  transition: border-color 200ms ease, transform 200ms ease;
+}
+
+.categoryCard[data-available="true"] {
+  cursor: default;
+}
+
+.categoryCard:hover {
+  border-color: var(--color-import-navy);
+  transform: translateY(-3px);
+}
+
+.categoryTitle {
+  display: block;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 21px;
+  font-weight: 500;
+}
+
+.categoryNote {
+  margin-top: 8px;
+  color: #5c6672;
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.categoryBadge {
+  display: inline-block;
+  margin-top: 14px;
+  padding: 4px 9px;
+  border: 1px solid rgba(11, 31, 61, 0.16);
+  color: var(--color-import-silver-deep);
+  font-size: 8.5px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 900px) {
+  .categoryGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .categoryGrid {
+    grid-template-columns: 1fr;
+  }
+}
