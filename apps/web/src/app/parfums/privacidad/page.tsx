@@ -22,7 +22,7 @@ export default function PrivacidadPage() {
   const contactEmail = config.CONTACT_EMAIL ?? PARFUMS_SETTINGS.contactEmail;
 
   return (
-    <>
+    <main>
       <div className={styles.breadcrumbs}>
         <Breadcrumbs items={crumbs} />
       </div>
@@ -94,6 +94,6 @@ export default function PrivacidadPage() {
           </ul>
         </div>
       </section>
-    </>
+    </main>
   );
 }

@@ -28,7 +28,7 @@ export default function ContactoPage() {
   const storeName = "Cruzial Parfums";
 
   return (
-    <>
+    <main>
       <div className={styles.breadcrumbs}>
         <Breadcrumbs items={crumbs} />
       </div>
@@ -130,6 +130,6 @@ export default function ContactoPage() {
           </div>
         </div>
       </section>
-    </>
+    </main>
   );
 }

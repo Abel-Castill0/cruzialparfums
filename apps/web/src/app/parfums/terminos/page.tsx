@@ -22,7 +22,7 @@ export default function TerminosPage() {
   const contactEmail = config.CONTACT_EMAIL ?? PARFUMS_SETTINGS.contactEmail;
 
   return (
-    <>
+    <main>
       <div className={styles.breadcrumbs}>
         <Breadcrumbs items={crumbs} />
       </div>
@@ -114,6 +114,6 @@ export default function TerminosPage() {
           </ul>
         </div>
       </section>
-    </>
+    </main>
   );
 }

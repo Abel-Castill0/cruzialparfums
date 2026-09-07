@@ -84,7 +84,7 @@ export default function NosotrosPage() {
   const whatsappNumber = config.WA_NUMBER ?? PARFUMS_SETTINGS.whatsappNumber;
 
   return (
-    <>
+    <main>
       <div className={styles.breadcrumbs}>
         <Breadcrumbs items={crumbs} />
       </div>
@@ -233,6 +233,6 @@ export default function NosotrosPage() {
           </div>
         </div>
       </section>
-    </>
+    </main>
   );
 }
