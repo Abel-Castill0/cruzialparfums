@@ -173,8 +173,13 @@ select throws_ok(
 );
 
 select throws_ok(
-  $$update public.orders set status = 'confirmed'
-    where id = '11111111-0000-4000-8000-000000000071'$$,
+  $$insert into public.orders (id, business_unit_id, order_number, status)
+    values (
+      '11111111-0000-4000-8000-000000000073',
+      '11111111-1111-4111-8111-111111111111',
+      'PARFUMS-FUTURE-STATE',
+      'confirmed'
+    )$$,
   '23514', null, 'an unconfirmed future order state cannot be invented'
 );
 
