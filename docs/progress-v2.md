@@ -30,25 +30,40 @@ detalle CONFIRMED/UNKNOWN de esta fase. Capacidades técnicas de Fase 2
 (Product Detail, Cart, Checkout, Combos, Finder, Mayorista, Institucional,
 404) se conservan y se reconcilian, no se reescriben desde cero.
 
-Bloques de Fase 2.5 (orden de ejecución):
-1. Docs: reconciliar reglas (este commit).
-2. Datos de catálogo: `red-intensely`→Dumont Paris, `reserve-privee`→Givenchy,
+Bloques de Fase 2.5 (orden de ejecución) — estado 2026-09-06/07:
+
+1. ✅ Docs: reconciliar reglas (`c15f4e0`).
+2. ✅ Datos de catálogo: `red-intensely`→Dumont Paris, `reserve-privee`→Givenchy,
    `purple-melancholia`→designer, `bir-intense`→hidden, spelling de
-   `cdn-preciux-i`/`amber-o-gold-e`, Olva→Shalom.
-3. Descontinuado≠agotado (`productionStatus`/`availabilityStatus`).
-4. Promoción de regalo solo elegible en frasco completo (regla centralizada).
-5. Product Card: control de cantidad.
-6. Combo Builder: tamaño por línea, no global.
-7. Mayorista: nueva línea + política configurable por categoría.
-8. Gateway público `/`, Home real `/parfums`, ComboCarousel.
-9. Cruzial Import (storefront, consolidado, checkout/delivery propios).
-10. Admin gateway `/admin`.
-11. Actualizar `docs/supabase-schema-v2.md` con los contratos reconciliados.
-12. Segunda auditoría (Olva, "Más Deseados", promo en decants, copy viejo,
-    a11y, responsive, hydration, console errors).
+   `cdn-preciux-i`/`amber-o-gold-e`, `supremacy-noi` nombre completo
+   (`55f3234`). Olva→Shalom + grep-gate de regresión (`58770eb`, encontró y
+   corrigió 3 menciones vivas en Contacto/Nosotros/Checkout).
+3. ✅ Descontinuado≠agotado: `availabilityStatus` separado de `discontinued`
+   en el dominio; ProductCard/ProductDetail dejan de bloquear compra o
+   mostrar "Agotado" sin evidencia (`a669087`).
+4. ✅ Promoción de regalo solo elegible en frasco completo, regla
+   centralizada en `promotion-eligibility.ts` (`5718652`).
+5. ✅ Product Card: control de cantidad `[-] N [+] Añadir` (`7ca6df8`).
+6. ✅ Combo Builder: tamaño por línea (`ComboLine`), ya no global (`bea08d5`).
+7. ✅ Mayorista: línea confirmada + descuento por categoría, `wholesale-policy.ts`
+   (`331f84f`); `wholesaleThresholdScope` queda `UNKNOWN` a propósito.
+8. ⬜ Gateway público `/`, Home real `/parfums`, ComboCarousel — NO iniciado.
+9. ⬜ Cruzial Import (storefront, consolidado, checkout/delivery propios) — NO iniciado.
+10. ⬜ Admin gateway `/admin` — NO iniciado (bloqueado además por bootstrap/roles UNKNOWN).
+11. ⬜ Actualizar `docs/supabase-schema-v2.md` con los contratos reconciliados — NO iniciado.
+12. 🟡 Segunda auditoría: barrida rápida hecha (grep Olva ya cubierto por el
+    gate del bloque 2; sin TODO/FIXME, sin `console.log`, sin "Más Deseados"
+    en `apps/web/src`). Falta: revisión completa de responsive/a11y/perf/
+    hydration en las páginas nuevas de este bloque y en las que aún no
+    existen (8–11).
+
+`apps/web`: 20 test files, 79 tests, `npm run check` (export+lint+typecheck+
+test+build) en PASS tras cada commit de este bloque.
 
 ## NEXT
-- Completar los bloques de Fase 2.5 pendientes en el orden anterior.
+- Bloques 8–11 de Fase 2.5 (Gateway, Home, Carousel, Import, Admin, schema)
+  siguen pendientes — son builds nuevos grandes, no fixes; cada uno necesita
+  su propio ciclo diseño→implementación→test→verificación visual.
 - Gate final de parity de Parfums (global responsive/SEO/a11y) antes de Supabase/cutover.
 - Mantener Preview `noindex`; validar datos comerciales antes de Supabase/cutover.
 
