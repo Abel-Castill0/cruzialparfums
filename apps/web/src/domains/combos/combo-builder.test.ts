@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { LegacyCatalogRepository } from "../catalog/legacy-catalog-repository";
+import { buildCustomComboMessage } from "../whatsapp/parfums-message-builder";
 import {
   addComboLine,
   calculateComboLinesTotal,
@@ -76,6 +77,50 @@ describe("custom combo rules", () => {
     const untouched = lines.filter((line) => line.productId !== "khamrah-clasico");
     expect(untouched.every((line) => line.size === 3)).toBe(true);
     expect(lines.find((line) => line.productId === "khamrah-clasico")?.size).toBe(10);
+  });
+
+  it("A=10ml, B=3ml, C=5ml; changing only B to 10ml leaves A and C exactly as they were", () => {
+    // Exact real-world scenario requested for QA: three distinct sizes up
+    // front, then a single line change, verified end to end including the
+    // WhatsApp message.
+    let lines: ComboLine[] = [];
+    lines = addComboLine(lines, "khamrah-clasico"); // A
+    lines = addComboLine(lines, "khamrah-qahwa"); // B
+    lines = addComboLine(lines, "yara-candy"); // C
+    lines = setComboLineSize(lines, "khamrah-clasico", 10); // A = 10ml
+    lines = setComboLineSize(lines, "khamrah-qahwa", 3); // B = 3ml (already default, explicit)
+    lines = setComboLineSize(lines, "yara-candy", 5); // C = 5ml
+
+    // Now change only B.
+    lines = setComboLineSize(lines, "khamrah-qahwa", 10);
+
+    const resolved = resolveComboLines(eligible, lines);
+    function entryFor(legacyId: string) {
+      const entry = resolved.find((candidate) => candidate.product.legacyId === legacyId);
+      if (!entry) throw new Error(`missing resolved line for ${legacyId}`);
+      return entry;
+    }
+    expect(entryFor("khamrah-clasico").line.size).toBe(10); // A unchanged
+    expect(entryFor("khamrah-qahwa").line.size).toBe(10); // B changed
+    expect(entryFor("yara-candy").line.size).toBe(5); // C unchanged
+    expect(entryFor("khamrah-clasico").price).toBe(26);
+    expect(entryFor("khamrah-qahwa").price).toBe(26);
+    expect(entryFor("yara-candy").price).toBe(15);
+
+    const message = buildCustomComboMessage({
+      storeName: "Cruzial Parfums",
+      lines: resolved.map((entry) => ({
+        brand: entry.product.brand,
+        name: entry.product.name,
+        subtotal: entry.price,
+        variantLabel: `${entry.line.size} ml`,
+      })),
+      total: calculateComboLinesTotal(resolved),
+    });
+    expect(message).toContain("Khamrah Clásico (10 ml) — S/ 26.00");
+    expect(message).toContain("Khamrah Qahwa (10 ml) — S/ 26.00");
+    expect(message).toContain("Yara Candy (5 ml) — S/ 15.00");
+    expect(message).toContain("TOTAL ESTIMADO: S/ 67.00");
   });
 
   it("removes exactly one line without touching the others", () => {
