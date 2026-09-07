@@ -1,7 +1,26 @@
 # Cruzial Platform V2 — Client decisions
 
-Última actualización: 2026-09-06 (Fase 2.5 — Business Reconciliation). Una entrada
-`UNKNOWN` nunca es una regla de negocio.
+Última actualización: 2026-09-07 (Full Product Completion). Una entrada
+`UNKNOWN` nunca es una regla de negocio. Cuando una decisión más nueva
+contradice una anterior, la más nueva (LATEST) gana — se documenta el
+reemplazo, no se borra el historial a ciegas.
+
+## CONFIRMED — 2026-09-07 (contacto y paleta — LATEST, reemplaza 2026-09-06)
+
+- **WhatsApp**: `+51 926 390 591` (E.164 `51926390591`), reemplaza
+  `51924590921`. Único número inicial para Parfums e Import, pero cada
+  unidad tiene su propio objeto de settings
+  (`domains/platform/settings.ts`) — no un valor global compartido —
+  para poder divergir sin tocar la otra unidad.
+- **Correo público**: `dominiocruzial@gmail.com` (nuevo campo, no existía
+  antes en `CRUZIAL_CONFIG`).
+- **Paleta Parfums**: **negro + blanco**. El dorado deja de ser color de
+  UI dominante (pills/botones/precios/bordes); puede permanecer dentro del
+  logo o de fotografías. Aplicado progresivamente — ver
+  `docs/progress-v2.md` para qué superficies ya migraron.
+- **Paleta Import**: azul profundo + blanco + plata, ya establecida en la
+  ronda anterior — confirmado explícitamente: sin rojo, sin dorado
+  dominante, no es "Parfums recoloreado".
 
 ## CONFIRMED — 2026-09-06 (Fase 2.5, catálogo)
 
