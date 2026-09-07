@@ -41,6 +41,10 @@ export type LegacyProductRecord = {
   discontinued?: boolean;
   hidden?: boolean;
   outOfStock?: boolean;
+  isFeatured?: boolean;
+  featuredRank?: number | null;
+  featuredFrom?: string | null;
+  featuredUntil?: string | null;
   img: string | null;
   imgBottle: string | null;
   imgSet: string | null;
@@ -79,6 +83,8 @@ export type CatalogProduct = {
   bestseller: boolean;
   hidden: boolean;
   availabilityStatus: AvailabilityStatus;
+  isFeatured: boolean;
+  featuredRank: number | null;
   imageUrl: string | null;
   decantImageUrl: string | null;
   bottleImageUrl: string | null;

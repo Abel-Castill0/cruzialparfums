@@ -58,4 +58,11 @@ describe("LegacyCatalogRepository", () => {
     expect(wholesale.find((entry) => entry.product.legacyId === "khamrah-clasico")?.prices)
       .toEqual({ unit: 130, m4: 122, m12: 114 });
   });
+
+  it("listFeatured() is empty until real curation exists — never invents one", () => {
+    // No product is marked isFeatured today (docs/client-decisions.md: no
+    // client-confirmed curation). This is the honest, correct state, not a
+    // bug — FeaturedPerfumeRail must render nothing when this is [].
+    expect(repository.listFeatured()).toEqual([]);
+  });
 });

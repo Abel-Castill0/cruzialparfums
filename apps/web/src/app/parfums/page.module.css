@@ -167,8 +167,13 @@
 .discovery,
 .comboSection,
 .finder,
+.customCombo,
+.decantEdu,
 .authenticity,
-.wholesaleCta {
+.wholesaleCta,
+.evidence,
+.faq,
+.finalCta {
   width: min(1240px, calc(100% - 48px));
   margin-inline: auto;
   padding: clamp(48px, 7vw, 82px) 0;
@@ -176,7 +181,11 @@
 
 .discovery,
 .comboSection,
-.authenticity {
+.decantEdu,
+.authenticity,
+.evidence,
+.faq,
+.finalCta {
   border-top: 1px solid rgba(26, 22, 18, 0.12);
 }
 
@@ -357,11 +366,208 @@
   background: transparent;
 }
 
+/* Custom combo CTA */
+
+.customCombo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.customCombo h2 {
+  margin: 8px 0 10px;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: clamp(26px, 3.6vw, 40px);
+  font-weight: 500;
+}
+
+.customCombo h2 em {
+  color: #756f66;
+  font-style: normal;
+}
+
+.customCombo > div > p {
+  max-width: 46ch;
+  color: #6f6961;
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.customComboCta {
+  flex: 0 0 auto;
+  min-height: 49px;
+  padding: 0 24px;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  border: 1px solid #0a0806;
+  color: #0a0806;
+  background: #fff;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.customComboCta:hover {
+  color: #fff;
+  background: #0a0806;
+}
+
+/* Decant education */
+
+.decantGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.decantGrid article {
+  padding: 26px 24px;
+  border: 1px solid rgba(26, 22, 18, 0.13);
+  background: #fff;
+}
+
+.decantGrid strong {
+  display: block;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 30px;
+  font-weight: 500;
+}
+
+.decantGrid > article > span {
+  display: block;
+  margin-top: 6px;
+  color: #756f66;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.decantGrid p {
+  margin-top: 12px;
+  color: #6f6961;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+/* Evidence (empty state) */
+
+.evidence {
+  text-align: center;
+}
+
+.evidence h2 {
+  margin: 8px auto 12px;
+  max-width: 20ch;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: clamp(26px, 3.6vw, 38px);
+  font-weight: 500;
+}
+
+.evidence p {
+  max-width: 52ch;
+  margin: 0 auto;
+  color: #6f6961;
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+/* FAQ */
+
+.faqGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px 32px;
+}
+
+.faqGrid h3 {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 17px;
+  font-weight: 500;
+}
+
+.faqGrid p {
+  margin-top: 8px;
+  color: #6f6961;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+/* Final CTA */
+
+.finalCta {
+  text-align: center;
+}
+
+.finalCta h2 {
+  margin: 8px auto 22px;
+  max-width: 18ch;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: clamp(32px, 5vw, 54px);
+  font-weight: 500;
+}
+
+.finalCta h2 em {
+  color: #756f66;
+  font-style: normal;
+}
+
+.finalCtaActions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.finalCtaPrimary,
+.finalCtaSecondary {
+  min-height: 49px;
+  padding: 0 26px;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  border: 1px solid #0a0806;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.finalCtaPrimary {
+  color: #fff;
+  background: #0a0806;
+}
+
+.finalCtaPrimary:hover {
+  color: #0a0806;
+  background: transparent;
+}
+
+.finalCtaSecondary {
+  color: #0a0806;
+  background: transparent;
+}
+
+.finalCtaSecondary:hover {
+  color: #fff;
+  background: #0a0806;
+}
+
 @media (max-width: 900px) {
   .trustStrip,
   .discoveryGrid,
-  .principiosGrid {
+  .principiosGrid,
+  .decantGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .faqGrid {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -381,18 +587,31 @@
   }
 
   .discoveryGrid,
-  .principiosGrid {
+  .principiosGrid,
+  .decantGrid {
     grid-template-columns: 1fr;
   }
 
   .finder,
+  .customCombo,
   .wholesaleCta {
     flex-direction: column;
     align-items: flex-start;
   }
 
   .finderCta,
+  .customComboCta,
   .wholesaleLink {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .finalCtaActions {
+    flex-direction: column;
+  }
+
+  .finalCtaPrimary,
+  .finalCtaSecondary {
     width: 100%;
     justify-content: center;
   }

@@ -55,6 +55,8 @@ function toCatalogProduct(
     bestseller: Boolean(product.bestseller),
     hidden: Boolean(product.hidden),
     availabilityStatus: product.outOfStock ? "out_of_stock" : "available",
+    isFeatured: Boolean(product.isFeatured),
+    featuredRank: product.featuredRank ?? null,
     imageUrl: media?.url ?? null,
     decantImageUrl: decantMedia?.url ?? null,
     bottleImageUrl: bottleMedia?.url ?? null,
@@ -92,6 +94,27 @@ export class LegacyCatalogRepository {
 
   listCombos(): CatalogProduct[] {
     return this.list().filter((product) => product.type === "combo");
+  }
+
+  /**
+   * FeaturedPerfumeRail source. Admin-curatable via `isFeatured`/
+   * `featuredRank`/`featuredFrom`/`featuredUntil` — NOT a sales claim, NOT
+   * a hardcoded eternal list. Returns [] whenever nothing is currently
+   * marked featured (which is the case for the whole catalog today — no
+   * client-confirmed curation exists yet, see assets/data.js). The rail
+   * component must render nothing when this is empty, not a placeholder.
+   */
+  listFeatured(): CatalogProduct[] {
+    const now = Date.now();
+    return catalogFixture.products
+      .filter((product) => {
+        if (product.hidden || !product.isFeatured) return false;
+        if (product.featuredFrom && new Date(product.featuredFrom).getTime() > now) return false;
+        if (product.featuredUntil && new Date(product.featuredUntil).getTime() < now) return false;
+        return true;
+      })
+      .map((product) => toCatalogProduct(product, this.mediaSource))
+      .sort((a, b) => (a.featuredRank ?? Infinity) - (b.featuredRank ?? Infinity));
   }
 
   listWholesale(): CatalogWholesaleProduct[] {

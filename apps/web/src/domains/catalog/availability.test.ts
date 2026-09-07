@@ -21,6 +21,8 @@ function product(overrides: Partial<CatalogProduct>): CatalogProduct {
     bestseller: false,
     hidden: false,
     availabilityStatus: "available",
+    isFeatured: false,
+    featuredRank: null,
     imageUrl: null,
     decantImageUrl: null,
     bottleImageUrl: null,

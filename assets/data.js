@@ -38,7 +38,8 @@ const M = {
 };
 
 /* Fábrica compacta de productos.
-   extra: { tag, desc, bottle, bestseller, discontinued, hidden, outOfStock }
+   extra: { tag, desc, bottle, bestseller, discontinued, hidden, outOfStock,
+            isFeatured, featuredRank, featuredFrom, featuredUntil }
    Provenance del claim "100% original" en la desc por defecto: CLIENT_CONFIRMED
    (dueño del negocio, 2026-08-30) — cumple el requisito de CLAUDE.md de que un
    claim de autenticidad necesita confirmación explícita, igual que un precio.
@@ -48,7 +49,13 @@ const M = {
    `discontinued` (ya no se fabrica, pero puede seguir habiendo unidades).
    outOfStock: CLIENT_CONFIRMED 2026-09-06 — "descontinuado" ≠ "agotado".
    Solo bloquea la compra si hay evidencia real de que no queda stock; no se
-   marca por defecto en ningún producto descontinuado sin esa confirmación. */
+   marca por defecto en ningún producto descontinuado sin esa confirmación.
+   isFeatured/featuredRank/featuredFrom/featuredUntil: 2026-09-07 — curación
+   editorial administrable para el FeaturedPerfumeRail de Home ("Selección
+   Cruzial"), explícitamente NO una lista eterna hardcodeada ni una métrica
+   de ventas. Ningún producto está marcado `isFeatured: true` todavía — no
+   hay curación confirmada por el cliente y no se inventa una. El rail existe
+   y funciona, pero no renderiza nada hasta que Admin marque productos reales. */
 const P = (id, brand, name, gender, type, family, conc, price, notes, mood, extra) => ({
   id, brand, name, gender, type, family, conc, price, notes, mood,
   tag: extra && extra.tag || (type === "combo" ? "Combo" : type === "arab" ? "Árabe" : type === "niche" ? "Nicho" : "Designer"),
@@ -56,6 +63,10 @@ const P = (id, brand, name, gender, type, family, conc, price, notes, mood, extr
   bottle: extra && extra.bottle || null,
   hidden: !!(extra && extra.hidden),
   outOfStock: !!(extra && extra.outOfStock),
+  isFeatured: !!(extra && extra.isFeatured),
+  featuredRank: (extra && typeof extra.featuredRank === "number") ? extra.featuredRank : null,
+  featuredFrom: extra && extra.featuredFrom || null,
+  featuredUntil: extra && extra.featuredUntil || null,
   /* UNVERIFIED — INTERNAL ONLY — DO NOT EXPOSE AS A COMMERCIAL CLAIM.
      bestseller: editorial/curatorial flag set by the team (products worth highlighting
      for scent profile, availability, margin, etc.) — NOT a claim of verified sales volume
