@@ -22,7 +22,15 @@ producto (`img/perfumes/webp/*`) antes de aplicarse. Provenance: `CLIENT_CONFIRM
   DERIVED_VALIDATED (foto) + CLIENT_CONFIRMED.
 - **`purple-melancholia`** (Valentino, ya `CLIENT_CONFIRMED` 2026-08-30 en
   marca): clasificación comercial `type` corregida `niche` → `designer`.
-  CLIENT_CONFIRMED 2026-09-06.
+  CLIENT_CONFIRMED 2026-09-06. **Re-verificado 2026-09-07**: es el ÚNICO
+  registro con `brand: "Valentino"` en todo `assets/data.js` (grep
+  exhaustivo) — no existe un segundo producto Valentino mal clasificado.
+  Foto comparada: `img/perfumes/webp/Purple Melancholia.webp` (desplegada)
+  vs. `img/perfumes/VALENTINO - VALENTINO MELANCHOLIA.png` (original nuevo,
+  untracked) — mismo frasco (Valentino Born In Roma Uomo Intense, rockstud
+  negro-a-morado), misma etiqueta "VALENTINO". La foto desplegada no está
+  dañada; no se sustituye. `type: designer` es la única corrección que
+  correspondía a Valentino y ya se aplicó.
 - **`bir-intense`** (Burberry Brit Intense): el cliente confirmó que no lo
   tiene en inventario. Se marca `hidden: true` (nuevo campo) y se retira de
   catálogo, Finder, relacionados, búsqueda, mayorista y sitemap futuro. No se
@@ -46,9 +54,14 @@ producto (`img/perfumes/webp/*`) antes de aplicarse. Provenance: `CLIENT_CONFIRM
   `img/perfumes/transparent/MAISON ALHAMBRA - SCEPTRE MALACHITE.webp` — la
   etiqueta dice "SCEPTRE MALACHITE / MAISON ALHAMBRA", coincide exactamente
   con marca/nombre ya almacenados. La foto NO está dañada ni es incorrecta;
-  no se modifica nada. La nota "cambiar la foto incorrecta" del cliente ya
-  estaba resuelta por una ronda anterior de reemplazo de fotos originales
-  (ver `img/perfumes/*.png` sin procesar, AGENTS.md).
+  no se modifica nada. **CLIENT_ASSET_MISSING (confirmado 2026-09-07)**:
+  búsqueda exhaustiva de candidatos nuevos (`git status`, `find img -iname
+  "*sceptre*" -o -iname "*spectre*" -o -iname "*malachite*" -o -iname
+  "*alhambra*"`) no encuentra ningún archivo nuevo/untracked destinado a
+  sustituir esta foto — solo aparece la ya desplegada. El cliente pidió
+  "cambiar la foto" pero no ha subido ningún reemplazo todavía; no se
+  descarga una foto de Internet para llenar ese vacío. Pendiente: que el
+  cliente suba el archivo correcto si de verdad quiere reemplazarla.
 - **Envíos Parfums**: `Olva` no se usa en ningún runtime de V2 (`apps/web/src`
   no lo menciona). El sitio legacy estático (`assets/data.js`,
   `checkout.html`, `index.html`, etc.) sí lo menciona junto a Shalom; se
@@ -133,13 +146,19 @@ producto (`img/perfumes/webp/*`) antes de aplicarse. Provenance: `CLIENT_CONFIRM
 - Reglas de archive/hard-delete, retención de pedidos, PII y audit logs.
 - Si los pedidos requieren fecha de nacimiento u otro dato adicional del comprador.
 - Políticas legales finales de Import y fecha de aprobación del cliente.
-- **UNKNOWN_CLIENT_CLARIFICATION — `1-million-lucky`**: el cliente pidió
-  mostrar "One Million", pero el producto real y su foto son "1 Million
-  **Lucky**" (Paco Rabanne), una fragancia distinta al "1 Million" base. No
-  se renombra: haría pasar la variante Lucky por el perfume base, que sería
-  una falsedad comercial. Pendiente: ¿el cliente se refiere a este registro,
-  a un producto "1 Million" base que no existe en el catálogo, o quiere que
-  el decant physical corresponda a otro frasco?
+- **`1-million-lucky` — RESUELTO PARCIALMENTE 2026-09-07**: único producto
+  del catálogo con "Million"/"Lucky" en el nombre (grep exhaustivo en
+  `assets/data.js`, sin homónimos ni segundo registro "1 Million" base). La
+  foto (verificada 2026-09-06) muestra inequívocamente "1 MILLION LUCKY" —
+  es la variante Lucky, no el perfume base "1 Million". Corrección aplicada
+  sin cambiar identidad: `name` "1 Million Lucky" → **"One Million Lucky"**
+  (numeral → palabra, "Lucky" se conserva porque es lo que confirma la
+  foto). `legacy_id`/slug sin cambios. CLIENT_CONFIRMED (instrucción literal
+  "1 million a one million") + DERIVED_VALIDATED (foto).
+  **UNKNOWN_CLIENT_CLARIFICATION restante**: si el cliente en realidad
+  quería el perfume base "1 Million" (sin "Lucky") — ese producto no existe
+  en el catálogo actual y no se inventa. No renombrar a "One Million" a
+  secas mientras eso no se confirme explícitamente.
 - **UNKNOWN_CLIENT_CLARIFICATION — `cdn-preciux-i` / "Précieux"**: el
   producto real es "Club de Nuit Precieux I" (Armaf); no hay ningún registro
   "Moudon Précieux" en el catálogo. Se corrigió solo la ortografía de la

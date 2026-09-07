@@ -69,10 +69,17 @@ describe("business data contract — regression gate", () => {
     expect(product?.name).toBe("Gentleman Réserve Privée");
   });
 
-  it("Valentino Purple Melancholia is classified as designer, not niche", () => {
-    const product = repository.findByLegacyId("purple-melancholia");
-    expect(product?.brand).toBe("Valentino");
-    expect(product?.type).toBe("designer");
+  it("every Valentino product is classified as designer, not niche", () => {
+    const valentinoProducts = repository
+      .list()
+      .filter((product) => product.brand === "Valentino");
+    // Exhaustive as of 2026-09-07: exactly one Valentino record exists
+    // (purple-melancholia). If a second one is ever added, this contract
+    // still holds it to designer without needing to be told its id.
+    expect(valentinoProducts.length).toBeGreaterThan(0);
+    for (const product of valentinoProducts) {
+      expect(product.type).toBe("designer");
+    }
   });
 
   it("Burberry Brit Intense is not public anywhere", () => {
@@ -82,12 +89,26 @@ describe("business data contract — regression gate", () => {
     expect(repository.listWholesale().some((entry) => entry.product.legacyId === "bir-intense")).toBe(false);
   });
 
-  it("Sceptre Malachite keeps its client-verified brand/name", () => {
-    // Photo re-verified 2026-09-06 against the client's own bottle photo —
-    // already correct, see docs/client-decisions.md.
+  it("Sceptre Malachite keeps its client-verified brand/name/asset", () => {
+    // Photo re-verified 2026-09-06 and again 2026-09-07 (exhaustive search
+    // for a replacement asset: none exists, CLIENT_ASSET_MISSING) against
+    // the client's own bottle photo — already correct, see
+    // docs/client-decisions.md. Pinning the asset path so nobody swaps in
+    // an unverified image without going through that same verification.
     const product = repository.findByLegacyId("sceptre-malachite");
     expect(product?.brand).toBe("Maison Alhambra");
     expect(product?.name).toBe("Sceptre Malachite");
+    expect(decodeURIComponent(product?.imageUrl ?? "")).toContain("SCEPTRE MALACHITE");
+  });
+
+  it("One Million Lucky: numeral spelled out, variant identity preserved", () => {
+    // Client-confirmed 2026-09-07: "1"->"One" only. "Lucky" stays because
+    // the bottle photo is unambiguously that variant, not the base
+    // "1 Million". legacy_id/slug unchanged. See docs/client-decisions.md.
+    const product = repository.findByLegacyId("1-million-lucky");
+    expect(product?.brand).toBe("Paco Rabanne");
+    expect(product?.name).toBe("One Million Lucky");
+    expect(product?.slug).toBe("1-million-lucky");
   });
 
   it("discontinued products remain purchasable absent out-of-stock evidence", () => {

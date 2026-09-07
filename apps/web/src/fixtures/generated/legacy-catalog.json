@@ -4,7 +4,7 @@
     "purpose": "legacy_visual_parity_only",
     "futureSeedEligible": false,
     "sourcePath": "assets/data.js",
-    "sourceSha256": "2617572bcd50d081023c6e4d55ce795af324cf352c7a3e88e1ff1ba28f77ec8b",
+    "sourceSha256": "9cfc0c0cb99017aee253602a659cde1258284d2e4ea912c5afec55e894378009",
     "verificationStatus": "legacy",
     "counts": {
       "total": 99,
@@ -4290,7 +4290,7 @@
     {
       "id": "1-million-lucky",
       "brand": "Paco Rabanne",
-      "name": "1 Million Lucky",
+      "name": "One Million Lucky",
       "gender": "men",
       "type": "designer",
       "family": "Gourmand",
@@ -4312,7 +4312,7 @@
         "glow": "rgba(184,134,11,.4)"
       },
       "tag": "Designer",
-      "desc": "1 Million Lucky — fragancia de la familia gourmand, concentración EDT. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "desc": "One Million Lucky — fragancia de la familia gourmand, concentración EDT. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
       "bottle": {
         "100": 780
       },

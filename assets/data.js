@@ -462,7 +462,7 @@ window.CRUZIAL_PRODUCTS = [
   P("sauvage-edt", "Dior", "Sauvage EDT", "men", "designer", "Fresco", "EDT", T223048, ["Bergamota", "Pimienta", "Ámbar"], M.m8, { bestseller: true, bottle: { 100: 650 } }),
   P("dylan-blue", "Versace", "Dylan Blue", "men", "designer", "Fresco", "EDP", T303869, ["Bergamota", "Agua", "Almizcle"], M.m1, { bottle: { 100: 620 } }),
   P("adg-profondo-edp", "Armani", "Acqua di Gio Profondo EDP", "men", "designer", "Fresco", "EDP", T263456, ["Marino", "Bergamota", "Madera"], M.m2, { bottle: { 100: 700 } }),
-  P("1-million-lucky", "Paco Rabanne", "1 Million Lucky", "men", "designer", "Gourmand", "EDT", T263456, ["Ciruela", "Avellana", "Ámbar"], M.m3, { bottle: { 100: 780 } }),
+  P("1-million-lucky", "Paco Rabanne", "One Million Lucky", "men", "designer", "Gourmand", "EDT", T263456, ["Ciruela", "Avellana", "Ámbar"], M.m3, { bottle: { 100: 780 } }), // name: CLIENT_CONFIRMED 2026-09-07 — "1"→"One" (numeral a palabra); "Lucky" se conserva porque la botella (foto) es inequívocamente esa variante, no la base "1 Million". legacy_id sin cambios.
   P("invictus-elixir", "Paco Rabanne", "Invictus Elixir", "men", "designer", "Fresco", "EDP", T243251, ["Acuático", "Ámbar", "Madera"], M.m1),
   P("reserve-privee", "Givenchy", "Gentleman Réserve Privée", "men", "designer", "Amaderado", "EDP", T263456, ["Madera", "Ámbar", "Vainilla"], M.m4), // brand/name: CLIENT_CONFIRMED + DERIVED_VALIDATED (foto) 2026-09-06 — no es Armani
   P("cedrat-boise-int", "Mancera", "Cedrat Boise Intense", "men", "niche", "Cítrico", "EDP", T263456, ["Limón", "Cedro", "Almizcle"], M.m5, { bottle: { 100: 820 } }),
