@@ -41,12 +41,11 @@ export type AdminSessionResult =
 type MembershipRow = {
   business_unit_id: string;
   role: string;
-  business_units: { code: string } | { code: string }[] | null;
+  business_units: { code: string } | null;
 };
 
 function normalizeUnit(row: MembershipRow): AdminMembership | null {
-  const unit = Array.isArray(row.business_units) ? row.business_units[0] : row.business_units;
-  const code = unit?.code;
+  const code = row.business_units?.code;
   if (!isBusinessUnitCode(code)) return null;
   if (row.role !== "admin" && row.role !== "viewer") return null;
 
@@ -91,7 +90,7 @@ export async function getAdminSession(): Promise<AdminSessionResult> {
 
   if (error) return { status: "unavailable" };
 
-  const memberships = (data as MembershipRow[] | null ?? [])
+  const memberships = (data ?? [])
     .map(normalizeUnit)
     .filter((membership): membership is AdminMembership => membership !== null);
 

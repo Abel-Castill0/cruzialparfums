@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import type { Database } from "./database.types";
 import { readSupabasePublicEnv } from "./env";
 
 /**
@@ -24,7 +25,7 @@ export async function refreshSupabaseSession(
   // fixture, so this is a no-op rather than an error.
   if (!env) return response;
 
-  const supabase = createServerClient(env.url, env.publishableKey, {
+  const supabase = createServerClient<Database>(env.url, env.publishableKey, {
     cookies: {
       getAll() {
         return request.cookies.getAll();

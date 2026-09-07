@@ -2,6 +2,7 @@
 
 import { createBrowserClient } from "@supabase/ssr";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "./database.types";
 import { readSupabasePublicEnv } from "./env";
 
 /**
@@ -12,9 +13,9 @@ import { readSupabasePublicEnv } from "./env";
  * value read through this client as authorization, and never do a permission
  * check here: the server re-checks every mutation.
  */
-export function createSupabaseBrowserClient(): SupabaseClient | null {
+export function createSupabaseBrowserClient(): SupabaseClient<Database> | null {
   const env = readSupabasePublicEnv();
   if (!env) return null;
 
-  return createBrowserClient(env.url, env.publishableKey);
+  return createBrowserClient<Database>(env.url, env.publishableKey);
 }

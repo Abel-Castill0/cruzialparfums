@@ -3,6 +3,7 @@ import "server-only";
 import { createServerClient } from "@supabase/ssr";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
+import type { Database } from "./database.types";
 import { readSupabasePublicEnv, readSupabaseSecretKey } from "./env";
 
 /**
@@ -19,13 +20,13 @@ import { readSupabasePublicEnv, readSupabaseSecretKey } from "./env";
  * Returns null when Supabase is not configured, so callers render an honest
  * "backend not configured" state instead of failing with a credential error.
  */
-export async function createSupabaseServerClient(): Promise<SupabaseClient | null> {
+export async function createSupabaseServerClient(): Promise<SupabaseClient<Database> | null> {
   const env = readSupabasePublicEnv();
   if (!env) return null;
 
   const cookieStore = await cookies();
 
-  return createServerClient(env.url, env.publishableKey, {
+  return createServerClient<Database>(env.url, env.publishableKey, {
     cookies: {
       getAll() {
         return cookieStore.getAll();
@@ -56,12 +57,12 @@ export async function createSupabaseServerClient(): Promise<SupabaseClient | nul
  *
  * Returns null when the secret key is unset.
  */
-export function createSupabaseAdminClient(): SupabaseClient | null {
+export function createSupabaseAdminClient(): SupabaseClient<Database> | null {
   const env = readSupabasePublicEnv();
   const secretKey = readSupabaseSecretKey();
   if (!env || !secretKey) return null;
 
-  return createServerClient(env.url, secretKey, {
+  return createServerClient<Database>(env.url, secretKey, {
     auth: { persistSession: false, autoRefreshToken: false },
     cookies: {
       // No session is carried: this client is not "a user", it is the server.
