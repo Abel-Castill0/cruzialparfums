@@ -8,6 +8,7 @@ import {
   buildWholesaleInquiryMessage,
   buildWholesaleProductMessage,
 } from "./parfums-message-builder";
+import { PARFUMS_SETTINGS } from "../platform/settings";
 
 describe("Parfums WhatsApp message builder", () => {
   it("builds and encodes a product consultation without inventing a number", () => {
@@ -16,9 +17,9 @@ describe("Parfums WhatsApp message builder", () => {
       brand: "Lattafa",
       productName: "Khamrah Clásico",
     });
-    const url = buildWhatsAppUrl("51924590921", message);
+    const url = buildWhatsAppUrl(PARFUMS_SETTINGS.whatsappNumber, message);
     expect(url).toBe(
-      `https://wa.me/51924590921?text=${encodeURIComponent(message)}`,
+      `https://wa.me/${PARFUMS_SETTINGS.whatsappNumber}?text=${encodeURIComponent(message)}`,
     );
     expect(decodeURIComponent(new URL(url).searchParams.get("text") ?? "")).toBe(
       message,
@@ -47,7 +48,7 @@ describe("Parfums WhatsApp message builder", () => {
     expect(message).toContain("TOTAL ESTIMADO: S/ 32.00");
     expect(message).toContain("Continúo en WhatsApp para confirmar stock");
     expect(message.toLocaleLowerCase("es")).not.toContain("pedido confirmado");
-    expect(decodeURIComponent(buildWhatsAppUrl("51924590921", message))).toContain("Ana Pérez");
+    expect(decodeURIComponent(buildWhatsAppUrl(PARFUMS_SETTINGS.whatsappNumber, message))).toContain("Ana Pérez");
   });
 
   it("encodes a custom combo with an independent size per line", () => {
@@ -65,7 +66,7 @@ describe("Parfums WhatsApp message builder", () => {
     expect(message).toContain("Khamrah Qahwa (3 ml) — S/ 12.00");
     expect(message).toContain("Yara Candy (5 ml) — S/ 15.00");
     expect(message).toContain("TOTAL ESTIMADO: S/ 53.00");
-    expect(decodeURIComponent(buildWhatsAppUrl("51924590921", message))).toContain("Khamrah Clásico");
+    expect(decodeURIComponent(buildWhatsAppUrl(PARFUMS_SETTINGS.whatsappNumber, message))).toContain("Khamrah Clásico");
   });
 
   it("labels wholesale row pricing as referential legacy data", () => {
