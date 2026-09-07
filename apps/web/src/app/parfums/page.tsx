@@ -73,7 +73,7 @@ export default function ParfumsHomePage() {
             alt="Cruzial Parfums — perfumería árabe, designer y de nicho"
             fill
             sizes="100vw"
-            priority
+            preload
             className={styles.heroImage}
           />
         ) : null}
