@@ -3,8 +3,14 @@
   --color-ink-soft: #151310;
   --color-ivory: #f7f3ea;
   --color-paper: #fffdf8;
-  --color-gold: #c9a962;
-  --color-gold-deep: #a78542;
+  /* Client-confirmed 2026-09-07: Parfums UI is black + white now — gold is
+     no longer a dominant UI color (it can still live in the logo mark or in
+     photography). These two token NAMES are kept so every existing
+     `var(--color-gold*)` reference updates from one place instead of a
+     file-by-file hunt, but their VALUES are ink, not gold, from here on.
+     New code should reach for --color-ink / --color-ink-muted directly. */
+  --color-gold: #0a0908;
+  --color-gold-deep: #0a0908;
   --color-ink-muted: #756f66;
   --color-line: rgba(10, 9, 8, 0.16);
   /* Cruzial Import palette — deep blue + white + silver. Kept out of
@@ -16,7 +22,7 @@
   --color-import-silver: #aebbc9;
   --color-import-silver-deep: #7c8b9c;
   --text-label: 0.6875rem;
-  --focus-ring: 0 0 0 3px rgba(201, 169, 98, 0.42);
+  --focus-ring: 0 0 0 3px rgba(10, 9, 8, 0.32);
 }
 
 html {

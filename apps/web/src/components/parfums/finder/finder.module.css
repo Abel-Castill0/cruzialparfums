@@ -41,7 +41,7 @@
 }
 
 .head > span {
-  color: #c9a962;
+  color: rgba(255, 253, 248, 0.7);
   font-family: var(--font-display), Georgia, serif;
   font-size: 17px;
   font-style: italic;
@@ -87,7 +87,7 @@
 .progress i {
   height: 100%;
   display: block;
-  background: #c9a962;
+  background: #fffdf8;
   transition: width 220ms ease;
 }
 
@@ -140,13 +140,13 @@
 }
 
 .options button.selected {
-  border-color: #c9a962;
-  color: #d6bc81;
-  background: rgba(201, 169, 98, 0.12);
+  border-color: #fffdf8;
+  color: #fffdf8;
+  background: rgba(255, 253, 248, 0.14);
 }
 
 .options button span {
-  color: #c9a962;
+  color: rgba(255, 253, 248, 0.7);
 }
 
 .nav {
@@ -188,7 +188,7 @@
 
 .resultEyebrow {
   margin-bottom: 9px;
-  color: #c9a962;
+  color: rgba(255, 253, 248, 0.7);
   font-size: 9px;
   letter-spacing: 0.22em;
   text-transform: uppercase;
@@ -197,7 +197,7 @@
 .methodNote {
   margin-top: 10px;
   padding-left: 12px;
-  border-left: 2px solid rgba(201, 169, 98, 0.5);
+  border-left: 2px solid rgba(255, 255, 255, 0.5);
   color: rgba(255, 255, 255, 0.43);
   font-size: 10px;
   line-height: 1.5;
@@ -223,7 +223,7 @@
 .topResult {
   grid-column: 1 / -1;
   grid-template-columns: 104px minmax(0, 1fr);
-  border-color: rgba(201, 169, 98, 0.48);
+  border-color: rgba(255, 255, 255, 0.4);
 }
 
 .resultMedia {
@@ -247,7 +247,7 @@
   display: inline-flex;
   gap: 5px;
   color: #17140f;
-  background: #c9a962;
+  background: #fffdf8;
   font-size: 7px;
   font-weight: 600;
   letter-spacing: 0.08em;
@@ -344,7 +344,7 @@
   max-width: calc(100% - 32px);
   padding: 12px 17px;
   color: #17140f;
-  background: #c9a962;
+  background: #fffdf8;
   font-size: 10px;
   text-align: center;
   opacity: 0;
@@ -365,7 +365,7 @@
 .resultCard button:focus-visible,
 .resultFooter a:focus-visible,
 .resultFooter button:focus-visible {
-  outline: 2px solid #c9a962;
+  outline: 2px solid #fffdf8;
   outline-offset: 2px;
 }
 

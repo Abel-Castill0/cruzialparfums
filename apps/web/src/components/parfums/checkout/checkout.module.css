@@ -14,7 +14,7 @@
 .hero > p,
 .panelHead span,
 .formHead > span {
-  color: #a78542;
+  color: #756f66;
   font-size: 9px;
   font-weight: 600;
   letter-spacing: 0.24em;
@@ -31,7 +31,7 @@
 }
 
 .hero h1 em {
-  color: #a78542;
+  color: #756f66;
   font-weight: 400;
 }
 
@@ -151,7 +151,7 @@
 }
 
 .total strong {
-  color: #a78542;
+  color: #0a0806;
   font-family: var(--font-display), Georgia, serif;
   font-size: 31px;
   font-weight: 500;
@@ -238,8 +238,8 @@
 .formPanel input:focus-visible,
 .formPanel select:focus-visible,
 .formPanel textarea:focus-visible {
-  border-color: #a78542;
-  box-shadow: 0 0 0 2px rgba(167, 133, 66, 0.14);
+  border-color: #0a0806;
+  box-shadow: 0 0 0 2px rgba(10, 9, 8, 0.14);
 }
 
 .submit {

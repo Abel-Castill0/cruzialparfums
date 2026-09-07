@@ -20,7 +20,7 @@
 }
 
 .announcement span {
-  color: #c9a962;
+  color: #fffdf8;
 }
 
 .siteHeader {
@@ -56,9 +56,9 @@
   overflow: hidden;
   display: grid;
   place-items: center;
-  border: 1px solid rgba(201, 169, 98, 0.46);
+  border: 1px solid rgba(10, 9, 8, 0.28);
   border-radius: 50%;
-  color: #c9a962;
+  color: #0a0806;
   font-family: var(--font-display), Georgia, serif;
   font-size: 22px;
 }
@@ -84,7 +84,7 @@
 
 .brandWord small {
   margin-top: 4px;
-  color: #a78542;
+  color: #756f66;
   font-size: 8px;
   font-weight: 600;
   letter-spacing: 0.42em;
@@ -112,7 +112,7 @@
   left: 0;
   height: 1px;
   content: "";
-  background: #c9a962;
+  background: #0a0806;
   transform: scaleX(0);
   transition: transform 220ms ease;
 }
@@ -144,7 +144,7 @@
 }
 
 .iconButton:hover {
-  color: #a78542;
+  color: #0a0806;
   background: #f7f3ea;
 }
 
@@ -160,7 +160,7 @@
   border: 2px solid #fff;
   border-radius: 20px;
   color: #fff;
-  background: #a78542;
+  background: #0a0806;
   font-size: 8px;
   font-weight: 600;
 }
@@ -220,7 +220,7 @@
 
 .eyebrow {
   margin-bottom: 24px;
-  color: #a78542;
+  color: #756f66;
   font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.24em;
@@ -231,7 +231,7 @@
   width: 100%;
   padding: 8px 0 20px;
   border: 0;
-  border-bottom: 1px solid #c9a962;
+  border-bottom: 1px solid #0a0806;
   border-radius: 0;
   outline: 0;
   color: #17130f;
@@ -455,7 +455,7 @@
 }
 
 .mobileMenu > a:hover {
-  color: #c9a962;
+  color: #fffdf8;
 }
 
 .mobileMenu > a.menuSecondary {
@@ -543,7 +543,7 @@
 
 .footerColumn h2 {
   margin-bottom: 10px;
-  color: #c9a962;
+  color: #fffdf8;
   font-size: 9px;
   font-weight: 600;
   letter-spacing: 0.2em;

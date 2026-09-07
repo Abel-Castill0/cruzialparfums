@@ -15,7 +15,7 @@
 }
 
 .eyebrow {
-  color: #a78542;
+  color: #756f66;
   font-size: 9px;
   font-weight: 600;
   letter-spacing: 0.24em;
@@ -38,7 +38,7 @@
 
 .hero h1 em,
 .sectionHead h2 em {
-  color: #a78542;
+  color: #756f66;
   font-weight: 400;
 }
 
@@ -68,8 +68,8 @@
 }
 
 .hero > a:hover {
-  border-color: #a78542;
-  background: #a78542;
+  border-color: #0a0806;
+  background: #0a0806;
 }
 
 .features {
@@ -86,7 +86,7 @@
 }
 
 .features span {
-  color: #a78542;
+  color: #0a0806;
   font-size: 15px;
 }
 
@@ -196,8 +196,8 @@
 }
 
 .toolbar input:focus-visible {
-  border-color: #a78542;
-  box-shadow: 0 0 0 2px rgba(167, 133, 66, 0.13);
+  border-color: #0a0806;
+  box-shadow: 0 0 0 2px rgba(10, 9, 8, 0.13);
 }
 
 .filterList {
@@ -219,9 +219,9 @@
 }
 
 .filterList button[aria-pressed="true"] {
-  border-color: #a78542;
+  border-color: #0a0806;
   color: #fff;
-  background: #a78542;
+  background: #0a0806;
 }
 
 .count {
@@ -274,7 +274,7 @@
 }
 
 .tableWrap td strong {
-  color: #a78542;
+  color: #0a0806;
   font-family: var(--font-display), Georgia, serif;
   font-size: 16px;
   font-weight: 500;
@@ -310,8 +310,8 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  border: 1px solid #a78542;
-  color: #a78542;
+  border: 1px solid #0a0806;
+  color: #0a0806;
   font-size: 9px;
   font-weight: 600;
   letter-spacing: 0.1em;
@@ -322,7 +322,7 @@
 
 .action a:hover {
   color: #fff;
-  background: #a78542;
+  background: #0a0806;
 }
 
 .tableNote {
@@ -359,7 +359,7 @@
 .empty button {
   margin-top: 6px;
   padding: 10px 18px;
-  border: 1px solid #a78542;
+  border: 1px solid #0a0806;
   color: #2c2925;
   background: #fff;
   font-size: 10px;
@@ -389,7 +389,7 @@
 }
 
 .gift > span {
-  color: #a78542;
+  color: #0a0806;
   font-size: 20px;
 }
 
@@ -417,12 +417,12 @@
 
 .stepGrid article {
   padding: 26px 22px;
-  border-top: 1px solid #a78542;
+  border-top: 1px solid #0a0806;
   background: #fff;
 }
 
 .stepGrid span {
-  color: #a78542;
+  color: #756f66;
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.18em;
@@ -515,8 +515,8 @@
 .form input:focus-visible,
 .form select:focus-visible,
 .form textarea:focus-visible {
-  border-color: #a78542;
-  box-shadow: 0 0 0 2px rgba(167, 133, 66, 0.13);
+  border-color: #0a0806;
+  box-shadow: 0 0 0 2px rgba(10, 9, 8, 0.13);
 }
 
 .form button {
@@ -533,7 +533,7 @@
 }
 
 .form button:hover {
-  background: #a78542;
+  background: #2c2925;
 }
 
 .form small {
@@ -551,7 +551,7 @@
 .form select:focus-visible,
 .form textarea:focus-visible,
 .toolbar input:focus-visible {
-  outline: 2px solid #a78542;
+  outline: 2px solid #0a0806;
   outline-offset: 2px;
 }
 

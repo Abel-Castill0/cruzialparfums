@@ -29,7 +29,7 @@
 }
 
 .brand {
-  color: #8d774b;
+  color: #756f66;
   font-size: 8px;
   font-weight: 600;
   letter-spacing: 0.19em;
@@ -113,12 +113,12 @@
 .name:focus-visible,
 .quantity button:focus-visible,
 .remove:focus-visible {
-  outline: 2px solid #a78542;
+  outline: 2px solid #0a0806;
   outline-offset: 2px;
 }
 
 .subtotal {
-  color: #a78542;
+  color: #0a0806;
   font-family: var(--font-display), Georgia, serif;
   font-size: 19px;
   font-weight: 500;

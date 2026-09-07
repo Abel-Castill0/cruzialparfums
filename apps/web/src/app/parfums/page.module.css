@@ -3,7 +3,7 @@
 }
 
 .eyebrow {
-  color: #a78542;
+  color: #756f66;
   font-size: 9px;
   font-weight: 600;
   letter-spacing: 0.24em;
@@ -27,7 +27,7 @@
 }
 
 .sectionHead h2 em {
-  color: #a78542;
+  color: #756f66;
   font-weight: 400;
   font-style: normal;
 }
@@ -43,7 +43,7 @@
 }
 
 .sectionHead > a:hover {
-  color: #a78542;
+  color: #756f66;
 }
 
 /* Hero */
@@ -78,7 +78,7 @@
 }
 
 .heroCopy .eyebrow {
-  color: #c9a962;
+  color: #fffdf8;
 }
 
 .heroCopy h1 {
@@ -139,7 +139,7 @@
 
 .trustStrip strong {
   display: block;
-  color: #a78542;
+  color: #0a0806;
   font-family: var(--font-display), Georgia, serif;
   font-size: 20px;
   font-weight: 500;
@@ -197,7 +197,7 @@
 }
 
 .discoveryCard:hover {
-  border-color: rgba(167, 133, 66, 0.5);
+  border-color: rgba(10, 9, 8, 0.4);
   transform: translateY(-3px);
 }
 
@@ -218,7 +218,7 @@
 .discoveryArrow {
   display: block;
   margin-top: 18px;
-  color: #a78542;
+  color: #0a0806;
   font-size: 15px;
 }
 
@@ -236,7 +236,7 @@
 }
 
 .finder .eyebrow {
-  color: #c9a962;
+  color: #fffdf8;
 }
 
 .finder h2 {
@@ -247,7 +247,7 @@
 }
 
 .finder h2 em {
-  color: #c9a962;
+  color: #fffdf8;
   font-style: normal;
 }
 
@@ -265,9 +265,9 @@
   display: inline-flex;
   align-items: center;
   gap: 9px;
-  border: 1px solid #c9a962;
+  border: 1px solid #fffdf8;
   color: #0a0806;
-  background: #c9a962;
+  background: #fffdf8;
   font-size: 9px;
   font-weight: 600;
   letter-spacing: 0.14em;
@@ -275,7 +275,7 @@
 }
 
 .finderCta:hover {
-  color: #c9a962;
+  color: #fffdf8;
   background: transparent;
 }
 
@@ -288,7 +288,7 @@
 }
 
 .principiosGrid article span {
-  color: #a78542;
+  color: #756f66;
   font-family: var(--font-display), Georgia, serif;
   font-size: 13px;
 }
@@ -324,7 +324,7 @@
 }
 
 .wholesaleCta h2 em {
-  color: #a78542;
+  color: #756f66;
   font-style: normal;
 }
 
@@ -352,8 +352,9 @@
 }
 
 .wholesaleLink:hover {
-  border-color: #a78542;
-  background: #a78542;
+  color: #0a0806;
+  border-color: #0a0806;
+  background: transparent;
 }
 
 @media (max-width: 900px) {

@@ -24,7 +24,7 @@
 
 .hero > p,
 .sectionHead p {
-  color: #a78542;
+  color: #756f66;
   font-size: 9px;
   font-weight: 600;
   letter-spacing: 0.24em;
@@ -42,7 +42,7 @@
 
 .hero h1 em,
 .sectionHead h2 em {
-  color: #a78542;
+  color: #756f66;
   font-weight: 400;
 }
 
@@ -154,7 +154,7 @@
 }
 
 .comboBody > div:first-child > p {
-  color: #a78542;
+  color: #756f66;
   font-size: 8px;
   letter-spacing: 0.19em;
   text-transform: uppercase;
@@ -213,9 +213,9 @@
 }
 
 .comboSizes button.selected {
-  border-color: #a78542;
+  border-color: #0a0806;
   color: #fff;
-  background: #a78542;
+  background: #0a0806;
 }
 
 .summaryLineHead {
@@ -243,9 +243,9 @@
 }
 
 .summaryLineSizes button.selected {
-  border-color: #a78542;
+  border-color: #0a0806;
   color: #fff;
-  background: #a78542;
+  background: #0a0806;
 }
 
 .comboBuy {
@@ -271,7 +271,7 @@
 
 .comboBuy strong,
 .summaryTotal strong {
-  color: #a78542;
+  color: #0a0806;
   font-family: var(--font-display), Georgia, serif;
   font-size: 25px;
   font-weight: 500;
@@ -336,8 +336,8 @@
 }
 
 .search input:focus-visible {
-  border-color: #a78542;
-  box-shadow: 0 0 0 2px rgba(167, 133, 66, 0.13);
+  border-color: #0a0806;
+  box-shadow: 0 0 0 2px rgba(10, 9, 8, 0.13);
 }
 
 .picker {
@@ -366,7 +366,7 @@
 }
 
 .pickerItem:hover {
-  border-color: rgba(167, 133, 66, 0.55);
+  border-color: rgba(10, 9, 8, 0.4);
 }
 
 .pickerItem:disabled {
@@ -375,9 +375,9 @@
 }
 
 .pickerSelected {
-  border-color: #a78542;
+  border-color: #0a0806;
   background: #fbf7ee;
-  box-shadow: inset 0 0 0 1px #a78542;
+  box-shadow: inset 0 0 0 1px #0a0806;
 }
 
 .check {
@@ -391,7 +391,7 @@
   place-items: center;
   border-radius: 50%;
   color: #fff;
-  background: #a78542;
+  background: #0a0806;
   font-size: 10px;
 }
 
@@ -418,7 +418,7 @@
 
 .itemInfo small {
   overflow: hidden;
-  color: #8d774b;
+  color: #756f66;
   font-size: 7px;
   letter-spacing: 0.12em;
   text-overflow: ellipsis;
@@ -439,7 +439,7 @@
 
 .itemInfo em {
   margin-top: 5px;
-  color: #a78542;
+  color: #0a0806;
   font-size: 10px;
   font-style: normal;
 }
@@ -497,7 +497,7 @@
 }
 
 .summary li strong {
-  color: #a78542;
+  color: #0a0806;
   font-size: 10px;
   font-weight: 500;
   white-space: nowrap;
@@ -521,7 +521,7 @@
 
 .limit {
   margin-top: 10px;
-  color: #8a6c34;
+  color: #756f66;
   font-size: 10px;
 }
 
@@ -603,7 +603,7 @@ button.send:disabled,
 .summary a:focus-visible,
 .mobileSticky button:focus-visible,
 .mobileSticky a:focus-visible {
-  outline: 2px solid #a78542;
+  outline: 2px solid #0a0806;
   outline-offset: 2px;
 }
 
