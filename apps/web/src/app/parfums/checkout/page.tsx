@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { CheckoutExperience } from "@/components/parfums/checkout/checkout-experience";
 import { LegacyCatalogRepository } from "@/domains/catalog/legacy-catalog-repository";
+import { PARFUMS_SETTINGS } from "@/domains/platform/settings";
 
 export const metadata: Metadata = {
   title: "Revisa tu selección",
@@ -16,7 +17,7 @@ export default function CheckoutPage() {
     <main>
       <CheckoutExperience
         products={catalog.list()}
-        whatsappNumber={config.WA_NUMBER ?? "51924590921"}
+        whatsappNumber={config.WA_NUMBER ?? PARFUMS_SETTINGS.whatsappNumber}
         storeName={config.STORE ?? "Cruzial Parfums"}
       />
     </main>

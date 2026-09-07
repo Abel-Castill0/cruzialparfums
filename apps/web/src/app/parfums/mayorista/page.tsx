@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { WholesaleExperience } from "@/components/parfums/wholesale/wholesale-experience";
 import { LegacyCatalogRepository } from "@/domains/catalog/legacy-catalog-repository";
+import { PARFUMS_SETTINGS } from "@/domains/platform/settings";
 
 export const metadata: Metadata = {
   title: "Venta por mayor",
@@ -16,7 +17,7 @@ export default function WholesalePage() {
       <WholesaleExperience
         entries={catalog.listWholesale()}
         storeName={config.STORE ?? "Cruzial Parfums"}
-        whatsappNumber={config.WA_NUMBER ?? "51924590921"}
+        whatsappNumber={config.WA_NUMBER ?? PARFUMS_SETTINGS.whatsappNumber}
       />
     </main>
   );

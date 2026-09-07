@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { Breadcrumbs } from "@/components/parfums/navigation/breadcrumbs";
 import { ProductDetailExperience } from "@/components/parfums/product/product-detail-experience";
 import { LegacyCatalogRepository } from "@/domains/catalog/legacy-catalog-repository";
+import { PARFUMS_SETTINGS } from "@/domains/platform/settings";
 import { resolveCanonicalUrl } from "@/lib/seo/canonical-url";
 import {
   buildSafeProductPageStructuredData,
@@ -70,7 +71,7 @@ export default async function ProductPage({ params, searchParams }: ProductPageP
           relatedProducts={repository.listRelated(product)}
           initialVariant={initialVariant}
           atomizations={config.ATOMIZACIONES ?? { "3": "50–60", "5": "70–80", "10": "140–150" }}
-          whatsappNumber={config.WA_NUMBER ?? "51924590921"}
+          whatsappNumber={config.WA_NUMBER ?? PARFUMS_SETTINGS.whatsappNumber}
           storeName={config.STORE ?? "Cruzial Parfums"}
         />
       </div>

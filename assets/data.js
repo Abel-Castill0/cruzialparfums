@@ -6,8 +6,9 @@
    ============================================================ */
 
 window.CRUZIAL_CONFIG = {
-  WA_NUMBER: "51924590921",
-  PHONE_DISPLAY: "924 590 921",
+  WA_NUMBER: "51926390591", // CLIENT_CONFIRMED 2026-09-07 — número nuevo, reemplaza 51924590921
+  PHONE_DISPLAY: "926 390 591",
+  CONTACT_EMAIL: "dominiocruzial@gmail.com", // CLIENT_CONFIRMED 2026-09-07
   INSTAGRAM_HANDLE: "@Cruzial_parfum",
   INSTAGRAM_URL: "https://www.instagram.com/Cruzial_parfum/",
   STORE: "Cruzial Parfums",

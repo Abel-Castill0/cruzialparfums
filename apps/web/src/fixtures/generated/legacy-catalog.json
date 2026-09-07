@@ -4,7 +4,7 @@
     "purpose": "legacy_visual_parity_only",
     "futureSeedEligible": false,
     "sourcePath": "assets/data.js",
-    "sourceSha256": "9cfc0c0cb99017aee253602a659cde1258284d2e4ea912c5afec55e894378009",
+    "sourceSha256": "dd5914fb4970688154e66b4ee368815eb3037f92b08c265d6d27b9d6f4cc6de0",
     "verificationStatus": "legacy",
     "counts": {
       "total": 99,
@@ -20,8 +20,9 @@
     }
   },
   "config": {
-    "WA_NUMBER": "51924590921",
-    "PHONE_DISPLAY": "924 590 921",
+    "WA_NUMBER": "51926390591",
+    "PHONE_DISPLAY": "926 390 591",
+    "CONTACT_EMAIL": "dominiocruzial@gmail.com",
     "INSTAGRAM_HANDLE": "@Cruzial_parfum",
     "INSTAGRAM_URL": "https://www.instagram.com/Cruzial_parfum/",
     "STORE": "Cruzial Parfums",

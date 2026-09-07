@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { CombosExperience } from "@/components/parfums/combos/combos-experience";
 import { LegacyCatalogRepository } from "@/domains/catalog/legacy-catalog-repository";
+import { PARFUMS_SETTINGS } from "@/domains/platform/settings";
 
 export const metadata: Metadata = {
   title: "Combos",
@@ -16,7 +17,7 @@ export default function CombosPage() {
       <CombosExperience
         combos={catalog.listCombos()}
         products={catalog.listFragrances()}
-        whatsappNumber={config.WA_NUMBER ?? "51924590921"}
+        whatsappNumber={config.WA_NUMBER ?? PARFUMS_SETTINGS.whatsappNumber}
         storeName={config.STORE ?? "Cruzial Parfums"}
       />
     </main>

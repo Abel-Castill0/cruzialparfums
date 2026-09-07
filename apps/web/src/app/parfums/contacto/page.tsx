@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Breadcrumbs, type BreadcrumbItem } from "@/components/parfums/navigation/breadcrumbs";
 import { InstitutionalContactForm } from "@/components/parfums/institutional/institutional-contact-form";
 import { LegacyCatalogRepository } from "@/domains/catalog/legacy-catalog-repository";
+import { PARFUMS_SETTINGS } from "@/domains/platform/settings";
 import styles from "@/components/parfums/institutional/institutional.module.css";
 
 export const metadata: Metadata = {
@@ -18,7 +19,9 @@ const crumbs: BreadcrumbItem[] = [
 export default function ContactoPage() {
   const catalog = new LegacyCatalogRepository();
   const config = catalog.getStorefrontConfig();
-  const whatsappNumber = config.WA_NUMBER ?? "51924590921";
+  const whatsappNumber = config.WA_NUMBER ?? PARFUMS_SETTINGS.whatsappNumber;
+  const phoneDisplay = config.PHONE_DISPLAY ?? PARFUMS_SETTINGS.whatsappDisplay;
+  const contactEmail = config.CONTACT_EMAIL ?? PARFUMS_SETTINGS.contactEmail;
   const instagramUrl = config.INSTAGRAM_URL ?? "https://www.instagram.com/Cruzial_parfum/";
   const instagramHandle = config.INSTAGRAM_HANDLE ?? "@Cruzial_parfum";
 
@@ -47,7 +50,7 @@ export default function ContactoPage() {
               <div className={styles.contactIcon} aria-hidden="true">✉</div>
               <h3>WhatsApp</h3>
               <p>La vía más rápida para pedidos, consultas y cotizaciones.</p>
-              <span className={styles.contactValue}>924 590 921</span>
+              <span className={styles.contactValue}>{phoneDisplay}</span>
               <a className={styles.textLink} href={`https://wa.me/${whatsappNumber}`} target="_blank" rel="noopener noreferrer">
                 Escribir ahora <span aria-hidden="true">↗</span>
               </a>
@@ -69,9 +72,12 @@ export default function ContactoPage() {
             </div>
             <div className={styles.contactCard}>
               <div className={styles.contactIcon} aria-hidden="true">◷</div>
-              <h3>Contacto oficial</h3>
-              <p>Atención personalizada para tus pedidos y asesorías. El pedido se confirma con el 50% de adelanto.</p>
-              <span className={styles.contactValue}>WhatsApp 924 590 921</span>
+              <h3>Correo</h3>
+              <p>Para consultas por escrito, cotizaciones extensas o coordinación fuera de WhatsApp.</p>
+              <span className={styles.contactValue}>{contactEmail}</span>
+              <a className={styles.textLink} href={`mailto:${contactEmail}`}>
+                Escribir un correo <span aria-hidden="true">↗</span>
+              </a>
             </div>
           </div>
         </div>

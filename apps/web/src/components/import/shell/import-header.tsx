@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { IMPORT_SETTINGS } from "@/domains/platform/settings";
 import styles from "./import-shell.module.css";
 
 export function ImportHeader() {
@@ -12,9 +13,19 @@ export function ImportHeader() {
             <span>Import</span>
           </span>
         </div>
-        <Link href="/" className={styles.back}>
-          ← Volver a Cruzial
-        </Link>
+        <div className={styles.headerActions}>
+          <a
+            className={styles.whatsapp}
+            href={`https://wa.me/${IMPORT_SETTINGS.whatsappNumber}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            WhatsApp
+          </a>
+          <Link href="/" className={styles.back}>
+            ← Volver a Cruzial
+          </Link>
+        </div>
       </div>
     </header>
   );

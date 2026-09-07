@@ -124,6 +124,8 @@ export type LegacyCatalogFixture = {
   };
   config: {
     WA_NUMBER?: string;
+    PHONE_DISPLAY?: string;
+    CONTACT_EMAIL?: string;
     INSTAGRAM_URL?: string;
     INSTAGRAM_HANDLE?: string;
     STORE?: string;

@@ -4,6 +4,7 @@ import { SiteFooter } from "@/components/parfums/shell/site-footer";
 import { SiteHeader } from "@/components/parfums/shell/site-header";
 import { WhatsAppAction } from "@/components/parfums/shell/whatsapp-action";
 import { LegacyCatalogRepository } from "@/domains/catalog/legacy-catalog-repository";
+import { PARFUMS_SETTINGS } from "@/domains/platform/settings";
 
 export const metadata: Metadata = {
   title: { default: "Cruzial Parfums", template: "%s — Cruzial Parfums" },
@@ -16,7 +17,7 @@ export default function ParfumsLayout({
   const catalog = new LegacyCatalogRepository();
   const config = catalog.getStorefrontConfig();
   const { logoUrl } = catalog.getBrandMedia();
-  const whatsappNumber = config.WA_NUMBER ?? "51924590921";
+  const whatsappNumber = config.WA_NUMBER ?? PARFUMS_SETTINGS.whatsappNumber;
   const instagramUrl = config.INSTAGRAM_URL ?? "https://www.instagram.com/Cruzial_parfum/";
   const searchProducts = catalog.listFragrances().map(({ slug, brand, name, notes, family, discontinued }) => ({ slug, brand, name, notes, family, discontinued }));
   const cartProducts = catalog.list();

@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Breadcrumbs, type BreadcrumbItem } from "@/components/parfums/navigation/breadcrumbs";
+import { LegacyCatalogRepository } from "@/domains/catalog/legacy-catalog-repository";
+import { PARFUMS_SETTINGS } from "@/domains/platform/settings";
 import styles from "@/components/parfums/institutional/institutional.module.css";
 
 export const metadata: Metadata = {
@@ -13,6 +15,12 @@ const crumbs: BreadcrumbItem[] = [
 ];
 
 export default function PrivacidadPage() {
+  const catalog = new LegacyCatalogRepository();
+  const config = catalog.getStorefrontConfig();
+  const whatsappNumber = config.WA_NUMBER ?? PARFUMS_SETTINGS.whatsappNumber;
+  const whatsappDisplay = config.PHONE_DISPLAY ?? PARFUMS_SETTINGS.whatsappDisplay;
+  const contactEmail = config.CONTACT_EMAIL ?? PARFUMS_SETTINGS.contactEmail;
+
   return (
     <>
       <div className={styles.breadcrumbs}>
@@ -80,7 +88,8 @@ export default function PrivacidadPage() {
           <h2>9. Contacto</h2>
           <p>Si tienes preguntas sobre esta política o sobre tus datos personales, contáctanos:</p>
           <ul>
-            <li>WhatsApp: <a href="https://wa.me/51924590921" target="_blank" rel="noopener noreferrer">+51 924 590 921</a></li>
+            <li>WhatsApp: <a href={`https://wa.me/${whatsappNumber}`} target="_blank" rel="noopener noreferrer">+{whatsappNumber.slice(0, 2)} {whatsappDisplay}</a></li>
+            <li>Correo: <a href={`mailto:${contactEmail}`}>{contactEmail}</a></li>
             <li>Instagram: <a href="https://www.instagram.com/Cruzial_parfum/" target="_blank" rel="noopener noreferrer">@Cruzial_parfum</a></li>
           </ul>
         </div>
