@@ -6,18 +6,21 @@ Migración del sitio estático de Cruzial Parfums a la Plataforma Cruzial V2
 ## Goal
 
 Una plataforma que migre el storefront Parfums con parity visual y de datos
-respecto al sitio legacy, sin inventar información comercial. Postgres/Supabase
-llega después del cutover confirmado; hoy la fuente canónica de producto es
-`assets/data.js` vía el adapter legacy.
+respecto al sitio legacy, sin inventar información comercial. La foundation de
+Postgres/Supabase ya se versiona en Fase 3, pero no se convierte en fuente
+comercial hasta un cutover confirmado; hoy la fuente canónica de producto sigue
+siendo `assets/data.js` vía el adapter legacy.
 
-## Workflow actual (Fase 2)
+## Workflow actual (Fase 3)
 
 - Rama: `codex/feature/cruzial-platform-v2`. `master` queda intacto (GitHub Pages).
 - V2 aislada en `apps/web` (Next.js 16 + TypeScript estricto, App Router).
 - Capacidades ya cerradas (NO reauditar sin regresión demostrada): Foundation,
   Catalog, Product Detail, Cart, Checkout, Combos, Finder, Mayorista,
   Institutional (Nosotros / Contacto / Privacidad / Términos / 404).
-- Orden restante: gate global de parity de Parfums → luego Import/Admin/Supabase.
+- Gate global de Parfums: cerrado. Trabajo actual: migrations + RLS + auth Admin
+  foundation. Después: cerrar runtime DB cuando Docker esté sano; luego Admin
+  CRUD e Import operativo por capabilities separadas.
 
 ## Comandos importantes
 
@@ -27,6 +30,9 @@ npm run dev            # desarrollo local (HTTP, nunca file://)
 npm run check          # catalog:check + eslint + typecheck + vitest + build
 npm run test           # vitest run
 npm run catalog:check  # verifica fixture generado contra assets/data.js
+npm run etl:check      # verifica staging legacy determinista, sin escribir DB
+npm run db:reset       # requiere Docker/Supabase local sano
+npm run db:test        # pgTAP; no declarar PASS si Docker no está disponible
 ```
 
 Para verificar visualmente: crear build (`npm run build`) + `next start`, y

@@ -1,25 +1,52 @@
-# Cruzial Platform V2 — Propuesta de schema Supabase
+# Cruzial Platform V2 — Schema Supabase
 
-Estado: diseño de Fase 2.5. No es una migración ejecutable ni crea reglas comerciales.
+Estado: Fase 3. Las migrations existen en `supabase/migrations/` y son la
+fuente de verdad; este documento las describe, no las reemplaza.
 
 ## Estado de implementación
 
-- **IMPLEMENTED (runtime, no DB):** adapter legacy de catálogo, separación de
-  settings Parfums/Import y contrato editorial temporal
-  `isFeatured/featuredRank/featuredFrom/featuredUntil`.
-- **PROPOSED (DB):** todas las tablas y políticas descritas debajo. No existe
-  todavía `supabase/` ni una migration, por lo que ninguna tabla se declara
-  implementada.
-- **UNKNOWN:** valores o reglas que dependen de decisión del cliente, incluidos
-  alcance mayorista, estados finales de pedido, retención de PII, automatización
-  de campañas y operación de waitlist. Un `UNKNOWN` no se convierte en constraint
-  ni seed comercial.
+- **IMPLEMENTED (migrations en Git):** `business_units`, `admin_memberships`,
+  `categories`, `products`, `product_categories`, `product_variants`,
+  `inventory`, `product_media`, `combos`, `combo_items`, `settings`,
+  `shipping_methods`, `deposit_policies`, `wholesale_policies`,
+  `variant_price_tiers`, `campaigns`, `campaign_products`, `customers`,
+  `orders`, `order_lines`, `audit_log`, más los helpers de autorización del
+  esquema `app` y las políticas RLS de todas ellas.
 
-Inventario mínimo **PROPOSED**: `business_units`, `products`,
-`product_variants`, `categories`, `product_categories`, `product_media`,
-`inventory`, `promotions`, `combos`, `combo_items`, `wholesale_policies`, `campaigns`,
-`campaign_products`, `customers`, `orders`, `order_lines`, `shipping_methods`,
-`deposit_policies`, `settings`, `admin_memberships`, `audit_log` y `waitlist`.
+  La migration de hardening `20260907154401` añade coherencia de unidad en
+  referencias hijas, visibilidad pública dependiente de todos los padres,
+  snapshots de pedido inmutables, validación del adelanto contra estado
+  verificado y protección contra suplantar el actor del audit log.
+
+  ⚠️ **IMPLEMENTED aquí significa "escrito y versionado", no "ejecutado".** El
+  stack local de Supabase no pudo arrancar en este entorno (el motor Linux de
+  Docker Desktop no inicia), así que `supabase db reset` y `supabase test db`
+  **todavía no se han corrido**. Ninguna afirmación de este documento sobre el
+  comportamiento en runtime está verificada por ejecución.
+
+- **PROPOSED (no creadas, con motivo):**
+  - `promotions` / `promotion_rules` / `promotion_rewards` — la única promo
+    confirmada (decant de 2 ml solo con frasco completo) es una regla editorial
+    estática ya centralizada en `domains/catalog/promotion-eligibility.ts`. No
+    hay variabilidad administrable confirmada; un motor de reglas sería
+    especulativo.
+  - `waitlist` — campos requeridos, consentimiento, retención y canal siguen
+    `UNKNOWN` en `docs/client-decisions.md`, y no existe formulario de waitlist
+    en el runtime (la home de Import usa un CTA de WhatsApp a propósito).
+
+- **UNKNOWN:** alcance mayorista (`wholesaleThresholdScope`), estados finales de
+  pedido más allá de `pending_whatsapp_confirmation`, retención de PII y de
+  audit log, automatización de campañas por fecha, y bootstrap/MFA/recuperación
+  del primer admin. Un `UNKNOWN` no se convierte en constraint ni en seed.
+
+### Decisión: dónde viven los campos de destacados
+
+`is_featured`, `featured_rank`, `featured_from` y `featured_until` son columnas
+de `products`, no una tabla de merchandising aparte. Hoy existe **una sola**
+ubicación editorial (el rail de la Home), el admin necesita marcar producto +
+orden + ventana, y el contrato de runtime ya implementado usa esos mismos
+cuatro nombres. Una tabla de merchandising se justificaría con varios slots con
+nombre — algo que no está confirmado.
 
 ## Convenciones
 
@@ -49,15 +76,14 @@ describe claves admitidas; no convierte atributos no confirmados en contenido.
 
 `product_id`, `category_id`, `sort_order`. PK compuesta `(product_id, category_id)`.
 
-Un producto conserva una categoría primaria en `products.category_id` para
-navegación/breadcrumb, pero puede aparecer en categorías adicionales (p. ej. una
-fragancia Árabe incluida también en una colección temática) sin duplicar el
-registro de producto. Tabla vacía hasta que exista un caso real de doble
-categorización — no se siembra contenido de ejemplo.
+Las categorías son muchos-a-muchos porque el catálogo confirmado ya usa dos ejes
+ortogonales: tipo comercial y familia olfativa. No existe una columna
+`products.category_id` ni una categoría primaria inventada; el `sort_order` de
+la relación permite orden determinista sin duplicar el producto.
 
 ### `products`
 
-`id`, `business_unit_id`, `category_id`, `legacy_id`, `slug`, `name`, `brand`,
+`id`, `business_unit_id`, `legacy_id`, `slug`, `name`, `brand`,
 `short_description`, `description`, `sales_mode`, `publication_status`,
 `production_status`, `is_featured`, `featured_rank nullable`,
 `featured_from nullable`, `featured_until nullable`, `specs jsonb`, timestamps,
@@ -65,8 +91,9 @@ categorización — no se siembra contenido de ejemplo.
 
 `sales_mode`: `campaign | always_available | catalog_only`.
 `production_status`: `active | discontinued`. No representa stock ni visibilidad.
-`publication_status`: `draft | published | hidden`; `hidden` retira un producto de
-superficies públicas sin borrarlo. `is_featured` es curación editorial, no una
+`publication_status`: `draft | published | hidden | archived`; `hidden` retira un
+producto de superficies públicas sin borrarlo y `archived_at` conserva el lifecycle.
+`is_featured` es curación editorial, no una
 afirmación de ventas. `featured_rank` ordena el rail y la ventana opcional
 `featured_from`/`featured_until` permite activarlo sin una lista permanente.
 
@@ -124,13 +151,15 @@ timestamps, `archived_at`.
 No sembrar contenido de combos hasta confirmarlo. El builder personalizado es un tipo de
 línea/pedido, no necesariamente un combo publicado.
 
-## Promociones candidatas
+## Promociones candidatas — NO IMPLEMENTADAS
 
 ### `promotions`, `promotion_rules` y `promotion_rewards`
 
-Se reservan como modelo candidato para promociones auditables: cabecera/ventana de la
-promoción, condiciones y recompensas. No se implementa un motor complejo ni se fijan
-reglas comerciales durante paridad; cualquier migración requiere reconfirmación.
+Modelo candidato para promociones auditables: cabecera/ventana, condiciones y
+recompensas. **Ninguna de estas tablas se creó en Fase 3**: la única promo
+confirmada es estática y ya vive en `promotion-eligibility.ts`. Crear un motor
+de reglas sin un caso de uso administrable confirmado sería especular. Cualquier
+migración futura requiere reconfirmación del cliente.
 
 ## Campañas
 
@@ -199,13 +228,13 @@ momento del pedido), `deposit_policy_snapshot jsonb` (copia inmutable de la fila
 `deposit_policies` aplicada: porcentaje, id de política, vigencia), `subtotal_amount`,
 `currency`, `notes`, timestamps, `archived_at`.
 
-`status` incluye `pending_whatsapp_confirmation` como estado inicial tras crear el
-borrador — nunca se declara "pedido confirmado" solo por generar el mensaje de WhatsApp.
-Los campos/retención de PII y estados finales de pedido más allá de esto requieren
-decisión del cliente. Los snapshots (`customer_snapshot`, `delivery_snapshot`,
+`status` solo admite `draft` y `pending_whatsapp_confirmation` en esta fase — nunca
+se declara "pedido confirmado" solo por generar el mensaje de WhatsApp. Los estados
+finales requieren decisión del cliente y llegarán mediante una migration posterior,
+no como candidatos inventados. Los snapshots (`customer_snapshot`, `delivery_snapshot`,
 `verified_customer_status_snapshot`, `deposit_policy_snapshot`) son la fuente de verdad
-del pedido una vez confirmado — no se recalculan si `customers`/`deposit_policies` cambian
-después.
+del pedido una vez que sale de `draft` — no se recalculan si
+`customers`/`deposit_policies` cambian después.
 
 ### `order_lines`
 
@@ -214,17 +243,24 @@ después.
 `unit_price_amount`, `currency`, `campaign_snapshot jsonb nullable`, `quantity`,
 `line_total_amount`, timestamps.
 
-Los snapshots son obligatorios e inmutables después de confirmar el pedido. Los FKs son
-trazabilidad, no fuente para reescribir la historia.
+Los snapshots se vuelven inmutables cuando el pedido sale de `draft`; volver a
+`draft` no puede usarse para desbloquearlos. Los FKs son trazabilidad, no fuente
+para reescribir la historia.
+Pedidos y líneas tampoco admiten `DELETE`; cancelar o corregir requiere una transición
+explícita futura, no un cascade que borre el historial.
 
 ## Operación
 
-### `waitlist`
+### `waitlist` — NO IMPLEMENTADA
 
-`id`, `business_unit_id`, `campaign_id nullable`, `product_id nullable`, `email nullable`,
-`phone nullable`, `consent_snapshot jsonb`, `status`, timestamps.
+Forma prevista: `id`, `business_unit_id`, `campaign_id nullable`,
+`product_id nullable`, `email nullable`, `phone nullable`,
+`consent_snapshot jsonb`, `status`, timestamps.
 
-Campos requeridos, consentimiento, doble opt-in y retención están pendientes.
+**No se creó en Fase 3.** Campos requeridos, consentimiento, doble opt-in,
+retención y canal siguen `UNKNOWN`, y no existe formulario de waitlist en el
+runtime. Crear la tabla ahora fijaría un contrato de datos personales antes de
+saber qué se puede pedir y por cuánto tiempo se puede guardar.
 
 ### `settings`
 
@@ -265,7 +301,7 @@ No se actualiza catálogo directamente desde el upload.
 
 ## Índices y constraints mínimos
 
-- Unicidad de `business_units.code`, SKU no nulo, slugs por contexto y número de campaña.
+- Unicidad de `business_units.code`, SKU cuando esté presente, slugs por contexto y número de campaña.
 - Unicidad de `deposit_policies(business_unit_id, customer_status, effective_from)`,
   `shipping_methods(business_unit_id, code)`, `settings(business_unit_id, key)` y
   `admin_memberships(user_id, business_unit_id)`.
@@ -283,7 +319,7 @@ No se actualiza catálogo directamente desde el upload.
   pedidos históricos.
 - Trigger o función transaccional para `updated_at` y audit de operaciones críticas.
 
-## Matriz RLS propuesta
+## Matriz RLS implementada en SQL (runtime pendiente)
 
 | Recurso | `anon` | admin autenticado |
 | --- | --- | --- |
@@ -291,15 +327,15 @@ No se actualiza catálogo directamente desde el upload.
 | Campañas/campaign products | SELECT solo visible públicamente | CRUD + transiciones |
 | Wholesale policies/price tiers | SELECT solo público (mayorista) | CRUD autorizado |
 | Shipping methods | SELECT solo `is_active` | CRUD autorizado |
-| Deposit policies | Sin acceso directo; resolución server-side | CRUD autorizado |
+| Deposit policies | SELECT de términos activos confirmados | CRUD autorizado |
 | Settings | SELECT solo `is_public` | CRUD autorizado |
 | Customers | Sin acceso directo | Acceso autorizado por unidad |
 | Orders/order lines | Sin acceso directo | Acceso autorizado por unidad |
-| Waitlist | Sin SELECT/INSERT directo | Acceso autorizado |
-| Admin memberships/audit log/import staging | Sin acceso | Acceso autorizado según función |
+| Admin memberships/audit log | Sin acceso | Acceso restringido por función/policy |
 
-La inscripción a waitlist entra por Route Handler con validación y rate limit. RLS se
-habilita en toda tabla del schema expuesto; grants y policies se prueban por separado.
+Una futura inscripción a waitlist requerirá Route Handler, validación y rate limit;
+la tabla aún no existe. RLS se habilita en toda tabla del schema expuesto; grants y
+policies se prueban por separado.
 Con `admin_memberships` ahora scoped por `business_unit_id`, la política pasa a ser
 `is_admin_for(auth.uid(), business_unit_id)` — un admin autorizado en Parfums no debe
 poder mutar filas de Import solo por estar autenticado, y viceversa. Ninguna policy
@@ -307,6 +343,18 @@ confía en metadata editable por el usuario. Views públicas deben usar `securit
 o una alternativa que conserve RLS.
 
 ## Gates de Fase 3
+
+Estado actual: **1-3 PENDIENTES DE EJECUCIÓN** (Docker no arrancó en este
+entorno). 4 verificado por test estático. 5-9 están escritos como assertions
+en `supabase/tests/` pero comparten el mismo bloqueo: escritos, no corridos.
+
+Comandos exactos para cerrarlos cuando Docker esté sano:
+
+```bash
+npx supabase start
+npm --prefix apps/web run db:reset    # migrations + seed desde cero
+npm --prefix apps/web run db:test     # 74 assertions pgTAP
+```
 
 1. `supabase db reset` reconstruye todo desde cero.
 2. Tipos TypeScript regenerados sin diff pendiente.

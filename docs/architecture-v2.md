@@ -18,7 +18,8 @@ separadas explícitamente.
 La raíz estática existente queda intacta durante Foundation y paridad. Vercel debe usar
 `apps/web` como Root Directory en la rama V2. `master` continúa publicando GitHub Pages.
 
-Árbol objetivo **PROPOSED**; no implica que estos archivos o servicios ya existan:
+Árbol mixto: la foundation de Supabase/auth indicada abajo está **IMPLEMENTED
+IN GIT**; los dominios y endpoints marcados como futuros siguen propuestos.
 
 ```text
 cruzialparfums/
@@ -84,9 +85,12 @@ extraerse sin cambiar las rutas.
 │   ├── privacidad
 │   └── terminos
 ├── import
-└── admin/
-    ├── parfums
-    └── import
+├── admin/
+│   ├── login
+│   ├── parfums
+│   └── import
+└── auth/
+    └── callback
 ```
 
 El carrito Parfums implementado es un drawer persistente que continúa a
@@ -152,8 +156,21 @@ Upload admin → endpoint firmado de servidor → Cloudinary → product_media �
 CSV → staging + diff → aprobación admin → transacción → catálogo + audit_log
 ```
 
-Los únicos puntos futuros de creación de clientes serán `lib/supabase/client` y
-`lib/supabase/server`. Ningún dominio o componente instancia un cliente Supabase.
+Los únicos puntos de creación de clientes implementados son
+`lib/supabase/client` y `lib/supabase/server`; el refresh SSR vive en
+`lib/supabase/proxy-session`. Ningún dominio o componente instancia un cliente
+Supabase por su cuenta.
+
+## Auth Admin foundation
+
+- `/admin/login` solo inicia sesión de usuarios ya provisionados; no hay signup.
+- `/admin`, `/admin/parfums` y `/admin/import` son `force-dynamic`, resuelven la
+  sesión en servidor y filtran unidades desde `admin_memberships`.
+- El proxy refresca cookies; no decide autorización. Cada página/handler vuelve
+  a autorizar y RLS conserva la última barrera.
+- El primer usuario se crea fuera del navegador. El SQL operator-run asigna
+  `admin|viewer` por unidad usando `ADMIN_BOOTSTRAP_EMAIL`; no contiene password.
+- Bootstrap password, MFA y recuperación siguen `UNKNOWN`; no se simulan.
 
 - El cliente público recibe solo columnas públicas y filas publicadas.
 - El navegador puede usar la anon key; nunca recibe `service_role` ni secretos Cloudinary.

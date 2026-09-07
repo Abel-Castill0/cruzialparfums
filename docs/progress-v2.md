@@ -6,7 +6,8 @@
 
 ## HEAD
 
-`bee6381` al cerrar el Global Parfums Quality / Parity Gate (2026-09-07).
+Git es la fuente de verdad del hash. Recovery de Fase 3 inició en `f82e637`
+(schema/RLS + pgTAP ya versionados, dos commits locales por delante del remoto).
 
 ## CURRENT
 
@@ -20,8 +21,12 @@
 - Home Parfums usa negro/blanco y conserva hero, trust, discovery, combos,
   Finder, educación, autenticidad, mayorista, FAQ y CTA. FeaturedPerfumeRail
   existe pero no renderiza productos hasta recibir curación real.
-- Import y Admin son foundations honestas; no representan catálogo, carrito,
-  auth ni CRUD implementados.
+- Import sigue siendo foundation editorial. Admin ya tiene login sin signup,
+  sesión SSR y autorización por membresía/unidad; no tiene CRUD todavía.
+- Supabase Foundation existe como migrations versionadas, RLS, pgTAP, seed
+  estructural, provisioning manual y ETL legacy a staging `draft`/`legacy`.
+  Docker Linux no está disponible en esta máquina: SQL revisado estáticamente,
+  pero `db reset`/pgTAP continúan pendientes de ejecución real.
 - Preview y Admin permanecen `noindex,nofollow`; Production/cutover no autorizados.
 - **Global Parfums Quality / Parity Gate: PASS** (alcance verificado abajo;
   ningún P0/P1 abierto conocido). No se declara "sin bugs" — ver PARTIAL/
@@ -39,7 +44,15 @@
   `dominiocruzial@gmail.com`, con settings separados Parfums/Import.
 - Paletas LATEST: Parfums negro/blanco con dorado no dominante; Import azul
   profundo/blanco/plata.
-- Schema Supabase documentado solo como propuesta; no existen migrations.
+- Supabase Foundation escrita: 21 tablas públicas con RLS, helpers privados en
+  schema `app`, aislamiento Parfums/Import también en referencias hijas,
+  snapshots de pedidos, audit log append-only y estados de producto separados.
+- Auth Admin foundation: `.env.example` sin valores, clientes browser/server
+  separados, `/admin/login`, callback seguro, refresh SSR, páginas dinámicas,
+  selector por membresías y ausencia de signup público. Bootstrap crea el
+  usuario fuera de la app y otorga membresías mediante SQL operator-run.
+- ETL legacy determinista e idempotente: 96 productos en staging, 3 combos
+  bloqueados por reconfirmación, 0 inválidos; nunca escribe Postgres ni publica.
 - Recovery Codex→Claude cerrada (5 bugs confirmados corregidos y verificados
   en vivo: landmark `<main>` en 4 páginas institucionales, semántica de
   diálogo del panel de filtros móvil, touch targets ~44×44px en 8 módulos,
@@ -102,14 +115,15 @@
 
 ## PARTIAL
 
-- Nada activo — el gate de este bloque quedó cerrado. Ver BLOCKERS para lo
-  que sigue fuera de alcance y los residuales documentados.
+- Supabase runtime local: `BLOCKED_RUNTIME_DOCKER`. Las migrations y 74
+  assertions pgTAP existen, pero no se etiquetan como ejecutadas.
+- Tipos TypeScript generados desde la DB quedan pendientes del primer reset
+  exitoso; no existe una DB local sana desde la cual generarlos.
 
 ## TODO
 
-- Iniciar Supabase Foundation + migrations + RLS + auth Admin en una
-  ejecución separada (explícitamente no autorizado en este bloque).
-- Import operativo y Admin CRUD permanecen fuera del bloque actual.
+- Ejecutar `db:reset` + `db:test` y generar tipos cuando Docker esté sano.
+- Admin CRUD e Import operativo permanecen fuera de este bloque.
 - Matriz responsive/funcional de Import y Admin (este gate cubrió Parfums
   a fondo; Import/Admin solo se verificaron a nivel estructural básico:
   título único, `<main>`/`<h1>` únicos, 0 imágenes sin alt, consola limpia).
@@ -118,7 +132,10 @@
 
 - Cutover: dominio/cuentas definitivas y reglas comerciales P0 sin confirmar.
 - Import: catálogo, operación de campañas/pedidos y políticas finales pendientes.
-- Admin: bootstrap, MFA, recuperación y roles operativos pendientes.
+- Admin: creación del primer usuario, contraseña, MFA y recuperación siguen
+  pendientes de decisión; el grant de membresías ya tiene ruta operator-run.
+- Runtime DB local: Docker CLI existe, pero `dockerDesktopLinuxEngine` no
+  arrancó tras un intento acotado; bloquea reset y pgTAP, no Vitest/build.
 - 23 precios de frasco y composiciones combo son paridad legacy, no seed verificado.
 - `wholesaleThresholdScope`: 40 unidades combinadas vs. por SKU sigue UNKNOWN.
 - Reemplazo de `sceptre-malachite`: falta un asset nuevo del cliente.
@@ -138,11 +155,17 @@
 
 ## TESTS — CURRENT
 
-- HEAD del gate: `bee6381`.
+- Recovery de Fase 3 partió de `f82e637`; el hash final vive en Git.
 - `npm run check` (catálogo + lint + typecheck + test + build): PASS.
-- Vitest: 20 archivos, 85 tests PASS.
-- Build: 19 rutas generadas (incluye el nuevo `/parfums/[...catchall]`) PASS.
-- `git diff --check`: limpio en cada commit de este bloque.
+- Vitest: 23 archivos, 103 tests PASS; focalizados Phase 3: 4 archivos,
+  21 tests PASS.
+- Build: 21 entradas de ruta PASS; `/admin`, sus unidades, login y callback
+  aparecen dinámicas (`ƒ`), no prerenderizadas.
+- ETL: dos escrituras consecutivas produjeron el mismo SHA-256; `etl:check`
+  PASS (96 staging, 3 blocked, 0 invalid).
+- pgTAP: 4 archivos, 74 assertions con planes estáticamente consistentes;
+  **NO EJECUTADAS** porque Docker/Postgres local no está disponible.
+- `git diff --check`: limpio.
 - Consola del navegador: 0 errores en las 16 rutas verificadas (Parfums,
   Import, Admin, 404) tras reiniciar el dev server para descartar cache
   stale de Turbopack (un proceso `node` huérfano en el puerto 3000 causó
@@ -166,5 +189,6 @@
 ## NEXT
 
 Gate de Parfums cerrado. El siguiente bloque, solo tras revisión externa,
-es **Supabase Foundation + migrations + RLS + auth Admin** — no iniciado en
-esta ejecución.
+es cerrar el gate runtime de Supabase (`db:reset`, pgTAP y tipos) en un host con
+Docker sano. Después: Admin CRUD por capability; no iniciar Import operativo,
+Cloudinary, pagos ni automatizaciones dentro de este mismo bloque.
