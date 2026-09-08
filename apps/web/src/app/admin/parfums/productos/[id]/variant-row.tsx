@@ -81,6 +81,7 @@ export function VariantRow({
   const variantErrors = variantState.status === "field_errors" ? variantState.errors : {};
   const inventoryErrors = inventoryState.status === "field_errors" ? inventoryState.errors : {};
   const rowDisabled = disabled || Boolean(variant.archived_at);
+  const errorIdPrefix = `variant-${variant.id}`;
 
   if (!editing) {
     return (
@@ -129,44 +130,50 @@ export function VariantRow({
           <div className={formStyles.grid}>
             <label className={formStyles.field}>
               <span>Nombre *</span>
-              <input name="label" defaultValue={variant.label} required maxLength={60} aria-invalid={!!variantErrors.label} />
-              {variantErrors.label ? <p className={formStyles.error} role="alert">{variantErrors.label}</p> : null}
+              <input name="label" defaultValue={variant.label} required maxLength={60} aria-invalid={!!variantErrors.label} aria-describedby={variantErrors.label ? `${errorIdPrefix}-label-error` : undefined} />
+              {variantErrors.label ? <p id={`${errorIdPrefix}-label-error`} className={formStyles.error} role="alert">{variantErrors.label}</p> : null}
             </label>
             <label className={formStyles.field}>
               <span>Tipo</span>
-              <select name="variantKind" defaultValue={variant.variant_kind}>
+              <select name="variantKind" defaultValue={variant.variant_kind} aria-invalid={!!variantErrors.variantKind} aria-describedby={variantErrors.variantKind ? `${errorIdPrefix}-kind-error` : undefined}>
                 <option value="decant">Decant</option>
                 <option value="bottle">Frasco</option>
               </select>
+              {variantErrors.variantKind ? <p id={`${errorIdPrefix}-kind-error`} className={formStyles.error} role="alert">{variantErrors.variantKind}</p> : null}
             </label>
             <label className={formStyles.field}>
               <span>Tamaño (ml)</span>
-              <input name="sizeMl" type="number" step="0.01" min="0.01" defaultValue={variant.size_ml ?? ""} />
+              <input name="sizeMl" type="number" step="0.01" min="0.01" defaultValue={variant.size_ml ?? ""} aria-invalid={!!variantErrors.sizeMl} aria-describedby={variantErrors.sizeMl ? `${errorIdPrefix}-size-error` : undefined} />
+              {variantErrors.sizeMl ? <p id={`${errorIdPrefix}-size-error`} className={formStyles.error} role="alert">{variantErrors.sizeMl}</p> : null}
             </label>
             <label className={formStyles.field}>
               <span>Precio *</span>
-              <input name="priceAmount" type="number" step="0.01" min="0" defaultValue={variant.price_amount} required aria-invalid={!!variantErrors.priceAmount} />
-              {variantErrors.priceAmount ? <p className={formStyles.error} role="alert">{variantErrors.priceAmount}</p> : null}
+              <input name="priceAmount" type="number" step="0.01" min="0" defaultValue={variant.price_amount} required aria-invalid={!!variantErrors.priceAmount} aria-describedby={variantErrors.priceAmount ? `${errorIdPrefix}-price-error` : undefined} />
+              {variantErrors.priceAmount ? <p id={`${errorIdPrefix}-price-error`} className={formStyles.error} role="alert">{variantErrors.priceAmount}</p> : null}
             </label>
             <label className={formStyles.field}>
               <span>Moneda</span>
-              <input name="currency" defaultValue={variant.currency} maxLength={3} />
+              <input name="currency" defaultValue={variant.currency} maxLength={3} aria-invalid={!!variantErrors.currency} aria-describedby={variantErrors.currency ? `${errorIdPrefix}-currency-error` : undefined} />
+              {variantErrors.currency ? <p id={`${errorIdPrefix}-currency-error`} className={formStyles.error} role="alert">{variantErrors.currency}</p> : null}
             </label>
             <label className={formStyles.field}>
               <span>SKU</span>
-              <input name="sku" defaultValue={variant.sku ?? ""} maxLength={60} />
+              <input name="sku" defaultValue={variant.sku ?? ""} maxLength={60} aria-invalid={!!variantErrors.sku} aria-describedby={variantErrors.sku ? `${errorIdPrefix}-sku-error` : undefined} />
+              {variantErrors.sku ? <p id={`${errorIdPrefix}-sku-error`} className={formStyles.error} role="alert">{variantErrors.sku}</p> : null}
             </label>
             <label className={formStyles.field}>
               <span>Publicación</span>
-              <select name="publicationStatus" defaultValue={variant.publication_status}>
+              <select name="publicationStatus" defaultValue={variant.publication_status} aria-invalid={!!variantErrors.publicationStatus} aria-describedby={variantErrors.publicationStatus ? `${errorIdPrefix}-publication-error` : undefined}>
                 <option value="draft">Borrador</option>
                 <option value="published">Publicado</option>
                 <option value="archived">Archivado</option>
               </select>
+              {variantErrors.publicationStatus ? <p id={`${errorIdPrefix}-publication-error`} className={formStyles.error} role="alert">{variantErrors.publicationStatus}</p> : null}
             </label>
             <label className={formStyles.field}>
               <span>Orden</span>
-              <input name="sortOrder" type="number" step="1" defaultValue={variant.sort_order} />
+              <input name="sortOrder" type="number" step="1" defaultValue={variant.sort_order} aria-invalid={!!variantErrors.sortOrder} aria-describedby={variantErrors.sortOrder ? `${errorIdPrefix}-sort-error` : undefined} />
+              {variantErrors.sortOrder ? <p id={`${errorIdPrefix}-sort-error`} className={formStyles.error} role="alert">{variantErrors.sortOrder}</p> : null}
             </label>
           </div>
           <div className={`${styles.formActions} ${styles.spacingTop}`}>
@@ -187,17 +194,19 @@ export function VariantRow({
             <div className={formStyles.grid}>
               <label className={formStyles.field}>
                 <span>Modo de inventario</span>
-                <select name="inventoryMode" defaultValue={inventory.inventory_mode}>
+                <select name="inventoryMode" defaultValue={inventory.inventory_mode} aria-invalid={!!inventoryErrors.inventoryMode} aria-describedby={inventoryErrors.inventoryMode ? `${errorIdPrefix}-inventory-mode-error` : undefined}>
                   <option value="status_only">Solo estado</option>
                   <option value="tracked_quantity">Cantidad controlada</option>
                 </select>
+                {inventoryErrors.inventoryMode ? <p id={`${errorIdPrefix}-inventory-mode-error`} className={formStyles.error} role="alert">{inventoryErrors.inventoryMode}</p> : null}
               </label>
               <label className={formStyles.field}>
                 <span>Disponibilidad</span>
-                <select name="availabilityStatus" defaultValue={inventory.availability_status}>
+                <select name="availabilityStatus" defaultValue={inventory.availability_status} aria-invalid={!!inventoryErrors.availabilityStatus} aria-describedby={inventoryErrors.availabilityStatus ? `${errorIdPrefix}-availability-error` : undefined}>
                   <option value="available">Disponible</option>
                   <option value="out_of_stock">Agotado</option>
                 </select>
+                {inventoryErrors.availabilityStatus ? <p id={`${errorIdPrefix}-availability-error`} className={formStyles.error} role="alert">{inventoryErrors.availabilityStatus}</p> : null}
               </label>
               <label className={formStyles.field}>
                 <span>Cantidad en stock</span>
@@ -208,9 +217,10 @@ export function VariantRow({
                   min="0"
                   defaultValue={inventory.quantity_on_hand ?? ""}
                   aria-invalid={!!inventoryErrors.quantityOnHand}
+                  aria-describedby={inventoryErrors.quantityOnHand ? `${errorIdPrefix}-quantity-error` : undefined}
                 />
                 {inventoryErrors.quantityOnHand ? (
-                  <p className={formStyles.error} role="alert">{inventoryErrors.quantityOnHand}</p>
+                  <p id={`${errorIdPrefix}-quantity-error`} className={formStyles.error} role="alert">{inventoryErrors.quantityOnHand}</p>
                 ) : null}
               </label>
             </div>

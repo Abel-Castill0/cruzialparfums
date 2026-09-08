@@ -114,7 +114,7 @@ export default async function AdminGatewayPage() {
       <p className={styles.footer}>
         {result.status === "not_configured" || result.status === "unavailable"
           ? "La foundation está preparada, pero este entorno no tiene un backend operativo."
-          : "Sesión y membresías verificadas. El CRUD de catálogo, pedidos y campañas todavía no está implementado."}
+          : "Sesión y membresías verificadas. La administración de productos Parfums está disponible; pedidos, campañas y los demás módulos siguen pendientes."}
       </p>
     </div>
   );

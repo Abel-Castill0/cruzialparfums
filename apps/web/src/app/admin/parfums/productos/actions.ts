@@ -1,6 +1,8 @@
 "use server";
 
+import type { Route } from "next";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { requireUnitAdmin } from "@/lib/auth/admin-session";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import {
@@ -38,8 +40,8 @@ export type ActionState<T> =
 
 const PRODUCTS_LIST_PATH = "/admin/parfums/productos";
 
-function productEditPath(productId: string) {
-  return `/admin/parfums/productos/${productId}`;
+function productEditPath(productId: string): Route {
+  return `/admin/parfums/productos/${productId}` as Route;
 }
 
 /** Maps a repository error to a message safe to render — never the raw
@@ -73,6 +75,13 @@ function friendlyError(error: AdminRepositoryError, context: "product" | "varian
       console.error(`[admin-parfums:${context}] unexpected repository error:`, error.message);
       return "Ocurrió un error inesperado. Intenta de nuevo.";
   }
+}
+
+function variantUniqueFieldErrors(
+  error: Extract<AdminRepositoryError, { type: "unique_violation" }>,
+): FieldErrors {
+  const field = error.constraint?.includes("sku") ? "sku" : "label";
+  return { [field]: friendlyError(error, "variant") };
 }
 
 async function getRepositoryOrError(): Promise<
@@ -135,7 +144,7 @@ export async function createProductAction(
 
   revalidatePath(PRODUCTS_LIST_PATH);
   revalidatePath(productEditPath(result.data.id));
-  return { status: "success", data: result.data };
+  redirect(productEditPath(result.data.id));
 }
 
 export async function updateProductAction(
@@ -226,7 +235,7 @@ export async function createVariantAction(
   const result = await repo.repository.createVariant(productId, variantValidation.value, inventoryValidation.value);
   if (!result.ok) {
     if (result.error.type === "unique_violation") {
-      return { status: "field_errors", errors: { label: friendlyError(result.error, "variant") } };
+      return { status: "field_errors", errors: variantUniqueFieldErrors(result.error) };
     }
     return { status: "error", message: friendlyError(result.error, "variant") };
   }
@@ -253,7 +262,7 @@ export async function updateVariantAction(
   const result = await repo.repository.updateVariant(variantId, expectedUpdatedAt, validation.value);
   if (!result.ok) {
     if (result.error.type === "unique_violation") {
-      return { status: "field_errors", errors: { label: friendlyError(result.error, "variant") } };
+      return { status: "field_errors", errors: variantUniqueFieldErrors(result.error) };
     }
     return { status: "error", message: friendlyError(result.error, "variant") };
   }

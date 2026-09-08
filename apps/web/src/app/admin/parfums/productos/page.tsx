@@ -81,9 +81,11 @@ export default async function AdminParfumsProductsPage({
   if (!listResult.ok) {
     return (
       <div className={styles.page}>
-        <p className={styles.notice} role="alert">
-          No se pudo cargar el catálogo. Intenta de nuevo.
-        </p>
+        <main>
+          <p className={styles.notice} role="alert">
+            No se pudo cargar el catálogo. Intenta de nuevo.
+          </p>
+        </main>
       </div>
     );
   }

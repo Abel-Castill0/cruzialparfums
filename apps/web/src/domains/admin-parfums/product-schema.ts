@@ -252,7 +252,12 @@ function parseMoney(value: unknown, field: string, errors: FieldErrors): number 
     return null;
   }
   // Reject more than 2 decimal places rather than silently rounding a price.
-  if (Math.round(parsed * 100) !== parsed * 100) {
+  // Compare with a scale-aware tolerance: ordinary decimal input such as 19.90
+  // becomes 19.9 as a Number and its binary representation is not exact.
+  const scaled = parsed * 100;
+  const roundingDelta = Math.abs(Math.round(scaled) - scaled);
+  const floatingPointTolerance = Number.EPSILON * Math.max(1, Math.abs(scaled));
+  if (roundingDelta > floatingPointTolerance) {
     errors[field] = "El monto no puede tener más de 2 decimales.";
     return null;
   }

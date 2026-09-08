@@ -115,6 +115,11 @@ describe("validateVariantForm", () => {
     expect(result.ok).toBe(true);
   });
 
+  it("accepts a two-decimal price affected by binary floating-point representation", () => {
+    const result = validateVariantForm({ ...validInput, priceAmount: "19.90" });
+    expect(result.ok).toBe(true);
+  });
+
   it("rejects a negative price", () => {
     const result = validateVariantForm({ ...validInput, priceAmount: -1 });
     expect(result.ok).toBe(false);

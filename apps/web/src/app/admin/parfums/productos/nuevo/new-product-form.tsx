@@ -1,7 +1,6 @@
 "use client";
 
-import { useActionState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useActionState } from "react";
 import { ProductFormFields } from "@/components/admin/product-form-fields";
 import { createProductAction, type ActionState } from "../actions";
 import type { Database } from "@/lib/supabase/database.types";
@@ -30,16 +29,7 @@ const emptyDefaults = {
 const initialState: ActionState<ProductRow> = { status: "idle" };
 
 export function NewProductForm() {
-  const router = useRouter();
   const [state, formAction, pending] = useActionState(createProductAction, initialState);
-
-  useEffect(() => {
-    if (state.status === "success") {
-      // Redirect to the edit page so the admin can add variants right away —
-      // a product with no variants is a valid draft state, not a dead end.
-      router.push(`/admin/parfums/productos/${state.data.id}`);
-    }
-  }, [state, router]);
 
   const fieldErrors = state.status === "field_errors" ? state.errors : {};
 
