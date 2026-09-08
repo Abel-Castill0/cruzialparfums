@@ -88,18 +88,25 @@ describe("commercial reconciliation", () => {
       resolve(repositoryRoot, "supabase/staging/legacy-catalog-staging.json"),
       "utf8",
     )) as LegacyStaging;
-    const result = reconcileCommercialCatalog({ staging, documentedBottlePriceCount: 23 });
+    const result = reconcileCommercialCatalog({ staging, documentedBottlePriceCount: 24 });
 
     expect(result.summary).toMatchObject({
       legacy_products_considered: 99,
       staged_non_combo_products: 96,
       variants: 312,
       blocked: 3,
-      conflicts: 1,
+      conflicts: 0,
     });
     expect(result.blocked).toHaveLength(3);
     expect(result.blocked.every((item) => item.entity === "combo")).toBe(true);
-    expect(first(result.conflicts).code).toBe("DOCUMENTED_BOTTLE_PRICE_COUNT_MISMATCH");
+    expect(result.conflicts).toEqual([]);
+    expect(result.category_targets).toHaveLength(11);
+    expect(result.category_targets).toContainEqual(expect.objectContaining({
+      kind: "commercial_type",
+      slug: "arabic",
+      name: "Árabe",
+      publication_status: "draft",
+    }));
   });
 
   it("keeps every current legacy price exact, legacy, draft, and not publishable", () => {

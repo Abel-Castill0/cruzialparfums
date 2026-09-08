@@ -192,7 +192,11 @@ producto (`img/perfumes/webp/*`) antes de aplicarse. Provenance: `CLIENT_CONFIRM
 - Procedimiento seguro de bootstrap del primer admin, contraseña inicial, MFA,
   recuperación, alta de administradores adicionales y futuros roles/permisos.
 - Dominio final, cuentas/proyectos de Vercel, Supabase, Cloudinary y Resend.
-- Cuáles de los 23 precios de frasco actuales están confirmados para publicar.
+- Cuáles de los 24 precios de frasco actuales, distribuidos entre 23 productos,
+  están confirmados para publicar. **El conteo previo de “23 precios” queda
+  SUPERSEDED (4H1B1, evidencia versionada):** contaba productos con frasco;
+  `erba-pura` tiene dos variantes de frasco, 50 ml y 100 ml. Ninguno de los 24
+  precios queda confirmado por esta corrección de conteo.
 - Reglas comerciales futuras del builder personalizado.
 - Categorías y catálogo inicial de Import; datos comerciales y fuente de cada registro.
 - Campos definitivos para relojes u otras categorías.
@@ -276,9 +280,10 @@ producto (`img/perfumes/webp/*`) antes de aplicarse. Provenance: `CLIENT_CONFIRM
 
 - Las composiciones actuales de los tres combos pueden reproducirse durante la paridad
   legacy, pero no se consideran catálogo comercial verificado ni seed futuro.
-- Los 23 precios de frasco y los demás precios de `assets/data.js` pueden mostrarse para
-  paridad con `verificationStatus: legacy`; no quedan aprobados para carga automática a
-  Supabase.
+- Los 24 precios de frasco (23 productos; `erba-pura` aporta 50 ml y 100 ml) y
+  los demás precios de `assets/data.js` pueden mostrarse para paridad con
+  `verificationStatus: legacy`; no quedan aprobados para publicación automática
+  en Supabase. Su carga local controlada como `legacy` + `draft` no los confirma.
 
 ## LEGACY_LEGAL_PENDING_REVIEW (por revisar humano/legal)
 

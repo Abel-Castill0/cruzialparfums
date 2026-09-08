@@ -92,14 +92,27 @@ Manifest) implementada y validada localmente, sin carga ni mutación de media.
   olfativas, sin colisiones. `bir-intense` se conserva `hidden`; producción,
   disponibilidad y publicación siguen independientes. Inventario futuro:
   `status_only`, `quantity_on_hand = null`. Los 3 combos siguen bloqueados y
-  hay 0 excluidos. Conflicto explícito: la documentación todavía dice 23
-  precios de frasco, pero el staging actual contiene 24; ningún valor se
-  alteró ni se omitió. 14 overrides de provenance a nivel de campo o
+  hay 0 excluidos. El aparente conflicto 23→24 quedó resuelto en 4H1B1: eran
+  23 productos con frasco pero 24 precios porque `erba-pura` tiene 50/100 ml;
+  ningún valor se alteró ni se promovió. 14 overrides de provenance a nivel de campo o
   categoría no promueven el `verification_status` mixto, que permanece
   conservador en `legacy`. Inspección de filas comerciales existentes en
   Supabase: `NOT_VERIFIED` (4H1A es artifact-first, sin credenciales ni
   mutación remota). Dependencia siguiente: revisión del manifiesto antes de
   4H1B; media continúa diferida a 4F2B.
+- **4H1B1 Controlled Local Commercial Population: IMPLEMENTED / LOCAL RUNTIME
+  TESTED.** Migration aditiva con funciones operator-only en schema `app`
+  (solo `postgres`; revocadas a `public`/`anon`/`authenticated`/`service_role`)
+  y CLI limitado al contenedor local derivado de `supabase/config.toml`.
+  Semántica `INSERT-or-verify`, sin update/delete/upsert: primero plan completo,
+  luego apply atómico bajo locks; cualquier diferencia rehúsa todo el apply.
+  Reset local inició en 0/0/0/0/0; dry-run planeó 11 categorías, 96 productos,
+  312 variantes, 192 relaciones y 312 inventarios. Apply local coincidió y la
+  segunda pasada quedó 0 inserts / 823 unchanged / 0 conflicts. Probes reales
+  protegieron un nombre humano y `tracked_quantity = 7`; ambos applies fueron
+  rechazados sin overwrite. Verificación: 0 publicados, 0 precios promovidos,
+  0 combos/media, `bir-intense` hidden, 3 discontinued+available; Admin ve
+  corregido + normal, anon ve 0 drafts. Hosted staging **NO POBLADO**.
 - **Public Parfums Order Request: IMPLEMENTED / RUNTIME TESTED.** El checkout
   revalida identidades y cantidades contra `LegacyCatalogRepository`, ignora
   snapshots comerciales del browser y persiste mediante una RPC service-only
@@ -348,6 +361,8 @@ Manifest) implementada y validada localmente, sin carga ni mutación de media.
   asset ausente, colisión y orden determinista).
 - `commercial:check`: PASS; el manifiesto coincide byte por byte con ETL,
   decisiones y migrations versionadas, sin timestamps variables.
+- `commercial:load:verify`: PASS local; 0 inserts, 823 unchanged, 0 conflicts,
+  conteos/estados exactos, smoke Admin y aislamiento anónimo.
 - `media:check`: PASS; el manifiesto coincide byte por byte con el catálogo y
   el inventario local de nombres de archivo (sin leer contenido binario).
 - Build: PASS; `/admin/parfums/pedidos` y `/pedidos/[id]` son dinámicos
@@ -355,11 +370,12 @@ Manifest) implementada y validada localmente, sin carga ni mutación de media.
   como contenido compartido.
 - ETL: dos escrituras consecutivas produjeron el mismo SHA-256; `etl:check`
   PASS (96 staging, 3 blocked, 0 invalid).
-- Supabase CLI: `db:reset` fresco PASS; las 12 migrations y el seed
-  estructural se aplicaron desde cero (Fase 4F1 añadió 1 migration).
-- pgTAP runtime: 11 archivos, 272/272 assertions PASS (74 foundation + 28
+- Supabase CLI: `db:reset` fresco PASS; las 13 migrations y el seed
+  estructural se aplicaron desde cero (4H1B1 añadió el boundary operator-only).
+- pgTAP runtime: 12 archivos, 306/306 assertions PASS (74 foundation + 28
   Product CRUD + 37 Categories CRUD + 39 Combos CRUD + 29 Wholesale + 21
-  Public Order Request + 14 Admin Orders Inbox/Detail + 30 Media Mutations)
+  Public Order Request + 14 Admin Orders Inbox/Detail + 30 Media Mutations +
+  34 Controlled Commercial Import)
   en PostgreSQL local. Tipos generados sin drift contra `public,graphql_public`.
 - `git diff --check`: limpio.
 - E2E navegador de Admin Orders (Fase 4E2): login Parfums admin → inbox con
@@ -404,9 +420,8 @@ Manifest) implementada y validada localmente, sin carga ni mutación de media.
 
 ## NEXT
 
-**Fase 4H1A — Commercial Reconciliation Manifest cerrada.** Siguiente
-capability solo después de revisar el manifiesto y recibir nueva instrucción:
-**Fase 4H1B — Controlled Supabase Population**. La migración controlada de
-fotos a Cloudinary (4F2B) espera IDs comerciales estables. No iniciar 4H1B,
-4F2B, Settings, Import operativo, storefront Supabase cutover, config de Auth
-remota ni deploy/Preview.
+**Fase 4H1B1 — Controlled Local Commercial Population cerrada.** Siguiente
+capability solo después de revisar el resultado local y recibir nueva
+instrucción: **Fase 4H1B2 — Controlled Hosted Staging Population**. No iniciar
+4H1B2, 4F2B, Settings, Import operativo, storefront Supabase cutover, config de
+Auth remota ni deploy/Preview.

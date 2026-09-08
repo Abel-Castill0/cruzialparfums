@@ -6,7 +6,7 @@
     "source_artifact": "supabase/staging/legacy-catalog-staging.json",
     "source_fingerprints": {
       "assets/data.js": "f2cc900aa8851474b3e6d3e799deeac2103ed77da7f1e66034c1f05a9624021a",
-      "docs/client-decisions.md": "539401f754ff25a07e8419d07d5334efbd21c2a1997c2e0ed7f6db54c7603dd9",
+      "docs/client-decisions.md": "42e55b03810316ec6c80f262f13908eefe0cff2d285ada6489d5314c0b09a0d9",
       "supabase/migrations/20260907154348_catalog.sql": "0933444fefb2a3f65d0c54d592f6a06ad078625b30f349d68a9363da4f06683e",
       "supabase/migrations/20260907154401_integrity_hardening.sql": "7bbc09f0180cd016b2e2f9bfe5429fd747c086e70ca0720eece5a9fec121d37e",
       "supabase/migrations/20260908070000_admin_parfums_wholesale.sql": "db4cf7d1503f8c943b99dc5a0246b1edc2a6bc3ae53ab0f62303b282817d575a",
@@ -57,8 +57,274 @@
     "category_relationships": 192,
     "status_overrides": 1,
     "provenance_overrides": 14,
-    "conflicts": 1
+    "conflicts": 0
   },
+  "category_targets": [
+    {
+      "kind": "commercial_type",
+      "slug": "arabic",
+      "name": "Árabe",
+      "description": null,
+      "spec_schema": {},
+      "publication_status": "draft",
+      "sort_order": 0,
+      "field_provenance": {
+        "slug": {
+          "provenance": [
+            "CLIENT_CONFIRMED",
+            "DERIVED_VALIDATED"
+          ],
+          "basis": "Stable commercial identities are confirmed by the wholesale contract and normalized from legacy source"
+        },
+        "name": {
+          "provenance": [
+            "CLIENT_CONFIRMED"
+          ],
+          "basis": "Commercial category label is documented in the confirmed wholesale contract"
+        }
+      }
+    },
+    {
+      "kind": "commercial_type",
+      "slug": "designer",
+      "name": "Diseñador",
+      "description": null,
+      "spec_schema": {},
+      "publication_status": "draft",
+      "sort_order": 0,
+      "field_provenance": {
+        "slug": {
+          "provenance": [
+            "CLIENT_CONFIRMED",
+            "DERIVED_VALIDATED"
+          ],
+          "basis": "Stable commercial identities are confirmed by the wholesale contract and normalized from legacy source"
+        },
+        "name": {
+          "provenance": [
+            "CLIENT_CONFIRMED"
+          ],
+          "basis": "Commercial category label is documented in the confirmed wholesale contract"
+        }
+      }
+    },
+    {
+      "kind": "commercial_type",
+      "slug": "niche",
+      "name": "Nicho",
+      "description": null,
+      "spec_schema": {},
+      "publication_status": "draft",
+      "sort_order": 0,
+      "field_provenance": {
+        "slug": {
+          "provenance": [
+            "CLIENT_CONFIRMED",
+            "DERIVED_VALIDATED"
+          ],
+          "basis": "Stable commercial identities are confirmed by the wholesale contract and normalized from legacy source"
+        },
+        "name": {
+          "provenance": [
+            "CLIENT_CONFIRMED"
+          ],
+          "basis": "Commercial category label is documented in the confirmed wholesale contract"
+        }
+      }
+    },
+    {
+      "kind": "olfactory_family",
+      "slug": "acuatico",
+      "name": "Acuático",
+      "description": null,
+      "spec_schema": {},
+      "publication_status": "draft",
+      "sort_order": 0,
+      "field_provenance": {
+        "slug": {
+          "provenance": [
+            "legacy",
+            "DERIVED_VALIDATED"
+          ],
+          "basis": "ASCII-safe slug derived deterministically from the legacy olfactory-family label"
+        },
+        "name": {
+          "provenance": [
+            "legacy"
+          ],
+          "basis": "Display label preserved from the legacy olfactory-family value"
+        }
+      }
+    },
+    {
+      "kind": "olfactory_family",
+      "slug": "amaderado",
+      "name": "Amaderado",
+      "description": null,
+      "spec_schema": {},
+      "publication_status": "draft",
+      "sort_order": 0,
+      "field_provenance": {
+        "slug": {
+          "provenance": [
+            "legacy",
+            "DERIVED_VALIDATED"
+          ],
+          "basis": "ASCII-safe slug derived deterministically from the legacy olfactory-family label"
+        },
+        "name": {
+          "provenance": [
+            "legacy"
+          ],
+          "basis": "Display label preserved from the legacy olfactory-family value"
+        }
+      }
+    },
+    {
+      "kind": "olfactory_family",
+      "slug": "ambar",
+      "name": "Ámbar",
+      "description": null,
+      "spec_schema": {},
+      "publication_status": "draft",
+      "sort_order": 0,
+      "field_provenance": {
+        "slug": {
+          "provenance": [
+            "legacy",
+            "DERIVED_VALIDATED"
+          ],
+          "basis": "ASCII-safe slug derived deterministically from the legacy olfactory-family label"
+        },
+        "name": {
+          "provenance": [
+            "legacy"
+          ],
+          "basis": "Display label preserved from the legacy olfactory-family value"
+        }
+      }
+    },
+    {
+      "kind": "olfactory_family",
+      "slug": "citrico",
+      "name": "Cítrico",
+      "description": null,
+      "spec_schema": {},
+      "publication_status": "draft",
+      "sort_order": 0,
+      "field_provenance": {
+        "slug": {
+          "provenance": [
+            "legacy",
+            "DERIVED_VALIDATED"
+          ],
+          "basis": "ASCII-safe slug derived deterministically from the legacy olfactory-family label"
+        },
+        "name": {
+          "provenance": [
+            "legacy"
+          ],
+          "basis": "Display label preserved from the legacy olfactory-family value"
+        }
+      }
+    },
+    {
+      "kind": "olfactory_family",
+      "slug": "especiado",
+      "name": "Especiado",
+      "description": null,
+      "spec_schema": {},
+      "publication_status": "draft",
+      "sort_order": 0,
+      "field_provenance": {
+        "slug": {
+          "provenance": [
+            "legacy",
+            "DERIVED_VALIDATED"
+          ],
+          "basis": "ASCII-safe slug derived deterministically from the legacy olfactory-family label"
+        },
+        "name": {
+          "provenance": [
+            "legacy"
+          ],
+          "basis": "Display label preserved from the legacy olfactory-family value"
+        }
+      }
+    },
+    {
+      "kind": "olfactory_family",
+      "slug": "floral",
+      "name": "Floral",
+      "description": null,
+      "spec_schema": {},
+      "publication_status": "draft",
+      "sort_order": 0,
+      "field_provenance": {
+        "slug": {
+          "provenance": [
+            "legacy",
+            "DERIVED_VALIDATED"
+          ],
+          "basis": "ASCII-safe slug derived deterministically from the legacy olfactory-family label"
+        },
+        "name": {
+          "provenance": [
+            "legacy"
+          ],
+          "basis": "Display label preserved from the legacy olfactory-family value"
+        }
+      }
+    },
+    {
+      "kind": "olfactory_family",
+      "slug": "fresco",
+      "name": "Fresco",
+      "description": null,
+      "spec_schema": {},
+      "publication_status": "draft",
+      "sort_order": 0,
+      "field_provenance": {
+        "slug": {
+          "provenance": [
+            "legacy",
+            "DERIVED_VALIDATED"
+          ],
+          "basis": "ASCII-safe slug derived deterministically from the legacy olfactory-family label"
+        },
+        "name": {
+          "provenance": [
+            "legacy"
+          ],
+          "basis": "Display label preserved from the legacy olfactory-family value"
+        }
+      }
+    },
+    {
+      "kind": "olfactory_family",
+      "slug": "gourmand",
+      "name": "Gourmand",
+      "description": null,
+      "spec_schema": {},
+      "publication_status": "draft",
+      "sort_order": 0,
+      "field_provenance": {
+        "slug": {
+          "provenance": [
+            "legacy",
+            "DERIVED_VALIDATED"
+          ],
+          "basis": "ASCII-safe slug derived deterministically from the legacy olfactory-family label"
+        },
+        "name": {
+          "provenance": [
+            "legacy"
+          ],
+          "basis": "Display label preserved from the legacy olfactory-family value"
+        }
+      }
+    }
+  ],
   "products": [
     {
       "legacy_id": "1-million-lucky",
@@ -26948,11 +27214,5 @@
       "source_state": "CLIENT_PROVIDED_PENDING_RECONFIRMATION"
     }
   ],
-  "conflicts": [
-    {
-      "code": "DOCUMENTED_BOTTLE_PRICE_COUNT_MISMATCH",
-      "legacy_ids": [],
-      "detail": "docs/client-decisions.md records 23; current legacy staging contains 24"
-    }
-  ]
+  "conflicts": []
 }

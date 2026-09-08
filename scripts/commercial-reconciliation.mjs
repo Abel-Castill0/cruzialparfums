@@ -48,7 +48,12 @@ const COMMERCIAL_TYPE_MAP = Object.freeze({
   niche: "niche",
 });
 const STABLE_COMMERCIAL_TYPES = new Set(["arabic", "designer", "niche"]);
-const DOCUMENTED_BOTTLE_PRICE_COUNT = 23;
+const DOCUMENTED_BOTTLE_PRICE_COUNT = 24;
+const COMMERCIAL_CATEGORY_NAMES = Object.freeze({
+  arabic: "Árabe",
+  designer: "Diseñador",
+  niche: "Nicho",
+});
 const PRODUCT_FIELDS = Object.freeze([
   "legacy_id",
   "slug",
@@ -137,6 +142,13 @@ function targetCategorySlug(category) {
     return COMMERCIAL_TYPE_MAP[category.slug] ?? null;
   }
   return normalizeCategorySlug(category.slug);
+}
+
+function targetCategoryName(category) {
+  const targetSlug = targetCategorySlug(category);
+  if (category.kind === "commercial_type") return COMMERCIAL_CATEGORY_NAMES[targetSlug] ?? null;
+  const sourceName = String(category.slug).trim();
+  return sourceName ? `${sourceName[0].toLocaleUpperCase("es-PE")}${sourceName.slice(1)}` : null;
 }
 
 function defaultFieldProvenance() {
@@ -397,6 +409,23 @@ export function reconcileCommercialCatalog({ staging, sourceFingerprints = {}, d
 
   const uniqueCategories = new Map();
   for (const product of products) for (const category of product.categories) if (category.target_slug) uniqueCategories.set(`${category.kind}:${category.target_slug}`, category);
+  const categoryTargets = [...uniqueCategories.values()].map((category) => ({
+    kind: category.kind,
+    slug: category.target_slug,
+    name: targetCategoryName({ kind: category.kind, slug: category.source_slug }),
+    description: null,
+    spec_schema: {},
+    publication_status: "draft",
+    sort_order: 0,
+    field_provenance: {
+      slug: category.kind === "commercial_type"
+        ? evidence(["CLIENT_CONFIRMED", "DERIVED_VALIDATED"], "Stable commercial identities are confirmed by the wholesale contract and normalized from legacy source")
+        : evidence(["legacy", "DERIVED_VALIDATED"], "ASCII-safe slug derived deterministically from the legacy olfactory-family label"),
+      name: category.kind === "commercial_type"
+        ? evidence(["CLIENT_CONFIRMED"], "Commercial category label is documented in the confirmed wholesale contract")
+        : evidence(["legacy"], "Display label preserved from the legacy olfactory-family value"),
+    },
+  })).sort((left, right) => stableCompare(`${left.kind}:${left.slug}`, `${right.kind}:${right.slug}`));
   const count = (predicate) => products.filter(predicate).length;
   const variants = products.flatMap((product) => product.variants);
   const overrideCount = Object.values(FIELD_OVERRIDES).reduce((total, fields) => total + Object.keys(fields).length, 0) + Object.keys(CATEGORY_PROVENANCE_OVERRIDES).length;
@@ -440,6 +469,7 @@ export function reconcileCommercialCatalog({ staging, sourceFingerprints = {}, d
       media_write_status: "DEFERRED_TO_4F2B",
     },
     summary,
+    category_targets: categoryTargets,
     products,
     blocked,
     conflicts,

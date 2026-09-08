@@ -61,6 +61,7 @@ export interface ReconciledProduct {
 export interface CommercialReconciliationArtifact {
   metadata: Record<string, unknown>;
   summary: Record<string, number>;
+  category_targets: Array<Record<string, unknown>>;
   products: ReconciledProduct[];
   blocked: Array<Record<string, unknown>>;
   conflicts: Array<{ code: string; legacy_ids: string[]; detail: string }>;
