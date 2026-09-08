@@ -112,7 +112,29 @@ Manifest) implementada y validada localmente, sin carga ni mutación de media.
   protegieron un nombre humano y `tracked_quantity = 7`; ambos applies fueron
   rechazados sin overwrite. Verificación: 0 publicados, 0 precios promovidos,
   0 combos/media, `bir-intense` hidden, 3 discontinued+available; Admin ve
-  corregido + normal, anon ve 0 drafts. Hosted staging **NO POBLADO**.
+  corregido + normal, anon ve 0 drafts. En ese checkpoint local, hosted staging
+  seguía sin poblar.
+- **4H1B2 Controlled Hosted Staging Population: APPLIED / VERIFIED.** Target
+  confirmado exclusivamente como `cruzial-v2-staging`
+  (`iyxidhglyqkzoziyewlc`); la única migration pendiente era
+  `20260908140000_controlled_commercial_import.sql`, aplicada y luego verificada
+  local ↔ remote. Baseline Parfums remoto: 0 categorías/productos/variantes/
+  relaciones/inventarios/combos/media, sin filas manuales, coincidencias,
+  inesperadas ni colisiones. Plan operator-only: 11 categorías, 96 productos,
+  312 variantes, 192 relaciones y 312 inventarios; 923 inserts, 0 unchanged y
+  0 conflicts. Se ejecutó un único apply atómico; el plan posterior quedó 0
+  inserts / 923 unchanged / 0 conflicts. Estado verificado: 95 productos draft,
+  `bir-intense` hidden, 0 published, 312 variantes draft con precio `legacy`, 24
+  variantes de frasco en 23 productos (`erba-pura` conserva dos), inventario
+  `status_only` con cantidad null, 11 categorías y 192 relaciones. Anon ve 0
+  productos draft/hidden y 0 categorías draft. Combos, combo items y media
+  permanecen 0→0; no hubo Cloudinary ni cutover y el storefront público conserva
+  `LegacyCatalogRepository → assets/data.js`. Las funciones siguen en `app`,
+  `SECURITY DEFINER`, `search_path = ''` y ACL explícita solo para `postgres`;
+  `public`/`anon`/`authenticated`/`service_role` no pueden ejecutarlas. UUIDs son
+  locales a cada entorno: 4F2B deberá usar identidad de media portable y resolver
+  la asociación por `business unit + legacy_id`, sin depender de un UUID de
+  staging.
 - **Public Parfums Order Request: IMPLEMENTED / RUNTIME TESTED.** El checkout
   revalida identidades y cantidades contra `LegacyCatalogRepository`, ignora
   snapshots comerciales del browser y persiste mediante una RPC service-only
@@ -420,8 +442,7 @@ Manifest) implementada y validada localmente, sin carga ni mutación de media.
 
 ## NEXT
 
-**Fase 4H1B1 — Controlled Local Commercial Population cerrada.** Siguiente
-capability solo después de revisar el resultado local y recibir nueva
-instrucción: **Fase 4H1B2 — Controlled Hosted Staging Population**. No iniciar
-4H1B2, 4F2B, Settings, Import operativo, storefront Supabase cutover, config de
-Auth remota ni deploy/Preview.
+**Fase 4H1B2 — Controlled Hosted Staging Population cerrada.** Revisar la
+población de staging y luego elegir la siguiente capability con instrucción
+explícita. No iniciar automáticamente 4F2B, Settings, Import operativo,
+storefront Supabase cutover, config de Auth remota, deploy/Preview ni Production.
