@@ -6,22 +6,19 @@
 
 ## HEAD
 
-Git es la fuente de verdad del hash. Fase 4E2 (Admin Parfums — Orders Inbox /
-Detail) cerrada sobre el runtime Supabase y el Public Order Request (4E1)
-existentes.
+Git es la fuente de verdad del hash. Fase 4F1 (Media Foundation + Admin Parfums
+Media) cerrada sobre el runtime Supabase y el Media/Cloudinary existentes.
 
 ## CURRENT
 
 - V2 aislada en `apps/web`: Next.js 16, App Router y TypeScript estricto.
 - **ADMIN DB = Supabase. PUBLIC STOREFRONT = `LegacyCatalogRepository`
   (temporal, sobre `assets/data.js`).** Siguen siendo dos fuentes
-  deliberadamente separadas hasta un cutover explícito — Fase 4b no tocó
-  `LegacyCatalogRepository` ni ninguna página pública; reconfirmado en vivo
-  (`/parfums/catalogo` sirve el fixture legacy de 95 productos sin cambios).
+  deliberadamente separadas hasta un cutover explícito.
 - Implementado: gateway, Home Parfums, catálogo, producto, cart drawer,
   checkout, combos/builder, Finder, mayorista, institucional, legales y 404.
 - Import sigue siendo foundation editorial (sin CRUD).
-- **Admin Parfums — Product CRUD: IMPLEMENTED.** `/admin/parfums/productos`
+- **Admin Parfums — Product CRUD: IMPLEMENTED / RUNTIME TESTED.** `/admin/parfums/productos`
   (lista paginada/filtrable/buscable), `/nuevo` (crear) y `/[id]` (editar:
   datos core, variantes + inventario por variante, categorías, destacado,
   archivar/restaurar). Todo sobre las RPCs `public.admin_*`
@@ -54,6 +51,22 @@ existentes.
   La DB acumula cantidades por slug estable, excluye decants, calcula dinero
   con `numeric`, audita update/enable/disable en la misma transacción y rechaza
   `expected_updated_at` obsoleto.
+- **Admin Parfums — Media / Cloudinary: IMPLEMENTED / RUNTIME TESTED.**
+  6 RPCs de media (`admin_register_media`, `admin_update_media`,
+  `admin_set_media_primary`, `admin_archive_media`, `admin_restore_media`,
+  `admin_reorder_media`), todas SECURITY INVOKER con `app.assert_admin_for`,
+  audit y concurrencia optimista. Single active primary per product enforced by
+  partial unique index. Archivar elimina is_primary sin auto-promover; restaurar
+  nunca re-primaria. Cloudinary signed upload server-side (sha1 de params +
+  secret), API secret nunca en el cliente ni en NEXT_PUBLIC_*. Valida la
+  respuesta de Cloudinary (folder prefix, format, size) antes de persistir;
+  asset rechazado se limpia automáticamente. Admin Media manager integrado en
+  el editor de producto: upload, alt text, variante asociada, principal, reorden
+  ↑/↓, archivar/restaurar. Warning cuando el producto tiene media activa sin
+  principal. Viewer Parfums: solo lectura. Import-only: denegado. Anónimo:
+  denegado. Responsive: `repeat(auto-fill, minmax(220px, 1fr))`. 12 unit
+  tests vitest + 30 pgTAP assertions nuevas. Staging `cruzial-v2-staging`
+  actualizado (12 migrations). `git diff --check` limpio.
 - **Public Parfums Order Request: IMPLEMENTED / RUNTIME TESTED.** El checkout
   revalida identidades y cantidades contra `LegacyCatalogRepository`, ignora
   snapshots comerciales del browser y persiste mediante una RPC service-only
@@ -91,8 +104,8 @@ existentes.
   la generación linked contiene la vista, RPCs y campos Wholesale nuevos.
 - Supabase Foundation (Fase 3) sigue vigente: migrations versionadas, RLS,
   pgTAP, seed estructural, ETL legacy a staging. **RUNTIME TESTED: YES** —
-  207/207 pgTAP (74 Fase 3 + 28 Fase 4a + 37 Fase 4b + 39 Fase 4c + 29
-  Fase 4d) en reset fresco.
+  272/272 pgTAP (74 Fase 3 + 28 Fase 4a + 37 Fase 4b + 39 Fase 4c + 29
+  Fase 4d + 21 Order Request + 14 Orders Inbox + 30 Media) en reset fresco.
 - Preview y Admin permanecen `noindex,nofollow`; Production/cutover no autorizados.
 - **Global Parfums Quality / Parity Gate (Fase 2.5): PASS** (heredado, sin
   regresión demostrada en este bloque). No se declara "sin bugs" — ver
@@ -157,6 +170,16 @@ existentes.
   conflicto stale, filtro/listado, clasificación faltante e aislamiento del
   admin exclusivo de Import. Las nuevas superficies pasaron los siete anchos
   320/390/430/768/1024/1440/1920, labels, foco y targets principales de 44px.
+- Fase 4F1 Media Foundation + Admin Parfums Media cerrada y runtime-tested: 6
+  RPCs de media (register/update/set_primary/archive/restore/reorder), todas
+  SECURITY INVOKER con app.assert_admin_for, audit y concurrencia optimista.
+  Cloudinary signed upload server-side, sin SDK, sin NEXT_PUBLIC_* secret.
+  Valida respuesta Cloudinary antes de persistir; asset rechazado limpiado
+  automáticamente. DB persistence failure reportada explícitamente (no
+  silenciada). Admin Media manager en el editor de producto: upload, alt,
+  variante, principal, reorden ↑/↓, archivar/restaurar. Viewer read-only,
+  import-only denegado, anónimo denegado. Responsive auto-fill grid.
+  30 pgTAP assertions + 12 vitest. Staging push con dry-run limpio.
 - Auth Admin foundation: `.env.example` sin valores, clientes browser/server
   separados, `/admin/login`, callback seguro, refresh SSR, páginas dinámicas,
   selector por membresías y ausencia de signup público. Bootstrap crea el
@@ -236,7 +259,7 @@ existentes.
 
 ## TODO
 
-- Admin Orders, Media/Cloudinary, Settings, Audit UI global e
+- Admin Settings, Audit UI global e
   Import operativo permanecen fuera de este bloque — siguientes capabilities,
   no iniciadas.
 - Media de combos (`product_media` de solo lectura) quedó explícitamente
@@ -280,19 +303,19 @@ existentes.
 - El hash final de Fase 4E2 vive en Git; los assets originales del cliente
   permanecen fuera de staging.
 - `npm run check` (catálogo + lint + typecheck + test + build): PASS.
-- Vitest: 31 archivos, 188 tests PASS (+6 de Fase 4E2: mapeo de estado y
-  normalización de teléfono para WhatsApp).
+- Vitest: 32 archivos, 200 tests PASS (+12 de Fase 4F1: Cloudinary env
+  contract, upload authorization, upload result validation).
 - Build: PASS; `/admin/parfums/pedidos` y `/pedidos/[id]` son dinámicos
   (`force-dynamic`), igual que el resto de Admin — nunca prerenderizados
   como contenido compartido.
 - ETL: dos escrituras consecutivas produjeron el mismo SHA-256; `etl:check`
   PASS (96 staging, 3 blocked, 0 invalid).
-- Supabase CLI: `db:reset` fresco PASS; las 11 migrations y el seed
-  estructural se aplicaron desde cero (sin migration nueva en 4E2).
-- pgTAP runtime: 10 archivos, 242/242 assertions PASS (74 foundation + 28
+- Supabase CLI: `db:reset` fresco PASS; las 12 migrations y el seed
+  estructural se aplicaron desde cero (Fase 4F1 añadió 1 migration).
+- pgTAP runtime: 11 archivos, 272/272 assertions PASS (74 foundation + 28
   Product CRUD + 37 Categories CRUD + 39 Combos CRUD + 29 Wholesale + 21
-  Public Order Request + 14 Admin Orders Inbox/Detail) en PostgreSQL local.
-  Tipos generados sin drift contra `public,graphql_public`.
+  Public Order Request + 14 Admin Orders Inbox/Detail + 30 Media Mutations)
+  en PostgreSQL local. Tipos generados sin drift contra `public,graphql_public`.
 - `git diff --check`: limpio.
 - E2E navegador de Admin Orders (Fase 4E2): login Parfums admin → inbox con
   25 fixtures sintéticos (creados vía la RPC real
@@ -336,11 +359,10 @@ existentes.
 
 ## NEXT
 
-**Fase 4E2 — Admin Parfums Orders Inbox / Detail cerrada. DETENER para
-revisión externa.** Siguiente capability solo tras nueva instrucción:
-**Fase 4F — Media / Cloudinary**. No se implementó workflow de estado de
-pedido, payments, refunds, shipping tracking, Cloudinary, CRM de clientes,
-Import operativo ni campañas en este bloque — deliberadamente fuera de
-alcance de 4E2. Payments/Pagos permanece **INTENTIONALLY OUT OF SCOPE FOR
-V1**; no es blocker ni capability futura. No iniciar Import operativo,
-Cloudinary, storefront Supabase cutover, config de Auth remota ni deploy/Preview.
+**Fase 4F1 — Media Foundation + Admin Parfums Media cerrada.**
+Staging `cruzial-v2-staging` actualizado (12 migrations). Synthetic Cloudinary
+TEST asset eliminado; local fixtures limpiados. Siguiente capability solo tras
+nueva instrucción: **Fase 4F2 — Client Media Reconciliation / Controlled
+Migration** (reconciliar los ~96 PNGs del cliente con Cloudinary). No iniciar
+Import operativo, Settings, Audit UI, storefront Supabase cutover, config de
+Auth remota ni deploy/Preview.

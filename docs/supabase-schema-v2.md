@@ -1,6 +1,6 @@
 # Cruzial Platform V2 — Schema Supabase
 
-Estado: Fase 3. Las migrations existen en `supabase/migrations/` y son la
+Estado: Fase 4F1 cerrada. Las migrations existen en `supabase/migrations/` y son la
 fuente de verdad; este documento las describe, no las reemplaza.
 
 ## Estado de implementación
@@ -32,9 +32,20 @@ fuente de verdad; este documento las describe, no las reemplaza.
   pueden ejecutar la RPC ni insertar directamente; Next usa temporalmente el
   path privilegiado solo después de revalidar contra el catálogo legacy.
 
-  **RUNTIME TESTED: YES.** El 2026-09-07 se ejecutaron dos resets frescos sobre
-  PostgreSQL local, aplicando las seis migrations y el seed sin parches
-  manuales. Las 4 suites pgTAP finalizaron con 74/74 assertions PASS.
+  La migration de Fase 4F1 `20260908120000` añade las 6 RPCs de media:
+  `admin_register_media`, `admin_update_media`, `admin_set_media_primary`,
+  `admin_archive_media`, `admin_restore_media`, `admin_reorder_media`. Todas
+  son SECURITY INVOKER, usan `app.assert_admin_for`, audit en la misma
+  transacción y concurrencia optimista (SQLSTATE 40001). Archivar elimina
+  is_primary sin auto-promover; restaurar nunca re-primaria. Reorder rechaza
+  ids de otro producto (P2004). `app.media_unit` resuelve la unidad de negocio
+  desde el media id. Añade las acciones `primary_change` y `reorder` al
+  constraint `audit_log_action_check`. Single active primary por producto se
+  impone via la parcial unique index existente `product_media_single_primary_idx`.
+
+  **RUNTIME TESTED: YES.** El 2026-09-08 se ejecutaron dos resets frescos sobre
+  PostgreSQL local, aplicando las 12 migrations y el seed sin parches
+  manuales. Las 11 suites pgTAP finalizaron con 272/272 assertions PASS.
 
 - **PROPOSED (no creadas, con motivo):**
   - `promotions` / `promotion_rules` / `promotion_rewards` — la única promo
@@ -156,9 +167,14 @@ Disponibilidad, producción y publicación son ejes independientes: un producto
 
 ### `product_media`
 
-`id`, `product_id`, `variant_id nullable`, `provider`, `public_id`, `secure_url`,
-`width`, `height`, `bytes`, `format`, `alt`, `sort_order`, `is_primary`, metadata,
-timestamps, `archived_at`.
+`id`, `product_id`, `product_variant_id nullable`, `provider`, `public_id`,
+`secure_url`, `width`, `height`, `bytes`, `format`, `checksum`, `alt`,
+`sort_order`, `is_primary`, `metadata jsonb`, timestamps, `archived_at`.
+
+Constraints: single active primary per product via partial unique index
+`product_media_single_primary_idx`. Provider constrained to `legacy_static` |
+`cloudinary`. Dimensions must be positive. FK to `product_variants` uses
+`ON DELETE SET NULL` (variant removal preserves media).
 
 ### `combos` y `combo_items`
 
@@ -366,19 +382,19 @@ poder mutar filas de Import solo por estar autenticado, y viceversa. Ninguna pol
 confía en metadata editable por el usuario. Views públicas deben usar `security_invoker`
 o una alternativa que conserve RLS.
 
-## Gates de Fase 3
+## Gates de Fase 3 + 4A–4F1
 
 Estado actual: **PASS**. Docker Linux y Supabase local iniciaron; `db:reset`
-reconstruyó el esquema desde cero dos veces y `db:test` ejecutó 4 suites con
-74/74 assertions PASS. Los tipos centrales se generaron desde esa DB mediante
-Supabase CLI `2.117.0` y sus clientes consumidores compilan con `Database`.
+reconstruyó el esquema desde cero y `db:test` ejecutó 11 suites con
+272/272 assertions PASS. Los tipos centrales se generaron desde esa DB mediante
+Supabase CLI y sus clientes consumidores compilan con `Database`.
 
 Comandos verificados:
 
 ```bash
 npx supabase start
-npm --prefix apps/web run db:reset    # migrations + seed desde cero
-npm --prefix apps/web run db:test     # 74 assertions pgTAP
+npm --prefix apps/web run db:reset    # 12 migrations + seed desde cero
+npm --prefix apps/web run db:test     # 272 assertions pgTAP (11 suites)
 ```
 
 1. `supabase db reset` reconstruye todo desde cero.
