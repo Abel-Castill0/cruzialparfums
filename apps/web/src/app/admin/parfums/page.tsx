@@ -10,8 +10,9 @@ export const metadata: Metadata = { title: "Parfums" };
 
 // Variantes/decants/frascos/disponibilidad/destacado live inside Productos.
 // Categorías has its own CRUD and remains assignable from the product editor.
+// Combos also has its own CRUD now — composición, verificación y archive/
+// restore sobre un producto Parfums existente.
 const placeholderAreas = [
-  "Combos",
   "Promociones",
   "Mayorista",
   "Pedidos",
@@ -42,13 +43,19 @@ export default async function AdminParfumsPage() {
   const supabase = await createSupabaseServerClient();
   let productCount: number | null = null;
   let categoryCount: number | null = null;
+  let comboCount: number | null = null;
   if (supabase) {
-    const [products, categories] = await Promise.all([
+    const [products, categories, combos] = await Promise.all([
       supabase.from("products").select("*", { count: "exact", head: true }).eq("business_unit_id", membership.businessUnitId),
       supabase.from("categories").select("*", { count: "exact", head: true }).eq("business_unit_id", membership.businessUnitId),
+      supabase
+        .from("combos")
+        .select("*, product:products!inner(business_unit_id)", { count: "exact", head: true })
+        .eq("product.business_unit_id", membership.businessUnitId),
     ]);
     productCount = products.count ?? 0;
     categoryCount = categories.count ?? 0;
+    comboCount = combos.count ?? 0;
   }
 
   return (
@@ -70,6 +77,14 @@ export default async function AdminParfumsPage() {
             categoryCount === null
               ? "Jerarquía, publicación y relaciones con productos."
               : `${categoryCount} categoría${categoryCount === 1 ? "" : "s"} · jerarquía, publicación y relaciones.`,
+        },
+        {
+          label: "Combos",
+          href: "/admin/parfums/combos",
+          summary:
+            comboCount === null
+              ? "Composición, verificación y archive/restore."
+              : `${comboCount} combo${comboCount === 1 ? "" : "s"} · composición, verificación y archive/restore.`,
         },
       ]}
       placeholderAreas={placeholderAreas}
