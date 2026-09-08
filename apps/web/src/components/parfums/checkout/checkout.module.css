@@ -299,6 +299,34 @@
   text-decoration: underline;
 }
 
+.submitError {
+  padding: 12px 14px;
+  border-left: 3px solid #7c3028;
+  display: grid;
+  gap: 4px;
+  color: #6b2923;
+  background: #fff2ef;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.submitError strong {
+  color: #541e1a;
+}
+
+.fieldError {
+  color: #7c3028 !important;
+  font-size: 10px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0 !important;
+  line-height: 1.45;
+  text-transform: none;
+}
+
+.formPanel [aria-invalid="true"] {
+  border-color: #7c3028;
+}
+
 @media (max-width: 920px) {
   .page {
     width: min(760px, calc(100% - 32px));

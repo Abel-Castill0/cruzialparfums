@@ -2,31 +2,26 @@
 
 import type { Route } from "next";
 import Link from "next/link";
-import { useMemo, useState, type FormEvent } from "react";
+import { useRouter } from "next/navigation";
+import { useRef, useState, useTransition, type FormEvent } from "react";
+import {
+  createParfumsOrderRequest,
+  type CreateParfumsOrderResult,
+} from "@/app/parfums/checkout/actions";
 import { CartLine } from "@/components/parfums/cart/cart-line";
 import { useParfumsCart } from "@/components/parfums/cart/use-parfums-cart";
 import { Breadcrumbs } from "@/components/parfums/navigation/breadcrumbs";
-import { formatParfumsVariant } from "@/domains/carts/parfums-cart-pricing";
 import type { CatalogProduct } from "@/domains/catalog/types";
-import {
-  buildCheckoutMessage,
-  buildWhatsAppUrl,
-  type ParfumsCheckoutCustomer,
-} from "@/domains/whatsapp/parfums-message-builder";
+import { handoffStorageKey } from "@/domains/orders/parfums-order-handoff";
+import { PARFUMS_DELIVERY_OPTIONS } from "@/domains/orders/parfums-order-request";
+import type { ParfumsCheckoutCustomer } from "@/domains/whatsapp/parfums-message-builder";
 import styles from "./checkout.module.css";
-
-const deliveryOptions = [
-  "Lima Metropolitana — Línea 1 (delivery gratis)",
-  "Lima Metropolitana — Motorizado",
-  "Lima Metropolitana — Contraentrega",
-  "Provincias — Agencia Shalom",
-] as const;
 
 const emptyCustomer: ParfumsCheckoutCustomer = {
   name: "",
   phone: "",
   district: "",
-  delivery: deliveryOptions[0],
+  delivery: PARFUMS_DELIVERY_OPTIONS[0],
   note: "",
 };
 
@@ -36,44 +31,56 @@ function money(value: number) {
 
 export function CheckoutExperience({
   products,
-  whatsappNumber,
-  storeName,
 }: {
   products: CatalogProduct[];
-  whatsappNumber: string;
-  storeName: string;
 }) {
+  const router = useRouter();
   const { lines, total, persistenceError, setQuantity, remove, clear } = useParfumsCart(products);
   const [customer, setCustomer] = useState(emptyCustomer);
-  const [submitState, setSubmitState] = useState<"idle" | "opened" | "blocked">("idle");
+  const [result, setResult] = useState<CreateParfumsOrderResult | null>(null);
+  const [isPending, startTransition] = useTransition();
+  const requestIdRef = useRef<string | null>(null);
+  const errorRef = useRef<HTMLDivElement>(null);
 
-  const message = useMemo(() => buildCheckoutMessage({
-    storeName,
-    lines: lines.map((line) => ({
-      brand: line.product.brand,
-      name: line.product.name,
-      variantLabel: formatParfumsVariant(line),
-      quantity: line.quantity,
-      subtotal: line.subtotal,
-      ...(line.product.comboContent
-        ? { contents: line.product.comboContent.perfumes }
-        : {}),
-    })),
-    total,
-    customer,
-  }), [customer, lines, storeName, total]);
-  const whatsappUrl = buildWhatsAppUrl(whatsappNumber, message);
+  function resetAttempt() {
+    requestIdRef.current = null;
+    setResult(null);
+  }
 
   function updateCustomer(field: keyof ParfumsCheckoutCustomer, value: string) {
     setCustomer((current) => ({ ...current, [field]: value }));
-    setSubmitState("idle");
+    resetAttempt();
   }
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (lines.length === 0) return;
-    const popup = window.open(whatsappUrl, "_blank", "noopener,noreferrer");
-    setSubmitState(popup === null ? "blocked" : "opened");
+    if (lines.length === 0 || isPending) return;
+    requestIdRef.current ??= crypto.randomUUID();
+    const requestId = requestIdRef.current;
+    setResult(null);
+    startTransition(async () => {
+      const actionResult = await createParfumsOrderRequest({
+        requestId,
+        lines: lines.map((line) => ({
+          productId: line.product.legacyId,
+          variantId: line.variant.variantId,
+          quantity: line.quantity,
+        })),
+        customer,
+      });
+      setResult(actionResult);
+      if (actionResult.status !== "success") {
+        requestAnimationFrame(() => errorRef.current?.focus());
+        return;
+      }
+      try {
+        sessionStorage.setItem(handoffStorageKey(actionResult.orderNumber), actionResult.whatsappUrl);
+      } catch {
+        // A safe reference-only fallback remains available on the next page.
+      }
+      clear();
+      router.push(`/parfums/gracias/${encodeURIComponent(actionResult.orderNumber)}` as Route);
+    });
   }
 
   return (
@@ -95,7 +102,7 @@ export function CheckoutExperience({
               <span>Paso 1</span>
               <h2 id="selection-title">Tu selección</h2>
             </div>
-            {lines.length > 0 ? <button type="button" onClick={clear}>Vaciar carrito</button> : null}
+            {lines.length > 0 ? <button type="button" onClick={() => { resetAttempt(); clear(); }}>Vaciar carrito</button> : null}
           </div>
           {lines.length === 0 ? (
             <div className={styles.empty}>
@@ -109,8 +116,8 @@ export function CheckoutExperience({
                 <CartLine
                   key={line.key}
                   line={line}
-                  onQuantity={(quantity) => setQuantity(line.product.legacyId, line.variant.variantId, quantity)}
-                  onRemove={() => remove(line.product.legacyId, line.variant.variantId)}
+                  onQuantity={(quantity) => { resetAttempt(); setQuantity(line.product.legacyId, line.variant.variantId, quantity); }}
+                  onRemove={() => { resetAttempt(); remove(line.product.legacyId, line.variant.variantId); }}
                 />
               ))}
             </div>
@@ -129,37 +136,43 @@ export function CheckoutExperience({
             <h2 id="details-title">Datos para coordinar</h2>
             <p>Los usaremos únicamente para preparar el mensaje de WhatsApp.</p>
           </div>
-          <form action={whatsappUrl} target="_blank" onSubmit={submit}>
+          <form onSubmit={submit} aria-busy={isPending}>
+            {result?.status === "error" ? (
+              <div ref={errorRef} className={styles.submitError} role="alert" tabIndex={-1}>
+                <strong>No pudimos registrar la solicitud.</strong>
+                <span>{result.message}</span>
+              </div>
+            ) : null}
             <label>
               Nombre y apellido
-              <input required autoComplete="name" value={customer.name} onChange={(event) => updateCustomer("name", event.target.value)} placeholder="Tu nombre completo" />
+              <input id="checkout-name" required maxLength={120} autoComplete="name" value={customer.name} onChange={(event) => updateCustomer("name", event.target.value)} placeholder="Tu nombre completo" aria-invalid={Boolean(result?.status === "error" && result.fieldErrors?.name)} aria-describedby={result?.status === "error" && result.fieldErrors?.name ? "checkout-name-error" : undefined} />
+              {result?.status === "error" && result.fieldErrors?.name ? <small id="checkout-name-error" className={styles.fieldError}>{result.fieldErrors.name}</small> : null}
             </label>
             <label>
               WhatsApp
-              <input required type="tel" inputMode="tel" autoComplete="tel" value={customer.phone} onChange={(event) => updateCustomer("phone", event.target.value)} placeholder="9XX XXX XXX" />
+              <input id="checkout-phone" required maxLength={30} type="tel" inputMode="tel" autoComplete="tel" value={customer.phone} onChange={(event) => updateCustomer("phone", event.target.value)} placeholder="9XX XXX XXX" aria-invalid={Boolean(result?.status === "error" && result.fieldErrors?.phone)} aria-describedby={result?.status === "error" && result.fieldErrors?.phone ? "checkout-phone-error" : undefined} />
+              {result?.status === "error" && result.fieldErrors?.phone ? <small id="checkout-phone-error" className={styles.fieldError}>{result.fieldErrors.phone}</small> : null}
             </label>
             <label>
               Distrito / Ciudad
-              <input required autoComplete="address-level2" value={customer.district} onChange={(event) => updateCustomer("district", event.target.value)} placeholder="Ej. Miraflores, Lima" />
+              <input id="checkout-district" required maxLength={120} autoComplete="address-level2" value={customer.district} onChange={(event) => updateCustomer("district", event.target.value)} placeholder="Ej. Miraflores, Lima" aria-invalid={Boolean(result?.status === "error" && result.fieldErrors?.district)} aria-describedby={result?.status === "error" && result.fieldErrors?.district ? "checkout-district-error" : undefined} />
+              {result?.status === "error" && result.fieldErrors?.district ? <small id="checkout-district-error" className={styles.fieldError}>{result.fieldErrors.district}</small> : null}
             </label>
             <label>
               Entrega
-              <select value={customer.delivery} onChange={(event) => updateCustomer("delivery", event.target.value)}>
-                {deliveryOptions.map((option) => <option key={option}>{option}</option>)}
+              <select id="checkout-delivery" value={customer.delivery} onChange={(event) => updateCustomer("delivery", event.target.value)} aria-invalid={Boolean(result?.status === "error" && result.fieldErrors?.delivery)}>
+                {PARFUMS_DELIVERY_OPTIONS.map((option) => <option key={option}>{option}</option>)}
               </select>
             </label>
             <label>
               Nota <small>opcional</small>
-              <textarea rows={3} value={customer.note} onChange={(event) => updateCustomer("note", event.target.value)} placeholder="Horario, referencias o preferencias…" />
+              <textarea id="checkout-note" maxLength={500} rows={3} value={customer.note} onChange={(event) => updateCustomer("note", event.target.value)} placeholder="Horario, referencias o preferencias…" />
             </label>
-            <button type="submit" className={styles.submit} data-checkout-submit disabled={lines.length === 0}>
-              {lines.length === 0 ? "Añade productos para continuar" : "Continuar en WhatsApp"} <span aria-hidden="true">↗</span>
+            <button type="submit" className={styles.submit} data-checkout-submit disabled={lines.length === 0 || isPending}>
+              {lines.length === 0 ? "Añade productos para continuar" : isPending ? "Registrando solicitud…" : "Registrar y continuar"} <span aria-hidden="true">→</span>
             </button>
-            <p className={styles.formNote}><strong>Sin pagos dentro de la web.</strong> En WhatsApp confirmaremos disponibilidad, envío, total final y los siguientes pasos.</p>
-            <div className={styles.submitFeedback} aria-live="polite">
-              {submitState === "opened" ? "WhatsApp fue abierto. Continúa allí para confirmar." : null}
-              {submitState === "blocked" ? <span>El navegador bloqueó la ventana. <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">Abrir WhatsApp manualmente</a>.</span> : null}
-            </div>
+            <p className={styles.formNote}><strong>Sin pagos dentro de la web.</strong> Primero registraremos tu solicitud; después podrás coordinar disponibilidad, envío y pago por WhatsApp.</p>
+            <div className={styles.submitFeedback} aria-live="polite">{isPending ? "Validando productos y precios…" : null}</div>
           </form>
         </aside>
       </div>

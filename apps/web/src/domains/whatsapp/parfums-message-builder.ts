@@ -76,6 +76,43 @@ export function buildCheckoutMessage({
   ].join("\n");
 }
 
+export function buildPersistedOrderRequestMessage({
+  storeName,
+  orderNumber,
+  lines,
+  subtotal,
+  customer,
+}: {
+  storeName: string;
+  orderNumber: string;
+  lines: readonly {
+    productName: string;
+    variantLabel: string;
+    quantity: number;
+    lineTotal: number;
+  }[];
+  subtotal: number;
+  customer: ParfumsCheckoutCustomer;
+}) {
+  return [
+    `Hola ${storeName}. Registré una solicitud y quiero terminar la coordinación.`,
+    `Referencia: ${orderNumber}`,
+    "",
+    ...lines.map((line) => `- ${line.variantLabel} · ${line.productName} ×${line.quantity} = ${money(line.lineTotal)}`),
+    "",
+    `SUBTOTAL REGISTRADO: ${money(subtotal)}`,
+    "",
+    "— DATOS PARA COORDINAR —",
+    `Nombre: ${customer.name.trim()}`,
+    `WhatsApp: ${customer.phone.trim()}`,
+    `Distrito / Ciudad: ${customer.district.trim()}`,
+    `Entrega: ${customer.delivery}`,
+    `Nota: ${customer.note?.trim() || "—"}`,
+    "",
+    "Esta es una solicitud pendiente de confirmación. Continúo en WhatsApp para coordinar disponibilidad, envío y pago.",
+  ].join("\n");
+}
+
 export function buildCustomComboMessage({
   storeName,
   lines,

@@ -693,6 +693,7 @@ export type Database = {
           id: string
           notes: string | null
           order_number: string
+          request_id: string | null
           shipping_method_id: string | null
           status: string
           subtotal_amount: number
@@ -715,6 +716,7 @@ export type Database = {
           id?: string
           notes?: string | null
           order_number: string
+          request_id?: string | null
           shipping_method_id?: string | null
           status?: string
           subtotal_amount?: number
@@ -737,6 +739,7 @@ export type Database = {
           id?: string
           notes?: string | null
           order_number?: string
+          request_id?: string | null
           shipping_method_id?: string | null
           status?: string
           subtotal_amount?: number
@@ -1906,6 +1909,20 @@ export type Database = {
           product_variant_id: string
           quantity: number
           threshold_reached: boolean
+        }[]
+      }
+      create_parfums_order_request: {
+        Args: {
+          p_customer_snapshot: Json
+          p_delivery_snapshot: Json
+          p_lines: Json
+          p_request_id: string
+          p_shipping_method_code: string
+        }
+        Returns: {
+          created: boolean
+          order_id: string
+          order_number: string
         }[]
       }
     }

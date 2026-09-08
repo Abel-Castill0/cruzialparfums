@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildProductConsultationMessage,
   buildCheckoutMessage,
+  buildPersistedOrderRequestMessage,
   buildContactMessage,
   buildCustomComboMessage,
   buildWhatsAppUrl,
@@ -49,6 +50,27 @@ describe("Parfums WhatsApp message builder", () => {
     expect(message).toContain("Continúo en WhatsApp para confirmar stock");
     expect(message.toLocaleLowerCase("es")).not.toContain("pedido confirmado");
     expect(decodeURIComponent(buildWhatsAppUrl(PARFUMS_SETTINGS.whatsappNumber, message))).toContain("Ana Pérez");
+  });
+
+  it("builds the persisted handoff with reference, delivery and safe request wording", () => {
+    const message = buildPersistedOrderRequestMessage({
+      storeName: "Cruzial Parfums",
+      orderNumber: "CRP-20260908-123456789ABC",
+      lines: [{ productName: "Lattafa Khamrah Clásico", variantLabel: "Decant 5 ml", quantity: 2, lineTotal: 32 }],
+      subtotal: 32,
+      customer: {
+        name: "Ana Pérez",
+        phone: "999 111 222",
+        district: "Miraflores, Lima",
+        delivery: "Lima Metropolitana — Motorizado",
+      },
+    });
+    expect(message).toContain("Referencia: CRP-20260908-123456789ABC");
+    expect(message).toContain("SUBTOTAL REGISTRADO: S/ 32.00");
+    expect(message).toContain("Entrega: Lima Metropolitana — Motorizado");
+    expect(message).toContain("solicitud pendiente de confirmación");
+    expect(message.toLocaleLowerCase("es")).not.toContain("pedido confirmado");
+    expect(message.toLocaleLowerCase("es")).not.toContain("pago recibido");
   });
 
   it("encodes a custom combo with an independent size per line", () => {
