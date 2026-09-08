@@ -8,9 +8,8 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = { title: "Parfums" };
 
-// Variantes/decants/frascos/disponibilidad/destacado/categorías all live
-// inside the Productos module (list + create/edit) — they are not separate
-// placeholder cards anymore now that that module is real.
+// Variantes/decants/frascos/disponibilidad/destacado live inside Productos.
+// Categorías has its own CRUD and remains assignable from the product editor.
 const placeholderAreas = [
   "Combos",
   "Promociones",
@@ -42,12 +41,14 @@ export default async function AdminParfumsPage() {
   // back those yet.
   const supabase = await createSupabaseServerClient();
   let productCount: number | null = null;
+  let categoryCount: number | null = null;
   if (supabase) {
-    const { count } = await supabase
-      .from("products")
-      .select("*", { count: "exact", head: true })
-      .eq("business_unit_id", membership.businessUnitId);
-    productCount = count ?? 0;
+    const [products, categories] = await Promise.all([
+      supabase.from("products").select("*", { count: "exact", head: true }).eq("business_unit_id", membership.businessUnitId),
+      supabase.from("categories").select("*", { count: "exact", head: true }).eq("business_unit_id", membership.businessUnitId),
+    ]);
+    productCount = products.count ?? 0;
+    categoryCount = categories.count ?? 0;
   }
 
   return (
@@ -61,6 +62,14 @@ export default async function AdminParfumsPage() {
             productCount === null
               ? "Catálogo, variantes, inventario y destacados."
               : `${productCount} producto${productCount === 1 ? "" : "s"} · variantes, inventario y destacados.`,
+        },
+        {
+          label: "Categorías",
+          href: "/admin/parfums/categorias",
+          summary:
+            categoryCount === null
+              ? "Jerarquía, publicación y relaciones con productos."
+              : `${categoryCount} categoría${categoryCount === 1 ? "" : "s"} · jerarquía, publicación y relaciones.`,
         },
       ]}
       placeholderAreas={placeholderAreas}
