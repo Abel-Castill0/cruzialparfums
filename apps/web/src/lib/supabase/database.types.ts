@@ -1208,6 +1208,23 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      admin_archive_combo: {
+        Args: { p_combo_id: string; p_expected_updated_at: string }
+        Returns: {
+          archived_at: string | null
+          composition_verification_status: string
+          created_at: string
+          id: string
+          product_id: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "combos"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       admin_archive_product: {
         Args: { p_expected_updated_at: string; p_product_id: string }
         Returns: {
@@ -1297,6 +1314,26 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "categories"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      admin_create_combo: {
+        Args: {
+          p_composition_verification_status?: string
+          p_product_id: string
+        }
+        Returns: {
+          archived_at: string | null
+          composition_verification_status: string
+          created_at: string
+          id: string
+          product_id: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "combos"
           isOneToOne: true
           isSetofReturn: false
         }
@@ -1414,6 +1451,23 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      admin_restore_combo: {
+        Args: { p_combo_id: string; p_expected_updated_at: string }
+        Returns: {
+          archived_at: string | null
+          composition_verification_status: string
+          created_at: string
+          id: string
+          product_id: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "combos"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       admin_restore_product: {
         Args: { p_expected_updated_at: string; p_product_id: string }
         Returns: {
@@ -1474,6 +1528,27 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      admin_set_combo_composition: {
+        Args: {
+          p_combo_id: string
+          p_expected_updated_at: string
+          p_items: Json
+        }
+        Returns: {
+          combo_id: string
+          created_at: string
+          id: string
+          product_variant_id: string
+          quantity: number
+          sort_order: number
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "combo_items"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       admin_set_product_categories: {
         Args: { p_category_ids: string[]; p_product_id: string }
         Returns: {
@@ -1519,6 +1594,27 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "categories"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      admin_update_combo_verification: {
+        Args: {
+          p_combo_id: string
+          p_composition_verification_status: string
+          p_expected_updated_at: string
+        }
+        Returns: {
+          archived_at: string | null
+          composition_verification_status: string
+          created_at: string
+          id: string
+          product_id: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "combos"
           isOneToOne: true
           isSetofReturn: false
         }

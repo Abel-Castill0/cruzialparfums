@@ -100,6 +100,11 @@ describe("Supabase migration security contract", () => {
       "admin_update_category",
       "admin_archive_category",
       "admin_restore_category",
+      "admin_create_combo",
+      "admin_update_combo_verification",
+      "admin_archive_combo",
+      "admin_restore_combo",
+      "admin_set_combo_composition",
     ];
     for (const name of adminMutations) {
       expect(sql).toMatch(new RegExp(`create or replace function public\\.${name}\\(`));
