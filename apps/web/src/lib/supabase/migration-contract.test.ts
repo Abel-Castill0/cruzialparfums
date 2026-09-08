@@ -96,6 +96,10 @@ describe("Supabase migration security contract", () => {
       "admin_restore_variant",
       "admin_update_inventory",
       "admin_set_product_categories",
+      "admin_create_category",
+      "admin_update_category",
+      "admin_archive_category",
+      "admin_restore_category",
     ];
     for (const name of adminMutations) {
       expect(sql).toMatch(new RegExp(`create or replace function public\\.${name}\\(`));
@@ -120,5 +124,17 @@ describe("Supabase migration security contract", () => {
     for (const [grant] of grants) {
       expect(grant).not.toMatch(/\banon\b/);
     }
+  });
+
+  it("keeps category hierarchy, relation and archive guards in the database", async () => {
+    const sql = await readMigrations();
+
+    expect(sql).toContain("category hierarchy cannot contain a cycle");
+    expect(sql).toContain("archive child categories first");
+    expect(sql).toContain("remove product assignments before archiving the category");
+    expect(sql).toContain("an archived category cannot be assigned to a product");
+    expect(sql).toContain("category was modified by another session");
+    expect(sql).toContain("app.write_audit_log(");
+    expect(sql).toContain("app.assert_admin_for(");
   });
 });

@@ -70,6 +70,8 @@ function friendlyError(error: AdminRepositoryError, context: "product" | "varian
         return "Ya existe una variante con ese nombre en este producto.";
       }
       return "Ya existe un registro con esos datos.";
+    case "invalid_reference":
+      return "Una de las categorías seleccionadas ya no está disponible. Recarga la página.";
     case "unknown":
       // Logged server-side for diagnosis; never shown to the admin verbatim.
       console.error(`[admin-parfums:${context}] unexpected repository error:`, error.message);

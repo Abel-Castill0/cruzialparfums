@@ -1184,6 +1184,30 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_archive_category: {
+        Args: { p_category_id: string; p_expected_updated_at: string }
+        Returns: {
+          archived_at: string | null
+          business_unit_id: string
+          created_at: string
+          description: string | null
+          id: string
+          kind: string
+          name: string
+          parent_id: string | null
+          publication_status: string
+          slug: string
+          sort_order: number
+          spec_schema: Json
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "categories"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       admin_archive_product: {
         Args: { p_expected_updated_at: string; p_product_id: string }
         Returns: {
@@ -1240,6 +1264,39 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "product_variants"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      admin_create_category: {
+        Args: {
+          p_business_unit_code: string
+          p_description?: string
+          p_kind: string
+          p_name: string
+          p_parent_id?: string
+          p_publication_status?: string
+          p_slug: string
+          p_sort_order?: number
+        }
+        Returns: {
+          archived_at: string | null
+          business_unit_id: string
+          created_at: string
+          description: string | null
+          id: string
+          kind: string
+          name: string
+          parent_id: string | null
+          publication_status: string
+          slug: string
+          sort_order: number
+          spec_schema: Json
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "categories"
           isOneToOne: true
           isSetofReturn: false
         }
@@ -1333,6 +1390,30 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      admin_restore_category: {
+        Args: { p_category_id: string; p_expected_updated_at: string }
+        Returns: {
+          archived_at: string | null
+          business_unit_id: string
+          created_at: string
+          description: string | null
+          id: string
+          kind: string
+          name: string
+          parent_id: string | null
+          publication_status: string
+          slug: string
+          sort_order: number
+          spec_schema: Json
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "categories"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       admin_restore_product: {
         Args: { p_expected_updated_at: string; p_product_id: string }
         Returns: {
@@ -1406,6 +1487,40 @@ export type Database = {
           to: "product_categories"
           isOneToOne: false
           isSetofReturn: true
+        }
+      }
+      admin_update_category: {
+        Args: {
+          p_category_id: string
+          p_description: string
+          p_expected_updated_at: string
+          p_kind: string
+          p_name: string
+          p_parent_id: string
+          p_publication_status: string
+          p_slug: string
+          p_sort_order: number
+        }
+        Returns: {
+          archived_at: string | null
+          business_unit_id: string
+          created_at: string
+          description: string | null
+          id: string
+          kind: string
+          name: string
+          parent_id: string | null
+          publication_status: string
+          slug: string
+          sort_order: number
+          spec_schema: Json
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "categories"
+          isOneToOne: true
+          isSetofReturn: false
         }
       }
       admin_update_inventory: {

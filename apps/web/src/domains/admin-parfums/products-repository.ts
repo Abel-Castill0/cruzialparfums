@@ -45,6 +45,7 @@ export type AdminRepositoryError =
   | { type: "not_found" }
   | { type: "conflict" }
   | { type: "unique_violation"; constraint: string | null }
+  | { type: "invalid_reference" }
   | { type: "unknown"; message: string };
 
 export type AdminRepositoryResult<T> =
@@ -80,7 +81,7 @@ export type ProductListPage = {
  * forwards `error.message`/`error.details` verbatim to the caller for
  * anything except the `unknown` fallback, which callers must log server-side
  * only — never render to the admin. */
-function mapPostgrestError(error: PostgrestError): AdminRepositoryError {
+export function mapPostgrestError(error: PostgrestError): AdminRepositoryError {
   switch (error.code) {
     case "42501":
       return { type: "forbidden" };
@@ -90,6 +91,8 @@ function mapPostgrestError(error: PostgrestError): AdminRepositoryError {
       return { type: "conflict" };
     case "23505":
       return { type: "unique_violation", constraint: extractConstraint(error) };
+    case "P2004":
+      return { type: "invalid_reference" };
     default:
       return { type: "unknown", message: error.message };
   }
