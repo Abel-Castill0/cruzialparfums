@@ -198,8 +198,22 @@ export type Database = {
             foreignKeyName: "campaign_products_product_id_fkey"
             columns: ["product_id"]
             isOneToOne: false
+            referencedRelation: "admin_parfums_wholesale_catalog"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "campaign_products_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
             referencedRelation: "products"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_products_product_variant_id_fkey"
+            columns: ["product_variant_id"]
+            isOneToOne: false
+            referencedRelation: "admin_parfums_wholesale_catalog"
+            referencedColumns: ["variant_id"]
           },
           {
             foreignKeyName: "campaign_products_product_variant_id_fkey"
@@ -360,6 +374,13 @@ export type Database = {
             foreignKeyName: "combo_items_product_variant_id_fkey"
             columns: ["product_variant_id"]
             isOneToOne: false
+            referencedRelation: "admin_parfums_wholesale_catalog"
+            referencedColumns: ["variant_id"]
+          },
+          {
+            foreignKeyName: "combo_items_product_variant_id_fkey"
+            columns: ["product_variant_id"]
+            isOneToOne: false
             referencedRelation: "product_variants"
             referencedColumns: ["id"]
           },
@@ -391,6 +412,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "combos_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: true
+            referencedRelation: "admin_parfums_wholesale_catalog"
+            referencedColumns: ["product_id"]
+          },
           {
             foreignKeyName: "combos_product_id_fkey"
             columns: ["product_id"]
@@ -539,6 +567,13 @@ export type Database = {
             foreignKeyName: "inventory_product_variant_id_fkey"
             columns: ["product_variant_id"]
             isOneToOne: true
+            referencedRelation: "admin_parfums_wholesale_catalog"
+            referencedColumns: ["variant_id"]
+          },
+          {
+            foreignKeyName: "inventory_product_variant_id_fkey"
+            columns: ["product_variant_id"]
+            isOneToOne: true
             referencedRelation: "product_variants"
             referencedColumns: ["id"]
           },
@@ -615,8 +650,22 @@ export type Database = {
             foreignKeyName: "order_lines_product_id_fkey"
             columns: ["product_id"]
             isOneToOne: false
+            referencedRelation: "admin_parfums_wholesale_catalog"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "order_lines_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
             referencedRelation: "products"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_lines_product_variant_id_fkey"
+            columns: ["product_variant_id"]
+            isOneToOne: false
+            referencedRelation: "admin_parfums_wholesale_catalog"
+            referencedColumns: ["variant_id"]
           },
           {
             foreignKeyName: "order_lines_product_variant_id_fkey"
@@ -756,6 +805,13 @@ export type Database = {
             foreignKeyName: "product_categories_product_id_fkey"
             columns: ["product_id"]
             isOneToOne: false
+            referencedRelation: "admin_parfums_wholesale_catalog"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "product_categories_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
             referencedRelation: "products"
             referencedColumns: ["id"]
           },
@@ -827,8 +883,22 @@ export type Database = {
             foreignKeyName: "product_media_product_id_fkey"
             columns: ["product_id"]
             isOneToOne: false
+            referencedRelation: "admin_parfums_wholesale_catalog"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "product_media_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
             referencedRelation: "products"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_media_product_variant_id_fkey"
+            columns: ["product_variant_id"]
+            isOneToOne: false
+            referencedRelation: "admin_parfums_wholesale_catalog"
+            referencedColumns: ["variant_id"]
           },
           {
             foreignKeyName: "product_media_product_variant_id_fkey"
@@ -892,6 +962,13 @@ export type Database = {
           variant_kind?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "product_variants_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "admin_parfums_wholesale_catalog"
+            referencedColumns: ["product_id"]
+          },
           {
             foreignKeyName: "product_variants_product_id_fkey"
             columns: ["product_id"]
@@ -1114,8 +1191,22 @@ export type Database = {
             foreignKeyName: "variant_price_tiers_product_variant_id_fkey"
             columns: ["product_variant_id"]
             isOneToOne: false
+            referencedRelation: "admin_parfums_wholesale_catalog"
+            referencedColumns: ["variant_id"]
+          },
+          {
+            foreignKeyName: "variant_price_tiers_product_variant_id_fkey"
+            columns: ["product_variant_id"]
+            isOneToOne: false
             referencedRelation: "product_variants"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "variant_price_tiers_wholesale_policy_id_fkey"
+            columns: ["wholesale_policy_id"]
+            isOneToOne: false
+            referencedRelation: "admin_parfums_wholesale_catalog"
+            referencedColumns: ["policy_id"]
           },
           {
             foreignKeyName: "variant_price_tiers_wholesale_policy_id_fkey"
@@ -1130,8 +1221,10 @@ export type Database = {
         Row: {
           archived_at: string | null
           business_unit_id: string
+          commercial_type: string | null
           created_at: string
           currency: string
+          discount_amount: number | null
           id: string
           is_active: boolean
           min_amount: number | null
@@ -1144,8 +1237,10 @@ export type Database = {
         Insert: {
           archived_at?: string | null
           business_unit_id: string
+          commercial_type?: string | null
           created_at?: string
           currency?: string
+          discount_amount?: number | null
           id?: string
           is_active?: boolean
           min_amount?: number | null
@@ -1158,8 +1253,10 @@ export type Database = {
         Update: {
           archived_at?: string | null
           business_unit_id?: string
+          commercial_type?: string | null
           created_at?: string
           currency?: string
+          discount_amount?: number | null
           id?: string
           is_active?: boolean
           min_amount?: number | null
@@ -1181,7 +1278,39 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      admin_parfums_wholesale_catalog: {
+        Row: {
+          availability_status: string | null
+          base_price_amount: number | null
+          brand: string | null
+          business_unit_id: string | null
+          commercial_type: string | null
+          currency: string | null
+          discount_amount: number | null
+          eligibility_status: string | null
+          min_quantity: number | null
+          policy_id: string | null
+          policy_is_active: boolean | null
+          product_archived_at: string | null
+          product_id: string | null
+          product_name: string | null
+          product_publication_status: string | null
+          variant_archived_at: string | null
+          variant_id: string | null
+          variant_label: string | null
+          variant_publication_status: string | null
+          wholesale_price_amount: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "products_business_unit_id_fkey"
+            columns: ["business_unit_id"]
+            isOneToOne: false
+            referencedRelation: "business_units"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       admin_archive_category: {
@@ -1731,6 +1860,53 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      admin_update_wholesale_policy: {
+        Args: {
+          p_discount_amount: number
+          p_expected_updated_at: string
+          p_is_active: boolean
+          p_min_quantity: number
+          p_policy_id: string
+        }
+        Returns: {
+          archived_at: string | null
+          business_unit_id: string
+          commercial_type: string | null
+          created_at: string
+          currency: string
+          discount_amount: number | null
+          id: string
+          is_active: boolean
+          min_amount: number | null
+          min_quantity: number | null
+          name: string
+          notes: string | null
+          scope: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "wholesale_policies"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      calculate_parfums_wholesale_quote: {
+        Args: { p_lines: Json }
+        Returns: {
+          base_unit_price: number
+          bottle_group_quantity: number
+          commercial_type: string
+          currency: string
+          discount_per_unit: number
+          eligibility_status: string
+          final_unit_price: number
+          line_total: number
+          product_variant_id: string
+          quantity: number
+          threshold_reached: boolean
+        }[]
       }
     }
     Enums: {
