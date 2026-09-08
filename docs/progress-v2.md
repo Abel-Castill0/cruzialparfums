@@ -6,15 +6,15 @@
 
 ## HEAD
 
-Git es la fuente de verdad del hash. Fase 4a (Admin Parfums — Product CRUD)
-cerrada sobre el runtime Supabase de Fase 3.
+Git es la fuente de verdad del hash. Fase 4b (Admin Parfums — Categories CRUD)
+cerrada sobre Product CRUD y el runtime Supabase existentes.
 
 ## CURRENT
 
 - V2 aislada en `apps/web`: Next.js 16, App Router y TypeScript estricto.
 - **ADMIN DB = Supabase. PUBLIC STOREFRONT = `LegacyCatalogRepository`
   (temporal, sobre `assets/data.js`).** Siguen siendo dos fuentes
-  deliberadamente separadas hasta un cutover explícito — Fase 4a no tocó
+  deliberadamente separadas hasta un cutover explícito — Fase 4b no tocó
   `LegacyCatalogRepository` ni ninguna página pública; reconfirmado en vivo
   (`/parfums/catalogo` sirve el fixture legacy de 95 productos sin cambios).
 - Implementado: gateway, Home Parfums, catálogo, producto, cart drawer,
@@ -26,9 +26,15 @@ cerrada sobre el runtime Supabase de Fase 3.
   archivar/restaurar). Todo sobre las RPCs `public.admin_*`
   (migration Fase 4a) — atómico, con audit log no falsificable y
   concurrencia optimista (`updated_at` esperado).
+- **Admin Parfums — Categories CRUD: IMPLEMENTED / RUNTIME TESTED.**
+  `/admin/parfums/categorias`, `/nueva` y `/[id]`: listado server-side con
+  búsqueda/filtros/paginación, create/edit, jerarquía, estado, orden y
+  archive/restore. RPCs atómicas auditan actor real, rechazan concurrencia
+  obsoleta, ciclos/cross-unit, padre archivado y archivo con productos o hijas
+  activas. `spec_schema` se preserva y no se expone como JSON arbitrario.
 - Supabase Foundation (Fase 3) sigue vigente: migrations versionadas, RLS,
   pgTAP, seed estructural, ETL legacy a staging. **RUNTIME TESTED: YES** —
-  102/102 pgTAP (74 Fase 3 + 28 Fase 4a) en reset fresco.
+  139/139 pgTAP (74 Fase 3 + 28 Fase 4a + 37 Fase 4b) en reset fresco.
 - Preview y Admin permanecen `noindex,nofollow`; Production/cutover no autorizados.
 - **Global Parfums Quality / Parity Gate (Fase 2.5): PASS** (heredado, sin
   regresión demostrada en este bloque). No se declara "sin bugs" — ver
@@ -57,6 +63,14 @@ cerrada sobre el runtime Supabase de Fase 3.
   obsoleto. E2E local cubrió el flujo completo y el rechazo de un admin
   exclusivo de Import; responsive/a11y spot-check pasó en 320/390/768/1024/
   1440 sin overflow, con cards móviles, labels, teclado, foco y targets de 44px.
+- Fase 4b Admin Parfums Categories CRUD cerrada y runtime-tested: categorías
+  raíz/hija, tipo comercial/familia olfativa, slug, descripción, publicación,
+  orden y archive/restore sin DELETE. La DB protege ciclos incluso concurrentes,
+  relaciones de producto e hijas activas; Product editor omite archivadas para
+  nuevas asignaciones y nunca elimina relaciones silenciosamente. E2E local
+  cubrió el flujo completo, conflicto entre sesiones e aislamiento Import-only;
+  list/new/edit pasaron 320/390/430/768/1024/1440/1920 sin overflow y con un
+  solo `main`/`h1`, labels, teclado y controles principales de ~44 px.
 - Auth Admin foundation: `.env.example` sin valores, clientes browser/server
   separados, `/admin/login`, callback seguro, refresh SSR, páginas dinámicas,
   selector por membresías y ausencia de signup público. Bootstrap crea el
@@ -136,9 +150,9 @@ cerrada sobre el runtime Supabase de Fase 3.
 
 ## TODO
 
-- Phase 4b Categories CRUD y los demás módulos Admin permanecen fuera de este
-  bloque. Import operativo también sigue pendiente.
-- La matriz de Fase 4a cubrió list/new/edit; los módulos Admin todavía no
+- Combos Admin y los demás módulos Admin permanecen fuera de este bloque.
+  Import operativo también sigue pendiente.
+- Las matrices de Fase 4a/4b cubrieron sus rutas; los módulos Admin todavía no
   implementados no tienen una auditoría funcional completa.
 
 ## BLOCKERS
@@ -166,24 +180,25 @@ cerrada sobre el runtime Supabase de Fase 3.
 
 ## TESTS — CURRENT
 
-- Recovery de Fase 4a partió del remoto `1381b13` y preservó tres commits
-  locales backend/domain/UI; el hash final vive en Git.
+- El hash final de Fase 4b vive en Git; los assets originales del cliente
+  permanecen fuera de staging.
 - `npm run check` (catálogo + lint + typecheck + test + build): PASS.
-- Vitest: 24 archivos, 128 tests PASS.
-- Build: PASS; `/admin`, sus unidades, login, callback y Product CRUD son
-  dinámicos, no prerenderizados como contenido compartido.
+- Vitest: 25 archivos, 140 tests PASS.
+- Build: PASS; `/admin`, sus unidades, login, callback, Product CRUD y
+  Categories CRUD son dinámicos, no prerenderizados como contenido compartido.
 - ETL: dos escrituras consecutivas produjeron el mismo SHA-256; `etl:check`
   PASS (96 staging, 3 blocked, 0 invalid).
-- Supabase CLI `2.117.0`: `db:reset` fresco PASS; las 7 migrations y el seed
+- Supabase CLI: `db:reset` fresco PASS; las 8 migrations y el seed
   estructural se aplicaron desde cero.
-- pgTAP runtime: 5 archivos, 102/102 assertions PASS (74 foundation + 28
-  Product CRUD) en PostgreSQL local. Tipos generados sin drift contra
-  `public,graphql_public`.
+- pgTAP runtime: 6 archivos, 139/139 assertions PASS (74 foundation + 28
+  Product CRUD + 37 Categories CRUD) en PostgreSQL local. Tipos generados sin
+  drift contra `public,graphql_public`.
 - `git diff --check`: limpio.
-- E2E navegador: create/edit, variante/precio, inventario, featured,
-  categorías y archive/restore PASS; auditoría verificada en DB con actor real;
-  admin Import-only redirigido sin datos Parfums; storefront público legacy
-  smoke-tested en Home, catálogo (95 productos) y producto real.
+- E2E navegador de Categories: create/edit Parent+Child, búsqueda/filtro,
+  jerarquía/ciclo preventivo, sort/status, relación con Product, bloqueos de
+  archive, archive/restore y conflicto stale PASS. Auditoría verificada en DB
+  con actor real; Import-only y anónimo redirigidos sin datos Parfums;
+  storefront público legacy smoke-tested en Home, catálogo y producto real.
 
 ## HISTORICAL
 
@@ -201,6 +216,7 @@ cerrada sobre el runtime Supabase de Fase 3.
 
 ## NEXT
 
-Gates de Parfums y runtime Supabase cerrados. **DETENER para revisión externa.**
-Después de aprobación explícita: Phase 4b Categories CRUD. No iniciar Import
-operativo, Cloudinary, pagos ni automatizaciones dentro de este mismo bloque.
+Fase 4b Categories CRUD cerrada. **DETENER para revisión externa.** Después de
+aprobación explícita: siguiente capability Admin definida por negocio (por
+ejemplo Combos), sin iniciar Import operativo, Cloudinary, pagos, storefront
+Supabase cutover ni automatizaciones dentro de este bloque.
