@@ -108,7 +108,7 @@ Manifest) implementada y validada localmente, sin carga ni mutación de media.
   luego apply atómico bajo locks; cualquier diferencia rehúsa todo el apply.
   Reset local inició en 0/0/0/0/0; dry-run planeó 11 categorías, 96 productos,
   312 variantes, 192 relaciones y 312 inventarios. Apply local coincidió y la
-  segunda pasada quedó 0 inserts / 823 unchanged / 0 conflicts. Probes reales
+  segunda pasada quedó 0 inserts / 923 unchanged / 0 conflicts. Probes reales
   protegieron un nombre humano y `tracked_quantity = 7`; ambos applies fueron
   rechazados sin overwrite. Verificación: 0 publicados, 0 precios promovidos,
   0 combos/media, `bir-intense` hidden, 3 discontinued+available; Admin ve
@@ -361,7 +361,7 @@ Manifest) implementada y validada localmente, sin carga ni mutación de media.
   asset ausente, colisión y orden determinista).
 - `commercial:check`: PASS; el manifiesto coincide byte por byte con ETL,
   decisiones y migrations versionadas, sin timestamps variables.
-- `commercial:load:verify`: PASS local; 0 inserts, 823 unchanged, 0 conflicts,
+- `commercial:load:verify`: PASS local; 0 inserts, 923 unchanged, 0 conflicts,
   conteos/estados exactos, smoke Admin y aislamiento anónimo.
 - `media:check`: PASS; el manifiesto coincide byte por byte con el catálogo y
   el inventario local de nombres de archivo (sin leer contenido binario).
