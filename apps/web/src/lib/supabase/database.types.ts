@@ -1,3 +1,6 @@
+Connecting to db 5432
+(node:1) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 error listeners added to [BoundPool]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+(Use `node --trace-warnings ...` to show where the warning was created)
 export type Json =
   | string
   | number
@@ -1357,6 +1360,35 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      admin_archive_media: {
+        Args: { p_expected_updated_at: string; p_media_id: string }
+        Returns: {
+          alt: string | null
+          archived_at: string | null
+          bytes: number | null
+          checksum: string | null
+          created_at: string
+          format: string | null
+          height: number | null
+          id: string
+          is_primary: boolean
+          metadata: Json
+          product_id: string
+          product_variant_id: string | null
+          provider: string
+          public_id: string | null
+          secure_url: string
+          sort_order: number
+          updated_at: string
+          width: number | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "product_media"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       admin_archive_product: {
         Args: { p_expected_updated_at: string; p_product_id: string }
         Returns: {
@@ -1559,6 +1591,76 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      admin_register_media: {
+        Args: {
+          p_alt?: string
+          p_bytes?: number
+          p_format?: string
+          p_height?: number
+          p_product_id: string
+          p_provider?: string
+          p_public_id?: string
+          p_secure_url: string
+          p_set_primary?: boolean
+          p_variant_id?: string
+          p_width?: number
+        }
+        Returns: {
+          alt: string | null
+          archived_at: string | null
+          bytes: number | null
+          checksum: string | null
+          created_at: string
+          format: string | null
+          height: number | null
+          id: string
+          is_primary: boolean
+          metadata: Json
+          product_id: string
+          product_variant_id: string | null
+          provider: string
+          public_id: string | null
+          secure_url: string
+          sort_order: number
+          updated_at: string
+          width: number | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "product_media"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      admin_reorder_media: {
+        Args: { p_items: Json; p_product_id: string }
+        Returns: {
+          alt: string | null
+          archived_at: string | null
+          bytes: number | null
+          checksum: string | null
+          created_at: string
+          format: string | null
+          height: number | null
+          id: string
+          is_primary: boolean
+          metadata: Json
+          product_id: string
+          product_variant_id: string | null
+          provider: string
+          public_id: string | null
+          secure_url: string
+          sort_order: number
+          updated_at: string
+          width: number | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "product_media"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       admin_restore_category: {
         Args: { p_category_id: string; p_expected_updated_at: string }
         Returns: {
@@ -1596,6 +1698,35 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "combos"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      admin_restore_media: {
+        Args: { p_expected_updated_at: string; p_media_id: string }
+        Returns: {
+          alt: string | null
+          archived_at: string | null
+          bytes: number | null
+          checksum: string | null
+          created_at: string
+          format: string | null
+          height: number | null
+          id: string
+          is_primary: boolean
+          metadata: Json
+          product_id: string
+          product_variant_id: string | null
+          provider: string
+          public_id: string | null
+          secure_url: string
+          sort_order: number
+          updated_at: string
+          width: number | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "product_media"
           isOneToOne: true
           isSetofReturn: false
         }
@@ -1679,6 +1810,35 @@ export type Database = {
           to: "combo_items"
           isOneToOne: false
           isSetofReturn: true
+        }
+      }
+      admin_set_media_primary: {
+        Args: { p_expected_updated_at: string; p_media_id: string }
+        Returns: {
+          alt: string | null
+          archived_at: string | null
+          bytes: number | null
+          checksum: string | null
+          created_at: string
+          format: string | null
+          height: number | null
+          id: string
+          is_primary: boolean
+          metadata: Json
+          product_id: string
+          product_variant_id: string | null
+          provider: string
+          public_id: string | null
+          secure_url: string
+          sort_order: number
+          updated_at: string
+          width: number | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "product_media"
+          isOneToOne: true
+          isSetofReturn: false
         }
       }
       admin_set_product_categories: {
@@ -1772,6 +1932,40 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "inventory"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      admin_update_media: {
+        Args: {
+          p_alt: string
+          p_expected_updated_at: string
+          p_media_id: string
+          p_variant_id: string
+        }
+        Returns: {
+          alt: string | null
+          archived_at: string | null
+          bytes: number | null
+          checksum: string | null
+          created_at: string
+          format: string | null
+          height: number | null
+          id: string
+          is_primary: boolean
+          metadata: Json
+          product_id: string
+          product_variant_id: string | null
+          provider: string
+          public_id: string | null
+          secure_url: string
+          sort_order: number
+          updated_at: string
+          width: number | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "product_media"
           isOneToOne: true
           isSetofReturn: false
         }
@@ -2060,3 +2254,4 @@ export const Constants = {
     Enums: {},
   },
 } as const
+
