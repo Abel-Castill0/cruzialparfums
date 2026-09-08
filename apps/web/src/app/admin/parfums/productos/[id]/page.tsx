@@ -4,10 +4,12 @@ import { notFound, redirect } from "next/navigation";
 import { getAdminSession } from "@/lib/auth/admin-session";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { AdminParfumsProductsRepository } from "@/domains/admin-parfums/products-repository";
+import { AdminParfumsMediaRepository } from "@/domains/admin-parfums/media-repository";
 import { isValidUuid } from "@/domains/admin-parfums/product-schema";
 import { ProductCoreForm } from "./product-core-form";
 import { VariantManager } from "./variant-manager";
 import { CategoryPicker } from "./category-picker";
+import { MediaManager } from "./media-manager";
 import styles from "../page.module.css";
 
 export const dynamic = "force-dynamic";
@@ -54,9 +56,11 @@ export default async function EditProductPage({
   }
 
   const repository = new AdminParfumsProductsRepository(supabase, membership.businessUnitId);
-  const [detailResult, categoriesResult] = await Promise.all([
+  const mediaRepository = new AdminParfumsMediaRepository(supabase);
+  const [detailResult, categoriesResult, mediaResult] = await Promise.all([
     repository.getById(id),
     repository.listAvailableCategories(),
+    mediaRepository.listForProduct(id),
   ]);
 
   if (!detailResult.ok) {
@@ -72,6 +76,7 @@ export default async function EditProductPage({
 
   const { product, variants, categories } = detailResult.data;
   const availableCategories = categoriesResult.ok ? categoriesResult.data : [];
+  const media = mediaResult.ok ? mediaResult.data : [];
   const canWrite = membership.role === "admin";
 
   return (
@@ -97,6 +102,13 @@ export default async function EditProductPage({
 
         <VariantManager
           productId={product.id}
+          variants={variants}
+          disabled={!canWrite}
+        />
+
+        <MediaManager
+          productId={product.id}
+          media={media}
           variants={variants}
           disabled={!canWrite}
         />
