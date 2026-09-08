@@ -81,6 +81,25 @@ Manifest) implementada y validada localmente, sin carga ni mutación de media.
   Cloudinary, `product_media`, DB ni storefront. La migración real queda
   bloqueada hasta que la reconciliación comercial legacy → Supabase entregue
   IDs de producto estables.
+- **4H1A Commercial Reconciliation Manifest: IMPLEMENTED / VALIDATED.** El
+  generador determinista enriquece el staging ETL existente sin un segundo
+  parser de catálogo: 99 productos legacy considerados, 96 productos
+  no-combo (87 `MIGRATABLE_DRAFT`, 9 con campos de provenance más fuerte),
+  312 variantes y 192 relaciones de categoría. Los 312 precios permanecen
+  `legacy` y draft —incluidos 24 precios de frasco—; 0 precios confirmados.
+  Normaliza explícitamente
+  `arab → arabic` y slugs olfativos a ASCII: 3 categorías comerciales y 8
+  olfativas, sin colisiones. `bir-intense` se conserva `hidden`; producción,
+  disponibilidad y publicación siguen independientes. Inventario futuro:
+  `status_only`, `quantity_on_hand = null`. Los 3 combos siguen bloqueados y
+  hay 0 excluidos. Conflicto explícito: la documentación todavía dice 23
+  precios de frasco, pero el staging actual contiene 24; ningún valor se
+  alteró ni se omitió. 14 overrides de provenance a nivel de campo o
+  categoría no promueven el `verification_status` mixto, que permanece
+  conservador en `legacy`. Inspección de filas comerciales existentes en
+  Supabase: `NOT_VERIFIED` (4H1A es artifact-first, sin credenciales ni
+  mutación remota). Dependencia siguiente: revisión del manifiesto antes de
+  4H1B; media continúa diferida a 4F2B.
 - **Public Parfums Order Request: IMPLEMENTED / RUNTIME TESTED.** El checkout
   revalida identidades y cantidades contra `LegacyCatalogRepository`, ignora
   snapshots comerciales del browser y persiste mediante una RPC service-only
@@ -321,9 +340,14 @@ Manifest) implementada y validada localmente, sin carga ni mutación de media.
 - El hash final de Fase 4E2 vive en Git; los assets originales del cliente
   permanecen fuera de staging.
 - `npm run check` (catálogo + lint + typecheck + test + build): PASS.
-- Vitest: 33 archivos, 208 tests PASS (+8 de Fase 4F2A: normalización, exact,
+- Vitest: 34 archivos, 220 tests PASS (incluye 12 de Fase 4H1A: staging,
+  provenance por campo, overrides documentados, precios legacy, status
+  conservador, hidden/descontinuado independientes, categorías, conflictos,
+  combos y determinismo; más 8 de Fase 4F2A: normalización, exact,
   aliases confirmados —incluido Valentino y su pareja `(2)`—, ambigüedad,
   asset ausente, colisión y orden determinista).
+- `commercial:check`: PASS; el manifiesto coincide byte por byte con ETL,
+  decisiones y migrations versionadas, sin timestamps variables.
 - `media:check`: PASS; el manifiesto coincide byte por byte con el catálogo y
   el inventario local de nombres de archivo (sin leer contenido binario).
 - Build: PASS; `/admin/parfums/pedidos` y `/pedidos/[id]` son dinámicos
@@ -380,9 +404,9 @@ Manifest) implementada y validada localmente, sin carga ni mutación de media.
 
 ## NEXT
 
-**Fase 4F2A — Client Media Reconciliation Manifest cerrada.** Siguiente
-capability solo tras nueva instrucción: **Fase 4H1 — Commercial Data
-Reconciliation legacy → Supabase**. La migración controlada de fotos a
-Cloudinary (4F2B) espera IDs comerciales estables. No iniciar 4F2B, Settings,
-Import operativo, storefront Supabase cutover, config de Auth remota ni
-deploy/Preview.
+**Fase 4H1A — Commercial Reconciliation Manifest cerrada.** Siguiente
+capability solo después de revisar el manifiesto y recibir nueva instrucción:
+**Fase 4H1B — Controlled Supabase Population**. La migración controlada de
+fotos a Cloudinary (4F2B) espera IDs comerciales estables. No iniciar 4H1B,
+4F2B, Settings, Import operativo, storefront Supabase cutover, config de Auth
+remota ni deploy/Preview.
