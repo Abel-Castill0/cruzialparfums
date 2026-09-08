@@ -440,9 +440,44 @@ Manifest) implementada y validada localmente, sin carga ni mutación de media.
 
 - No deploy, merge, cutover ni cambios en `master`/GitHub Pages.
 
+- **4F2B Controlled Client Media Migration: APPLIED / VERIFIED.** Fuente:
+  `supabase/staging/client-media-reconciliation.json` — solo `EXACT_MATCH`
+  (156) y `ALIAS_CONFIRMED` (34) son migrables; `AMBIGUOUS` (Liquid Brun,
+  Versace Eros EDP), `NO_MATCH` (lovely-cherry, royal-blend-sequoia),
+  `CLIENT_ASSET_MISSING` (sceptre-malachite) y los huérfanos de Cuarteto
+  Oriental Vainilla Freak quedan sin migrar, sin adivinar. De 190 registros
+  elegibles, 4 se excluyeron por duplicado de slot (Hawas Verde y Purple
+  Melancholia tienen dos archivos cliente distintos para el mismo rol; el
+  desempate usa `current_legacy_image` — el basename del webp actualmente
+  desplegado — nunca un heurístico inventado) → 186 ítems planeados sobre 92
+  productos. Identidad portable: `cruzial/parfums/catalog/<legacy_id>/
+  <bottle|set|additional-NN>`, sin UUID de entorno. Primary nunca asumido
+  como "bottle": replica `p.img = imgs.set || imgs.bottle` de
+  `assets/data.js` (92/92 productos con primary, 0 con más de un primary
+  activo). `product_variant_id` siempre `null` (media a nivel de producto,
+  sin inferencia). Dos fases independientes, nunca una transacción: (A)
+  Cloudinary — firma/upload propios (sin SDK), `overwrite=false`,
+  `context.source_sha256` verificado antes de subir; segundo plan real
+  confirma idempotencia (186 `already_present_verified`, 0 `would_upload`).
+  (B) DB — migración aditiva `20260908150000_controlled_client_media_import.sql`
+  con `app.plan_parfums_media_import`/`app.apply_parfums_media_import`
+  (operator-only, `postgres` únicamente, revocado a
+  `public`/`anon`/`authenticated`/`service_role`), `INSERT`-or-verify,
+  resuelve producto por `(business_unit_id=parfums, legacy_id)` — nunca por
+  UUID de staging —, rechaza sin crash una segunda primary activa en
+  conflicto con `product_media_single_primary_idx`. 23 pgTAP nuevos + 13
+  tests unitarios de la lógica pura de planeo (`node --test`, sin
+  dependencia nueva). Aplicado y verificado en `cruzial-v2-staging`
+  (`iyxidhglyqkzoziyewlc`): 186 `product_media`/92 productos, 92 primary
+  (1:1), 0 archivados, roles `{set:92, bottle:92, additional:2}`, segundo
+  plan DB 0 insert/186 unchanged/0 conflict. Ningún original en
+  `img/perfumes/*.png` fue leído más que para checksum/upload — cero
+  rename/move/delete/crop/optimización. El storefront público sigue en
+  `LegacyCatalogRepository` → `assets/data.js`; no hubo cutover.
+
 ## NEXT
 
-**Fase 4H1B2 — Controlled Hosted Staging Population cerrada.** Revisar la
-población de staging y luego elegir la siguiente capability con instrucción
-explícita. No iniciar automáticamente 4F2B, Settings, Import operativo,
-storefront Supabase cutover, config de Auth remota, deploy/Preview ni Production.
+**Fase 4F2B — Controlled Client Media Migration cerrada.** Elegir la
+siguiente capability con instrucción explícita. No iniciar automáticamente
+Settings/Audit UI, Import operativo, storefront Supabase cutover, config de
+Auth remota, deploy/Preview ni Production.

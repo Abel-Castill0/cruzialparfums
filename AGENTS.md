@@ -20,9 +20,10 @@ Feature branch:
 
 Never modify `master` without explicit production-cutover authorization.
 
-Verified Phase 4F2A baseline before the correctness checkpoint:
+Verified Phase 4F2B baseline (staging applied, 186 product_media / 92
+products, idempotent):
 
-`674909cbf78192b63b73736620ae2056f1650d6a`
+`190f486` (see docs/progress-v2.md for the full checkpoint record)
 
 Git is authoritative.
 
@@ -62,6 +63,8 @@ Never mix carts, orders, settings or business data between units.
 - 4E2 Admin Orders
 - 4F1 Media Foundation + Admin Media
 - 4F2A Client Media Reconciliation Manifest
+- 4F2B Controlled Client Media Migration (Cloudinary + staging product_media,
+  186 assets / 92 products, applied and verified)
 
 Phase 4F1 includes:
 
@@ -347,11 +350,10 @@ Closed:
 4E1 Public Orders
 4E2 Admin Orders
 4F1 Media Foundation
+4F2B Controlled Client Media Migration
 
 Next — not started without explicit instruction:
 
-4H1 — Commercial Data Reconciliation legacy → Supabase
-4F2B — Controlled Cloudinary Client Media Migration
 4G — Settings + Audit UI
 4H2 — Public Parfums Supabase Cutover
 4I — Vercel Preview + remote Auth
