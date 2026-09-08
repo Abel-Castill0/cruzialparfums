@@ -6,31 +6,33 @@
 
 ## HEAD
 
-Git es la fuente de verdad del hash. Recovery de Fase 3 inició en `f82e637`
-(schema/RLS + pgTAP ya versionados, dos commits locales por delante del remoto).
+Git es la fuente de verdad del hash. Fase 4a (Admin Parfums — Product CRUD)
+cerrada sobre el runtime Supabase de Fase 3.
 
 ## CURRENT
 
 - V2 aislada en `apps/web`: Next.js 16, App Router y TypeScript estricto.
-- Fuente canónica temporal: `assets/data.js` mediante
-  `LegacyCatalogRepository`; fixture solo para paridad legacy, nunca seed
-  comercial automático.
+- **ADMIN DB = Supabase. PUBLIC STOREFRONT = `LegacyCatalogRepository`
+  (temporal, sobre `assets/data.js`).** Siguen siendo dos fuentes
+  deliberadamente separadas hasta un cutover explícito — Fase 4a no tocó
+  `LegacyCatalogRepository` ni ninguna página pública; reconfirmado en vivo
+  (`/parfums/catalogo` sirve el fixture legacy de 95 productos sin cambios).
 - Implementado: gateway, Home Parfums, catálogo, producto, cart drawer,
-  checkout, combos/builder, Finder, mayorista, institucional, legales y 404
-  (404 de Parfums ahora realmente alcanzable — ver DONE).
-- Home Parfums usa negro/blanco y conserva hero, trust, discovery, combos,
-  Finder, educación, autenticidad, mayorista, FAQ y CTA. FeaturedPerfumeRail
-  existe pero no renderiza productos hasta recibir curación real.
-- Import sigue siendo foundation editorial. Admin ya tiene login sin signup,
-  sesión SSR y autorización por membresía/unidad; no tiene CRUD todavía.
-- Supabase Foundation existe como migrations versionadas, RLS, pgTAP, seed
-  estructural, provisioning manual y ETL legacy a staging `draft`/`legacy`.
-  **RUNTIME TESTED: YES** — Docker Linux + PostgreSQL local, reset fresco y
-  pgTAP 74/74 verificados el 2026-09-07.
+  checkout, combos/builder, Finder, mayorista, institucional, legales y 404.
+- Import sigue siendo foundation editorial (sin CRUD).
+- **Admin Parfums — Product CRUD: IMPLEMENTED.** `/admin/parfums/productos`
+  (lista paginada/filtrable/buscable), `/nuevo` (crear) y `/[id]` (editar:
+  datos core, variantes + inventario por variante, categorías, destacado,
+  archivar/restaurar). Todo sobre las RPCs `public.admin_*`
+  (migration Fase 4a) — atómico, con audit log no falsificable y
+  concurrencia optimista (`updated_at` esperado).
+- Supabase Foundation (Fase 3) sigue vigente: migrations versionadas, RLS,
+  pgTAP, seed estructural, ETL legacy a staging. **RUNTIME TESTED: YES** —
+  102/102 pgTAP (74 Fase 3 + 28 Fase 4a) en reset fresco.
 - Preview y Admin permanecen `noindex,nofollow`; Production/cutover no autorizados.
-- **Global Parfums Quality / Parity Gate: PASS** (alcance verificado abajo;
-  ningún P0/P1 abierto conocido). No se declara "sin bugs" — ver PARTIAL/
-  BLOCKERS para lo no cubierto y los residuales P2/P3 documentados.
+- **Global Parfums Quality / Parity Gate (Fase 2.5): PASS** (heredado, sin
+  regresión demostrada en este bloque). No se declara "sin bugs" — ver
+  PARTIAL/BLOCKERS.
 
 ## DONE
 
@@ -47,6 +49,14 @@ Git es la fuente de verdad del hash. Recovery de Fase 3 inició en `f82e637`
 - Supabase Foundation escrita: 21 tablas públicas con RLS, helpers privados en
   schema `app`, aislamiento Parfums/Import también en referencias hijas,
   snapshots de pedidos, audit log append-only y estados de producto separados.
+- Fase 4a Admin Parfums Product CRUD cerrada y runtime-tested: productos,
+  variantes, precios, inventario `status_only`/`tracked_quantity`, featured,
+  asignación/desasignación de categorías existentes y archive/restore. Las
+  Server Actions revalidan sesión + rol Admin de Parfums; las RPCs resuelven
+  unidad y actor, auditan dentro de la transacción y rechazan `updated_at`
+  obsoleto. E2E local cubrió el flujo completo y el rechazo de un admin
+  exclusivo de Import; responsive/a11y spot-check pasó en 320/390/768/1024/
+  1440 sin overflow, con cards móviles, labels, teclado, foco y targets de 44px.
 - Auth Admin foundation: `.env.example` sin valores, clientes browser/server
   separados, `/admin/login`, callback seguro, refresh SSR, páginas dinámicas,
   selector por membresías y ausencia de signup público. Bootstrap crea el
@@ -121,15 +131,15 @@ Git es la fuente de verdad del hash. Recovery de Fase 3 inició en `f82e637`
 ## PARTIAL
 
 - No se probó login con credenciales del cliente ni bootstrap production; no
-  se inventaron credenciales. Autorización RLS por usuario/unidad sí fue
-  ejecutada con fixtures transaccionales pgTAP locales.
+  se inventaron credenciales. Auth/E2E y autorización cross-unit se probaron
+  con usuarios locales descartables; RLS también se ejecutó con pgTAP.
 
 ## TODO
 
-- Admin CRUD e Import operativo permanecen fuera de este bloque.
-- Matriz responsive/funcional de Import y Admin (este gate cubrió Parfums
-  a fondo; Import/Admin solo se verificaron a nivel estructural básico:
-  título único, `<main>`/`<h1>` únicos, 0 imágenes sin alt, consola limpia).
+- Phase 4b Categories CRUD y los demás módulos Admin permanecen fuera de este
+  bloque. Import operativo también sigue pendiente.
+- La matriz de Fase 4a cubrió list/new/edit; los módulos Admin todavía no
+  implementados no tienen una auditoría funcional completa.
 
 ## BLOCKERS
 
@@ -156,23 +166,24 @@ Git es la fuente de verdad del hash. Recovery de Fase 3 inició en `f82e637`
 
 ## TESTS — CURRENT
 
-- Recovery de Fase 3 partió de `f82e637`; el hash final vive en Git.
+- Recovery de Fase 4a partió del remoto `1381b13` y preservó tres commits
+  locales backend/domain/UI; el hash final vive en Git.
 - `npm run check` (catálogo + lint + typecheck + test + build): PASS.
-- Vitest: 23 archivos, 103 tests PASS; focalizados Phase 3: 4 archivos,
-  21 tests PASS.
-- Build: 21 entradas de ruta PASS; `/admin`, sus unidades, login y callback
-  aparecen dinámicas (`ƒ`), no prerenderizadas.
+- Vitest: 24 archivos, 128 tests PASS.
+- Build: PASS; `/admin`, sus unidades, login, callback y Product CRUD son
+  dinámicos, no prerenderizados como contenido compartido.
 - ETL: dos escrituras consecutivas produjeron el mismo SHA-256; `etl:check`
   PASS (96 staging, 3 blocked, 0 invalid).
-- Supabase CLI `2.117.0`: dos `db:reset` frescos PASS; las 6 migrations y el
-  seed estructural se aplicaron desde cero en ambos.
-- pgTAP runtime: 4 archivos, 74/74 assertions PASS en PostgreSQL local.
+- Supabase CLI `2.117.0`: `db:reset` fresco PASS; las 7 migrations y el seed
+  estructural se aplicaron desde cero.
+- pgTAP runtime: 5 archivos, 102/102 assertions PASS (74 foundation + 28
+  Product CRUD) en PostgreSQL local. Tipos generados sin drift contra
+  `public,graphql_public`.
 - `git diff --check`: limpio.
-- Consola del navegador: 0 errores en las 16 rutas verificadas (Parfums,
-  Import, Admin, 404) tras reiniciar el dev server para descartar cache
-  stale de Turbopack (un proceso `node` huérfano en el puerto 3000 causó
-  falsos positivos de CSS desactualizado al inicio de este bloque — no era
-  un bug de la app, confirmado y documentado en el reporte de recovery).
+- E2E navegador: create/edit, variante/precio, inventario, featured,
+  categorías y archive/restore PASS; auditoría verificada en DB con actor real;
+  admin Import-only redirigido sin datos Parfums; storefront público legacy
+  smoke-tested en Home, catálogo (95 productos) y producto real.
 
 ## HISTORICAL
 
@@ -191,5 +202,5 @@ Git es la fuente de verdad del hash. Recovery de Fase 3 inició en `f82e637`
 ## NEXT
 
 Gates de Parfums y runtime Supabase cerrados. **DETENER para revisión externa.**
-Después de aprobación explícita: Admin CRUD por capability; no iniciar Import
+Después de aprobación explícita: Phase 4b Categories CRUD. No iniciar Import
 operativo, Cloudinary, pagos ni automatizaciones dentro de este mismo bloque.
