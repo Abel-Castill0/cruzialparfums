@@ -113,6 +113,22 @@ export function buildPersistedOrderRequestMessage({
   ].join("\n");
 }
 
+/** Admin → customer opener for the Orders Detail "Contactar por WhatsApp"
+ * action (Phase 4E2). Store's own voice, not the customer's — distinct from
+ * `buildPersistedOrderRequestMessage`, which is what the customer sent. Pure
+ * operational contact, no status/price/promise beyond the reference number
+ * the admin is already looking at. */
+export function buildAdminOrderFollowUpMessage({
+  customerName,
+  orderNumber,
+}: {
+  customerName: string;
+  orderNumber: string;
+}) {
+  const greeting = customerName.trim() ? `Hola ${customerName.trim()}` : "Hola";
+  return `${greeting}, te escribimos de Cruzial Parfums sobre tu pedido ${orderNumber}.`;
+}
+
 export function buildCustomComboMessage({
   storeName,
   lines,

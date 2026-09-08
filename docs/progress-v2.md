@@ -6,8 +6,9 @@
 
 ## HEAD
 
-Git es la fuente de verdad del hash. Fase 4c (Admin Parfums — Combos CRUD)
-cerrada sobre Product/Categories CRUD y el runtime Supabase existentes.
+Git es la fuente de verdad del hash. Fase 4E2 (Admin Parfums — Orders Inbox /
+Detail) cerrada sobre el runtime Supabase y el Public Order Request (4E1)
+existentes.
 
 ## CURRENT
 
@@ -59,6 +60,22 @@ cerrada sobre Product/Categories CRUD y el runtime Supabase existentes.
   atómica e idempotente. El resultado queda en
   `pending_whatsapp_confirmation`; recién entonces limpia el carrito y entrega
   el handoff `/parfums/gracias/[order]` hacia el WhatsApp central.
+- **Admin Parfums — Orders Inbox / Detail: IMPLEMENTED / RUNTIME TESTED.**
+  `/admin/parfums/pedidos` (listado paginado 20/página, más reciente primero,
+  búsqueda server-side por número de pedido/nombre/teléfono) y
+  `/admin/parfums/pedidos/[id]` (referencia, cliente, entrega, líneas
+  inmutables y subtotal). Solo lectura — sin RPC ni migration nueva; las
+  policies `orders_admin_read` / `order_lines_admin_read` ya existentes
+  (Fase 3) son la única autorización, verificadas en pgTAP con fixtures
+  reales (admin y viewer Parfums leen, Import-only y anónimo quedan
+  denegados). Estado único confirmado hoy (`pending_whatsapp_confirmation`)
+  mapeado centralizadamente a "Pendiente por WhatsApp" — nunca se expone el
+  enum crudo ni se inventa un filtro de estado sin valor real. "Contactar por
+  WhatsApp" normaliza el teléfono del cliente solo cuando calza el contrato
+  peruano validado (9 dígitos móvil, con o sin `51`); si no calza, se
+  muestra/copia el teléfono en vez de inventar un país. Detalle nunca
+  reconstruye nombres/precios desde el catálogo vivo — solo lee los
+  snapshots almacenados.
 - **Supabase remoto staging enlazado**: proyecto `cruzial-v2-staging`
   (`iyxidhglyqkzoziyewlc`, ACTIVE_HEALTHY, único proyecto existente — sin
   ambigüedad). Las primeras 9 migrations locales se aplicaron limpiamente sobre un
@@ -260,21 +277,36 @@ cerrada sobre Product/Categories CRUD y el runtime Supabase existentes.
 
 ## TESTS — CURRENT
 
-- El hash final de Fase 4e1 vive en Git; los assets originales del cliente
+- El hash final de Fase 4E2 vive en Git; los assets originales del cliente
   permanecen fuera de staging.
 - `npm run check` (catálogo + lint + typecheck + test + build): PASS.
-- Vitest: 29 archivos, 182 tests PASS.
-- Build: PASS; `/admin`, sus unidades, login, callback, Product/Categories/
-  Combos/Wholesale son dinámicos, no prerenderizados como contenido compartido.
+- Vitest: 31 archivos, 188 tests PASS (+6 de Fase 4E2: mapeo de estado y
+  normalización de teléfono para WhatsApp).
+- Build: PASS; `/admin/parfums/pedidos` y `/pedidos/[id]` son dinámicos
+  (`force-dynamic`), igual que el resto de Admin — nunca prerenderizados
+  como contenido compartido.
 - ETL: dos escrituras consecutivas produjeron el mismo SHA-256; `etl:check`
   PASS (96 staging, 3 blocked, 0 invalid).
 - Supabase CLI: `db:reset` fresco PASS; las 11 migrations y el seed
-  estructural se aplicaron desde cero.
-- pgTAP runtime: 9 archivos, 228/228 assertions PASS (74 foundation + 28
+  estructural se aplicaron desde cero (sin migration nueva en 4E2).
+- pgTAP runtime: 10 archivos, 242/242 assertions PASS (74 foundation + 28
   Product CRUD + 37 Categories CRUD + 39 Combos CRUD + 29 Wholesale + 21
-  Public Order Request) en PostgreSQL local.
+  Public Order Request + 14 Admin Orders Inbox/Detail) en PostgreSQL local.
   Tipos generados sin drift contra `public,graphql_public`.
 - `git diff --check`: limpio.
+- E2E navegador de Admin Orders (Fase 4E2): login Parfums admin → inbox con
+  25 fixtures sintéticos (creados vía la RPC real
+  `create_parfums_order_request`, nunca insert directo) → paginación 20/5
+  entre página 1 y 2 verificada → búsqueda por nombre coincide exactamente 1
+  fila → detalle con snapshot de líneas/subtotal correctos → enlace
+  `wa.me/51999...` construido con el teléfono normalizado y mensaje de
+  operador → "Copiar referencia"/"Copiar teléfono" degradan sin romper
+  cuando el navegador niega el permiso de portapapeles → 1 `<main>`/1 `<h1>`
+  en detalle → sin overflow horizontal en 320/375/1440 → Parfums viewer lee
+  inbox y líneas → Import-only admin denegado (dashboard sin tarjeta
+  Parfums, ruta y detalle directos redirigen a `/admin`) → anónimo
+  redirigido a `/admin/login`. Usuarios locales descartables
+  (`e2e-*@example.test`), sin PII real.
 - E2E navegador de Combos: crear sobre producto elegible, agregar 2 variantes,
   duplicado/auto-referencia/cross-unit rechazados contra el runtime real,
   reordenar con persistencia verificada en DB, verificación explícita,
@@ -304,8 +336,11 @@ cerrada sobre Product/Categories CRUD y el runtime Supabase existentes.
 
 ## NEXT
 
-**Fase 4E1 — Public Order Request Pipeline cerrada. DETENER para revisión externa.**
-Siguiente capability solo tras nueva instrucción: **Fase 4E2 — Admin Parfums
-Orders Inbox / Detail**. Payments/Pagos permanece **INTENTIONALLY OUT OF SCOPE
-FOR V1**; no es blocker ni capability futura. No iniciar Import operativo,
+**Fase 4E2 — Admin Parfums Orders Inbox / Detail cerrada. DETENER para
+revisión externa.** Siguiente capability solo tras nueva instrucción:
+**Fase 4F — Media / Cloudinary**. No se implementó workflow de estado de
+pedido, payments, refunds, shipping tracking, Cloudinary, CRM de clientes,
+Import operativo ni campañas en este bloque — deliberadamente fuera de
+alcance de 4E2. Payments/Pagos permanece **INTENTIONALLY OUT OF SCOPE FOR
+V1**; no es blocker ni capability futura. No iniciar Import operativo,
 Cloudinary, storefront Supabase cutover, config de Auth remota ni deploy/Preview.

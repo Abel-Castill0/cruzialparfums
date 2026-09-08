@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { AdminUnitPage } from "@/components/admin/admin-unit-page";
 import { getAdminSession } from "@/lib/auth/admin-session";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { AdminParfumsOrdersRepository } from "@/domains/admin-parfums/orders-repository";
 
 export const dynamic = "force-dynamic";
 
@@ -12,10 +13,10 @@ export const metadata: Metadata = { title: "Parfums" };
 // Variantes/decants/frascos/disponibilidad/destacado live inside Productos.
 // Categorías has its own CRUD and remains assignable from the product editor.
 // Combos also has its own CRUD now — composición, verificación y archive/
-// restore sobre un producto Parfums existente.
+// restore sobre un producto Parfums existente. Pedidos (Phase 4E2) is now
+// Inbox/Detail only — read-only, no status workflow yet.
 const placeholderAreas = [
   "Promociones",
-  "Pedidos",
   "Media",
   "Settings",
   "Auditoría",
@@ -45,8 +46,10 @@ export default async function AdminParfumsPage() {
   let categoryCount: number | null = null;
   let comboCount: number | null = null;
   let wholesaleBottleCount: number | null = null;
+  let pendingOrderCount: number | null = null;
   if (supabase) {
-    const [products, categories, combos, wholesaleBottles] = await Promise.all([
+    const ordersRepository = new AdminParfumsOrdersRepository(supabase, membership.businessUnitId);
+    const [products, categories, combos, wholesaleBottles, pendingOrders] = await Promise.all([
       supabase.from("products").select("*", { count: "exact", head: true }).eq("business_unit_id", membership.businessUnitId),
       supabase.from("categories").select("*", { count: "exact", head: true }).eq("business_unit_id", membership.businessUnitId),
       supabase
@@ -57,11 +60,13 @@ export default async function AdminParfumsPage() {
         .from("admin_parfums_wholesale_catalog")
         .select("*", { count: "exact", head: true })
         .eq("business_unit_id", membership.businessUnitId),
+      ordersRepository.countPendingWhatsappConfirmation(),
     ]);
     productCount = products.count ?? 0;
     categoryCount = categories.count ?? 0;
     comboCount = combos.count ?? 0;
     wholesaleBottleCount = wholesaleBottles.count ?? 0;
+    pendingOrderCount = pendingOrders;
   }
 
   return (
@@ -99,6 +104,14 @@ export default async function AdminParfumsPage() {
             wholesaleBottleCount === null
               ? "Reglas por tipo comercial y frascos elegibles."
               : `${wholesaleBottleCount} frasco${wholesaleBottleCount === 1 ? "" : "s"} · reglas por tipo comercial y precio derivado.`,
+        },
+        {
+          label: "Pedidos",
+          href: "/admin/parfums/pedidos" as Route,
+          summary:
+            pendingOrderCount === null
+              ? "Solicitudes registradas, pendientes por WhatsApp."
+              : `${pendingOrderCount} pendiente${pendingOrderCount === 1 ? "" : "s"} por WhatsApp.`,
         },
       ]}
       placeholderAreas={placeholderAreas}
