@@ -78,4 +78,47 @@ describe("Supabase migration security contract", () => {
     expect(sql).toContain("reject_order_history_delete");
     expect(sql).toContain("actor_user_id = (select auth.uid())");
   });
+
+  it("keeps admin mutation RPCs in public (callable) and their audit/authz helpers in app (not callable)", async () => {
+    const sql = await readMigrations();
+
+    // supabase-js .rpc() can only reach a function in a schema config.toml's
+    // api.schemas exposes — "public" here. A mutation defined under `app.`
+    // would silently be uncallable from the client, not merely insecure.
+    const adminMutations = [
+      "admin_create_product",
+      "admin_update_product",
+      "admin_archive_product",
+      "admin_restore_product",
+      "admin_create_variant",
+      "admin_update_variant",
+      "admin_archive_variant",
+      "admin_restore_variant",
+      "admin_update_inventory",
+      "admin_set_product_categories",
+    ];
+    for (const name of adminMutations) {
+      expect(sql).toMatch(new RegExp(`create or replace function public\\.${name}\\(`));
+      expect(sql).not.toMatch(new RegExp(`create or replace function app\\.${name}\\(`));
+      expect(sql).toMatch(new RegExp(`grant execute on function public\\.${name}\\([^;]*?\\) to authenticated`));
+    }
+
+    // The reverse guarantee: a client must not be able to call the audit
+    // writer directly and forge an entry disconnected from a real mutation,
+    // nor call the raw authorization check as if it were a query.
+    expect(sql).toMatch(/create or replace function app\.write_audit_log\(/);
+    expect(sql).not.toMatch(/create or replace function public\.write_audit_log\(/);
+    expect(sql).toMatch(/create or replace function app\.assert_admin_for\(/);
+    expect(sql).not.toMatch(/create or replace function public\.assert_admin_for\(/);
+  });
+
+  it("never grants an admin mutation RPC to anon", async () => {
+    const sql = await readMigrations();
+    const grants = [...sql.matchAll(/grant execute on function public\.admin_\w+\([^;]*;/g)];
+
+    expect(grants.length).toBeGreaterThan(0);
+    for (const [grant] of grants) {
+      expect(grant).not.toMatch(/\banon\b/);
+    }
+  });
 });

@@ -216,8 +216,16 @@ web3 = 30
 # secret = ""
 
 [auth.email]
-# Allow/disallow new user signups via email to your project.
-enable_signup = false
+# Allow/disallow new user signups via email to your project. NOTE: in this
+# CLI version this flag also gates the email provider as a whole (including
+# password sign-in for already-provisioned users) — confirmed empirically:
+# setting it to false made GET /auth/v1/settings report
+# external.email = false and broke sign-in for an existing admin account,
+# not just self-registration. The real "no public signup" gate is the
+# top-level [auth] enable_signup = false below, which GoTrue enforces on the
+# /signup endpoint independently of this one. Kept true here so provisioned
+# admins can still sign in with a password.
+enable_signup = true
 # If enabled, a user will be required to confirm any email change on both the old, and new email
 # addresses. If disabled, only the new email is required to confirm.
 double_confirm_changes = true

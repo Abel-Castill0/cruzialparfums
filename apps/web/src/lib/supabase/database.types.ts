@@ -7,6 +7,31 @@ export type Json =
   | Json[]
 
 export type Database = {
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
       admin_memberships: {
@@ -1159,7 +1184,343 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      admin_archive_product: {
+        Args: { p_expected_updated_at: string; p_product_id: string }
+        Returns: {
+          archived_at: string | null
+          availability_status: string
+          brand: string | null
+          business_unit_id: string
+          concentration: string | null
+          created_at: string
+          description: string | null
+          featured_from: string | null
+          featured_rank: number | null
+          featured_until: string | null
+          gender: string | null
+          id: string
+          is_featured: boolean
+          legacy_id: string | null
+          name: string
+          production_status: string
+          publication_status: string
+          sales_mode: string
+          short_description: string | null
+          slug: string
+          specs: Json
+          updated_at: string
+          verification_status: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "products"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      admin_archive_variant: {
+        Args: { p_expected_updated_at: string; p_variant_id: string }
+        Returns: {
+          archived_at: string | null
+          created_at: string
+          currency: string
+          id: string
+          label: string
+          option_values: Json
+          price_amount: number
+          price_verification_status: string
+          product_id: string
+          publication_status: string
+          size_ml: number | null
+          sku: string | null
+          sort_order: number
+          updated_at: string
+          variant_kind: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "product_variants"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      admin_create_product: {
+        Args: {
+          p_brand?: string
+          p_business_unit_code: string
+          p_concentration?: string
+          p_description?: string
+          p_featured_from?: string
+          p_featured_rank?: number
+          p_featured_until?: string
+          p_gender?: string
+          p_is_featured?: boolean
+          p_name: string
+          p_production_status?: string
+          p_publication_status?: string
+          p_sales_mode?: string
+          p_short_description?: string
+          p_slug: string
+        }
+        Returns: {
+          archived_at: string | null
+          availability_status: string
+          brand: string | null
+          business_unit_id: string
+          concentration: string | null
+          created_at: string
+          description: string | null
+          featured_from: string | null
+          featured_rank: number | null
+          featured_until: string | null
+          gender: string | null
+          id: string
+          is_featured: boolean
+          legacy_id: string | null
+          name: string
+          production_status: string
+          publication_status: string
+          sales_mode: string
+          short_description: string | null
+          slug: string
+          specs: Json
+          updated_at: string
+          verification_status: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "products"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      admin_create_variant: {
+        Args: {
+          p_availability_status?: string
+          p_currency?: string
+          p_inventory_mode?: string
+          p_label: string
+          p_price_amount: number
+          p_product_id: string
+          p_publication_status?: string
+          p_quantity_on_hand?: number
+          p_size_ml: number
+          p_sku?: string
+          p_sort_order?: number
+          p_variant_kind: string
+        }
+        Returns: {
+          archived_at: string | null
+          created_at: string
+          currency: string
+          id: string
+          label: string
+          option_values: Json
+          price_amount: number
+          price_verification_status: string
+          product_id: string
+          publication_status: string
+          size_ml: number | null
+          sku: string | null
+          sort_order: number
+          updated_at: string
+          variant_kind: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "product_variants"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      admin_restore_product: {
+        Args: { p_expected_updated_at: string; p_product_id: string }
+        Returns: {
+          archived_at: string | null
+          availability_status: string
+          brand: string | null
+          business_unit_id: string
+          concentration: string | null
+          created_at: string
+          description: string | null
+          featured_from: string | null
+          featured_rank: number | null
+          featured_until: string | null
+          gender: string | null
+          id: string
+          is_featured: boolean
+          legacy_id: string | null
+          name: string
+          production_status: string
+          publication_status: string
+          sales_mode: string
+          short_description: string | null
+          slug: string
+          specs: Json
+          updated_at: string
+          verification_status: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "products"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      admin_restore_variant: {
+        Args: { p_expected_updated_at: string; p_variant_id: string }
+        Returns: {
+          archived_at: string | null
+          created_at: string
+          currency: string
+          id: string
+          label: string
+          option_values: Json
+          price_amount: number
+          price_verification_status: string
+          product_id: string
+          publication_status: string
+          size_ml: number | null
+          sku: string | null
+          sort_order: number
+          updated_at: string
+          variant_kind: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "product_variants"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      admin_set_product_categories: {
+        Args: { p_category_ids: string[]; p_product_id: string }
+        Returns: {
+          category_id: string
+          created_at: string
+          product_id: string
+          sort_order: number
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "product_categories"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      admin_update_inventory: {
+        Args: {
+          p_availability_status: string
+          p_expected_updated_at: string
+          p_inventory_mode: string
+          p_quantity_on_hand: number
+          p_variant_id: string
+        }
+        Returns: {
+          availability_status: string
+          created_at: string
+          id: string
+          inventory_mode: string
+          product_variant_id: string
+          quantity_on_hand: number | null
+          updated_at: string
+          updated_by: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "inventory"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      admin_update_product: {
+        Args: {
+          p_brand: string
+          p_concentration: string
+          p_description: string
+          p_expected_updated_at: string
+          p_featured_from: string
+          p_featured_rank: number
+          p_featured_until: string
+          p_gender: string
+          p_is_featured: boolean
+          p_name: string
+          p_product_id: string
+          p_production_status: string
+          p_publication_status: string
+          p_sales_mode: string
+          p_short_description: string
+          p_slug: string
+        }
+        Returns: {
+          archived_at: string | null
+          availability_status: string
+          brand: string | null
+          business_unit_id: string
+          concentration: string | null
+          created_at: string
+          description: string | null
+          featured_from: string | null
+          featured_rank: number | null
+          featured_until: string | null
+          gender: string | null
+          id: string
+          is_featured: boolean
+          legacy_id: string | null
+          name: string
+          production_status: string
+          publication_status: string
+          sales_mode: string
+          short_description: string | null
+          slug: string
+          specs: Json
+          updated_at: string
+          verification_status: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "products"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      admin_update_variant: {
+        Args: {
+          p_currency: string
+          p_expected_updated_at: string
+          p_label: string
+          p_price_amount: number
+          p_publication_status: string
+          p_size_ml: number
+          p_sku: string
+          p_sort_order: number
+          p_variant_id: string
+          p_variant_kind: string
+        }
+        Returns: {
+          archived_at: string | null
+          created_at: string
+          currency: string
+          id: string
+          label: string
+          option_values: Json
+          price_amount: number
+          price_verification_status: string
+          product_id: string
+          publication_status: string
+          size_ml: number | null
+          sku: string | null
+          sort_order: number
+          updated_at: string
+          variant_kind: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "product_variants"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
     }
     Enums: {
       [_ in never]: never
@@ -1288,6 +1649,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {},
   },
