@@ -69,12 +69,11 @@ Manifest) implementada y validada localmente, sin carga ni mutación de media.
   actualizado (12 migrations). `git diff --check` limpio.
 - **4F2A Media Reconciliation Manifest: IMPLEMENTED / VALIDATED.** Inventario
   determinista de 96 productos legacy no-combo y 196 PNG originales, basado
-  únicamente en metadata/nombres: 156 `EXACT_MATCH`, 32 `ALIAS_CONFIRMED`, 6
+  únicamente en metadata/nombres: 156 `EXACT_MATCH`, 34 `ALIAS_CONFIRMED`, 4
   `AMBIGUOUS`, 4 `NO_MATCH` (2 archivos huérfanos + 2 productos sin archivo) y
   1 `CLIENT_ASSET_MISSING`. Excepciones explícitas: ambiguos
   `FRENCH AVENEU - LIQUID BRUN.png`, `FRENCH AVENEU -LIQUID BRUN.png`,
-  `VALENTINO - VALENTINO MELANCHOLIA.png` + `(2)`, y
-  `VERSACE - EROS EDP.png` + `(2)`; productos sin match `lovely-cherry` y
+  y `VERSACE - EROS EDP.png` + `(2)`; productos sin match `lovely-cherry` y
   `royal-blend-sequoia`; `sceptre-malachite` permanece
   `CLIENT_ASSET_MISSING`; huérfanos `Cuarteto Oriental Vainilla Freak.png` +
   `(2)`. El detalle y las colisiones viven en
@@ -322,8 +321,9 @@ Manifest) implementada y validada localmente, sin carga ni mutación de media.
 - El hash final de Fase 4E2 vive en Git; los assets originales del cliente
   permanecen fuera de staging.
 - `npm run check` (catálogo + lint + typecheck + test + build): PASS.
-- Vitest: 33 archivos, 207 tests PASS (+7 de Fase 4F2A: normalización, exact,
-  alias confirmado, ambigüedad, asset ausente, colisión y orden determinista).
+- Vitest: 33 archivos, 208 tests PASS (+8 de Fase 4F2A: normalización, exact,
+  aliases confirmados —incluido Valentino y su pareja `(2)`—, ambigüedad,
+  asset ausente, colisión y orden determinista).
 - `media:check`: PASS; el manifiesto coincide byte por byte con el catálogo y
   el inventario local de nombres de archivo (sin leer contenido binario).
 - Build: PASS; `/admin/parfums/pedidos` y `/pedidos/[id]` son dinámicos

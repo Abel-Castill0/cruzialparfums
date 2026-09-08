@@ -38,6 +38,25 @@ const KNOWN_CLIENT_ASSET_MISSING = new Map([
   ],
 ]);
 
+const CLIENT_CONFIRMED_MEDIA_ALIASES = new Map([
+  [
+    normalizeMediaIdentity("VALENTINO - VALENTINO MELANCHOLIA.png"),
+    {
+      legacyProductId: "purple-melancholia",
+      matchBasis: "CLIENT_CONFIRMED_DECISION",
+      notes: "docs/client-decisions.md confirms the original client file and deployed Purple Melancholia image show the same bottle and product.",
+    },
+  ],
+  [
+    normalizeMediaIdentity("VALENTINO - VALENTINO MELANCHOLIA (2).png"),
+    {
+      legacyProductId: "purple-melancholia",
+      matchBasis: "CLIENT_CONFIRMED_DECISION_AND_IMG_MAP_PAIR_CONVENTION",
+      notes: "The confirmed base alias is extended only to its exact (2) filename pair; assets/data.js defines (2) as the set view for a product.",
+    },
+  ],
+]);
+
 function filenameStem(value) {
   const name = basename(String(value).replaceAll("\\", "/")).trim();
   return name.replace(/\.(?:png|webp|jpe?g)$/iu, "");
@@ -203,6 +222,10 @@ export function reconcileClientMedia({ products: inputProducts, clientFilenames 
     let matchBasis;
     let notes;
     let matchedReference = null;
+    let recordSource = ["assets/data.js", "img/perfumes filename inventory"];
+    const confirmedMediaAlias = CLIENT_CONFIRMED_MEDIA_ALIASES.get(
+      parsedFile.normalizedFilename,
+    );
 
     if (normalizedDuplicates.length > 1) {
       candidateIds = uniqueSorted([
@@ -214,6 +237,21 @@ export function reconcileClientMedia({ products: inputProducts, clientFilenames 
       status = "AMBIGUOUS";
       matchBasis = "DUPLICATE_NORMALIZED_FILENAME";
       notes = "Multiple client files normalize to the same filename; no identity was confirmed automatically.";
+    } else if (confirmedMediaAlias) {
+      candidateIds = [confirmedMediaAlias.legacyProductId];
+      status = "ALIAS_CONFIRMED";
+      matchBasis = confirmedMediaAlias.matchBasis;
+      notes = confirmedMediaAlias.notes;
+      recordSource = [
+        "assets/data.js",
+        "docs/client-decisions.md",
+        "img/perfumes filename inventory",
+      ];
+      matchedReference = references.find(
+        (reference) =>
+          reference.legacyProductId === confirmedMediaAlias.legacyProductId &&
+          reference.mediaRole === parsedFile.mediaRole,
+      );
     } else if (directProductIds.length === 1) {
       candidateIds = directProductIds;
       matchedReference = directReferences.find(
@@ -278,7 +316,7 @@ export function reconcileClientMedia({ products: inputProducts, clientFilenames 
       status,
       match_basis: matchBasis,
       notes,
-      source: ["assets/data.js", "img/perfumes filename inventory"],
+      source: recordSource,
       candidate_legacy_product_ids: confirmed ? [] : candidateIds,
     });
   }

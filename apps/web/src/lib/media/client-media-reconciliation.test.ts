@@ -65,6 +65,43 @@ describe("client media reconciliation", () => {
     });
   });
 
+  it("honors the documented Valentino alias and its deterministic (2) pair", () => {
+    const result = reconcileClientMedia({
+      products: [
+        {
+          id: "purple-melancholia",
+          name: "Purple Melancholia",
+          brand: "Valentino",
+          type: "designer",
+          img: "img/perfumes/webp/Purple Melancholia (2).webp",
+          imgBottle: "img/perfumes/webp/Purple Melancholia.webp",
+          imgSet: "img/perfumes/webp/Purple Melancholia (2).webp",
+        },
+      ],
+      clientFilenames: [
+        "VALENTINO - VALENTINO MELANCHOLIA.png",
+        "VALENTINO - VALENTINO MELANCHOLIA (2).png",
+      ],
+    });
+
+    expect(result.records).toEqual([
+      expect.objectContaining({
+        legacy_product_id: "purple-melancholia",
+        client_original_filename: "VALENTINO - VALENTINO MELANCHOLIA (2).png",
+        media_role: "set",
+        status: "ALIAS_CONFIRMED",
+        match_basis: "CLIENT_CONFIRMED_DECISION_AND_IMG_MAP_PAIR_CONVENTION",
+      }),
+      expect.objectContaining({
+        legacy_product_id: "purple-melancholia",
+        client_original_filename: "VALENTINO - VALENTINO MELANCHOLIA.png",
+        media_role: "bottle",
+        status: "ALIAS_CONFIRMED",
+        match_basis: "CLIENT_CONFIRMED_DECISION",
+      }),
+    ]);
+  });
+
   it("keeps fuzzy-only similarity ambiguous", () => {
     const result = reconcileClientMedia({
       products: [

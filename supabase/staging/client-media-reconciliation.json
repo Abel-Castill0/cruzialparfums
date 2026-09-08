@@ -2897,40 +2897,38 @@
       "candidate_legacy_product_ids": []
     },
     {
-      "legacy_product_id": null,
-      "legacy_product_name": null,
-      "brand": null,
-      "current_legacy_image": null,
+      "legacy_product_id": "purple-melancholia",
+      "legacy_product_name": "Purple Melancholia",
+      "brand": "Valentino",
+      "current_legacy_image": "img/perfumes/webp/Purple Melancholia (2).webp",
       "client_original_filename": "VALENTINO - VALENTINO MELANCHOLIA (2).png",
       "media_role": "set",
-      "status": "AMBIGUOUS",
-      "match_basis": "FUZZY_CANDIDATE_ONLY",
-      "notes": "Filename similarity suggests candidate products, but fuzzy similarity is not authoritative.",
+      "status": "ALIAS_CONFIRMED",
+      "match_basis": "CLIENT_CONFIRMED_DECISION_AND_IMG_MAP_PAIR_CONVENTION",
+      "notes": "The confirmed base alias is extended only to its exact (2) filename pair; assets/data.js defines (2) as the set view for a product.",
       "source": [
         "assets/data.js",
+        "docs/client-decisions.md",
         "img/perfumes filename inventory"
       ],
-      "candidate_legacy_product_ids": [
-        "purple-melancholia"
-      ]
+      "candidate_legacy_product_ids": []
     },
     {
-      "legacy_product_id": null,
-      "legacy_product_name": null,
-      "brand": null,
-      "current_legacy_image": null,
+      "legacy_product_id": "purple-melancholia",
+      "legacy_product_name": "Purple Melancholia",
+      "brand": "Valentino",
+      "current_legacy_image": "img/perfumes/webp/Purple Melancholia.webp",
       "client_original_filename": "VALENTINO - VALENTINO MELANCHOLIA.png",
       "media_role": "bottle",
-      "status": "AMBIGUOUS",
-      "match_basis": "FUZZY_CANDIDATE_ONLY",
-      "notes": "Filename similarity suggests candidate products, but fuzzy similarity is not authoritative.",
+      "status": "ALIAS_CONFIRMED",
+      "match_basis": "CLIENT_CONFIRMED_DECISION",
+      "notes": "docs/client-decisions.md confirms the original client file and deployed Purple Melancholia image show the same bottle and product.",
       "source": [
         "assets/data.js",
+        "docs/client-decisions.md",
         "img/perfumes filename inventory"
       ],
-      "candidate_legacy_product_ids": [
-        "purple-melancholia"
-      ]
+      "candidate_legacy_product_ids": []
     },
     {
       "legacy_product_id": null,
@@ -3215,8 +3213,8 @@
     "catalog_products": 96,
     "client_png_files": 196,
     "exact_matches": 156,
-    "alias_confirmed": 32,
-    "ambiguous": 6,
+    "alias_confirmed": 34,
+    "ambiguous": 4,
     "no_match": 4,
     "client_asset_missing": 1,
     "orphan_client_files": 2
@@ -3257,42 +3255,6 @@
         ],
         "candidate_legacy_product_ids": [
           "liquid-brun"
-        ]
-      },
-      {
-        "legacy_product_id": null,
-        "legacy_product_name": null,
-        "brand": null,
-        "current_legacy_image": null,
-        "client_original_filename": "VALENTINO - VALENTINO MELANCHOLIA (2).png",
-        "media_role": "set",
-        "status": "AMBIGUOUS",
-        "match_basis": "FUZZY_CANDIDATE_ONLY",
-        "notes": "Filename similarity suggests candidate products, but fuzzy similarity is not authoritative.",
-        "source": [
-          "assets/data.js",
-          "img/perfumes filename inventory"
-        ],
-        "candidate_legacy_product_ids": [
-          "purple-melancholia"
-        ]
-      },
-      {
-        "legacy_product_id": null,
-        "legacy_product_name": null,
-        "brand": null,
-        "current_legacy_image": null,
-        "client_original_filename": "VALENTINO - VALENTINO MELANCHOLIA.png",
-        "media_role": "bottle",
-        "status": "AMBIGUOUS",
-        "match_basis": "FUZZY_CANDIDATE_ONLY",
-        "notes": "Filename similarity suggests candidate products, but fuzzy similarity is not authoritative.",
-        "source": [
-          "assets/data.js",
-          "img/perfumes filename inventory"
-        ],
-        "candidate_legacy_product_ids": [
-          "purple-melancholia"
         ]
       },
       {
@@ -4001,9 +3963,11 @@
         "legacy_product_id": "purple-melancholia",
         "client_original_filenames": [
           "Purple Melancholia (2).png",
-          "Purple Melancholia.png"
+          "Purple Melancholia.png",
+          "VALENTINO - VALENTINO MELANCHOLIA (2).png",
+          "VALENTINO - VALENTINO MELANCHOLIA.png"
         ],
-        "classification": "EXPECTED_PAIR"
+        "classification": "REVIEW_ADDITIONAL_FILES"
       },
       {
         "legacy_product_id": "qaed-al-fursan",
