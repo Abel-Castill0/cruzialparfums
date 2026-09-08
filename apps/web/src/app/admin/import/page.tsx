@@ -38,7 +38,7 @@ export default async function AdminImportPage() {
   return (
     <AdminUnitPage
       unitLabel="Cruzial Import"
-      areas={areas}
+      placeholderAreas={areas}
       role={membership.role}
       email={result.session.email}
     />

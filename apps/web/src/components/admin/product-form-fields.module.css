@@ -1,0 +1,104 @@
+.fieldset {
+  border: 1px solid rgba(23, 19, 15, 0.14);
+  background: #fff;
+  padding: 20px;
+}
+
+.fieldset:disabled {
+  opacity: 0.6;
+}
+
+.legend {
+  padding: 0 6px;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 4px;
+}
+
+.field {
+  display: grid;
+  gap: 5px;
+}
+
+.fieldFull {
+  display: grid;
+  gap: 5px;
+  margin-top: 14px;
+}
+
+.field span,
+.fieldFull span {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #5c574f;
+}
+
+.field input,
+.field select,
+.fieldFull input,
+.fieldFull textarea {
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid rgba(23, 19, 15, 0.2);
+  background: #fff;
+  color: #17130f;
+  font-size: 13px;
+  font-family: inherit;
+}
+
+.fieldFull textarea {
+  padding: 10px 12px;
+  resize: vertical;
+}
+
+.field input[aria-invalid="true"],
+.field select[aria-invalid="true"] {
+  border-color: #9a3b32;
+}
+
+.hint {
+  font-size: 10.5px;
+  color: #8a8378;
+  line-height: 1.4;
+}
+
+.error {
+  font-size: 11px;
+  color: #9a3b32;
+  line-height: 1.4;
+}
+
+.featuredBlock {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(23, 19, 15, 0.12);
+}
+
+.checkboxLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  font-size: 12.5px;
+  color: #17130f;
+}
+
+.checkboxLabel input {
+  width: 18px;
+  height: 18px;
+}
+
+@media (max-width: 640px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
