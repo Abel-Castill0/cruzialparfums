@@ -416,11 +416,36 @@ test("buildResultManifest row order follows the plan's deterministic product/ite
     sampleResolvedRow({ legacyProductId: "zeta-product", clientOriginalFilename: "Zeta.png", publicId: "cruzial/parfums/catalog/zeta-product/bottle" }),
     sampleResolvedRow({ legacyProductId: "alpha-product", clientOriginalFilename: "Alpha.png", publicId: "cruzial/parfums/catalog/alpha-product/bottle" }),
   ];
-  // buildResultManifest maps `rows` in the order it's given (the I/O shell
-  // is responsible for handing it plan-ordered rows) — this test documents
-  // that contract: it is the plan itself (alpha before zeta) that is
-  // alphabetically deterministic, and the I/O shell derives `rows` from it.
   assert.deepEqual(plan.products.map((p) => p.legacyProductId), ["alpha-product", "zeta-product"]);
   const manifestObject = buildResultManifest({ plan, sourceFingerprints: null, rows });
-  assert.equal(manifestObject.rows.length, 2);
+  assert.deepEqual(
+    manifestObject.rows.map((row) => row.cloudinary_public_id),
+    [
+      "cruzial/parfums/catalog/alpha-product/bottle",
+      "cruzial/parfums/catalog/zeta-product/bottle",
+    ],
+  );
+});
+
+test("buildResultManifest refuses missing, duplicate, or unplanned resolved rows", () => {
+  const plan = samplePlan();
+  const row = sampleResolvedRow({});
+
+  assert.throws(
+    () => buildResultManifest({ plan, sourceFingerprints: null, rows: [] }),
+    /Missing resolved media row/,
+  );
+  assert.throws(
+    () => buildResultManifest({ plan, sourceFingerprints: null, rows: [row, { ...row }] }),
+    /Duplicate resolved media publicId/,
+  );
+  assert.throws(
+    () =>
+      buildResultManifest({
+        plan,
+        sourceFingerprints: null,
+        rows: [row, sampleResolvedRow({ publicId: "cruzial/parfums/catalog/unplanned/set" })],
+      }),
+    /absent from the plan/,
+  );
 });

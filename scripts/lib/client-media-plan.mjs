@@ -345,7 +345,30 @@ export function buildMediaMigrationPlan(manifest, checksumOf) {
  * iteration order.
  */
 export function buildResultManifest({ plan, sourceFingerprints, rows }) {
-  const manifestRows = rows.map(function (row) {
+  const rowsByPublicId = new Map();
+  for (const row of rows) {
+    if (!row?.publicId) throw new Error("Every resolved media row requires a publicId.");
+    if (rowsByPublicId.has(row.publicId)) {
+      throw new Error(`Duplicate resolved media publicId: ${row.publicId}`);
+    }
+    rowsByPublicId.set(row.publicId, row);
+  }
+
+  const orderedRows = [];
+  for (const product of plan.products) {
+    for (const item of product.items) {
+      const publicId = computePortablePublicId(product.legacyProductId, item.assetId);
+      const row = rowsByPublicId.get(publicId);
+      if (!row) throw new Error(`Missing resolved media row for planned publicId: ${publicId}`);
+      orderedRows.push(row);
+      rowsByPublicId.delete(publicId);
+    }
+  }
+  if (rowsByPublicId.size > 0) {
+    throw new Error(`Resolved media contains ${rowsByPublicId.size} row(s) absent from the plan.`);
+  }
+
+  const manifestRows = orderedRows.map(function (row) {
     return {
       legacy_product_id: row.legacyProductId,
       client_original_filename: row.clientOriginalFilename,
