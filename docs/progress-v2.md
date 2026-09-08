@@ -6,8 +6,8 @@
 
 ## HEAD
 
-Git es la fuente de verdad del hash. Fase 4b (Admin Parfums — Categories CRUD)
-cerrada sobre Product CRUD y el runtime Supabase existentes.
+Git es la fuente de verdad del hash. Fase 4c (Admin Parfums — Combos CRUD)
+cerrada sobre Product/Categories CRUD y el runtime Supabase existentes.
 
 ## CURRENT
 
@@ -32,9 +32,24 @@ cerrada sobre Product CRUD y el runtime Supabase existentes.
   archive/restore. RPCs atómicas auditan actor real, rechazan concurrencia
   obsoleta, ciclos/cross-unit, padre archivado y archivo con productos o hijas
   activas. `spec_schema` se preserva y no se expone como JSON arbitrario.
+- **Admin Parfums — Combos CRUD: IMPLEMENTED / RUNTIME TESTED.**
+  `/admin/parfums/combos`, `/nuevo` y `/[id]`: un combo es 1:1 con un producto
+  Parfums existente elegible (no archivado, sin combo previo); composición
+  (`combo_items`) administrada aparte del editor de producto, con selects
+  nativos de producto/variante, cantidad y orden por botones ↑/↓, guardado
+  como reemplazo atómico completo. Estado de verificación
+  (`pending_reconfirmation` / `client_confirmed` / `unknown`) es una acción
+  explícita, nunca inferida. Archive/restore no toca producto/variantes/
+  composición. Integridad añadida (migration aditiva, sin editar históricas):
+  auto-referencia bloqueada (un combo no puede incluir una variante de su
+  propio producto), y archivar una variante/producto referenciado por un
+  combo activo queda bloqueado (mismo precedente que Fase 4b con categorías)
+  hasta archivar el combo primero — verificado también en vivo contra
+  Product CRUD, no solo en pgTAP.
 - Supabase Foundation (Fase 3) sigue vigente: migrations versionadas, RLS,
   pgTAP, seed estructural, ETL legacy a staging. **RUNTIME TESTED: YES** —
-  139/139 pgTAP (74 Fase 3 + 28 Fase 4a + 37 Fase 4b) en reset fresco.
+  178/178 pgTAP (74 Fase 3 + 28 Fase 4a + 37 Fase 4b + 39 Fase 4c) en reset
+  fresco.
 - Preview y Admin permanecen `noindex,nofollow`; Production/cutover no autorizados.
 - **Global Parfums Quality / Parity Gate (Fase 2.5): PASS** (heredado, sin
   regresión demostrada en este bloque). No se declara "sin bugs" — ver
@@ -71,6 +86,27 @@ cerrada sobre Product CRUD y el runtime Supabase existentes.
   cubrió el flujo completo, conflicto entre sesiones e aislamiento Import-only;
   list/new/edit pasaron 320/390/430/768/1024/1440/1920 sin overflow y con un
   solo `main`/`h1`, labels, teclado y controles principales de ~44 px.
+- Fase 4c Admin Parfums Combos CRUD cerrada y runtime-tested: crear sobre un
+  producto elegible, componer/reordenar/cambiar cantidad, verificación
+  explícita, archive/restore preservando la composición. `ComboWorkspace`
+  centraliza el `updated_at` del combo como token de concurrencia compartido
+  entre el editor de verificación y el editor de composición — un bug real
+  encontrado en el propio E2E (guardar uno invalidaba el token del otro
+  dentro de la misma pestaña) y corregido antes de cerrar la fase. E2E local
+  cubrió: crear, agregar 2 variantes, duplicado rechazado (cliente y DB),
+  auto-referencia rechazada contra el runtime real, cross-unit rechazado por
+  el trigger de la DB, reordenar con persistencia verificada, verificación
+  explícita, bloqueo real de archivar variante/producto referenciado (con
+  mensaje específico, no el genérico — otro bug real encontrado y corregido:
+  `mapPostgrestError` no traducía `P2006` fuera del módulo de combos),
+  archive/restore de combo sin tocar el producto, conflicto de concurrencia
+  real (otra sesión simulada por SQL) rechazado sin sobrescritura, y
+  aislamiento Import-only verificado navegando la app real, no solo pgTAP.
+  Fixtures y usuarios de prueba (incluida una segunda pasada solo para el
+  spot-check responsive) eliminados al cerrar; `audit_log` de esas pruebas
+  quedó (append-only por diseño, confirmado también aquí) y se limpia con el
+  próximo `db:reset`. list/nuevo/[id] pasaron 320/390/430/768/1024/1440/1920
+  sin overflow, con un solo `main`/`h1` en cada uno.
 - Auth Admin foundation: `.env.example` sin valores, clientes browser/server
   separados, `/admin/login`, callback seguro, refresh SSR, páginas dinámicas,
   selector por membresías y ausencia de signup público. Bootstrap crea el
@@ -150,10 +186,17 @@ cerrada sobre Product CRUD y el runtime Supabase existentes.
 
 ## TODO
 
-- Combos Admin y los demás módulos Admin permanecen fuera de este bloque.
-  Import operativo también sigue pendiente.
-- Las matrices de Fase 4a/4b cubrieron sus rutas; los módulos Admin todavía no
-  implementados no tienen una auditoría funcional completa.
+- Wholesale Admin, Orders, Media/Cloudinary, Settings, Audit UI global e
+  Import operativo permanecen fuera de este bloque — siguientes capabilities,
+  no iniciadas.
+- Media de combos (`product_media` de solo lectura) quedó explícitamente
+  fuera de alcance de Fase 4c (opcional según el brief) — no es una omisión.
+- Reglas comerciales de combos anidados dentro de otros combos: sin contrato
+  confirmado, no se inventó ninguna regla — documentado como UNKNOWN, no
+  bloqueado a nivel de schema salvo la auto-referencia (que sí es un bug de
+  integridad, no una regla de negocio, y sí quedó corregido).
+- Las matrices de Fase 4a/4b/4c cubrieron sus rutas; los módulos Admin
+  todavía no implementados no tienen una auditoría funcional completa.
 
 ## BLOCKERS
 
@@ -180,25 +223,32 @@ cerrada sobre Product CRUD y el runtime Supabase existentes.
 
 ## TESTS — CURRENT
 
-- El hash final de Fase 4b vive en Git; los assets originales del cliente
+- El hash final de Fase 4c vive en Git; los assets originales del cliente
   permanecen fuera de staging.
 - `npm run check` (catálogo + lint + typecheck + test + build): PASS.
-- Vitest: 25 archivos, 140 tests PASS.
-- Build: PASS; `/admin`, sus unidades, login, callback, Product CRUD y
-  Categories CRUD son dinámicos, no prerenderizados como contenido compartido.
+- Vitest: 26 archivos, 165 tests PASS.
+- Build: PASS; `/admin`, sus unidades, login, callback, Product/Categories/
+  Combos CRUD son dinámicos, no prerenderizados como contenido compartido.
 - ETL: dos escrituras consecutivas produjeron el mismo SHA-256; `etl:check`
   PASS (96 staging, 3 blocked, 0 invalid).
-- Supabase CLI: `db:reset` fresco PASS; las 8 migrations y el seed
+- Supabase CLI: `db:reset` fresco PASS; las 9 migrations y el seed
   estructural se aplicaron desde cero.
-- pgTAP runtime: 6 archivos, 139/139 assertions PASS (74 foundation + 28
-  Product CRUD + 37 Categories CRUD) en PostgreSQL local. Tipos generados sin
-  drift contra `public,graphql_public`.
+- pgTAP runtime: 7 archivos, 178/178 assertions PASS (74 foundation + 28
+  Product CRUD + 37 Categories CRUD + 39 Combos CRUD) en PostgreSQL local.
+  Tipos generados sin drift contra `public,graphql_public`.
 - `git diff --check`: limpio.
-- E2E navegador de Categories: create/edit Parent+Child, búsqueda/filtro,
-  jerarquía/ciclo preventivo, sort/status, relación con Product, bloqueos de
-  archive, archive/restore y conflicto stale PASS. Auditoría verificada en DB
-  con actor real; Import-only y anónimo redirigidos sin datos Parfums;
-  storefront público legacy smoke-tested en Home, catálogo y producto real.
+- E2E navegador de Combos: crear sobre producto elegible, agregar 2 variantes,
+  duplicado/auto-referencia/cross-unit rechazados contra el runtime real,
+  reordenar con persistencia verificada en DB, verificación explícita,
+  bloqueo de archivar variante/producto referenciado (con mensaje correcto),
+  archive/restore de combo sin tocar el producto, conflicto de concurrencia
+  real rechazado, aislamiento Import-only navegando la app. Storefront
+  público legacy smoke-tested en Home, catálogo, `/parfums/combos` (sin
+  filtración de datos Supabase) y producto real — sin cambios.
+- E2E navegador de Categories (Fase 4b, sin regresión demostrada): create/edit
+  Parent+Child, búsqueda/filtro, jerarquía/ciclo preventivo, sort/status,
+  relación con Product, bloqueos de archive, archive/restore y conflicto
+  stale PASS.
 
 ## HISTORICAL
 
@@ -216,7 +266,9 @@ cerrada sobre Product CRUD y el runtime Supabase existentes.
 
 ## NEXT
 
-Fase 4b Categories CRUD cerrada. **DETENER para revisión externa.** Después de
-aprobación explícita: siguiente capability Admin definida por negocio (por
-ejemplo Combos), sin iniciar Import operativo, Cloudinary, pagos, storefront
-Supabase cutover ni automatizaciones dentro de este bloque.
+Fase 4c Combos CRUD cerrada. **DETENER para revisión externa.** Después de
+aprobación explícita: la siguiente capability es Wholesale Admin, pero
+requiere tratar con cuidado `wholesaleThresholdScope = UNKNOWN` (40 unidades
+combinadas vs. por SKU) antes de implementar cualquier motor de descuento.
+No iniciar Import operativo, Cloudinary, pagos, storefront Supabase cutover
+ni automatizaciones dentro de este bloque.
