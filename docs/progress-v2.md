@@ -475,6 +475,20 @@ Manifest) implementada y validada localmente, sin carga ni mutación de media.
   rename/move/delete/crop/optimización. El storefront público sigue en
   `LegacyCatalogRepository` → `assets/data.js`; no hubo cutover.
 
+
+- **4F2B Correctness Hardening: APPLIED / VERIFIED.** Este cierre corrige y
+  sustituye el detalle previo que excluía cuatro duplicados de slot: los 190
+  originales confirmados migran sobre 92 productos. Los 186 public IDs previos
+  permanecen byte-for-byte sin churn y cuatro fotos de contenido distinto se
+  conservan como supplemental content-addressed para Hawas Verde y Purple
+  Melancholia. Cloudinary final: 190 already-present verificados, 0 upload,
+  missing, blocked o conflict; manifiesto schema v2 canónico e independiente del
+  orden de entrada. Staging DB: 190 unchanged, 0 insert/conflict; checksum y
+  provenance válidos en 190/190, product_variant_id null, máximo una primary
+  activa por producto. Migration 20260908160000 sincronizada y backfill aplicado.
+  Gate final: 31 tests Node y 32 assertions pgTAP PASS. No se tocaron originales,
+  storefront ni otra fase.
+
 ## NEXT
 
 **Fase 4F2B — Controlled Client Media Migration cerrada.** Elegir la
