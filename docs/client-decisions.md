@@ -17,7 +17,9 @@ reemplazo, no se borra el historial a ciegas.
   aprobado: "Tu solicitud fue registrada. Termina la coordinación por
   WhatsApp." Import conserva su regla de adelanto (nuevo 50% / recurrente
   70%) como dato a calcular/snapshotear para la coordinación por WhatsApp —
-  la web no cobra ese adelanto.
+  la web no cobra ese adelanto. **Payments/Pagos en runtime están
+  INTENTIONALLY OUT OF SCOPE FOR V1**: no son un blocker ni una capability
+  futura V1; la coordinación comercial y de pago permanece en WhatsApp.
 - **`wholesaleThresholdScope`: CONFIRMED — por `commercial_type`, no por
   producto ni por pedido global.** La elegibilidad de mayorista se acumula
   dentro de una misma categoría comercial (`kind = commercial_type`):
@@ -31,10 +33,10 @@ reemplazo, no se borra el historial a ciegas.
   variantes de frasco completo elegibles para mayorista. El matching debe
   usar la identidad estable de categoría (`kind = commercial_type`), nunca
   parsing de etiquetas de UI. El schema actual de `wholesale_policies`
-  (scope `per_product | per_order | unconfirmed`) no representa todavía
-  `per_category`/`per_commercial_type` — Fase 4D (Wholesale Admin) debe
-  introducir esa representación mínima de forma **aditiva**, sin alterar el
-  scope model existente en este checkpoint.
+  La observación histórica de que el schema no representaba todavía este
+  alcance queda **SUPERSEDED por Fase 4D cerrada**: la representación aditiva
+  `per_commercial_type` ya existe con slugs estables
+  `arabic | designer | niche`, cálculo DB y Admin Wholesale.
 - **Consolidados — comportamiento confirmado (registro, sin implementación
   nueva en este checkpoint).** Cada consolidado es una campaña independiente
   que abre y cierra; el siguiente consolidado puede tener productos, precios

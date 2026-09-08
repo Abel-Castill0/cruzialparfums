@@ -25,6 +25,13 @@ fuente de verdad; este documento las describe, no las reemplaza.
   concurrencia optimista. No introduce productos comerciales ni cambia la
   fuente del storefront.
 
+  La migration de Fase 4e1 `20260908100000` añade `orders.request_id`, su
+  unicidad por unidad y `create_parfums_order_request`: una transacción
+  service-only que crea draft + snapshots de líneas, calcula el subtotal y
+  termina en `pending_whatsapp_confirmation`. `anon` y `authenticated` no
+  pueden ejecutar la RPC ni insertar directamente; Next usa temporalmente el
+  path privilegiado solo después de revalidar contra el catálogo legacy.
+
   **RUNTIME TESTED: YES.** El 2026-09-07 se ejecutaron dos resets frescos sobre
   PostgreSQL local, aplicando las seis migrations y el seed sin parches
   manuales. Las 4 suites pgTAP finalizaron con 74/74 assertions PASS.
@@ -39,8 +46,8 @@ fuente de verdad; este documento las describe, no las reemplaza.
     `UNKNOWN` en `docs/client-decisions.md`, y no existe formulario de waitlist
     en el runtime (la home de Import usa un CTA de WhatsApp a propósito).
 
-- **UNKNOWN:** alcance mayorista (`wholesaleThresholdScope`), estados finales de
-  pedido más allá de `pending_whatsapp_confirmation`, retención de PII y de
+- **UNKNOWN:** estados finales de pedido más allá de
+  `pending_whatsapp_confirmation`, retención de PII y de
   audit log, automatización de campañas por fecha, y bootstrap/MFA/recuperación
   del primer admin. Un `UNKNOWN` no se convierte en constraint ni en seed.
 
@@ -229,7 +236,7 @@ propio método — no se comparte configuración de envío entre Parfums e Impor
 
 ### `orders`
 
-`id`, `order_number`, `business_unit_id`, `campaign_id nullable`, `customer_id nullable`,
+`id`, `order_number`, `request_id nullable`, `business_unit_id`, `campaign_id nullable`, `customer_id nullable`,
 `channel`, `status`, `customer_snapshot jsonb`, `delivery_snapshot jsonb`,
 `shipping_method_id nullable`, `claimed_customer_status` (`new | returning`,
 autodeclarado por el cliente en el checkout — no confiable por sí solo),
@@ -245,6 +252,13 @@ no como candidatos inventados. Los snapshots (`customer_snapshot`, `delivery_sna
 `verified_customer_status_snapshot`, `deposit_policy_snapshot`) son la fuente de verdad
 del pedido una vez que sale de `draft` — no se recalculan si
 `customers`/`deposit_policies` cambian después.
+
+En Parfums V1, `request_id` es la clave UUID de idempotencia generada por el
+cliente para un intento y nunca decide contenido comercial. El índice único
+`(business_unit_id, request_id)` y un advisory lock transaccional hacen que un
+retry concurrente devuelva la solicitud ya creada. `order_number` se genera en
+PostgreSQL para soporte; ninguno de los dos valores autoriza estado, precio o
+unidad de negocio desde el browser.
 
 ### `order_lines`
 

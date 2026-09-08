@@ -53,6 +53,12 @@ cerrada sobre Product/Categories CRUD y el runtime Supabase existentes.
   La DB acumula cantidades por slug estable, excluye decants, calcula dinero
   con `numeric`, audita update/enable/disable en la misma transacción y rechaza
   `expected_updated_at` obsoleto.
+- **Public Parfums Order Request: IMPLEMENTED / RUNTIME TESTED.** El checkout
+  revalida identidades y cantidades contra `LegacyCatalogRepository`, ignora
+  snapshots comerciales del browser y persiste mediante una RPC service-only
+  atómica e idempotente. El resultado queda en
+  `pending_whatsapp_confirmation`; recién entonces limpia el carrito y entrega
+  el handoff `/parfums/gracias/[order]` hacia el WhatsApp central.
 - **Supabase remoto staging enlazado**: proyecto `cruzial-v2-staging`
   (`iyxidhglyqkzoziyewlc`, ACTIVE_HEALTHY, único proyecto existente — sin
   ambigüedad). Las primeras 9 migrations locales se aplicaron limpiamente sobre un
@@ -77,12 +83,12 @@ cerrada sobre Product/Categories CRUD y el runtime Supabase existentes.
 
 ## DONE
 
-- Foundation, Catalog, Product Detail, Cart, Checkout, Combos, Finder,
-  Mayorista e Institutional cerrados por capability; no se reescriben sin
+- Foundation, Catalog, Product Detail, Cart, Checkout, Public Order Request,
+  Combos, Finder, Mayorista e Institutional cerrados por capability; no se reescriben sin
   regresión demostrada.
 - Catálogo reconciliado: hidden, descontinuado independiente de disponibilidad,
   regalo solo en frasco, cantidad desde card, tamaño por línea en combos y
-  mayorista con alcance de 40 unidades todavía UNKNOWN.
+  mayorista con alcance confirmado `per_commercial_type` y umbral de 40 unidades.
 - Contacto operativo centralizado: WhatsApp `+51 926 390 591` y correo público
   `dominiocruzial@gmail.com`, con settings separados Parfums/Import.
 - Paletas LATEST: Parfums negro/blanco con dorado no dominante; Import azul
@@ -213,7 +219,7 @@ cerrada sobre Product/Categories CRUD y el runtime Supabase existentes.
 
 ## TODO
 
-- Orders, Media/Cloudinary, Settings, Audit UI global e
+- Admin Orders, Media/Cloudinary, Settings, Audit UI global e
   Import operativo permanecen fuera de este bloque — siguientes capabilities,
   no iniciadas.
 - Media de combos (`product_media` de solo lectura) quedó explícitamente
@@ -254,18 +260,19 @@ cerrada sobre Product/Categories CRUD y el runtime Supabase existentes.
 
 ## TESTS — CURRENT
 
-- El hash final de Fase 4d vive en Git; los assets originales del cliente
+- El hash final de Fase 4e1 vive en Git; los assets originales del cliente
   permanecen fuera de staging.
 - `npm run check` (catálogo + lint + typecheck + test + build): PASS.
-- Vitest: 27 archivos, 172 tests PASS.
+- Vitest: 29 archivos, 182 tests PASS.
 - Build: PASS; `/admin`, sus unidades, login, callback, Product/Categories/
   Combos/Wholesale son dinámicos, no prerenderizados como contenido compartido.
 - ETL: dos escrituras consecutivas produjeron el mismo SHA-256; `etl:check`
   PASS (96 staging, 3 blocked, 0 invalid).
-- Supabase CLI: `db:reset` fresco PASS; las 10 migrations y el seed
+- Supabase CLI: `db:reset` fresco PASS; las 11 migrations y el seed
   estructural se aplicaron desde cero.
-- pgTAP runtime: 8 archivos, 207/207 assertions PASS (74 foundation + 28
-  Product CRUD + 37 Categories CRUD + 39 Combos CRUD + 29 Wholesale) en PostgreSQL local.
+- pgTAP runtime: 9 archivos, 228/228 assertions PASS (74 foundation + 28
+  Product CRUD + 37 Categories CRUD + 39 Combos CRUD + 29 Wholesale + 21
+  Public Order Request) en PostgreSQL local.
   Tipos generados sin drift contra `public,graphql_public`.
 - `git diff --check`: limpio.
 - E2E navegador de Combos: crear sobre producto elegible, agregar 2 variantes,
@@ -297,7 +304,8 @@ cerrada sobre Product/Categories CRUD y el runtime Supabase existentes.
 
 ## NEXT
 
-**Fase 4D — Admin Parfums Wholesale cerrada. DETENER para revisión externa.**
-Siguiente capability solo tras nueva instrucción: Orders o el módulo Admin que
-el negocio priorice. No iniciar Import operativo, Cloudinary, pagos reales,
-storefront Supabase cutover, config de Auth remota ni deploy/Preview.
+**Fase 4E1 — Public Order Request Pipeline cerrada. DETENER para revisión externa.**
+Siguiente capability solo tras nueva instrucción: **Fase 4E2 — Admin Parfums
+Orders Inbox / Detail**. Payments/Pagos permanece **INTENTIONALLY OUT OF SCOPE
+FOR V1**; no es blocker ni capability futura. No iniciar Import operativo,
+Cloudinary, storefront Supabase cutover, config de Auth remota ni deploy/Preview.
