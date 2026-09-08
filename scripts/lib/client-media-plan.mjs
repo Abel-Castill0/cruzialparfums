@@ -59,18 +59,27 @@ function groupByRole(recordsForOneProduct) {
 
 /**
  * Resolves a single-slot (bottle/set) group with more than one eligible
- * candidate down to exactly one, using ONLY the group's own
- * current_legacy_image field (the currently-deployed IMG_MAP path -
- * AGENTS.md's own "CURRENT PUBLIC SOURCE OF TRUTH") - never a heuristic
- * invented for this migration. A candidate is selected only when its
- * filename (minus extension) exactly matches the basename (minus extension)
- * of current_legacy_image. If zero or more than one candidate satisfies
- * that, this is a real, unresolvable duplicate: return a conflict instead of
- * guessing.
+ * candidate down to exactly one CANONICAL record for that role, using ONLY
+ * the group's own current_legacy_image field (the currently-deployed
+ * IMG_MAP path - AGENTS.md's own "CURRENT PUBLIC SOURCE OF TRUTH") - never a
+ * heuristic invented for this migration. A candidate is selected as
+ * canonical only when its filename (minus extension) exactly matches the
+ * basename (minus extension) of current_legacy_image. If zero or more than
+ * one candidate satisfies that, this is a real, unresolvable duplicate:
+ * return a conflict instead of guessing.
+ *
+ * The other, non-canonical candidates are NOT discarded here — both records
+ * already reconcile authoritatively to the same legacy_product_id, which is
+ * sufficient product association on its own; a confirmed candidate is only
+ * ever dropped for being a byte-identical copy of something already kept
+ * (checked by the caller via checksum), never merely for losing the
+ * canonical-role tiebreak. See planProductMedia for how `otherCandidates`
+ * is turned into either a duplicate_content exclusion or a preserved
+ * supplemental media item.
  */
 function resolveSingleSlotGroup(records) {
   if (records.length === 1) {
-    return { selected: records[0], excluded: [], conflict: null };
+    return { selected: records[0], otherCandidates: [], conflict: null };
   }
 
   let targetBasename = null;
@@ -91,7 +100,7 @@ function resolveSingleSlotGroup(records) {
     const selected = matches[0];
     return {
       selected,
-      excluded: records.filter(function (record) {
+      otherCandidates: records.filter(function (record) {
         return record !== selected;
       }),
       conflict: null,
@@ -100,7 +109,7 @@ function resolveSingleSlotGroup(records) {
 
   return {
     selected: null,
-    excluded: [],
+    otherCandidates: [],
     conflict: {
       code: "DUPLICATE_SLOT_UNRESOLVED",
       legacy_product_id: records[0].legacy_product_id,
@@ -113,12 +122,17 @@ function resolveSingleSlotGroup(records) {
 }
 
 /**
- * Deduplicates a multi-slot ("additional") group by content: two records
- * whose local files hash identically are the same physical photo under two
- * filenames, so only one is kept. checksumOf(record) is injected so this
- * stays pure - the caller supplies pre-computed SHA-256 hashes.
+ * Deduplicates a group of records by content: two records whose local files
+ * hash identically are the same physical photo under two filenames, so only
+ * one is kept (sorted by filename first, so which one survives is
+ * deterministic). checksumOf(record) is injected so this stays pure - the
+ * caller supplies pre-computed SHA-256 hashes. A record whose checksum
+ * cannot be determined (checksumOf returns a falsy value — e.g. no local
+ * file) is never treated as a duplicate of anything: identity can only be
+ * disproved, never assumed, so it is always kept here and left for the
+ * Cloudinary-plan I/O layer to classify as missing_local_file.
  */
-function dedupeMultiSlotGroup(records, checksumOf) {
+function dedupeByContent(records, checksumOf) {
   const sorted = records.slice().sort(function (a, b) {
     return a.client_original_filename.localeCompare(b.client_original_filename);
   });
@@ -149,6 +163,22 @@ export function stableAssetId(mediaRole, ordinal) {
   return "additional-" + padded;
 }
 
+/**
+ * Stable-asset-id for a "supplemental" item: a confirmed candidate that lost
+ * the canonical bottle/set tiebreak (see resolveSingleSlotGroup) but has
+ * distinct content from the canonical asset, so it is preserved rather than
+ * discarded. Content-addressed (not ordinal) on purpose: it must never
+ * collide with, renumber, or otherwise disturb the ordinal
+ * additional-01/additional-02/... ids already assigned to genuine
+ * multi-slot "additional"-role records (some of which are already migrated
+ * — see docs: Phase 4F2B correctness patch, section 1), and it must stay
+ * identical across reruns regardless of how many other supplemental items
+ * exist or in what order they are discovered.
+ */
+export function supplementalAssetId(checksum) {
+  return "additional-" + checksum.slice(0, 12);
+}
+
 /** cruzial/parfums/catalog/<legacy_id>/<stable-asset-id> - no environment
  * UUID anywhere, so the same id is valid in staging and future production. */
 export function computePortablePublicId(legacyProductId, assetId) {
@@ -172,6 +202,7 @@ export function planProductMedia(legacyProductId, recordsForProduct, checksumOf)
   const conflicts = [];
   const excluded = [];
   const resolvedSingleSlot = {};
+  const supplementalCandidates = [];
 
   for (const role of SINGLE_SLOT_ROLES) {
     const records = byRole[role];
@@ -182,14 +213,35 @@ export function planProductMedia(legacyProductId, recordsForProduct, checksumOf)
       continue;
     }
     resolvedSingleSlot[role] = resolved.selected;
-    for (const record of resolved.excluded) {
-      excluded.push(Object.assign({}, record, { exclusion_reason: "duplicate_slot_not_selected" }));
+
+    // A non-canonical candidate is dropped only when it is a byte-identical
+    // copy of the canonical asset (checksum confirmed equal) — never merely
+    // for losing the bottle/set tiebreak. Both records already reconcile to
+    // this product, which is sufficient association on its own; distinct
+    // content is preserved as a supplemental media item, not discarded.
+    const canonicalChecksum = resolved.selected ? checksumOf(resolved.selected) : null;
+    for (const candidate of resolved.otherCandidates) {
+      const candidateChecksum = checksumOf(candidate);
+      if (candidateChecksum && canonicalChecksum && candidateChecksum === canonicalChecksum) {
+        excluded.push(Object.assign({}, candidate, { exclusion_reason: "duplicate_content" }));
+      } else {
+        supplementalCandidates.push(candidate);
+      }
     }
   }
 
   const additionalRecords = byRole.additional || [];
-  const additionalResolved = dedupeMultiSlotGroup(additionalRecords, checksumOf);
+  const additionalResolved = dedupeByContent(additionalRecords, checksumOf);
   for (const record of additionalResolved.duplicates) {
+    excluded.push(Object.assign({}, record, { exclusion_reason: "duplicate_content" }));
+  }
+
+  // Supplemental candidates are deduplicated against each other by the same
+  // content rule (two lost-tiebreak candidates from different single-slot
+  // roles could themselves coincide), independently of the genuine
+  // "additional"-role group above so its ordinal ids never shift.
+  const supplementalResolved = dedupeByContent(supplementalCandidates, checksumOf);
+  for (const record of supplementalResolved.duplicates) {
     excluded.push(Object.assign({}, record, { exclusion_reason: "duplicate_content" }));
   }
 
@@ -223,6 +275,34 @@ export function planProductMedia(legacyProductId, recordsForProduct, checksumOf)
     });
   });
 
+  // Supplemental items (lost the canonical tiebreak, distinct content) are
+  // still "additional" media role-wise, but get a content-addressed id
+  // (never an ordinal one) so they can never collide with or renumber the
+  // genuine additional-01/02/... ids assigned just above.
+  const sortedSupplemental = supplementalResolved.kept.slice().sort(function (a, b) {
+    return a.client_original_filename.localeCompare(b.client_original_filename);
+  });
+  sortedSupplemental.forEach(function (record) {
+    const checksum = checksumOf(record);
+    if (!checksum) {
+      // No local file to hash — cannot mint a content-addressed id. Leave
+      // it out of the plan's items entirely; the Cloudinary-plan I/O layer
+      // (which has real filesystem access) is what actually classifies a
+      // missing source file, so this never silently vanishes — it simply
+      // isn't planned as an item here, matching how any other unresolved
+      // record in this function behaves.
+      excluded.push(Object.assign({}, record, { exclusion_reason: "missing_local_file" }));
+      return;
+    }
+    items.push({
+      record,
+      mediaRole: "additional",
+      assetId: supplementalAssetId(checksum),
+      isPrimary: false,
+      sortOrder: sortOrder++,
+    });
+  });
+
   return { legacyProductId, items, excluded, conflicts };
 }
 
@@ -250,6 +330,74 @@ export function buildMediaMigrationPlan(manifest, checksumOf) {
   });
 
   return { eligibleCount: eligible.length, products };
+}
+
+/**
+ * Builds the deterministic, versioned result-manifest object written to
+ * supabase/staging/client-media-cloudinary.json (docs: Phase 4F2B
+ * correctness patch, section 4). Pure and I/O-free: `rows` is the already-
+ * resolved list of migrated media (each carrying its Cloudinary metadata),
+ * computed by the I/O shell. No timestamp, no "uploaded vs already present"
+ * run-dependent counts — two clean runs over unchanged source files and
+ * Cloudinary state must produce byte-identical JSON. Row order follows
+ * `plan.products` (already sorted by legacy_product_id) x each product's
+ * fixed item order — never input array order, never a Map/object key
+ * iteration order.
+ */
+export function buildResultManifest({ plan, sourceFingerprints, rows }) {
+  const manifestRows = rows.map(function (row) {
+    return {
+      legacy_product_id: row.legacyProductId,
+      client_original_filename: row.clientOriginalFilename,
+      media_role: row.mediaRole,
+      source_sha256: row.checksum,
+      cloudinary_public_id: row.publicId,
+      secure_url: row.secureUrl,
+      width: row.width,
+      height: row.height,
+      bytes: row.bytes,
+      format: row.format,
+      source_reconciliation_status: row.reconciliationStatus,
+      migration_status: "migrated",
+      is_primary_intent: row.isPrimary,
+      sort_order: row.sortOrder,
+      variant_association_intent: null,
+      alt: [row.brand, row.legacyProductName].filter(Boolean).join(" ") || null,
+    };
+  });
+
+  const excludedByteDuplicates = plan.products.reduce(function (sum, product) {
+    return (
+      sum +
+      product.excluded.filter(function (record) {
+        return record.exclusion_reason === "duplicate_content";
+      }).length
+    );
+  }, 0);
+
+  const unresolved = plan.products.reduce(function (sum, product) {
+    return (
+      sum +
+      product.conflicts.length +
+      product.excluded.filter(function (record) {
+        return record.exclusion_reason !== "duplicate_content";
+      }).length
+    );
+  }, 0);
+
+  return {
+    schema_version: 2,
+    purpose: "Phase 4F2B Cloudinary migration result — portable, no environment UUIDs, no secrets, deterministic.",
+    migration_source: MIGRATION_SOURCE,
+    source_fingerprints: sourceFingerprints ?? null,
+    counts: {
+      source_eligible_records: plan.eligibleCount,
+      migrated_assets: manifestRows.length,
+      excluded_byte_duplicates: excludedByteDuplicates,
+      unresolved: unresolved,
+    },
+    rows: manifestRows,
+  };
 }
 
 export { ELIGIBLE_STATUSES, SINGLE_SLOT_ROLES, MIGRATION_SOURCE };

@@ -31,9 +31,9 @@ import { createHash } from "node:crypto";
 import { existsSync, readFileSync, writeFileSync, mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { spawnSync } from "node:child_process";
-import { buildMediaMigrationPlan, MIGRATION_SOURCE, computePortablePublicId } from "./lib/client-media-plan.mjs";
+import { buildMediaMigrationPlan, buildResultManifest, MIGRATION_SOURCE, computePortablePublicId } from "./lib/client-media-plan.mjs";
 
 const scriptDirectory = dirname(fileURLToPath(import.meta.url));
 const repositoryRoot = resolve(scriptDirectory, "..");
@@ -198,9 +198,41 @@ async function loadPlan() {
   return { manifest, plan, checksumOf };
 }
 
+/** Any of these three means the plan is not clean enough to upload from —
+ * see docs: Phase 4F2B correctness patch, section 2. `blocked` counts
+ * planning-level conflicts (e.g. an unresolved single-slot duplicate) that
+ * never even reached Cloudinary classification; `missing_local_file` means
+ * a confirmed record has no readable source on disk; `conflicts` means a
+ * public_id already exists on Cloudinary with different, unverified
+ * content. Uploading anything while any of these is nonzero risks either a
+ * partial, silently-incomplete result manifest or an ambiguous asset. */
+export function hasFatalPlanIssues(counts) {
+  return counts.conflicts > 0 || counts.missing_local_file > 0 || counts.blocked > 0;
+}
+
+/**
+ * Pure decision point for cloudinaryApply, extracted specifically so the
+ * fail-closed rule is unit-testable without real Cloudinary/filesystem I/O
+ * (docs: Phase 4F2B correctness patch, section 2). Given a plan's counts and
+ * its classified rows, decides whether to proceed at all and, if so, which
+ * rows actually need an upload call vs. which are already verified present.
+ * When refused, `toUpload` and `toKeep` are always empty — the caller must
+ * not perform a single upload.
+ */
+export function planUploadDecision(counts, classified) {
+  if (hasFatalPlanIssues(counts)) {
+    return { refused: true, toUpload: [], toKeep: [] };
+  }
+  const toUpload = classified.filter(
+    (row) => row.classification !== "missing_local_file" && row.classification !== "already_present_verified",
+  );
+  const toKeep = classified.filter((row) => row.classification === "already_present_verified");
+  return { refused: false, toUpload, toKeep };
+}
+
 async function cloudinaryPlan() {
   const env = requireCloudinaryEnv();
-  const { plan } = await loadPlan();
+  const { plan, manifest } = await loadPlan();
   const rows = flattenPlanItems(plan);
 
   const classified = [];
@@ -225,29 +257,28 @@ async function cloudinaryPlan() {
     console.log(`MISSING_LOCAL_FILE ${row.publicId}: ${row.localPath}`);
   }
 
-  if (counts.conflicts > 0) {
-    console.error("STOP: conflicts > 0. Refusing to proceed to upload.");
+  if (hasFatalPlanIssues(counts)) {
+    console.error("STOP: plan has conflicts, missing local files, or planning-level blocks. Refusing to proceed to upload.");
     process.exitCode = 2;
   }
-  return { counts, classified, productConflicts };
+  return { counts, classified, productConflicts, plan, manifest };
 }
 
 async function cloudinaryApply() {
   const env = requireCloudinaryEnv();
-  const { classified, counts } = await cloudinaryPlan();
-  if (counts.conflicts > 0) {
-    console.error("STOP: cloudinary-apply refused because the plan has conflicts.");
+  const { classified, counts, plan, manifest } = await cloudinaryPlan();
+  const decision = planUploadDecision(counts, classified);
+  if (decision.refused) {
+    // Fail closed, before a single upload: a partial run here would produce
+    // a result manifest that looks complete but silently omits real,
+    // eligible media (docs: Phase 4F2B correctness patch, section 2).
+    console.error("STOP: cloudinary-apply refused — the plan is not clean (conflicts, missing local files, or blocked entries). Zero uploads performed.");
     process.exitCode = 2;
     return;
   }
 
-  const results = [];
-  for (const row of classified) {
-    if (row.classification === "missing_local_file") continue;
-    if (row.classification === "already_present_verified") {
-      results.push(row);
-      continue;
-    }
+  const results = [...decision.toKeep];
+  for (const row of decision.toUpload) {
     console.log(`Uploading ${row.publicId} <- ${row.clientOriginalFilename}`);
     const uploaded = await cloudinaryUpload(
       row.localPath,
@@ -272,41 +303,29 @@ async function cloudinaryApply() {
     });
   }
 
-  const manifestRows = results
-    .filter((row) => row.classification === "uploaded" || row.classification === "already_present_verified")
-    .map((row) => ({
-      legacy_product_id: row.legacyProductId,
-      client_original_filename: row.clientOriginalFilename,
-      media_role: row.mediaRole,
-      source_sha256: row.checksum,
-      cloudinary_public_id: row.publicId,
-      secure_url: row.secureUrl,
-      width: row.width,
-      height: row.height,
-      bytes: row.bytes,
-      format: row.format,
-      source_reconciliation_status: row.reconciliationStatus,
-      migration_status: "migrated",
-      is_primary_intent: row.isPrimary,
-      sort_order: row.sortOrder,
-      variant_association_intent: null,
-      alt: [row.brand, row.legacyProductName].filter(Boolean).join(" ") || null,
-    }));
+  // Console-only, run-dependent bookkeeping — how many of this run's rows
+  // were freshly uploaded vs. already verified present. This is exactly the
+  // kind of runtime state that must NOT land in the committed artifact:
+  // two clean runs over the same source/account state produce the same
+  // rows either way, but which ones were "uploaded" this time vs. last time
+  // is not semantic information about the migration result (docs: Phase
+  // 4F2B correctness patch, section 4).
+  console.log(
+    `This run: uploaded=${results.filter((r) => r.classification === "uploaded").length}, ` +
+      `already_present_verified=${results.filter((r) => r.classification === "already_present_verified").length}.`,
+  );
 
-  const resultManifest = {
-    schema_version: 1,
-    purpose: "Phase 4F2B Cloudinary migration result — portable, no environment UUIDs, no secrets.",
-    generated_at: new Date().toISOString(),
-    migration_source: MIGRATION_SOURCE,
-    counts: {
-      uploaded: results.filter((r) => r.classification === "uploaded").length,
-      already_present_verified: results.filter((r) => r.classification === "already_present_verified").length,
-    },
-    rows: manifestRows,
-  };
+  const migratedRows = results.filter(
+    (row) => row.classification === "uploaded" || row.classification === "already_present_verified",
+  );
+  const resultManifest = buildResultManifest({
+    plan,
+    sourceFingerprints: manifest.source_fingerprints ?? null,
+    rows: migratedRows,
+  });
 
   writeFileSync(resultManifestPath, JSON.stringify(resultManifest, null, 2) + "\n");
-  console.log(`Wrote ${resultManifestPath} (${manifestRows.length} rows).`);
+  console.log(`Wrote ${resultManifestPath} (${resultManifest.rows.length} rows).`);
 }
 
 // ---------------------------------------------------------------------------
@@ -436,7 +455,14 @@ async function main() {
   throw new Error("Usage: node scripts/migrate-client-media.mjs <cloudinary-plan|cloudinary-apply|db-plan|db-apply|verify> [--target=local|staging]");
 }
 
-main().catch((error) => {
-  console.error(error instanceof Error ? error.message : error);
-  process.exitCode = 1;
-});
+// Guarded so this module can be `import`ed from a test file (see
+// migrate-client-media.test.mjs) without executing the CLI — main() only
+// runs when this file is the actual process entry point. pathToFileURL
+// (not a hand-rolled "file://" + replace) is what correctly matches
+// import.meta.url's format on Windows (three slashes + drive letter) too.
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main().catch((error) => {
+    console.error(error instanceof Error ? error.message : error);
+    process.exitCode = 1;
+  });
+}
