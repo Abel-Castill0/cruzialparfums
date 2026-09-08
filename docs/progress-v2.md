@@ -46,9 +46,16 @@ cerrada sobre Product/Categories CRUD y el runtime Supabase existentes.
   combo activo queda bloqueado (mismo precedente que Fase 4b con categorías)
   hasta archivar el combo primero — verificado también en vivo contra
   Product CRUD, no solo en pgTAP.
+- **Admin Parfums — Wholesale: IMPLEMENTED / RUNTIME TESTED.**
+  `/admin/parfums/mayorista` gestiona las tres políticas confirmadas por
+  `commercial_type`, lista exclusivamente variantes `bottle` con precio base,
+  precio derivado, disponibilidad/publicación y diagnóstico de clasificación.
+  La DB acumula cantidades por slug estable, excluye decants, calcula dinero
+  con `numeric`, audita update/enable/disable en la misma transacción y rechaza
+  `expected_updated_at` obsoleto.
 - **Supabase remoto staging enlazado**: proyecto `cruzial-v2-staging`
   (`iyxidhglyqkzoziyewlc`, ACTIVE_HEALTHY, único proyecto existente — sin
-  ambigüedad). Las 9 migrations locales se aplicaron limpiamente sobre un
+  ambigüedad). Las primeras 9 migrations locales se aplicaron limpiamente sobre un
   remoto que no tenía schema de aplicación previo (`migration list` vacío
   antes del push); `db push --dry-run` coincidió exactamente con el push
   real. Tipos generados desde el proyecto enlazado (`--linked`) comparados
@@ -56,10 +63,13 @@ cerrada sobre Product/Categories CRUD y el runtime Supabase existentes.
   metadata del generador (`__InternalSupabase`/versión de PostgREST) ausente
   en la generación `--local`. Config de Auth remota NO tocada — ver
   `REMOTE_AUTH_URL_CONFIG_PENDING_PREVIEW` en BLOCKERS.
+  La décima migration (Fase 4d Wholesale) pasó dry-run como único cambio,
+  se aplicó al mismo staging y un segundo dry-run confirmó `upToDate: true`;
+  la generación linked contiene la vista, RPCs y campos Wholesale nuevos.
 - Supabase Foundation (Fase 3) sigue vigente: migrations versionadas, RLS,
   pgTAP, seed estructural, ETL legacy a staging. **RUNTIME TESTED: YES** —
-  178/178 pgTAP (74 Fase 3 + 28 Fase 4a + 37 Fase 4b + 39 Fase 4c) en reset
-  fresco.
+  207/207 pgTAP (74 Fase 3 + 28 Fase 4a + 37 Fase 4b + 39 Fase 4c + 29
+  Fase 4d) en reset fresco.
 - Preview y Admin permanecen `noindex,nofollow`; Production/cutover no autorizados.
 - **Global Parfums Quality / Parity Gate (Fase 2.5): PASS** (heredado, sin
   regresión demostrada en este bloque). No se declara "sin bugs" — ver
@@ -117,6 +127,13 @@ cerrada sobre Product/Categories CRUD y el runtime Supabase existentes.
   quedó (append-only por diseño, confirmado también aquí) y se limpia con el
   próximo `db:reset`. list/nuevo/[id] pasaron 320/390/430/768/1024/1440/1920
   sin overflow, con un solo `main`/`h1` en cada uno.
+- Fase 4d Admin Parfums Wholesale cerrada y runtime-tested: políticas activas
+  iniciales Árabe 40/−S/5, Diseñador 40/−S/7 y Nicho 40/−S/10; cálculo
+  autoritativo 39/40/41, suma entre productos del mismo tipo, separación entre
+  tipos y exclusión de decants. E2E local verificó mutación, audit actor real,
+  conflicto stale, filtro/listado, clasificación faltante e aislamiento del
+  admin exclusivo de Import. Las nuevas superficies pasaron los siete anchos
+  320/390/430/768/1024/1440/1920, labels, foco y targets principales de 44px.
 - Auth Admin foundation: `.env.example` sin valores, clientes browser/server
   separados, `/admin/login`, callback seguro, refresh SSR, páginas dinámicas,
   selector por membresías y ausencia de signup público. Bootstrap crea el
@@ -196,7 +213,7 @@ cerrada sobre Product/Categories CRUD y el runtime Supabase existentes.
 
 ## TODO
 
-- Wholesale Admin, Orders, Media/Cloudinary, Settings, Audit UI global e
+- Orders, Media/Cloudinary, Settings, Audit UI global e
   Import operativo permanecen fuera de este bloque — siguientes capabilities,
   no iniciadas.
 - Media de combos (`product_media` de solo lectura) quedó explícitamente
@@ -237,18 +254,18 @@ cerrada sobre Product/Categories CRUD y el runtime Supabase existentes.
 
 ## TESTS — CURRENT
 
-- El hash final de Fase 4c vive en Git; los assets originales del cliente
+- El hash final de Fase 4d vive en Git; los assets originales del cliente
   permanecen fuera de staging.
 - `npm run check` (catálogo + lint + typecheck + test + build): PASS.
-- Vitest: 26 archivos, 165 tests PASS.
+- Vitest: 27 archivos, 172 tests PASS.
 - Build: PASS; `/admin`, sus unidades, login, callback, Product/Categories/
-  Combos CRUD son dinámicos, no prerenderizados como contenido compartido.
+  Combos/Wholesale son dinámicos, no prerenderizados como contenido compartido.
 - ETL: dos escrituras consecutivas produjeron el mismo SHA-256; `etl:check`
   PASS (96 staging, 3 blocked, 0 invalid).
-- Supabase CLI: `db:reset` fresco PASS; las 9 migrations y el seed
+- Supabase CLI: `db:reset` fresco PASS; las 10 migrations y el seed
   estructural se aplicaron desde cero.
-- pgTAP runtime: 7 archivos, 178/178 assertions PASS (74 foundation + 28
-  Product CRUD + 37 Categories CRUD + 39 Combos CRUD) en PostgreSQL local.
+- pgTAP runtime: 8 archivos, 207/207 assertions PASS (74 foundation + 28
+  Product CRUD + 37 Categories CRUD + 39 Combos CRUD + 29 Wholesale) en PostgreSQL local.
   Tipos generados sin drift contra `public,graphql_public`.
 - `git diff --check`: limpio.
 - E2E navegador de Combos: crear sobre producto elegible, agregar 2 variantes,
@@ -280,13 +297,7 @@ cerrada sobre Product/Categories CRUD y el runtime Supabase existentes.
 
 ## NEXT
 
-Checkpoint de reconciliación de contratos cerrado: checkout WhatsApp-only y
-`wholesaleThresholdScope` (por `commercial_type`) ya son CONFIRMED en
-`docs/client-decisions.md`; staging remoto enlazado y sincronizado.
-**DETENER para revisión externa.** Después de aprobación explícita:
-**Fase 4D — Admin Parfums Wholesale**, que debe introducir de forma aditiva
-la representación mínima `per_category`/`per_commercial_type` en
-`wholesale_policies` (sin alterar el scope model existente) y el motor de
-descuento acumulado por `commercial_type` con el umbral de 40 unidades. No
-iniciar Import operativo, Cloudinary, pagos reales, storefront Supabase
-cutover, config de Auth remota, ni deploy/Preview dentro de este bloque.
+**Fase 4D — Admin Parfums Wholesale cerrada. DETENER para revisión externa.**
+Siguiente capability solo tras nueva instrucción: Orders o el módulo Admin que
+el negocio priorice. No iniciar Import operativo, Cloudinary, pagos reales,
+storefront Supabase cutover, config de Auth remota ni deploy/Preview.

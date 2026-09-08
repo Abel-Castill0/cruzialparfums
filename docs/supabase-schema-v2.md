@@ -18,6 +18,13 @@ fuente de verdad; este documento las describe, no las reemplaza.
   snapshots de pedido inmutables, validación del adelanto contra estado
   verificado y protección contra suplantar el actor del audit log.
 
+  La migration de Fase 4d `20260908070000` añade el scope confirmado
+  `per_commercial_type`, las tres políticas Parfums (`arabic`, `designer`,
+  `niche`), descuento decimal derivado, catálogo administrativo de frascos,
+  cotización autoritativa por grupo comercial y mutación auditada con
+  concurrencia optimista. No introduce productos comerciales ni cambia la
+  fuente del storefront.
+
   **RUNTIME TESTED: YES.** El 2026-09-07 se ejecutaron dos resets frescos sobre
   PostgreSQL local, aplicando las seis migrations y el seed sin parches
   manuales. Las 4 suites pgTAP finalizaron con 74/74 assertions PASS.
@@ -112,16 +119,21 @@ El mayorista usa tramos flexibles por variante. `context` distingue, por ejemplo
 
 ### `wholesale_policies`
 
-`id`, `business_unit_id`, `name`, `scope` (`per_product | per_order | unconfirmed`),
-`min_quantity nullable`, `min_amount nullable`, `currency`, `is_active`, `notes`,
-timestamps, `archived_at`.
+`id`, `business_unit_id`, `name`, `scope`
+(`per_product | per_order | per_commercial_type | unconfirmed`),
+`commercial_type nullable`, `min_quantity nullable`, `min_amount nullable`,
+`discount_amount nullable`, `currency`, `is_active`, `notes`, timestamps,
+`archived_at`.
 
-Separa la **regla** de elegibilidad mayorista (a qué aplica el tramo: por producto,
-por total de pedido, u otro criterio) del **precio** resultante, que sigue viviendo
-en `variant_price_tiers` con `context = 'wholesale'`. `scope` se crea con el valor
-`unconfirmed` porque `wholesaleThresholdScope` está registrado como `UNKNOWN` en
-`docs/client-decisions.md` — no se fija `per_product` ni `per_order` sin confirmación
-del cliente; el enum ya prevé el valor final para evitar una migración de tipo después.
+Para Parfums, el contrato confirmado usa `per_commercial_type`: distintos
+productos suman hacia el umbral dentro de `arabic`, `designer` o `niche`, pero
+los tipos nunca se mezclan. Solo `product_variants.variant_kind = 'bottle'`
+cuenta. El precio calificado se deriva con decimal en PostgreSQL como precio
+base menos `discount_amount`; el navegador no decide el precio final.
+
+`variant_price_tiers` permanece disponible para tramos independientes futuros.
+Una guard impide asociar un tier manual a una política
+`per_commercial_type`, evitando dos fuentes de verdad incompatibles.
 
 ### `inventory`
 

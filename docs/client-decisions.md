@@ -259,6 +259,12 @@ producto (`img/perfumes/webp/*`) antes de aplicarse. Provenance: `CLIENT_CONFIRM
 - Campaña guarda oferta propia en `campaign_products`; cerrar no muta pedidos.
 - Dos stores/keys de carrito; el servidor recalcula precios al crear pedido.
 - Acceso público solo a filas/campos publicados; mutaciones pasan por servidor + RLS.
+- El nombre técnico final del alcance mayorista confirmado es
+  `per_commercial_type`: `wholesale_policies.commercial_type` usa los slugs
+  estables `arabic | designer | niche` y el precio se deriva de
+  `product_variants.price_amount - wholesale_policies.discount_amount`.
+  `variant_price_tiers` se conserva para otros tramos futuros, pero no puede
+  duplicar una política `per_commercial_type`.
 - Upload Cloudinary firmado; secretos solo en servidor; migración por manifiesto/checksum.
 - CSV usa staging + diff + confirmación + transacción + audit log.
 - Redirects temporales en Preview; permanentes solo después del gate completo.
