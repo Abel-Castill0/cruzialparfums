@@ -18,7 +18,6 @@ export const metadata: Metadata = { title: "Parfums" };
 const placeholderAreas = [
   "Promociones",
   "Media",
-  "Settings",
   "Auditoría",
 ] as const;
 
@@ -112,6 +111,11 @@ export default async function AdminParfumsPage() {
             pendingOrderCount === null
               ? "Solicitudes registradas, pendientes por WhatsApp."
               : `${pendingOrderCount} pendiente${pendingOrderCount === 1 ? "" : "s"} por WhatsApp.`,
+        },
+        {
+          label: "Configuración",
+          href: "/admin/parfums/configuracion" as Route,
+          summary: "Contacto público: WhatsApp y correo.",
         },
       ]}
       placeholderAreas={placeholderAreas}

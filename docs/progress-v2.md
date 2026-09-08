@@ -69,6 +69,7 @@ Isolated:
 - Controlled Local Commercial Population ✅
 - Controlled Hosted Staging Commercial Population ✅
 - Controlled Client Media Migration ✅
+- Admin Settings — Public Contact (4G1) ✅
 
 Do not re-audit closed capabilities without evidence of regression.
 
@@ -152,6 +153,35 @@ is idempotent (190 unchanged, 0 insert/conflict); all checksums/provenance match
 `product_variant_id = null`, there are 92 primary rows and 0 primary violations.
 Migration `20260908160000_client_media_checksum_integrity.sql` is synced.
 
+## Settings (4G1)
+
+Typed `public_contact` key on `public.settings` (whatsappNumber, whatsappDisplay,
+contactEmail), independent rows per unit (`parfums`, `import`), both
+`is_public = true`, values match the confirmed contact
+(`51926390591` / `926 390 591` / `dominiocruzial@gmail.com`).
+
+Sole write path: `public.admin_update_public_contact_setting` (security
+definer, `app.assert_admin_for`, optimistic concurrency on `updated_at`,
+atomic `settings_change` audit_log entry). `authenticated` has no
+table-level INSERT/UPDATE/DELETE grant on `settings` any more — the prior
+`settings_admin_write` RLS policy allowed a direct, unaudited write; that
+grant revoke is what closes it, with the policy kept as a second layer.
+A `before insert or update` trigger (`app.validate_settings_value`)
+re-validates the same three-field shape at the database layer regardless of
+caller. Migration: `20260908170000_admin_settings_public_contact.sql`.
+pgTAP: `supabase/tests/14_admin_settings_public_contact.sql` (18 checks).
+
+Admin UI: `/admin/parfums/configuracion` (Parfums only this phase) — admin
+edits, viewer read-only, stale-write and validation feedback, no raw JSON.
+Import gets its own DB row already; its Admin UI is not in scope for 4G1.
+
+`apps/web/src/domains/platform/settings.ts` (static PARFUMS_SETTINGS /
+IMPORT_SETTINGS) is unchanged and still what public V2 consumers read —
+the DB row is the staged canonical value for the future storefront cutover,
+not wired to any public runtime path in this phase.
+
+Audit UI itself is 4G2 — not built yet.
+
 ## Orders / payments
 
 Cruzial V1 does NOT charge through the website.
@@ -232,7 +262,7 @@ White backgrounds are intentional.
 
 ## Next roadmap
 
-1. 4G — Settings + Audit UI
+1. 4G2 — Audit Log UI (Settings mutations already produce settings_change entries)
 2. 4H2 — Public Parfums Supabase cutover
 3. 4I — Vercel Preview + hosted Auth configuration
 4. Parfums Preview QA

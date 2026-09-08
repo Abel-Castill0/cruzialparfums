@@ -2018,6 +2018,31 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      admin_update_public_contact_setting: {
+        Args: {
+          p_business_unit_code: string
+          p_contact_email: string
+          p_expected_updated_at: string
+          p_whatsapp_display: string
+          p_whatsapp_number: string
+        }
+        Returns: {
+          business_unit_id: string | null
+          created_at: string
+          id: string
+          is_public: boolean
+          key: string
+          updated_at: string
+          updated_by: string | null
+          value: Json
+        }
+        SetofOptions: {
+          from: "*"
+          to: "settings"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       admin_update_variant: {
         Args: {
           p_currency: string
