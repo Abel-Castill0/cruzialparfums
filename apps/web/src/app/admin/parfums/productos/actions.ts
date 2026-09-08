@@ -72,6 +72,10 @@ function friendlyError(error: AdminRepositoryError, context: "product" | "varian
       return "Ya existe un registro con esos datos.";
     case "invalid_reference":
       return "Una de las categorías seleccionadas ya no está disponible. Recarga la página.";
+    case "combo_reference":
+      return context === "product"
+        ? "No puedes archivar este producto porque tiene un combo activo asociado. Archiva el combo primero."
+        : "No puedes archivar esta variante porque forma parte de la composición de un combo activo. Archiva el combo o quítala de la composición primero.";
     case "unknown":
       // Logged server-side for diagnosis; never shown to the admin verbatim.
       console.error(`[admin-parfums:${context}] unexpected repository error:`, error.message);

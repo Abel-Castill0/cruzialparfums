@@ -53,6 +53,11 @@ function friendlyError(error: CategoryMutationError): string {
       return "Una categoría archivada no puede asignarse a productos.";
     case "archived_edit":
       return "Restaura la categoría antes de editarla.";
+    case "combo_reference":
+      // Categories never mutate combos/variants — this branch exists only so
+      // the shared AdminRepositoryError union (which Phase 4c extended with
+      // this variant) stays exhaustively handled here too.
+      return "Ocurrió un error inesperado. Intenta de nuevo.";
     case "unknown":
       console.error("[admin-parfums:categories] unexpected repository error:", error.message);
       return "Ocurrió un error inesperado. Intenta de nuevo.";

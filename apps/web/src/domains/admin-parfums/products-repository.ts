@@ -46,6 +46,7 @@ export type AdminRepositoryError =
   | { type: "conflict" }
   | { type: "unique_violation"; constraint: string | null }
   | { type: "invalid_reference" }
+  | { type: "combo_reference" }
   | { type: "unknown"; message: string };
 
 export type AdminRepositoryResult<T> =
@@ -93,6 +94,11 @@ export function mapPostgrestError(error: PostgrestError): AdminRepositoryError {
       return { type: "unique_violation", constraint: extractConstraint(error) };
     case "P2004":
       return { type: "invalid_reference" };
+    case "P2006":
+      // Raised by admin_archive_variant/admin_archive_product (Phase 4c):
+      // archiving is blocked while an active combo references this variant,
+      // or while this product IS an active combo's own vendible product.
+      return { type: "combo_reference" };
     default:
       return { type: "unknown", message: error.message };
   }
