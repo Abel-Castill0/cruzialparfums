@@ -1,11 +1,16 @@
 {
-  "schema_version": 1,
-  "purpose": "Phase 4F2B Cloudinary migration result — portable, no environment UUIDs, no secrets.",
-  "generated_at": "2026-09-08T15:11:48.372Z",
+  "schema_version": 2,
+  "purpose": "Phase 4F2B Cloudinary migration result — portable, no environment UUIDs, no secrets, deterministic.",
   "migration_source": "phase_4f2b_client_media",
+  "source_fingerprints": {
+    "legacy_catalog_sha256": "f2cc900aa8851474b3e6d3e799deeac2103ed77da7f1e66034c1f05a9624021a",
+    "client_filename_inventory_sha256": "8b7a22f132f0b592bfc08627101a0a6aa4e476da17c1a94546f5c6854bac0bbc"
+  },
   "counts": {
-    "uploaded": 186,
-    "already_present_verified": 0
+    "source_eligible_records": 190,
+    "migrated_assets": 190,
+    "excluded_byte_duplicates": 0,
+    "unresolved": 0
   },
   "rows": [
     {
@@ -3355,6 +3360,78 @@
       "sort_order": 1,
       "variant_association_intent": null,
       "alt": "Lattafa Zanzibar Limited Edition"
+    },
+    {
+      "legacy_product_id": "hawas-verde",
+      "client_original_filename": "RASASI - HAWAS verde (2).png",
+      "media_role": "additional",
+      "source_sha256": "b8819b416109b245711782eb1666db3c26a49dda16be86771ad925f178dddc09",
+      "cloudinary_public_id": "cruzial/parfums/catalog/hawas-verde/additional-b8819b416109",
+      "secure_url": "https://res.cloudinary.com/iwwtyvf2/image/upload/v1788883509/cruzial/parfums/catalog/hawas-verde/additional-b8819b416109.png",
+      "width": 2048,
+      "height": 2048,
+      "bytes": 1498771,
+      "format": "png",
+      "source_reconciliation_status": "EXACT_MATCH",
+      "migration_status": "migrated",
+      "is_primary_intent": false,
+      "sort_order": 2,
+      "variant_association_intent": null,
+      "alt": "Rasasi Hawas Verde"
+    },
+    {
+      "legacy_product_id": "hawas-verde",
+      "client_original_filename": "RASASI - HAWAS verde.png",
+      "media_role": "additional",
+      "source_sha256": "7c3f3b8d2c44a6cc99ff6598642d40bb7232ce18292636852ef704644792fb24",
+      "cloudinary_public_id": "cruzial/parfums/catalog/hawas-verde/additional-7c3f3b8d2c44",
+      "secure_url": "https://res.cloudinary.com/iwwtyvf2/image/upload/v1788883510/cruzial/parfums/catalog/hawas-verde/additional-7c3f3b8d2c44.png",
+      "width": 2048,
+      "height": 2048,
+      "bytes": 1301568,
+      "format": "png",
+      "source_reconciliation_status": "EXACT_MATCH",
+      "migration_status": "migrated",
+      "is_primary_intent": false,
+      "sort_order": 3,
+      "variant_association_intent": null,
+      "alt": "Rasasi Hawas Verde"
+    },
+    {
+      "legacy_product_id": "purple-melancholia",
+      "client_original_filename": "VALENTINO - VALENTINO MELANCHOLIA (2).png",
+      "media_role": "additional",
+      "source_sha256": "46eb9bdef4d5973fd81dadee36516b1ea544b3beb4b583d73eaa9306af9763c7",
+      "cloudinary_public_id": "cruzial/parfums/catalog/purple-melancholia/additional-46eb9bdef4d5",
+      "secure_url": "https://res.cloudinary.com/iwwtyvf2/image/upload/v1788883511/cruzial/parfums/catalog/purple-melancholia/additional-46eb9bdef4d5.png",
+      "width": 2048,
+      "height": 2048,
+      "bytes": 1876695,
+      "format": "png",
+      "source_reconciliation_status": "ALIAS_CONFIRMED",
+      "migration_status": "migrated",
+      "is_primary_intent": false,
+      "sort_order": 2,
+      "variant_association_intent": null,
+      "alt": "Valentino Purple Melancholia"
+    },
+    {
+      "legacy_product_id": "purple-melancholia",
+      "client_original_filename": "VALENTINO - VALENTINO MELANCHOLIA.png",
+      "media_role": "additional",
+      "source_sha256": "f22b14d79654ea72ede5b4c7e9f2f47be8ff1be71359d6ef64c135bdb4886eba",
+      "cloudinary_public_id": "cruzial/parfums/catalog/purple-melancholia/additional-f22b14d79654",
+      "secure_url": "https://res.cloudinary.com/iwwtyvf2/image/upload/v1788883512/cruzial/parfums/catalog/purple-melancholia/additional-f22b14d79654.png",
+      "width": 2048,
+      "height": 2048,
+      "bytes": 1867435,
+      "format": "png",
+      "source_reconciliation_status": "ALIAS_CONFIRMED",
+      "migration_status": "migrated",
+      "is_primary_intent": false,
+      "sort_order": 3,
+      "variant_association_intent": null,
+      "alt": "Valentino Purple Melancholia"
     }
   ]
 }
