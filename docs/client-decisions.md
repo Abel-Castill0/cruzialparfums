@@ -1,9 +1,48 @@
 # Cruzial Platform V2 — Client decisions
 
-Última actualización: 2026-09-07 (Full Product Completion). Una entrada
-`UNKNOWN` nunca es una regla de negocio. Cuando una decisión más nueva
-contradice una anterior, la más nueva (LATEST) gana — se documenta el
+Última actualización: 2026-09-08 (checkout/pagos y mayorista threshold).
+Una entrada `UNKNOWN` nunca es una regla de negocio. Cuando una decisión más
+nueva contradice una anterior, la más nueva (LATEST) gana — se documenta el
 reemplazo, no se borra el historial a ciegas.
+
+## CONFIRMED — 2026-09-08 (checkout/pagos y mayorista threshold — LATEST)
+
+- **Checkout: WhatsApp-only, sin cobro en la página.** Tanto Parfums como
+  Import siguen `cart → checkout → validación server-side → crear/registrar
+  order request → status pending_whatsapp_confirmation → abrir WhatsApp con
+  mensaje prellenado`. La coordinación de pago/adelanto ocurre fuera del
+  sitio, por WhatsApp. **No implementar** Culqi, Mercado Pago, Stripe, API de
+  Yape/Plin, cobro con tarjeta, webhooks de pago ni un estado de "pago
+  confirmado" — abrir WhatsApp nunca equivale a pago confirmado. Copy
+  aprobado: "Tu solicitud fue registrada. Termina la coordinación por
+  WhatsApp." Import conserva su regla de adelanto (nuevo 50% / recurrente
+  70%) como dato a calcular/snapshotear para la coordinación por WhatsApp —
+  la web no cobra ese adelanto.
+- **`wholesaleThresholdScope`: CONFIRMED — por `commercial_type`, no por
+  producto ni por pedido global.** La elegibilidad de mayorista se acumula
+  dentro de una misma categoría comercial (`kind = commercial_type`):
+  árabe, designer y nicho no se mezclan entre sí, pero productos distintos
+  dentro de la misma categoría sí se combinan hacia el umbral de 40
+  unidades. Ejemplo válido: 20 Yara Pink + 10 Khamrah Qahwa + 10 9PM = 40
+  árabes → aplica el descuento árabe. Ejemplo inválido: 20 árabes + 10
+  designer + 10 nicho = 40 unidades en total pero ninguna categoría llega
+  sola a 40 → no aplica ningún descuento. Descuentos por unidad elegible al
+  alcanzar el umbral: árabe −S/5, designer −S/7, nicho −S/10. Solo participan
+  variantes de frasco completo elegibles para mayorista. El matching debe
+  usar la identidad estable de categoría (`kind = commercial_type`), nunca
+  parsing de etiquetas de UI. El schema actual de `wholesale_policies`
+  (scope `per_product | per_order | unconfirmed`) no representa todavía
+  `per_category`/`per_commercial_type` — Fase 4D (Wholesale Admin) debe
+  introducir esa representación mínima de forma **aditiva**, sin alterar el
+  scope model existente en este checkpoint.
+- **Consolidados — comportamiento confirmado (registro, sin implementación
+  nueva en este checkpoint).** Cada consolidado es una campaña independiente
+  que abre y cierra; el siguiente consolidado puede tener productos, precios
+  y disponibilidad distintos; los consolidados históricos nunca se
+  sobrescriben. La arquitectura `campaigns`/`campaign_products` ya vigente
+  soporta esto y se mantiene sin cambios. Pertenece a trabajo futuro de
+  Import, no a Wholesale Admin. El PDF de 76 páginas de consolidados
+  históricos no se procesó en este checkpoint (fuera de alcance explícito).
 
 ## CONFIRMED — 2026-09-07 (contacto y paleta — LATEST, reemplaza 2026-09-06)
 
@@ -156,10 +195,10 @@ producto (`img/perfumes/webp/*`) antes de aplicarse. Provenance: `CLIENT_CONFIRM
 - Categorías y catálogo inicial de Import; datos comerciales y fuente de cada registro.
 - Campos definitivos para relojes u otras categorías.
 - Moneda(s), impuestos y si Import muestra precio final, estimado o solo consulta.
-- Checkout de cada unidad: solo WhatsApp, registro previo del pedido o pago futuro.
 - Estados de pedido, transiciones, cancelación y responsables operativos.
-- Reglas de pago, adelanto, cancellation, lead time, refund, disponibilidad, garantía,
-  shipping y entrega para Import.
+- Reglas de cancellation, lead time, refund, disponibilidad, garantía, shipping
+  y entrega para Import (el mecanismo de checkout/adelanto en sí ya es
+  CONFIRMED — ver 2026-09-08 arriba).
 - Si `opens_at`/`closes_at` cambian el estado automáticamente o solo informan al admin.
 - Zona horaria contractual de campañas (la operación actual está en Lima, pero confirmar).
 - Si puede haber varios consolidados abiertos y cuál prioriza el gateway.
@@ -202,10 +241,6 @@ producto (`img/perfumes/webp/*`) antes de aplicarse. Provenance: `CLIENT_CONFIRM
 - **UNKNOWN — fragmento "reserva para..."**: no existe ningún texto con ese
   fragmento en el repositorio (grep sin resultados en HTML, `data.js` ni
   docs). No se puede completar sin que el cliente aporte el texto completo.
-- **`wholesaleThresholdScope`**: si "40 unidades" del mayorista es
-  combinado por pedido o por SKU. No se implementa el motor de descuento
-  hasta confirmarse; la UI puede mencionar la modalidad de 40 unidades sin
-  fijar el alcance.
 - Eventos analytics, proveedor, consentimiento/cookies y criterio de éxito.
 - Emails de waitlist/campaña/pedido que realmente se usarán y dominio remitente.
 - Si se mantiene PWA/offline en V2.

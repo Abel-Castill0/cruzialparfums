@@ -46,6 +46,16 @@ cerrada sobre Product/Categories CRUD y el runtime Supabase existentes.
   combo activo queda bloqueado (mismo precedente que Fase 4b con categorías)
   hasta archivar el combo primero — verificado también en vivo contra
   Product CRUD, no solo en pgTAP.
+- **Supabase remoto staging enlazado**: proyecto `cruzial-v2-staging`
+  (`iyxidhglyqkzoziyewlc`, ACTIVE_HEALTHY, único proyecto existente — sin
+  ambigüedad). Las 9 migrations locales se aplicaron limpiamente sobre un
+  remoto que no tenía schema de aplicación previo (`migration list` vacío
+  antes del push); `db push --dry-run` coincidió exactamente con el push
+  real. Tipos generados desde el proyecto enlazado (`--linked`) comparados
+  contra los locales: sin drift de schema — única diferencia es un bloque de
+  metadata del generador (`__InternalSupabase`/versión de PostgREST) ausente
+  en la generación `--local`. Config de Auth remota NO tocada — ver
+  `REMOTE_AUTH_URL_CONFIG_PENDING_PREVIEW` en BLOCKERS.
 - Supabase Foundation (Fase 3) sigue vigente: migrations versionadas, RLS,
   pgTAP, seed estructural, ETL legacy a staging. **RUNTIME TESTED: YES** —
   178/178 pgTAP (74 Fase 3 + 28 Fase 4a + 37 Fase 4b + 39 Fase 4c) en reset
@@ -205,8 +215,12 @@ cerrada sobre Product/Categories CRUD y el runtime Supabase existentes.
 - Admin: creación del primer usuario, contraseña, MFA y recuperación siguen
   pendientes de decisión; el grant de membresías ya tiene ruta operator-run.
 - 23 precios de frasco y composiciones combo son paridad legacy, no seed verificado.
-- `wholesaleThresholdScope`: 40 unidades combinadas vs. por SKU sigue UNKNOWN.
 - Reemplazo de `sceptre-malachite`: falta un asset nuevo del cliente.
+- **`REMOTE_AUTH_URL_CONFIG_PENDING_PREVIEW`**: `supabase/config.toml`'s Auth
+  `site_url`/`additional_redirect_urls` siguen apuntando a `localhost` — no se
+  empujó config de Auth al proyecto remoto en este checkpoint porque todavía
+  no existe una URL de Vercel Preview aprobada. No exponer el staging
+  públicamente hasta configurar correctamente el redirect/site URL remoto.
 - **Residual P3 documentado, no bloqueante**: en `/parfums/no-such-route-xyz`
   (404), el `<title>` SSR es correcto ("Página no encontrada — Cruzial
   Parfums") pero revierte a un valor genérico compuesto unos cientos de ms
@@ -266,9 +280,13 @@ cerrada sobre Product/Categories CRUD y el runtime Supabase existentes.
 
 ## NEXT
 
-Fase 4c Combos CRUD cerrada. **DETENER para revisión externa.** Después de
-aprobación explícita: la siguiente capability es Wholesale Admin, pero
-requiere tratar con cuidado `wholesaleThresholdScope = UNKNOWN` (40 unidades
-combinadas vs. por SKU) antes de implementar cualquier motor de descuento.
-No iniciar Import operativo, Cloudinary, pagos, storefront Supabase cutover
-ni automatizaciones dentro de este bloque.
+Checkpoint de reconciliación de contratos cerrado: checkout WhatsApp-only y
+`wholesaleThresholdScope` (por `commercial_type`) ya son CONFIRMED en
+`docs/client-decisions.md`; staging remoto enlazado y sincronizado.
+**DETENER para revisión externa.** Después de aprobación explícita:
+**Fase 4D — Admin Parfums Wholesale**, que debe introducir de forma aditiva
+la representación mínima `per_category`/`per_commercial_type` en
+`wholesale_policies` (sin alterar el scope model existente) y el motor de
+descuento acumulado por `commercial_type` con el umbral de 40 unidades. No
+iniciar Import operativo, Cloudinary, pagos reales, storefront Supabase
+cutover, config de Auth remota, ni deploy/Preview dentro de este bloque.
