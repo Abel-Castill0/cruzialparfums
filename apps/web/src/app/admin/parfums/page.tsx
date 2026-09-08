@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import type { Route } from "next";
 import { redirect } from "next/navigation";
 import { AdminUnitPage } from "@/components/admin/admin-unit-page";
 import { getAdminSession } from "@/lib/auth/admin-session";
@@ -14,7 +15,6 @@ export const metadata: Metadata = { title: "Parfums" };
 // restore sobre un producto Parfums existente.
 const placeholderAreas = [
   "Promociones",
-  "Mayorista",
   "Pedidos",
   "Media",
   "Settings",
@@ -44,18 +44,24 @@ export default async function AdminParfumsPage() {
   let productCount: number | null = null;
   let categoryCount: number | null = null;
   let comboCount: number | null = null;
+  let wholesaleBottleCount: number | null = null;
   if (supabase) {
-    const [products, categories, combos] = await Promise.all([
+    const [products, categories, combos, wholesaleBottles] = await Promise.all([
       supabase.from("products").select("*", { count: "exact", head: true }).eq("business_unit_id", membership.businessUnitId),
       supabase.from("categories").select("*", { count: "exact", head: true }).eq("business_unit_id", membership.businessUnitId),
       supabase
         .from("combos")
         .select("*, product:products!inner(business_unit_id)", { count: "exact", head: true })
         .eq("product.business_unit_id", membership.businessUnitId),
+      supabase
+        .from("admin_parfums_wholesale_catalog")
+        .select("*", { count: "exact", head: true })
+        .eq("business_unit_id", membership.businessUnitId),
     ]);
     productCount = products.count ?? 0;
     categoryCount = categories.count ?? 0;
     comboCount = combos.count ?? 0;
+    wholesaleBottleCount = wholesaleBottles.count ?? 0;
   }
 
   return (
@@ -85,6 +91,14 @@ export default async function AdminParfumsPage() {
             comboCount === null
               ? "Composición, verificación y archive/restore."
               : `${comboCount} combo${comboCount === 1 ? "" : "s"} · composición, verificación y archive/restore.`,
+        },
+        {
+          label: "Mayorista",
+          href: "/admin/parfums/mayorista" as Route,
+          summary:
+            wholesaleBottleCount === null
+              ? "Reglas por tipo comercial y frascos elegibles."
+              : `${wholesaleBottleCount} frasco${wholesaleBottleCount === 1 ? "" : "s"} · reglas por tipo comercial y precio derivado.`,
         },
       ]}
       placeholderAreas={placeholderAreas}
