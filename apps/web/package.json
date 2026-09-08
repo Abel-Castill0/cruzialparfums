@@ -8,6 +8,8 @@
     "start": "next start",
     "catalog:export": "node ../../scripts/export-legacy-catalog.mjs",
     "catalog:check": "node ../../scripts/export-legacy-catalog.mjs --check",
+    "media:reconcile": "node ../../scripts/client-media-reconciliation.mjs",
+    "media:check": "node ../../scripts/client-media-reconciliation.mjs --check",
     "lint": "eslint . --max-warnings=0",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",

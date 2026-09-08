@@ -6,8 +6,8 @@
 
 ## HEAD
 
-Git es la fuente de verdad del hash. Fase 4F1 (Media Foundation + Admin Parfums
-Media) cerrada sobre el runtime Supabase y el Media/Cloudinary existentes.
+Git es la fuente de verdad del hash. Fase 4F2A (Client Media Reconciliation
+Manifest) implementada y validada localmente, sin carga ni mutación de media.
 
 ## CURRENT
 
@@ -67,6 +67,21 @@ Media) cerrada sobre el runtime Supabase y el Media/Cloudinary existentes.
   denegado. Responsive: `repeat(auto-fill, minmax(220px, 1fr))`. 12 unit
   tests vitest + 30 pgTAP assertions nuevas. Staging `cruzial-v2-staging`
   actualizado (12 migrations). `git diff --check` limpio.
+- **4F2A Media Reconciliation Manifest: IMPLEMENTED / VALIDATED.** Inventario
+  determinista de 96 productos legacy no-combo y 196 PNG originales, basado
+  únicamente en metadata/nombres: 156 `EXACT_MATCH`, 32 `ALIAS_CONFIRMED`, 6
+  `AMBIGUOUS`, 4 `NO_MATCH` (2 archivos huérfanos + 2 productos sin archivo) y
+  1 `CLIENT_ASSET_MISSING`. Excepciones explícitas: ambiguos
+  `FRENCH AVENEU - LIQUID BRUN.png`, `FRENCH AVENEU -LIQUID BRUN.png`,
+  `VALENTINO - VALENTINO MELANCHOLIA.png` + `(2)`, y
+  `VERSACE - EROS EDP.png` + `(2)`; productos sin match `lovely-cherry` y
+  `royal-blend-sequoia`; `sceptre-malachite` permanece
+  `CLIENT_ASSET_MISSING`; huérfanos `Cuarteto Oriental Vainilla Freak.png` +
+  `(2)`. El detalle y las colisiones viven en
+  `supabase/staging/client-media-reconciliation.json`; no se tocó ningún PNG,
+  Cloudinary, `product_media`, DB ni storefront. La migración real queda
+  bloqueada hasta que la reconciliación comercial legacy → Supabase entregue
+  IDs de producto estables.
 - **Public Parfums Order Request: IMPLEMENTED / RUNTIME TESTED.** El checkout
   revalida identidades y cantidades contra `LegacyCatalogRepository`, ignora
   snapshots comerciales del browser y persiste mediante una RPC service-only
@@ -180,6 +195,10 @@ Media) cerrada sobre el runtime Supabase y el Media/Cloudinary existentes.
   variante, principal, reorden ↑/↓, archivar/restaurar. Viewer read-only,
   import-only denegado, anónimo denegado. Responsive auto-fill grid.
   30 pgTAP assertions + 12 vitest. Staging push con dry-run limpio.
+- Fase 4F2A Client Media Reconciliation Manifest cerrada: generador/check
+  determinista, normalización conservadora, aliases limitados a `IMG_MAP`,
+  fuzzy siempre ambiguo, colisiones auditables y 7 pruebas unitarias. El
+  artefacto es staging solamente y no establece verdad comercial en Supabase.
 - Auth Admin foundation: `.env.example` sin valores, clientes browser/server
   separados, `/admin/login`, callback seguro, refresh SSR, páginas dinámicas,
   selector por membresías y ausencia de signup público. Bootstrap crea el
@@ -303,8 +322,10 @@ Media) cerrada sobre el runtime Supabase y el Media/Cloudinary existentes.
 - El hash final de Fase 4E2 vive en Git; los assets originales del cliente
   permanecen fuera de staging.
 - `npm run check` (catálogo + lint + typecheck + test + build): PASS.
-- Vitest: 32 archivos, 200 tests PASS (+12 de Fase 4F1: Cloudinary env
-  contract, upload authorization, upload result validation).
+- Vitest: 33 archivos, 207 tests PASS (+7 de Fase 4F2A: normalización, exact,
+  alias confirmado, ambigüedad, asset ausente, colisión y orden determinista).
+- `media:check`: PASS; el manifiesto coincide byte por byte con el catálogo y
+  el inventario local de nombres de archivo (sin leer contenido binario).
 - Build: PASS; `/admin/parfums/pedidos` y `/pedidos/[id]` son dinámicos
   (`force-dynamic`), igual que el resto de Admin — nunca prerenderizados
   como contenido compartido.
@@ -359,10 +380,9 @@ Media) cerrada sobre el runtime Supabase y el Media/Cloudinary existentes.
 
 ## NEXT
 
-**Fase 4F1 — Media Foundation + Admin Parfums Media cerrada.**
-Staging `cruzial-v2-staging` actualizado (12 migrations). Synthetic Cloudinary
-TEST asset eliminado; local fixtures limpiados. Siguiente capability solo tras
-nueva instrucción: **Fase 4F2 — Client Media Reconciliation / Controlled
-Migration** (reconciliar los ~96 PNGs del cliente con Cloudinary). No iniciar
-Import operativo, Settings, Audit UI, storefront Supabase cutover, config de
-Auth remota ni deploy/Preview.
+**Fase 4F2A — Client Media Reconciliation Manifest cerrada.** Siguiente
+capability solo tras nueva instrucción: **Fase 4H1 — Commercial Data
+Reconciliation legacy → Supabase**. La migración controlada de fotos a
+Cloudinary (4F2B) espera IDs comerciales estables. No iniciar 4F2B, Settings,
+Import operativo, storefront Supabase cutover, config de Auth remota ni
+deploy/Preview.

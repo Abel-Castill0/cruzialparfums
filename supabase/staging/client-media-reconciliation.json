@@ -1,0 +1,4196 @@
+{
+  "schema_version": 1,
+  "purpose": "Client PNG filename reconciliation against the legacy Parfums catalog; staging only.",
+  "scope": {
+    "catalog": "assets/data.js non-combo products",
+    "client_media": "img/perfumes/*.png filenames only",
+    "public_source_of_truth": "LegacyCatalogRepository / assets/data.js",
+    "migration_blocked_until": "Commercial Data Reconciliation legacy -> Supabase provides stable product IDs"
+  },
+  "source_fingerprints": {
+    "legacy_catalog_sha256": "f2cc900aa8851474b3e6d3e799deeac2103ed77da7f1e66034c1f05a9624021a",
+    "client_filename_inventory_sha256": "8b7a22f132f0b592bfc08627101a0a6aa4e476da17c1a94546f5c6854bac0bbc"
+  },
+  "records": [
+    {
+      "legacy_product_id": "9pm-rebel",
+      "legacy_product_name": "9 PM Rebel",
+      "brand": "Afnan",
+      "current_legacy_image": "img/perfumes/webp/9 PM Rebel (2).webp",
+      "client_original_filename": "9 PM Rebel (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "9pm-rebel",
+      "legacy_product_name": "9 PM Rebel",
+      "brand": "Afnan",
+      "current_legacy_image": "img/perfumes/webp/9 PM Rebel.webp",
+      "client_original_filename": "9 PM Rebel.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "9am-dive",
+      "legacy_product_name": "9 AM Dive",
+      "brand": "Afnan",
+      "current_legacy_image": "img/perfumes/webp/AFNAN - 9AM DIVE (2).webp",
+      "client_original_filename": "AFNAN - 9AM DIVE (2).png",
+      "media_role": "set",
+      "status": "ALIAS_CONFIRMED",
+      "match_basis": "CURRENT_IMG_MAP",
+      "notes": "The current authoritative legacy image mapping confirms this filename-to-product alias.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "9am-dive",
+      "legacy_product_name": "9 AM Dive",
+      "brand": "Afnan",
+      "current_legacy_image": "img/perfumes/webp/AFNAN - 9AM DIVE.webp",
+      "client_original_filename": "AFNAN - 9AM DIVE.png",
+      "media_role": "bottle",
+      "status": "ALIAS_CONFIRMED",
+      "match_basis": "CURRENT_IMG_MAP",
+      "notes": "The current authoritative legacy image mapping confirms this filename-to-product alias.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "9pm",
+      "legacy_product_name": "9 PM",
+      "brand": "Afnan",
+      "current_legacy_image": "img/perfumes/webp/AFNAN - 9PM (2).webp",
+      "client_original_filename": "AFNAN - 9PM (2).png",
+      "media_role": "set",
+      "status": "ALIAS_CONFIRMED",
+      "match_basis": "CURRENT_IMG_MAP",
+      "notes": "The current authoritative legacy image mapping confirms this filename-to-product alias.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "9pm-elixir",
+      "legacy_product_name": "9 PM Elixir",
+      "brand": "Afnan",
+      "current_legacy_image": "img/perfumes/webp/AFNAN - 9PM ELIXIR (2).webp",
+      "client_original_filename": "AFNAN - 9PM ELIXIR (2).png",
+      "media_role": "set",
+      "status": "ALIAS_CONFIRMED",
+      "match_basis": "CURRENT_IMG_MAP",
+      "notes": "The current authoritative legacy image mapping confirms this filename-to-product alias.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "9pm-elixir",
+      "legacy_product_name": "9 PM Elixir",
+      "brand": "Afnan",
+      "current_legacy_image": "img/perfumes/webp/AFNAN - 9PM ELIXIR.webp",
+      "client_original_filename": "AFNAN - 9PM ELIXIR.png",
+      "media_role": "bottle",
+      "status": "ALIAS_CONFIRMED",
+      "match_basis": "CURRENT_IMG_MAP",
+      "notes": "The current authoritative legacy image mapping confirms this filename-to-product alias.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "9pm-night-out",
+      "legacy_product_name": "9 PM Night Out",
+      "brand": "Afnan",
+      "current_legacy_image": "img/perfumes/webp/AFNAN - 9PM NIGHT OUT (2).webp",
+      "client_original_filename": "AFNAN - 9PM NIGHT OUT (2).png",
+      "media_role": "set",
+      "status": "ALIAS_CONFIRMED",
+      "match_basis": "CURRENT_IMG_MAP",
+      "notes": "The current authoritative legacy image mapping confirms this filename-to-product alias.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "9pm-night-out",
+      "legacy_product_name": "9 PM Night Out",
+      "brand": "Afnan",
+      "current_legacy_image": "img/perfumes/webp/AFNAN - 9PM NIGHT OUT.webp",
+      "client_original_filename": "AFNAN - 9PM NIGHT OUT.png",
+      "media_role": "bottle",
+      "status": "ALIAS_CONFIRMED",
+      "match_basis": "CURRENT_IMG_MAP",
+      "notes": "The current authoritative legacy image mapping confirms this filename-to-product alias.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "9pm",
+      "legacy_product_name": "9 PM",
+      "brand": "Afnan",
+      "current_legacy_image": "img/perfumes/webp/AFNAN - 9PM.webp",
+      "client_original_filename": "AFNAN - 9PM.png",
+      "media_role": "bottle",
+      "status": "ALIAS_CONFIRMED",
+      "match_basis": "CURRENT_IMG_MAP",
+      "notes": "The current authoritative legacy image mapping confirms this filename-to-product alias.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "9am",
+      "legacy_product_name": "9 AM",
+      "brand": "Afnan",
+      "current_legacy_image": "img/perfumes/webp/Afnan 9 AM (2).webp",
+      "client_original_filename": "Afnan 9 AM (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "9am",
+      "legacy_product_name": "9 AM",
+      "brand": "Afnan",
+      "current_legacy_image": "img/perfumes/webp/Afnan 9 AM.webp",
+      "client_original_filename": "Afnan 9 AM.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "supremacy-colle",
+      "legacy_product_name": "Supremacy Collection",
+      "brand": "Afnan",
+      "current_legacy_image": "img/perfumes/webp/Afnan Supremacy Collection (2).webp",
+      "client_original_filename": "Afnan Supremacy Collection (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "supremacy-colle",
+      "legacy_product_name": "Supremacy Collection",
+      "brand": "Afnan",
+      "current_legacy_image": "img/perfumes/webp/Afnan Supremacy Collection.webp",
+      "client_original_filename": "Afnan Supremacy Collection.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "supremacy-noi",
+      "legacy_product_name": "Supremacy Not Only Intense",
+      "brand": "Afnan",
+      "current_legacy_image": "img/perfumes/webp/Afnan Supremacy NOIR (2).webp",
+      "client_original_filename": "Afnan Supremacy NOIR (2).png",
+      "media_role": "set",
+      "status": "ALIAS_CONFIRMED",
+      "match_basis": "CURRENT_IMG_MAP",
+      "notes": "The current authoritative legacy image mapping confirms this filename-to-product alias.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "supremacy-noi",
+      "legacy_product_name": "Supremacy Not Only Intense",
+      "brand": "Afnan",
+      "current_legacy_image": "img/perfumes/webp/Afnan Supremacy NOIR.webp",
+      "client_original_filename": "Afnan Supremacy NOIR.png",
+      "media_role": "bottle",
+      "status": "ALIAS_CONFIRMED",
+      "match_basis": "CURRENT_IMG_MAP",
+      "notes": "The current authoritative legacy image mapping confirms this filename-to-product alias.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "amber-o-gold-e",
+      "legacy_product_name": "Amber Oud Gold Edition",
+      "brand": "Al Haramain",
+      "current_legacy_image": "img/perfumes/webp/AL HARAMAIN - AMBER OUD GOLD EDITION (2).webp",
+      "client_original_filename": "AL HARAMAIN - AMBER OUD GOLD EDITION (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "amber-o-gold-e",
+      "legacy_product_name": "Amber Oud Gold Edition",
+      "brand": "Al Haramain",
+      "current_legacy_image": "img/perfumes/webp/AL HARAMAIN - AMBER OUD GOLD EDITION.webp",
+      "client_original_filename": "AL HARAMAIN - AMBER OUD GOLD EDITION.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "ao-aqua-dubai",
+      "legacy_product_name": "Amber Oud Aqua Dubai",
+      "brand": "Al Haramain",
+      "current_legacy_image": "img/perfumes/webp/Amber Oud Aqua Dubai (2).webp",
+      "client_original_filename": "Amber Oud Aqua Dubai (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "ao-aqua-dubai",
+      "legacy_product_name": "Amber Oud Aqua Dubai",
+      "brand": "Al Haramain",
+      "current_legacy_image": "img/perfumes/webp/Amber Oud Aqua Dubai.webp",
+      "client_original_filename": "Amber Oud Aqua Dubai.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "ao-dubai-night",
+      "legacy_product_name": "Amber Oud Dubai Night",
+      "brand": "Al Haramain",
+      "current_legacy_image": "img/perfumes/webp/Amber Oud Dubai Night (2).webp",
+      "client_original_filename": "Amber Oud Dubai Night (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "ao-dubai-night",
+      "legacy_product_name": "Amber Oud Dubai Night",
+      "brand": "Al Haramain",
+      "current_legacy_image": "img/perfumes/webp/Amber Oud Dubai Night.webp",
+      "client_original_filename": "Amber Oud Dubai Night.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "cdn-intense-man",
+      "legacy_product_name": "Club de Nuit Intense Man",
+      "brand": "Armaf",
+      "current_legacy_image": "img/perfumes/webp/ARMAF - CLUB DE NUIT INTENSE EDT (2).webp",
+      "client_original_filename": "ARMAF - CLUB DE NUIT INTENSE EDT (2).png",
+      "media_role": "set",
+      "status": "ALIAS_CONFIRMED",
+      "match_basis": "CURRENT_IMG_MAP",
+      "notes": "The current authoritative legacy image mapping confirms this filename-to-product alias.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "cdn-intense-man",
+      "legacy_product_name": "Club de Nuit Intense Man",
+      "brand": "Armaf",
+      "current_legacy_image": "img/perfumes/webp/ARMAF - CLUB DE NUIT INTENSE EDT.webp",
+      "client_original_filename": "ARMAF - CLUB DE NUIT INTENSE EDT.png",
+      "media_role": "bottle",
+      "status": "ALIAS_CONFIRMED",
+      "match_basis": "CURRENT_IMG_MAP",
+      "notes": "The current authoritative legacy image mapping confirms this filename-to-product alias.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "cdn-urban-man-e",
+      "legacy_product_name": "Club de Nuit Urban Man Elixir",
+      "brand": "Armaf",
+      "current_legacy_image": "img/perfumes/webp/ARMAF - CLUB DE NUIT URBAN MAN ELIXIR (2).webp",
+      "client_original_filename": "ARMAF - CLUB DE NUIT URBAN MAN ELIXIR (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "cdn-urban-man-e",
+      "legacy_product_name": "Club de Nuit Urban Man Elixir",
+      "brand": "Armaf",
+      "current_legacy_image": "img/perfumes/webp/ARMAF - CLUB DE NUIT URBAN MAN ELIXIR.webp",
+      "client_original_filename": "ARMAF - CLUB DE NUIT URBAN MAN ELIXIR.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "mandarin-sky",
+      "legacy_product_name": "Mandarin Sky",
+      "brand": "Afnan",
+      "current_legacy_image": "img/perfumes/webp/ARMAF - MANDARIN SKY (2).webp",
+      "client_original_filename": "ARMAF - MANDARIN SKY (2).png",
+      "media_role": "set",
+      "status": "ALIAS_CONFIRMED",
+      "match_basis": "CURRENT_IMG_MAP",
+      "notes": "The current authoritative legacy image mapping confirms this filename-to-product alias.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "mandarin-sky",
+      "legacy_product_name": "Mandarin Sky",
+      "brand": "Afnan",
+      "current_legacy_image": "img/perfumes/webp/ARMAF - MANDARIN SKY.webp",
+      "client_original_filename": "ARMAF - MANDARIN SKY.png",
+      "media_role": "bottle",
+      "status": "ALIAS_CONFIRMED",
+      "match_basis": "CURRENT_IMG_MAP",
+      "notes": "The current authoritative legacy image mapping confirms this filename-to-product alias.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "odyssey-aqua",
+      "legacy_product_name": "Odyssey Aqua",
+      "brand": "Lattafa",
+      "current_legacy_image": "img/perfumes/webp/ARMAF - ODYSSEY AQUA (2).webp",
+      "client_original_filename": "ARMAF - ODYSSEY AQUA (2).png",
+      "media_role": "set",
+      "status": "ALIAS_CONFIRMED",
+      "match_basis": "CURRENT_IMG_MAP",
+      "notes": "The current authoritative legacy image mapping confirms this filename-to-product alias.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "odyssey-aqua",
+      "legacy_product_name": "Odyssey Aqua",
+      "brand": "Lattafa",
+      "current_legacy_image": "img/perfumes/webp/ARMAF - ODYSSEY AQUA.webp",
+      "client_original_filename": "ARMAF - ODYSSEY AQUA.png",
+      "media_role": "bottle",
+      "status": "ALIAS_CONFIRMED",
+      "match_basis": "CURRENT_IMG_MAP",
+      "notes": "The current authoritative legacy image mapping confirms this filename-to-product alias.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "reserve-privee",
+      "legacy_product_name": "Gentleman Réserve Privée",
+      "brand": "Givenchy",
+      "current_legacy_image": "img/perfumes/webp/Armani Reserve Privée (2).webp",
+      "client_original_filename": "Armani Reserve Privée (2).png",
+      "media_role": "set",
+      "status": "ALIAS_CONFIRMED",
+      "match_basis": "CURRENT_IMG_MAP",
+      "notes": "The current authoritative legacy image mapping confirms this filename-to-product alias.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "reserve-privee",
+      "legacy_product_name": "Gentleman Réserve Privée",
+      "brand": "Givenchy",
+      "current_legacy_image": "img/perfumes/webp/Armani Reserve Privée.webp",
+      "client_original_filename": "Armani Reserve Privée.png",
+      "media_role": "bottle",
+      "status": "ALIAS_CONFIRMED",
+      "match_basis": "CURRENT_IMG_MAP",
+      "notes": "The current authoritative legacy image mapping confirms this filename-to-product alias.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "art-of-universe",
+      "legacy_product_name": "Art Of Universe",
+      "brand": "Lattafa",
+      "current_legacy_image": "img/perfumes/webp/Art Of Universe (2).webp",
+      "client_original_filename": "Art Of Universe (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "art-of-universe",
+      "legacy_product_name": "Art Of Universe",
+      "brand": "Lattafa",
+      "current_legacy_image": "img/perfumes/webp/Art Of Universe.webp",
+      "client_original_filename": "Art Of Universe.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "asad-elixir",
+      "legacy_product_name": "Asad Elixir",
+      "brand": "Lattafa",
+      "current_legacy_image": "img/perfumes/webp/Asad Elixir (2).webp",
+      "client_original_filename": "Asad Elixir (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "asad-elixir",
+      "legacy_product_name": "Asad Elixir",
+      "brand": "Lattafa",
+      "current_legacy_image": "img/perfumes/webp/Asad Elixir.webp",
+      "client_original_filename": "Asad Elixir.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "azzaro-tmw-edp",
+      "legacy_product_name": "The Most Wanted EDP",
+      "brand": "Azzaro",
+      "current_legacy_image": "img/perfumes/webp/AZZARO.-AZZARO THE MOSTH WANTED INTENSE EDP (2).webp",
+      "client_original_filename": "AZZARO.-AZZARO THE MOSTH WANTED INTENSE EDP (2).png",
+      "media_role": "set",
+      "status": "ALIAS_CONFIRMED",
+      "match_basis": "CURRENT_IMG_MAP",
+      "notes": "The current authoritative legacy image mapping confirms this filename-to-product alias.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "azzaro-tmw-edp",
+      "legacy_product_name": "The Most Wanted EDP",
+      "brand": "Azzaro",
+      "current_legacy_image": "img/perfumes/webp/AZZARO.-AZZARO THE MOSTH WANTED INTENSE EDP.webp",
+      "client_original_filename": "AZZARO.-AZZARO THE MOSTH WANTED INTENSE EDP.png",
+      "media_role": "bottle",
+      "status": "ALIAS_CONFIRMED",
+      "match_basis": "CURRENT_IMG_MAP",
+      "notes": "The current authoritative legacy image mapping confirms this filename-to-product alias.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "tmw-parfum",
+      "legacy_product_name": "The Most Wanted Parfum",
+      "brand": "Azzaro",
+      "current_legacy_image": "img/perfumes/webp/AZZARO.-AZZARO THE MOSTH WANTED PARFUM (2).webp",
+      "client_original_filename": "AZZARO.-AZZARO THE MOSTH WANTED PARFUM (2).png",
+      "media_role": "set",
+      "status": "ALIAS_CONFIRMED",
+      "match_basis": "CURRENT_IMG_MAP",
+      "notes": "The current authoritative legacy image mapping confirms this filename-to-product alias.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "tmw-parfum",
+      "legacy_product_name": "The Most Wanted Parfum",
+      "brand": "Azzaro",
+      "current_legacy_image": "img/perfumes/webp/AZZARO.-AZZARO THE MOSTH WANTED PARFUM.webp",
+      "client_original_filename": "AZZARO.-AZZARO THE MOSTH WANTED PARFUM.png",
+      "media_role": "bottle",
+      "status": "ALIAS_CONFIRMED",
+      "match_basis": "CURRENT_IMG_MAP",
+      "notes": "The current authoritative legacy image mapping confirms this filename-to-product alias.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "bharara-king",
+      "legacy_product_name": "Bharara King",
+      "brand": "Bharara",
+      "current_legacy_image": null,
+      "client_original_filename": "BHARARA - BHARARA KING (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY",
+      "notes": "Normalized filename matches one legacy catalog product identity.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "bharara-king",
+      "legacy_product_name": "Bharara King",
+      "brand": "Bharara",
+      "current_legacy_image": null,
+      "client_original_filename": "BHARARA - BHARARA KING.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY",
+      "notes": "Normalized filename matches one legacy catalog product identity.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "bright-peach",
+      "legacy_product_name": "Bright Peach",
+      "brand": "Maison Alhambra",
+      "current_legacy_image": "img/perfumes/webp/Bright Peach (2).webp",
+      "client_original_filename": "Bright Peach (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "bright-peach",
+      "legacy_product_name": "Bright Peach",
+      "brand": "Maison Alhambra",
+      "current_legacy_image": "img/perfumes/webp/Bright Peach.webp",
+      "client_original_filename": "Bright Peach.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "bir-intense",
+      "legacy_product_name": "Burberry Brit Intense",
+      "brand": "Burberry",
+      "current_legacy_image": "img/perfumes/webp/Burberry Burberry Brit Intense (2).webp",
+      "client_original_filename": "Burberry Burberry Brit Intense (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "bir-intense",
+      "legacy_product_name": "Burberry Brit Intense",
+      "brand": "Burberry",
+      "current_legacy_image": "img/perfumes/webp/Burberry Burberry Brit Intense.webp",
+      "client_original_filename": "Burberry Burberry Brit Intense.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "b-man-in-black",
+      "legacy_product_name": "Bvlgari Man In Black",
+      "brand": "Bvlgari",
+      "current_legacy_image": "img/perfumes/webp/Bvlgari Bvlgari Man In Black (2).webp",
+      "client_original_filename": "Bvlgari Bvlgari Man In Black (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "b-man-in-black",
+      "legacy_product_name": "Bvlgari Man In Black",
+      "brand": "Bvlgari",
+      "current_legacy_image": "img/perfumes/webp/Bvlgari Bvlgari Man In Black.webp",
+      "client_original_filename": "Bvlgari Bvlgari Man In Black.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "212-edt",
+      "legacy_product_name": "212 EDT",
+      "brand": "Carolina Herrera",
+      "current_legacy_image": "img/perfumes/webp/Carolina Herrera 212 EDT (2).webp",
+      "client_original_filename": "Carolina Herrera 212 EDT (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "212-edt",
+      "legacy_product_name": "212 EDT",
+      "brand": "Carolina Herrera",
+      "current_legacy_image": "img/perfumes/webp/Carolina Herrera 212 EDT.webp",
+      "client_original_filename": "Carolina Herrera 212 EDT.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "cdn-preciux-i",
+      "legacy_product_name": "Club de Nuit Precieux I",
+      "brand": "Armaf",
+      "current_legacy_image": "img/perfumes/webp/Club de Nuit Precieux I (2).webp",
+      "client_original_filename": "Club de Nuit Precieux I (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "cdn-preciux-i",
+      "legacy_product_name": "Club de Nuit Precieux I",
+      "brand": "Armaf",
+      "current_legacy_image": "img/perfumes/webp/Club de Nuit Precieux I.webp",
+      "client_original_filename": "Club de Nuit Precieux I.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": null,
+      "legacy_product_name": null,
+      "brand": null,
+      "current_legacy_image": null,
+      "client_original_filename": "Cuarteto Oriental Vainilla Freak (2).png",
+      "media_role": "set",
+      "status": "NO_MATCH",
+      "match_basis": "NO_CATALOG_CANDIDATE",
+      "notes": "No safe legacy catalog identity candidate was found from filename metadata.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": null,
+      "legacy_product_name": null,
+      "brand": null,
+      "current_legacy_image": null,
+      "client_original_filename": "Cuarteto Oriental Vainilla Freak.png",
+      "media_role": "bottle",
+      "status": "NO_MATCH",
+      "match_basis": "NO_CATALOG_CANDIDATE",
+      "notes": "No safe legacy catalog identity candidate was found from filename metadata.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "sauvage-edt",
+      "legacy_product_name": "Sauvage EDT",
+      "brand": "Dior",
+      "current_legacy_image": "img/perfumes/webp/Dior Sauvage EDT (2).webp",
+      "client_original_filename": "Dior Sauvage EDT (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "sauvage-edt",
+      "legacy_product_name": "Sauvage EDT",
+      "brand": "Dior",
+      "current_legacy_image": "img/perfumes/webp/Dior Sauvage EDT.webp",
+      "client_original_filename": "Dior Sauvage EDT.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "nitro-red",
+      "legacy_product_name": "Nitro Red",
+      "brand": "Dumont Paris",
+      "current_legacy_image": "img/perfumes/webp/DUMONT PARIS - NITRO RED (2).webp",
+      "client_original_filename": "DUMONT PARIS - NITRO RED (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "nitro-red",
+      "legacy_product_name": "Nitro Red",
+      "brand": "Dumont Paris",
+      "current_legacy_image": "img/perfumes/webp/DUMONT PARIS - NITRO RED.webp",
+      "client_original_filename": "DUMONT PARIS - NITRO RED.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "swy-absolutely",
+      "legacy_product_name": "Stronger With You Absolutely",
+      "brand": "Armani",
+      "current_legacy_image": "img/perfumes/EMPORIO ARMANI - STRONGER WITH YOU ABSOLUTELY (2).png",
+      "client_original_filename": "EMPORIO ARMANI - STRONGER WITH YOU ABSOLUTELY (2).png",
+      "media_role": "set",
+      "status": "ALIAS_CONFIRMED",
+      "match_basis": "CURRENT_IMG_MAP",
+      "notes": "The current authoritative legacy image mapping confirms this filename-to-product alias.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "swy-absolutely",
+      "legacy_product_name": "Stronger With You Absolutely",
+      "brand": "Armani",
+      "current_legacy_image": "img/perfumes/EMPORIO ARMANI - STRONGER WITH YOU ABSOLUTELY.png",
+      "client_original_filename": "EMPORIO ARMANI - STRONGER WITH YOU ABSOLUTELY.png",
+      "media_role": "bottle",
+      "status": "ALIAS_CONFIRMED",
+      "match_basis": "CURRENT_IMG_MAP",
+      "notes": "The current authoritative legacy image mapping confirms this filename-to-product alias.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "swy-intensely",
+      "legacy_product_name": "Stronger With You Intensely",
+      "brand": "Armani",
+      "current_legacy_image": "img/perfumes/webp/EMPORIO ARMANI - STRONGER WITH YOU INTENSELY (2).webp",
+      "client_original_filename": "EMPORIO ARMANI - STRONGER WITH YOU INTENSELY (2).png",
+      "media_role": "set",
+      "status": "ALIAS_CONFIRMED",
+      "match_basis": "CURRENT_IMG_MAP",
+      "notes": "The current authoritative legacy image mapping confirms this filename-to-product alias.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "swy-intensely",
+      "legacy_product_name": "Stronger With You Intensely",
+      "brand": "Armani",
+      "current_legacy_image": "img/perfumes/webp/EMPORIO ARMANI - STRONGER WITH YOU INTENSELY.webp",
+      "client_original_filename": "EMPORIO ARMANI - STRONGER WITH YOU INTENSELY.png",
+      "media_role": "bottle",
+      "status": "ALIAS_CONFIRMED",
+      "match_basis": "CURRENT_IMG_MAP",
+      "notes": "The current authoritative legacy image mapping confirms this filename-to-product alias.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": null,
+      "legacy_product_name": null,
+      "brand": null,
+      "current_legacy_image": null,
+      "client_original_filename": "FRENCH AVENEU - LIQUID BRUN.png",
+      "media_role": "bottle",
+      "status": "AMBIGUOUS",
+      "match_basis": "DUPLICATE_NORMALIZED_FILENAME",
+      "notes": "Multiple client files normalize to the same filename; no identity was confirmed automatically.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": [
+        "liquid-brun"
+      ]
+    },
+    {
+      "legacy_product_id": null,
+      "legacy_product_name": null,
+      "brand": null,
+      "current_legacy_image": null,
+      "client_original_filename": "FRENCH AVENEU -LIQUID BRUN.png",
+      "media_role": "bottle",
+      "status": "AMBIGUOUS",
+      "match_basis": "DUPLICATE_NORMALIZED_FILENAME",
+      "notes": "Multiple client files normalize to the same filename; no identity was confirmed automatically.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": [
+        "liquid-brun"
+      ]
+    },
+    {
+      "legacy_product_id": "vulcan-feu",
+      "legacy_product_name": "Vulcan Feu",
+      "brand": "French Avenue",
+      "current_legacy_image": "img/perfumes/FRENCH AVENUE - VULCAN FEU (2).png",
+      "client_original_filename": "FRENCH AVENUE - VULCAN FEU (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "vulcan-feu",
+      "legacy_product_name": "Vulcan Feu",
+      "brand": "French Avenue",
+      "current_legacy_image": "img/perfumes/FRENCH AVENUE - VULCAN FEU.png",
+      "client_original_filename": "FRENCH AVENUE - VULCAN FEU.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "adg-profondo-edp",
+      "legacy_product_name": "Acqua di Gio Profondo EDP",
+      "brand": "Armani",
+      "current_legacy_image": "img/perfumes/GIORGIO ARMANI .-ACQUA DI GIO PROFONDO EDP (2).png",
+      "client_original_filename": "GIORGIO ARMANI .-ACQUA DI GIO PROFONDO EDP (2).png",
+      "media_role": "set",
+      "status": "ALIAS_CONFIRMED",
+      "match_basis": "CURRENT_IMG_MAP",
+      "notes": "The current authoritative legacy image mapping confirms this filename-to-product alias.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "adg-profondo-edp",
+      "legacy_product_name": "Acqua di Gio Profondo EDP",
+      "brand": "Armani",
+      "current_legacy_image": "img/perfumes/GIORGIO ARMANI .-ACQUA DI GIO PROFONDO EDP.png",
+      "client_original_filename": "GIORGIO ARMANI .-ACQUA DI GIO PROFONDO EDP.png",
+      "media_role": "bottle",
+      "status": "ALIAS_CONFIRMED",
+      "match_basis": "CURRENT_IMG_MAP",
+      "notes": "The current authoritative legacy image mapping confirms this filename-to-product alias.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "hawas-elixir",
+      "legacy_product_name": "Hawas Elixir",
+      "brand": "Rasasi",
+      "current_legacy_image": "img/perfumes/Hawas Elixir (2).png",
+      "client_original_filename": "Hawas Elixir (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "hawas-elixir",
+      "legacy_product_name": "Hawas Elixir",
+      "brand": "Rasasi",
+      "current_legacy_image": "img/perfumes/Hawas Elixir.png",
+      "client_original_filename": "Hawas Elixir.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "hawas-exotic",
+      "legacy_product_name": "Hawas Exotic",
+      "brand": "Rasasi",
+      "current_legacy_image": "img/perfumes/webp/Hawas Exotic (2).webp",
+      "client_original_filename": "Hawas Exotic (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "hawas-exotic",
+      "legacy_product_name": "Hawas Exotic",
+      "brand": "Rasasi",
+      "current_legacy_image": "img/perfumes/webp/Hawas Exotic.webp",
+      "client_original_filename": "Hawas Exotic.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "hawas-verde",
+      "legacy_product_name": "Hawas Verde",
+      "brand": "Rasasi",
+      "current_legacy_image": "img/perfumes/webp/Hawas Verde (2).webp",
+      "client_original_filename": "Hawas Verde (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "hawas-verde",
+      "legacy_product_name": "Hawas Verde",
+      "brand": "Rasasi",
+      "current_legacy_image": "img/perfumes/webp/Hawas Verde.webp",
+      "client_original_filename": "Hawas Verde.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "le-beau-le-parfum",
+      "legacy_product_name": "Le Beau Le Parfum",
+      "brand": "Jean Paul Gaultier",
+      "current_legacy_image": "img/perfumes/webp/JEAN PAUL GAULTIER - LE BEAU LE PARFUM (2).webp",
+      "client_original_filename": "JEAN PAUL GAULTIER - LE BEAU LE PARFUM (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "le-beau-le-parfum",
+      "legacy_product_name": "Le Beau Le Parfum",
+      "brand": "Jean Paul Gaultier",
+      "current_legacy_image": "img/perfumes/webp/JEAN PAUL GAULTIER - LE BEAU LE PARFUM.webp",
+      "client_original_filename": "JEAN PAUL GAULTIER - LE BEAU LE PARFUM.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "le-male-elixir",
+      "legacy_product_name": "Le Male Elixir",
+      "brand": "Jean Paul Gaultier",
+      "current_legacy_image": null,
+      "client_original_filename": "JEAN PAUL GAULTIER - LE MALE ELIXIR (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY",
+      "notes": "Normalized filename matches one legacy catalog product identity.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "le-male-elixir",
+      "legacy_product_name": "Le Male Elixir",
+      "brand": "Jean Paul Gaultier",
+      "current_legacy_image": "img/perfumes/webp/JEAN PAUL GAULTIER - LE MALE ELIXIR.webp",
+      "client_original_filename": "JEAN PAUL GAULTIER - LE MALE ELIXIR.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "ultra-male",
+      "legacy_product_name": "Ultra Male",
+      "brand": "Jean Paul Gaultier",
+      "current_legacy_image": "img/perfumes/webp/Jean Paul Gaultier Ultra Male (2).webp",
+      "client_original_filename": "Jean Paul Gaultier Ultra Male (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "ultra-male",
+      "legacy_product_name": "Ultra Male",
+      "brand": "Jean Paul Gaultier",
+      "current_legacy_image": "img/perfumes/webp/Jean Paul Gaultier Ultra Male.webp",
+      "client_original_filename": "Jean Paul Gaultier Ultra Male.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "khamrah-waha",
+      "legacy_product_name": "Khamrah Waha",
+      "brand": "Lattafa",
+      "current_legacy_image": "img/perfumes/webp/Khamrah Waha (2).webp",
+      "client_original_filename": "Khamrah Waha (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "khamrah-waha",
+      "legacy_product_name": "Khamrah Waha",
+      "brand": "Lattafa",
+      "current_legacy_image": "img/perfumes/webp/Khamrah Waha.webp",
+      "client_original_filename": "Khamrah Waha.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "asad-bourbon",
+      "legacy_product_name": "Asad Bourbon",
+      "brand": "Lattafa",
+      "current_legacy_image": "img/perfumes/webp/LATTAFA - ASAD BOURBON (2).webp",
+      "client_original_filename": "LATTAFA - ASAD BOURBON (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "asad-bourbon",
+      "legacy_product_name": "Asad Bourbon",
+      "brand": "Lattafa",
+      "current_legacy_image": "img/perfumes/webp/LATTAFA - ASAD BOURBON.webp",
+      "client_original_filename": "LATTAFA - ASAD BOURBON.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "asad-clasico",
+      "legacy_product_name": "Asad Clásico",
+      "brand": "Lattafa",
+      "current_legacy_image": "img/perfumes/webp/LATTAFA - ASAD CLASICO (2).webp",
+      "client_original_filename": "LATTAFA - ASAD CLASICO (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "asad-clasico",
+      "legacy_product_name": "Asad Clásico",
+      "brand": "Lattafa",
+      "current_legacy_image": "img/perfumes/webp/LATTAFA - ASAD CLASICO.webp",
+      "client_original_filename": "LATTAFA - ASAD CLASICO.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "eclaire",
+      "legacy_product_name": "Eclaire",
+      "brand": "Lattafa",
+      "current_legacy_image": "img/perfumes/LATTAFA - ECLAIRE (2).png",
+      "client_original_filename": "LATTAFA - ECLAIRE (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "eclaire",
+      "legacy_product_name": "Eclaire",
+      "brand": "Lattafa",
+      "current_legacy_image": "img/perfumes/LATTAFA - ECLAIRE.png",
+      "client_original_filename": "LATTAFA - ECLAIRE.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "honor-and-glory",
+      "legacy_product_name": "Honor And Glory",
+      "brand": "Lattafa",
+      "current_legacy_image": "img/perfumes/webp/LATTAFA - HONOR AND GLORY (2).webp",
+      "client_original_filename": "LATTAFA - HONOR AND GLORY (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "honor-and-glory",
+      "legacy_product_name": "Honor And Glory",
+      "brand": "Lattafa",
+      "current_legacy_image": "img/perfumes/webp/LATTAFA - HONOR AND GLORY.webp",
+      "client_original_filename": "LATTAFA - HONOR AND GLORY.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "khamrah-clasico",
+      "legacy_product_name": "Khamrah Clásico",
+      "brand": "Lattafa",
+      "current_legacy_image": "img/perfumes/webp/LATTAFA - KHAMRAH CLASICO (2).webp",
+      "client_original_filename": "LATTAFA - KHAMRAH CLASICO (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "khamrah-clasico",
+      "legacy_product_name": "Khamrah Clásico",
+      "brand": "Lattafa",
+      "current_legacy_image": null,
+      "client_original_filename": "LATTAFA - KHAMRAH CLASICO (3).png",
+      "media_role": "additional",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY",
+      "notes": "Normalized filename matches one legacy catalog product identity.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "khamrah-clasico",
+      "legacy_product_name": "Khamrah Clásico",
+      "brand": "Lattafa",
+      "current_legacy_image": null,
+      "client_original_filename": "LATTAFA - KHAMRAH CLASICO (4).png",
+      "media_role": "additional",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY",
+      "notes": "Normalized filename matches one legacy catalog product identity.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "khamrah-clasico",
+      "legacy_product_name": "Khamrah Clásico",
+      "brand": "Lattafa",
+      "current_legacy_image": "img/perfumes/webp/LATTAFA - KHAMRAH CLASICO.webp",
+      "client_original_filename": "LATTAFA - KHAMRAH CLASICO.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "khamrah-dukhan",
+      "legacy_product_name": "Khamrah Dukhan",
+      "brand": "Lattafa",
+      "current_legacy_image": "img/perfumes/webp/LATTAFA - KHAMRAH DUKHAN (2).webp",
+      "client_original_filename": "LATTAFA - KHAMRAH DUKHAN (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "khamrah-dukhan",
+      "legacy_product_name": "Khamrah Dukhan",
+      "brand": "Lattafa",
+      "current_legacy_image": "img/perfumes/webp/LATTAFA - KHAMRAH DUKHAN.webp",
+      "client_original_filename": "LATTAFA - KHAMRAH DUKHAN.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "khamrah-qahwa",
+      "legacy_product_name": "Khamrah Qahwa",
+      "brand": "Lattafa",
+      "current_legacy_image": "img/perfumes/webp/LATTAFA - KHAMRAH QAHWA (2).webp",
+      "client_original_filename": "LATTAFA - KHAMRAH QAHWA (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "khamrah-qahwa",
+      "legacy_product_name": "Khamrah Qahwa",
+      "brand": "Lattafa",
+      "current_legacy_image": "img/perfumes/webp/LATTAFA - KHAMRAH QAHWA.webp",
+      "client_original_filename": "LATTAFA - KHAMRAH QAHWA.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "sublime",
+      "legacy_product_name": "Sublime",
+      "brand": "Lattafa",
+      "current_legacy_image": "img/perfumes/webp/LATTAFA - SUBLIME (2).webp",
+      "client_original_filename": "LATTAFA - SUBLIME (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "sublime",
+      "legacy_product_name": "Sublime",
+      "brand": "Lattafa",
+      "current_legacy_image": "img/perfumes/webp/LATTAFA - SUBLIME.webp",
+      "client_original_filename": "LATTAFA - SUBLIME.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "yara-elixir",
+      "legacy_product_name": "Yara Elixir",
+      "brand": "Lattafa",
+      "current_legacy_image": "img/perfumes/webp/LATTAFA - YARA ELIXIR (2).webp",
+      "client_original_filename": "LATTAFA - YARA ELIXIR (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "yara-elixir",
+      "legacy_product_name": "Yara Elixir",
+      "brand": "Lattafa",
+      "current_legacy_image": "img/perfumes/webp/LATTAFA - YARA ELIXIR.webp",
+      "client_original_filename": "LATTAFA - YARA ELIXIR.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "yara-pink",
+      "legacy_product_name": "Yara Pink",
+      "brand": "Lattafa",
+      "current_legacy_image": "img/perfumes/LATTAFA - YARA PINK (2).png",
+      "client_original_filename": "LATTAFA - YARA PINK (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "yara-pink",
+      "legacy_product_name": "Yara Pink",
+      "brand": "Lattafa",
+      "current_legacy_image": "img/perfumes/LATTAFA - YARA PINK.png",
+      "client_original_filename": "LATTAFA - YARA PINK.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "angham",
+      "legacy_product_name": "Angham",
+      "brand": "Lattafa",
+      "current_legacy_image": "img/perfumes/Lattafa Angham (2).png",
+      "client_original_filename": "Lattafa Angham (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "angham",
+      "legacy_product_name": "Angham",
+      "brand": "Lattafa",
+      "current_legacy_image": "img/perfumes/Lattafa Angham.png",
+      "client_original_filename": "Lattafa Angham.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "eclaire-banoffi",
+      "legacy_product_name": "Eclaire Banoffi",
+      "brand": "Lattafa",
+      "current_legacy_image": "img/perfumes/webp/Lattafa Eclaire Banoffi (2).webp",
+      "client_original_filename": "Lattafa Eclaire Banoffi (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "eclaire-banoffi",
+      "legacy_product_name": "Eclaire Banoffi",
+      "brand": "Lattafa",
+      "current_legacy_image": "img/perfumes/webp/Lattafa Eclaire Banoffi.webp",
+      "client_original_filename": "Lattafa Eclaire Banoffi.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "eclaire-pistache",
+      "legacy_product_name": "Eclaire Pistache",
+      "brand": "Lattafa",
+      "current_legacy_image": "img/perfumes/webp/Lattafa Eclaire Pistache (2).webp",
+      "client_original_filename": "Lattafa Eclaire Pistache (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "eclaire-pistache",
+      "legacy_product_name": "Eclaire Pistache",
+      "brand": "Lattafa",
+      "current_legacy_image": "img/perfumes/webp/Lattafa Eclaire Pistache.webp",
+      "client_original_filename": "Lattafa Eclaire Pistache.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "fakhar-black",
+      "legacy_product_name": "Fakhar Black",
+      "brand": "Lattafa",
+      "current_legacy_image": "img/perfumes/webp/Lattafa Fakhar Black (2).webp",
+      "client_original_filename": "Lattafa Fakhar Black (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "fakhar-black",
+      "legacy_product_name": "Fakhar Black",
+      "brand": "Lattafa",
+      "current_legacy_image": "img/perfumes/webp/Lattafa Fakhar Black.webp",
+      "client_original_filename": "Lattafa Fakhar Black.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "homme-white",
+      "legacy_product_name": "Homme White",
+      "brand": "Lattafa",
+      "current_legacy_image": "img/perfumes/webp/Lattafa Homme White (2).webp",
+      "client_original_filename": "Lattafa Homme White (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "homme-white",
+      "legacy_product_name": "Homme White",
+      "brand": "Lattafa",
+      "current_legacy_image": "img/perfumes/webp/Lattafa Homme White.webp",
+      "client_original_filename": "Lattafa Homme White.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "mayar",
+      "legacy_product_name": "Mayar",
+      "brand": "Lattafa",
+      "current_legacy_image": "img/perfumes/Lattafa Mayar (2).png",
+      "client_original_filename": "Lattafa Mayar (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "mayar-cherry-i",
+      "legacy_product_name": "Mayar Cherry Intense",
+      "brand": "Lattafa",
+      "current_legacy_image": "img/perfumes/webp/Lattafa Mayar Cherry Intense (2).webp",
+      "client_original_filename": "Lattafa Mayar Cherry Intense (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "mayar-cherry-i",
+      "legacy_product_name": "Mayar Cherry Intense",
+      "brand": "Lattafa",
+      "current_legacy_image": "img/perfumes/webp/Lattafa Mayar Cherry Intense.webp",
+      "client_original_filename": "Lattafa Mayar Cherry Intense.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "mayar",
+      "legacy_product_name": "Mayar",
+      "brand": "Lattafa",
+      "current_legacy_image": "img/perfumes/Lattafa Mayar.png",
+      "client_original_filename": "Lattafa Mayar.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "odyssey-artisto",
+      "legacy_product_name": "Odyssey Artisto",
+      "brand": "Lattafa",
+      "current_legacy_image": "img/perfumes/webp/Lattafa Odyssey Artisto (2).webp",
+      "client_original_filename": "Lattafa Odyssey Artisto (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "odyssey-artisto",
+      "legacy_product_name": "Odyssey Artisto",
+      "brand": "Lattafa",
+      "current_legacy_image": "img/perfumes/webp/Lattafa Odyssey Artisto.webp",
+      "client_original_filename": "Lattafa Odyssey Artisto.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "odyssey-homme",
+      "legacy_product_name": "Odyssey Homme",
+      "brand": "Lattafa",
+      "current_legacy_image": "img/perfumes/webp/Lattafa Odyssey Homme (2).webp",
+      "client_original_filename": "Lattafa Odyssey Homme (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "odyssey-homme",
+      "legacy_product_name": "Odyssey Homme",
+      "brand": "Lattafa",
+      "current_legacy_image": "img/perfumes/webp/Lattafa Odyssey Homme.webp",
+      "client_original_filename": "Lattafa Odyssey Homme.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "odyssey-limoni",
+      "legacy_product_name": "Odyssey Limoni",
+      "brand": "Lattafa",
+      "current_legacy_image": "img/perfumes/webp/Lattafa Odyssey Limoni (2).webp",
+      "client_original_filename": "Lattafa Odyssey Limoni (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "odyssey-limoni",
+      "legacy_product_name": "Odyssey Limoni",
+      "brand": "Lattafa",
+      "current_legacy_image": "img/perfumes/webp/Lattafa Odyssey Limoni.webp",
+      "client_original_filename": "Lattafa Odyssey Limoni.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "odyssey-mega",
+      "legacy_product_name": "Odyssey Mega",
+      "brand": "Lattafa",
+      "current_legacy_image": "img/perfumes/webp/Lattafa Odyssey Mega (2).webp",
+      "client_original_filename": "Lattafa Odyssey Mega (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "odyssey-mega",
+      "legacy_product_name": "Odyssey Mega",
+      "brand": "Lattafa",
+      "current_legacy_image": "img/perfumes/webp/Lattafa Odyssey Mega.webp",
+      "client_original_filename": "Lattafa Odyssey Mega.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "odyssey-spectra",
+      "legacy_product_name": "Odyssey Spectra",
+      "brand": "Lattafa",
+      "current_legacy_image": "img/perfumes/webp/Lattafa Odyssey Spectra (2).webp",
+      "client_original_filename": "Lattafa Odyssey Spectra (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "odyssey-spectra",
+      "legacy_product_name": "Odyssey Spectra",
+      "brand": "Lattafa",
+      "current_legacy_image": "img/perfumes/webp/Lattafa Odyssey Spectra.webp",
+      "client_original_filename": "Lattafa Odyssey Spectra.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "paradise-garden",
+      "legacy_product_name": "Paradise Garden",
+      "brand": "Lattafa",
+      "current_legacy_image": "img/perfumes/webp/Lattafa Paradise Garden (2).webp",
+      "client_original_filename": "Lattafa Paradise Garden (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "paradise-garden",
+      "legacy_product_name": "Paradise Garden",
+      "brand": "Lattafa",
+      "current_legacy_image": "img/perfumes/webp/Lattafa Paradise Garden.webp",
+      "client_original_filename": "Lattafa Paradise Garden.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "qaed-al-fursan",
+      "legacy_product_name": "Qaed Al Fursan",
+      "brand": "Lattafa",
+      "current_legacy_image": "img/perfumes/webp/Lattafa Qaed Al Fursan (2).webp",
+      "client_original_filename": "Lattafa Qaed Al Fursan (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "qaed-al-fursan",
+      "legacy_product_name": "Qaed Al Fursan",
+      "brand": "Lattafa",
+      "current_legacy_image": "img/perfumes/webp/Lattafa Qaed Al Fursan.webp",
+      "client_original_filename": "Lattafa Qaed Al Fursan.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "red-intensely",
+      "legacy_product_name": "Nitro Red Intensely",
+      "brand": "Dumont Paris",
+      "current_legacy_image": "img/perfumes/webp/Lattafa Red Intensely (2).webp",
+      "client_original_filename": "Lattafa Red Intensely (2).png",
+      "media_role": "set",
+      "status": "ALIAS_CONFIRMED",
+      "match_basis": "CURRENT_IMG_MAP",
+      "notes": "The current authoritative legacy image mapping confirms this filename-to-product alias.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "red-intensely",
+      "legacy_product_name": "Nitro Red Intensely",
+      "brand": "Dumont Paris",
+      "current_legacy_image": "img/perfumes/webp/Lattafa Red Intensely.webp",
+      "client_original_filename": "Lattafa Red Intensely.png",
+      "media_role": "bottle",
+      "status": "ALIAS_CONFIRMED",
+      "match_basis": "CURRENT_IMG_MAP",
+      "notes": "The current authoritative legacy image mapping confirms this filename-to-product alias.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "yum-yum",
+      "legacy_product_name": "Yum Yum",
+      "brand": "Lattafa",
+      "current_legacy_image": "img/perfumes/Lattafa Yum Yum (2).png",
+      "client_original_filename": "Lattafa Yum Yum (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "yum-yum",
+      "legacy_product_name": "Yum Yum",
+      "brand": "Lattafa",
+      "current_legacy_image": "img/perfumes/Lattafa Yum Yum.png",
+      "client_original_filename": "Lattafa Yum Yum.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "jean-lowe-inmotel",
+      "legacy_product_name": "Jean Lowe Inmotel",
+      "brand": "Maison Alhambra",
+      "current_legacy_image": "img/perfumes/Maison Alhambra Jean Lowe Inmotel (2).png",
+      "client_original_filename": "Maison Alhambra Jean Lowe Inmotel (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "jean-lowe-inmotel",
+      "legacy_product_name": "Jean Lowe Inmotel",
+      "brand": "Maison Alhambra",
+      "current_legacy_image": "img/perfumes/Maison Alhambra Jean Lowe Inmotel.png",
+      "client_original_filename": "Maison Alhambra Jean Lowe Inmotel.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "jean-lowe-vibe",
+      "legacy_product_name": "Jean Lowe Vibe",
+      "brand": "Maison Alhambra",
+      "current_legacy_image": "img/perfumes/Maison Alhambra Jean Lowe Vibe (2).png",
+      "client_original_filename": "Maison Alhambra Jean Lowe Vibe (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "jean-lowe-vibe",
+      "legacy_product_name": "Jean Lowe Vibe",
+      "brand": "Maison Alhambra",
+      "current_legacy_image": "img/perfumes/Maison Alhambra Jean Lowe Vibe.png",
+      "client_original_filename": "Maison Alhambra Jean Lowe Vibe.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "by-the-fireplace",
+      "legacy_product_name": "By The Fireplace",
+      "brand": "Maison Margiela",
+      "current_legacy_image": "img/perfumes/webp/Maison Margiela By The Fireplace (2).webp",
+      "client_original_filename": "Maison Margiela By The Fireplace (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "by-the-fireplace",
+      "legacy_product_name": "By The Fireplace",
+      "brand": "Maison Margiela",
+      "current_legacy_image": "img/perfumes/webp/Maison Margiela By The Fireplace.webp",
+      "client_original_filename": "Maison Margiela By The Fireplace.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "cedrat-boise-int",
+      "legacy_product_name": "Cedrat Boise Intense",
+      "brand": "Mancera",
+      "current_legacy_image": "img/perfumes/webp/Mancera Cedrat Boise Intense (2).webp",
+      "client_original_filename": "Mancera Cedrat Boise Intense (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "cedrat-boise-int",
+      "legacy_product_name": "Cedrat Boise Intense",
+      "brand": "Mancera",
+      "current_legacy_image": "img/perfumes/webp/Mancera Cedrat Boise Intense.webp",
+      "client_original_filename": "Mancera Cedrat Boise Intense.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "m-red-tobacco",
+      "legacy_product_name": "Mancera Red Tobacco",
+      "brand": "Mancera",
+      "current_legacy_image": "img/perfumes/webp/Mancera Mancera Red Tobacco (2).webp",
+      "client_original_filename": "Mancera Mancera Red Tobacco (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "m-red-tobacco",
+      "legacy_product_name": "Mancera Red Tobacco",
+      "brand": "Mancera",
+      "current_legacy_image": "img/perfumes/webp/Mancera Mancera Red Tobacco.webp",
+      "client_original_filename": "Mancera Mancera Red Tobacco.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "m-sky-elixir",
+      "legacy_product_name": "Mandarin Sky Elixir",
+      "brand": "Afnan",
+      "current_legacy_image": "img/perfumes/webp/Mandarin Sky Elixir (2).webp",
+      "client_original_filename": "Mandarin Sky Elixir (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "m-sky-elixir",
+      "legacy_product_name": "Mandarin Sky Elixir",
+      "brand": "Afnan",
+      "current_legacy_image": "img/perfumes/webp/Mandarin Sky Elixir.webp",
+      "client_original_filename": "Mandarin Sky Elixir.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "m-sky-vintage",
+      "legacy_product_name": "Mandarin Sky Vintage",
+      "brand": "Afnan",
+      "current_legacy_image": "img/perfumes/webp/Mandarin Sky Vintage (2).webp",
+      "client_original_filename": "Mandarin Sky Vintage (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "m-sky-vintage",
+      "legacy_product_name": "Mandarin Sky Vintage",
+      "brand": "Afnan",
+      "current_legacy_image": "img/perfumes/webp/Mandarin Sky Vintage.webp",
+      "client_original_filename": "Mandarin Sky Vintage.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "mashrabya",
+      "legacy_product_name": "Mashrabya",
+      "brand": "Lattafa",
+      "current_legacy_image": "img/perfumes/webp/Mashrabya (2).webp",
+      "client_original_filename": "Mashrabya (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "mashrabya",
+      "legacy_product_name": "Mashrabya",
+      "brand": "Lattafa",
+      "current_legacy_image": "img/perfumes/webp/Mashrabya.webp",
+      "client_original_filename": "Mashrabya.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "nautica-voyage",
+      "legacy_product_name": "Nautica Voyage",
+      "brand": "Nautica",
+      "current_legacy_image": "img/perfumes/webp/Nautica Nautica Voyage (2).webp",
+      "client_original_filename": "Nautica Nautica Voyage (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "nautica-voyage",
+      "legacy_product_name": "Nautica Voyage",
+      "brand": "Nautica",
+      "current_legacy_image": "img/perfumes/webp/Nautica Nautica Voyage.webp",
+      "client_original_filename": "Nautica Nautica Voyage.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "oud-for-glory",
+      "legacy_product_name": "Oud For Glory",
+      "brand": "Lattafa",
+      "current_legacy_image": "img/perfumes/webp/Oud For Glory (2).webp",
+      "client_original_filename": "Oud For Glory (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "oud-for-glory",
+      "legacy_product_name": "Oud For Glory",
+      "brand": "Lattafa",
+      "current_legacy_image": "img/perfumes/webp/Oud For Glory.webp",
+      "client_original_filename": "Oud For Glory.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "invictus-elixir",
+      "legacy_product_name": "Invictus Elixir",
+      "brand": "Paco Rabanne",
+      "current_legacy_image": "img/perfumes/webp/PACO RABANNE -INVICTUS ELIXIR (2).webp",
+      "client_original_filename": "PACO RABANNE -INVICTUS ELIXIR (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "invictus-elixir",
+      "legacy_product_name": "Invictus Elixir",
+      "brand": "Paco Rabanne",
+      "current_legacy_image": "img/perfumes/webp/PACO RABANNE -INVICTUS ELIXIR.webp",
+      "client_original_filename": "PACO RABANNE -INVICTUS ELIXIR.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "1-million-lucky",
+      "legacy_product_name": "One Million Lucky",
+      "brand": "Paco Rabanne",
+      "current_legacy_image": "img/perfumes/webp/Paco Rabanne 1 Million Lucky (2).webp",
+      "client_original_filename": "Paco Rabanne 1 Million Lucky (2).png",
+      "media_role": "set",
+      "status": "ALIAS_CONFIRMED",
+      "match_basis": "CURRENT_IMG_MAP",
+      "notes": "The current authoritative legacy image mapping confirms this filename-to-product alias.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "1-million-lucky",
+      "legacy_product_name": "One Million Lucky",
+      "brand": "Paco Rabanne",
+      "current_legacy_image": "img/perfumes/webp/Paco Rabanne 1 Million Lucky.webp",
+      "client_original_filename": "Paco Rabanne 1 Million Lucky.png",
+      "media_role": "bottle",
+      "status": "ALIAS_CONFIRMED",
+      "match_basis": "CURRENT_IMG_MAP",
+      "notes": "The current authoritative legacy image mapping confirms this filename-to-product alias.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "victory-elixir",
+      "legacy_product_name": "Victory Elixir",
+      "brand": "Paco Rabanne",
+      "current_legacy_image": "img/perfumes/webp/Paco Rabanne Victory Elixir (2).webp",
+      "client_original_filename": "Paco Rabanne Victory Elixir (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "victory-elixir",
+      "legacy_product_name": "Victory Elixir",
+      "brand": "Paco Rabanne",
+      "current_legacy_image": "img/perfumes/webp/Paco Rabanne Victory Elixir.webp",
+      "client_original_filename": "Paco Rabanne Victory Elixir.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "purple-melancholia",
+      "legacy_product_name": "Purple Melancholia",
+      "brand": "Valentino",
+      "current_legacy_image": "img/perfumes/webp/Purple Melancholia (2).webp",
+      "client_original_filename": "Purple Melancholia (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "purple-melancholia",
+      "legacy_product_name": "Purple Melancholia",
+      "brand": "Valentino",
+      "current_legacy_image": "img/perfumes/webp/Purple Melancholia.webp",
+      "client_original_filename": "Purple Melancholia.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "hawas-chrome",
+      "legacy_product_name": "Hawas Chrome",
+      "brand": "Rasasi",
+      "current_legacy_image": "img/perfumes/RASASI - HAWAS CHROME (2).png",
+      "client_original_filename": "RASASI - HAWAS CHROME (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "hawas-chrome",
+      "legacy_product_name": "Hawas Chrome",
+      "brand": "Rasasi",
+      "current_legacy_image": "img/perfumes/RASASI - HAWAS CHROME.png",
+      "client_original_filename": "RASASI - HAWAS CHROME.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "hawas-fire",
+      "legacy_product_name": "Hawas Fire",
+      "brand": "Rasasi",
+      "current_legacy_image": "img/perfumes/webp/RASASI - HAWAS FIRE (2).webp",
+      "client_original_filename": "RASASI - HAWAS FIRE (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "hawas-fire",
+      "legacy_product_name": "Hawas Fire",
+      "brand": "Rasasi",
+      "current_legacy_image": "img/perfumes/webp/RASASI - HAWAS FIRE.webp",
+      "client_original_filename": "RASASI - HAWAS FIRE.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "hawas-ice",
+      "legacy_product_name": "Hawas Ice",
+      "brand": "Rasasi",
+      "current_legacy_image": "img/perfumes/webp/RASASI - HAWAS ICE (2).webp",
+      "client_original_filename": "RASASI - HAWAS ICE (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "hawas-ice",
+      "legacy_product_name": "Hawas Ice",
+      "brand": "Rasasi",
+      "current_legacy_image": "img/perfumes/webp/RASASI - HAWAS ICE.webp",
+      "client_original_filename": "RASASI - HAWAS ICE.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "hawas-kobra",
+      "legacy_product_name": "Hawas Kobra",
+      "brand": "Rasasi",
+      "current_legacy_image": "img/perfumes/webp/RASASI - HAWAS KOBRA (2).webp",
+      "client_original_filename": "RASASI - HAWAS KOBRA (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "hawas-kobra",
+      "legacy_product_name": "Hawas Kobra",
+      "brand": "Rasasi",
+      "current_legacy_image": "img/perfumes/webp/RASASI - HAWAS KOBRA.webp",
+      "client_original_filename": "RASASI - HAWAS KOBRA.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "hawas-tropical",
+      "legacy_product_name": "Hawas Tropical",
+      "brand": "Rasasi",
+      "current_legacy_image": "img/perfumes/RASASI - HAWAS TROPICAL (2).png",
+      "client_original_filename": "RASASI - HAWAS TROPICAL (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "hawas-tropical",
+      "legacy_product_name": "Hawas Tropical",
+      "brand": "Rasasi",
+      "current_legacy_image": "img/perfumes/RASASI - HAWAS TROPICAL.png",
+      "client_original_filename": "RASASI - HAWAS TROPICAL.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "hawas-verde",
+      "legacy_product_name": "Hawas Verde",
+      "brand": "Rasasi",
+      "current_legacy_image": null,
+      "client_original_filename": "RASASI - HAWAS verde (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY",
+      "notes": "Normalized filename matches one legacy catalog product identity.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "hawas-verde",
+      "legacy_product_name": "Hawas Verde",
+      "brand": "Rasasi",
+      "current_legacy_image": null,
+      "client_original_filename": "RASASI - HAWAS verde.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY",
+      "notes": "Normalized filename matches one legacy catalog product identity.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "rayhaan-italia",
+      "legacy_product_name": "Rayhaan Italia",
+      "brand": "Rayhaan",
+      "current_legacy_image": "img/perfumes/Rayhaan Italia (2).png",
+      "client_original_filename": "Rayhaan Italia (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "rayhaan-italia",
+      "legacy_product_name": "Rayhaan Italia",
+      "brand": "Rayhaan",
+      "current_legacy_image": "img/perfumes/Rayhaan Italia.png",
+      "client_original_filename": "Rayhaan Italia.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "spicebomb-extreme",
+      "legacy_product_name": "Spicebomb Extreme",
+      "brand": "Viktor & Rolf",
+      "current_legacy_image": "img/perfumes/webp/Spicebomb Extreme (2).webp",
+      "client_original_filename": "Spicebomb Extreme (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "spicebomb-extreme",
+      "legacy_product_name": "Spicebomb Extreme",
+      "brand": "Viktor & Rolf",
+      "current_legacy_image": "img/perfumes/webp/Spicebomb Extreme.webp",
+      "client_original_filename": "Spicebomb Extreme.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": null,
+      "legacy_product_name": null,
+      "brand": null,
+      "current_legacy_image": null,
+      "client_original_filename": "VALENTINO - VALENTINO MELANCHOLIA (2).png",
+      "media_role": "set",
+      "status": "AMBIGUOUS",
+      "match_basis": "FUZZY_CANDIDATE_ONLY",
+      "notes": "Filename similarity suggests candidate products, but fuzzy similarity is not authoritative.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": [
+        "purple-melancholia"
+      ]
+    },
+    {
+      "legacy_product_id": null,
+      "legacy_product_name": null,
+      "brand": null,
+      "current_legacy_image": null,
+      "client_original_filename": "VALENTINO - VALENTINO MELANCHOLIA.png",
+      "media_role": "bottle",
+      "status": "AMBIGUOUS",
+      "match_basis": "FUZZY_CANDIDATE_ONLY",
+      "notes": "Filename similarity suggests candidate products, but fuzzy similarity is not authoritative.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": [
+        "purple-melancholia"
+      ]
+    },
+    {
+      "legacy_product_id": null,
+      "legacy_product_name": null,
+      "brand": null,
+      "current_legacy_image": null,
+      "client_original_filename": "VERSACE - EROS EDP (2).png",
+      "media_role": "set",
+      "status": "AMBIGUOUS",
+      "match_basis": "FUZZY_CANDIDATE_ONLY",
+      "notes": "Filename similarity suggests candidate products, but fuzzy similarity is not authoritative.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": [
+        "eros-edt",
+        "eros-flame"
+      ]
+    },
+    {
+      "legacy_product_id": null,
+      "legacy_product_name": null,
+      "brand": null,
+      "current_legacy_image": null,
+      "client_original_filename": "VERSACE - EROS EDP.png",
+      "media_role": "bottle",
+      "status": "AMBIGUOUS",
+      "match_basis": "FUZZY_CANDIDATE_ONLY",
+      "notes": "Filename similarity suggests candidate products, but fuzzy similarity is not authoritative.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": [
+        "eros-edt",
+        "eros-flame"
+      ]
+    },
+    {
+      "legacy_product_id": "eros-flame",
+      "legacy_product_name": "Eros Flame",
+      "brand": "Versace",
+      "current_legacy_image": "img/perfumes/webp/VERSACE - EROS FLAME (2).webp",
+      "client_original_filename": "VERSACE - EROS FLAME (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "eros-flame",
+      "legacy_product_name": "Eros Flame",
+      "brand": "Versace",
+      "current_legacy_image": "img/perfumes/webp/VERSACE - EROS FLAME.webp",
+      "client_original_filename": "VERSACE - EROS FLAME.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "dylan-blue",
+      "legacy_product_name": "Dylan Blue",
+      "brand": "Versace",
+      "current_legacy_image": "img/perfumes/webp/Versace Dylan Blue (2).webp",
+      "client_original_filename": "Versace Dylan Blue (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "dylan-blue",
+      "legacy_product_name": "Dylan Blue",
+      "brand": "Versace",
+      "current_legacy_image": "img/perfumes/webp/Versace Dylan Blue.webp",
+      "client_original_filename": "Versace Dylan Blue.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "eros-edt",
+      "legacy_product_name": "Eros EDT",
+      "brand": "Versace",
+      "current_legacy_image": "img/perfumes/webp/Versace Eros EDT (2).webp",
+      "client_original_filename": "Versace Eros EDT (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "eros-edt",
+      "legacy_product_name": "Eros EDT",
+      "brand": "Versace",
+      "current_legacy_image": "img/perfumes/webp/Versace Eros EDT.webp",
+      "client_original_filename": "Versace Eros EDT.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "erba-pura",
+      "legacy_product_name": "Erba Pura",
+      "brand": "Xerjoff",
+      "current_legacy_image": "img/perfumes/webp/Xerjoff Erba Pura (2).webp",
+      "client_original_filename": "Xerjoff Erba Pura (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "erba-pura",
+      "legacy_product_name": "Erba Pura",
+      "brand": "Xerjoff",
+      "current_legacy_image": "img/perfumes/webp/Xerjoff Erba Pura.webp",
+      "client_original_filename": "Xerjoff Erba Pura.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "yara-candy",
+      "legacy_product_name": "Yara Candy",
+      "brand": "Lattafa",
+      "current_legacy_image": "img/perfumes/webp/Yara Candy (2).webp",
+      "client_original_filename": "Yara Candy (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "yara-candy",
+      "legacy_product_name": "Yara Candy",
+      "brand": "Lattafa",
+      "current_legacy_image": "img/perfumes/webp/Yara Candy.webp",
+      "client_original_filename": "Yara Candy.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "zanzibar-limited-e",
+      "legacy_product_name": "Zanzibar Limited Edition",
+      "brand": "Lattafa",
+      "current_legacy_image": "img/perfumes/webp/Zanzibar Limited Edition (2).webp",
+      "client_original_filename": "Zanzibar Limited Edition (2).png",
+      "media_role": "set",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "zanzibar-limited-e",
+      "legacy_product_name": "Zanzibar Limited Edition",
+      "brand": "Lattafa",
+      "current_legacy_image": "img/perfumes/webp/Zanzibar Limited Edition.webp",
+      "client_original_filename": "Zanzibar Limited Edition.png",
+      "media_role": "bottle",
+      "status": "EXACT_MATCH",
+      "match_basis": "NORMALIZED_CATALOG_IDENTITY_AND_IMG_MAP",
+      "notes": "Normalized filename matches the catalog identity and the current legacy image mapping.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "lovely-cherry",
+      "legacy_product_name": "Lovely Cherry",
+      "brand": "Maison Alhambra",
+      "current_legacy_image": null,
+      "client_original_filename": null,
+      "media_role": null,
+      "status": "NO_MATCH",
+      "match_basis": "NO_CLIENT_FILE",
+      "notes": "No client PNG filename safely matches this legacy catalog product.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "royal-blend-sequoia",
+      "legacy_product_name": "Royal Blend Sequoia",
+      "brand": "Maison Alhambra",
+      "current_legacy_image": null,
+      "client_original_filename": null,
+      "media_role": null,
+      "status": "NO_MATCH",
+      "match_basis": "NO_CLIENT_FILE",
+      "notes": "No client PNG filename safely matches this legacy catalog product.",
+      "source": [
+        "assets/data.js",
+        "img/perfumes filename inventory"
+      ],
+      "candidate_legacy_product_ids": []
+    },
+    {
+      "legacy_product_id": "sceptre-malachite",
+      "legacy_product_name": "Sceptre Malachite",
+      "brand": "Maison Alhambra",
+      "current_legacy_image": "img/perfumes/transparent/MAISON ALHAMBRA - SCEPTRE MALACHITE (2).webp",
+      "client_original_filename": null,
+      "media_role": null,
+      "status": "CLIENT_ASSET_MISSING",
+      "match_basis": "DOCUMENTED_CLIENT_ASSET_MISSING",
+      "notes": "No confirmed replacement client photo; do not substitute another asset.",
+      "source": [
+        "assets/data.js",
+        "docs/client-decisions.md"
+      ],
+      "candidate_legacy_product_ids": []
+    }
+  ],
+  "report": {
+    "catalog_products": 96,
+    "client_png_files": 196,
+    "exact_matches": 156,
+    "alias_confirmed": 32,
+    "ambiguous": 6,
+    "no_match": 4,
+    "client_asset_missing": 1,
+    "orphan_client_files": 2
+  },
+  "unresolved": {
+    "ambiguous": [
+      {
+        "legacy_product_id": null,
+        "legacy_product_name": null,
+        "brand": null,
+        "current_legacy_image": null,
+        "client_original_filename": "FRENCH AVENEU - LIQUID BRUN.png",
+        "media_role": "bottle",
+        "status": "AMBIGUOUS",
+        "match_basis": "DUPLICATE_NORMALIZED_FILENAME",
+        "notes": "Multiple client files normalize to the same filename; no identity was confirmed automatically.",
+        "source": [
+          "assets/data.js",
+          "img/perfumes filename inventory"
+        ],
+        "candidate_legacy_product_ids": [
+          "liquid-brun"
+        ]
+      },
+      {
+        "legacy_product_id": null,
+        "legacy_product_name": null,
+        "brand": null,
+        "current_legacy_image": null,
+        "client_original_filename": "FRENCH AVENEU -LIQUID BRUN.png",
+        "media_role": "bottle",
+        "status": "AMBIGUOUS",
+        "match_basis": "DUPLICATE_NORMALIZED_FILENAME",
+        "notes": "Multiple client files normalize to the same filename; no identity was confirmed automatically.",
+        "source": [
+          "assets/data.js",
+          "img/perfumes filename inventory"
+        ],
+        "candidate_legacy_product_ids": [
+          "liquid-brun"
+        ]
+      },
+      {
+        "legacy_product_id": null,
+        "legacy_product_name": null,
+        "brand": null,
+        "current_legacy_image": null,
+        "client_original_filename": "VALENTINO - VALENTINO MELANCHOLIA (2).png",
+        "media_role": "set",
+        "status": "AMBIGUOUS",
+        "match_basis": "FUZZY_CANDIDATE_ONLY",
+        "notes": "Filename similarity suggests candidate products, but fuzzy similarity is not authoritative.",
+        "source": [
+          "assets/data.js",
+          "img/perfumes filename inventory"
+        ],
+        "candidate_legacy_product_ids": [
+          "purple-melancholia"
+        ]
+      },
+      {
+        "legacy_product_id": null,
+        "legacy_product_name": null,
+        "brand": null,
+        "current_legacy_image": null,
+        "client_original_filename": "VALENTINO - VALENTINO MELANCHOLIA.png",
+        "media_role": "bottle",
+        "status": "AMBIGUOUS",
+        "match_basis": "FUZZY_CANDIDATE_ONLY",
+        "notes": "Filename similarity suggests candidate products, but fuzzy similarity is not authoritative.",
+        "source": [
+          "assets/data.js",
+          "img/perfumes filename inventory"
+        ],
+        "candidate_legacy_product_ids": [
+          "purple-melancholia"
+        ]
+      },
+      {
+        "legacy_product_id": null,
+        "legacy_product_name": null,
+        "brand": null,
+        "current_legacy_image": null,
+        "client_original_filename": "VERSACE - EROS EDP (2).png",
+        "media_role": "set",
+        "status": "AMBIGUOUS",
+        "match_basis": "FUZZY_CANDIDATE_ONLY",
+        "notes": "Filename similarity suggests candidate products, but fuzzy similarity is not authoritative.",
+        "source": [
+          "assets/data.js",
+          "img/perfumes filename inventory"
+        ],
+        "candidate_legacy_product_ids": [
+          "eros-edt",
+          "eros-flame"
+        ]
+      },
+      {
+        "legacy_product_id": null,
+        "legacy_product_name": null,
+        "brand": null,
+        "current_legacy_image": null,
+        "client_original_filename": "VERSACE - EROS EDP.png",
+        "media_role": "bottle",
+        "status": "AMBIGUOUS",
+        "match_basis": "FUZZY_CANDIDATE_ONLY",
+        "notes": "Filename similarity suggests candidate products, but fuzzy similarity is not authoritative.",
+        "source": [
+          "assets/data.js",
+          "img/perfumes filename inventory"
+        ],
+        "candidate_legacy_product_ids": [
+          "eros-edt",
+          "eros-flame"
+        ]
+      }
+    ],
+    "no_match": [
+      {
+        "legacy_product_id": null,
+        "legacy_product_name": null,
+        "brand": null,
+        "current_legacy_image": null,
+        "client_original_filename": "Cuarteto Oriental Vainilla Freak (2).png",
+        "media_role": "set",
+        "status": "NO_MATCH",
+        "match_basis": "NO_CATALOG_CANDIDATE",
+        "notes": "No safe legacy catalog identity candidate was found from filename metadata.",
+        "source": [
+          "assets/data.js",
+          "img/perfumes filename inventory"
+        ],
+        "candidate_legacy_product_ids": []
+      },
+      {
+        "legacy_product_id": null,
+        "legacy_product_name": null,
+        "brand": null,
+        "current_legacy_image": null,
+        "client_original_filename": "Cuarteto Oriental Vainilla Freak.png",
+        "media_role": "bottle",
+        "status": "NO_MATCH",
+        "match_basis": "NO_CATALOG_CANDIDATE",
+        "notes": "No safe legacy catalog identity candidate was found from filename metadata.",
+        "source": [
+          "assets/data.js",
+          "img/perfumes filename inventory"
+        ],
+        "candidate_legacy_product_ids": []
+      },
+      {
+        "legacy_product_id": "lovely-cherry",
+        "legacy_product_name": "Lovely Cherry",
+        "brand": "Maison Alhambra",
+        "current_legacy_image": null,
+        "client_original_filename": null,
+        "media_role": null,
+        "status": "NO_MATCH",
+        "match_basis": "NO_CLIENT_FILE",
+        "notes": "No client PNG filename safely matches this legacy catalog product.",
+        "source": [
+          "assets/data.js",
+          "img/perfumes filename inventory"
+        ],
+        "candidate_legacy_product_ids": []
+      },
+      {
+        "legacy_product_id": "royal-blend-sequoia",
+        "legacy_product_name": "Royal Blend Sequoia",
+        "brand": "Maison Alhambra",
+        "current_legacy_image": null,
+        "client_original_filename": null,
+        "media_role": null,
+        "status": "NO_MATCH",
+        "match_basis": "NO_CLIENT_FILE",
+        "notes": "No client PNG filename safely matches this legacy catalog product.",
+        "source": [
+          "assets/data.js",
+          "img/perfumes filename inventory"
+        ],
+        "candidate_legacy_product_ids": []
+      }
+    ],
+    "client_asset_missing": [
+      {
+        "legacy_product_id": "sceptre-malachite",
+        "legacy_product_name": "Sceptre Malachite",
+        "brand": "Maison Alhambra",
+        "current_legacy_image": "img/perfumes/transparent/MAISON ALHAMBRA - SCEPTRE MALACHITE (2).webp",
+        "client_original_filename": null,
+        "media_role": null,
+        "status": "CLIENT_ASSET_MISSING",
+        "match_basis": "DOCUMENTED_CLIENT_ASSET_MISSING",
+        "notes": "No confirmed replacement client photo; do not substitute another asset.",
+        "source": [
+          "assets/data.js",
+          "docs/client-decisions.md"
+        ],
+        "candidate_legacy_product_ids": []
+      }
+    ],
+    "orphan_client_files": [
+      "Cuarteto Oriental Vainilla Freak (2).png",
+      "Cuarteto Oriental Vainilla Freak.png"
+    ]
+  },
+  "duplicate_analysis": {
+    "multiple_client_files_per_product": [
+      {
+        "legacy_product_id": "1-million-lucky",
+        "client_original_filenames": [
+          "Paco Rabanne 1 Million Lucky (2).png",
+          "Paco Rabanne 1 Million Lucky.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "212-edt",
+        "client_original_filenames": [
+          "Carolina Herrera 212 EDT (2).png",
+          "Carolina Herrera 212 EDT.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "9am",
+        "client_original_filenames": [
+          "Afnan 9 AM (2).png",
+          "Afnan 9 AM.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "9am-dive",
+        "client_original_filenames": [
+          "AFNAN - 9AM DIVE (2).png",
+          "AFNAN - 9AM DIVE.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "9pm",
+        "client_original_filenames": [
+          "AFNAN - 9PM (2).png",
+          "AFNAN - 9PM.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "9pm-elixir",
+        "client_original_filenames": [
+          "AFNAN - 9PM ELIXIR (2).png",
+          "AFNAN - 9PM ELIXIR.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "9pm-night-out",
+        "client_original_filenames": [
+          "AFNAN - 9PM NIGHT OUT (2).png",
+          "AFNAN - 9PM NIGHT OUT.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "9pm-rebel",
+        "client_original_filenames": [
+          "9 PM Rebel (2).png",
+          "9 PM Rebel.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "adg-profondo-edp",
+        "client_original_filenames": [
+          "GIORGIO ARMANI .-ACQUA DI GIO PROFONDO EDP (2).png",
+          "GIORGIO ARMANI .-ACQUA DI GIO PROFONDO EDP.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "amber-o-gold-e",
+        "client_original_filenames": [
+          "AL HARAMAIN - AMBER OUD GOLD EDITION (2).png",
+          "AL HARAMAIN - AMBER OUD GOLD EDITION.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "angham",
+        "client_original_filenames": [
+          "Lattafa Angham (2).png",
+          "Lattafa Angham.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "ao-aqua-dubai",
+        "client_original_filenames": [
+          "Amber Oud Aqua Dubai (2).png",
+          "Amber Oud Aqua Dubai.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "ao-dubai-night",
+        "client_original_filenames": [
+          "Amber Oud Dubai Night (2).png",
+          "Amber Oud Dubai Night.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "art-of-universe",
+        "client_original_filenames": [
+          "Art Of Universe (2).png",
+          "Art Of Universe.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "asad-bourbon",
+        "client_original_filenames": [
+          "LATTAFA - ASAD BOURBON (2).png",
+          "LATTAFA - ASAD BOURBON.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "asad-clasico",
+        "client_original_filenames": [
+          "LATTAFA - ASAD CLASICO (2).png",
+          "LATTAFA - ASAD CLASICO.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "asad-elixir",
+        "client_original_filenames": [
+          "Asad Elixir (2).png",
+          "Asad Elixir.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "azzaro-tmw-edp",
+        "client_original_filenames": [
+          "AZZARO.-AZZARO THE MOSTH WANTED INTENSE EDP (2).png",
+          "AZZARO.-AZZARO THE MOSTH WANTED INTENSE EDP.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "b-man-in-black",
+        "client_original_filenames": [
+          "Bvlgari Bvlgari Man In Black (2).png",
+          "Bvlgari Bvlgari Man In Black.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "bharara-king",
+        "client_original_filenames": [
+          "BHARARA - BHARARA KING (2).png",
+          "BHARARA - BHARARA KING.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "bir-intense",
+        "client_original_filenames": [
+          "Burberry Burberry Brit Intense (2).png",
+          "Burberry Burberry Brit Intense.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "bright-peach",
+        "client_original_filenames": [
+          "Bright Peach (2).png",
+          "Bright Peach.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "by-the-fireplace",
+        "client_original_filenames": [
+          "Maison Margiela By The Fireplace (2).png",
+          "Maison Margiela By The Fireplace.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "cdn-intense-man",
+        "client_original_filenames": [
+          "ARMAF - CLUB DE NUIT INTENSE EDT (2).png",
+          "ARMAF - CLUB DE NUIT INTENSE EDT.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "cdn-preciux-i",
+        "client_original_filenames": [
+          "Club de Nuit Precieux I (2).png",
+          "Club de Nuit Precieux I.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "cdn-urban-man-e",
+        "client_original_filenames": [
+          "ARMAF - CLUB DE NUIT URBAN MAN ELIXIR (2).png",
+          "ARMAF - CLUB DE NUIT URBAN MAN ELIXIR.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "cedrat-boise-int",
+        "client_original_filenames": [
+          "Mancera Cedrat Boise Intense (2).png",
+          "Mancera Cedrat Boise Intense.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "dylan-blue",
+        "client_original_filenames": [
+          "Versace Dylan Blue (2).png",
+          "Versace Dylan Blue.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "eclaire",
+        "client_original_filenames": [
+          "LATTAFA - ECLAIRE (2).png",
+          "LATTAFA - ECLAIRE.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "eclaire-banoffi",
+        "client_original_filenames": [
+          "Lattafa Eclaire Banoffi (2).png",
+          "Lattafa Eclaire Banoffi.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "eclaire-pistache",
+        "client_original_filenames": [
+          "Lattafa Eclaire Pistache (2).png",
+          "Lattafa Eclaire Pistache.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "erba-pura",
+        "client_original_filenames": [
+          "Xerjoff Erba Pura (2).png",
+          "Xerjoff Erba Pura.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "eros-edt",
+        "client_original_filenames": [
+          "Versace Eros EDT (2).png",
+          "Versace Eros EDT.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "eros-flame",
+        "client_original_filenames": [
+          "VERSACE - EROS FLAME (2).png",
+          "VERSACE - EROS FLAME.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "fakhar-black",
+        "client_original_filenames": [
+          "Lattafa Fakhar Black (2).png",
+          "Lattafa Fakhar Black.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "hawas-chrome",
+        "client_original_filenames": [
+          "RASASI - HAWAS CHROME (2).png",
+          "RASASI - HAWAS CHROME.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "hawas-elixir",
+        "client_original_filenames": [
+          "Hawas Elixir (2).png",
+          "Hawas Elixir.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "hawas-exotic",
+        "client_original_filenames": [
+          "Hawas Exotic (2).png",
+          "Hawas Exotic.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "hawas-fire",
+        "client_original_filenames": [
+          "RASASI - HAWAS FIRE (2).png",
+          "RASASI - HAWAS FIRE.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "hawas-ice",
+        "client_original_filenames": [
+          "RASASI - HAWAS ICE (2).png",
+          "RASASI - HAWAS ICE.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "hawas-kobra",
+        "client_original_filenames": [
+          "RASASI - HAWAS KOBRA (2).png",
+          "RASASI - HAWAS KOBRA.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "hawas-tropical",
+        "client_original_filenames": [
+          "RASASI - HAWAS TROPICAL (2).png",
+          "RASASI - HAWAS TROPICAL.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "hawas-verde",
+        "client_original_filenames": [
+          "Hawas Verde (2).png",
+          "Hawas Verde.png",
+          "RASASI - HAWAS verde (2).png",
+          "RASASI - HAWAS verde.png"
+        ],
+        "classification": "REVIEW_ADDITIONAL_FILES"
+      },
+      {
+        "legacy_product_id": "homme-white",
+        "client_original_filenames": [
+          "Lattafa Homme White (2).png",
+          "Lattafa Homme White.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "honor-and-glory",
+        "client_original_filenames": [
+          "LATTAFA - HONOR AND GLORY (2).png",
+          "LATTAFA - HONOR AND GLORY.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "invictus-elixir",
+        "client_original_filenames": [
+          "PACO RABANNE -INVICTUS ELIXIR (2).png",
+          "PACO RABANNE -INVICTUS ELIXIR.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "jean-lowe-inmotel",
+        "client_original_filenames": [
+          "Maison Alhambra Jean Lowe Inmotel (2).png",
+          "Maison Alhambra Jean Lowe Inmotel.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "jean-lowe-vibe",
+        "client_original_filenames": [
+          "Maison Alhambra Jean Lowe Vibe (2).png",
+          "Maison Alhambra Jean Lowe Vibe.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "khamrah-clasico",
+        "client_original_filenames": [
+          "LATTAFA - KHAMRAH CLASICO (2).png",
+          "LATTAFA - KHAMRAH CLASICO (3).png",
+          "LATTAFA - KHAMRAH CLASICO (4).png",
+          "LATTAFA - KHAMRAH CLASICO.png"
+        ],
+        "classification": "REVIEW_ADDITIONAL_FILES"
+      },
+      {
+        "legacy_product_id": "khamrah-dukhan",
+        "client_original_filenames": [
+          "LATTAFA - KHAMRAH DUKHAN (2).png",
+          "LATTAFA - KHAMRAH DUKHAN.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "khamrah-qahwa",
+        "client_original_filenames": [
+          "LATTAFA - KHAMRAH QAHWA (2).png",
+          "LATTAFA - KHAMRAH QAHWA.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "khamrah-waha",
+        "client_original_filenames": [
+          "Khamrah Waha (2).png",
+          "Khamrah Waha.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "le-beau-le-parfum",
+        "client_original_filenames": [
+          "JEAN PAUL GAULTIER - LE BEAU LE PARFUM (2).png",
+          "JEAN PAUL GAULTIER - LE BEAU LE PARFUM.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "le-male-elixir",
+        "client_original_filenames": [
+          "JEAN PAUL GAULTIER - LE MALE ELIXIR (2).png",
+          "JEAN PAUL GAULTIER - LE MALE ELIXIR.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "m-red-tobacco",
+        "client_original_filenames": [
+          "Mancera Mancera Red Tobacco (2).png",
+          "Mancera Mancera Red Tobacco.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "m-sky-elixir",
+        "client_original_filenames": [
+          "Mandarin Sky Elixir (2).png",
+          "Mandarin Sky Elixir.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "m-sky-vintage",
+        "client_original_filenames": [
+          "Mandarin Sky Vintage (2).png",
+          "Mandarin Sky Vintage.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "mandarin-sky",
+        "client_original_filenames": [
+          "ARMAF - MANDARIN SKY (2).png",
+          "ARMAF - MANDARIN SKY.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "mashrabya",
+        "client_original_filenames": [
+          "Mashrabya (2).png",
+          "Mashrabya.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "mayar",
+        "client_original_filenames": [
+          "Lattafa Mayar (2).png",
+          "Lattafa Mayar.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "mayar-cherry-i",
+        "client_original_filenames": [
+          "Lattafa Mayar Cherry Intense (2).png",
+          "Lattafa Mayar Cherry Intense.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "nautica-voyage",
+        "client_original_filenames": [
+          "Nautica Nautica Voyage (2).png",
+          "Nautica Nautica Voyage.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "nitro-red",
+        "client_original_filenames": [
+          "DUMONT PARIS - NITRO RED (2).png",
+          "DUMONT PARIS - NITRO RED.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "odyssey-aqua",
+        "client_original_filenames": [
+          "ARMAF - ODYSSEY AQUA (2).png",
+          "ARMAF - ODYSSEY AQUA.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "odyssey-artisto",
+        "client_original_filenames": [
+          "Lattafa Odyssey Artisto (2).png",
+          "Lattafa Odyssey Artisto.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "odyssey-homme",
+        "client_original_filenames": [
+          "Lattafa Odyssey Homme (2).png",
+          "Lattafa Odyssey Homme.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "odyssey-limoni",
+        "client_original_filenames": [
+          "Lattafa Odyssey Limoni (2).png",
+          "Lattafa Odyssey Limoni.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "odyssey-mega",
+        "client_original_filenames": [
+          "Lattafa Odyssey Mega (2).png",
+          "Lattafa Odyssey Mega.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "odyssey-spectra",
+        "client_original_filenames": [
+          "Lattafa Odyssey Spectra (2).png",
+          "Lattafa Odyssey Spectra.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "oud-for-glory",
+        "client_original_filenames": [
+          "Oud For Glory (2).png",
+          "Oud For Glory.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "paradise-garden",
+        "client_original_filenames": [
+          "Lattafa Paradise Garden (2).png",
+          "Lattafa Paradise Garden.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "purple-melancholia",
+        "client_original_filenames": [
+          "Purple Melancholia (2).png",
+          "Purple Melancholia.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "qaed-al-fursan",
+        "client_original_filenames": [
+          "Lattafa Qaed Al Fursan (2).png",
+          "Lattafa Qaed Al Fursan.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "rayhaan-italia",
+        "client_original_filenames": [
+          "Rayhaan Italia (2).png",
+          "Rayhaan Italia.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "red-intensely",
+        "client_original_filenames": [
+          "Lattafa Red Intensely (2).png",
+          "Lattafa Red Intensely.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "reserve-privee",
+        "client_original_filenames": [
+          "Armani Reserve Privée (2).png",
+          "Armani Reserve Privée.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "sauvage-edt",
+        "client_original_filenames": [
+          "Dior Sauvage EDT (2).png",
+          "Dior Sauvage EDT.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "spicebomb-extreme",
+        "client_original_filenames": [
+          "Spicebomb Extreme (2).png",
+          "Spicebomb Extreme.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "sublime",
+        "client_original_filenames": [
+          "LATTAFA - SUBLIME (2).png",
+          "LATTAFA - SUBLIME.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "supremacy-colle",
+        "client_original_filenames": [
+          "Afnan Supremacy Collection (2).png",
+          "Afnan Supremacy Collection.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "supremacy-noi",
+        "client_original_filenames": [
+          "Afnan Supremacy NOIR (2).png",
+          "Afnan Supremacy NOIR.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "swy-absolutely",
+        "client_original_filenames": [
+          "EMPORIO ARMANI - STRONGER WITH YOU ABSOLUTELY (2).png",
+          "EMPORIO ARMANI - STRONGER WITH YOU ABSOLUTELY.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "swy-intensely",
+        "client_original_filenames": [
+          "EMPORIO ARMANI - STRONGER WITH YOU INTENSELY (2).png",
+          "EMPORIO ARMANI - STRONGER WITH YOU INTENSELY.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "tmw-parfum",
+        "client_original_filenames": [
+          "AZZARO.-AZZARO THE MOSTH WANTED PARFUM (2).png",
+          "AZZARO.-AZZARO THE MOSTH WANTED PARFUM.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "ultra-male",
+        "client_original_filenames": [
+          "Jean Paul Gaultier Ultra Male (2).png",
+          "Jean Paul Gaultier Ultra Male.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "victory-elixir",
+        "client_original_filenames": [
+          "Paco Rabanne Victory Elixir (2).png",
+          "Paco Rabanne Victory Elixir.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "vulcan-feu",
+        "client_original_filenames": [
+          "FRENCH AVENUE - VULCAN FEU (2).png",
+          "FRENCH AVENUE - VULCAN FEU.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "yara-candy",
+        "client_original_filenames": [
+          "Yara Candy (2).png",
+          "Yara Candy.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "yara-elixir",
+        "client_original_filenames": [
+          "LATTAFA - YARA ELIXIR (2).png",
+          "LATTAFA - YARA ELIXIR.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "yara-pink",
+        "client_original_filenames": [
+          "LATTAFA - YARA PINK (2).png",
+          "LATTAFA - YARA PINK.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "yum-yum",
+        "client_original_filenames": [
+          "Lattafa Yum Yum (2).png",
+          "Lattafa Yum Yum.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      },
+      {
+        "legacy_product_id": "zanzibar-limited-e",
+        "client_original_filenames": [
+          "Zanzibar Limited Edition (2).png",
+          "Zanzibar Limited Edition.png"
+        ],
+        "classification": "EXPECTED_PAIR"
+      }
+    ],
+    "files_matching_multiple_products": [
+      {
+        "client_original_filename": "VERSACE - EROS EDP (2).png",
+        "candidate_legacy_product_ids": [
+          "eros-edt",
+          "eros-flame"
+        ]
+      },
+      {
+        "client_original_filename": "VERSACE - EROS EDP.png",
+        "candidate_legacy_product_ids": [
+          "eros-edt",
+          "eros-flame"
+        ]
+      }
+    ],
+    "duplicate_normalized_filenames": [
+      {
+        "normalized_filename": "french aveneu liquid brun",
+        "client_original_filenames": [
+          "FRENCH AVENEU - LIQUID BRUN.png",
+          "FRENCH AVENEU -LIQUID BRUN.png"
+        ]
+      }
+    ],
+    "img_map_collisions": []
+  }
+}
