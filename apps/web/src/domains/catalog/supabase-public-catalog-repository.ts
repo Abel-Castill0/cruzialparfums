@@ -61,6 +61,7 @@ export type PublicProductRow = {
     sort_order: number;
     archived_at: string | null;
     product_variant_id: string | null;
+    media_role: string | null;
   }>;
   product_categories: Array<{
     sort_order: number;
@@ -76,7 +77,7 @@ const PUBLIC_PRODUCT_SELECT = `
   product_variants(id, label, variant_kind, size_ml, price_amount, currency,
     publication_status, archived_at, sort_order, price_verification_status),
   product_media(provider, secure_url, alt, is_primary, sort_order, archived_at,
-    product_variant_id),
+    product_variant_id, media_role:metadata->>media_role),
   product_categories(sort_order, category:categories(business_unit_id, kind,
     slug, name, publication_status, archived_at))
 `;
@@ -90,8 +91,16 @@ function verification(value: string): CatalogVerificationStatus {
     || value === "official_pdf" || value === "unknown" ? value : "legacy";
 }
 
-function gender(value: string | null): CatalogGender {
-  return value === "women" || value === "men" ? value : "unisex";
+function gender(value: string | null): CatalogGender | null {
+  return value === "women" || value === "men" || value === "unisex" ? value : null;
+}
+
+function productionStatus(value: string): "active" | "discontinued" | null {
+  return value === "active" || value === "discontinued" ? value : null;
+}
+
+function availabilityStatus(value: string): "available" | "out_of_stock" | null {
+  return value === "available" || value === "out_of_stock" ? value : null;
 }
 
 function categoryOf(row: PublicProductRow, kind: string): PublicCategory | null {
@@ -150,7 +159,14 @@ function mapVariants(row: PublicProductRow): CatalogProductVariant[] {
     .sort((a, b) => a.sortOrder - b.sortOrder || a.variantId.localeCompare(b.variantId));
 }
 
-function mapMedia(row: PublicProductRow): CatalogProductMedia[] {
+type PublicMediaRole = "set" | "bottle" | "additional";
+type MappedPublicMedia = CatalogProductMedia & { role: PublicMediaRole | null };
+
+function mediaRole(value: string | null): PublicMediaRole | null {
+  return value === "set" || value === "bottle" || value === "additional" ? value : null;
+}
+
+function mapMedia(row: PublicProductRow): MappedPublicMedia[] {
   const fallbackAlt = [row.brand, row.name].filter(Boolean).join(" ");
   const publicVariantIds = new Set(row.product_variants
     .filter((item) => item.publication_status === "published" && item.archived_at === null)
@@ -165,6 +181,7 @@ function mapMedia(row: PublicProductRow): CatalogProductMedia[] {
       alt: item.alt?.trim() || fallbackAlt,
       isPrimary: item.is_primary,
       sortOrder: item.sort_order,
+      role: mediaRole(item.media_role),
     }))
     .sort((a, b) => Number(b.isPrimary) - Number(a.isPrimary)
       || a.sortOrder - b.sortOrder || a.url.localeCompare(b.url));
@@ -176,13 +193,24 @@ export function mapPublicProduct(row: PublicProductRow): CatalogProduct | null {
     || row.publication_status !== "published" || row.archived_at !== null) return null;
   const type = commercialType(categoryOf(row, "commercial_type"));
   const family = categoryOf(row, "olfactory_family");
-  if (!row.legacy_id || !type || !family) return null;
+  const mappedGender = gender(row.gender);
+  const production = productionStatus(row.production_status);
+  const availability = availabilityStatus(row.availability_status);
+  if (!row.legacy_id || !type || !family || !mappedGender || !production || !availability) return null;
   const variants = mapVariants(row);
   const decants = variants.filter((item) => item.kind === "decant");
   if (decants.length === 0) return null;
   const bottles = variants.filter((item) => item.kind === "bottle");
-  const media = mapMedia(row);
-  const primary = media.find((item) => item.isPrimary) ?? media[0] ?? null;
+  const mappedMedia = mapMedia(row);
+  const primary = mappedMedia.find((item) => item.isPrimary) ?? mappedMedia[0] ?? null;
+  const decantMedia = mappedMedia.find((item) => item.role === "set") ?? primary;
+  const bottleMedia = mappedMedia.find((item) => item.role === "bottle") ?? primary;
+  const media: CatalogProductMedia[] = mappedMedia.map((item) => ({
+    url: item.url,
+    alt: item.alt,
+    isPrimary: item.isPrimary,
+    sortOrder: item.sortOrder,
+  }));
   const priceRecord = (items: CatalogProductVariant[]) => Object.fromEntries(
     items.map((item) => [item.sizeMl, Number(item.priceAmount)]),
   );
@@ -192,7 +220,7 @@ export function mapPublicProduct(row: PublicProductRow): CatalogProduct | null {
     slug: row.slug,
     brand: row.brand ?? "",
     name: row.name,
-    gender: gender(row.gender),
+    gender: mappedGender,
     type,
     family: family.name,
     concentration: row.concentration ?? "",
@@ -202,17 +230,17 @@ export function mapPublicProduct(row: PublicProductRow): CatalogProduct | null {
     notes: asStringArray(row.notes),
     tag: row.tag ?? family.name,
     description: row.description ?? "",
-    discontinued: row.production_status === "discontinued",
+    discontinued: production === "discontinued",
     bestseller: false,
     hidden: false,
-    availabilityStatus: row.availability_status === "out_of_stock" ? "out_of_stock" : "available",
+    availabilityStatus: availability,
     isFeatured: row.is_featured,
     featuredRank: row.featured_rank,
     featuredFrom: row.featured_from,
     featuredUntil: row.featured_until,
     imageUrl: primary?.url ?? null,
-    decantImageUrl: primary?.url ?? null,
-    bottleImageUrl: primary?.url ?? null,
+    decantImageUrl: decantMedia?.url ?? null,
+    bottleImageUrl: bottleMedia?.url ?? null,
     imageAlt: primary?.alt ?? [row.brand, row.name].filter(Boolean).join(" "),
     verificationStatus: verification(row.verification_status),
     bottlePricingVerificationStatus: bottles[0]?.priceVerificationStatus ?? null,

@@ -63,16 +63,27 @@ export function compareCatalogs(
   for (const identity of identities) {
     const legacy = legacyById.get(identity);
     const supabase = supabaseById.get(identity);
-    if (!legacy || !supabase) {
+    if (legacy && !supabase) {
       differences.push({
         identity,
-        field: "publication",
-        legacy: Boolean(legacy),
-        supabase: Boolean(supabase),
+        field: "missing_in_supabase",
+        legacy: true,
+        supabase: false,
         classification: "EXPECTED_BLOCKED",
       });
       continue;
     }
+    if (!legacy && supabase) {
+      differences.push({
+        identity,
+        field: "unexpected_in_supabase",
+        legacy: false,
+        supabase: true,
+        classification: "REAL_MAPPING_BUG",
+      });
+      continue;
+    }
+    if (!legacy || !supabase) continue;
     const left = comparableProduct(legacy);
     const right = comparableProduct(supabase);
     for (const field of Object.keys(left) as Array<keyof typeof left>) {

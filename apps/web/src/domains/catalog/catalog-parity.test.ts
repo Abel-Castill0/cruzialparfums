@@ -4,11 +4,20 @@ import { mapPublicProduct, type PublicProductRow } from "./supabase-public-catal
 import { LegacyCatalogRepository } from "./legacy-catalog-repository";
 
 describe("catalog parity oracle", () => {
-  it("classifies absent unpublished products as blocked, not mapping failures", () => {
+  it("classifies a legacy product absent from Supabase as expected blocked publication", () => {
     const legacy = new LegacyCatalogRepository().listFragrances().slice(0, 2);
     expect(compareCatalogs(legacy, [])).toEqual(legacy
-      .map((product) => expect.objectContaining({ identity: product.legacyId, classification: "EXPECTED_BLOCKED" }))
+      .map((product) => expect.objectContaining({ identity: product.legacyId, field: "missing_in_supabase", classification: "EXPECTED_BLOCKED" }))
       .sort());
+  });
+
+  it("classifies a public Supabase-only product as a real mapping bug", () => {
+    const supabaseOnly = new LegacyCatalogRepository().listFragrances()[0]!;
+    expect(compareCatalogs([], [supabaseOnly])).toEqual([expect.objectContaining({
+      identity: supabaseOnly.legacyId,
+      field: "unexpected_in_supabase",
+      classification: "REAL_MAPPING_BUG",
+    })]);
   });
 
   it("classifies exact comparable mapping changes as real bugs and media source changes separately", () => {
@@ -45,7 +54,7 @@ describe("catalog parity oracle", () => {
         sort_order: variant.sortOrder,
         price_verification_status: variant.priceVerificationStatus,
       })),
-      product_media: [{ provider: "cloudinary", secure_url: "https://res.cloudinary.com/demo/new.webp", alt: legacy.imageAlt, is_primary: true, sort_order: 0, archived_at: null, product_variant_id: null }],
+      product_media: [{ provider: "cloudinary", secure_url: "https://res.cloudinary.com/demo/new.webp", alt: legacy.imageAlt, is_primary: true, sort_order: 0, archived_at: null, product_variant_id: null, media_role: "set" }],
       product_categories: [
         { sort_order: 0, category: { business_unit_id: "11111111-1111-4111-8111-111111111111", kind: "commercial_type", slug: legacy.type, name: legacy.type, publication_status: "published", archived_at: null } },
         { sort_order: 1, category: { business_unit_id: "11111111-1111-4111-8111-111111111111", kind: "olfactory_family", slug: "family", name: legacy.family, publication_status: "published", archived_at: null } },

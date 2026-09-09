@@ -39,8 +39,13 @@ blindly.
   semantic `arab`; designer/niche map directly. A missing, unpublished,
   cross-unit or unsupported classification refuses the product.
 - Media is limited to active HTTPS Cloudinary `secure_url` rows, sorted primary
-  first and then deterministically. Missing media is represented by an empty
-  collection/null image, with no web or local-image fallback.
+  first and then deterministically. A narrow `metadata->>media_role` projection
+  preserves distinct `set`/`bottle` display images with primary/first fallback.
+  Missing media is represented by an empty collection/null image, with no web
+  or local-image fallback.
+- The parity oracle treats a legacy product absent from public Supabase as
+  `EXPECTED_BLOCKED`, but a public Supabase-only product as a
+  `REAL_MAPPING_BUG`; the two directions are intentionally asymmetric.
 - The current hosted anonymous result is correctly zero Parfums products.
 
 ## 4H2B readiness matrix

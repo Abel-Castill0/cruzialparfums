@@ -35,10 +35,10 @@ function row(overrides: Partial<PublicProductRow> = {}): PublicProductRow {
       { id: "decant-draft", label: "5 ml draft", variant_kind: "decant", size_ml: 5, price_amount: "99.99", currency: "PEN", publication_status: "draft", archived_at: null, sort_order: 1, price_verification_status: "legacy" },
     ],
     product_media: [
-      { provider: "cloudinary", secure_url: "https://res.cloudinary.com/demo/second.webp", alt: "Vista lateral", is_primary: false, sort_order: 1, archived_at: null, product_variant_id: null },
-      { provider: "cloudinary", secure_url: "https://res.cloudinary.com/demo/main.webp", alt: null, is_primary: true, sort_order: 9, archived_at: null, product_variant_id: "decant-public" },
-      { provider: "cloudinary", secure_url: "https://res.cloudinary.com/demo/draft.webp", alt: null, is_primary: false, sort_order: 0, archived_at: null, product_variant_id: "decant-draft" },
-      { provider: "legacy_static", secure_url: "/img/local.webp", alt: null, is_primary: false, sort_order: 0, archived_at: null, product_variant_id: null },
+      { provider: "cloudinary", secure_url: "https://res.cloudinary.com/demo/bottle.webp", alt: "Vista lateral", is_primary: false, sort_order: 1, archived_at: null, product_variant_id: null, media_role: "bottle" },
+      { provider: "cloudinary", secure_url: "https://res.cloudinary.com/demo/set.webp", alt: null, is_primary: true, sort_order: 9, archived_at: null, product_variant_id: "decant-public", media_role: "set" },
+      { provider: "cloudinary", secure_url: "https://res.cloudinary.com/demo/draft.webp", alt: null, is_primary: false, sort_order: 0, archived_at: null, product_variant_id: "decant-draft", media_role: "additional" },
+      { provider: "legacy_static", secure_url: "/img/local.webp", alt: null, is_primary: false, sort_order: 0, archived_at: null, product_variant_id: null, media_role: null },
     ],
     product_categories: [
       { sort_order: 0, category: { business_unit_id: PARFUMS_BUSINESS_UNIT_ID, kind: "commercial_type", slug: "arabic", name: "Árabe", publication_status: "published", archived_at: null } },
@@ -81,10 +81,35 @@ describe("SupabasePublicCatalogRepository mapping", () => {
   it("uses active Cloudinary media only, primary first with stable supplemental order and safe alt", () => {
     const product = mapPublicProduct(row());
     expect(product?.media).toEqual([
-      { url: "https://res.cloudinary.com/demo/main.webp", alt: "Maison Test Test Parfum", isPrimary: true, sortOrder: 9 },
-      { url: "https://res.cloudinary.com/demo/second.webp", alt: "Vista lateral", isPrimary: false, sortOrder: 1 },
+      { url: "https://res.cloudinary.com/demo/set.webp", alt: "Maison Test Test Parfum", isPrimary: true, sortOrder: 9 },
+      { url: "https://res.cloudinary.com/demo/bottle.webp", alt: "Vista lateral", isPrimary: false, sortOrder: 1 },
     ]);
-    expect(product?.imageUrl).toBe("https://res.cloudinary.com/demo/main.webp");
+    expect(product).toMatchObject({
+      imageUrl: "https://res.cloudinary.com/demo/set.webp",
+      decantImageUrl: "https://res.cloudinary.com/demo/set.webp",
+      bottleImageUrl: "https://res.cloudinary.com/demo/bottle.webp",
+    });
+    expect(product?.decantImageUrl).not.toBe(product?.bottleImageUrl);
+  });
+
+  it("falls back safely to the primary image when only one authoritative role exists", () => {
+    const product = mapPublicProduct(row({
+      product_media: [{
+        provider: "cloudinary",
+        secure_url: "https://res.cloudinary.com/demo/only-bottle.webp",
+        alt: null,
+        is_primary: true,
+        sort_order: 0,
+        archived_at: null,
+        product_variant_id: null,
+        media_role: "bottle",
+      }],
+    }));
+    expect(product).toMatchObject({
+      imageUrl: "https://res.cloudinary.com/demo/only-bottle.webp",
+      decantImageUrl: "https://res.cloudinary.com/demo/only-bottle.webp",
+      bottleImageUrl: "https://res.cloudinary.com/demo/only-bottle.webp",
+    });
   });
 
   it("exposes missing media honestly and does not add a local fallback", () => {
@@ -104,6 +129,14 @@ describe("SupabasePublicCatalogRepository mapping", () => {
       archived_at: null,
     };
     expect(mapPublicProduct(badCategory)).toBeNull();
+  });
+
+  it.each([
+    ["gender", { gender: "unsupported" }],
+    ["production status", { production_status: "retired" }],
+    ["availability status", { availability_status: "unknown" }],
+  ])("fails closed for malformed %s", (_label, overrides) => {
+    expect(mapPublicProduct(row(overrides))).toBeNull();
   });
 
   it("returns no products for the current zero-published state", () => {

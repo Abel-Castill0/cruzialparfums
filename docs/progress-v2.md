@@ -80,9 +80,11 @@ Do not re-audit closed capabilities without evidence of regression.
 Provider-neutral catalog types plus a public/RLS-bound Supabase repository,
 typed `public_contact` reader and deterministic parity oracle now exist. The
 repository performs one composed query (no N+1), maps exact decimal price text,
-published categories/variants and active Cloudinary media, and exposes missing
-media honestly. Anonymous hosted staging verification remains 0 public Parfums
-products, as expected. No schema migration or staging publication was needed.
+published categories/variants and active Cloudinary media, including preserved
+`set`/`bottle` roles, and exposes missing media honestly. The parity oracle
+fails on unexpected public Supabase-only identities. Anonymous hosted staging
+verification remains 0 public Parfums products, as expected. No schema
+migration or staging publication was needed.
 
 The runtime source remains `LegacyCatalogRepository → assets/data.js`, including
 checkout authority, combos and mayorista. 4H2B is blocked by publication,
