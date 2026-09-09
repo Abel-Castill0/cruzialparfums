@@ -1316,6 +1316,28 @@ export type Database = {
       }
     }
     Functions: {
+      admin_archive_campaign: {
+        Args: { p_campaign_id: string; p_expected_updated_at: string }
+        Returns: {
+          archived_at: string | null
+          business_unit_id: string
+          closes_at: string | null
+          created_at: string
+          id: string
+          name: string
+          number: number
+          opens_at: string | null
+          public_message: string | null
+          status: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "campaigns"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       admin_archive_category: {
         Args: { p_category_id: string; p_expected_updated_at: string }
         Returns: {
@@ -1442,6 +1464,34 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "product_variants"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      admin_create_campaign: {
+        Args: {
+          p_closes_at?: string
+          p_name: string
+          p_number: number
+          p_opens_at?: string
+          p_public_message?: string
+        }
+        Returns: {
+          archived_at: string | null
+          business_unit_id: string
+          closes_at: string | null
+          created_at: string
+          id: string
+          name: string
+          number: number
+          opens_at: string | null
+          public_message: string | null
+          status: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "campaigns"
           isOneToOne: true
           isSetofReturn: false
         }
@@ -1823,6 +1873,32 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      admin_set_campaign_status: {
+        Args: {
+          p_campaign_id: string
+          p_expected_updated_at: string
+          p_status: string
+        }
+        Returns: {
+          archived_at: string | null
+          business_unit_id: string
+          closes_at: string | null
+          created_at: string
+          id: string
+          name: string
+          number: number
+          opens_at: string | null
+          public_message: string | null
+          status: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "campaigns"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       admin_set_combo_composition: {
         Args: {
           p_combo_id: string
@@ -1886,6 +1962,35 @@ export type Database = {
           to: "product_categories"
           isOneToOne: false
           isSetofReturn: true
+        }
+      }
+      admin_update_campaign: {
+        Args: {
+          p_campaign_id: string
+          p_closes_at: string
+          p_expected_updated_at: string
+          p_name: string
+          p_opens_at: string
+          p_public_message: string
+        }
+        Returns: {
+          archived_at: string | null
+          business_unit_id: string
+          closes_at: string | null
+          created_at: string
+          id: string
+          name: string
+          number: number
+          opens_at: string | null
+          public_message: string | null
+          status: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "campaigns"
+          isOneToOne: true
+          isSetofReturn: false
         }
       }
       admin_update_category: {

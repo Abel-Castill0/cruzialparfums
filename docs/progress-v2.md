@@ -74,6 +74,7 @@ Isolated:
 - Public Supabase Catalog Repository Foundation + Parity Readiness (4H2A) ✅
 - Vercel Preview + Hosted Supabase Auth (4I1) ✅
 - Parfums Preview QA (4I2) ✅
+- Admin Import — Consolidado lifecycle + security foundation (4J1) ✅
 
 Do not re-audit closed capabilities without evidence of regression.
 
@@ -322,6 +323,66 @@ pagination, filters, detail scoping, security-definer read model).
 `supabase/tests/02_rls_business_unit_isolation.sql` updated: its old
 lives_ok on a direct audit_log INSERT is now throws_ok, matching the fix.
 
+## Admin Import — Consolidado lifecycle (4J1)
+
+Two confirmed gaps closed before any campaign mutation surface was built:
+
+- **Public visibility.** `campaigns_public_read`/`app.campaign_is_public`
+  previously treated `scheduled`/`open`/`paused` as public. Narrowed to the
+  confirmed contract: only `status = 'open' AND archived_at IS NULL AND`
+  business unit = `import`. draft/scheduled/paused/closed/fulfilled/archived
+  are all private. `campaign_products` inherits this unchanged (it already
+  delegated to `app.campaign_is_public`).
+- **Direct-write/audit bypass.** `authenticated` had table-level
+  INSERT/UPDATE/DELETE on `campaigns`/`campaign_products` through PostgREST,
+  bypassing any audited RPC. Revoked (same posture as 4G1 Settings); the RLS
+  write policies stay as a dormant second layer. `campaign_products` has no
+  mutation RPC yet — closing its direct-write path now means 4J2 cannot
+  inherit an unaudited bypass.
+
+Migration: `20260909000000_admin_import_consolidados.sql`. Also adds additive
+guards (`number > 0`, non-blank `name`, `public_message` ≤ 2000 chars).
+
+Lifecycle RPCs (all `SECURITY DEFINER`, `app.assert_admin_for`, atomic
+`app.write_audit_log`, optimistic concurrency via `updated_at`):
+`admin_create_campaign` (always creates `draft`, business unit resolved
+server-side to `import`, never a parameter), `admin_update_campaign`
+(metadata only — name/opens_at/closes_at/public_message, never touches
+status), `admin_set_campaign_status` (explicit lifecycle action, audited as
+`campaign_state_change`; status is never inferred from opens_at/closes_at —
+no scheduler exists), `admin_archive_campaign` (soft archive, no cascade, no
+restore workflow — not confirmed, so not invented).
+
+pgTAP: `supabase/tests/16_admin_import_consolidados.sql` (31 checks — create/
+edit/status/archive audited, direct-write denied, duplicate number/invalid
+window rejected, stale update rejected, viewer/Parfums-only-admin/anon all
+denied, actor spoof impossible, full public-visibility matrix per status).
+
+Admin UI: `/admin/import/consolidados` (list, Spanish status labels:
+Borrador/Programado/Abierto/Pausado/Cerrado/Completado),
+`/admin/import/consolidados/nuevo` (create), `/admin/import/consolidados/[id]`
+(metadata edit + explicit status control + archive). Viewer read-only. No
+generic JSON editor, no campaign-product table (that is 4J2). Opening a
+campaign with zero campaign_products only warns in the UI — 4J2 has not
+shipped, so nothing blocks it at the database layer. `/admin/import` landing
+promotes "Consolidado / Campañas" from placeholder to implemented; every
+other Import section stays a placeholder. datetime-local inputs are
+explicitly Lima-time (`America/Lima`, fixed UTC-5) and converted to/from
+timestamptz server-side (`campaign-schema.ts`) — never left to the browser's
+own timezone.
+
+Deferred to 4J2 on purpose: "duplicate previous campaign" was not built — a
+correct duplicate should clone `campaign_products` atomically too, which
+does not exist until 4J2; shipping a metadata-only duplicate now would be
+misleading.
+
+Verified: local `supabase db reset` + full pgTAP suite (16 files, 407 checks,
+0 regressions), `next build`/`tsc`/`eslint --max-warnings=0` all green,
+targeted Vitest (39 files, 259 tests). `supabase db push --dry-run` against
+staging (`iyxidhglyqkzoziyewlc`) showed only this one migration; pushed with
+explicit user confirmation. No Sexto Consolidado data was seeded (PDF not
+parsed this phase, per 4J1 scope).
+
 ## Orders / payments
 
 Cruzial V1 does NOT charge through the website.
@@ -407,7 +468,7 @@ White backgrounds are intentional.
 ## Next roadmap
 
 1. 4H2B — Public Parfums Supabase cutover after its blockers close
-2. Import Admin / Consolidados
+2. 4J2 — Campaign Products / Prices / Availability Admin
 3. Import public order flow
 4. Global production-readiness audit
 5. Production Supabase / Vercel
