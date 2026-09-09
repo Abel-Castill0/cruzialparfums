@@ -9,6 +9,7 @@ import type {
   LegacyCatalogFixture,
   CatalogComboContent,
   LegacyProductRecord,
+  PublicCatalogRepository,
 } from "./types";
 
 const catalogFixture = catalogFixtureJson as unknown as LegacyCatalogFixture;
@@ -57,6 +58,8 @@ function toCatalogProduct(
     availabilityStatus: product.outOfStock ? "out_of_stock" : "available",
     isFeatured: Boolean(product.isFeatured),
     featuredRank: product.featuredRank ?? null,
+    featuredFrom: product.featuredFrom ?? null,
+    featuredUntil: product.featuredUntil ?? null,
     imageUrl: media?.url ?? null,
     decantImageUrl: decantMedia?.url ?? null,
     bottleImageUrl: bottleMedia?.url ?? null,
@@ -66,10 +69,39 @@ function toCatalogProduct(
     comboCompositionVerificationStatus:
       product.comboCompositionVerificationStatus,
     comboContent,
+    variants: [
+      ...Object.entries(product.price).map(([size, price], sortOrder) => ({
+        variantId: `decant-${size}ml`,
+        kind: "decant" as const,
+        sizeMl: size,
+        label: `${size} ml`,
+        priceAmount: price.toFixed(2),
+        currency: "PEN" as const,
+        sortOrder,
+        priceVerificationStatus: product.pricingVerificationStatus,
+      })),
+      ...Object.entries(product.bottle ?? {}).map(([size, price], index) => ({
+        variantId: `bottle-${size}ml`,
+        kind: "bottle" as const,
+        sizeMl: size,
+        label: `Frasco ${size} ml`,
+        priceAmount: price.toFixed(2),
+        currency: "PEN" as const,
+        sortOrder: Object.keys(product.price).length + index,
+        priceVerificationStatus:
+          product.bottlePricingVerificationStatus ?? product.pricingVerificationStatus,
+      })),
+    ],
+    media: media ? [{
+      url: media.url,
+      alt: [product.brand, product.name].filter(Boolean).join(" "),
+      isPrimary: true,
+      sortOrder: 0,
+    }] : [],
   };
 }
 
-export class LegacyCatalogRepository {
+export class LegacyCatalogRepository implements PublicCatalogRepository {
   constructor(
     private readonly mediaSource: ProductMediaSource =
       new LegacyProductionMediaSource(),

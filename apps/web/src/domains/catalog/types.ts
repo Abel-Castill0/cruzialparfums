@@ -1,10 +1,20 @@
+export type CatalogVerificationStatus =
+  | "legacy"
+  | "client_confirmed"
+  | "derived_validated"
+  | "official_pdf"
+  | "unknown";
+/** @deprecated Fixture-only alias. Public catalog code uses CatalogVerificationStatus. */
 export type LegacyVerificationStatus = "legacy";
 export type ComboCompositionVerificationStatus =
   | "client_provided_pending_reconfirmation"
   | null;
 
-export type LegacyProductType = "arab" | "designer" | "niche" | "combo";
-export type LegacyGender = "women" | "men" | "unisex";
+export type CatalogProductType = "arab" | "designer" | "niche" | "combo";
+export type CatalogGender = "women" | "men" | "unisex";
+/** @deprecated Fixture-only aliases retained while the runtime remains legacy. */
+export type LegacyProductType = CatalogProductType;
+export type LegacyGender = CatalogGender;
 
 /**
  * Client-confirmed 2026-09-06 (see docs/client-decisions.md): "descontinuado"
@@ -65,6 +75,26 @@ export type CatalogComboContent = Omit<LegacyComboContent, "heroImage"> & {
   verificationStatus: "client_provided_pending_reconfirmation";
 };
 
+export type CatalogProductVariant = {
+  /** Compatibility identity used by the current cart; never a database UUID. */
+  variantId: string;
+  kind: "decant" | "bottle";
+  sizeMl: string;
+  label: string;
+  /** Canonical decimal text. Arithmetic belongs at an explicit money boundary. */
+  priceAmount: string;
+  currency: "PEN";
+  sortOrder: number;
+  priceVerificationStatus: CatalogVerificationStatus;
+};
+
+export type CatalogProductMedia = {
+  url: string;
+  alt: string;
+  isPrimary: boolean;
+  sortOrder: number;
+};
+
 export type CatalogProduct = {
   legacyId: string;
   slug: string;
@@ -85,15 +115,30 @@ export type CatalogProduct = {
   availabilityStatus: AvailabilityStatus;
   isFeatured: boolean;
   featuredRank: number | null;
+  featuredFrom: string | null;
+  featuredUntil: string | null;
   imageUrl: string | null;
   decantImageUrl: string | null;
   bottleImageUrl: string | null;
   imageAlt: string;
-  verificationStatus: LegacyVerificationStatus;
-  bottlePricingVerificationStatus: LegacyVerificationStatus | null;
+  verificationStatus: CatalogVerificationStatus;
+  bottlePricingVerificationStatus: CatalogVerificationStatus | null;
   comboCompositionVerificationStatus: ComboCompositionVerificationStatus;
   comboContent: CatalogComboContent | null;
+  variants: CatalogProductVariant[];
+  media: CatalogProductMedia[];
 };
+
+/** Shared provider-neutral read boundary. Both repositories satisfy it. */
+export interface PublicCatalogRepository {
+  list(): CatalogProduct[];
+  listFragrances(): CatalogProduct[];
+  listCombos(): CatalogProduct[];
+  listFeatured(): CatalogProduct[];
+  findByLegacyId(legacyId: string): CatalogProduct | null;
+  findBySlug(slug: string): CatalogProduct | null;
+  listRelated(product: CatalogProduct, limit?: number): CatalogProduct[];
+}
 
 export type LegacyWholesalePrice = {
   unit: number;

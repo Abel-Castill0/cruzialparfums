@@ -1,6 +1,6 @@
 # CRUZIAL PLATFORM V2 — CURRENT STATE
 
-Last updated: 2026-09-08
+Last updated: 2026-09-09
 
 ## Git
 
@@ -71,8 +71,24 @@ Isolated:
 - Controlled Client Media Migration ✅
 - Admin Settings — Public Contact (4G1) ✅
 - Admin Audit Log — integrity fix + UI (4G2) ✅
+- Public Supabase Catalog Repository Foundation + Parity Readiness (4H2A) ✅
 
 Do not re-audit closed capabilities without evidence of regression.
+
+### 4H2A boundary
+
+Provider-neutral catalog types plus a public/RLS-bound Supabase repository,
+typed `public_contact` reader and deterministic parity oracle now exist. The
+repository performs one composed query (no N+1), maps exact decimal price text,
+published categories/variants and active Cloudinary media, and exposes missing
+media honestly. Anonymous hosted staging verification remains 0 public Parfums
+products, as expected. No schema migration or staging publication was needed.
+
+The runtime source remains `LegacyCatalogRepository → assets/data.js`, including
+checkout authority, combos and mayorista. 4H2B is blocked by publication,
+legacy price confirmation, three unconfirmed combos, wholesale tier parity,
+unresolved media and the required atomic storefront/checkout authority switch.
+Full matrix: `docs/4h2a-public-catalog-readiness.md`.
 
 ## Hosted staging
 

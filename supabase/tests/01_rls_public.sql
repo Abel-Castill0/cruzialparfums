@@ -5,7 +5,7 @@
 
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(19);
+select plan(20);
 
 -- ---------------------------------------------------------------------------
 -- Fixtures (created as the migration owner, rolled back at the end)
@@ -23,7 +23,9 @@ values
   ('11111111-0000-4000-8000-000000000001', '11111111-1111-4111-8111-111111111111',
    'published-parfum', 'Published Parfum', 'published'),
   ('11111111-0000-4000-8000-000000000002', '11111111-1111-4111-8111-111111111111',
-   'draft-parfum', 'Draft Parfum', 'draft');
+   'draft-parfum', 'Draft Parfum', 'draft'),
+  ('11111111-0000-4000-8000-000000000003', '11111111-1111-4111-8111-111111111111',
+   'hidden-parfum', 'Hidden Parfum', 'hidden');
 
 insert into public.categories (id, business_unit_id, kind, slug, name, publication_status)
 values
@@ -123,6 +125,12 @@ select is(
   (select count(*)::int from public.products where slug = 'draft-parfum'),
   0,
   'anon cannot read a draft product'
+);
+
+select is(
+  (select count(*)::int from public.products where slug = 'hidden-parfum'),
+  0,
+  'anon cannot read a hidden product'
 );
 
 select is(

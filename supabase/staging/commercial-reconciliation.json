@@ -6,7 +6,7 @@
     "source_artifact": "supabase/staging/legacy-catalog-staging.json",
     "source_fingerprints": {
       "assets/data.js": "f2cc900aa8851474b3e6d3e799deeac2103ed77da7f1e66034c1f05a9624021a",
-      "docs/client-decisions.md": "42e55b03810316ec6c80f262f13908eefe0cff2d285ada6489d5314c0b09a0d9",
+      "docs/client-decisions.md": "099637a1ce5eb594a1fbd33dcae4df71f5bf1d2e83f7b6f1250e35eba4a2aa0a",
       "supabase/migrations/20260907154348_catalog.sql": "0933444fefb2a3f65d0c54d592f6a06ad078625b30f349d68a9363da4f06683e",
       "supabase/migrations/20260907154401_integrity_hardening.sql": "7bbc09f0180cd016b2e2f9bfe5429fd747c086e70ca0720eece5a9fec121d37e",
       "supabase/migrations/20260908070000_admin_parfums_wholesale.sql": "db4cf7d1503f8c943b99dc5a0246b1edc2a6bc3ae53ab0f62303b282817d575a",

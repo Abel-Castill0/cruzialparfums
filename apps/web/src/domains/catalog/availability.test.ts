@@ -23,6 +23,8 @@ function product(overrides: Partial<CatalogProduct>): CatalogProduct {
     availabilityStatus: "available",
     isFeatured: false,
     featuredRank: null,
+    featuredFrom: null,
+    featuredUntil: null,
     imageUrl: null,
     decantImageUrl: null,
     bottleImageUrl: null,
@@ -31,6 +33,8 @@ function product(overrides: Partial<CatalogProduct>): CatalogProduct {
     bottlePricingVerificationStatus: null,
     comboCompositionVerificationStatus: null,
     comboContent: null,
+    variants: [],
+    media: [],
     ...overrides,
   };
 }
