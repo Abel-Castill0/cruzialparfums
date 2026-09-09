@@ -70,6 +70,7 @@ Isolated:
 - Controlled Hosted Staging Commercial Population ✅
 - Controlled Client Media Migration ✅
 - Admin Settings — Public Contact (4G1) ✅
+- Admin Audit Log — integrity fix + UI (4G2) ✅
 
 Do not re-audit closed capabilities without evidence of regression.
 
@@ -180,7 +181,42 @@ IMPORT_SETTINGS) is unchanged and still what public V2 consumers read —
 the DB row is the staged canonical value for the future storefront cutover,
 not wired to any public runtime path in this phase.
 
-Audit UI itself is 4G2 — not built yet.
+## Audit Log (4G2)
+
+Confirmed integrity gap closed: `audit_log_admin_insert` let any
+authenticated admin INSERT an `audit_log` row directly (actor-spoof-proof
+via `actor_user_id = auth.uid()`, but not fabrication-proof — a row
+disconnected from any real mutation was still possible). Fix: dropped that
+policy and revoked `authenticated`'s table-level INSERT grant on
+`audit_log`, so `app.write_audit_log()` is now the only path any mutation
+RPC can reach. It moved from `SECURITY INVOKER` to `SECURITY DEFINER` (the
+grant it relied on is gone) and now calls `app.assert_admin_for()` itself,
+since DEFINER bypasses RLS — authorization moved from a policy to an
+explicit statement, not weakened. `actor_user_id` still always comes from
+`auth.uid()`, never a parameter. UPDATE/DELETE remain blocked by the
+existing unconditional trigger regardless. Migration:
+`20260908190000_admin_audit_log_integrity_and_read_model.sql`.
+
+Read model: `public.admin_list_audit_log` (paginated, capped at 30/page,
+`action`/`entity_type` filters) and `public.admin_get_audit_log_entry`
+(single row with before/after, scoped to the caller's resolved unit) — both
+`SECURITY DEFINER` solely to resolve actor email from `auth.users` at read
+time; nothing is persisted. `app.can_read_unit` gates both, so admin and
+viewer read, Import-only and anon do not.
+
+Admin UI: `/admin/parfums/auditoria` (list) and `/admin/parfums/auditoria/[id]`
+(detail) — read-only, no mutation of any kind. Detail renders a bounded
+field-level diff (`computeFieldChanges`, capped at 40 fields, sensitive key
+names redacted outright); unknown future action/entity/field values degrade
+to a humanized fallback label instead of crashing. Auditoría card promoted
+from placeholder to implemented on `/admin/parfums`.
+
+pgTAP: `supabase/tests/15_admin_audit_log.sql` (19 checks — fabrication
+denied, real mutation still audits, actor spoof impossible, cross-unit
+denied, UPDATE/DELETE denied, admin/viewer read, Import-only/anon denied,
+pagination, filters, detail scoping, security-definer read model).
+`supabase/tests/02_rls_business_unit_isolation.sql` updated: its old
+lives_ok on a direct audit_log INSERT is now throws_ok, matching the fix.
 
 ## Orders / payments
 
@@ -262,15 +298,14 @@ White backgrounds are intentional.
 
 ## Next roadmap
 
-1. 4G2 — Audit Log UI (Settings mutations already produce settings_change entries)
-2. 4H2 — Public Parfums Supabase cutover
-3. 4I — Vercel Preview + hosted Auth configuration
-4. Parfums Preview QA
-5. Import Admin / Consolidados
-6. Import public order flow
-7. Global production-readiness audit
-8. Production Supabase / Vercel
-9. Punto.pe DNS / SEO cutover
+1. 4H2 — Public Parfums Supabase cutover
+2. 4I — Vercel Preview + hosted Auth configuration
+3. Parfums Preview QA
+4. Import Admin / Consolidados
+5. Import public order flow
+6. Global production-readiness audit
+7. Production Supabase / Vercel
+8. Punto.pe DNS / SEO cutover
 
 Do not jump ahead automatically.
 
