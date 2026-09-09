@@ -73,6 +73,7 @@ Isolated:
 - Admin Audit Log — integrity fix + UI (4G2) ✅
 - Public Supabase Catalog Repository Foundation + Parity Readiness (4H2A) ✅
 - Vercel Preview + Hosted Supabase Auth (4I1) ✅
+- Parfums Preview QA (4I2) ✅
 
 Do not re-audit closed capabilities without evidence of regression.
 
@@ -117,6 +118,65 @@ returns 0 public products. 4H2B remains blocked and no Production/custom-domain
 deployment is active. Vercel classified the initial failed build as Production
 despite no `--prod` flag; it never became live and its exact failed deployment
 record was removed. The sole remaining deployment is the verified Preview.
+
+### 4I2 checkpoint
+
+Verified via local Vercel CLI (`dominiocruzial-5459` / team `cruzial` —
+the Vercel MCP connector in this environment is a different, unrelated
+account and cannot see this project): current Preview build target is
+`preview`, no Production deployment exists for `cruzial-platform-v2`
+(`Latest Production URL: --`), no custom domain attached, build/runtime
+logs show zero errors/warnings/exceptions.
+
+Cache root cause reconfirmed against actual build output (not inferred):
+only `/parfums/catalogo`, `/parfums/productos/[slug]` and
+`/parfums/[...catchall]` are `ƒ Dynamic` — both read Next's `searchParams`
+(filters / `?variant=`) or are an unenumerated catch-all, both required for
+current shareable-URL semantics. Every other route is `○ Static`. No
+unnecessary dynamic boundary found. Left as-is.
+
+Critical flow (catálogo → filter → product → decant size → qty → cart →
+merge/remove → checkout, stopped before submission) and secondary flows
+(Finder wizard, Combo Builder with per-line sizes, Combos page, Mayorista
+pricing/WhatsApp CTAs, mobile nav drawer, WhatsApp link encoding across 96
+products) all verified working, zero console/runtime errors. Responsive
+checked at 320/375/390/768/1440 across Home/Catalog/Product/Checkout/
+Combos/Mayorista/Admin login — no horizontal overflow anywhere. A
+previously suspected WhatsApp-button/price overlap on mobile Checkout was
+re-tested with real bounding-box geometry (not screenshots) across the
+full scroll range at 320/375/390 and did not reproduce — false positive,
+no fix needed. Keyboard focus (visible ring, correct tab order, Escape +
+focus-return on cart drawer) and label/alt-text/H1 structure spot-checked
+clean across Home/Catalog/Product/Checkout/Admin login.
+
+Fixed: no `X-Content-Type-Options`/`X-Frame-Options` existed on any route
+(confirmed missing, not assumed). Added minimal `headers()` in
+`apps/web/next.config.ts` (nosniff + DENY only, no CSP). Verified via
+`npm run check` (green) and a redeployed, re-verified Preview
+(`cruzial-platform-v2-3yyt7kxvk-cruzial.vercel.app`, `target: preview`,
+headers present, admin/login and Supabase-backed auth unaffected). This is
+now the current Preview; the prior one
+(`cruzial-platform-v2-r9vn40e6o-cruzial.vercel.app`) was left in place and
+still serves.
+
+Not completed this pass: a literal anonymous-REST re-count of hosted
+public Parfums products. `vercel env pull` (both `--environment=preview`
+and with `--git-branch`) returned an empty value for
+`NEXT_PUBLIC_SUPABASE_URL`/`_PUBLISHABLE_KEY` despite `vercel env ls`
+listing them as set — consistent with these being synced by a Vercel
+integration rather than stored as directly pullable project env vars, a
+CLI/API limitation rather than a missing/misconfigured var. App-level
+proof stands in instead: `/admin/login` renders the normal (Supabase-
+configured) form rather than the app's own "backend not configured"
+fallback (`isSupabaseConfigured()` in `apps/web/src/lib/supabase/env.ts`
+returns non-null only when both vars are set), confirming Supabase
+connectivity is intact and unchanged since 4I1's direct anonymous
+verification (0 public products). A real, formal Lighthouse run was also
+not available in this environment; Navigation Timing was captured instead
+(TTFB ~82ms, DOMContentLoaded ~125ms, load ~390ms, consistent across
+samples) as a partial, non-authoritative proxy — LCP/CLS/paint APIs did
+not populate because this harness backgrounds the browser tab between
+tool calls, which pauses paint-timing observers per spec.
 
 ## Hosted staging
 
@@ -337,17 +397,21 @@ White backgrounds are intentional.
 - `sceptre-malachite` replacement asset missing.
 - Import operational/catalog/campaign work remains incomplete.
 - Production admin bootstrap/MFA/recovery still needs final operational decision.
-- Lighthouse/Web Vitals remain for 4I2 Preview QA.
+- A formal Lighthouse (or PageSpeed Insights) run against the Preview is still
+  outstanding — this environment has no Lighthouse tooling; only Navigation
+  Timing was captured in 4I2.
+- A literal anonymous-REST re-count of hosted public Parfums products was not
+  re-run in 4I2 (CLI env-pull limitation on integration-synced Supabase vars,
+  see 4I2 checkpoint); app-level proof shows Supabase connectivity intact.
 
 ## Next roadmap
 
-1. 4I2 — Parfums Preview QA
-2. 4H2B — Public Parfums Supabase cutover after its blockers close
-4. Import Admin / Consolidados
-5. Import public order flow
-6. Global production-readiness audit
-7. Production Supabase / Vercel
-8. Punto.pe DNS / SEO cutover
+1. 4H2B — Public Parfums Supabase cutover after its blockers close
+2. Import Admin / Consolidados
+3. Import public order flow
+4. Global production-readiness audit
+5. Production Supabase / Vercel
+6. Punto.pe DNS / SEO cutover
 
 Do not jump ahead automatically.
 
