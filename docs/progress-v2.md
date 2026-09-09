@@ -23,7 +23,7 @@ V2:
 - Supabase/PostgreSQL
 - RLS + pgTAP
 - Cloudinary
-- Vercel planned
+- Vercel Preview operational
 
 Runtime split until explicit cutover:
 
@@ -72,6 +72,7 @@ Isolated:
 - Admin Settings — Public Contact (4G1) ✅
 - Admin Audit Log — integrity fix + UI (4G2) ✅
 - Public Supabase Catalog Repository Foundation + Parity Readiness (4H2A) ✅
+- Vercel Preview + Hosted Supabase Auth (4I1) ✅
 
 Do not re-audit closed capabilities without evidence of regression.
 
@@ -91,6 +92,31 @@ checkout authority, combos and mayorista. 4H2B is blocked by publication,
 legacy price confirmation, three unconfirmed combos, wholesale tier parity,
 unresolved media and the required atomic storefront/checkout authority switch.
 Full matrix: `docs/4h2a-public-catalog-readiness.md`.
+
+### 4I1 checkpoint
+
+Vercel project `cruzial-platform-v2` deploys `apps/web` as a Next.js Preview:
+
+`https://cruzial-platform-v2-r9vn40e6o-cruzial.vercel.app`
+
+Preview-only environment variables point to hosted staging
+`iyxidhglyqkzoziyewlc`. Hosted Auth uses the exact Preview origin and callback,
+while both localhost callbacks remain allowed. Password login authenticates
+directly through hosted Supabase and redirects to `/admin`; `/auth/callback`
+remains the configured confirmation/recovery callback. A temporary staging-only
+Parfums Admin verified the complete Admin read surface and Cloudinary signing
+boundary, then its membership and Auth identity were removed with no audit or
+commercial references left behind.
+
+Deployed `/`, `/parfums`, `/parfums/catalogo` and `/admin/login` are
+`noindex,nofollow`; Admin responses are private/no-store, external callback
+redirects are rejected, and no server secret appeared in representative HTML
+or first-party JS. The public storefront remains
+`LegacyCatalogRepository → assets/data.js`; anonymous hosted staging still
+returns 0 public products. 4H2B remains blocked and no Production/custom-domain
+deployment is active. Vercel classified the initial failed build as Production
+despite no `--prod` flag; it never became live and its exact failed deployment
+record was removed. The sole remaining deployment is the verified Preview.
 
 ## Hosted staging
 
@@ -309,16 +335,14 @@ White backgrounds are intentional.
 - 3 legacy combo compositions remain pending reconfirmation.
 - Exact inventory operating model remains unknown.
 - `sceptre-malachite` replacement asset missing.
-- Remote Auth site/redirect URLs wait for Vercel Preview.
 - Import operational/catalog/campaign work remains incomplete.
 - Production admin bootstrap/MFA/recovery still needs final operational decision.
-- Real Lighthouse/Web Vitals wait for Preview.
+- Lighthouse/Web Vitals remain for 4I2 Preview QA.
 
 ## Next roadmap
 
-1. 4H2 — Public Parfums Supabase cutover
-2. 4I — Vercel Preview + hosted Auth configuration
-3. Parfums Preview QA
+1. 4I2 — Parfums Preview QA
+2. 4H2B — Public Parfums Supabase cutover after its blockers close
 4. Import Admin / Consolidados
 5. Import public order flow
 6. Global production-readiness audit
