@@ -383,6 +383,51 @@ staging (`iyxidhglyqkzoziyewlc`) showed only this one migration; pushed with
 explicit user confirmation. No Sexto Consolidado data was seeded (PDF not
 parsed this phase, per 4J1 scope).
 
+### 4J1 correctness micro-patch
+
+External review found two real gaps, both closed additively:
+
+- **Cross-unit RPC scope.** `admin_update_campaign`/`admin_set_campaign_status`/
+  `admin_archive_campaign` authorized with
+  `app.assert_admin_for(v_before.business_unit_id)` — whatever unit the loaded
+  row actually belonged to — instead of being intrinsically Import-scoped
+  like `admin_create_campaign` already was. An admin of another unit could in
+  principle call these Import-only RPCs on a campaign row, if a cross-unit
+  one existed. Fixed: each function now resolves the canonical Import
+  `business_unit_id` itself and requires the loaded campaign to belong to it
+  before authorizing — a wrong-unit campaign id is rejected identically to a
+  nonexistent one (`P0002`), so the error never reveals whether a cross-unit
+  row exists. Migration:
+  `20260909010000_admin_import_consolidados_unit_scope_fix.sql`
+  (`create or replace function`, no data changes).
+- **`campaign_products` RLS test gap.** The original pgTAP suite only checked
+  the `app.campaign_is_public()` helper, not the real
+  `campaign_products_public_read` policy — which (from
+  `20260907154401_integrity_hardening.sql`, already in place before 4J1) also
+  requires the referenced product itself to be `app.product_is_public()`.
+  Added real `campaign_products` rows across all seven campaign states and
+  queried the table directly as anon.
+
+pgTAP: `supabase/tests/16_admin_import_consolidados.sql` extended to 46
+checks — cross-unit denial on all three RPCs (row proven unchanged after),
+Import admin still works normally on its own campaign right after, and the
+full `campaign_products` public-visibility matrix against the real table
+policy. 16 files / 422 checks total, 0 regressions.
+
+Browser smoke (local, temporary Supabase Auth users, not hosted) caught a
+real bug the RPC-level tests couldn't see: the campaign number field on the
+edit form used `disabled` for "not editable", which excludes it from
+`FormData` entirely — every metadata edit failed the required-field check.
+Fixed to `readOnly` (`apps/web/src/components/admin/campaign-form-fields.tsx`).
+Re-verified end to end: Import admin create → edit → status → archive, Import
+viewer read-only (list, detail, no mutation controls, no create link), no
+horizontal overflow at 320/390/768/1440.
+
+`supabase db push --dry-run` showed only the one correction migration;
+pushed to `iyxidhglyqkzoziyewlc` after explicit confirmation. The migration
+contains no data statements (functions only), and `migration list` confirms
+local/remote stay in sync — existing Parfums/Import data untouched.
+
 ## Orders / payments
 
 Cruzial V1 does NOT charge through the website.

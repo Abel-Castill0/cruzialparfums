@@ -3,7 +3,7 @@
 
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(31);
+select plan(46);
 
 insert into auth.users (id, instance_id, aud, role, email, encrypted_password, created_at, updated_at)
 values
@@ -279,6 +279,155 @@ set local request.jwt.claims to '{"role":"anon"}';
 select throws_ok(
   $$select public.admin_create_campaign(17, 'Anon Attempt', null, null, null)$$,
   '42501', null, 'anonymous cannot execute admin_create_campaign'
+);
+reset role;
+
+-- ---------------------------------------------------------------------------
+-- Cross-unit scope: update/status/archive are intrinsically Import-scoped
+-- ---------------------------------------------------------------------------
+--
+-- A campaign row that (however unrealistically) belongs to Parfums must be
+-- unreachable through the Import-only lifecycle RPCs — not just unreachable
+-- by someone who is not a Parfums admin, but unreachable *because these RPCs
+-- resolve the Import unit themselves and never trust business_unit_id off
+-- the row alone*. Inserted directly (privileged setup), bypassing the admin
+-- RPCs entirely, since admin_create_campaign itself cannot produce a
+-- non-Import row.
+
+insert into public.campaigns (id, business_unit_id, number, name, status)
+values (
+  '77777777-0000-4000-8000-000000000001',
+  '11111111-1111-4111-8111-111111111111',
+  501, 'Parfums Campaign (should be unreachable via Import RPCs)', 'draft'
+);
+
+set local role authenticated;
+set local request.jwt.claims to '{"sub":"66666666-cccc-4ccc-8ccc-cccccccccccc","role":"authenticated"}';
+select throws_ok(
+  $$select public.admin_update_campaign(
+      '77777777-0000-4000-8000-000000000001',
+      (select updated_at from public.campaigns where id = '77777777-0000-4000-8000-000000000001'),
+      'Renamed by Parfums admin', null, null, null)$$,
+  'P0002', null, 'a Parfums admin cannot admin_update_campaign a Parfums-owned campaign row through the Import-scoped RPC'
+);
+select throws_ok(
+  $$select public.admin_set_campaign_status(
+      '77777777-0000-4000-8000-000000000001',
+      (select updated_at from public.campaigns where id = '77777777-0000-4000-8000-000000000001'),
+      'open')$$,
+  'P0002', null, 'a Parfums admin cannot admin_set_campaign_status a Parfums-owned campaign row through the Import-scoped RPC'
+);
+select throws_ok(
+  $$select public.admin_archive_campaign(
+      '77777777-0000-4000-8000-000000000001',
+      (select updated_at from public.campaigns where id = '77777777-0000-4000-8000-000000000001'))$$,
+  'P0002', null, 'a Parfums admin cannot admin_archive_campaign a Parfums-owned campaign row through the Import-scoped RPC'
+);
+reset role;
+
+-- Also: an Import admin cannot reach the SAME row either, even though they
+-- administer Import — the row genuinely belongs to Parfums, not Import, so
+-- "resolve Import, require the row match it" correctly excludes it too.
+set local role authenticated;
+set local request.jwt.claims to '{"sub":"44444444-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
+select throws_ok(
+  $$select public.admin_update_campaign(
+      '77777777-0000-4000-8000-000000000001',
+      (select updated_at from public.campaigns where id = '77777777-0000-4000-8000-000000000001'),
+      'Renamed by Import admin', null, null, null)$$,
+  'P0002', null, 'an Import admin cannot reach a genuinely Parfums-owned campaign row either'
+);
+reset role;
+
+select is(
+  (select name from public.campaigns where id = '77777777-0000-4000-8000-000000000001'),
+  'Parfums Campaign (should be unreachable via Import RPCs)', 'the Parfums campaign name is unchanged by every attempted Import-RPC call above'
+);
+select is(
+  (select status from public.campaigns where id = '77777777-0000-4000-8000-000000000001'),
+  'draft', 'the Parfums campaign status is unchanged'
+);
+select is(
+  (select archived_at from public.campaigns where id = '77777777-0000-4000-8000-000000000001'),
+  null::timestamptz, 'the Parfums campaign remains unarchived'
+);
+
+-- Import admin still works normally on a real Import campaign, right after
+-- the denials above — proving the fix scopes correctly rather than breaking
+-- legitimate same-unit access.
+set local role authenticated;
+set local request.jwt.claims to '{"sub":"44444444-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
+select lives_ok(
+  $$select public.admin_update_campaign(
+      (select id from public.campaigns where number = 6 and business_unit_id = '22222222-2222-4222-8222-222222222222'),
+      (select updated_at from public.campaigns where number = 6 and business_unit_id = '22222222-2222-4222-8222-222222222222'),
+      'Sexto Consolidado (editado de nuevo)', null, null, 'Mensaje final')$$,
+  'Import admin still edits their own Import campaign normally after the cross-unit fix'
+);
+reset role;
+
+-- ---------------------------------------------------------------------------
+-- Real campaign_products public RLS — the actual table policy, not just the
+-- app.campaign_is_public() helper checked earlier.
+-- ---------------------------------------------------------------------------
+
+-- campaign_products_public_read (hardened in 20260907154401_integrity_hardening.sql)
+-- also requires the referenced product itself to be publicly visible
+-- (app.product_is_public: publication_status = 'published', not archived) —
+-- a draft product would hide the row regardless of campaign visibility, so
+-- the product used here must be published for this to test the campaign
+-- dimension in isolation.
+insert into public.products (id, business_unit_id, slug, name, publication_status)
+values ('88888888-0000-4000-8000-000000000001', '22222222-2222-4222-8222-222222222222', 'import-rls-test-product', 'Import RLS Test Product', 'published');
+
+insert into public.campaigns (id, business_unit_id, number, name, status, archived_at) values
+  ('99990000-0000-4000-8000-000000000001', '22222222-2222-4222-8222-222222222222', 901, 'CP Open',      'open',      null),
+  ('99990000-0000-4000-8000-000000000002', '22222222-2222-4222-8222-222222222222', 902, 'CP Draft',     'draft',     null),
+  ('99990000-0000-4000-8000-000000000003', '22222222-2222-4222-8222-222222222222', 903, 'CP Scheduled', 'scheduled', null),
+  ('99990000-0000-4000-8000-000000000004', '22222222-2222-4222-8222-222222222222', 904, 'CP Paused',    'paused',    null),
+  ('99990000-0000-4000-8000-000000000005', '22222222-2222-4222-8222-222222222222', 905, 'CP Closed',    'closed',    null),
+  ('99990000-0000-4000-8000-000000000006', '22222222-2222-4222-8222-222222222222', 906, 'CP Fulfilled', 'fulfilled', null),
+  ('99990000-0000-4000-8000-000000000007', '22222222-2222-4222-8222-222222222222', 907, 'CP Archived',  'open',      now());
+
+insert into public.campaign_products (id, campaign_id, product_id, price_amount) values
+  ('99991000-0000-4000-8000-000000000001', '99990000-0000-4000-8000-000000000001', '88888888-0000-4000-8000-000000000001', 25),
+  ('99991000-0000-4000-8000-000000000002', '99990000-0000-4000-8000-000000000002', '88888888-0000-4000-8000-000000000001', 25),
+  ('99991000-0000-4000-8000-000000000003', '99990000-0000-4000-8000-000000000003', '88888888-0000-4000-8000-000000000001', 25),
+  ('99991000-0000-4000-8000-000000000004', '99990000-0000-4000-8000-000000000004', '88888888-0000-4000-8000-000000000001', 25),
+  ('99991000-0000-4000-8000-000000000005', '99990000-0000-4000-8000-000000000005', '88888888-0000-4000-8000-000000000001', 25),
+  ('99991000-0000-4000-8000-000000000006', '99990000-0000-4000-8000-000000000006', '88888888-0000-4000-8000-000000000001', 25),
+  ('99991000-0000-4000-8000-000000000007', '99990000-0000-4000-8000-000000000007', '88888888-0000-4000-8000-000000000001', 25);
+
+set local role anon;
+set local request.jwt.claims to '{"role":"anon"}';
+
+select is(
+  (select count(*)::integer from public.campaign_products where id = '99991000-0000-4000-8000-000000000001'),
+  1, 'campaign_products: open Import campaign product is visible to anon (real table policy)'
+);
+select is(
+  (select count(*)::integer from public.campaign_products where id = '99991000-0000-4000-8000-000000000002'),
+  0, 'campaign_products: draft Import campaign product is invisible to anon'
+);
+select is(
+  (select count(*)::integer from public.campaign_products where id = '99991000-0000-4000-8000-000000000003'),
+  0, 'campaign_products: scheduled Import campaign product is invisible to anon'
+);
+select is(
+  (select count(*)::integer from public.campaign_products where id = '99991000-0000-4000-8000-000000000004'),
+  0, 'campaign_products: paused Import campaign product is invisible to anon'
+);
+select is(
+  (select count(*)::integer from public.campaign_products where id = '99991000-0000-4000-8000-000000000005'),
+  0, 'campaign_products: closed Import campaign product is invisible to anon'
+);
+select is(
+  (select count(*)::integer from public.campaign_products where id = '99991000-0000-4000-8000-000000000006'),
+  0, 'campaign_products: fulfilled Import campaign product is invisible to anon'
+);
+select is(
+  (select count(*)::integer from public.campaign_products where id = '99991000-0000-4000-8000-000000000007'),
+  0, 'campaign_products: archived (even though status=open) Import campaign product is invisible to anon'
 );
 reset role;
 

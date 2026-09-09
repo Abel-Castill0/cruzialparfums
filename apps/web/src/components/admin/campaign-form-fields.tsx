@@ -37,7 +37,13 @@ export function CampaignFormFields({
             min={1}
             defaultValue={defaults.number}
             required
-            disabled={disabled || !numberEditable}
+            // readOnly, not disabled: a disabled input is excluded from
+            // FormData entirely, which would submit an empty "number" and
+            // fail server-side validation on every edit. readOnly keeps the
+            // value in the submission while still blocking changes. The
+            // surrounding fieldset's own `disabled` (viewer/pending) already
+            // blocks all input, number included.
+            readOnly={!numberEditable}
             aria-invalid={!!errors.number}
             aria-describedby={errors.number ? "campaign-error-number" : "campaign-hint-number"}
           />
