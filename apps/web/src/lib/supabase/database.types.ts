@@ -1588,6 +1588,41 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      admin_get_audit_log_entry: {
+        Args: { p_business_unit_code: string; p_entry_id: string }
+        Returns: {
+          action: string
+          actor_email: string
+          actor_user_id: string
+          after: Json
+          before: Json
+          business_unit_id: string
+          created_at: string
+          entity_id: string
+          entity_type: string
+          id: string
+        }[]
+      }
+      admin_list_audit_log: {
+        Args: {
+          p_action?: string
+          p_business_unit_code: string
+          p_entity_type?: string
+          p_page?: number
+          p_page_size?: number
+        }
+        Returns: {
+          action: string
+          actor_email: string
+          actor_user_id: string
+          business_unit_id: string
+          created_at: string
+          entity_id: string
+          entity_type: string
+          id: string
+          total_count: number
+        }[]
+      }
       admin_register_media: {
         Args: {
           p_alt?: string

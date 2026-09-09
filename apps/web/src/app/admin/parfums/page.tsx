@@ -14,11 +14,11 @@ export const metadata: Metadata = { title: "Parfums" };
 // Categorías has its own CRUD and remains assignable from the product editor.
 // Combos also has its own CRUD now — composición, verificación y archive/
 // restore sobre un producto Parfums existente. Pedidos (Phase 4E2) is now
-// Inbox/Detail only — read-only, no status workflow yet.
+// Inbox/Detail only — read-only, no status workflow yet. Auditoría (4G2) is
+// also read-only — admin and viewer both see it, moved out of placeholders.
 const placeholderAreas = [
   "Promociones",
   "Media",
-  "Auditoría",
 ] as const;
 
 export default async function AdminParfumsPage() {
@@ -46,9 +46,10 @@ export default async function AdminParfumsPage() {
   let comboCount: number | null = null;
   let wholesaleBottleCount: number | null = null;
   let pendingOrderCount: number | null = null;
+  let auditLogCount: number | null = null;
   if (supabase) {
     const ordersRepository = new AdminParfumsOrdersRepository(supabase, membership.businessUnitId);
-    const [products, categories, combos, wholesaleBottles, pendingOrders] = await Promise.all([
+    const [products, categories, combos, wholesaleBottles, pendingOrders, auditLog] = await Promise.all([
       supabase.from("products").select("*", { count: "exact", head: true }).eq("business_unit_id", membership.businessUnitId),
       supabase.from("categories").select("*", { count: "exact", head: true }).eq("business_unit_id", membership.businessUnitId),
       supabase
@@ -60,12 +61,17 @@ export default async function AdminParfumsPage() {
         .select("*", { count: "exact", head: true })
         .eq("business_unit_id", membership.businessUnitId),
       ordersRepository.countPendingWhatsappConfirmation(),
+      // Read via the same RPC the Auditoría screen itself uses (never a raw
+      // count(*) against audit_log from here) — one small page is enough
+      // to read total_count back without a second, unbounded query.
+      supabase.rpc("admin_list_audit_log", { p_business_unit_code: "parfums", p_page: 1, p_page_size: 1 }),
     ]);
     productCount = products.count ?? 0;
     categoryCount = categories.count ?? 0;
     comboCount = combos.count ?? 0;
     wholesaleBottleCount = wholesaleBottles.count ?? 0;
     pendingOrderCount = pendingOrders;
+    auditLogCount = auditLog.error ? null : (auditLog.data?.[0]?.total_count ?? 0);
   }
 
   return (
@@ -116,6 +122,14 @@ export default async function AdminParfumsPage() {
           label: "Configuración",
           href: "/admin/parfums/configuracion" as Route,
           summary: "Contacto público: WhatsApp y correo.",
+        },
+        {
+          label: "Auditoría",
+          href: "/admin/parfums/auditoria" as Route,
+          summary:
+            auditLogCount === null
+              ? "Historial de cambios administrativos, solo lectura."
+              : `${auditLogCount} evento${auditLogCount === 1 ? "" : "s"} registrado${auditLogCount === 1 ? "" : "s"} · solo lectura.`,
         },
       ]}
       placeholderAreas={placeholderAreas}

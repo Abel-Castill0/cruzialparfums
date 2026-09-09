@@ -106,12 +106,19 @@ select is(
   'an admin sees only its own membership rows'
 );
 
--- Audit: writable for its own unit, never for the other one.
-select lives_ok(
+-- Audit: direct INSERT is denied outright as of Phase 4G2 — the only path
+-- that may add a row is app.write_audit_log(), called atomically by the
+-- admin mutation RPCs (see supabase/tests/15_admin_audit_log.sql for the
+-- full integrity-fix coverage). This is no longer a business-unit isolation
+-- question — even the admin's OWN unit is denied — so both assertions below
+-- are throws_ok now, not a lives_ok/throws_ok pair.
+select throws_ok(
   $$insert into public.audit_log (business_unit_id, actor_user_id, action, entity_type)
     values ('11111111-1111-4111-8111-111111111111',
             'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 'update', 'product')$$,
-  'Parfums admin writes an audit entry for its own unit'
+  '42501',
+  null,
+  'Parfums admin cannot write an audit entry directly, even for its own unit (Phase 4G2)'
 );
 
 select throws_ok(
@@ -120,7 +127,7 @@ select throws_ok(
             'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 'update', 'product')$$,
   '42501',
   null,
-  'Parfums admin cannot write an audit entry against Import'
+  'Parfums admin cannot write an audit entry against Import either'
 );
 
 -- ---------------------------------------------------------------------------
