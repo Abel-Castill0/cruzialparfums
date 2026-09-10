@@ -85,7 +85,7 @@ Isolated:
   MAX_CAMPAIGN_OFFERS 1500 (schema + DB RPC hard cap), archived presentation
   fail-closed (archived_at OR publication_status='archived'), correction
   migration `20260909060000_campaign_products_correction.sql`.
-- Admin Import — Sexto Consolidado Population (4J4B implementation + local gate ✅; hosted apply pending operator credential) —
+- Admin Import — Sexto Consolidado Population (4J4B) ✅ —
   All 7 conflict groups resolved via PDF review. Overrides artifact
   (`sexto-consolidado-population-overrides.json`) implements: 2 split
   canonical source identities (Accento, Arabia Heroes), 1 omit offer pending
@@ -98,8 +98,11 @@ Isolated:
   fail-closed exact-state checks; it never creates synthetic auth or admin
   rows. Local: db reset → precheck → apply → verify → second apply → verify →
   real anon RLS zero-leak all green. Full pgTAP and application gate green.
-  Hosted staging precheck/apply/verify remains pending until the secure
-  `CRUZIAL_STAGING_DATABASE_URL` operator credential is available.
+  Hosted staging `iyxidhglyqkzoziyewlc`: zero-conflict precheck, atomic apply,
+  exact verify, second idempotent apply, second exact verify, and real anon RLS
+  `0 products / 0 presentations / 0 campaign offers` all green. Final staging
+  counts: 844 products, 912 presentations, 898 offers; campaign #6 remains
+  draft with null dates/message, and no synthetic auth or membership rows.
 
 Do not re-audit closed capabilities without evidence of regression.
 
