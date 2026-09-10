@@ -17,6 +17,7 @@ function readRow(priceAmount: unknown, sortOrder: number) {
     id: `row-${sortOrder}`,
     product_id: "product-id",
     product_variant_id: null,
+    import_presentation_id: null,
     price_amount: priceAmount,
     currency: "PEN",
     availability_status: "available",
@@ -29,6 +30,11 @@ function readRow(priceAmount: unknown, sortOrder: number) {
     variant_label: null,
     variant_archived_at: null,
     variant_publication_status: null,
+    presentation_label: null,
+    presentation_class: null,
+    presentation_capacity_ml: null,
+    presentation_archived_at: null,
+    presentation_publication_status: null,
   };
 }
 
@@ -86,10 +92,10 @@ describe("AdminImportCampaignProductsRepository", () => {
           slug: "product",
           brand: null,
           publication_status: "published",
-          product_variants: [
-            { id: "variant-published", label: "Published", size_ml: null, publication_status: "published", archived_at: null },
-            { id: "variant-draft", label: "Draft", size_ml: null, publication_status: "draft", archived_at: null },
-            { id: "variant-archived", label: "Archived", size_ml: null, publication_status: "archived", archived_at: null },
+          import_presentations: [
+            { id: "pres-published", label: "Published", presentation_class: "multi_presentation", capacity_ml: 50, publication_status: "published", archived_at: null },
+            { id: "pres-draft", label: "Draft", presentation_class: "single_fixed", capacity_ml: null, publication_status: "draft", archived_at: null },
+            { id: "pres-archived", label: "Archived", presentation_class: "pack_set", capacity_ml: null, publication_status: "archived", archived_at: null },
           ],
         }],
         error: null,
@@ -103,10 +109,10 @@ describe("AdminImportCampaignProductsRepository", () => {
     expect(calls).toContainEqual(["eq", "business_unit_id", UNIT_ID]);
     expect(calls).toContainEqual(["is", "archived_at", null]);
     expect(calls).toContainEqual(["neq", "publication_status", "archived"]);
-    expect(calls).toContainEqual(["is", "product_variants.archived_at", null]);
-    expect(calls).toContainEqual(["neq", "product_variants.publication_status", "archived"]);
+    expect(calls).toContainEqual(["is", "import_presentations.archived_at", null]);
+    expect(calls).toContainEqual(["neq", "import_presentations.publication_status", "archived"]);
     expect(calls).toContainEqual(["limit", 50]);
-    expect(result.ok && result.data[0]?.variants.map((variant) => variant.publicationStatus)).toEqual([
+    expect(result.ok && result.data[0]?.presentations.map((p) => p.publicationStatus)).toEqual([
       "published",
       "draft",
     ]);

@@ -23,6 +23,7 @@
 
 export type ProductPublicationStatus = "draft" | "published" | "hidden" | "archived";
 export type VariantPublicationStatus = "draft" | "published" | "archived";
+export type ImportPresentationPublicationStatus = "draft" | "published" | "archived";
 
 export type CampaignReadinessInput = {
   campaignStatus: string;
@@ -33,7 +34,10 @@ export type CampaignReadinessInput = {
   productVariantId: string | null;
   variantPublicationStatus: VariantPublicationStatus | null;
   variantArchivedAt: string | null;
-  availabilityStatus: "available" | "out_of_stock";
+  importPresentationId: string | null;
+  presentationPublicationStatus: ImportPresentationPublicationStatus | null;
+  presentationArchivedAt: string | null;
+  availabilityStatus: "unconfirmed" | "available" | "out_of_stock";
 };
 
 export type VisibilityReason =
@@ -45,6 +49,9 @@ export type VisibilityReason =
   | "product_archived"
   | "variant_not_published"
   | "variant_archived"
+  | "presentation_not_published"
+  | "presentation_archived"
+  | "availability_unconfirmed"
   | "unknown_publication_status";
 
 export type OfferReadiness = {
@@ -52,7 +59,7 @@ export type OfferReadiness = {
   visibilityReason: VisibilityReason;
   /** Independent of visibility — see module doc. Passed straight through
    * from campaign_products.availability_status, never derived. */
-  availability: "available" | "out_of_stock";
+  availability: "unconfirmed" | "available" | "out_of_stock";
 };
 
 export const VISIBILITY_REASON_LABELS: Record<VisibilityReason, string> = {
@@ -64,10 +71,14 @@ export const VISIBILITY_REASON_LABELS: Record<VisibilityReason, string> = {
   product_archived: "Producto archivado",
   variant_not_published: "Variante no publicada",
   variant_archived: "Variante archivada",
+  presentation_not_published: "Presentación no publicada",
+  presentation_archived: "Presentación archivada",
+  availability_unconfirmed: "Disponibilidad por confirmar",
   unknown_publication_status: "Estado de publicación desconocido",
 };
 
-export const AVAILABILITY_STATUS_LABELS: Record<"available" | "out_of_stock", string> = {
+export const AVAILABILITY_STATUS_LABELS: Record<"unconfirmed" | "available" | "out_of_stock", string> = {
+  unconfirmed: "Por confirmar",
   available: "Disponible",
   out_of_stock: "Agotado",
 };
@@ -122,6 +133,24 @@ function computeVisibilityReason(input: CampaignReadinessInput): VisibilityReaso
         return "unknown_publication_status";
     }
   }
+
+
+  // import_presentation_is_public (mutually exclusive with product variant)
+  if (input.importPresentationId !== null) {
+    if (input.presentationArchivedAt !== null) return "presentation_archived";
+    switch (input.presentationPublicationStatus) {
+      case "published":
+        break;
+      case "draft":
+        return "presentation_not_published";
+      case "archived":
+        return "presentation_archived";
+      default:
+        return "unknown_publication_status";
+    }
+  }
+
+  if (input.availabilityStatus === "unconfirmed") return "availability_unconfirmed";
 
   return "visible";
 }

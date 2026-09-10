@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import type {
   CampaignProductItem,
   EligibleImportProduct,
+  ImportPresentationClass,
 } from "@/domains/admin-import/campaign-products-repository";
 import {
   AVAILABILITY_LABELS,
@@ -16,6 +17,7 @@ import {
   VISIBILITY_REASON_LABELS,
   classifyOfferReadiness,
   type ProductPublicationStatus,
+  type ImportPresentationPublicationStatus,
   type VariantPublicationStatus,
 } from "@/domains/admin-import/campaign-readiness";
 import { searchEligibleImportProductsAction, setCampaignProductsAction } from "../actions";
@@ -34,14 +36,22 @@ const PICKER_PRODUCT_PUBLICATION_CLASS: Record<Exclude<ProductPublicationStatus,
   hidden: styles["status-archived"] ?? "",
 };
 
-const PICKER_VARIANT_PUBLICATION_LABELS: Record<Exclude<VariantPublicationStatus, "archived">, string> = {
-  published: "Publicado",
-  draft: "Borrador — no listo públicamente",
+const PRESENTATION_CLASS_LABELS: Record<ImportPresentationClass, string> = {
+  single_fixed: "Presentación única",
+  multi_presentation: "Presentación múltiple",
+  pack_set: "Pack / set",
+  ambiguous: "Presentación ambigua",
+};
+
+const PICKER_PRESENTATION_PUBLICATION_LABELS: Record<Exclude<ImportPresentationPublicationStatus, "archived">, string> = {
+  published: "Publicada",
+  draft: "Borrador — no lista públicamente",
 };
 
 type Row = {
   productId: string;
   productVariantId: string | null;
+  importPresentationId: string | null;
   /** Canonical decimal text (e.g. "16.00") — never a JS number. The input
    * itself may transiently hold something not yet valid while the admin is
    * typing; validity is only enforced on save (see handleSave/dirty). */
@@ -58,12 +68,19 @@ type Row = {
   productPublicationStatus: ProductPublicationStatus | null;
   variantArchivedAt: string | null;
   variantPublicationStatus: VariantPublicationStatus | null;
+  presentationLabel: string | null;
+  presentationClass: ImportPresentationClass | null;
+  presentationCapacityMl: number | null;
+  presentationArchived: boolean;
+  presentationArchivedAt: string | null;
+  presentationPublicationStatus: ImportPresentationPublicationStatus | null;
 };
 
 function toRow(item: CampaignProductItem): Row {
   return {
     productId: item.productId,
     productVariantId: item.productVariantId,
+    importPresentationId: item.importPresentationId,
     priceAmount: item.priceAmount,
     availabilityStatus: item.availabilityStatus,
     productName: item.productName,
@@ -74,11 +91,17 @@ function toRow(item: CampaignProductItem): Row {
     productPublicationStatus: item.productPublicationStatus,
     variantArchivedAt: item.variantArchivedAt,
     variantPublicationStatus: item.variantPublicationStatus,
+    presentationLabel: item.presentationLabel,
+    presentationClass: item.presentationClass,
+    presentationCapacityMl: item.presentationCapacityMl,
+    presentationArchived: item.presentationArchived,
+    presentationArchivedAt: item.presentationArchivedAt,
+    presentationPublicationStatus: item.presentationPublicationStatus,
   };
 }
 
 function rowKey(row: Row): string {
-  return `${row.productId}::${row.productVariantId ?? ""}`;
+  return `${row.productId}::${row.productVariantId ?? ""}::${row.importPresentationId ?? ""}`;
 }
 
 function sameSet(a: Row[], b: Row[]): boolean {
@@ -88,6 +111,7 @@ function sameSet(a: Row[], b: Row[]): boolean {
     return !!other
       && other.productId === row.productId
       && other.productVariantId === row.productVariantId
+      && other.importPresentationId === row.importPresentationId
       && other.priceAmount === row.priceAmount
       && other.availabilityStatus === row.availabilityStatus;
     // quantityLimit deliberately excluded: it is never client-editable, so
@@ -145,9 +169,9 @@ export function CampaignProductsManager({
   const [pickerQuery, setPickerQuery] = useState("");
   const [pickerLoading, setPickerLoading] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<EligibleImportProduct | null>(null);
-  const [selectedVariantId, setSelectedVariantId] = useState("");
+  const [selectedPresentationId, setSelectedPresentationId] = useState("");
   const [newPrice, setNewPrice] = useState("");
-  const [newAvailability, setNewAvailability] = useState<CampaignProductAvailability>("available");
+  const [newAvailability, setNewAvailability] = useState<CampaignProductAvailability>("unconfirmed");
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -168,6 +192,9 @@ export function CampaignProductsManager({
           productVariantId: row.productVariantId,
           variantPublicationStatus: row.variantPublicationStatus,
           variantArchivedAt: row.variantArchivedAt,
+          importPresentationId: row.importPresentationId,
+          presentationPublicationStatus: row.presentationPublicationStatus,
+          presentationArchivedAt: row.presentationArchivedAt,
           availabilityStatus: row.availabilityStatus,
         }),
       ),
@@ -177,11 +204,13 @@ export function CampaignProductsManager({
   const summary = useMemo(() => {
     const visible = readiness.filter((r) => r.isPubliclyVisible).length;
     const outOfStock = readiness.filter((r) => r.availability === "out_of_stock").length;
+    const unconfirmed = readiness.filter((r) => r.availability === "unconfirmed").length;
     return {
       configured: rows.length,
       visible,
       blocked: rows.length - visible,
       outOfStock,
+      unconfirmed,
     };
   }, [readiness, rows.length]);
 
@@ -212,10 +241,14 @@ export function CampaignProductsManager({
       setAddError("Selecciona un producto.");
       return;
     }
-    const variantId = selectedVariantId || null;
-    const dedupe = `${selectedProduct.id}::${variantId ?? ""}`;
+    const presentationId = selectedPresentationId || null;
+    if (selectedProduct.presentations.length > 0 && presentationId === null) {
+      setAddError("Selecciona una presentación Import.");
+      return;
+    }
+    const dedupe = `${selectedProduct.id}::::${presentationId ?? ""}`;
     if (rows.some((row) => rowKey(row) === dedupe)) {
-      setAddError("Este producto (con esa variante) ya está en la lista.");
+      setAddError("Este producto con esa presentación ya está en la lista.");
       return;
     }
     if (!isValidMoneyText(newPrice)) {
@@ -223,9 +256,11 @@ export function CampaignProductsManager({
       return;
     }
     const price = normalizeMoneyText(newPrice);
-    const variant = variantId ? selectedProduct.variants.find((candidate) => candidate.id === variantId) : null;
-    if (variantId && !variant) {
-      setAddError("Esa variante ya no está disponible. Vuelve a buscar.");
+    const presentation = presentationId
+      ? selectedProduct.presentations.find((candidate) => candidate.id === presentationId)
+      : null;
+    if (presentationId && !presentation) {
+      setAddError("Esa presentación ya no está disponible. Vuelve a buscar.");
       return;
     }
 
@@ -233,22 +268,29 @@ export function CampaignProductsManager({
       ...previous,
       {
         productId: selectedProduct.id,
-        productVariantId: variantId,
+        productVariantId: null,
+        importPresentationId: presentationId,
         priceAmount: price,
         availabilityStatus: newAvailability,
         productName: selectedProduct.name,
-        variantLabel: variant?.label ?? null,
+        variantLabel: null,
         productArchived: false,
         variantArchived: false,
         productArchivedAt: null,
         productPublicationStatus: selectedProduct.publicationStatus,
         variantArchivedAt: null,
-        variantPublicationStatus: variant?.publicationStatus ?? null,
+        variantPublicationStatus: null,
+        presentationLabel: presentation?.label ?? null,
+        presentationClass: presentation?.presentationClass ?? null,
+        presentationCapacityMl: presentation?.capacityMl ?? null,
+        presentationArchived: false,
+        presentationArchivedAt: null,
+        presentationPublicationStatus: presentation?.publicationStatus ?? null,
       },
     ]);
-    setSelectedVariantId("");
+    setSelectedPresentationId("");
     setNewPrice("");
-    setNewAvailability("available");
+    setNewAvailability("unconfirmed");
     setSaved(false);
   }
 
@@ -297,6 +339,7 @@ export function CampaignProductsManager({
       const payload = rows.map((row, index) => ({
         productId: row.productId,
         productVariantId: row.productVariantId,
+        importPresentationId: row.importPresentationId,
         priceAmount: row.priceAmount,
         availabilityStatus: row.availabilityStatus,
         sortOrder: index,
@@ -334,6 +377,7 @@ export function CampaignProductsManager({
         <div><dt>Visibles públicamente</dt><dd>{summary.visible}</dd></div>
         <div><dt>Bloqueados por publicación</dt><dd>{summary.blocked}</dd></div>
         <div><dt>Agotados</dt><dd>{summary.outOfStock}</dd></div>
+        <div><dt>Por confirmar</dt><dd>{summary.unconfirmed}</dd></div>
       </dl>
       {campaignStatus !== "open" || campaignArchivedAt !== null ? (
         <p className={styles.notice}>
@@ -365,15 +409,19 @@ export function CampaignProductsManager({
           <tbody>
             {rows.map((row, index) => {
               const key = rowKey(row);
-              const rowLabel = row.variantLabel ? `${row.productName} · ${row.variantLabel}` : row.productName;
+              const structureLabel = row.presentationLabel ?? row.variantLabel;
+              const rowLabel = structureLabel ? `${row.productName} · ${structureLabel}` : row.productName;
               const rowReadiness = readiness[index];
               return (
                 <tr key={key}>
                   <td data-label="Producto">
                     {row.productName}
-                    {row.variantLabel ? ` · ${row.variantLabel}` : ""}
+                    {structureLabel ? ` · ${structureLabel}` : ""}
+                    {row.presentationCapacityMl ? ` · ${row.presentationCapacityMl} ml` : ""}
+                    {row.presentationClass ? ` · ${PRESENTATION_CLASS_LABELS[row.presentationClass]}` : ""}
                     {row.productArchived ? <span className={styles.badgeArchived}> Producto archivado</span> : null}
                     {row.variantArchived ? <span className={styles.badgeArchived}> Variante archivada</span> : null}
+                    {row.presentationArchived ? <span className={styles.badgeArchived}> Presentación archivada</span> : null}
                   </td>
                   <td data-label="Precio (PEN)">
                     <label className={formStyles.field}>
@@ -396,6 +444,7 @@ export function CampaignProductsManager({
                         disabled={disabled}
                         onChange={(event) => handleAvailabilityChange(key, event.target.value as CampaignProductAvailability)}
                       >
+                        <option value="unconfirmed">{AVAILABILITY_LABELS.unconfirmed}</option>
                         <option value="available">{AVAILABILITY_LABELS.available}</option>
                         <option value="out_of_stock">{AVAILABILITY_LABELS.out_of_stock}</option>
                       </select>
@@ -466,7 +515,7 @@ export function CampaignProductsManager({
               onChange={(event) => {
                 setPickerQuery(event.target.value);
                 setSelectedProduct(null);
-                setSelectedVariantId("");
+                setSelectedPresentationId("");
               }}
               placeholder="Ej. Armaf, Club de Nuit…"
             />
@@ -499,7 +548,7 @@ export function CampaignProductsManager({
                     className={styles.secondaryButton}
                     onClick={() => {
                       setSelectedProduct(product);
-                      setSelectedVariantId("");
+                      setSelectedPresentationId("");
                     }}
                   >
                     {selectedProduct?.id === product.id ? "Seleccionado" : "Elegir"}
@@ -512,16 +561,16 @@ export function CampaignProductsManager({
           {selectedProduct ? (
             <div className={formStyles.grid}>
               <label className={formStyles.field}>
-                <span>Variante (opcional)</span>
+                <span>Presentación Import{selectedProduct.presentations.length === 0 ? " (producto completo)" : ""}</span>
                 <select
-                  value={selectedVariantId}
-                  onChange={(event) => setSelectedVariantId(event.target.value)}
-                  disabled={selectedProduct.variants.length === 0}
+                  value={selectedPresentationId}
+                  onChange={(event) => setSelectedPresentationId(event.target.value)}
+                  disabled={selectedProduct.presentations.length === 0}
                 >
-                  <option value="">Producto completo (sin variante)</option>
-                  {selectedProduct.variants.map((variant) => (
-                    <option key={variant.id} value={variant.id}>
-                      {variant.label}{variant.sizeMl ? ` · ${variant.sizeMl} ml` : ""} ({PICKER_VARIANT_PUBLICATION_LABELS[variant.publicationStatus]})
+                  <option value="">{selectedProduct.presentations.length === 0 ? "Producto completo" : "Selecciona una presentación"}</option>
+                  {selectedProduct.presentations.map((presentation) => (
+                    <option key={presentation.id} value={presentation.id}>
+                      {presentation.label}{presentation.capacityMl ? ` · ${presentation.capacityMl} ml` : ""} · {PRESENTATION_CLASS_LABELS[presentation.presentationClass]} ({PICKER_PRESENTATION_PUBLICATION_LABELS[presentation.publicationStatus]})
                     </option>
                   ))}
                 </select>
@@ -542,6 +591,7 @@ export function CampaignProductsManager({
                   value={newAvailability}
                   onChange={(event) => setNewAvailability(event.target.value as CampaignProductAvailability)}
                 >
+                  <option value="unconfirmed">{AVAILABILITY_LABELS.unconfirmed}</option>
                   <option value="available">{AVAILABILITY_LABELS.available}</option>
                   <option value="out_of_stock">{AVAILABILITY_LABELS.out_of_stock}</option>
                 </select>

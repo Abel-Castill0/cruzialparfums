@@ -1,9 +1,10 @@
 import { isValidUuid, type FieldErrors, type ValidationResult } from "../admin-parfums/product-schema";
 
-const AVAILABILITY_STATUSES = ["available", "out_of_stock"] as const;
+const AVAILABILITY_STATUSES = ["unconfirmed", "available", "out_of_stock"] as const;
 export type CampaignProductAvailability = (typeof AVAILABILITY_STATUSES)[number];
 
 export const AVAILABILITY_LABELS: Record<CampaignProductAvailability, string> = {
+  unconfirmed: "Por confirmar",
   available: "Disponible",
   out_of_stock: "Agotado",
 };
@@ -64,6 +65,7 @@ function parseMoney(value: unknown, field: string, errors: FieldErrors): string 
 export type CampaignProductItemInput = {
   productId: string;
   productVariantId: string | null;
+  importPresentationId: string | null;
   /** Canonical decimal text, e.g. "16.00" — never a JS number. */
   priceAmount: string;
   availabilityStatus: CampaignProductAvailability;
@@ -110,20 +112,30 @@ export function validateCampaignProductItems(rawItems: unknown): ValidationResul
       return;
     }
 
-    const dedupeKey = `${productId}::${productVariantId ?? ""}`;
+    const importPresentationId = typeof item.importPresentationId === "string" && item.importPresentationId
+      ? item.importPresentationId
+      : null;
+    if (importPresentationId !== null && !isValidUuid(importPresentationId)) {
+      errors[`${key}.importPresentationId`] = "Selecciona una presentación válida.";
+      return;
+    }
+    if (productVariantId !== null && importPresentationId !== null) {
+      errors[`${key}.importPresentationId`] = "Una oferta no puede usar variante y presentación Import a la vez.";
+      return;
+    }
+
+    const dedupeKey = `${productId}::${productVariantId ?? ""}::${importPresentationId ?? ""}`;
     if (seen.has(dedupeKey)) {
-      errors[`${key}.productId`] = "Este producto (y variante) ya está en la lista.";
+      errors[`${key}.productId`] = "Este producto con la misma presentación ya está en la lista.";
       return;
     }
     seen.add(dedupeKey);
 
     const priceAmount = parseMoney(item.priceAmount, `${key}.priceAmount`, errors);
 
-    // Fail-closed: any value other than exactly "available" or
-    // "out_of_stock" (including missing/null/malformed) is a validation
-    // error. Never silently transform an unsupported value into "available".
+    // Fail-closed: missing/null/malformed values are validation errors.
     if (!isCampaignProductAvailability(item.availabilityStatus)) {
-      errors[`${key}.availabilityStatus`] = "Selecciona una disponibilidad válida (Disponible o Agotado).";
+      errors[`${key}.availabilityStatus`] = "Selecciona una disponibilidad válida (Por confirmar, Disponible o Agotado).";
       return;
     }
     const availabilityStatus = item.availabilityStatus;
@@ -131,7 +143,7 @@ export function validateCampaignProductItems(rawItems: unknown): ValidationResul
     const sortOrder = Number.isInteger(item.sortOrder) ? (item.sortOrder as number) : index;
 
     if (priceAmount === null) return;
-    parsed.push({ productId, productVariantId, priceAmount, availabilityStatus, sortOrder });
+    parsed.push({ productId, productVariantId, importPresentationId, priceAmount, availabilityStatus, sortOrder });
   });
 
   if (Object.keys(errors).length > 0) return { ok: false, errors };

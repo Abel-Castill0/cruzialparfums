@@ -20,6 +20,7 @@ describe("validateCampaignProductItems", () => {
         {
           productId: PRODUCT_ID,
           productVariantId: null,
+          importPresentationId: null,
           priceAmount: "45.50",
           availabilityStatus: "available",
           sortOrder: 0,
@@ -171,6 +172,7 @@ describe("validateCampaignProductItems", () => {
 
 describe("isCampaignProductAvailability", () => {
   it("accepts the confirmed statuses only", () => {
+    expect(isCampaignProductAvailability("unconfirmed")).toBe(true);
     expect(isCampaignProductAvailability("available")).toBe(true);
     expect(isCampaignProductAvailability("out_of_stock")).toBe(true);
     expect(isCampaignProductAvailability("backordered")).toBe(false);

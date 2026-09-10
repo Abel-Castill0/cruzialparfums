@@ -14,6 +14,7 @@ import {
 } from "./campaign-products-schema";
 import type { CampaignRow } from "./campaigns-repository";
 import type {
+  ImportPresentationPublicationStatus,
   ProductPublicationStatus,
   VariantPublicationStatus,
 } from "./campaign-readiness";
@@ -31,12 +32,10 @@ export type CampaignProductMutationResult<T> =
   | { ok: true; data: T }
   | { ok: false; error: CampaignProductMutationError };
 
-/** One eligible Import product, with its (non-archived) variants embedded —
- * the bounded picker's data source (searchEligibleProducts). No price/stock
- * is invented here: variants carry their own base price_amount only as a
- * label aid, never as the campaign price (campaign price is always entered
- * fresh — client-decisions.md: "products/prices/availability may differ by
- * campaign"). publicationStatus is included so the picker can visually
+/** One eligible Import product with its non-archived, price-free structural
+ * presentations embedded — the bounded picker's data source. Campaign price
+ * is always entered fresh. publicationStatus is included so the picker can
+ * visually
  * distinguish Publicado/Borrador/Oculto — archived (archived_at) products
  * are excluded upstream entirely, never returned as "selectable but archived". */
 export type EligibleImportProduct = {
@@ -45,8 +44,16 @@ export type EligibleImportProduct = {
   slug: string;
   brand: string | null;
   publicationStatus: Exclude<ProductPublicationStatus, "archived">;
-  variants: { id: string; label: string; sizeMl: number | null; publicationStatus: Exclude<VariantPublicationStatus, "archived"> }[];
+  presentations: {
+    id: string;
+    label: string;
+    presentationClass: ImportPresentationClass;
+    capacityMl: number | null;
+    publicationStatus: Exclude<ImportPresentationPublicationStatus, "archived">;
+  }[];
 };
+
+export type ImportPresentationClass = "single_fixed" | "multi_presentation" | "pack_set" | "ambiguous";
 
 /** quantity_limit is deliberately NOT part of this read model (4J2
  * correction): it is not a confirmed Import feature and the admin UI never
@@ -69,6 +76,13 @@ export type CampaignProductItem = {
   variantArchived: boolean;
   variantArchivedAt: string | null;
   variantPublicationStatus: VariantPublicationStatus | null;
+  importPresentationId: string | null;
+  presentationLabel: string | null;
+  presentationClass: ImportPresentationClass | null;
+  presentationCapacityMl: number | null;
+  presentationArchived: boolean;
+  presentationArchivedAt: string | null;
+  presentationPublicationStatus: ImportPresentationPublicationStatus | null;
   priceAmount: string;
   currency: string;
   availabilityStatus: CampaignProductAvailability;
@@ -124,12 +138,12 @@ export class AdminImportCampaignProductsRepository {
 
     let builder = this.supabase
       .from("products")
-      .select("id, name, slug, brand, publication_status, product_variants(id, label, size_ml, publication_status, archived_at)")
+      .select("id, name, slug, brand, publication_status, import_presentations(id, label, presentation_class, capacity_ml, publication_status, archived_at)")
       .eq("business_unit_id", this.businessUnitId)
       .is("archived_at", null)
       .neq("publication_status", "archived")
-      .is("product_variants.archived_at", null)
-      .neq("product_variants.publication_status", "archived")
+      .is("import_presentations.archived_at", null)
+      .neq("import_presentations.publication_status", "archived")
       .order("name", { ascending: true })
       .limit(boundedLimit);
 
@@ -150,13 +164,18 @@ export class AdminImportCampaignProductsRepository {
         slug: row.slug,
         brand: row.brand,
         publicationStatus: row.publication_status,
-        variants: (row.product_variants ?? []).flatMap((variant) => {
-          if (variant.archived_at !== null || !isSelectableVariantPublicationStatus(variant.publication_status)) return [];
+        presentations: (row.import_presentations ?? []).flatMap((presentation) => {
+          if (
+            presentation.archived_at !== null
+            || !isSelectablePresentationPublicationStatus(presentation.publication_status)
+            || !isImportPresentationClass(presentation.presentation_class)
+          ) return [];
           return [{
-            id: variant.id,
-            label: variant.label,
-            sizeMl: variant.size_ml,
-            publicationStatus: variant.publication_status,
+            id: presentation.id,
+            label: presentation.label,
+            presentationClass: presentation.presentation_class,
+            capacityMl: presentation.capacity_ml,
+            publicationStatus: presentation.publication_status,
           }];
         }),
       }];
@@ -199,6 +218,15 @@ export class AdminImportCampaignProductsRepository {
         variantPublicationStatus: isVariantPublicationStatus(row.variant_publication_status)
           ? row.variant_publication_status
           : null,
+        importPresentationId: row.import_presentation_id,
+        presentationLabel: row.presentation_label,
+        presentationClass: isImportPresentationClass(row.presentation_class) ? row.presentation_class : null,
+        presentationCapacityMl: row.presentation_capacity_ml,
+        presentationArchived: row.presentation_archived_at !== null,
+        presentationArchivedAt: row.presentation_archived_at,
+        presentationPublicationStatus: isPresentationPublicationStatus(row.presentation_publication_status)
+          ? row.presentation_publication_status
+          : null,
         priceAmount,
         currency: row.currency,
         availabilityStatus: row.availability_status,
@@ -230,6 +258,7 @@ export class AdminImportCampaignProductsRepository {
     const payload = items.map((item) => ({
       product_id: item.productId,
       product_variant_id: item.productVariantId,
+      import_presentation_id: item.importPresentationId,
       // Canonical decimal text (e.g. "16.00") — passed through unmodified,
       // never routed through Number()/arithmetic on this side either.
       price_amount: item.priceAmount,
@@ -270,8 +299,19 @@ function isSelectableProductPublicationStatus(
   return value === "draft" || value === "published" || value === "hidden";
 }
 
-function isSelectableVariantPublicationStatus(
+function isPresentationPublicationStatus(value: unknown): value is ImportPresentationPublicationStatus {
+  return value === "draft" || value === "published" || value === "archived";
+}
+
+function isSelectablePresentationPublicationStatus(
   value: unknown,
-): value is Exclude<VariantPublicationStatus, "archived"> {
+): value is Exclude<ImportPresentationPublicationStatus, "archived"> {
   return value === "draft" || value === "published";
+}
+
+function isImportPresentationClass(value: unknown): value is ImportPresentationClass {
+  return value === "single_fixed"
+    || value === "multi_presentation"
+    || value === "pack_set"
+    || value === "ambiguous";
 }

@@ -9,6 +9,9 @@ const base: CampaignReadinessInput = {
   productVariantId: null,
   variantPublicationStatus: null,
   variantArchivedAt: null,
+  importPresentationId: null,
+  presentationPublicationStatus: null,
+  presentationArchivedAt: null,
   availabilityStatus: "available",
 };
 

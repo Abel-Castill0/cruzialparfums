@@ -1,4 +1,4 @@
-export type Json =
+﻿export type Json =
   | string
   | number
   | boolean
@@ -153,6 +153,7 @@ export type Database = {
           created_at: string
           currency: string
           id: string
+          import_presentation_id: string | null
           price_amount: number
           product_id: string
           product_variant_id: string | null
@@ -166,6 +167,7 @@ export type Database = {
           created_at?: string
           currency?: string
           id?: string
+          import_presentation_id?: string | null
           price_amount: number
           product_id: string
           product_variant_id?: string | null
@@ -179,6 +181,7 @@ export type Database = {
           created_at?: string
           currency?: string
           id?: string
+          import_presentation_id?: string | null
           price_amount?: number
           product_id?: string
           product_variant_id?: string | null
@@ -192,6 +195,13 @@ export type Database = {
             columns: ["campaign_id"]
             isOneToOne: false
             referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_products_import_presentation_id_fkey"
+            columns: ["import_presentation_id"]
+            isOneToOne: false
+            referencedRelation: "import_presentations"
             referencedColumns: ["id"]
           },
           {
@@ -527,6 +537,66 @@ export type Database = {
             columns: ["business_unit_id"]
             isOneToOne: false
             referencedRelation: "business_units"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      import_presentations: {
+        Row: {
+          archived_at: string | null
+          capacity_ml: number | null
+          composition: Json | null
+          created_at: string
+          id: string
+          label: string
+          presentation_class: string
+          product_id: string
+          publication_status: string
+          source_metadata: Json
+          stable_key: string
+          updated_at: string
+        }
+        Insert: {
+          archived_at?: string | null
+          capacity_ml?: number | null
+          composition?: Json | null
+          created_at?: string
+          id?: string
+          label: string
+          presentation_class: string
+          product_id: string
+          publication_status?: string
+          source_metadata?: Json
+          stable_key: string
+          updated_at?: string
+        }
+        Update: {
+          archived_at?: string | null
+          capacity_ml?: number | null
+          composition?: Json | null
+          created_at?: string
+          id?: string
+          label?: string
+          presentation_class?: string
+          product_id?: string
+          publication_status?: string
+          source_metadata?: Json
+          stable_key?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "import_presentations_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "admin_parfums_wholesale_catalog"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "import_presentations_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
             referencedColumns: ["id"]
           },
         ]
@@ -1664,26 +1734,6 @@ export type Database = {
           isSetofReturn: false
         }
       }
-      admin_get_import_campaign_products: {
-        Args: { p_campaign_id: string }
-        Returns: {
-          availability_status: string
-          currency: string
-          id: string
-          price_amount: string
-          product_archived_at: string | null
-          product_brand: string | null
-          product_id: string
-          product_name: string
-          product_publication_status: string
-          product_slug: string
-          product_variant_id: string | null
-          sort_order: number
-          variant_archived_at: string | null
-          variant_label: string | null
-          variant_publication_status: string | null
-        }[]
-      }
       admin_get_audit_log_entry: {
         Args: { p_business_unit_code: string; p_entry_id: string }
         Returns: {
@@ -1697,6 +1747,32 @@ export type Database = {
           entity_id: string
           entity_type: string
           id: string
+        }[]
+      }
+      admin_get_import_campaign_products: {
+        Args: { p_campaign_id: string }
+        Returns: {
+          availability_status: string
+          currency: string
+          id: string
+          import_presentation_id: string
+          presentation_archived_at: string
+          presentation_capacity_ml: number
+          presentation_class: string
+          presentation_label: string
+          presentation_publication_status: string
+          price_amount: string
+          product_archived_at: string
+          product_brand: string
+          product_id: string
+          product_name: string
+          product_publication_status: string
+          product_slug: string
+          product_variant_id: string
+          sort_order: number
+          variant_archived_at: string
+          variant_label: string
+          variant_publication_status: string
         }[]
       }
       admin_list_audit_log: {
@@ -1931,6 +2007,7 @@ export type Database = {
           created_at: string
           currency: string
           id: string
+          import_presentation_id: string | null
           price_amount: number
           product_id: string
           product_variant_id: string | null
@@ -2488,3 +2565,4 @@ export const Constants = {
     Enums: {},
   },
 } as const
+
