@@ -85,6 +85,13 @@ Isolated:
   MAX_CAMPAIGN_OFFERS 1500 (schema + DB RPC hard cap), archived presentation
   fail-closed (archived_at OR publication_status='archived'), correction
   migration `20260909060000_campaign_products_correction.sql`.
+- Admin Import — Sexto Consolidado Population (4J4B) ⛔ BLOCKED —
+  Loader implemented (`scripts/load-import-consolidado.mjs`), population plan
+  validated: 842 products, 906 presentations, 886 priced offers, 13 skipped
+  (no price), Vanilla Freak unresolved. 7 conflicting duplicate offer groups
+  detected (same product + same presentation + different prices). Per spec:
+  STOP, report, do not choose silently. Awaiting conflict resolution before
+  local apply.
 
 Do not re-audit closed capabilities without evidence of regression.
 
