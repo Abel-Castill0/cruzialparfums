@@ -46,10 +46,7 @@ async function main() {
   const manifestJson = JSON.stringify(manifest, null, 2) + "\n";
   const manifestSha = sha256(manifestJson);
 
-  // Write manifest with SHA in footer (outside canonical body)
-  const output = manifestJson.trimEnd() + `\n\n<!-- manifest-sha256: ${manifestSha} -->\n`;
-
-  await writeFile(outputPath, output, "utf8");
+  await writeFile(outputPath, manifestJson, "utf8");
   console.log(`[gen] Plan version: ${PLAN_VERSION}`);
   console.log(`[gen] Reviewed SHA: ${reviewed._sha256}`);
   console.log(`[gen] Overrides SHA: ${overrides._sha256}`);

@@ -23,11 +23,11 @@ insert into public.admin_memberships (user_id, business_unit_id, role) values
 set local role authenticated;
 set local request.jwt.claims to '{"sub":"44444444-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
 select lives_ok(
-  $$select public.admin_create_campaign(6, 'Sexto Consolidado', null, null, 'Mensaje público')$$,
+  $$select public.admin_create_campaign(6006, 'Sexto Consolidado', null, null, 'Mensaje público')$$,
   'Import admin creates a draft campaign'
 );
 select is(
-  (select status from public.campaigns where business_unit_id = '22222222-2222-4222-8222-222222222222' and number = 6),
+  (select status from public.campaigns where business_unit_id = '22222222-2222-4222-8222-222222222222' and number = 6006),
   'draft', 'a newly created campaign always starts as draft (no create-as-open shortcut)'
 );
 reset role;
@@ -45,7 +45,7 @@ select is(
 set local role authenticated;
 set local request.jwt.claims to '{"sub":"44444444-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
 select throws_ok(
-  $$select public.admin_create_campaign(6, 'Otro Sexto', null, null, null)$$,
+  $$select public.admin_create_campaign(6006, 'Otro Sexto', null, null, null)$$,
   '23505', null, 'duplicate campaign number inside Import is rejected'
 );
 -- Invalid time window rejected
@@ -80,7 +80,7 @@ reset role;
 set local role authenticated;
 set local request.jwt.claims to '{"sub":"44444444-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
 select throws_ok(
-  $$update public.campaigns set name = name where number = 6 and business_unit_id = '22222222-2222-4222-8222-222222222222'$$,
+  $$update public.campaigns set name = name where number = 6006 and business_unit_id = '22222222-2222-4222-8222-222222222222'$$,
   '42501', null, 'an Import admin cannot write campaigns directly through the table (audited RPC is the only path)'
 );
 select throws_ok(
@@ -88,12 +88,12 @@ select throws_ok(
   '42501', null, 'direct INSERT on campaigns is denied'
 );
 select throws_ok(
-  $$delete from public.campaigns where number = 6 and business_unit_id = '22222222-2222-4222-8222-222222222222'$$,
+  $$delete from public.campaigns where number = 6006 and business_unit_id = '22222222-2222-4222-8222-222222222222'$$,
   '42501', null, 'direct DELETE on campaigns is denied'
 );
 select throws_ok(
   $$insert into public.campaign_products (campaign_id, product_id, price_amount)
-    select id, (select id from public.products limit 1), 10 from public.campaigns where number = 6$$,
+    select id, (select id from public.products limit 1), 10 from public.campaigns where number = 6006$$,
   '42501', null, 'direct write on campaign_products is denied'
 );
 reset role;
@@ -106,14 +106,14 @@ set local role authenticated;
 set local request.jwt.claims to '{"sub":"44444444-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
 select lives_ok(
   $$select public.admin_update_campaign(
-      (select id from public.campaigns where number = 6 and business_unit_id = '22222222-2222-4222-8222-222222222222'),
-      (select updated_at from public.campaigns where number = 6 and business_unit_id = '22222222-2222-4222-8222-222222222222'),
+      (select id from public.campaigns where number = 6006 and business_unit_id = '22222222-2222-4222-8222-222222222222'),
+      (select updated_at from public.campaigns where number = 6006 and business_unit_id = '22222222-2222-4222-8222-222222222222'),
       'Sexto Consolidado (editado)', null, null, 'Mensaje actualizado')$$,
   'Import admin edits campaign metadata'
 );
 select throws_ok(
   $$select public.admin_update_campaign(
-      (select id from public.campaigns where number = 6 and business_unit_id = '22222222-2222-4222-8222-222222222222'),
+      (select id from public.campaigns where number = 6006 and business_unit_id = '22222222-2222-4222-8222-222222222222'),
       '2000-01-01T00:00:00Z', 'Stale edit', null, null, null)$$,
   '40001', null, 'a stale expected_updated_at is rejected without silent overwrite'
 );
@@ -127,14 +127,14 @@ set local role authenticated;
 set local request.jwt.claims to '{"sub":"44444444-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
 select lives_ok(
   $$select public.admin_set_campaign_status(
-      (select id from public.campaigns where number = 6 and business_unit_id = '22222222-2222-4222-8222-222222222222'),
-      (select updated_at from public.campaigns where number = 6 and business_unit_id = '22222222-2222-4222-8222-222222222222'),
+      (select id from public.campaigns where number = 6006 and business_unit_id = '22222222-2222-4222-8222-222222222222'),
+      (select updated_at from public.campaigns where number = 6006 and business_unit_id = '22222222-2222-4222-8222-222222222222'),
       'open')$$,
   'Import admin opens the campaign'
 );
 reset role;
 select is(
-  (select status from public.campaigns where number = 6 and business_unit_id = '22222222-2222-4222-8222-222222222222'),
+  (select status from public.campaigns where number = 6006 and business_unit_id = '22222222-2222-4222-8222-222222222222'),
   'open', 'status is now open'
 );
 select is(
@@ -146,8 +146,8 @@ set local role authenticated;
 set local request.jwt.claims to '{"sub":"55555555-bbbb-4bbb-8bbb-bbbbbbbbbbbb","role":"authenticated"}';
 select throws_ok(
   $$select public.admin_set_campaign_status(
-      (select id from public.campaigns where number = 6 and business_unit_id = '22222222-2222-4222-8222-222222222222'),
-      (select updated_at from public.campaigns where number = 6 and business_unit_id = '22222222-2222-4222-8222-222222222222'),
+      (select id from public.campaigns where number = 6006 and business_unit_id = '22222222-2222-4222-8222-222222222222'),
+      (select updated_at from public.campaigns where number = 6006 and business_unit_id = '22222222-2222-4222-8222-222222222222'),
       'closed')$$,
   '42501', null, 'Import viewer cannot change status'
 );
@@ -195,7 +195,7 @@ set local role anon;
 set local request.jwt.claims to '{"role":"anon"}';
 
 select is(
-  (select count(*)::integer from public.campaigns where number = 6 and business_unit_id = '22222222-2222-4222-8222-222222222222'),
+  (select count(*)::integer from public.campaigns where number = 6006 and business_unit_id = '22222222-2222-4222-8222-222222222222'),
   1, 'anon reads the open Import campaign'
 );
 select is(
@@ -228,7 +228,7 @@ reset role;
 -- (campaign_products has no mutation RPC yet — that is 4J2 — so this checks
 -- the shared resolver campaign_products_public_read depends on).
 select is(
-  (select app.campaign_is_public(id) from public.campaigns where number = 6 and business_unit_id = '22222222-2222-4222-8222-222222222222'),
+  (select app.campaign_is_public(id) from public.campaigns where number = 6006 and business_unit_id = '22222222-2222-4222-8222-222222222222'),
   true, 'app.campaign_is_public is true for the open campaign (campaign_products_public_read relies on this)'
 );
 select is(
@@ -359,8 +359,8 @@ set local role authenticated;
 set local request.jwt.claims to '{"sub":"44444444-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
 select lives_ok(
   $$select public.admin_update_campaign(
-      (select id from public.campaigns where number = 6 and business_unit_id = '22222222-2222-4222-8222-222222222222'),
-      (select updated_at from public.campaigns where number = 6 and business_unit_id = '22222222-2222-4222-8222-222222222222'),
+      (select id from public.campaigns where number = 6006 and business_unit_id = '22222222-2222-4222-8222-222222222222'),
+      (select updated_at from public.campaigns where number = 6006 and business_unit_id = '22222222-2222-4222-8222-222222222222'),
       'Sexto Consolidado (editado de nuevo)', null, null, 'Mensaje final')$$,
   'Import admin still edits their own Import campaign normally after the cross-unit fix'
 );

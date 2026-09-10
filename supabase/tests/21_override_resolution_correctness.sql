@@ -5,7 +5,7 @@
 
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(18);
+select plan(20);
 
 -- Resolve campaign ID by natural identity
 -- (Import BU + number 6)
@@ -116,14 +116,21 @@ select is(
   'omit_offer_pending_price_confirmation: CDN Preciux IV has 0 campaign_products'
 );
 
--- ── 11. CDN Preciux IV: product exists but no presentation (all offers skipped) ──
+-- ── 11. CDN Preciux IV: structure survives the skipped price conflict ──
 
 select is(
   (select count(*)::int from public.import_presentations ip
    join public.products p on ip.product_id = p.id
    where p.slug like 'import-cdn-preciux-iv-%'),
-  0,
-  'omit_offer_pending_price_confirmation: CDN Preciux IV has no presentation (all offers skipped)'
+  1,
+  'omit_offer_pending_price_confirmation: CDN Preciux IV retains its 55ml presentation'
+);
+
+select ok(
+  exists(select 1 from public.import_presentations ip
+         join public.products p on ip.product_id = p.id
+         where p.slug like 'import-cdn-preciux-iv-%' and ip.label = '55ml'),
+  'omit_offer_pending_price_confirmation: CDN Preciux IV presentation is exactly 55ml'
 );
 
 -- ── 12. Total counts ──
@@ -139,6 +146,14 @@ select is(
    where campaign_id = (select id from public.campaigns where business_unit_id = '22222222-2222-4222-8222-222222222222' and number = 6)),
   898,
   'global: 898 campaign products'
+);
+
+select is(
+  (select count(*)::int from public.import_presentations ip
+   join public.products p on p.id = ip.product_id
+   where p.business_unit_id = '22222222-2222-4222-8222-222222222222' and p.slug like 'import-%'),
+  912,
+  'global: 912 structural import presentations'
 );
 
 -- ── 13. No null prices ──

@@ -61,9 +61,17 @@ export function mapAvailability(availabilityCandidate) {
   // Only explicit OUT_OF_STOCK evidence → out_of_stock.
   // Unknown/null → unconfirmed.
   // Explicit "available" → available (when actually supported).
-  if (availabilityCandidate === "OUT_OF_STOCK") return "out_of_stock";
-  if (availabilityCandidate === "available") return "available";
+  if (availabilityCandidate === "OUT_OF_STOCK" || availabilityCandidate === "out_of_stock") return "out_of_stock";
+  if (availabilityCandidate === "AVAILABLE" || availabilityCandidate === "available") return "available";
   return "unconfirmed";
+}
+
+function overrideReference(override) {
+  return [
+    override.resolution,
+    override.affected_canonical_product_id,
+    ...(override.affected_canonical_offer_ids || []),
+  ].join(":");
 }
 
 // ─── Plan builder ──────────────────────────────────────────────────────────
@@ -77,6 +85,7 @@ export function mapAvailability(availabilityCandidate) {
  * no priced offer exists.
  */
 export function buildPopulationPlan(reviewed, overrides) {
+  const reviewedOfferById = new Map(reviewed.canonical_offers.map((offer) => [offer.canonical_offer_id, offer]));
   // Index overrides
   const splitMap = new Map();
   const skipMap = new Map();
@@ -110,6 +119,9 @@ export function buildPopulationPlan(reviewed, overrides) {
       brand: p.brand?.value || null,
       import_segment: p.import_segment?.value || null,
       presentation_class: PRES_CLASS_MAP[p.presentation_class] || "ambiguous",
+      provenance: "OFFICIAL_PDF",
+      source_records: [...p.source_record_ids],
+      override_references: [],
     };
     plan.products.push(prod);
     productMap.set(p.canonical_product_id, prod);
@@ -130,6 +142,9 @@ export function buildPopulationPlan(reviewed, overrides) {
         presentation_class: origProd?.presentation_class
           ? PRES_CLASS_MAP[origProd.presentation_class] || "ambiguous"
           : "ambiguous",
+        provenance: "OFFICIAL_PDF",
+        source_records: sp.offers.map((offer) => reviewedOfferById.get(offer.canonical_offer_id)?.source_record_id).filter(Boolean),
+        override_references: [overrideReference(ov)],
       };
       plan.products.push(prod);
       productMap.set(sp.new_canonical_product_id, prod);
@@ -147,6 +162,8 @@ export function buildPopulationPlan(reviewed, overrides) {
       to_product_id: ra.to_product_id,
       new_presentation_label: ra.new_presentation_label,
       price_amount: ra.price_amount,
+      source_record_id: reviewedOfferById.get(ra.canonical_offer_id)?.source_record_id,
+      availability_candidate: reviewedOfferById.get(ra.canonical_offer_id)?.availability_candidate,
     });
     if (!productMap.has(ra.to_product_id)) {
       const s = slugFromCanonical(ra.to_product_name, ra.to_product_id);
@@ -158,6 +175,9 @@ export function buildPopulationPlan(reviewed, overrides) {
         brand: origProd?.brand?.value || null,
         import_segment: origProd?.import_segment?.value || null,
         presentation_class: "single_fixed",
+        provenance: "OFFICIAL_PDF",
+        source_records: [ra.source_record_id].filter(Boolean),
+        override_references: [overrideReference(ov)],
       };
       plan.products.push(prod);
       productMap.set(ra.to_product_id, prod);
@@ -190,7 +210,6 @@ export function buildPopulationPlan(reviewed, overrides) {
 
   for (const o of reviewed.canonical_offers) {
     const oid = o.canonical_offer_id;
-    if (skipOfferIds.has(oid)) continue;
     if (reassociatedOffers.has(oid)) continue;
 
     let canonicalProdId = splitOfferRedirect.has(oid) ? splitOfferRedirect.get(oid) : o.canonical_product_id;
@@ -216,7 +235,20 @@ export function buildPopulationPlan(reviewed, overrides) {
         label: finalLabel,
         presentation_class: productMap.get(canonicalProdId)?.presentation_class || "single_fixed",
         capacity_ml: extractCapacity(finalLabel),
+        provenance: "OFFICIAL_PDF",
+        source_records: [o.source_record_id],
+        override_references: [
+          ...(pOverride ? [overrideReference(presOverrideMap.get(canonicalProdId))] : []),
+          ...(skipOfferIds.has(oid) ? [overrideReference(skipMap.get(o.canonical_product_id))] : []),
+        ].filter(Boolean),
       });
+    } else {
+      const existing = structuralPres.get(key);
+      if (!existing.source_records.includes(o.source_record_id)) existing.source_records.push(o.source_record_id);
+      if (skipOfferIds.has(oid)) {
+        const ref = overrideReference(skipMap.get(o.canonical_product_id));
+        if (!existing.override_references.includes(ref)) existing.override_references.push(ref);
+      }
     }
   }
 
@@ -231,6 +263,9 @@ export function buildPopulationPlan(reviewed, overrides) {
         label: ra.new_presentation_label,
         presentation_class: productMap.get(ra.to_product_id)?.presentation_class || "single_fixed",
         capacity_ml: extractCapacity(ra.new_presentation_label),
+        provenance: "OFFICIAL_PDF",
+        source_records: [ra.source_record_id].filter(Boolean),
+        override_references: [overrideReference(reassociateMap.get(oid))],
       });
     }
   }
@@ -243,7 +278,15 @@ export function buildPopulationPlan(reviewed, overrides) {
   for (const o of reviewed.canonical_offers) {
     const oid = o.canonical_offer_id;
     if (skipOfferIds.has(oid)) {
-      plan.skipped.push({ id: oid, reason: "conflicting_source_price_pending_confirmation", product: o.canonical_product_id });
+      plan.skipped.push({
+        canonical_offer_id: oid,
+        reason: "conflicting_source_price_pending_confirmation",
+        product_canonical_id: o.canonical_product_id,
+        presentation_label: o.presentation?.raw_label || "default",
+        source_price_amount: o.price?.amount || null,
+        source_records: [o.source_record_id],
+        override_references: [overrideReference(skipMap.get(o.canonical_product_id))],
+      });
       continue;
     }
     if (reassociatedOffers.has(oid)) continue;
@@ -253,7 +296,15 @@ export function buildPopulationPlan(reviewed, overrides) {
 
     const price = o.price?.amount;
     if (!price || price === "") {
-      plan.skipped.push({ id: oid, reason: "no_price", product: canonicalProdId });
+      plan.skipped.push({
+        canonical_offer_id: oid,
+        reason: "no_price",
+        product_canonical_id: canonicalProdId,
+        presentation_label: o.presentation?.raw_label || "default",
+        source_price_amount: null,
+        source_records: [o.source_record_id],
+        override_references: [],
+      });
       continue;
     }
 
@@ -282,6 +333,11 @@ export function buildPopulationPlan(reviewed, overrides) {
       price_amount: finalPrice,
       availability_status: mapAvailability(o.availability_candidate),
       source_records: [o.source_record_id],
+      provenance: o.price?.provenance || "UNKNOWN",
+      override_references: [
+        ...(pOverride ? [overrideReference(presOverrideMap.get(o.canonical_product_id))] : []),
+        ...(splitOfferRedirect.has(oid) ? [overrideReference(splitMap.get(o.canonical_product_id))] : []),
+      ].filter(Boolean),
     });
   }
 
@@ -295,13 +351,18 @@ export function buildPopulationPlan(reviewed, overrides) {
         pres_stable_key: pk,
         pres_label: ra.new_presentation_label,
         price_amount: ra.price_amount,
-        availability_status: "unconfirmed",
-        source_records: [oid],
+        availability_status: mapAvailability(ra.availability_candidate),
+        source_records: [ra.source_record_id].filter(Boolean),
+        provenance: "OFFICIAL_PDF",
+        override_references: [overrideReference(reassociateMap.get(oid))],
       });
     }
   }
 
-  plan.offers = [...deduped.values()];
+  plan.products.sort((a, b) => a.canonical_id.localeCompare(b.canonical_id));
+  plan.presentations.sort((a, b) => `${a.product_canonical_id}|${a.stable_key}`.localeCompare(`${b.product_canonical_id}|${b.stable_key}`));
+  plan.offers = [...deduped.values()].sort((a, b) => `${a.product_canonical_id}|${a.pres_stable_key}`.localeCompare(`${b.product_canonical_id}|${b.pres_stable_key}`));
+  plan.skipped.sort((a, b) => a.canonical_offer_id.localeCompare(b.canonical_offer_id));
 
   plan.stats = {
     source_occurrences: reviewed.counts.source_occurrences,
@@ -327,7 +388,10 @@ export function buildCanonicalManifest(reviewed, overrides, plan) {
   return {
     schema_version: PLAN_VERSION,
     reviewed_sha256: reviewed._sha256 || null,
+    reviewed_artifact: "supabase/staging/import/sexto-consolidado-reviewed.json",
     overrides_sha256: overrides._sha256 || null,
+    overrides_artifact: "supabase/staging/import/sexto-consolidado-population-overrides.json",
+    source_pdf_sha256: "394874f026f7cdd6600e4ecb6c2456279980a501a700cba6d9182632d76e0493",
     campaign: {
       number: CAMPAIGN_NUMBER,
       name: CAMPAIGN_NAME,
@@ -340,18 +404,29 @@ export function buildCanonicalManifest(reviewed, overrides, plan) {
       name: p.name,
       brand: p.brand,
       import_segment: p.import_segment,
+      presentation_class: p.presentation_class,
+      provenance: p.provenance,
+      source_records: p.source_records,
+      override_references: p.override_references,
     })),
     presentations: plan.presentations.map((p) => ({
       product_canonical_id: p.product_canonical_id,
       stable_key: p.stable_key,
       label: p.label,
       capacity_ml: p.capacity_ml,
+      presentation_class: p.presentation_class,
+      provenance: p.provenance,
+      source_records: p.source_records,
+      override_references: p.override_references,
     })),
     offers: plan.offers.map((o) => ({
       product_canonical_id: o.product_canonical_id,
       pres_stable_key: o.pres_stable_key,
       price_amount: o.price_amount,
       availability_status: o.availability_status,
+      provenance: o.provenance,
+      source_records: o.source_records,
+      override_references: o.override_references,
     })),
     skipped: plan.skipped,
   };

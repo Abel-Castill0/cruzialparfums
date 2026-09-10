@@ -85,17 +85,21 @@ Isolated:
   MAX_CAMPAIGN_OFFERS 1500 (schema + DB RPC hard cap), archived presentation
   fail-closed (archived_at OR publication_status='archived'), correction
   migration `20260909060000_campaign_products_correction.sql`.
-- Admin Import — Sexto Consolidado Population (4J4B) ✅ —
+- Admin Import — Sexto Consolidado Population (4J4B implementation + local gate ✅; hosted apply pending operator credential) —
   All 7 conflict groups resolved via PDF review. Overrides artifact
   (`sexto-consolidado-population-overrides.json`) implements: 2 split
   canonical source identities (Accento, Arabia Heroes), 1 omit offer pending
   price confirmation (CDN Preciux IV), 3 split structural presentations (GOS
   Rouge, Black XS, Miss Dior), 1 correct source block association (Infrared
-  EDP). Population plan: 844 products, 898 presentations, 898 offers, 0
-  conflicts. Loader committed with RPC-based population via temp table +
-  `admin_set_campaign_products`. Local: db reset → apply → verify →
-  idempotence → RLS zero-leak all green. pgTAP 21 tests (test 21 override
-  correctness). vitest 345 tests (12 override tests). Staging pending.
+  EDP). Deterministic, UUID-free population plan: 844 products, 912 structural
+  presentations, 898 priced offers, 15 skipped offers, 0 unresolved conflicts.
+  Generator and loader share `buildPopulationPlan`. The operator uses one
+  direct PostgreSQL transaction, natural identities, advisory locking and
+  fail-closed exact-state checks; it never creates synthetic auth or admin
+  rows. Local: db reset → precheck → apply → verify → second apply → verify →
+  real anon RLS zero-leak all green. Full pgTAP and application gate green.
+  Hosted staging precheck/apply/verify remains pending until the secure
+  `CRUZIAL_STAGING_DATABASE_URL` operator credential is available.
 
 Do not re-audit closed capabilities without evidence of regression.
 
