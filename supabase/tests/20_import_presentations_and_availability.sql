@@ -7,17 +7,20 @@ select plan(32);
 insert into auth.users (id, instance_id, aud, role, email, encrypted_password, created_at, updated_at) values
   ('89000000-aaaa-4aaa-8aaa-aaaaaaaaaaaa', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'import-admin-4j4a@example.test', '', now(), now()),
   ('89000000-bbbb-4bbb-8bbb-bbbbbbbbbbbb', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'import-viewer-4j4a@example.test', '', now(), now()),
-  ('89000000-cccc-4ccc-8ccc-cccccccccccc', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'parfums-admin-4j4a@example.test', '', now(), now());
+  ('89000000-cccc-4ccc-8ccc-cccccccccccc', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'parfums-admin-4j4a@example.test', '', now(), now())
+on conflict do nothing;
 
 insert into public.admin_memberships (user_id, business_unit_id, role) values
   ('89000000-aaaa-4aaa-8aaa-aaaaaaaaaaaa', '22222222-2222-4222-8222-222222222222', 'admin'),
   ('89000000-bbbb-4bbb-8bbb-bbbbbbbbbbbb', '22222222-2222-4222-8222-222222222222', 'viewer'),
-  ('89000000-cccc-4ccc-8ccc-cccccccccccc', '11111111-1111-4111-8111-111111111111', 'admin');
+  ('89000000-cccc-4ccc-8ccc-cccccccccccc', '11111111-1111-4111-8111-111111111111', 'admin')
+on conflict do nothing;
 
 insert into public.products (id, business_unit_id, slug, name, publication_status) values
   ('89001000-0000-4000-8000-000000000001', '22222222-2222-4222-8222-222222222222', 'j4a-product-a', 'J4A Product A', 'published'),
   ('89001000-0000-4000-8000-000000000002', '22222222-2222-4222-8222-222222222222', 'j4a-product-b', 'J4A Product B', 'published'),
-  ('89001000-0000-4000-8000-000000000003', '11111111-1111-4111-8111-111111111111', 'j4a-parfums', 'J4A Parfums', 'published');
+  ('89001000-0000-4000-8000-000000000003', '11111111-1111-4111-8111-111111111111', 'j4a-parfums', 'J4A Parfums', 'published')
+on conflict do nothing;
 
 select lives_ok(
   $$insert into public.import_presentations

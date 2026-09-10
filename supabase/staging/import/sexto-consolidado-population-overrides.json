@@ -1,0 +1,175 @@
+{
+  "schema_version": "4j4b-overrides-v1",
+  "description": "Human review overrides for 7 conflicting offer groups detected in sexto-consolidado-reviewed.json. Applied after source PDF re-inspection.",
+  "reviewed_artifact": "supabase/staging/import/sexto-consolidado-reviewed.json",
+  "reviewed_sha256": "428d7f47c0a713d7593b8e2618664570dfcecee8b424e6215dfb08b6b27943c2",
+  "overrides": [
+    {
+      "resolution": "split_canonical_source_identity",
+      "reason": "Page 59 and page 60 show visually distinct products with different packaging despite sharing the display name Accento. Must not merge.",
+      "affected_canonical_product_id": "scp-c5ccac9bf5623139",
+      "affected_canonical_offer_ids": ["sco-0a44cf1c65b8f155", "sco-5dbcb096206d34a8"],
+      "split_products": [
+        {
+          "new_canonical_product_id": "scp-accento-page59",
+          "name": "Accento",
+          "source_page": 59,
+          "source_record_ids": ["sc-p059-b10-0b25df29c5"],
+          "offers": [
+            {
+              "canonical_offer_id": "sco-5dbcb096206d34a8",
+              "price_amount": "710.00",
+              "presentation_label": "100ml",
+              "size_ml": 100,
+              "availability": null
+            }
+          ]
+        },
+        {
+          "new_canonical_product_id": "scp-accento-page60",
+          "name": "Accento",
+          "source_page": 60,
+          "source_record_ids": ["sc-p060-b04-2474565c43"],
+          "offers": [
+            {
+              "canonical_offer_id": "sco-0a44cf1c65b8f155",
+              "price_amount": "720.00",
+              "presentation_label": "100ml",
+              "size_ml": 100,
+              "availability": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "resolution": "split_canonical_source_identity",
+      "reason": "Page 34 and page 35 show clearly different product packaging. Must not merge.",
+      "affected_canonical_product_id": "scp-d19a5b129c377ca8",
+      "affected_canonical_offer_ids": ["sco-41e825aeb4315f7a", "sco-b74ce3574ee460b1"],
+      "split_products": [
+        {
+          "new_canonical_product_id": "scp-arabia-heroes-page34",
+          "name": "Arabia Heroes",
+          "source_page": 34,
+          "source_record_ids": ["sc-p034-b10-ef1a751116"],
+          "offers": [
+            {
+              "canonical_offer_id": "sco-41e825aeb4315f7a",
+              "price_amount": "100.00",
+              "presentation_label": "100ml",
+              "size_ml": 100,
+              "availability": null
+            }
+          ]
+        },
+        {
+          "new_canonical_product_id": "scp-arabia-heroes-page35",
+          "name": "Arabia Heroes",
+          "source_page": 35,
+          "source_record_ids": ["sc-p035-b07-d497c672cc"],
+          "offers": [
+            {
+              "canonical_offer_id": "sco-b74ce3574ee460b1",
+              "price_amount": "90.00",
+              "presentation_label": "100ml",
+              "size_ml": 100,
+              "availability": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "resolution": "omit_offer_pending_price_confirmation",
+      "reason": "Genuine same-product+same-presentation price conflict (S/185 vs S/180). Both source prices preserved in manifest. Offer cannot be created until client confirms.",
+      "affected_canonical_product_id": "scp-9d3551178b73419a",
+      "affected_canonical_offer_ids": ["sco-48e961cbe983a478", "sco-ab0a3767ee2d8bad"],
+      "skip_offers": true,
+      "preserved_source_prices": [
+        {"source_record_id": "sc-p011-b10-2c8b30d085", "page": 11, "price": "185.00"},
+        {"source_record_id": "sc-p012-b10-37a8f09535", "page": 12, "price": "180.00"}
+      ]
+    },
+    {
+      "resolution": "split_structural_presentations",
+      "reason": "Page 30 source block 9 contains two distinct sellable items: GOS Rouge 100ml and GOS Rouge Extrait de Parfum 100ml. Not a price conflict.",
+      "affected_canonical_product_id": "scp-e549566330a33aca",
+      "affected_canonical_offer_ids": ["sco-63b50e1bdd1af26a", "sco-afda71f94239b97e"],
+      "presentation_overrides": [
+        {
+          "canonical_offer_id": "sco-afda71f94239b97e",
+          "new_presentation_label": "100ml",
+          "new_stable_key_suffix": "base-100ml"
+        },
+        {
+          "canonical_offer_id": "sco-63b50e1bdd1af26a",
+          "new_presentation_label": "Extrait de Parfum · 100ml",
+          "new_stable_key_suffix": "extrait-100ml"
+        }
+      ]
+    },
+    {
+      "resolution": "correct_source_block_association",
+      "reason": "Page 43 block 1 S/330 offer belongs to Infrared EDP visual block, not SpiceBomb EDT. Reconciliation incorrectly associated it.",
+      "affected_canonical_product_id": "scp-d1346a0f2b90c26e",
+      "affected_canonical_offer_ids": ["sco-66cf130c620fefd2", "sco-95a24655c8cb2ca4"],
+      "reassociate_offer": {
+        "canonical_offer_id": "sco-66cf130c620fefd2",
+        "from_product_id": "scp-d1346a0f2b90c26e",
+        "to_product_id": "scp-c65b7b5f87496b06",
+        "to_product_name": "Infrared EDP",
+        "correct_product_name": "Infrared EDP",
+        "new_presentation_label": "EDP · 90ml",
+        "price_amount": "330.00"
+      },
+      "keep_offers": [
+        {
+          "canonical_offer_id": "sco-95a24655c8cb2ca4",
+          "price_amount": "190.00",
+          "presentation_label": "90ml"
+        }
+      ]
+    },
+    {
+      "resolution": "split_structural_presentations",
+      "reason": "Page 45 shows Black XS EDT 80ml S/220 and Eau De Parfum 80ml S/240. Two distinct concentration presentations, not a price conflict.",
+      "affected_canonical_product_id": "scp-932ad57f8f1f376b",
+      "affected_canonical_offer_ids": ["sco-6913640f18eaeac4", "sco-6a90547e13abf398"],
+      "presentation_overrides": [
+        {
+          "canonical_offer_id": "sco-6a90547e13abf398",
+          "new_presentation_label": "EDT · 80ml",
+          "new_stable_key_suffix": "edt-80ml",
+          "price_amount": "220.00"
+        },
+        {
+          "canonical_offer_id": "sco-6913640f18eaeac4",
+          "new_presentation_label": "EDP · 80ml",
+          "new_stable_key_suffix": "edp-80ml",
+          "price_amount": "240.00"
+        }
+      ]
+    },
+    {
+      "resolution": "split_structural_presentations",
+      "reason": "Page 55 shows Miss Dior EDP 100ml S/615 and Tester 100ml S/555. Retail vs tester are separate sellable presentations.",
+      "affected_canonical_product_id": "scp-8ee77493b55e5021",
+      "affected_canonical_offer_ids": ["sco-bf0963df364fa2c7", "sco-ec797821882bde9b"],
+      "presentation_overrides": [
+        {
+          "canonical_offer_id": "sco-bf0963df364fa2c7",
+          "new_presentation_label": "Retail · 100ml",
+          "new_stable_key_suffix": "retail-100ml",
+          "price_amount": "615.00"
+        },
+        {
+          "canonical_offer_id": "sco-ec797821882bde9b",
+          "new_presentation_label": "Tester · 100ml",
+          "new_stable_key_suffix": "tester-100ml",
+          "price_amount": "555.00"
+        }
+      ]
+    }
+  ]
+}

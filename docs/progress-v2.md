@@ -85,13 +85,17 @@ Isolated:
   MAX_CAMPAIGN_OFFERS 1500 (schema + DB RPC hard cap), archived presentation
   fail-closed (archived_at OR publication_status='archived'), correction
   migration `20260909060000_campaign_products_correction.sql`.
-- Admin Import — Sexto Consolidado Population (4J4B) ⛔ BLOCKED —
-  Loader implemented (`scripts/load-import-consolidado.mjs`), population plan
-  validated: 842 products, 906 presentations, 886 priced offers, 13 skipped
-  (no price), Vanilla Freak unresolved. 7 conflicting duplicate offer groups
-  detected (same product + same presentation + different prices). Per spec:
-  STOP, report, do not choose silently. Awaiting conflict resolution before
-  local apply.
+- Admin Import — Sexto Consolidado Population (4J4B) ✅ —
+  All 7 conflict groups resolved via PDF review. Overrides artifact
+  (`sexto-consolidado-population-overrides.json`) implements: 2 split
+  canonical source identities (Accento, Arabia Heroes), 1 omit offer pending
+  price confirmation (CDN Preciux IV), 3 split structural presentations (GOS
+  Rouge, Black XS, Miss Dior), 1 correct source block association (Infrared
+  EDP). Population plan: 844 products, 898 presentations, 898 offers, 0
+  conflicts. Loader committed with RPC-based population via temp table +
+  `admin_set_campaign_products`. Local: db reset → apply → verify →
+  idempotence → RLS zero-leak all green. pgTAP 21 tests (test 21 override
+  correctness). vitest 345 tests (12 override tests). Staging pending.
 
 Do not re-audit closed capabilities without evidence of regression.
 
