@@ -75,6 +75,7 @@ Isolated:
 - Vercel Preview + Hosted Supabase Auth (4I1) ✅
 - Parfums Preview QA (4I2) ✅
 - Admin Import — Consolidado lifecycle + security foundation (4J1) ✅
+- Admin Import — Campaign Products / Prices / Availability (4J2) ✅
 
 Do not re-audit closed capabilities without evidence of regression.
 
@@ -428,6 +429,58 @@ pushed to `iyxidhglyqkzoziyewlc` after explicit confirmation. The migration
 contains no data statements (functions only), and `migration list` confirms
 local/remote stay in sync — existing Parfums/Import data untouched.
 
+## Admin Import — Campaign Products / Prices / Availability (4J2)
+
+Adds `admin_set_campaign_products` — the sole write path for
+`campaign_products` (price, currency, availability, quantity_limit,
+sort_order per consolidado), full-replace in one transaction, exactly the
+same shape as `admin_set_combo_composition` for `combo_items` (the admin UI
+holds the whole desired line-item set client-side and submits it as one
+array on save). `SECURITY DEFINER` because `authenticated` has no
+table-level write grant on `campaign_products` (revoked in 4J1, specifically
+so 4J2 could not inherit an unaudited bypass). Intrinsically Import-scoped
+identically to the 4J1 correction: resolves the Import `business_unit_id`
+itself and rejects a `campaign_id` belonging to another unit exactly like a
+nonexistent one (`P0002`). `currency` is never a parameter — always `'PEN'`,
+since Import currency/price-display policy is UNKNOWN. Referential guards:
+a product/variant must belong to Import and not be archived, and an
+archived campaign cannot have its products edited. Audited as
+`composition_update` (existing vocabulary — no constraint extension
+needed). Migration: `20260909020000_admin_import_campaign_products.sql`.
+
+pgTAP: `supabase/tests/17_admin_import_campaign_products.sql` (26 checks —
+full replace correctness, cross-unit/archived-product/archived-variant/
+negative-price rejection with no partial writes, stale-write rejection,
+archived-campaign block, cross-unit RPC scope both directions, viewer/anon
+denial, direct-table-write still closed, empty-replace clears the set). 17
+files / 448 checks total, 0 regressions.
+
+Admin UI: `CampaignProductsManager`
+(`apps/web/src/app/admin/import/consolidados/[id]/campaign-products-manager.tsx`),
+mirroring `CompositionManager`'s add/remove/reorder-then-save local-state
+design, embedded in the existing `CampaignEditor` (no separate workspace
+wrapper needed — `CampaignEditor` already owned the campaign row as the
+shared `updated_at` concurrency token across metadata/status/archive; the
+products manager threads through the same pattern). Price/availability/
+quantity_limit are entered fresh per line, never copied from a reference
+price — they belong to the campaign, not the base product
+(client-decisions.md: "products/prices/availability may differ by
+campaign"). Product/variant picker reads Import's non-archived products via
+`AdminImportCampaignProductsRepository.listEligibleProducts` — empty until
+4J3 populates the Import base catalog; the UI states that dependency
+explicitly rather than treating an empty catalog as an error. The "opening
+with zero products" warning on the Estado section (added in 4J1 as a
+placeholder note) now reads the real, live product count.
+
+Verified: local `supabase db reset` + full pgTAP suite, `next build`/`tsc`/
+`eslint --max-warnings=0`/Vitest all green (40 files / 270 tests). Local
+browser smoke (temporary Supabase Auth users): admin adds a product+variant
+line, saves, reloads and confirms persistence + the `composition_update`
+audit row; viewer sees the same table read-only with no add/save controls;
+320/390/768/1440 all clean, no horizontal overflow. `db push --dry-run`
+showed only this migration; pushed to `iyxidhglyqkzoziyewlc` after
+confirmation.
+
 ## Orders / payments
 
 Cruzial V1 does NOT charge through the website.
@@ -513,11 +566,12 @@ White backgrounds are intentional.
 ## Next roadmap
 
 1. 4H2B — Public Parfums Supabase cutover after its blockers close
-2. 4J2 — Campaign Products / Prices / Availability Admin
-3. Import public order flow
-4. Global production-readiness audit
-5. Production Supabase / Vercel
-6. Punto.pe DNS / SEO cutover
+2. 4J3 — Extract/reconcile the Sexto Consolidado PDF into Import base products
+3. 4J4 — Use 4J2 to populate the reviewed Sexto Consolidado
+4. Import public order flow
+5. Global production-readiness audit
+6. Production Supabase / Vercel
+7. Punto.pe DNS / SEO cutover
 
 Do not jump ahead automatically.
 

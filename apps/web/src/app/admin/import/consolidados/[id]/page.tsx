@@ -4,6 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import { getAdminSession } from "@/lib/auth/admin-session";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { AdminImportCampaignsRepository } from "@/domains/admin-import/campaigns-repository";
+import { AdminImportCampaignProductsRepository } from "@/domains/admin-import/campaign-products-repository";
 import { isValidUuid } from "@/domains/admin-import/campaign-schema";
 import { CampaignEditor } from "./campaign-editor";
 import styles from "@/app/admin/parfums/productos/page.module.css";
@@ -34,15 +35,15 @@ export default async function ConsolidadoDetailPage({
     return <div className={styles.page}><main><p className={styles.notice} role="alert">No se pudo cargar el consolidado. Intenta de nuevo.</p></main></div>;
   }
 
-  // Campaign products/prices are 4J2 — not built yet. A real count here is
-  // just used to warn the admin, on the OPEN action, that an open consolidado
-  // with zero products will show nothing once the public Import storefront
-  // exists. It never blocks OPEN (no campaign_products management exists to
-  // require it from yet).
-  const { count: productCount } = await supabase
-    .from("campaign_products")
-    .select("*", { count: "exact", head: true })
-    .eq("campaign_id", id);
+  const productsRepository = new AdminImportCampaignProductsRepository(supabase, membership.businessUnitId);
+  const [campaignProducts, eligibleProducts] = await Promise.all([
+    productsRepository.getCampaignProducts(id),
+    productsRepository.listEligibleProducts(),
+  ]);
+
+  if (!campaignProducts.ok || !eligibleProducts.ok) {
+    return <div className={styles.page}><main><p className={styles.notice} role="alert">No se pudieron cargar los productos del consolidado. Intenta de nuevo.</p></main></div>;
+  }
 
   return (
     <div className={styles.page}>
@@ -55,7 +56,8 @@ export default async function ConsolidadoDetailPage({
       <main>
         <CampaignEditor
           campaign={result.data}
-          productCount={productCount ?? 0}
+          campaignProducts={campaignProducts.data}
+          eligibleProducts={eligibleProducts.data}
           disabled={membership.role !== "admin"}
         />
       </main>

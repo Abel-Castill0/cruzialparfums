@@ -1873,6 +1873,32 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      admin_set_campaign_products: {
+        Args: {
+          p_campaign_id: string
+          p_expected_updated_at: string
+          p_items: Json
+        }
+        Returns: {
+          availability_status: string
+          campaign_id: string
+          created_at: string
+          currency: string
+          id: string
+          price_amount: number
+          product_id: string
+          product_variant_id: string | null
+          quantity_limit: number | null
+          sort_order: number
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "campaign_products"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       admin_set_campaign_status: {
         Args: {
           p_campaign_id: string

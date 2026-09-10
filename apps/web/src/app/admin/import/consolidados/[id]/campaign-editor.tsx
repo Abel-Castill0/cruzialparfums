@@ -3,6 +3,10 @@
 import { useActionState, useState } from "react";
 import { CampaignFormFields } from "@/components/admin/campaign-form-fields";
 import type { CampaignRow } from "@/domains/admin-import/campaigns-repository";
+import type {
+  CampaignProductItem,
+  EligibleImportProduct,
+} from "@/domains/admin-import/campaign-products-repository";
 import {
   CAMPAIGN_STATUSES,
   campaignStatusLabel,
@@ -15,6 +19,7 @@ import {
   updateCampaignAction,
   type CampaignActionState,
 } from "../actions";
+import { CampaignProductsManager } from "./campaign-products-manager";
 import formStyles from "@/components/admin/product-form-fields.module.css";
 import styles from "@/app/admin/parfums/productos/page.module.css";
 
@@ -22,11 +27,13 @@ const initialState: CampaignActionState = { status: "idle" };
 
 export function CampaignEditor({
   campaign,
-  productCount,
+  campaignProducts,
+  eligibleProducts,
   disabled,
 }: {
   campaign: CampaignRow;
-  productCount: number;
+  campaignProducts: CampaignProductItem[];
+  eligibleProducts: EligibleImportProduct[];
   disabled: boolean;
 }) {
   const [current, setCurrent] = useState(campaign);
@@ -37,6 +44,7 @@ export function CampaignEditor({
   const [nextStatus, setNextStatus] = useState<CampaignStatus>(campaign.status as CampaignStatus);
   const [archiveState, setArchiveState] = useState<CampaignActionState>({ status: "idle" });
   const [archivePending, setArchivePending] = useState(false);
+  const [productCount, setProductCount] = useState(campaignProducts.length);
   const [handledState, setHandledState] = useState(state);
 
   if (state !== handledState) {
@@ -113,9 +121,8 @@ export function CampaignEditor({
         ) : null}
         {openingWithNoProducts ? (
           <p className={formStyles.error} role="alert">
-            Este consolidado no tiene productos asociados (0 · Precios/Disponibilidad aún no implementado, Fase 4J2).
-            Al quedar Abierto, la futura tienda pública de Import no mostrará ningún producto hasta que se
-            agreguen.
+            Este consolidado no tiene productos asociados. Al quedar Abierto, la futura tienda pública de Import no
+            mostrará ningún producto hasta que se agreguen (sección &ldquo;Productos del consolidado&rdquo; más abajo).
           </p>
         ) : null}
       </section>
@@ -148,6 +155,20 @@ export function CampaignEditor({
           </button>
         </div>
       </form>
+
+      {/* ------------------------------------------------------------ */}
+      {/* Products (4J2) — full-replace, never a side effect of Estado  */}
+      {/* or Datos above.                                                */}
+      {/* ------------------------------------------------------------ */}
+      <CampaignProductsManager
+        campaignId={current.id}
+        campaignUpdatedAt={current.updated_at}
+        onUpdatedAtChange={(updatedAt) => setCurrent((previous) => ({ ...previous, updated_at: updatedAt }))}
+        onSavedCountChange={setProductCount}
+        items={campaignProducts}
+        eligibleProducts={eligibleProducts}
+        disabled={disabled || isArchived}
+      />
 
       {/* ------------------------------------------------------------ */}
       {/* Archive — no delete, no restore in this phase.                 */}
