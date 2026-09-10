@@ -6,6 +6,7 @@ const base: CampaignReadinessInput = {
   campaignArchivedAt: null,
   productPublicationStatus: "published",
   productArchivedAt: null,
+  productVariantId: null,
   variantPublicationStatus: null,
   variantArchivedAt: null,
   availabilityStatus: "available",
@@ -31,6 +32,7 @@ describe("classifyOfferReadiness", () => {
   it("a published, visible variant offer is visible", () => {
     const result = classifyOfferReadiness({
       ...base,
+      productVariantId: "variant-id",
       variantPublicationStatus: "published",
       variantArchivedAt: null,
     });
@@ -77,9 +79,21 @@ describe("classifyOfferReadiness", () => {
       expect(result.visibilityReason).toBe("product_draft");
     });
 
-    it("product_hidden — publication_status archived but archived_at still null", () => {
-      const result = classifyOfferReadiness({ ...base, productPublicationStatus: "archived", productArchivedAt: null });
+    it("product_hidden for publication_status hidden", () => {
+      const result = classifyOfferReadiness({ ...base, productPublicationStatus: "hidden", productArchivedAt: null });
       expect(result.visibilityReason).toBe("product_hidden");
+    });
+
+    it("product_archived for publication_status archived even when archived_at is null", () => {
+      const result = classifyOfferReadiness({ ...base, productPublicationStatus: "archived", productArchivedAt: null });
+      expect(result.visibilityReason).toBe("product_archived");
+    });
+
+    it("fails closed for an unknown runtime product status", () => {
+      const malformed = { ...base, productPublicationStatus: "unexpected" } as unknown as CampaignReadinessInput;
+      const result = classifyOfferReadiness(malformed);
+      expect(result.isPubliclyVisible).toBe(false);
+      expect(result.visibilityReason).toBe("unknown_publication_status");
     });
 
     it("a blocked campaign gate is reported before any product gate is even evaluated", () => {
@@ -96,30 +110,46 @@ describe("classifyOfferReadiness", () => {
     it("variant_archived", () => {
       const result = classifyOfferReadiness({
         ...base,
+        productVariantId: "variant-id",
         variantPublicationStatus: "published",
         variantArchivedAt: "2026-01-01T00:00:00Z",
       });
       expect(result.visibilityReason).toBe("variant_archived");
     });
 
-    it("variant_not_published for draft or archived publication_status", () => {
-      for (const status of ["draft", "archived"] as const) {
-        const result = classifyOfferReadiness({ ...base, variantPublicationStatus: status });
-        expect(result.visibilityReason).toBe("variant_not_published");
-      }
+    it("variant_not_published for draft publication_status", () => {
+      const result = classifyOfferReadiness({ ...base, productVariantId: "variant-id", variantPublicationStatus: "draft" });
+      expect(result.visibilityReason).toBe("variant_not_published");
+    });
+
+    it("variant_archived for archived publication_status", () => {
+      const result = classifyOfferReadiness({ ...base, productVariantId: "variant-id", variantPublicationStatus: "archived" });
+      expect(result.visibilityReason).toBe("variant_archived");
+    });
+
+    it("fails closed for an unknown runtime variant status", () => {
+      const malformed = {
+        ...base,
+        productVariantId: "variant-id",
+        variantPublicationStatus: "unexpected",
+      } as unknown as CampaignReadinessInput;
+      const result = classifyOfferReadiness(malformed);
+      expect(result.isPubliclyVisible).toBe(false);
+      expect(result.visibilityReason).toBe("unknown_publication_status");
     });
 
     it("a product-level block is reported before any variant gate is evaluated", () => {
       const result = classifyOfferReadiness({
         ...base,
         productPublicationStatus: "draft",
+        productVariantId: "variant-id",
         variantPublicationStatus: "published",
       });
       expect(result.visibilityReason).toBe("product_draft");
     });
 
     it("no variant on the offer (variantPublicationStatus null) skips variant gates entirely", () => {
-      const result = classifyOfferReadiness({ ...base, variantPublicationStatus: null, variantArchivedAt: "2026-01-01T00:00:00Z" });
+      const result = classifyOfferReadiness({ ...base, productVariantId: null, variantPublicationStatus: null, variantArchivedAt: "2026-01-01T00:00:00Z" });
       expect(result.visibilityReason).toBe("visible");
     });
   });

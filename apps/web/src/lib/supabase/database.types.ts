@@ -1664,6 +1664,26 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      admin_get_import_campaign_products: {
+        Args: { p_campaign_id: string }
+        Returns: {
+          availability_status: string
+          currency: string
+          id: string
+          price_amount: string
+          product_archived_at: string | null
+          product_brand: string | null
+          product_id: string
+          product_name: string
+          product_publication_status: string
+          product_slug: string
+          product_variant_id: string | null
+          sort_order: number
+          variant_archived_at: string | null
+          variant_label: string | null
+          variant_publication_status: string | null
+        }[]
+      }
       admin_get_audit_log_entry: {
         Args: { p_business_unit_code: string; p_entry_id: string }
         Returns: {
@@ -2468,4 +2488,3 @@ export const Constants = {
     Enums: {},
   },
 } as const
-

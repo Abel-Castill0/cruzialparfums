@@ -7,7 +7,6 @@ import type {
 } from "@/domains/admin-import/campaign-products-repository";
 import {
   AVAILABILITY_LABELS,
-  isCampaignProductAvailability,
   isValidMoneyText,
   normalizeMoneyText,
   type CampaignProductAvailability,
@@ -16,25 +15,28 @@ import {
   AVAILABILITY_STATUS_LABELS,
   VISIBILITY_REASON_LABELS,
   classifyOfferReadiness,
-  type PublicationStatus,
+  type ProductPublicationStatus,
+  type VariantPublicationStatus,
 } from "@/domains/admin-import/campaign-readiness";
 import { searchEligibleImportProductsAction, setCampaignProductsAction } from "../actions";
 import formStyles from "@/components/admin/product-form-fields.module.css";
 import styles from "@/app/admin/parfums/productos/page.module.css";
 
-const PICKER_PUBLICATION_LABELS: Record<PublicationStatus, string> = {
+const PICKER_PRODUCT_PUBLICATION_LABELS: Record<Exclude<ProductPublicationStatus, "archived">, string> = {
   published: "Publicado",
   draft: "Borrador",
-  // publication_status = 'archived' with archived_at still null — "hidden",
-  // not soft-deleted. Genuinely archived (archived_at set) products are
-  // never returned by searchEligibleImportProductsAction at all.
-  archived: "Oculto",
+  hidden: "Oculto",
 };
 
-const PICKER_PUBLICATION_CLASS: Record<PublicationStatus, string> = {
+const PICKER_PRODUCT_PUBLICATION_CLASS: Record<Exclude<ProductPublicationStatus, "archived">, string> = {
   published: styles["status-published"] ?? "",
   draft: styles["status-draft"] ?? "",
-  archived: styles["status-archived"] ?? "",
+  hidden: styles["status-archived"] ?? "",
+};
+
+const PICKER_VARIANT_PUBLICATION_LABELS: Record<Exclude<VariantPublicationStatus, "archived">, string> = {
+  published: "Publicado",
+  draft: "Borrador — no listo públicamente",
 };
 
 type Row = {
@@ -53,17 +55,17 @@ type Row = {
   // mirror of the same fields RLS itself gates on, never rendered as raw
   // catalog data beyond the readiness badges below.
   productArchivedAt: string | null;
-  productPublicationStatus: PublicationStatus;
+  productPublicationStatus: ProductPublicationStatus | null;
   variantArchivedAt: string | null;
-  variantPublicationStatus: PublicationStatus | null;
+  variantPublicationStatus: VariantPublicationStatus | null;
 };
 
 function toRow(item: CampaignProductItem): Row {
   return {
     productId: item.productId,
     productVariantId: item.productVariantId,
-    priceAmount: item.priceAmount.toFixed(2),
-    availabilityStatus: isCampaignProductAvailability(item.availabilityStatus) ? item.availabilityStatus : "available",
+    priceAmount: item.priceAmount,
+    availabilityStatus: item.availabilityStatus,
     productName: item.productName,
     variantLabel: item.variantLabel,
     productArchived: item.productArchived,
@@ -163,6 +165,7 @@ export function CampaignProductsManager({
           campaignArchivedAt,
           productPublicationStatus: row.productPublicationStatus,
           productArchivedAt: row.productArchivedAt,
+          productVariantId: row.productVariantId,
           variantPublicationStatus: row.variantPublicationStatus,
           variantArchivedAt: row.variantArchivedAt,
           availabilityStatus: row.availabilityStatus,
@@ -487,8 +490,8 @@ export function CampaignProductsManager({
                 >
                   <div className={styles.rowMain}>
                     <strong>{product.brand ? `${product.brand} — ` : ""}{product.name}</strong>{" "}
-                    <span className={`${styles.badge} ${PICKER_PUBLICATION_CLASS[product.publicationStatus]}`}>
-                      {PICKER_PUBLICATION_LABELS[product.publicationStatus]}
+                    <span className={`${styles.badge} ${PICKER_PRODUCT_PUBLICATION_CLASS[product.publicationStatus]}`}>
+                      {PICKER_PRODUCT_PUBLICATION_LABELS[product.publicationStatus]}
                     </span>
                   </div>
                   <button
@@ -518,7 +521,7 @@ export function CampaignProductsManager({
                   <option value="">Producto completo (sin variante)</option>
                   {selectedProduct.variants.map((variant) => (
                     <option key={variant.id} value={variant.id}>
-                      {variant.label}{variant.sizeMl ? ` · ${variant.sizeMl} ml` : ""} ({PICKER_PUBLICATION_LABELS[variant.publicationStatus]})
+                      {variant.label}{variant.sizeMl ? ` · ${variant.sizeMl} ml` : ""} ({PICKER_VARIANT_PUBLICATION_LABELS[variant.publicationStatus]})
                     </option>
                   ))}
                 </select>

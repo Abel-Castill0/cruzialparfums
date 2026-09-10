@@ -21,15 +21,17 @@
  * availability into one label.
  */
 
-export type PublicationStatus = "draft" | "published" | "archived";
+export type ProductPublicationStatus = "draft" | "published" | "hidden" | "archived";
+export type VariantPublicationStatus = "draft" | "published" | "archived";
 
 export type CampaignReadinessInput = {
   campaignStatus: string;
   campaignArchivedAt: string | null;
-  productPublicationStatus: PublicationStatus;
+  productPublicationStatus: ProductPublicationStatus | null;
   productArchivedAt: string | null;
   /** null when the offer is product-level (no variant selected). */
-  variantPublicationStatus: PublicationStatus | null;
+  productVariantId: string | null;
+  variantPublicationStatus: VariantPublicationStatus | null;
   variantArchivedAt: string | null;
   availabilityStatus: "available" | "out_of_stock";
 };
@@ -42,7 +44,8 @@ export type VisibilityReason =
   | "product_hidden"
   | "product_archived"
   | "variant_not_published"
-  | "variant_archived";
+  | "variant_archived"
+  | "unknown_publication_status";
 
 export type OfferReadiness = {
   isPubliclyVisible: boolean;
@@ -61,6 +64,7 @@ export const VISIBILITY_REASON_LABELS: Record<VisibilityReason, string> = {
   product_archived: "Producto archivado",
   variant_not_published: "Variante no publicada",
   variant_archived: "Variante archivada",
+  unknown_publication_status: "Estado de publicación desconocido",
 };
 
 export const AVAILABILITY_STATUS_LABELS: Record<"available" | "out_of_stock", string> = {
@@ -91,13 +95,32 @@ function computeVisibilityReason(input: CampaignReadinessInput): VisibilityReaso
 
   // product_is_public
   if (input.productArchivedAt !== null) return "product_archived";
-  if (input.productPublicationStatus === "draft") return "product_draft";
-  if (input.productPublicationStatus === "archived") return "product_hidden";
+  switch (input.productPublicationStatus) {
+    case "published":
+      break;
+    case "draft":
+      return "product_draft";
+    case "hidden":
+      return "product_hidden";
+    case "archived":
+      return "product_archived";
+    default:
+      return "unknown_publication_status";
+  }
 
-  // variant_is_public (only when the offer has a variant at all)
-  if (input.variantPublicationStatus !== null) {
+  // variant_is_public (only when product_variant_id exists on the offer)
+  if (input.productVariantId !== null) {
     if (input.variantArchivedAt !== null) return "variant_archived";
-    if (input.variantPublicationStatus !== "published") return "variant_not_published";
+    switch (input.variantPublicationStatus) {
+      case "published":
+        break;
+      case "draft":
+        return "variant_not_published";
+      case "archived":
+        return "variant_archived";
+      default:
+        return "unknown_publication_status";
+    }
   }
 
   return "visible";

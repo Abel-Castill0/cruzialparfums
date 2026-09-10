@@ -7,9 +7,17 @@ import {
   type AdminRepositoryError,
   type AdminRepositoryResult,
 } from "@/domains/admin-parfums/products-repository";
-import type { CampaignProductItemInput } from "./campaign-products-schema";
+import {
+  isCampaignProductAvailability,
+  type CampaignProductAvailability,
+  type CampaignProductItemInput,
+} from "./campaign-products-schema";
 import type { CampaignRow } from "./campaigns-repository";
-import type { PublicationStatus } from "./campaign-readiness";
+import type {
+  ProductPublicationStatus,
+  VariantPublicationStatus,
+} from "./campaign-readiness";
+import { canonicalizeCampaignMoneyText } from "./campaign-money";
 
 export type CampaignProductRow = Database["public"]["Tables"]["campaign_products"]["Row"];
 
@@ -36,8 +44,8 @@ export type EligibleImportProduct = {
   name: string;
   slug: string;
   brand: string | null;
-  publicationStatus: PublicationStatus;
-  variants: { id: string; label: string; sizeMl: number | null; publicationStatus: PublicationStatus }[];
+  publicationStatus: Exclude<ProductPublicationStatus, "archived">;
+  variants: { id: string; label: string; sizeMl: number | null; publicationStatus: Exclude<VariantPublicationStatus, "archived"> }[];
 };
 
 /** quantity_limit is deliberately NOT part of this read model (4J2
@@ -55,15 +63,15 @@ export type CampaignProductItem = {
   productBrand: string | null;
   productArchived: boolean;
   productArchivedAt: string | null;
-  productPublicationStatus: PublicationStatus;
+  productPublicationStatus: ProductPublicationStatus | null;
   productVariantId: string | null;
   variantLabel: string | null;
   variantArchived: boolean;
   variantArchivedAt: string | null;
-  variantPublicationStatus: PublicationStatus | null;
-  priceAmount: number;
+  variantPublicationStatus: VariantPublicationStatus | null;
+  priceAmount: string;
   currency: string;
-  availabilityStatus: string;
+  availabilityStatus: CampaignProductAvailability;
   sortOrder: number;
 };
 
@@ -119,6 +127,9 @@ export class AdminImportCampaignProductsRepository {
       .select("id, name, slug, brand, publication_status, product_variants(id, label, size_ml, publication_status, archived_at)")
       .eq("business_unit_id", this.businessUnitId)
       .is("archived_at", null)
+      .neq("publication_status", "archived")
+      .is("product_variants.archived_at", null)
+      .neq("product_variants.publication_status", "archived")
       .order("name", { ascending: true })
       .limit(boundedLimit);
 
@@ -131,71 +142,69 @@ export class AdminImportCampaignProductsRepository {
     const { data, error } = await builder;
     if (error) return { ok: false, error: mapPostgrestError(error) };
 
-    const items: EligibleImportProduct[] = (data ?? []).map((row) => ({
-      id: row.id,
-      name: row.name,
-      slug: row.slug,
-      brand: row.brand,
-      publicationStatus: row.publication_status as PublicationStatus,
-      variants: (row.product_variants ?? [])
-        .filter((variant) => variant.archived_at === null)
-        .map((variant) => ({
-          id: variant.id,
-          label: variant.label,
-          sizeMl: variant.size_ml,
-          publicationStatus: variant.publication_status as PublicationStatus,
-        })),
-    }));
+    const items: EligibleImportProduct[] = (data ?? []).flatMap((row) => {
+      if (!isSelectableProductPublicationStatus(row.publication_status)) return [];
+      return [{
+        id: row.id,
+        name: row.name,
+        slug: row.slug,
+        brand: row.brand,
+        publicationStatus: row.publication_status,
+        variants: (row.product_variants ?? []).flatMap((variant) => {
+          if (variant.archived_at !== null || !isSelectableVariantPublicationStatus(variant.publication_status)) return [];
+          return [{
+            id: variant.id,
+            label: variant.label,
+            sizeMl: variant.size_ml,
+            publicationStatus: variant.publication_status,
+          }];
+        }),
+      }];
+    });
 
     return { ok: true, data: items };
   }
 
   async getCampaignProducts(campaignId: string): Promise<AdminRepositoryResult<CampaignProductItem[]>> {
-    const { data, error } = await this.supabase
-      .from("campaign_products")
-      .select(
-        "id, product_id, product_variant_id, price_amount, currency, availability_status, sort_order, product:products(name, slug, brand, archived_at, publication_status), variant:product_variants(label, archived_at, publication_status)",
-      )
-      .eq("campaign_id", campaignId)
-      .order("sort_order", { ascending: true });
+    const { data, error } = await this.supabase.rpc("admin_get_import_campaign_products", {
+      p_campaign_id: campaignId,
+    });
 
     if (error) return { ok: false, error: mapPostgrestError(error) };
 
-    const items: CampaignProductItem[] = (data ?? []).map((row) => {
-      const product = row.product as unknown as {
-        name: string;
-        slug: string;
-        brand: string | null;
-        archived_at: string | null;
-        publication_status: PublicationStatus;
-      } | null;
-      const variant = row.variant as unknown as {
-        label: string;
-        archived_at: string | null;
-        publication_status: PublicationStatus;
-      } | null;
-      return {
+    const items: CampaignProductItem[] = [];
+    for (const row of data ?? []) {
+      const priceAmount = canonicalizeCampaignMoneyText(row.price_amount);
+      if (priceAmount === null) {
+        return { ok: false, error: { type: "unknown", message: "Invalid campaign price returned by database" } };
+      }
+      if (!isCampaignProductAvailability(row.availability_status)) {
+        return { ok: false, error: { type: "unknown", message: "Invalid campaign availability returned by database" } };
+      }
+      items.push({
         id: row.id,
         productId: row.product_id,
-        productName: product?.name ?? "(producto eliminado)",
-        productSlug: product?.slug ?? "",
-        productBrand: product?.brand ?? null,
-        productArchived: product?.archived_at !== null && product?.archived_at !== undefined,
-        productArchivedAt: product?.archived_at ?? null,
-        // A deleted product's row is treated as the safest (most hidden)
-        // classification, never as "published" by default.
-        productPublicationStatus: product?.publication_status ?? "archived",
+        productName: row.product_name ?? "(producto eliminado)",
+        productSlug: row.product_slug ?? "",
+        productBrand: row.product_brand,
+        productArchived: row.product_archived_at !== null,
+        productArchivedAt: row.product_archived_at,
+        productPublicationStatus: isProductPublicationStatus(row.product_publication_status)
+          ? row.product_publication_status
+          : null,
         productVariantId: row.product_variant_id,
-        variantLabel: variant?.label ?? null,
-        variantArchived: variant ? variant.archived_at !== null : false,
-        variantArchivedAt: variant?.archived_at ?? null,
-        variantPublicationStatus: variant ? variant.publication_status : null,
-        priceAmount: row.price_amount,
+        variantLabel: row.variant_label,
+        variantArchived: row.variant_archived_at !== null,
+        variantArchivedAt: row.variant_archived_at,
+        variantPublicationStatus: isVariantPublicationStatus(row.variant_publication_status)
+          ? row.variant_publication_status
+          : null,
+        priceAmount,
         currency: row.currency,
         availabilityStatus: row.availability_status,
         sortOrder: row.sort_order,
-      };
-    });
+      });
+    }
 
     return { ok: true, data: items };
   }
@@ -245,4 +254,24 @@ export class AdminImportCampaignProductsRepository {
 
     return { ok: true, data: { campaign: campaignRow, itemCount: (data ?? []).length } };
   }
+}
+
+function isProductPublicationStatus(value: unknown): value is ProductPublicationStatus {
+  return value === "draft" || value === "published" || value === "hidden" || value === "archived";
+}
+
+function isVariantPublicationStatus(value: unknown): value is VariantPublicationStatus {
+  return value === "draft" || value === "published" || value === "archived";
+}
+
+function isSelectableProductPublicationStatus(
+  value: unknown,
+): value is Exclude<ProductPublicationStatus, "archived"> {
+  return value === "draft" || value === "published" || value === "hidden";
+}
+
+function isSelectableVariantPublicationStatus(
+  value: unknown,
+): value is Exclude<VariantPublicationStatus, "archived"> {
+  return value === "draft" || value === "published";
 }
