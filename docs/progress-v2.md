@@ -78,6 +78,10 @@ Isolated:
 - Admin Import — Campaign Products / Prices / Availability (4J2) ✅ — see "4J2
   correction" below for the full defect list and what was added in the
   second pass (readiness model, open-campaign summary, bounded picker).
+- Admin Import — Import Presentation + Availability Foundation (4J4A) ✅ —
+  import_presentations table (price-free structural identities),
+  campaign_products.import_presentation_id, unconfirmed availability,
+  public RLS fail-closed, quantity_limit preserved by full identity.
 
 Do not re-audit closed capabilities without evidence of regression.
 
