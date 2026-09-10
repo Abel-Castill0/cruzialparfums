@@ -75,10 +75,9 @@ Isolated:
 - Vercel Preview + Hosted Supabase Auth (4I1) ✅
 - Parfums Preview QA (4I2) ✅
 - Admin Import — Consolidado lifecycle + security foundation (4J1) ✅
-- Admin Import — Campaign Products / Prices / Availability (4J2) ⚠️ IN PROGRESS —
-  see "4J2 correction" below. Not closed: readiness classifier/summary and
-  picker bounding still outstanding, and the correction migration has not
-  been pushed to staging yet.
+- Admin Import — Campaign Products / Prices / Availability (4J2) ✅ — see "4J2
+  correction" below for the full defect list and what was added in the
+  second pass (readiness model, open-campaign summary, bounded picker).
 
 Do not re-audit closed capabilities without evidence of regression.
 
@@ -540,27 +539,79 @@ contract and fail-closed availability (34 tests); `campaign-schema.test.ts`
 gained `validateDuplicateCampaignForm` coverage (20 tests). Full suite: 40
 files / 293 tests, `tsc --noEmit` and `eslint --max-warnings=0` both clean.
 
-**Not completed in this pass** (still open, block calling 4J2 fully closed):
+### 4J2 correction, part 2 (readiness model + summary + bounded picker)
 
-- Section 6/7 (public readiness classifier + open-campaign summary) and
-  section 8 (bounded/paginated product picker) from the review were not
-  implemented — out of budget for this pass. The picker still loads the
-  full non-archived Import product set; there is no readiness classifier
-  mirroring real RLS on the admin read model yet.
-- Local `supabase db reset` + full pgTAP run was **not executed** — this
-  environment has no `supabase` CLI and no local Supabase Postgres stack
-  running (only unrelated Docker containers). The new pgTAP file 18 and the
-  edits to file 17 are unverified against a live database; only the
-  TypeScript layer (`tsc`, `eslint`, Vitest) was actually run and is green.
-- `supabase db push --dry-run` / staging push was **not performed** —
-  blocked on the local pgTAP verification above per the capability
-  workflow ("local green first, then push"). The correction migration is
-  committed locally only; `iyxidhglyqkzoziyewlc` still has only the
-  original (pre-correction) 4J2 migration applied.
+- **`classifyOfferReadiness`** (`campaign-readiness.ts`) — a pure function
+  mirroring the real RLS conjunction exactly (`app.campaign_is_public` AND
+  `app.product_is_public` AND, when a variant is set, `app.variant_is_public`
+  — untouched, no defect found so no RLS edit): campaign gates first
+  (archived_at, then status = open), then product gates (archived_at,
+  draft, or publication_status = 'archived' while archived_at is still
+  null → "hidden"), then variant gates when the offer has one. Returns
+  `{ isPubliclyVisible, visibilityReason, availability }` — visibility and
+  availability are deliberately independent fields, never collapsed into
+  one label; an `out_of_stock` offer can be `isPubliclyVisible: true`.
+  14 focused pure-function tests (`campaign-readiness.test.ts`).
+- **Admin read model**: `CampaignProductItem` gained
+  `productPublicationStatus`/`productArchivedAt`/`variantPublicationStatus`/
+  `variantArchivedAt` (only what the classifier needs — no unrelated catalog
+  fields) and **dropped** `quantityLimit` entirely, since nothing in the UI
+  needs to display it (kept server-internal per the review's own
+  preference). `setCampaignProducts` now returns `itemCount: number`
+  instead of the full RPC row set, for the same reason — the raw
+  `campaign_products` rows (which carry `quantity_limit`) never round-trip
+  into the server action's response payload.
+- **Per-line indicators + open-campaign summary**: each configured offer in
+  `CampaignProductsManager` shows two independent badges (e.g. "Visible
+  públicamente" + "Agotado"), and a `Productos configurados / Visibles
+  públicamente / Bloqueados por publicación / Agotados` summary sits above
+  the table, computed live from local state (so an unsaved edit previews
+  its effect before "Guardar productos"). A non-open/archived campaign gets
+  an explicit note that 0 public-visible is expected, not a bug. Nothing
+  here auto-publishes, auto-opens, or auto-changes availability.
+- **Bounded picker**: `listEligibleProducts` (loaded the entire non-archived
+  Import catalog) replaced with
+  `AdminImportCampaignProductsRepository.searchEligibleProducts({query,
+  limit})` — Import-only, non-archived, name/brand `ilike` search, capped at
+  50 (the picker action itself requests 20), embedded non-archived variants
+  with their own `publication_status`. New server action
+  `searchEligibleImportProductsAction` (admin-gated, same posture as every
+  other campaign_products mutation even though it's a read). UI: a search
+  box replaces the old `<select>` of the whole catalog, 300ms debounced,
+  results show Publicado/Borrador/Oculto badges, archived products are
+  never returned so never selectable. The `[id]/page.tsx` SSR call now
+  requests a bounded first page (`limit: 20`), never the whole catalog.
 
-Next session should run `npm run db:reset && npm run db:test` locally
-first, fix anything the pgTAP run surfaces, then decide whether to close
-the remaining scope (6/7/8) before or after the staging push.
+**DB gate — actually executed, not statically inspected**: `npx supabase
+start` + `npx supabase db reset` (local Docker stack; `npx supabase
+--version` works fine even without a global `supabase` binary — the
+correction above about "Supabase CLI unavailable" was wrong) applied all 21
+migrations including the correction cleanly. `npx supabase test db`: 18
+files / 483 checks, `Result: PASS` — including file 18 (new, 35 checks) and
+the corrected assertions in file 17. `npm run check` (catalog:check,
+commercial:check, lint, typecheck, 41 files/312 Vitest tests, `next build`)
+green end to end. Local browser smoke with temporary Supabase Auth users
+(`import-admin-smoke@…`, `import-viewer-smoke@…`, granted via
+`supabase/provisioning/grant-admin-membership.sql`) and three seeded
+smoke-test Import products (published/draft/hidden publication states):
+admin searched the picker, added a published variant at "129.90", saved,
+reloaded and confirmed persistence; opened the campaign and watched
+"Visibles públicamente" flip live; set availability to Agotado and
+confirmed the offer stayed "Visible públicamente" + "Agotado" simultaneously
+(proves independence in the running app, not just in tests); duplicated the
+campaign (#502, draft, dates/message empty, price/availability copied
+exactly); confirmed the viewer sees a fully read-only page with no Cambiar
+estado / Guardar / Duplicar / Agregar controls at all. 320/390/768/1440 all
+`scrollWidth === clientWidth` (no horizontal overflow).
+
+**Staging**: `db push --dry-run` showed only
+`20260909030000_admin_import_campaign_products_correction.sql`, pushed to
+`iyxidhglyqkzoziyewlc`, `migration list --linked` confirms local/remote are
+now fully in sync (21/21). No fake hosted campaign/product data — only the
+migration went to staging; the smoke-test users/products above are local
+Docker-only and never left this machine.
+
+4J2 is now closed.
 
 ## Orders / payments
 

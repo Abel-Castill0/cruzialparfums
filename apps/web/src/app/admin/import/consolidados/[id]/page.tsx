@@ -36,9 +36,12 @@ export default async function ConsolidadoDetailPage({
   }
 
   const productsRepository = new AdminImportCampaignProductsRepository(supabase, membership.businessUnitId);
+  // Bounded initial page only (4J2 correction) — the picker's own search
+  // action (searchEligibleImportProductsAction) refines this client-side;
+  // this SSR call never loads the whole Import catalog.
   const [campaignProducts, eligibleProducts] = await Promise.all([
     productsRepository.getCampaignProducts(id),
-    productsRepository.listEligibleProducts(),
+    productsRepository.searchEligibleProducts({ query: "", limit: 20 }),
   ]);
 
   if (!campaignProducts.ok || !eligibleProducts.ok) {

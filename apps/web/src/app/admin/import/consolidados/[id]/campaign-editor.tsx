@@ -164,6 +164,8 @@ export function CampaignEditor({
       <CampaignProductsManager
         campaignId={current.id}
         campaignUpdatedAt={current.updated_at}
+        campaignStatus={current.status}
+        campaignArchivedAt={current.archived_at}
         onUpdatedAtChange={(updatedAt) => setCurrent((previous) => ({ ...previous, updated_at: updatedAt }))}
         onSavedCountChange={setProductCount}
         items={campaignProducts}

@@ -9,6 +9,7 @@ import {
 } from "@/domains/admin-parfums/products-repository";
 import type { CampaignProductItemInput } from "./campaign-products-schema";
 import type { CampaignRow } from "./campaigns-repository";
+import type { PublicationStatus } from "./campaign-readiness";
 
 export type CampaignProductRow = Database["public"]["Tables"]["campaign_products"]["Row"];
 
@@ -23,31 +24,46 @@ export type CampaignProductMutationResult<T> =
   | { ok: false; error: CampaignProductMutationError };
 
 /** One eligible Import product, with its (non-archived) variants embedded —
- * the picker's data source. No price/stock is invented here: variants carry
- * their own base price_amount only as a label aid, never as the campaign
- * price (campaign price is always entered fresh — client-decisions.md:
- * "products/prices/availability may differ by campaign"). */
+ * the bounded picker's data source (searchEligibleProducts). No price/stock
+ * is invented here: variants carry their own base price_amount only as a
+ * label aid, never as the campaign price (campaign price is always entered
+ * fresh — client-decisions.md: "products/prices/availability may differ by
+ * campaign"). publicationStatus is included so the picker can visually
+ * distinguish Publicado/Borrador/Oculto — archived (archived_at) products
+ * are excluded upstream entirely, never returned as "selectable but archived". */
 export type EligibleImportProduct = {
   id: string;
   name: string;
   slug: string;
   brand: string | null;
-  variants: { id: string; label: string; sizeMl: number | null }[];
+  publicationStatus: PublicationStatus;
+  variants: { id: string; label: string; sizeMl: number | null; publicationStatus: PublicationStatus }[];
 };
 
+/** quantity_limit is deliberately NOT part of this read model (4J2
+ * correction): it is not a confirmed Import feature and the admin UI never
+ * needs to display it — keeping it out of the type keeps it out of the
+ * server-action response payload sent to the browser. productPublicationStatus/
+ * productArchivedAt/variantPublicationStatus/variantArchivedAt exist only to
+ * feed classifyOfferReadiness (campaign-readiness.ts), mirroring the same
+ * fields RLS itself gates on — never exposed as raw catalog data beyond that. */
 export type CampaignProductItem = {
   id: string;
   productId: string;
   productName: string;
   productSlug: string;
+  productBrand: string | null;
   productArchived: boolean;
+  productArchivedAt: string | null;
+  productPublicationStatus: PublicationStatus;
   productVariantId: string | null;
   variantLabel: string | null;
   variantArchived: boolean;
+  variantArchivedAt: string | null;
+  variantPublicationStatus: PublicationStatus | null;
   priceAmount: number;
   currency: string;
   availabilityStatus: string;
-  quantityLimit: number | null;
   sortOrder: number;
 };
 
@@ -79,18 +95,40 @@ export class AdminImportCampaignProductsRepository {
     private readonly businessUnitId: string,
   ) {}
 
-  /** Non-archived Import products with their non-archived variants — the
-   * "add to campaign" picker's data source. Empty until 4J3 populates the
-   * Import base catalog; the UI must handle that gracefully, not treat it
-   * as an error. */
-  async listEligibleProducts(): Promise<AdminRepositoryResult<EligibleImportProduct[]>> {
-    const { data, error } = await this.supabase
+  /** Bounded, server-side, Import-only product search — the "add to
+   * campaign" picker's data source (4J2 correction: replaces the old
+   * listEligibleProducts, which loaded the entire non-archived Import
+   * catalog on every page load; that does not scale once 4J3 populates a
+   * much larger catalog). Archived products (archived_at set) are excluded
+   * entirely — never returned as "selectable but archived". An empty query
+   * returns a bounded first page ordered by name, not an error; the picker
+   * UI must handle zero results gracefully (4J3 has not populated the
+   * catalog yet). */
+  async searchEligibleProducts({
+    query,
+    limit,
+  }: {
+    query: string;
+    limit: number;
+  }): Promise<AdminRepositoryResult<EligibleImportProduct[]>> {
+    const boundedLimit = Math.min(50, Math.max(1, limit));
+    const term = query.trim().replace(/[%_]/g, (character) => `\\${character}`);
+
+    let builder = this.supabase
       .from("products")
-      .select("id, name, slug, brand, product_variants(id, label, size_ml, archived_at)")
+      .select("id, name, slug, brand, publication_status, product_variants(id, label, size_ml, publication_status, archived_at)")
       .eq("business_unit_id", this.businessUnitId)
       .is("archived_at", null)
-      .order("name", { ascending: true });
+      .order("name", { ascending: true })
+      .limit(boundedLimit);
 
+    if (term) {
+      // Search by name or brand only — the useful identity fields for an
+      // admin picking a product, never by internal id.
+      builder = builder.or(`name.ilike.%${term}%,brand.ilike.%${term}%`);
+    }
+
+    const { data, error } = await builder;
     if (error) return { ok: false, error: mapPostgrestError(error) };
 
     const items: EligibleImportProduct[] = (data ?? []).map((row) => ({
@@ -98,9 +136,15 @@ export class AdminImportCampaignProductsRepository {
       name: row.name,
       slug: row.slug,
       brand: row.brand,
+      publicationStatus: row.publication_status as PublicationStatus,
       variants: (row.product_variants ?? [])
         .filter((variant) => variant.archived_at === null)
-        .map((variant) => ({ id: variant.id, label: variant.label, sizeMl: variant.size_ml })),
+        .map((variant) => ({
+          id: variant.id,
+          label: variant.label,
+          sizeMl: variant.size_ml,
+          publicationStatus: variant.publication_status as PublicationStatus,
+        })),
     }));
 
     return { ok: true, data: items };
@@ -110,7 +154,7 @@ export class AdminImportCampaignProductsRepository {
     const { data, error } = await this.supabase
       .from("campaign_products")
       .select(
-        "id, product_id, product_variant_id, price_amount, currency, availability_status, quantity_limit, sort_order, product:products(name, slug, archived_at), variant:product_variants(label, archived_at)",
+        "id, product_id, product_variant_id, price_amount, currency, availability_status, sort_order, product:products(name, slug, brand, archived_at, publication_status), variant:product_variants(label, archived_at, publication_status)",
       )
       .eq("campaign_id", campaignId)
       .order("sort_order", { ascending: true });
@@ -118,21 +162,37 @@ export class AdminImportCampaignProductsRepository {
     if (error) return { ok: false, error: mapPostgrestError(error) };
 
     const items: CampaignProductItem[] = (data ?? []).map((row) => {
-      const product = row.product as unknown as { name: string; slug: string; archived_at: string | null } | null;
-      const variant = row.variant as unknown as { label: string; archived_at: string | null } | null;
+      const product = row.product as unknown as {
+        name: string;
+        slug: string;
+        brand: string | null;
+        archived_at: string | null;
+        publication_status: PublicationStatus;
+      } | null;
+      const variant = row.variant as unknown as {
+        label: string;
+        archived_at: string | null;
+        publication_status: PublicationStatus;
+      } | null;
       return {
         id: row.id,
         productId: row.product_id,
         productName: product?.name ?? "(producto eliminado)",
         productSlug: product?.slug ?? "",
+        productBrand: product?.brand ?? null,
         productArchived: product?.archived_at !== null && product?.archived_at !== undefined,
+        productArchivedAt: product?.archived_at ?? null,
+        // A deleted product's row is treated as the safest (most hidden)
+        // classification, never as "published" by default.
+        productPublicationStatus: product?.publication_status ?? "archived",
         productVariantId: row.product_variant_id,
         variantLabel: variant?.label ?? null,
         variantArchived: variant ? variant.archived_at !== null : false,
+        variantArchivedAt: variant?.archived_at ?? null,
+        variantPublicationStatus: variant ? variant.publication_status : null,
         priceAmount: row.price_amount,
         currency: row.currency,
         availabilityStatus: row.availability_status,
-        quantityLimit: row.quantity_limit,
         sortOrder: row.sort_order,
       };
     });
@@ -141,14 +201,19 @@ export class AdminImportCampaignProductsRepository {
   }
 
   /** Full replace, one RPC call. Returns the fresh campaign row (bumped
-   * updated_at) alongside the new items, so the caller has a valid
+   * updated_at) alongside the new item count, so the caller has a valid
    * concurrency token for whatever mutates next — same pattern as
-   * AdminParfumsCombosRepository.setComposition. */
+   * AdminParfumsCombosRepository.setComposition. Only the count is
+   * returned, not the full rows: the RPC's `setof campaign_products`
+   * result carries quantity_limit, and that field is deliberately kept
+   * server-internal (4J2 correction) rather than round-tripped into the
+   * server action's response payload just to report a save count the UI
+   * only ever reads the length of. */
   async setCampaignProducts(
     campaignId: string,
     expectedUpdatedAt: string,
     items: CampaignProductItemInput[],
-  ): Promise<CampaignProductMutationResult<{ campaign: CampaignRow; items: CampaignProductRow[] }>> {
+  ): Promise<CampaignProductMutationResult<{ campaign: CampaignRow; itemCount: number }>> {
     // quantity_limit is deliberately never sent: it is not a
     // browser-authoritative field (4J2 correction). The RPC preserves any
     // existing value server-side by (product_id, product_variant_id) and
@@ -178,6 +243,6 @@ export class AdminImportCampaignProductsRepository {
     if (campaignError) return { ok: false, error: mapPostgrestError(campaignError) };
     if (!campaignRow) return { ok: false, error: { type: "not_found" } };
 
-    return { ok: true, data: { campaign: campaignRow, items: (data ?? []) as CampaignProductRow[] } };
+    return { ok: true, data: { campaign: campaignRow, itemCount: (data ?? []).length } };
   }
 }

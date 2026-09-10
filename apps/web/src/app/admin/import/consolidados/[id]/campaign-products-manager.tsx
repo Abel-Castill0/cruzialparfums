@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import type {
   CampaignProductItem,
   EligibleImportProduct,
@@ -12,9 +12,30 @@ import {
   normalizeMoneyText,
   type CampaignProductAvailability,
 } from "@/domains/admin-import/campaign-products-schema";
-import { setCampaignProductsAction } from "../actions";
+import {
+  AVAILABILITY_STATUS_LABELS,
+  VISIBILITY_REASON_LABELS,
+  classifyOfferReadiness,
+  type PublicationStatus,
+} from "@/domains/admin-import/campaign-readiness";
+import { searchEligibleImportProductsAction, setCampaignProductsAction } from "../actions";
 import formStyles from "@/components/admin/product-form-fields.module.css";
 import styles from "@/app/admin/parfums/productos/page.module.css";
+
+const PICKER_PUBLICATION_LABELS: Record<PublicationStatus, string> = {
+  published: "Publicado",
+  draft: "Borrador",
+  // publication_status = 'archived' with archived_at still null — "hidden",
+  // not soft-deleted. Genuinely archived (archived_at set) products are
+  // never returned by searchEligibleImportProductsAction at all.
+  archived: "Oculto",
+};
+
+const PICKER_PUBLICATION_CLASS: Record<PublicationStatus, string> = {
+  published: styles["status-published"] ?? "",
+  draft: styles["status-draft"] ?? "",
+  archived: styles["status-archived"] ?? "",
+};
 
 type Row = {
   productId: string;
@@ -24,14 +45,17 @@ type Row = {
    * typing; validity is only enforced on save (see handleSave/dirty). */
   priceAmount: string;
   availabilityStatus: CampaignProductAvailability;
-  /** Read-only display only — quantity_limit is never sent back to the
-   * server from this manager (4J2 correction: not browser-authoritative).
-   * The RPC preserves the existing value server-side by itself. */
-  quantityLimit: number | null;
   productName: string;
   variantLabel: string | null;
   productArchived: boolean;
   variantArchived: boolean;
+  // The following four exist only to feed classifyOfferReadiness — a pure
+  // mirror of the same fields RLS itself gates on, never rendered as raw
+  // catalog data beyond the readiness badges below.
+  productArchivedAt: string | null;
+  productPublicationStatus: PublicationStatus;
+  variantArchivedAt: string | null;
+  variantPublicationStatus: PublicationStatus | null;
 };
 
 function toRow(item: CampaignProductItem): Row {
@@ -40,11 +64,14 @@ function toRow(item: CampaignProductItem): Row {
     productVariantId: item.productVariantId,
     priceAmount: item.priceAmount.toFixed(2),
     availabilityStatus: isCampaignProductAvailability(item.availabilityStatus) ? item.availabilityStatus : "available",
-    quantityLimit: item.quantityLimit,
     productName: item.productName,
     variantLabel: item.variantLabel,
     productArchived: item.productArchived,
     variantArchived: item.variantArchived,
+    productArchivedAt: item.productArchivedAt,
+    productPublicationStatus: item.productPublicationStatus,
+    variantArchivedAt: item.variantArchivedAt,
+    variantPublicationStatus: item.variantPublicationStatus,
   };
 }
 
@@ -62,7 +89,9 @@ function sameSet(a: Row[], b: Row[]): boolean {
       && other.priceAmount === row.priceAmount
       && other.availabilityStatus === row.availabilityStatus;
     // quantityLimit deliberately excluded: it is never client-editable, so
-    // it can never make the local set "dirty" relative to the baseline.
+    // it can never make the local set "dirty" relative to the baseline —
+    // and it is not even part of this component's data any more (4J2
+    // correction: kept server-internal, never sent to the browser).
   });
 }
 
@@ -77,10 +106,16 @@ function sameSet(a: Row[], b: Row[]): boolean {
  * quantity_limit has no confirmed rule (client-decisions.md: UNKNOWN) and is
  * not exposed here at all — admin_set_campaign_products preserves any
  * existing value server-side; the browser can neither see nor set it.
+ *
+ * Each configured offer also shows its public-readiness (mirrors real RLS —
+ * campaign-readiness.ts) and availability side by side, since they are
+ * independent: an out_of_stock offer can still be publicly visible.
  */
 export function CampaignProductsManager({
   campaignId,
   campaignUpdatedAt,
+  campaignStatus,
+  campaignArchivedAt,
   onUpdatedAtChange,
   onSavedCountChange,
   items,
@@ -89,18 +124,25 @@ export function CampaignProductsManager({
 }: {
   campaignId: string;
   campaignUpdatedAt: string;
+  campaignStatus: string;
+  campaignArchivedAt: string | null;
   onUpdatedAtChange: (updatedAt: string) => void;
   /** Fired with the saved row count so a parent's own "0 products" warning
    * (e.g. before opening the campaign) stays accurate right after a save,
    * without a full page reload. */
   onSavedCountChange?: (count: number) => void;
   items: CampaignProductItem[];
+  /** Bounded first page (SSR) — the picker below refines it via
+   * searchEligibleImportProductsAction, never the whole catalog. */
   eligibleProducts: EligibleImportProduct[];
   disabled: boolean;
 }) {
   const [rows, setRows] = useState<Row[]>(() => items.map(toRow));
   const [baseline, setBaseline] = useState<Row[]>(() => items.map(toRow));
-  const [selectedProductId, setSelectedProductId] = useState("");
+  const [pickerResults, setPickerResults] = useState<EligibleImportProduct[]>(eligibleProducts);
+  const [pickerQuery, setPickerQuery] = useState("");
+  const [pickerLoading, setPickerLoading] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<EligibleImportProduct | null>(null);
   const [selectedVariantId, setSelectedVariantId] = useState("");
   const [newPrice, setNewPrice] = useState("");
   const [newAvailability, setNewAvailability] = useState<CampaignProductAvailability>("available");
@@ -109,22 +151,66 @@ export function CampaignProductsManager({
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [saved, setSaved] = useState(false);
   const [addError, setAddError] = useState<string | null>(null);
-
-  const selectedProduct = useMemo(
-    () => eligibleProducts.find((product) => product.id === selectedProductId) ?? null,
-    [eligibleProducts, selectedProductId],
-  );
+  const searchDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const dirty = useMemo(() => !sameSet(rows, baseline), [rows, baseline]);
 
+  const readiness = useMemo(
+    () =>
+      rows.map((row) =>
+        classifyOfferReadiness({
+          campaignStatus,
+          campaignArchivedAt,
+          productPublicationStatus: row.productPublicationStatus,
+          productArchivedAt: row.productArchivedAt,
+          variantPublicationStatus: row.variantPublicationStatus,
+          variantArchivedAt: row.variantArchivedAt,
+          availabilityStatus: row.availabilityStatus,
+        }),
+      ),
+    [rows, campaignStatus, campaignArchivedAt],
+  );
+
+  const summary = useMemo(() => {
+    const visible = readiness.filter((r) => r.isPubliclyVisible).length;
+    const outOfStock = readiness.filter((r) => r.availability === "out_of_stock").length;
+    return {
+      configured: rows.length,
+      visible,
+      blocked: rows.length - visible,
+      outOfStock,
+    };
+  }, [readiness, rows.length]);
+
+  // Debounced bounded search — never the whole catalog. Disabled entirely
+  // when the manager itself is read-only (viewer) since the picker is not
+  // rendered in that case anyway.
+  useEffect(() => {
+    if (disabled) return;
+    if (searchDebounce.current) clearTimeout(searchDebounce.current);
+    let cancelled = false;
+    searchDebounce.current = setTimeout(() => {
+      setPickerLoading(true);
+      searchEligibleImportProductsAction(pickerQuery).then((result) => {
+        if (cancelled) return;
+        setPickerLoading(false);
+        if (result.ok) setPickerResults(result.data);
+      });
+    }, 300);
+    return () => {
+      cancelled = true;
+      if (searchDebounce.current) clearTimeout(searchDebounce.current);
+    };
+  }, [pickerQuery, disabled]);
+
   function handleAdd() {
     setAddError(null);
-    if (!selectedProductId) {
+    if (!selectedProduct) {
       setAddError("Selecciona un producto.");
       return;
     }
     const variantId = selectedVariantId || null;
-    const dedupe = `${selectedProductId}::${variantId ?? ""}`;
+    const dedupe = `${selectedProduct.id}::${variantId ?? ""}`;
     if (rows.some((row) => rowKey(row) === dedupe)) {
       setAddError("Este producto (con esa variante) ya está en la lista.");
       return;
@@ -134,32 +220,27 @@ export function CampaignProductsManager({
       return;
     }
     const price = normalizeMoneyText(newPrice);
-    const product = eligibleProducts.find((candidate) => candidate.id === selectedProductId);
-    if (!product) {
-      setAddError("Ese producto ya no está disponible. Recarga la página.");
-      return;
-    }
-    const variant = variantId ? product.variants.find((candidate) => candidate.id === variantId) : null;
+    const variant = variantId ? selectedProduct.variants.find((candidate) => candidate.id === variantId) : null;
     if (variantId && !variant) {
-      setAddError("Esa variante ya no está disponible. Recarga la página.");
+      setAddError("Esa variante ya no está disponible. Vuelve a buscar.");
       return;
     }
 
     setRows((previous) => [
       ...previous,
       {
-        productId: selectedProductId,
+        productId: selectedProduct.id,
         productVariantId: variantId,
         priceAmount: price,
         availabilityStatus: newAvailability,
-        // A brand-new association always has quantity_limit = NULL — the
-        // RPC enforces this server-side regardless of what this manager
-        // sends (it never sends quantity_limit at all).
-        quantityLimit: null,
-        productName: product.name,
+        productName: selectedProduct.name,
         variantLabel: variant?.label ?? null,
         productArchived: false,
         variantArchived: false,
+        productArchivedAt: null,
+        productPublicationStatus: selectedProduct.publicationStatus,
+        variantArchivedAt: null,
+        variantPublicationStatus: variant?.publicationStatus ?? null,
       },
     ]);
     setSelectedVariantId("");
@@ -220,7 +301,7 @@ export function CampaignProductsManager({
       const result = await setCampaignProductsAction(campaignId, campaignUpdatedAt, payload);
       if (result.status === "success") {
         onUpdatedAtChange(result.data.campaign.updated_at);
-        onSavedCountChange?.(result.data.items.length);
+        onSavedCountChange?.(result.data.itemCount);
         setBaseline(rows);
         setSaved(true);
       } else if (result.status === "field_errors") {
@@ -241,6 +322,23 @@ export function CampaignProductsManager({
         precios distintos en otro consolidado.
       </p>
 
+      {/* --------------------------------------------------------------- */}
+      {/* Open-campaign summary — read-only counts, never an action that   */}
+      {/* publishes, opens, or changes availability by itself.             */}
+      {/* --------------------------------------------------------------- */}
+      <dl className={styles.rowStats} aria-label="Resumen de publicación">
+        <div><dt>Productos configurados</dt><dd>{summary.configured}</dd></div>
+        <div><dt>Visibles públicamente</dt><dd>{summary.visible}</dd></div>
+        <div><dt>Bloqueados por publicación</dt><dd>{summary.blocked}</dd></div>
+        <div><dt>Agotados</dt><dd>{summary.outOfStock}</dd></div>
+      </dl>
+      {campaignStatus !== "open" || campaignArchivedAt !== null ? (
+        <p className={styles.notice}>
+          Visibles públicamente = 0 posible aunque los productos estén publicados: el consolidado no está{" "}
+          <strong>Abierto</strong> ahora mismo.
+        </p>
+      ) : null}
+
       {error ? <p className={formStyles.error} role="alert">{error}</p> : null}
       {Object.keys(fieldErrors).length > 0 ? (
         <p className={formStyles.error} role="alert">{Object.values(fieldErrors)[0]}</p>
@@ -256,6 +354,7 @@ export function CampaignProductsManager({
               <th>Producto</th>
               <th>Precio (PEN)</th>
               <th>Disponibilidad</th>
+              <th>Publicación</th>
               <th>Orden</th>
               <th>Acciones</th>
             </tr>
@@ -264,6 +363,7 @@ export function CampaignProductsManager({
             {rows.map((row, index) => {
               const key = rowKey(row);
               const rowLabel = row.variantLabel ? `${row.productName} · ${row.variantLabel}` : row.productName;
+              const rowReadiness = readiness[index];
               return (
                 <tr key={key}>
                   <td data-label="Producto">
@@ -297,6 +397,18 @@ export function CampaignProductsManager({
                         <option value="out_of_stock">{AVAILABILITY_LABELS.out_of_stock}</option>
                       </select>
                     </label>
+                  </td>
+                  <td data-label="Publicación">
+                    {rowReadiness ? (
+                      <div className={styles.rowBadges}>
+                        <span className={`${styles.badge} ${rowReadiness.isPubliclyVisible ? styles["status-published"] : styles.badgeArchived}`}>
+                          {VISIBILITY_REASON_LABELS[rowReadiness.visibilityReason]}
+                        </span>
+                        <span className={`${styles.badge} ${rowReadiness.availability === "available" ? styles["status-published"] : styles["status-draft"]}`}>
+                          {AVAILABILITY_STATUS_LABELS[rowReadiness.availability]}
+                        </span>
+                      </div>
+                    ) : null}
                   </td>
                   <td data-label="Orden">
                     {!disabled ? (
@@ -343,78 +455,108 @@ export function CampaignProductsManager({
 
       {!disabled ? (
         <div className={`${styles.section} ${styles.spacingTop}`}>
-          <div className={formStyles.grid}>
-            <label className={formStyles.field}>
-              <span>Producto</span>
-              <select
-                value={selectedProductId}
-                onChange={(event) => {
-                  setSelectedProductId(event.target.value);
-                  setSelectedVariantId("");
-                }}
-              >
-                <option value="">Selecciona un producto…</option>
-                {eligibleProducts.map((product) => (
-                  <option key={product.id} value={product.id}>
-                    {product.brand ? `${product.brand} — ` : ""}{product.name}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className={formStyles.field}>
-              <span>Variante (opcional)</span>
-              <select
-                value={selectedVariantId}
-                onChange={(event) => setSelectedVariantId(event.target.value)}
-                disabled={!selectedProductId || (selectedProduct?.variants.length ?? 0) === 0}
-              >
-                <option value="">Producto completo (sin variante)</option>
-                {(selectedProduct?.variants ?? []).map((variant) => (
-                  <option key={variant.id} value={variant.id}>
-                    {variant.label}{variant.sizeMl ? ` · ${variant.sizeMl} ml` : ""}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className={formStyles.field}>
-              <span>Precio (PEN)</span>
-              <input
-                type="text"
-                inputMode="decimal"
-                placeholder="0.00"
-                value={newPrice}
-                onChange={(event) => setNewPrice(event.target.value)}
-              />
-            </label>
-            <label className={formStyles.field}>
-              <span>Disponibilidad</span>
-              <select
-                value={newAvailability}
-                onChange={(event) => setNewAvailability(event.target.value as CampaignProductAvailability)}
-              >
-                <option value="available">{AVAILABILITY_LABELS.available}</option>
-                <option value="out_of_stock">{AVAILABILITY_LABELS.out_of_stock}</option>
-              </select>
-            </label>
-          </div>
-          {addError ? <p className={formStyles.error} role="alert">{addError}</p> : null}
-          {eligibleProducts.length === 0 ? (
+          <label className={formStyles.field}>
+            <span>Buscar producto de Cruzial Import (nombre o marca)</span>
+            <input
+              type="text"
+              value={pickerQuery}
+              onChange={(event) => {
+                setPickerQuery(event.target.value);
+                setSelectedProduct(null);
+                setSelectedVariantId("");
+              }}
+              placeholder="Ej. Armaf, Club de Nuit…"
+            />
+          </label>
+
+          {pickerLoading ? <p className={styles.notice}>Buscando…</p> : null}
+
+          {pickerResults.length === 0 && !pickerLoading ? (
             <p className={styles.notice}>
-              No hay productos base de Cruzial Import disponibles todavía (Fase 4J3 — extracción del catálogo —
-              aún no se ha ejecutado).
+              {pickerQuery.trim()
+                ? "No se encontraron productos de Cruzial Import con esa búsqueda."
+                : "No hay productos base de Cruzial Import disponibles todavía (Fase 4J3 — extracción del catálogo — aún no se ha ejecutado)."}
             </p>
           ) : (
-            <div className={`${styles.formActions} ${styles.spacingTop}`}>
-              <button
-                type="button"
-                className={styles.secondaryButton}
-                onClick={handleAdd}
-                disabled={!selectedProductId}
-              >
-                + Agregar producto
-              </button>
-            </div>
+            <ul className={styles.list} aria-label="Resultados de búsqueda">
+              {pickerResults.map((product) => (
+                <li
+                  key={product.id}
+                  className={styles.row}
+                  style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", padding: "10px 14px" }}
+                >
+                  <div className={styles.rowMain}>
+                    <strong>{product.brand ? `${product.brand} — ` : ""}{product.name}</strong>{" "}
+                    <span className={`${styles.badge} ${PICKER_PUBLICATION_CLASS[product.publicationStatus]}`}>
+                      {PICKER_PUBLICATION_LABELS[product.publicationStatus]}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    className={styles.secondaryButton}
+                    onClick={() => {
+                      setSelectedProduct(product);
+                      setSelectedVariantId("");
+                    }}
+                  >
+                    {selectedProduct?.id === product.id ? "Seleccionado" : "Elegir"}
+                  </button>
+                </li>
+              ))}
+            </ul>
           )}
+
+          {selectedProduct ? (
+            <div className={formStyles.grid}>
+              <label className={formStyles.field}>
+                <span>Variante (opcional)</span>
+                <select
+                  value={selectedVariantId}
+                  onChange={(event) => setSelectedVariantId(event.target.value)}
+                  disabled={selectedProduct.variants.length === 0}
+                >
+                  <option value="">Producto completo (sin variante)</option>
+                  {selectedProduct.variants.map((variant) => (
+                    <option key={variant.id} value={variant.id}>
+                      {variant.label}{variant.sizeMl ? ` · ${variant.sizeMl} ml` : ""} ({PICKER_PUBLICATION_LABELS[variant.publicationStatus]})
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className={formStyles.field}>
+                <span>Precio (PEN)</span>
+                <input
+                  type="text"
+                  inputMode="decimal"
+                  placeholder="0.00"
+                  value={newPrice}
+                  onChange={(event) => setNewPrice(event.target.value)}
+                />
+              </label>
+              <label className={formStyles.field}>
+                <span>Disponibilidad</span>
+                <select
+                  value={newAvailability}
+                  onChange={(event) => setNewAvailability(event.target.value as CampaignProductAvailability)}
+                >
+                  <option value="available">{AVAILABILITY_LABELS.available}</option>
+                  <option value="out_of_stock">{AVAILABILITY_LABELS.out_of_stock}</option>
+                </select>
+              </label>
+            </div>
+          ) : null}
+
+          {addError ? <p className={formStyles.error} role="alert">{addError}</p> : null}
+          <div className={`${styles.formActions} ${styles.spacingTop}`}>
+            <button
+              type="button"
+              className={styles.secondaryButton}
+              onClick={handleAdd}
+              disabled={!selectedProduct}
+            >
+              + Agregar producto
+            </button>
+          </div>
         </div>
       ) : null}
 

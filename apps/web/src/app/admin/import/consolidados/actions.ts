@@ -14,6 +14,7 @@ import {
 import {
   AdminImportCampaignProductsRepository,
   type CampaignProductMutationError,
+  type EligibleImportProduct,
 } from "@/domains/admin-import/campaign-products-repository";
 import {
   isCampaignStatus,
@@ -26,7 +27,6 @@ import { validateCampaignProductItems } from "@/domains/admin-import/campaign-pr
 import type { FieldErrors } from "@/domains/admin-parfums/product-schema";
 
 type CampaignRow = Database["public"]["Tables"]["campaigns"]["Row"];
-type CampaignProductRow = Database["public"]["Tables"]["campaign_products"]["Row"];
 
 export type CampaignActionState =
   | { status: "idle" }
@@ -36,7 +36,7 @@ export type CampaignActionState =
 
 export type CampaignProductsActionState =
   | { status: "idle" }
-  | { status: "success"; data: { campaign: CampaignRow; items: CampaignProductRow[] } }
+  | { status: "success"; data: { campaign: CampaignRow; itemCount: number } }
   | { status: "field_errors"; errors: FieldErrors }
   | { status: "error"; message: string };
 
@@ -334,4 +334,32 @@ export async function setCampaignProductsAction(
 
   revalidatePath(editPath(campaignId));
   return { status: "success", data: result.data };
+}
+
+const PICKER_RESULT_LIMIT = 20;
+
+export type SearchEligibleProductsResult =
+  | { ok: true; data: EligibleImportProduct[] }
+  | { ok: false; message: string };
+
+/** Bounded, server-side, Import-only product search (4J2 correction —
+ * replaces loading the entire non-archived Import catalog up front). Admin
+ * only, same auth gate as every other campaign_products mutation, even
+ * though this itself is a read — the picker it feeds is never rendered for
+ * a viewer anyway (CampaignProductsManager's disabled prop). */
+export async function searchEligibleImportProductsAction(query: string): Promise<SearchEligibleProductsResult> {
+  const repository = await campaignProductsRepositoryOrError();
+  if (!repository.ok) {
+    const state = repository.state;
+    return { ok: false, message: state.status === "error" ? state.message : "No autorizado." };
+  }
+
+  const result = await repository.repository.searchEligibleProducts({
+    query: typeof query === "string" ? query : "",
+    limit: PICKER_RESULT_LIMIT,
+  });
+  if (!result.ok) {
+    return { ok: false, message: friendlyCampaignProductError(result.error) };
+  }
+  return { ok: true, data: result.data };
 }
