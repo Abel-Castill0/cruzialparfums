@@ -2,7 +2,7 @@
 
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(29);
+select plan(32);
 
 insert into auth.users (id, instance_id, aud, role, email, encrypted_password, created_at, updated_at) values
   ('89000000-aaaa-4aaa-8aaa-aaaaaaaaaaaa', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'import-admin-4j4a@example.test', '', now(), now()),
@@ -171,6 +171,46 @@ reset role;
 set local role authenticated;
 set local request.jwt.claims to '{"sub":"89000000-cccc-4ccc-8ccc-cccccccccccc","role":"authenticated"}';
 select throws_ok($$select public.admin_set_campaign_products('89003000-0000-4000-8000-000000000001', now(), '[]'::jsonb)$$, '42501', null, 'Parfums admin cannot mutate Import offers');
+reset role;
+
+-- archived presentation with publication_status='archived' but archived_at=NULL must be rejected
+insert into public.import_presentations
+  (id, product_id, stable_key, label, presentation_class, capacity_ml, publication_status) values
+  ('89002000-0000-4000-8000-000000000010', '89001000-0000-4000-8000-000000000001', 'archived-status-only', 'Archived Status Only', 'single_fixed', 30, 'archived');
+set local role authenticated;
+set local request.jwt.claims to '{"sub":"89000000-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
+select throws_ok(
+  $$select public.admin_set_campaign_products(
+    '89003000-0000-4000-8000-000000000001',
+    (select updated_at from public.campaigns where id = '89003000-0000-4000-8000-000000000001'),
+    '[{"product_id":"89001000-0000-4000-8000-000000000001","import_presentation_id":"89002000-0000-4000-8000-000000000010","price_amount":"10.00","availability_status":"available","sort_order":0}]'::jsonb)$$,
+  '22023', null, 'presentation with publication_status=archived (even archived_at=NULL) is rejected'
+);
+reset role;
+
+-- RPC hard cap: non-array rejected
+set local role authenticated;
+set local request.jwt.claims to '{"sub":"89000000-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
+select throws_ok(
+  $$select public.admin_set_campaign_products(
+    '89003000-0000-4000-8000-000000000001',
+    (select updated_at from public.campaigns where id = '89003000-0000-4000-8000-000000000001'),
+    '"not an array"'::jsonb)$$,
+  'P2009', null, 'non-array p_items is rejected'
+);
+reset role;
+
+-- RPC hard cap: oversized payload rejected
+set local role authenticated;
+set local request.jwt.claims to '{"sub":"89000000-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
+select throws_ok(
+  $$select public.admin_set_campaign_products(
+    '89003000-0000-4000-8000-000000000001',
+    (select updated_at from public.campaigns where id = '89003000-0000-4000-8000-000000000001'),
+    (select jsonb_agg(jsonb_build_object('product_id','89001000-0000-4000-8000-000000000001','import_presentation_id','89002000-0000-4000-8000-000000000001','price_amount','10.00','availability_status','available','sort_order', g))
+     from generate_series(1, 1501) g)::jsonb)$$,
+  'P2009', null, 'p_items exceeding 1500 limit is rejected'
+);
 reset role;
 
 select * from finish();

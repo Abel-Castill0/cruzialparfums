@@ -90,7 +90,7 @@ describe("validateCampaignProductItems", () => {
   });
 
   it("rejects more than the max item count", () => {
-    const items = Array.from({ length: 501 }, (_, index) => ({
+    const items = Array.from({ length: 1501 }, (_, index) => ({
       productId: PRODUCT_ID,
       productVariantId: `33333333-3333-4333-8333-${String(index).padStart(12, "0")}`,
       priceAmount: "10",
@@ -167,6 +167,44 @@ describe("validateCampaignProductItems", () => {
       ]);
       expect(result.ok).toBe(false);
     });
+  });
+});
+
+describe("campaign offer scale", () => {
+  it("accepts 913 valid offers (Sexto Consolidado scale)", () => {
+    const items = Array.from({ length: 913 }, (_, index) => ({
+      productId: PRODUCT_ID,
+      importPresentationId: `33333333-3333-4333-8333-${String(index).padStart(12, "0")}`,
+      priceAmount: "10.00",
+      availabilityStatus: "available" as const,
+      sortOrder: index,
+    }));
+    const result = validateCampaignProductItems(items);
+    expect(result.ok).toBe(true);
+  });
+
+  it("accepts exactly MAX_CAMPAIGN_OFFERS (1500) offers", () => {
+    const items = Array.from({ length: 1500 }, (_, index) => ({
+      productId: PRODUCT_ID,
+      importPresentationId: `44444444-4444-4444-8444-${String(index).padStart(12, "0")}`,
+      priceAmount: "10.00",
+      availabilityStatus: "available" as const,
+      sortOrder: index,
+    }));
+    const result = validateCampaignProductItems(items);
+    expect(result.ok).toBe(true);
+  });
+
+  it("rejects MAX_CAMPAIGN_OFFERS + 1 (1501) offers", () => {
+    const items = Array.from({ length: 1501 }, (_, index) => ({
+      productId: PRODUCT_ID,
+      importPresentationId: `55555555-5555-5555-8555-${String(index).padStart(12, "0")}`,
+      priceAmount: "10.00",
+      availabilityStatus: "available" as const,
+      sortOrder: index,
+    }));
+    const result = validateCampaignProductItems(items);
+    expect(result.ok).toBe(false);
   });
 });
 

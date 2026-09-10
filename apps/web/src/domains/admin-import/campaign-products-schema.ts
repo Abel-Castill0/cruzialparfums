@@ -72,7 +72,7 @@ export type CampaignProductItemInput = {
   sortOrder: number;
 };
 
-const MAX_ITEMS = 500;
+const MAX_CAMPAIGN_OFFERS = 1500;
 
 /**
  * Validates a full campaign_products replace. Same full-replace design as
@@ -87,8 +87,8 @@ export function validateCampaignProductItems(rawItems: unknown): ValidationResul
   if (!Array.isArray(rawItems)) {
     return { ok: false, errors: { items: "La lista de productos enviada no es válida." } };
   }
-  if (rawItems.length > MAX_ITEMS) {
-    return { ok: false, errors: { items: `Un consolidado no puede tener más de ${MAX_ITEMS} líneas.` } };
+  if (rawItems.length > MAX_CAMPAIGN_OFFERS) {
+    return { ok: false, errors: { items: `Un consolidado no puede tener más de ${MAX_CAMPAIGN_OFFERS} líneas.` } };
   }
 
   const seen = new Set<string>();

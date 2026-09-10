@@ -14,11 +14,11 @@
  * 20260907154358_rls_policies.sql — untouched by this file; this is a
  * read-only mirror for the admin UI, not a rewrite of the policy itself.)
  *
- * availability_status is a DELIBERATELY independent dimension: RLS does not
- * gate on it at all, so an out_of_stock offer is still publicly readable
- * once every publication gate above passes — the storefront is expected to
- * show it as "Agotado", not hide it. Never collapse visibility and
- * availability into one label.
+ * availability_status gates public RLS: only 'available' and 'out_of_stock'
+ * are publicly visible; 'unconfirmed' is intentionally hidden. An out_of_stock
+ * offer is still publicly readable once every publication gate above passes —
+ * the storefront is expected to show it as "Agotado", not hide it. Never
+ * collapse visibility and availability into one label.
  */
 
 export type ProductPublicationStatus = "draft" | "published" | "hidden" | "archived";

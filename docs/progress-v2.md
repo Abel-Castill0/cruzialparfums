@@ -82,6 +82,9 @@ Isolated:
   import_presentations table (price-free structural identities),
   campaign_products.import_presentation_id, unconfirmed availability,
   public RLS fail-closed, quantity_limit preserved by full identity.
+  MAX_CAMPAIGN_OFFERS 1500 (schema + DB RPC hard cap), archived presentation
+  fail-closed (archived_at OR publication_status='archived'), correction
+  migration `20260909060000_campaign_products_correction.sql`.
 
 Do not re-audit closed capabilities without evidence of regression.
 
