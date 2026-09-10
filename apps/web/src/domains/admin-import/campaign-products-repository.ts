@@ -149,12 +149,17 @@ export class AdminImportCampaignProductsRepository {
     expectedUpdatedAt: string,
     items: CampaignProductItemInput[],
   ): Promise<CampaignProductMutationResult<{ campaign: CampaignRow; items: CampaignProductRow[] }>> {
+    // quantity_limit is deliberately never sent: it is not a
+    // browser-authoritative field (4J2 correction). The RPC preserves any
+    // existing value server-side by (product_id, product_variant_id) and
+    // sets NULL for brand-new associations — the browser cannot overwrite it.
     const payload = items.map((item) => ({
       product_id: item.productId,
       product_variant_id: item.productVariantId,
+      // Canonical decimal text (e.g. "16.00") — passed through unmodified,
+      // never routed through Number()/arithmetic on this side either.
       price_amount: item.priceAmount,
       availability_status: item.availabilityStatus,
-      quantity_limit: item.quantityLimit,
       sort_order: item.sortOrder,
     }));
 

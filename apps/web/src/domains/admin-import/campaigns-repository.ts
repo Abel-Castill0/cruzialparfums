@@ -19,6 +19,19 @@ export type CampaignMutationError =
   | { type: "already_archived" }
   | { type: "archived_edit" };
 
+export type DuplicateCampaignMutationError =
+  | AdminRepositoryError
+  | { type: "invalid_input" };
+
+function mapDuplicateCampaignError(error: PostgrestError): DuplicateCampaignMutationError {
+  switch (error.code) {
+    case "P2010":
+      return { type: "invalid_input" };
+    default:
+      return mapPostgrestError(error);
+  }
+}
+
 export type CampaignMutationResult<T> =
   | { ok: true; data: T }
   | { ok: false; error: CampaignMutationError };
@@ -166,6 +179,24 @@ export class AdminImportCampaignsRepository {
       p_expected_updated_at: expectedUpdatedAt,
     });
     if (error) return { ok: false, error: mapCampaignError(error) };
+    return { ok: true, data: data as CampaignRow };
+  }
+
+  /** Duplicates a source campaign into a new draft campaign, copying every
+   * campaign_product row exactly (admin_duplicate_campaign RPC — one atomic
+   * transaction, rolls back entirely on any failure). Dates and
+   * public_message are reset, never copied. */
+  async duplicate(
+    sourceCampaignId: string,
+    newNumber: number,
+    newName: string,
+  ): Promise<{ ok: true; data: CampaignRow } | { ok: false; error: DuplicateCampaignMutationError }> {
+    const { data, error } = await this.supabase.rpc("admin_duplicate_campaign", {
+      p_source_campaign_id: sourceCampaignId,
+      p_new_number: newNumber,
+      p_new_name: newName,
+    });
+    if (error) return { ok: false, error: mapDuplicateCampaignError(error) };
     return { ok: true, data: data as CampaignRow };
   }
 }

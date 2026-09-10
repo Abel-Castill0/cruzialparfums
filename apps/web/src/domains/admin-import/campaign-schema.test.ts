@@ -5,6 +5,7 @@ import {
   isoToLimaDatetimeLocal,
   limaDatetimeLocalToIso,
   validateCampaignForm,
+  validateDuplicateCampaignForm,
 } from "./campaign-schema";
 
 const valid = {
@@ -104,5 +105,41 @@ describe("isValidExpectedTimestamp", () => {
     expect(isValidExpectedTimestamp("2026-09-10T14:00:00.000Z")).toBe(true);
     expect(isValidExpectedTimestamp("not-a-date")).toBe(false);
     expect(isValidExpectedTimestamp(123)).toBe(false);
+  });
+});
+
+describe("validateDuplicateCampaignForm", () => {
+  it("accepts a valid new number and name", () => {
+    const result = validateDuplicateCampaignForm({ newNumber: "7", newName: "Séptimo Consolidado" });
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.value).toEqual({ newNumber: 7, newName: "Séptimo Consolidado" });
+  });
+
+  it("rejects a non-positive or non-integer number", () => {
+    expect(validateDuplicateCampaignForm({ newNumber: "0", newName: "x" }).ok).toBe(false);
+    expect(validateDuplicateCampaignForm({ newNumber: "-1", newName: "x" }).ok).toBe(false);
+    expect(validateDuplicateCampaignForm({ newNumber: "1.5", newName: "x" }).ok).toBe(false);
+    expect(validateDuplicateCampaignForm({ newNumber: "", newName: "x" }).ok).toBe(false);
+  });
+
+  it("rejects a blank or whitespace-only name", () => {
+    expect(validateDuplicateCampaignForm({ newNumber: "1", newName: "" }).ok).toBe(false);
+    expect(validateDuplicateCampaignForm({ newNumber: "1", newName: "   " }).ok).toBe(false);
+  });
+
+  it("trims the name", () => {
+    const result = validateDuplicateCampaignForm({ newNumber: "1", newName: "  Copia  " });
+    if (result.ok) expect(result.value.newName).toBe("Copia");
+  });
+
+  it("never accepts business_unit_id/status/actor/currency fields — they are not part of this input shape", () => {
+    const result = validateDuplicateCampaignForm({
+      newNumber: "1",
+      newName: "Copia",
+      businessUnitId: "should-be-ignored",
+      status: "open",
+    });
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(Object.keys(result.value)).toEqual(["newNumber", "newName"]);
   });
 });

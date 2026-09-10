@@ -12,39 +12,72 @@ export function isCampaignProductAvailability(value: unknown): value is Campaign
   return typeof value === "string" && (AVAILABILITY_STATUSES as readonly string[]).includes(value);
 }
 
+/**
+ * Canonical decimal-text money contract (4J2 correction). Campaign prices
+ * are commercial authority and must never pass through JS binary-float
+ * arithmetic anywhere on the TypeScript/UI/action/repository boundary — the
+ * database column is numeric(12,2), and every hop up to it must carry the
+ * exact same decimal text a human typed, normalized only by string
+ * operations (zero-padding), never Number()/Math.round(). "16.00",
+ * "129.90", "0.00" are the canonical shape: 1-10 integer digits (numeric
+ * (12,2) allows at most 10 digits before the point), an optional '.', and
+ * 1-2 fraction digits. No sign, no scientific notation, no thousands
+ * separators — anything outside that syntax is a validation error, not a
+ * best-effort coercion.
+ */
+const MONEY_PATTERN = /^\d{1,10}(?:\.\d{1,2})?$/;
+
+export function isValidMoneyText(value: unknown): value is string {
+  return typeof value === "string" && MONEY_PATTERN.test(value.trim());
+}
+
+/** Normalizes an already-valid money text to exactly 2 fraction digits via
+ * string padding only — "16" -> "16.00", "16.5" -> "16.50". Never touches
+ * the integer part, never routes through Number(). */
+export function normalizeMoneyText(value: string): string {
+  const trimmed = value.trim();
+  const [whole, fraction = ""] = trimmed.split(".");
+  return `${whole}.${fraction.padEnd(2, "0").slice(0, 2)}`;
+}
+
+function parseMoney(value: unknown, field: string, errors: FieldErrors): string | null {
+  if (typeof value !== "string" || value.trim() === "") {
+    errors[field] = "Ingresa un monto válido.";
+    return null;
+  }
+  if (!isValidMoneyText(value)) {
+    errors[field] = "Ingresa un monto válido: solo dígitos y hasta 2 decimales, sin signo (ej. 16.50).";
+    return null;
+  }
+  return normalizeMoneyText(value);
+}
+
+/**
+ * quantity_limit is intentionally NOT part of this input type. It is not a
+ * confirmed Import business feature (docs/client-decisions.md: exact
+ * inventory/quantity-limit rules are UNKNOWN) and the browser must never be
+ * able to set or overwrite it — admin_set_campaign_products preserves any
+ * existing non-null value server-side and always sets NULL for a brand-new
+ * association. See campaign-products-manager.tsx and the RPC in
+ * supabase/migrations/20260909030000_admin_import_campaign_products_correction.sql.
+ */
 export type CampaignProductItemInput = {
   productId: string;
   productVariantId: string | null;
-  priceAmount: number;
+  /** Canonical decimal text, e.g. "16.00" — never a JS number. */
+  priceAmount: string;
   availabilityStatus: CampaignProductAvailability;
-  quantityLimit: number | null;
   sortOrder: number;
 };
 
 const MAX_ITEMS = 500;
-
-function parseMoney(value: unknown, field: string, errors: FieldErrors): number | null {
-  if (value === null || value === undefined || value === "") {
-    errors[field] = "Ingresa un monto válido.";
-    return null;
-  }
-  const parsed = typeof value === "number" ? value : Number(value);
-  if (!Number.isFinite(parsed)) {
-    errors[field] = "Ingresa un monto válido.";
-    return null;
-  }
-  if (parsed < 0) {
-    errors[field] = "El monto no puede ser negativo.";
-    return null;
-  }
-  return Math.round(parsed * 100) / 100;
-}
 
 /**
  * Validates a full campaign_products replace. Same full-replace design as
  * validateComboItems: the client always submits the whole desired set, so
  * there is no partial-patch ambiguity. currency is never accepted here —
  * it is always 'PEN' at the RPC layer, never a client-controlled value.
+ * quantity_limit is never accepted here either (see CampaignProductItemInput).
  */
 export function validateCampaignProductItems(rawItems: unknown): ValidationResult<CampaignProductItemInput[]> {
   const errors: FieldErrors = {};
@@ -86,24 +119,19 @@ export function validateCampaignProductItems(rawItems: unknown): ValidationResul
 
     const priceAmount = parseMoney(item.priceAmount, `${key}.priceAmount`, errors);
 
-    const availabilityStatus = isCampaignProductAvailability(item.availabilityStatus)
-      ? item.availabilityStatus
-      : "available";
-
-    let quantityLimit: number | null = null;
-    if (item.quantityLimit !== null && item.quantityLimit !== undefined && item.quantityLimit !== "") {
-      const parsedLimit = typeof item.quantityLimit === "number" ? item.quantityLimit : Number(item.quantityLimit);
-      if (!Number.isInteger(parsedLimit) || parsedLimit <= 0) {
-        errors[`${key}.quantityLimit`] = "El límite debe ser un entero mayor que 0, o dejarse vacío.";
-      } else {
-        quantityLimit = parsedLimit;
-      }
+    // Fail-closed: any value other than exactly "available" or
+    // "out_of_stock" (including missing/null/malformed) is a validation
+    // error. Never silently transform an unsupported value into "available".
+    if (!isCampaignProductAvailability(item.availabilityStatus)) {
+      errors[`${key}.availabilityStatus`] = "Selecciona una disponibilidad válida (Disponible o Agotado).";
+      return;
     }
+    const availabilityStatus = item.availabilityStatus;
 
     const sortOrder = Number.isInteger(item.sortOrder) ? (item.sortOrder as number) : index;
 
     if (priceAmount === null) return;
-    parsed.push({ productId, productVariantId, priceAmount, availabilityStatus, quantityLimit, sortOrder });
+    parsed.push({ productId, productVariantId, priceAmount, availabilityStatus, sortOrder });
   });
 
   if (Object.keys(errors).length > 0) return { ok: false, errors };

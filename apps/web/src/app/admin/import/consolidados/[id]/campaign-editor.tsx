@@ -20,6 +20,7 @@ import {
   type CampaignActionState,
 } from "../actions";
 import { CampaignProductsManager } from "./campaign-products-manager";
+import { DuplicateCampaignControl } from "./duplicate-campaign-control";
 import formStyles from "@/components/admin/product-form-fields.module.css";
 import styles from "@/app/admin/parfums/productos/page.module.css";
 
@@ -169,6 +170,11 @@ export function CampaignEditor({
         eligibleProducts={eligibleProducts}
         disabled={disabled || isArchived}
       />
+
+      {/* ------------------------------------------------------------ */}
+      {/* Duplicate — admin only, never rendered for a viewer.           */}
+      {/* ------------------------------------------------------------ */}
+      {!disabled ? <DuplicateCampaignControl campaignId={current.id} /> : null}
 
       {/* ------------------------------------------------------------ */}
       {/* Archive — no delete, no restore in this phase.                 */}

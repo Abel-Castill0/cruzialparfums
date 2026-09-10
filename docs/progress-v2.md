@@ -75,7 +75,10 @@ Isolated:
 - Vercel Preview + Hosted Supabase Auth (4I1) ✅
 - Parfums Preview QA (4I2) ✅
 - Admin Import — Consolidado lifecycle + security foundation (4J1) ✅
-- Admin Import — Campaign Products / Prices / Availability (4J2) ✅
+- Admin Import — Campaign Products / Prices / Availability (4J2) ⚠️ IN PROGRESS —
+  see "4J2 correction" below. Not closed: readiness classifier/summary and
+  picker bounding still outstanding, and the correction migration has not
+  been pushed to staging yet.
 
 Do not re-audit closed capabilities without evidence of regression.
 
@@ -480,6 +483,84 @@ audit row; viewer sees the same table read-only with no add/save controls;
 320/390/768/1440 all clean, no horizontal overflow. `db push --dry-run`
 showed only this migration; pushed to `iyxidhglyqkzoziyewlc` after
 confirmation.
+
+### 4J2 correction (external review — P1 defects + missing scope)
+
+External review found confirmed 4J2 defects. This pass fixes:
+
+- **Exact decimal money**: `CampaignProductItemInput.priceAmount` was a JS
+  `number`, parsed with `Number()`/`Math.round(price*100)/100`. Replaced
+  with a canonical decimal-TEXT contract end to end (`"16.00"`), validated
+  by regex (`^\d{1,10}(\.\d{1,2})?$`, no sign, no scientific notation),
+  normalized only by string padding, never JS arithmetic
+  (`campaign-products-schema.ts`). The RPC already cast jsonb TEXT straight
+  to `numeric` (no float involved server-side); it now also re-validates the
+  same syntax itself (`P2009`) since it is independently callable through
+  supabase-js, not only through the validated server action.
+- **Availability fail-closed**: `coalesce(elem->>'availability_status',
+  'available')` and the TS schema's `?? "available"` both silently
+  defaulted a missing/unsupported value to `available`. Both now reject
+  (TS field error; RPC `P2008`) — only exactly `available`/`out_of_stock`
+  is valid.
+- **quantity_limit removed from browser-authoritative input**: not a
+  confirmed Import feature (`docs/client-decisions.md`: UNKNOWN). Removed
+  from `CampaignProductItemInput`, the manager UI's table and add-row form
+  entirely. `admin_set_campaign_products` no longer reads `quantity_limit`
+  from `p_items` at all — it snapshots each existing association's value by
+  `(product_id, product_variant_id)` before the delete and re-applies it on
+  insert; a brand-new association always gets `NULL`. The browser has no
+  path to set or overwrite it.
+- **`admin_duplicate_campaign`** (deferred 4J1 scope, implemented now): one
+  atomic `SECURITY DEFINER` RPC — Import-scoped intrinsically, wrong-unit
+  source looks not-found, destination always `draft` with `opens_at`/
+  `closes_at`/`public_message` reset (no confirmed rule for carrying stale
+  marketing text forward), every `campaign_products` row copied exactly
+  (`price_amount`/`currency`/`availability_status`/`quantity_limit`/
+  `sort_order`), whole operation one transaction (any failure leaves no
+  partial destination campaign), audit metadata bounded to
+  source/destination id+number+copied-offer-count — never the product
+  array. UI: `DuplicateCampaignControl`
+  (`consolidados/[id]/duplicate-campaign-control.tsx`), admin-only, asks
+  only nuevo número + nuevo nombre, redirects to the new campaign on
+  success.
+
+Migration: `20260909030000_admin_import_campaign_products_correction.sql`
+(additive — `20260909020000_admin_import_campaign_products.sql` was already
+applied to staging and was not edited). pgTAP: `supabase/tests/
+18_admin_import_campaign_products_correction.sql` (35 checks — fail-closed
+availability, decimal syntax guard, quantity_limit preservation and
+new-association-null, duplicate RPC correctness/atomicity/authorization/
+unit-scope). `supabase/tests/17_admin_import_campaign_products.sql` updated
+in place (not a migration — a few assertions encoded the old, now-incorrect
+behavior: a negative price used to fail the table's `23514` check constraint
+and now fails the RPC's own `P2009` syntax guard first; a client-sent
+`quantity_limit` used to be written through and is now proven ignored).
+Vitest: `campaign-products-schema.test.ts` rewritten for the decimal-text
+contract and fail-closed availability (34 tests); `campaign-schema.test.ts`
+gained `validateDuplicateCampaignForm` coverage (20 tests). Full suite: 40
+files / 293 tests, `tsc --noEmit` and `eslint --max-warnings=0` both clean.
+
+**Not completed in this pass** (still open, block calling 4J2 fully closed):
+
+- Section 6/7 (public readiness classifier + open-campaign summary) and
+  section 8 (bounded/paginated product picker) from the review were not
+  implemented — out of budget for this pass. The picker still loads the
+  full non-archived Import product set; there is no readiness classifier
+  mirroring real RLS on the admin read model yet.
+- Local `supabase db reset` + full pgTAP run was **not executed** — this
+  environment has no `supabase` CLI and no local Supabase Postgres stack
+  running (only unrelated Docker containers). The new pgTAP file 18 and the
+  edits to file 17 are unverified against a live database; only the
+  TypeScript layer (`tsc`, `eslint`, Vitest) was actually run and is green.
+- `supabase db push --dry-run` / staging push was **not performed** —
+  blocked on the local pgTAP verification above per the capability
+  workflow ("local green first, then push"). The correction migration is
+  committed locally only; `iyxidhglyqkzoziyewlc` still has only the
+  original (pre-correction) 4J2 migration applied.
+
+Next session should run `npm run db:reset && npm run db:test` locally
+first, fix anything the pgTAP run surfaces, then decide whether to close
+the remaining scope (6/7/8) before or after the staging push.
 
 ## Orders / payments
 

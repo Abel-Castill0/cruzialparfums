@@ -82,6 +82,10 @@ select is(
 -- Full replace: a second call with a different set REPLACES, not appends
 -- ---------------------------------------------------------------------------
 
+-- 4J2 correction: quantity_limit is sent in this payload (3) but must be
+-- IGNORED — this is a brand-new (product, variant) key (no variant this
+-- time), so the RPC must set quantity_limit = NULL regardless of what the
+-- browser sent, proving the browser cannot set or overwrite it.
 set local role authenticated;
 set local request.jwt.claims to '{"sub":"88880000-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
 select lives_ok(
@@ -107,7 +111,7 @@ select is(
 );
 select is(
   (select quantity_limit from public.campaign_products where campaign_id = '88883000-0000-4000-8000-000000000001'),
-  3, 'quantity_limit was written'
+  null, '4J2 correction: quantity_limit=3 sent in the payload was ignored — this is a new association, so it is NULL, not 3'
 );
 
 -- ---------------------------------------------------------------------------
@@ -137,12 +141,15 @@ select throws_ok(
       '[{"product_id":"88881000-0000-4000-8000-000000000001","product_variant_id":"88882000-0000-4000-8000-000000000002","price_amount":10,"sort_order":0}]'::jsonb)$$,
   '22023', null, 'an archived variant cannot be added'
 );
+-- 4J2 correction: a negative price now fails the RPC's own exact-decimal
+-- syntax guard (no sign allowed) before ever reaching the table, not the
+-- table's price >= 0 check constraint (23514) any more.
 select throws_ok(
   $$select public.admin_set_campaign_products(
       '88883000-0000-4000-8000-000000000001',
       (select updated_at from public.campaigns where id = '88883000-0000-4000-8000-000000000001'),
-      '[{"product_id":"88881000-0000-4000-8000-000000000001","product_variant_id":"88882000-0000-4000-8000-000000000001","price_amount":-5,"sort_order":0}]'::jsonb)$$,
-  '23514', null, 'a negative price is rejected by the table check constraint'
+      '[{"product_id":"88881000-0000-4000-8000-000000000001","product_variant_id":"88882000-0000-4000-8000-000000000001","price_amount":-5,"availability_status":"available","sort_order":0}]'::jsonb)$$,
+  'P2009', null, 'a negative price is rejected by the exact-decimal syntax guard'
 );
 select is(
   (select count(*)::integer from public.campaign_products where campaign_id = '88883000-0000-4000-8000-000000000001'),
@@ -159,7 +166,7 @@ select throws_ok(
   $$select public.admin_set_campaign_products(
       '88883000-0000-4000-8000-000000000001',
       '2000-01-01T00:00:00Z',
-      '[{"product_id":"88881000-0000-4000-8000-000000000001","price_amount":10,"sort_order":0}]'::jsonb)$$,
+      '[{"product_id":"88881000-0000-4000-8000-000000000001","price_amount":10,"availability_status":"available","sort_order":0}]'::jsonb)$$,
   '40001', null, 'a stale expected_updated_at is rejected without silent overwrite'
 );
 reset role;

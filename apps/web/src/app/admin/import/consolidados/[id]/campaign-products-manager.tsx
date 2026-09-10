@@ -8,6 +8,8 @@ import type {
 import {
   AVAILABILITY_LABELS,
   isCampaignProductAvailability,
+  isValidMoneyText,
+  normalizeMoneyText,
   type CampaignProductAvailability,
 } from "@/domains/admin-import/campaign-products-schema";
 import { setCampaignProductsAction } from "../actions";
@@ -17,8 +19,14 @@ import styles from "@/app/admin/parfums/productos/page.module.css";
 type Row = {
   productId: string;
   productVariantId: string | null;
-  priceAmount: number;
+  /** Canonical decimal text (e.g. "16.00") — never a JS number. The input
+   * itself may transiently hold something not yet valid while the admin is
+   * typing; validity is only enforced on save (see handleSave/dirty). */
+  priceAmount: string;
   availabilityStatus: CampaignProductAvailability;
+  /** Read-only display only — quantity_limit is never sent back to the
+   * server from this manager (4J2 correction: not browser-authoritative).
+   * The RPC preserves the existing value server-side by itself. */
   quantityLimit: number | null;
   productName: string;
   variantLabel: string | null;
@@ -30,7 +38,7 @@ function toRow(item: CampaignProductItem): Row {
   return {
     productId: item.productId,
     productVariantId: item.productVariantId,
-    priceAmount: item.priceAmount,
+    priceAmount: item.priceAmount.toFixed(2),
     availabilityStatus: isCampaignProductAvailability(item.availabilityStatus) ? item.availabilityStatus : "available",
     quantityLimit: item.quantityLimit,
     productName: item.productName,
@@ -52,8 +60,9 @@ function sameSet(a: Row[], b: Row[]): boolean {
       && other.productId === row.productId
       && other.productVariantId === row.productVariantId
       && other.priceAmount === row.priceAmount
-      && other.availabilityStatus === row.availabilityStatus
-      && other.quantityLimit === row.quantityLimit;
+      && other.availabilityStatus === row.availabilityStatus;
+    // quantityLimit deliberately excluded: it is never client-editable, so
+    // it can never make the local set "dirty" relative to the baseline.
   });
 }
 
@@ -62,10 +71,12 @@ function sameSet(a: Row[], b: Row[]): boolean {
  * catalog (that is 4J3). "Guardar productos" sends the whole current array
  * in one full-replace call (admin_set_campaign_products); add/remove/
  * reorder/price/availability edits are local state until then — same design
- * as CompositionManager for combo_items. Price/availability/quantity_limit
- * are entered fresh per line, never copied from a reference price: they
- * belong to the campaign, not the product (client-decisions.md, Import/
- * Consolidados).
+ * as CompositionManager for combo_items. Price/availability are entered
+ * fresh per line, never copied from a reference price: they belong to the
+ * campaign, not the product (client-decisions.md, Import/Consolidados).
+ * quantity_limit has no confirmed rule (client-decisions.md: UNKNOWN) and is
+ * not exposed here at all — admin_set_campaign_products preserves any
+ * existing value server-side; the browser can neither see nor set it.
  */
 export function CampaignProductsManager({
   campaignId,
@@ -93,7 +104,6 @@ export function CampaignProductsManager({
   const [selectedVariantId, setSelectedVariantId] = useState("");
   const [newPrice, setNewPrice] = useState("");
   const [newAvailability, setNewAvailability] = useState<CampaignProductAvailability>("available");
-  const [newQuantityLimit, setNewQuantityLimit] = useState("");
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -119,20 +129,11 @@ export function CampaignProductsManager({
       setAddError("Este producto (con esa variante) ya está en la lista.");
       return;
     }
-    const price = Number(newPrice);
-    if (!Number.isFinite(price) || price < 0) {
-      setAddError("Ingresa un precio válido (0 o más).");
+    if (!isValidMoneyText(newPrice)) {
+      setAddError("Ingresa un precio válido: solo dígitos y hasta 2 decimales, sin signo (ej. 16.50).");
       return;
     }
-    let quantityLimit: number | null = null;
-    if (newQuantityLimit.trim()) {
-      const parsedLimit = Number(newQuantityLimit);
-      if (!Number.isInteger(parsedLimit) || parsedLimit <= 0) {
-        setAddError("El límite de cantidad debe ser un entero mayor que 0, o dejarse vacío.");
-        return;
-      }
-      quantityLimit = parsedLimit;
-    }
+    const price = normalizeMoneyText(newPrice);
     const product = eligibleProducts.find((candidate) => candidate.id === selectedProductId);
     if (!product) {
       setAddError("Ese producto ya no está disponible. Recarga la página.");
@@ -149,9 +150,12 @@ export function CampaignProductsManager({
       {
         productId: selectedProductId,
         productVariantId: variantId,
-        priceAmount: Math.round(price * 100) / 100,
+        priceAmount: price,
         availabilityStatus: newAvailability,
-        quantityLimit,
+        // A brand-new association always has quantity_limit = NULL — the
+        // RPC enforces this server-side regardless of what this manager
+        // sends (it never sends quantity_limit at all).
+        quantityLimit: null,
         productName: product.name,
         variantLabel: variant?.label ?? null,
         productArchived: false,
@@ -160,7 +164,6 @@ export function CampaignProductsManager({
     ]);
     setSelectedVariantId("");
     setNewPrice("");
-    setNewQuantityLimit("");
     setNewAvailability("available");
     setSaved(false);
   }
@@ -171,9 +174,11 @@ export function CampaignProductsManager({
   }
 
   function handlePriceChange(key: string, value: string) {
-    const price = Number(value);
+    // Kept as raw text while typing (never Number()) — validity is checked
+    // at save time by validateCampaignProductItems, same contract as the
+    // server. sameSet/dirty compares the raw text directly.
     setRows((previous) =>
-      previous.map((row) => (rowKey(row) === key ? { ...row, priceAmount: price } : row)),
+      previous.map((row) => (rowKey(row) === key ? { ...row, priceAmount: value } : row)),
     );
     setSaved(false);
   }
@@ -181,14 +186,6 @@ export function CampaignProductsManager({
   function handleAvailabilityChange(key: string, value: CampaignProductAvailability) {
     setRows((previous) =>
       previous.map((row) => (rowKey(row) === key ? { ...row, availabilityStatus: value } : row)),
-    );
-    setSaved(false);
-  }
-
-  function handleQuantityLimitChange(key: string, value: string) {
-    const quantityLimit = value.trim() ? Number(value) : null;
-    setRows((previous) =>
-      previous.map((row) => (rowKey(row) === key ? { ...row, quantityLimit } : row)),
     );
     setSaved(false);
   }
@@ -210,12 +207,14 @@ export function CampaignProductsManager({
     setError(null);
     setFieldErrors({});
     startTransition(async () => {
+      // quantity_limit is never sent — it is not browser-authoritative
+      // (4J2 correction). The RPC preserves each existing association's
+      // value by itself.
       const payload = rows.map((row, index) => ({
         productId: row.productId,
         productVariantId: row.productVariantId,
         priceAmount: row.priceAmount,
         availabilityStatus: row.availabilityStatus,
-        quantityLimit: row.quantityLimit,
         sortOrder: index,
       }));
       const result = await setCampaignProductsAction(campaignId, campaignUpdatedAt, payload);
@@ -238,8 +237,8 @@ export function CampaignProductsManager({
         <h2 id="campaign-products-title">Productos del consolidado ({rows.length})</h2>
       </div>
       <p className={styles.notice}>
-        Precio, disponibilidad y límite de cantidad pertenecen a este consolidado — no al producto base. Un mismo
-        producto puede tener precios distintos en otro consolidado.
+        Precio y disponibilidad pertenecen a este consolidado — no al producto base. Un mismo producto puede tener
+        precios distintos en otro consolidado.
       </p>
 
       {error ? <p className={formStyles.error} role="alert">{error}</p> : null}
@@ -257,7 +256,6 @@ export function CampaignProductsManager({
               <th>Producto</th>
               <th>Precio (PEN)</th>
               <th>Disponibilidad</th>
-              <th>Límite</th>
               <th>Orden</th>
               <th>Acciones</th>
             </tr>
@@ -278,9 +276,9 @@ export function CampaignProductsManager({
                     <label className={formStyles.field}>
                       <span className={styles.srOnly}>Precio de {rowLabel}</span>
                       <input
-                        type="number"
-                        min={0}
-                        step={0.01}
+                        type="text"
+                        inputMode="decimal"
+                        placeholder="0.00"
                         value={row.priceAmount}
                         disabled={disabled}
                         onChange={(event) => handlePriceChange(key, event.target.value)}
@@ -298,20 +296,6 @@ export function CampaignProductsManager({
                         <option value="available">{AVAILABILITY_LABELS.available}</option>
                         <option value="out_of_stock">{AVAILABILITY_LABELS.out_of_stock}</option>
                       </select>
-                    </label>
-                  </td>
-                  <td data-label="Límite">
-                    <label className={formStyles.field}>
-                      <span className={styles.srOnly}>Límite de cantidad de {rowLabel}</span>
-                      <input
-                        type="number"
-                        min={1}
-                        step={1}
-                        placeholder="Sin límite"
-                        value={row.quantityLimit ?? ""}
-                        disabled={disabled}
-                        onChange={(event) => handleQuantityLimitChange(key, event.target.value)}
-                      />
                     </label>
                   </td>
                   <td data-label="Orden">
@@ -395,9 +379,9 @@ export function CampaignProductsManager({
             <label className={formStyles.field}>
               <span>Precio (PEN)</span>
               <input
-                type="number"
-                min={0}
-                step={0.01}
+                type="text"
+                inputMode="decimal"
+                placeholder="0.00"
                 value={newPrice}
                 onChange={(event) => setNewPrice(event.target.value)}
               />
@@ -411,17 +395,6 @@ export function CampaignProductsManager({
                 <option value="available">{AVAILABILITY_LABELS.available}</option>
                 <option value="out_of_stock">{AVAILABILITY_LABELS.out_of_stock}</option>
               </select>
-            </label>
-            <label className={formStyles.field}>
-              <span>Límite de cantidad (opcional)</span>
-              <input
-                type="number"
-                min={1}
-                step={1}
-                placeholder="Sin límite"
-                value={newQuantityLimit}
-                onChange={(event) => setNewQuantityLimit(event.target.value)}
-              />
             </label>
           </div>
           {addError ? <p className={formStyles.error} role="alert">{addError}</p> : null}

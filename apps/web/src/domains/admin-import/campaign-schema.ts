@@ -115,6 +115,31 @@ export function validateCampaignForm(input: Record<string, unknown>): Validation
   };
 }
 
+export type DuplicateCampaignFormInput = {
+  newNumber: number;
+  newName: string;
+};
+
+/** Validates "Duplicar consolidado": only nuevo número + nuevo nombre are
+ * ever asked — status/dates/public_message/business_unit_id/currency are
+ * never client input, they are fixed server-side by admin_duplicate_campaign. */
+export function validateDuplicateCampaignForm(input: Record<string, unknown>): ValidationResult<DuplicateCampaignFormInput> {
+  const errors: FieldErrors = {};
+
+  const numberRaw = typeof input.newNumber === "string" ? input.newNumber.trim() : "";
+  const newNumber = numberRaw === "" ? NaN : Number(numberRaw);
+  if (!Number.isSafeInteger(newNumber) || newNumber <= 0) {
+    errors.newNumber = "El nuevo número debe ser un entero positivo.";
+  }
+
+  const newName = typeof input.newName === "string" ? input.newName.trim() : "";
+  if (!newName) errors.newName = "El nuevo nombre es obligatorio.";
+  else if (newName.length > 200) errors.newName = "El nombre no puede superar 200 caracteres.";
+
+  if (Object.keys(errors).length > 0) return { ok: false, errors };
+  return { ok: true, value: { newNumber, newName } };
+}
+
 export function isValidExpectedTimestamp(value: unknown): value is string {
   return typeof value === "string"
     && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/.test(value)

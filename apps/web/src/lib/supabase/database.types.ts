@@ -1638,6 +1638,32 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      admin_duplicate_campaign: {
+        Args: {
+          p_new_name: string
+          p_new_number: number
+          p_source_campaign_id: string
+        }
+        Returns: {
+          archived_at: string | null
+          business_unit_id: string
+          closes_at: string | null
+          created_at: string
+          id: string
+          name: string
+          number: number
+          opens_at: string | null
+          public_message: string | null
+          status: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "campaigns"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       admin_get_audit_log_entry: {
         Args: { p_business_unit_code: string; p_entry_id: string }
         Returns: {

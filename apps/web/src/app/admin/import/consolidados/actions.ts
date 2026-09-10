@@ -9,6 +9,7 @@ import type { Database } from "@/lib/supabase/database.types";
 import {
   AdminImportCampaignsRepository,
   type CampaignMutationError,
+  type DuplicateCampaignMutationError,
 } from "@/domains/admin-import/campaigns-repository";
 import {
   AdminImportCampaignProductsRepository,
@@ -19,6 +20,7 @@ import {
   isValidExpectedTimestamp,
   isValidUuid,
   validateCampaignForm,
+  validateDuplicateCampaignForm,
 } from "@/domains/admin-import/campaign-schema";
 import { validateCampaignProductItems } from "@/domains/admin-import/campaign-products-schema";
 import type { FieldErrors } from "@/domains/admin-parfums/product-schema";
@@ -183,6 +185,68 @@ export async function createCampaignAction(
       return { status: "field_errors", errors: { closesAt: friendlyError(result.error) } };
     }
     return { status: "error", message: friendlyError(result.error) };
+  }
+
+  revalidatePath(CONSOLIDADOS_PATH);
+  revalidatePath("/admin/import");
+  redirect(editPath(result.data.id));
+}
+
+function friendlyDuplicateError(error: DuplicateCampaignMutationError): string {
+  switch (error.type) {
+    case "unauthorized":
+      return "Tu sesión expiró. Vuelve a iniciar sesión.";
+    case "forbidden":
+      return "No tienes permiso de administrador para Cruzial Import.";
+    case "not_found":
+      return "El consolidado de origen no existe o no tienes acceso a él.";
+    case "invalid_input":
+      return "El nuevo número debe ser un entero positivo y el nuevo nombre no puede estar vacío.";
+    case "unique_violation":
+      return "Ya existe un consolidado con ese número dentro de Cruzial Import.";
+    case "conflict":
+    case "invalid_reference":
+    case "combo_reference":
+      // Not reachable from this RPC — kept only so the shared
+      // AdminRepositoryError union stays exhaustively handled here too.
+      return "Ocurrió un error inesperado. Intenta de nuevo.";
+    case "unknown":
+      console.error("[admin-import:consolidados] unexpected duplicate error:", error.message);
+      return "Ocurrió un error inesperado. Intenta de nuevo.";
+  }
+}
+
+export type DuplicateCampaignActionState =
+  | { status: "idle" }
+  | { status: "success"; data: CampaignRow }
+  | { status: "field_errors"; errors: FieldErrors }
+  | { status: "error"; message: string };
+
+export async function duplicateCampaignAction(
+  sourceCampaignId: string,
+  _previous: DuplicateCampaignActionState,
+  formData: FormData,
+): Promise<DuplicateCampaignActionState> {
+  if (!isValidUuid(sourceCampaignId)) return { status: "error", message: "Identificador de consolidado inválido." };
+  const validation = validateDuplicateCampaignForm(entries(formData));
+  if (!validation.ok) return { status: "field_errors", errors: validation.errors };
+
+  const repository = await repositoryOrError();
+  if (!repository.ok) return repository.state;
+
+  const result = await repository.repository.duplicate(
+    sourceCampaignId,
+    validation.value.newNumber,
+    validation.value.newName,
+  );
+  if (!result.ok) {
+    if (result.error.type === "unique_violation") {
+      return { status: "field_errors", errors: { newNumber: friendlyDuplicateError(result.error) } };
+    }
+    if (result.error.type === "invalid_input") {
+      return { status: "field_errors", errors: { newName: friendlyDuplicateError(result.error) } };
+    }
+    return { status: "error", message: friendlyDuplicateError(result.error) };
   }
 
   revalidatePath(CONSOLIDADOS_PATH);
