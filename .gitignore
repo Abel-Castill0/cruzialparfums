@@ -14,6 +14,7 @@ Thumbs.db
 
 # Local QA tooling state
 .playwright-cli/
+tmp/
 
 # Vercel CLI local project link (4I2)
 .vercel

@@ -613,6 +613,36 @@ Docker-only and never left this machine.
 
 4J2 is now closed.
 
+## Sexto Consolidado structured staging (4J3)
+
+The deterministic, no-database-write extractor now converts the untracked
+client source `SEXTO CONSOLIDADO.pdf` into
+`supabase/staging/import/sexto-consolidado-staging.json`, with a compact human
+review queue in `docs/reviews/4j3-sexto-consolidado-review.md`. Source identity:
+SHA-256 `394874f026f7cdd6600e4ecb6c2456279980a501a700cba6d9182632d76e0493`,
+150,568,778 bytes, 76 pages.
+
+Native layout extraction plus targeted visual verification accounts for all
+76 pages: 71 parsed, 4 no-catalog divider/cover pages, and 1 page requiring
+manual review. The staging artifact retains all 845 commercial source
+occurrences without merging them: 741 high-, 103 medium-, and 1 low-confidence
+record; 772 have one clear canonical decimal-text price, 60 have multiple
+source prices kept as options, 12 are visually confirmed `AGOTADO`, and the
+remaining malformed page-7 price is deliberately unparsed. It also records 3
+source-backed candidate categories, 32 packs/sets (never Parfums combos), 6
+exact-name duplicate groups for reconciliation, generic capacity/presentation
+evidence, and per-block media presence. No OCR was required.
+
+Import variant/presentation architecture still needs a reviewed decision:
+capacity and pack evidence was not forced into the Parfums `decant`/`bottle`
+model. Product-image extraction/upload is deferred to a later Import media
+review. Every staged row remains unapproved; human review is required before
+4J4. No Supabase data, migration, contact setting, public storefront, or other
+business state changed in 4J3.
+
+4J3 is complete as a structured staging/review capability; 4J4 remains gated
+on human approval of this dataset.
+
 ## Orders / payments
 
 Cruzial V1 does NOT charge through the website.
