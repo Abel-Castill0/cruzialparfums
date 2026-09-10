@@ -234,7 +234,7 @@ select is(
 );
 select is(
   (select count(*)::integer from public.campaigns where business_unit_id = '22222222-2222-4222-8222-222222222222'),
-  3, 'destination campaign count is unchanged by the rejected calls (campaign #6 + source + the one successful duplicate)'
+  2, 'destination campaign count is unchanged by the rejected calls (this test''s own source campaign + the one successful duplicate)'
 );
 
 -- Authorization / unit scope
@@ -272,7 +272,7 @@ reset role;
 
 select is(
   (select count(*)::integer from public.campaigns where business_unit_id = '22222222-2222-4222-8222-222222222222'),
-  3, 'no unauthorized call created any campaign either'
+  2, 'no unauthorized call created any campaign either'
 );
 
 select * from finish();

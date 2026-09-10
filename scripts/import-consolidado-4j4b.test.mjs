@@ -53,6 +53,83 @@ test("shared plan is deterministic, UUID-free, and preserves reviewed structure"
   }
 });
 
+// Named-case regression coverage for the 4J4B override resolutions. This
+// used to live only as a live-database pgTAP check (supabase/tests/21_...)
+// that asserted "actual database state after loader apply" — which made the
+// normal `supabase db reset && supabase test db` gate non-hermetic (it
+// required the Sexto loader to have already populated local Postgres).
+// The same guarantees are proven here against the deterministic plan output
+// directly — no DB, no loader run required. DB-level invariants that are
+// genuinely schema/constraint concerns (no duplicate campaign_products
+// identity, no null price/presentation) stay covered by the hermetic
+// fixture-level pgTAP suite (see supabase/tests/17-20). Live-population
+// verification against a real database remains available via the operator's
+// `--verify` mode; see supabase/tests-manual/README.md.
+test("override resolutions: named split-identity and reassociation regressions", async () => {
+  const { reviewed, overrides } = await inputs();
+  const manifest = buildCanonicalManifest(reviewed, overrides, buildPopulationPlan(reviewed, overrides));
+  const bySlugPrefix = (prefix) => manifest.products.filter((item) => item.slug.startsWith(prefix));
+  const presentationsOf = (product) => manifest.presentations.filter((item) => item.product_canonical_id === product.canonical_id);
+  const offersOf = (product) => manifest.offers.filter((item) => item.product_canonical_id === product.canonical_id);
+
+  // Accento: split_canonical_source_identity — two distinct products, each
+  // with its own offer at its own price (S/710 and S/720).
+  const accento = bySlugPrefix("import-accento-");
+  assert.equal(accento.length, 2, "Accento produces 2 distinct products");
+  assert.deepEqual(
+    accento.flatMap((product) => offersOf(product).map((offer) => offer.price_amount)).sort(),
+    ["710.00", "720.00"],
+    "Accento offers are priced S/710 and S/720",
+  );
+  for (const product of accento) assert.equal(offersOf(product).length, 1, "each Accento product has exactly one offer");
+
+  // Arabia Heroes: split_canonical_source_identity — two distinct products.
+  assert.equal(bySlugPrefix("import-arabia-heroes-").length, 2, "Arabia Heroes produces 2 distinct products");
+
+  // GOS Rouge: split_structural_presentations — one product, two priced
+  // presentations (100ml and Extrait de Parfum).
+  const gosRouge = manifest.products.find((item) => item.name === "GOS Rouge");
+  assert.ok(gosRouge, "GOS Rouge product exists");
+  const gosRougePresentations = presentationsOf(gosRouge);
+  assert.equal(gosRougePresentations.length, 2, "GOS Rouge has 2 distinct presentations");
+  assert.ok(gosRougePresentations.some((item) => item.label === "100ml"), "GOS Rouge has a 100ml presentation");
+  assert.ok(gosRougePresentations.some((item) => item.label.startsWith("Extrait")), "GOS Rouge has an Extrait presentation");
+
+  // Black XS: split_structural_presentations — EDT and EDP presentations
+  // under a single product.
+  const blackXs = manifest.products.find((item) => item.slug.startsWith("import-black-xs-edt-"));
+  assert.ok(blackXs, "Black XS product exists");
+  const blackXsPresentations = presentationsOf(blackXs);
+  assert.equal(blackXsPresentations.length, 2, "Black XS has EDT and EDP presentations");
+  assert.ok(blackXsPresentations.some((item) => item.label.includes("EDT")));
+  assert.ok(blackXsPresentations.some((item) => item.label.includes("EDP")));
+
+  // Miss Dior EDP: split_structural_presentations — Retail and Tester.
+  const missDiorEdp = manifest.products.find((item) => item.name === "Miss Dior EDP");
+  assert.ok(missDiorEdp, "Miss Dior EDP product exists");
+  const missDiorPresentations = presentationsOf(missDiorEdp);
+  assert.equal(missDiorPresentations.length, 2, "Miss Dior EDP has Retail and Tester presentations");
+  assert.ok(missDiorPresentations.some((item) => item.label.startsWith("Retail")));
+  assert.ok(missDiorPresentations.some((item) => item.label.startsWith("Tester")));
+
+  // Infrared EDP: correct_source_block_association — the reconciled S/330
+  // offer belongs to the EDP · 90ml presentation, not SpiceBomb EDT (the
+  // override this manifest is built from explicitly corrects this).
+  const infrared = manifest.products.find((item) => item.name === "Infrared EDP");
+  assert.ok(infrared, "Infrared EDP product exists");
+  const infraredEdpPresentation = presentationsOf(infrared).find((item) => item.label.includes("EDP") && item.label.includes("90ml"));
+  assert.ok(infraredEdpPresentation, "Infrared EDP has an EDP · 90ml presentation");
+  const infraredEdpOffer = offersOf(infrared).find((item) => item.pres_stable_key === infraredEdpPresentation.stable_key);
+  assert.equal(infraredEdpOffer?.price_amount, "330.00", "Infrared EDP · 90ml offer is priced S/330");
+
+  // CDN Preciux IV: omit_offer_pending_price_confirmation — structure
+  // survives, no offer is generated for the unresolved price conflict.
+  const cdnPreciuxIv = manifest.products.find((item) => item.slug.startsWith("import-cdn-preciux-iv-"));
+  assert.ok(cdnPreciuxIv, "CDN Preciux IV product exists");
+  assert.deepEqual(presentationsOf(cdnPreciuxIv).map((item) => item.label), ["55ml"], "CDN Preciux IV retains its 55ml presentation");
+  assert.equal(offersOf(cdnPreciuxIv).length, 0, "CDN Preciux IV has no campaign offer");
+});
+
 test("availability mapping is fail-closed and exact money stays text", async () => {
   assert.equal(mapAvailability(null), "unconfirmed");
   assert.equal(mapAvailability("UNKNOWN"), "unconfirmed");

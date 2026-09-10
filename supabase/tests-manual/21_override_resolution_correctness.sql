@@ -2,6 +2,28 @@
 -- Verifies the actual database state after loader apply.
 -- All data comes from the loader's population; no fixtures needed.
 -- Campaign resolved by natural identity (Import BU + number=6), not fixed UUID.
+--
+-- NOT run by `supabase test db`. This file lives outside supabase/tests/ on
+-- purpose (4J4C): it asserts real population state (844 products / 898
+-- campaign_products / 912 presentations), which makes it non-hermetic — a
+-- plain `supabase db reset && supabase test db` never has that data, and
+-- never should (population happens only through the explicit 4J4B loader,
+-- never through migrations/seed). The same named-case regressions (Accento
+-- split, Arabia Heroes split, GOS Rouge/Black XS/Miss Dior presentation
+-- splits, Infrared reassociation, CDN Preciux IV no-offer) are proven
+-- hermetically, with no DB, in
+-- scripts/import-consolidado-4j4b.test.mjs ("override resolutions: named
+-- split-identity and reassociation regressions"), which runs on every
+-- `npm run check` via `npm run test:4j4b`.
+--
+-- Run this file manually, against LOCAL Supabase only, after populating
+-- local data with the 4J4B loader:
+--   node scripts/load-import-consolidado.mjs --target local --apply
+--   docker exec -i supabase_db_cruzialparfums \
+--     psql -U postgres -d postgres -v ON_ERROR_STOP=1 \
+--     < supabase/tests-manual/21_override_resolution_correctness.sql
+-- Never run the loader's --apply mode against --target staging outside the
+-- documented staging population procedure.
 
 begin;
 create extension if not exists pgtap with schema extensions;

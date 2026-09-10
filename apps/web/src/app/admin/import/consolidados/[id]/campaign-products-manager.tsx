@@ -20,6 +20,15 @@ import {
   type ImportPresentationPublicationStatus,
   type VariantPublicationStatus,
 } from "@/domains/admin-import/campaign-readiness";
+import {
+  campaignRowKey,
+  campaignRowsDirty,
+  filterCampaignRows,
+  moveCampaignRow,
+  paginateCampaignRows,
+  serializeCampaignRows,
+  updateCampaignRow,
+} from "@/domains/admin-import/campaign-table-model";
 import { searchEligibleImportProductsAction, setCampaignProductsAction } from "../actions";
 import formStyles from "@/components/admin/product-form-fields.module.css";
 import styles from "@/app/admin/parfums/productos/page.module.css";
@@ -100,27 +109,6 @@ function toRow(item: CampaignProductItem): Row {
   };
 }
 
-function rowKey(row: Row): string {
-  return `${row.productId}::${row.productVariantId ?? ""}::${row.importPresentationId ?? ""}`;
-}
-
-function sameSet(a: Row[], b: Row[]): boolean {
-  if (a.length !== b.length) return false;
-  return a.every((row, index) => {
-    const other = b[index];
-    return !!other
-      && other.productId === row.productId
-      && other.productVariantId === row.productVariantId
-      && other.importPresentationId === row.importPresentationId
-      && other.priceAmount === row.priceAmount
-      && other.availabilityStatus === row.availabilityStatus;
-    // quantityLimit deliberately excluded: it is never client-editable, so
-    // it can never make the local set "dirty" relative to the baseline —
-    // and it is not even part of this component's data any more (4J2
-    // correction: kept server-internal, never sent to the browser).
-  });
-}
-
 /**
  * Manages campaign_products only — never the base Import product/variant
  * catalog (that is 4J3). "Guardar productos" sends the whole current array
@@ -177,9 +165,22 @@ export function CampaignProductsManager({
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [saved, setSaved] = useState(false);
   const [addError, setAddError] = useState<string | null>(null);
+  const [tableQuery, setTableQuery] = useState("");
+  const [availabilityFilter, setAvailabilityFilter] = useState<"all" | CampaignProductAvailability>("all");
+  const [tablePage, setTablePage] = useState(1);
   const searchDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const dirty = useMemo(() => !sameSet(rows, baseline), [rows, baseline]);
+  const dirty = useMemo(() => campaignRowsDirty(rows, baseline), [rows, baseline]);
+  const filteredRows = useMemo(() => filterCampaignRows(rows, tableQuery, availabilityFilter), [rows, tableQuery, availabilityFilter]);
+  const pageWindow = useMemo(() => paginateCampaignRows(filteredRows, tablePage, 40), [filteredRows, tablePage]);
+  const filtersActive = tableQuery.trim().length > 0 || availabilityFilter !== "all";
+
+  useEffect(() => {
+    if (!dirty) return;
+    const guard = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = ""; };
+    window.addEventListener("beforeunload", guard);
+    return () => window.removeEventListener("beforeunload", guard);
+  }, [dirty]);
 
   const readiness = useMemo(
     () =>
@@ -247,7 +248,7 @@ export function CampaignProductsManager({
       return;
     }
     const dedupe = `${selectedProduct.id}::::${presentationId ?? ""}`;
-    if (rows.some((row) => rowKey(row) === dedupe)) {
+    if (rows.some((row) => campaignRowKey(row) === dedupe)) {
       setAddError("Este producto con esa presentación ya está en la lista.");
       return;
     }
@@ -295,7 +296,7 @@ export function CampaignProductsManager({
   }
 
   function handleRemove(key: string) {
-    setRows((previous) => previous.filter((row) => rowKey(row) !== key));
+    setRows((previous) => previous.filter((row) => campaignRowKey(row) !== key));
     setSaved(false);
   }
 
@@ -303,47 +304,32 @@ export function CampaignProductsManager({
     // Kept as raw text while typing (never Number()) — validity is checked
     // at save time by validateCampaignProductItems, same contract as the
     // server. sameSet/dirty compares the raw text directly.
-    setRows((previous) =>
-      previous.map((row) => (rowKey(row) === key ? { ...row, priceAmount: value } : row)),
-    );
+    setRows((previous) => updateCampaignRow(previous, key, { priceAmount: value }));
     setSaved(false);
   }
 
   function handleAvailabilityChange(key: string, value: CampaignProductAvailability) {
-    setRows((previous) =>
-      previous.map((row) => (rowKey(row) === key ? { ...row, availabilityStatus: value } : row)),
-    );
+    setRows((previous) => updateCampaignRow(previous, key, { availabilityStatus: value }));
     setSaved(false);
   }
 
-  function move(index: number, direction: -1 | 1) {
-    setRows((previous) => {
-      const next = [...previous];
-      const target = index + direction;
-      if (target < 0 || target >= next.length) return previous;
-      const [moved] = next.splice(index, 1);
-      if (!moved) return previous;
-      next.splice(target, 0, moved);
-      return next;
-    });
+  function moveTo(key: string, position: number) {
+    setRows((previous) => moveCampaignRow(previous, key, position));
     setSaved(false);
   }
 
   function handleSave() {
     setError(null);
     setFieldErrors({});
+    // A previous successful save must not remain visible while a new full
+    // replace is in flight; success belongs only to the server-confirmed
+    // submission currently being handled.
+    setSaved(false);
     startTransition(async () => {
       // quantity_limit is never sent — it is not browser-authoritative
       // (4J2 correction). The RPC preserves each existing association's
       // value by itself.
-      const payload = rows.map((row, index) => ({
-        productId: row.productId,
-        productVariantId: row.productVariantId,
-        importPresentationId: row.importPresentationId,
-        priceAmount: row.priceAmount,
-        availabilityStatus: row.availabilityStatus,
-        sortOrder: index,
-      }));
+      const payload = serializeCampaignRows(rows);
       const result = await setCampaignProductsAction(campaignId, campaignUpdatedAt, payload);
       if (result.status === "success") {
         onUpdatedAtChange(result.data.campaign.updated_at);
@@ -392,6 +378,22 @@ export function CampaignProductsManager({
       ) : null}
       {saved ? <p className={styles.savedNote} role="status">Productos guardados.</p> : null}
 
+      {rows.length > 0 ? (
+        <div className={styles.filters}>
+          <label className={styles.searchField}>
+            <span className={styles.srOnly}>Buscar dentro del consolidado</span>
+            <input value={tableQuery} placeholder="Buscar producto o presentación" onChange={(event) => { setTableQuery(event.target.value); setTablePage(1); }} />
+          </label>
+          <label className={styles.filterField}>
+            <span className={styles.srOnly}>Filtrar disponibilidad</span>
+            <select value={availabilityFilter} onChange={(event) => { setAvailabilityFilter(event.target.value as "all" | CampaignProductAvailability); setTablePage(1); }}>
+              <option value="all">Toda disponibilidad</option><option value="unconfirmed">Por confirmar</option><option value="available">Disponible</option><option value="out_of_stock">Agotado</option>
+            </select>
+          </label>
+          <span className={styles.filtersStatus}>Mostrando {pageWindow.from}–{pageWindow.to} de {pageWindow.total} ({rows.length} totales)</span>
+        </div>
+      ) : null}
+
       {rows.length === 0 ? (
         <p className={styles.notice}>Este consolidado aún no tiene productos.</p>
       ) : (
@@ -407,8 +409,9 @@ export function CampaignProductsManager({
             </tr>
           </thead>
           <tbody>
-            {rows.map((row, index) => {
-              const key = rowKey(row);
+            {pageWindow.items.map((row) => {
+              const key = campaignRowKey(row);
+              const index = rows.findIndex((candidate) => campaignRowKey(candidate) === key);
               const structureLabel = row.presentationLabel ?? row.variantLabel;
               const rowLabel = structureLabel ? `${row.productName} · ${structureLabel}` : row.productName;
               const rowReadiness = readiness[index];
@@ -463,28 +466,10 @@ export function CampaignProductsManager({
                     ) : null}
                   </td>
                   <td data-label="Orden">
-                    {!disabled ? (
-                      <>
-                        <button
-                          type="button"
-                          className={styles.secondaryButton}
-                          onClick={() => move(index, -1)}
-                          disabled={index === 0}
-                          aria-label={`Subir ${rowLabel}`}
-                        >
-                          ↑
-                        </button>
-                        <button
-                          type="button"
-                          className={`${styles.secondaryButton} ${styles.actionSpacing}`}
-                          onClick={() => move(index, 1)}
-                          disabled={index === rows.length - 1}
-                          aria-label={`Bajar ${rowLabel}`}
-                        >
-                          ↓
-                        </button>
-                      </>
+                    {!disabled && !filtersActive ? (
+                      <label className={formStyles.field}><span className={styles.srOnly}>Posición de {rowLabel}</span><input type="number" inputMode="numeric" min={1} max={rows.length} defaultValue={index + 1} key={`${key}:${index}`} onBlur={(event) => moveTo(key, Number(event.target.value))} style={{ width: "76px" }} /></label>
                     ) : null}
+                    {filtersActive ? <span className={styles.rowMeta}>Quita filtros para reordenar</span> : null}
                   </td>
                   <td data-label="Acciones">
                     {!disabled ? (
@@ -504,6 +489,8 @@ export function CampaignProductsManager({
           </tbody>
         </table>
       )}
+
+      {pageWindow.pages > 1 ? <nav className={styles.pagination} aria-label="Páginas del consolidado"><button type="button" className={styles.secondaryButton} disabled={pageWindow.page === 1} onClick={() => setTablePage((page) => Math.max(1, page - 1))}>← Anterior</button><span>Página {pageWindow.page} de {pageWindow.pages}</span><button type="button" className={styles.secondaryButton} disabled={pageWindow.page === pageWindow.pages} onClick={() => setTablePage((page) => Math.min(pageWindow.pages, page + 1))}>Siguiente →</button></nav> : null}
 
       {!disabled ? (
         <div className={`${styles.section} ${styles.spacingTop}`}>
@@ -527,7 +514,7 @@ export function CampaignProductsManager({
             <p className={styles.notice}>
               {pickerQuery.trim()
                 ? "No se encontraron productos de Cruzial Import con esa búsqueda."
-                : "No hay productos base de Cruzial Import disponibles todavía (Fase 4J3 — extracción del catálogo — aún no se ha ejecutado)."}
+                : "No hay productos activos disponibles para agregar."}
             </p>
           ) : (
             <ul className={styles.list} aria-label="Resultados de búsqueda">

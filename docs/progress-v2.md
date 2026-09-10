@@ -1,6 +1,6 @@
 # CRUZIAL PLATFORM V2 — CURRENT STATE
 
-Last updated: 2026-09-09
+Last updated: 2026-09-10
 
 ## Git
 
@@ -103,8 +103,47 @@ Isolated:
   `0 products / 0 presentations / 0 campaign offers` all green. Final staging
   counts: 844 products, 912 presentations, 898 offers; campaign #6 remains
   draft with null dates/message, and no synthetic auth or membership rows.
+- Admin Import — Catalog/Presentation Admin + Operational Hardening (4J4C) ✅ —
+  `/admin/import` (bounded QA counters, structural/commercial/public-visibility
+  distinction, no stale phase copy), `/admin/import/productos` (server search +
+  bounded pagination/filters, no eager 844-row load), `/admin/import/productos/
+  [id]` (audited product + structural-presentation admin; loader identity —
+  slug/legacy_id — immutable; no price/currency/availability fields on
+  presentations; server-derived `stable_key`). Campaign 898-row UX: 40-row
+  client window/pagination/search/filter over the full authoritative array;
+  filtered edits still serialize and save the complete set (proven by test and
+  real browser DB round-trip); move-to-position reorder disabled while
+  filtered; save-success state clears at the start of a new save; unsaved
+  `beforeunload` guard only while dirty. New migration
+  `20260910010000_admin_import_catalog_operations.sql` (RPC/schema only).
+  Correction migration `20260910020000_import_campaign_concurrency_conflict_code.sql`:
+  `admin_update_campaign` / `admin_set_campaign_status` / `admin_archive_campaign`
+  / `admin_set_campaign_products` now raise `P2011` (not Postgres's reserved
+  `40001` serialization_failure class) on a stale `expected_updated_at` — real
+  QA found `40001` interacting badly with the local Supabase Kong/PostgREST
+  gateway (~60s hang → raw 504) on every RPC that raised it; `P2011` is this
+  codebase's application-conflict code (see `mapPostgrestError`), verified
+  instant and correct both locally (browser, DB round-trip) and via hosted
+  staging source inspection. Older, unrelated RPCs that still raise `40001`
+  were deliberately left untouched (own-phase scope only; flagged below).
+  Full pgTAP hermetic from a bare `db reset` (Files=22, Tests=568) — no 4J4B
+  loader dependency; loader-population-state assertions moved to
+  `supabase/tests-manual/` with an explicit manual verification command.
+  Staging: dry-run exact (only these two migrations), applied, data invariants
+  unchanged (844/912/898, campaign #6 draft, 898 unconfirmed, Vanilla
+  Freak/CDN Preciux IV still 0 offers, 0 published products).
 
 Do not re-audit closed capabilities without evidence of regression.
+
+### Follow-up — SQLSTATE 40001 audit (not yet scheduled)
+
+4J4C found and fixed the `40001`→`P2011` local-hang defect only in the Import
+campaign + product/presentation RPCs it touches. The same `40001` convention
+is still used by closed-phase RPCs across Parfums products, categories,
+combos, wholesale, media, settings, and Import consolidados (pgTAP tests
+05/06/07/08/11/14/16 area). Whether the hang reproduces on hosted
+staging/production (different Kong/gateway config than local CLI) is
+unverified. Needs a dedicated Global QA follow-up, not a 4J4C sweep.
 
 ### 4H2A boundary
 

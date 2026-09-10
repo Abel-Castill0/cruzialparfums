@@ -115,7 +115,7 @@ select throws_ok(
   $$select public.admin_update_campaign(
       (select id from public.campaigns where number = 6006 and business_unit_id = '22222222-2222-4222-8222-222222222222'),
       '2000-01-01T00:00:00Z', 'Stale edit', null, null, null)$$,
-  '40001', null, 'a stale expected_updated_at is rejected without silent overwrite'
+  'P2011', null, 'a stale expected_updated_at is rejected without silent overwrite'
 );
 reset role;
 

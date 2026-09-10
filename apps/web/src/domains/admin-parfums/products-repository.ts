@@ -90,6 +90,11 @@ export function mapPostgrestError(error: PostgrestError): AdminRepositoryError {
       return { type: "not_found" };
     case "40001":
       return { type: "conflict" };
+    case "P2011":
+      // 4J4C's own optimistic-concurrency conflicts (see
+      // 20260910010000_admin_import_catalog_operations.sql for why this
+      // uses a dedicated code instead of the '40001' above).
+      return { type: "conflict" };
     case "23505":
       return { type: "unique_violation", constraint: extractConstraint(error) };
     case "P2004":

@@ -167,7 +167,7 @@ select throws_ok(
       '88883000-0000-4000-8000-000000000001',
       '2000-01-01T00:00:00Z',
       '[{"product_id":"88881000-0000-4000-8000-000000000001","price_amount":10,"availability_status":"available","sort_order":0}]'::jsonb)$$,
-  '40001', null, 'a stale expected_updated_at is rejected without silent overwrite'
+  'P2011', null, 'a stale expected_updated_at is rejected without silent overwrite'
 );
 reset role;
 
