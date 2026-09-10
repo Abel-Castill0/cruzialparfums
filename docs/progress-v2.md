@@ -643,6 +643,39 @@ business state changed in 4J3.
 4J3 is complete as a structured staging/review capability; 4J4 remains gated
 on human approval of this dataset.
 
+### 4J3R review resolution and canonical reconciliation
+
+The deterministic review layer now reads the unchanged 845-occurrence 4J3
+artifact and emits `sexto-consolidado-reviewed.json`: 842 conservative
+canonical products and 913 campaign-offer candidates. Three of the six prior
+exact-name groups are proven same-product occurrences (Accento, Arabia Heroes,
+CDN Preciux IV) and share canonical identity while every occurrence and price
+remains traceable; the other three remain distinct because the PDF proves a
+different gendered product, pack configuration, or offer kind.
+
+Brand resolution is complete for all 842 canonical products with per-product
+provenance (PDF packaging/repeated family or narrowly recorded external
+verification). The combined PDF section is resolved per product into 264
+designer and 164 niche canonical products from its page sequence, never price.
+Presentation review yields 738 single-fixed, 60 multi-presentation, 32
+pack/set, and 12 presentation-ambiguous canonical products. All 60 multi-price
+source records map every printed amount to a presentation-specific offer; all
+32 packs/sets carry conservative evidence and remain outside `public.combos`.
+
+The sole human commercial decision left is Vanilla Freak on page 7: the 75 ml
+presentation is visible but its price digits overlap and remain deliberately
+null. The 12 explicit `AGOTADO` occurrences map to out-of-stock candidates;
+the other 833 availability values stay source-unknown without blocking source
+preservation. No automatic publication is permitted.
+
+Schema inspection rejected forcing Import into the existing mandatory-price,
+`decant`/`bottle` variant model. The recommended V1 is canonical products plus
+price-free structural Import presentations and campaign-scoped offers, with
+campaign price and availability continuing to belong to campaign rows. This is
+an architecture recommendation only: no migration or database write occurred.
+4J3R is complete; 4J4 remains stopped pending the page-7 decision and an
+explicitly authorized implementation of the chosen presentation model.
+
 ## Orders / payments
 
 Cruzial V1 does NOT charge through the website.
@@ -728,12 +761,11 @@ White backgrounds are intentional.
 ## Next roadmap
 
 1. 4H2B — Public Parfums Supabase cutover after its blockers close
-2. 4J3 — Extract/reconcile the Sexto Consolidado PDF into Import base products
-3. 4J4 — Use 4J2 to populate the reviewed Sexto Consolidado
-4. Import public order flow
-5. Global production-readiness audit
-6. Production Supabase / Vercel
-7. Punto.pe DNS / SEO cutover
+2. 4J4 — After the remaining 4J3R decision and architecture authorization, use 4J2 to populate the reviewed Sexto Consolidado
+3. Import public order flow
+4. Global production-readiness audit
+5. Production Supabase / Vercel
+6. Punto.pe DNS / SEO cutover
 
 Do not jump ahead automatically.
 

@@ -211,7 +211,7 @@ function reviewMarkdown(staging) {
     `- Unavailable (visual AGOTADO evidence): ${summary.unavailable_records}\n- OCR-dependent records: ${summary.ocr_dependent_records}\n` +
     `- Records with media evidence present: ${summary.media_present_records}\n\n` +
     `Issue counts: ${JSON.stringify(summary.issue_counts)}\n\n` +
-    `## Manual review\n\nPages classified \`needs_manual_review\`: ${pages.length ? pages.join(", ") : "none"}.\n\n` +
+    `## Manual review\n\n${pages.length === 1 ? `1 page needs manual review: page ${pages[0]}.` : pages.length ? `${pages.length} pages need manual review: pages ${pages.join(", ")}.` : "No pages need manual review."}\n\n` +
     `Unresolved medium/low record IDs (${summary.unresolved_record_ids.length}):\n\n` +
     summary.unresolved_record_ids.map((id) => `- \`${id}\``).join("\n") +
     `\n\n## Architecture evidence\n\n` +

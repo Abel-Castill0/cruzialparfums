@@ -26,7 +26,7 @@ Issue counts: {"availability_unknown":833,"brand_missing":845,"variant_model_unk
 
 ## Manual review
 
-Pages classified `needs_manual_review`: 7.
+1 page needs manual review: page 7.
 
 Unresolved medium/low record IDs (104):
 
