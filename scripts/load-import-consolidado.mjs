@@ -1,14 +1,23 @@
 /**
  * Cruzial Platform V2 — Deterministic Sexto Consolidado population loader.
  *
- * Reads sexto-consolidado-reviewed.json + population-overrides.json
- * and populates Import products, presentations, campaign #6, and
- * campaign_products into the target Supabase database.
+ * Reads sexto-consolidado-reviewed.json + population-overrides.json,
+ * builds plan via shared module, applies to target database.
  *
  * Usage:
  *   node scripts/load-import-consolidado.mjs --target local --dry-run
  *   node scripts/load-import-consolidado.mjs --target local --apply
  *   node scripts/load-import-consolidado.mjs --target local --verify
+ *   node scripts/load-import-consolidado.mjs --target staging --dry-run
+ *   node scripts/load-import-consolidado.mjs --target staging --verify
+ *
+ * Target routing:
+ *   --target local   → local Supabase Docker only
+ *   --target staging → hosted staging project iyxidhglyqkzoziyewlc
+ *
+ * NEVER falls back from staging to local.
+ * NEVER creates synthetic auth users on staging.
+ * NEVER supports Production.
  */
 
 import { createHash } from "node:crypto";
@@ -17,6 +26,7 @@ import { readFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
+import { buildPopulationPlan, IMPORT_UNIT_ID, CAMPAIGN_NUMBER, CAMPAIGN_NAME, PLAN_VERSION } from "./lib/import-consolidado-plan.mjs";
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(scriptDir, "..");
@@ -24,23 +34,7 @@ const reviewedPath = resolve(repoRoot, "supabase/staging/import/sexto-consolidad
 const overridesPath = resolve(repoRoot, "supabase/staging/import/sexto-consolidado-population-overrides.json");
 const configPath = resolve(repoRoot, "supabase/config.toml");
 
-const IMPORT_UNIT_ID = "22222222-2222-4222-8222-222222222222";
-const CAMPAIGN_NUMBER = 6;
-const CAMPAIGN_NAME = "Sexto Consolidado";
-const CAMPAIGN_ID = "aa400000-0000-4000-8000-000000000006";
-
-const PRES_CLASS_MAP = Object.freeze({
-  A_SINGLE_FIXED_PRESENTATION: "single_fixed",
-  B_MULTI_PRESENTATION: "multi_presentation",
-  C_PACK_SET: "pack_set",
-  D_PRESENTATION_AMBIGUOUS: "ambiguous",
-});
-
-const CAT_IDS = Object.freeze({
-  designer: "aa300000-0000-4000-8000-000000000001",
-  niche: "aa300000-0000-4000-8000-000000000002",
-  arabic: "aa300000-0000-4000-8000-000000000003",
-});
+const STAGING_PROJECT_ID = "iyxidhglyqkzoziyewlc";
 
 // ─── CLI ────────────────────────────────────────────────────────────────────
 
@@ -51,12 +45,13 @@ function parseArgs(argv) {
   const modes = ["--dry-run", "--apply", "--verify"].filter((m) => args.includes(m));
   if (!["local", "staging"].includes(target)) throw new Error("Usage: --target=local|staging --dry-run|--apply|--verify");
   if (modes.length !== 1) throw new Error("Choose exactly one: --dry-run, --apply, or --verify.");
+  if (target === "staging" && modes[0] === "--apply") throw new Error("Staging apply is not supported by this script. Use staging-specific operator flow.");
   return { target, mode: modes[0] };
 }
 
 // ─── DB helpers ─────────────────────────────────────────────────────────────
 
-function getContainer() {
+function getLocalContainer() {
   const cfg = readFileSync(configPath, "utf8");
   const m = cfg.match(/^project_id\s*=\s*"([a-zA-Z0-9_-]+)"\s*$/mu);
   if (!m) throw new Error("supabase/config.toml has no safe project_id.");
@@ -75,367 +70,222 @@ function assertDB(c) {
   if (ok !== "true") throw new Error(`Container not running: ${c}`);
 }
 
-function psql(c, sql) {
-  return docker(["exec", "-i", c, "psql", "--username=postgres", "--dbname=postgres", "--quiet", "--no-align", "--tuples-only", "--set=ON_ERROR_STOP=1"], { input: sql });
+function psqlDocker(container, sql) {
+  return docker(["exec", "-i", container, "psql", "--username=postgres", "--dbname=postgres", "--quiet", "--no-align", "--tuples-only", "--set=ON_ERROR_STOP=1"], { input: sql });
 }
 
-// ─── Identity ───────────────────────────────────────────────────────────────
-
-function slug(name, id) {
-  const base = name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/gu, "").replace(/[^a-z0-9]+/gu, "-").replace(/^-|-$/gu, "");
-  const h = createHash("sha256").update(id).digest("hex").slice(0, 8);
-  return `import-${base}-${h}`;
-}
-
-function uuid(slugVal) {
-  const h = createHash("sha256").update(slugVal).digest("hex");
-  return `${h.slice(0, 8)}-${h.slice(8, 12)}-4${h.slice(13, 16)}-${h.slice(16, 20)}-${h.slice(20, 32)}`;
-}
-
-function pkey(pid, label) {
-  const l = (label || "default").toLowerCase().replace(/[^a-z0-9]+/gu, "-").replace(/^-|-$/gu, "");
-  const h = createHash("sha256").update(`${pid}:${label}`).digest("hex").slice(0, 8);
-  return `pres-${l}-${h}`;
-}
-
-function esc(s) {
-  return s === null || s === undefined ? "NULL" : `'${String(s).replace(/'/g, "''")}'`;
-}
-
-// ─── Plan builder ───────────────────────────────────────────────────────────
-
-function buildPlan(reviewed, overrides) {
-  // Index overrides by affected canonical_product_id
-  const splitMap = new Map();    // canonical_product_id → override
-  const skipMap = new Map();     // canonical_product_id → override
-  const presOverrideMap = new Map(); // canonical_product_id → override
-  const reassociateMap = new Map();  // canonical_offer_id → override
-
-  for (const ov of overrides.overrides) {
-    if (ov.resolution === "split_canonical_source_identity") {
-      splitMap.set(ov.affected_canonical_product_id, ov);
-    } else if (ov.resolution === "omit_offer_pending_price_confirmation") {
-      skipMap.set(ov.affected_canonical_product_id, ov);
-    } else if (ov.resolution === "split_structural_presentations") {
-      presOverrideMap.set(ov.affected_canonical_product_id, ov);
-    } else if (ov.resolution === "correct_source_block_association") {
-      reassociateMap.set(ov.affected_canonical_offer_ids[0], ov);
-    }
+function getTargetIdentity(target) {
+  if (target === "local") {
+    const container = getLocalContainer();
+    return { kind: "local", container, label: `local Docker container: ${container}` };
   }
-
-  const plan = { products: [], presentations: [], offers: [], skipped: [], stats: {} };
-
-  // ── Products ──
-  const productMap = new Map();
-  for (const p of reviewed.canonical_products) {
-    // Skip merged products that have split overrides
-    if (splitMap.has(p.canonical_product_id)) continue;
-
-    const s = slug(p.canonical_name, p.canonical_product_id);
-    const prod = {
-      canonical_id: p.canonical_product_id,
-      uuid: uuid(s), slug: s,
-      name: p.canonical_name,
-      brand: p.brand?.value || null,
-      import_segment: p.import_segment?.value || null,
-      presentation_class: PRES_CLASS_MAP[p.presentation_class] || "ambiguous",
-    };
-    plan.products.push(prod);
-    productMap.set(p.canonical_product_id, prod);
-  }
-
-  // Add split products from overrides + build offer redirect map
-  const splitOfferRedirect = new Map(); // canonical_offer_id → new_canonical_product_id
-  for (const [mergedId, ov] of splitMap) {
-    const origProd = reviewed.canonical_products.find((p) => p.canonical_product_id === mergedId);
-    for (const sp of ov.split_products) {
-      const s = slug(sp.name, sp.new_canonical_product_id);
-      const prod = {
-        canonical_id: sp.new_canonical_product_id,
-        uuid: uuid(s), slug: s,
-        name: sp.name,
-        brand: origProd?.brand?.value || null,
-        import_segment: origProd?.import_segment?.value || null,
-        presentation_class: origProd?.presentation_class
-          ? PRES_CLASS_MAP[origProd.presentation_class] || "ambiguous"
-          : "ambiguous",
-      };
-      plan.products.push(prod);
-      productMap.set(sp.new_canonical_product_id, prod);
-      // Map each offer from the original merged product to its split product
-      for (const offer of sp.offers) {
-        splitOfferRedirect.set(offer.canonical_offer_id, sp.new_canonical_product_id);
-      }
-    }
-  }
-
-  // ── Offers ──
-  // Build a lookup for reassociated offers
-  const reassociatedOffers = new Map(); // offer_id → { to_product_id, new_presentation_label, price_amount }
-
-  // Process reassociate overrides: the "from" offer is removed, the "to" product gets a new offer
-  for (const [, ov] of reassociateMap) {
-    const ra = ov.reassociate_offer;
-    reassociatedOffers.set(ra.canonical_offer_id, {
-      to_product_id: ra.to_product_id,
-      to_product_name: ra.to_product_name,
-      new_presentation_label: ra.new_presentation_label,
-      price_amount: ra.price_amount,
-    });
-    // The "from" product keeps its other offers via keep_offers
-    // But we need to also add the reassociated offer as a new product+offer
-    if (!productMap.has(ra.to_product_id)) {
-      const s = slug(ra.to_product_name, ra.to_product_id);
-      const origProd = reviewed.canonical_products.find((p) => p.canonical_product_id === ov.affected_canonical_product_id);
-      const prod = {
-        canonical_id: ra.to_product_id,
-        uuid: uuid(s), slug: s,
-        name: ra.to_product_name,
-        brand: origProd?.brand?.value || null,
-        import_segment: origProd?.import_segment?.value || null,
-        presentation_class: "single_fixed",
-      };
-      plan.products.push(prod);
-      productMap.set(ra.to_product_id, prod);
-    } else if (ra.correct_product_name) {
-      productMap.get(ra.to_product_id).name = ra.correct_product_name;
-    }
-  }
-
-  // Build presentation overrides lookup
-  const presOverrideLookup = new Map(); // canonical_offer_id → { label, suffix }
-  for (const [, ov] of presOverrideMap) {
-    for (const po of ov.presentation_overrides) {
-      presOverrideLookup.set(po.canonical_offer_id, {
-        label: po.new_presentation_label,
-        suffix: po.new_stable_key_suffix,
-        price: po.price_amount,
-      });
-    }
-  }
-
-  // Build skip offers lookup (CDN Preciux IV)
-  const skipOfferIds = new Set();
-  for (const [, ov] of skipMap) {
-    for (const oid of ov.affected_canonical_offer_ids) {
-      skipOfferIds.add(oid);
-    }
-  }
-
-  // Process all reviewed offers
-  const deduped = new Map(); // dedupKey → offer
-  for (const o of reviewed.canonical_offers) {
-    const oid = o.canonical_offer_id;
-    const rawLabel = o.presentation?.raw_label || "default";
-
-    // Skip offers marked by omit_offer_pending_price_confirmation
-    if (skipOfferIds.has(oid)) {
-      plan.skipped.push({ id: oid, reason: "conflicting_source_price_pending_confirmation", product: o.canonical_product_id });
-      continue;
-    }
-
-    // Handle reassociated offers: skip the original, will be added as new product below
-    if (reassociatedOffers.has(oid)) continue;
-
-    // Skip if product doesn't exist in our plan (was split and not re-added)
-    // Redirect offers from merged products to their split products
-    let canonicalProdId = splitOfferRedirect.has(oid) ? splitOfferRedirect.get(oid) : o.canonical_product_id;
-    if (!productMap.has(canonicalProdId)) continue;
-
-    const price = o.price?.amount;
-    if (!price || price === "") {
-      plan.skipped.push({ id: oid, reason: "no_price", product: canonicalProdId });
-      continue;
-    }
-
-    // Determine final presentation label and key
-    let finalLabel = rawLabel;
-    let presSuffix = rawLabel;
-    let finalPrice = price;
-    const pOverride = presOverrideLookup.get(oid);
-    if (pOverride) {
-      finalLabel = pOverride.label;
-      presSuffix = pOverride.suffix;
-      if (pOverride.price) finalPrice = pOverride.price;
-    }
-
-    const prod = productMap.get(canonicalProdId);
-    const pk = pkey(canonicalProdId, presSuffix);
-    const dedupKey = `${canonicalProdId}|${pk}|${finalPrice}`;
-
-    if (deduped.has(dedupKey)) {
-      deduped.get(dedupKey).source_records.push(o.source_record_id);
-      continue;
-    }
-
-    let avail = "unconfirmed";
-    if (o.availability_candidate === "OUT_OF_STOCK") avail = "out_of_stock";
-    else if (o.availability_candidate === "available") avail = "available";
-
-    deduped.set(dedupKey, {
-      product_uuid: prod.uuid,
-      product_canonical_id: canonicalProdId,
-      pres_stable_key: pk,
-      pres_label: finalLabel,
-      price_amount: finalPrice,
-      availability_status: avail,
-      source_records: [o.source_record_id],
-    });
-  }
-
-  // Add reassociated offers as new product+offer
-  for (const [oid, ra] of reassociatedOffers) {
-    const prod = productMap.get(ra.to_product_id);
-    if (!prod) throw new Error(`Reassociated product not found: ${ra.to_product_id}`);
-    const pk = pkey(ra.to_product_id, ra.new_presentation_label);
-    const dedupKey = `${ra.to_product_id}|${pk}|${ra.price_amount}`;
-    if (!deduped.has(dedupKey)) {
-      deduped.set(dedupKey, {
-        product_uuid: prod.uuid,
-        product_canonical_id: ra.to_product_id,
-        pres_stable_key: pk,
-        pres_label: ra.new_presentation_label,
-        price_amount: ra.price_amount,
-        availability_status: "unconfirmed",
-        source_records: [oid],
-      });
-    }
-  }
-
-  plan.offers = [...deduped.values()];
-
-  // Build presentations from final offers
-  const presSeen = new Map();
-  for (const o of plan.offers) {
-    const key = `${o.product_uuid}|${o.pres_stable_key}`;
-    if (presSeen.has(key)) continue;
-    presSeen.set(key, {
-      product_uuid: o.product_uuid,
-      stable_key: o.pres_stable_key,
-      label: o.pres_label,
-      presentation_class: productMap.get(o.product_canonical_id)?.presentation_class || "single_fixed",
-      capacity_ml: extractCapacity(o.pres_label),
-    });
-  }
-  plan.presentations = [...presSeen.values()];
-
-  plan.stats = {
-    source_occurrences: reviewed.counts.source_occurrences,
-    products: plan.products.length,
-    presentations: plan.presentations.length,
-    offers: plan.offers.length,
-    skipped_no_price: plan.skipped.filter((s) => s.reason === "no_price").length,
-    skipped_conflict: plan.skipped.filter((s) => s.reason === "conflicting_source_price_pending_confirmation").length,
-    conflicts: 0,
+  // staging
+  return {
+    kind: "staging",
+    project_id: STAGING_PROJECT_ID,
+    label: `hosted Supabase project: ${STAGING_PROJECT_ID}`,
   };
-
-  return plan;
 }
 
-function extractCapacity(label) {
-  const m = label.match(/(\d+(?:\.\d+)?)\s*ml/i);
-  return m ? parseFloat(m[1]) : null;
+function assertTargetSafety(target, identity) {
+  console.log(`[4J4B] TARGET: ${identity.label}`);
+  if (identity.kind === "staging") {
+    console.log("[4J4B] WARNING: Staging target selected. Verify operations only. Apply not supported by this script.");
+  }
 }
 
-// ─── SQL ────────────────────────────────────────────────────────────────────
+// ─── SQL builders ──────────────────────────────────────────────────────────
 
-function buildApplySQL(plan) {
+function buildApplySQL_local(plan) {
   const L = [];
   L.push("BEGIN;\n");
 
-  L.push("INSERT INTO auth.users (id, instance_id, aud, role, email, encrypted_password, created_at, updated_at)");
-  L.push("VALUES ('89000000-aaaa-4aaa-8aaa-aaaaaaaaaaaa', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'import-admin-4j4b@example.test', '', now(), now()) ON CONFLICT DO NOTHING;\n");
-
-  L.push("INSERT INTO public.admin_memberships (user_id, business_unit_id, role)");
-  L.push(`VALUES ('89000000-aaaa-4aaa-8aaa-aaaaaaaaaaaa', '${IMPORT_UNIT_ID}', 'admin') ON CONFLICT DO NOTHING;\n`);
-
-  L.push("INSERT INTO public.categories (id, business_unit_id, kind, name, slug, publication_status) VALUES");
-  L.push(`  ('${CAT_IDS.designer}', '${IMPORT_UNIT_ID}', 'import_category', 'Designer', 'import-designer', 'draft'),`);
-  L.push(`  ('${CAT_IDS.niche}', '${IMPORT_UNIT_ID}', 'import_category', 'Niche', 'import-niche', 'draft'),`);
-  L.push(`  ('${CAT_IDS.arabic}', '${IMPORT_UNIT_ID}', 'import_category', 'Arabic', 'import-arabic', 'draft')`);
+  // Categories — natural identity: Import BU + kind + slug
+  L.push("INSERT INTO public.categories (business_unit_id, kind, name, slug, publication_status) VALUES");
+  L.push(`  ('${IMPORT_UNIT_ID}', 'import_category', 'Designer', 'import-designer', 'draft'),`);
+  L.push(`  ('${IMPORT_UNIT_ID}', 'import_category', 'Niche', 'import-niche', 'draft'),`);
+  L.push(`  ('${IMPORT_UNIT_ID}', 'import_category', 'Arabic', 'import-arabic', 'draft')`);
   L.push("ON CONFLICT DO NOTHING;\n");
 
-  L.push(`INSERT INTO public.campaigns (id, business_unit_id, number, name, status) VALUES ('${CAMPAIGN_ID}', '${IMPORT_UNIT_ID}', ${CAMPAIGN_NUMBER}, ${esc(CAMPAIGN_NAME)}, 'draft') ON CONFLICT (business_unit_id, number) DO UPDATE SET name = EXCLUDED.name;\n`);
+  // Campaign #6 — resolve by Import BU + number
+  // FAIL-CLOSED: if exists, verify expected state
+  L.push("-- Campaign #6: create if absent, verify if exists");
+  L.push(`DO $camp$`);
+  L.push(`DECLARE v_camp RECORD;`);
+  L.push(`BEGIN`);
+  L.push(`  SELECT * INTO v_camp FROM public.campaigns WHERE business_unit_id = '${IMPORT_UNIT_ID}' AND number = ${CAMPAIGN_NUMBER};`);
+  L.push(`  IF v_camp.id IS NULL THEN`);
+  L.push(`    INSERT INTO public.campaigns (business_unit_id, number, name, status) VALUES ('${IMPORT_UNIT_ID}', ${CAMPAIGN_NUMBER}, '${CAMPAIGN_NAME}', 'draft');`);
+  L.push(`  ELSE`);
+  L.push(`    IF v_camp.name != '${CAMPAIGN_NAME}' THEN RAISE EXCEPTION 'campaign #6 name drift: expected %, got %', '${CAMPAIGN_NAME}', v_camp.name; END IF;`);
+  L.push(`    IF v_camp.status != 'draft' THEN RAISE EXCEPTION 'campaign #6 status drift: expected draft, got %', v_camp.status; END IF;`);
+  L.push(`  END IF;`);
+  L.push(`END $camp$;\n`);
 
-  L.push("-- Products");
+  // Products — resolve by Import BU + slug (legacy_id = canonical_id)
+  L.push("-- Products: create or verify");
   for (const p of plan.products) {
-    const catId = p.import_segment === "designer" ? CAT_IDS.designer : p.import_segment === "niche" ? CAT_IDS.niche : CAT_IDS.arabic;
-    L.push(`INSERT INTO public.products (id, business_unit_id, legacy_id, slug, name, brand, sales_mode, publication_status, verification_status) VALUES ('${p.uuid}', '${IMPORT_UNIT_ID}', ${esc(p.canonical_id)}, ${esc(p.slug)}, ${esc(p.name)}, ${esc(p.brand)}, 'campaign', 'draft', 'official_pdf') ON CONFLICT (business_unit_id, slug) DO UPDATE SET name = EXCLUDED.name, brand = EXCLUDED.brand;`);
-    L.push(`INSERT INTO public.product_categories (product_id, category_id, sort_order) VALUES ('${p.uuid}', '${catId}', 0) ON CONFLICT DO NOTHING;`);
+    L.push(`DO $prod$`);
+    L.push(`DECLARE v_prod RECORD;`);
+    L.push(`BEGIN`);
+    L.push(`  SELECT * INTO v_prod FROM public.products WHERE business_unit_id = '${IMPORT_UNIT_ID}' AND slug = '${p.slug}';`);
+    L.push(`  IF v_prod.id IS NULL THEN`);
+    L.push(`    INSERT INTO public.products (business_unit_id, legacy_id, slug, name, brand, sales_mode, publication_status, verification_status) VALUES ('${IMPORT_UNIT_ID}', '${p.canonical_id}', '${p.slug}', ${esc(p.name)}, ${esc(p.brand)}, 'campaign', 'draft', 'official_pdf');`);
+    L.push(`  ELSE`);
+    L.push(`    IF v_prod.name != ${esc(p.name)} THEN RAISE EXCEPTION 'product % name drift: expected %, got %', '${p.slug}', ${esc(p.name)}, v_prod.name; END IF;`);
+    L.push(`    IF v_prod.brand IS DISTINCT FROM ${esc(p.brand)} THEN RAISE EXCEPTION 'product % brand drift: expected %, got %', '${p.slug}', ${esc(p.brand)}, v_prod.brand; END IF;`);
+    L.push(`  END IF;`);
+    L.push(`END $prod$;\n`);
+  }
+
+  // Categories link
+  L.push("-- Product categories");
+  for (const p of plan.products) {
+    const catSlug = p.import_segment === "designer" ? "import-designer" : p.import_segment === "niche" ? "import-niche" : "import-arabic";
+    L.push(`INSERT INTO public.product_categories (product_id, category_id, sort_order) SELECT p.id, c.id, 0 FROM public.products p, public.categories c WHERE p.business_unit_id = '${IMPORT_UNIT_ID}' AND p.slug = '${p.slug}' AND c.business_unit_id = '${IMPORT_UNIT_ID}' AND c.slug = '${catSlug}' ON CONFLICT DO NOTHING;`);
   }
   L.push("");
 
-  L.push("-- Presentations");
+  // Presentations — resolve by product DB id + stable_key
+  L.push("-- Presentations: create or verify");
   for (const pr of plan.presentations) {
-    const cap = pr.capacity_ml ? String(pr.capacity_ml) : "NULL";
-    L.push(`INSERT INTO public.import_presentations (product_id, stable_key, label, presentation_class, capacity_ml, publication_status) VALUES ('${pr.product_uuid}', ${esc(pr.stable_key)}, ${esc(pr.label)}, ${esc(pr.presentation_class)}, ${cap}, 'draft') ON CONFLICT (product_id, stable_key) DO NOTHING;`);
+    const cap = pr.capacity_ml != null ? `'${pr.capacity_ml}'` : "NULL";
+    L.push(`DO $pres$`);
+    L.push(`DECLARE v_pres RECORD; v_prod_id uuid;`);
+    L.push(`BEGIN`);
+    L.push(`  SELECT p.id INTO v_prod_id FROM public.products p WHERE p.business_unit_id = '${IMPORT_UNIT_ID}' AND p.slug = '${pr.product_slug}';`);
+    L.push(`  IF v_prod_id IS NULL THEN RAISE EXCEPTION 'presentation product not found: %', '${pr.product_slug}'; END IF;`);
+    L.push(`  SELECT * INTO v_pres FROM public.import_presentations WHERE product_id = v_prod_id AND stable_key = '${pr.stable_key}';`);
+    L.push(`  IF v_pres.id IS NULL THEN`);
+    L.push(`    INSERT INTO public.import_presentations (product_id, stable_key, label, presentation_class, capacity_ml, publication_status) VALUES (v_prod_id, '${pr.stable_key}', ${esc(pr.label)}, '${pr.presentation_class}', ${cap}, 'draft');`);
+    L.push(`  ELSE`);
+    L.push(`    IF v_pres.label != ${esc(pr.label)} THEN RAISE EXCEPTION 'presentation % label drift: expected %, got %', '${pr.stable_key}', ${esc(pr.label)}, v_pres.label; END IF;`);
+    L.push(`  END IF;`);
+    L.push(`END $pres$;\n`);
   }
-  L.push("");
 
-  // Use RPC admin_set_campaign_products to populate campaign products
-  // Set role to authenticated with admin JWT claims
+  // Campaign products via RPC
+  // Setup auth user + admin membership as postgres (bypasses RLS), then switch role for RPC
+  L.push("-- Campaign products via RPC");
+  // Ensure auth user exists for JWT sub (idempotent)
+  L.push("INSERT INTO auth.users (id, instance_id, aud, role, email, encrypted_password, created_at, updated_at)");
+  L.push("SELECT '89000000-aaaa-4aaa-8aaa-aaaaaaaaaaaa', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'loader@test.local', '', now(), now()");
+  L.push("WHERE NOT EXISTS (SELECT 1 FROM auth.users WHERE id = '89000000-aaaa-4aaa-8aaa-aaaaaaaaaaaa');\n");
+
+  // Ensure admin membership for Import BU (idempotent)
+  L.push("INSERT INTO public.admin_memberships (user_id, business_unit_id, role, is_active)");
+  L.push(`SELECT '89000000-aaaa-4aaa-8aaa-aaaaaaaaaaaa', '${IMPORT_UNIT_ID}', 'admin', true`);
+  L.push(`WHERE NOT EXISTS (SELECT 1 FROM public.admin_memberships WHERE user_id = '89000000-aaaa-4aaa-8aaa-aaaaaaaaaaaa' AND business_unit_id = '${IMPORT_UNIT_ID}');\n`);
+
+  // Switch role for RPC call
   L.push("SET LOCAL role authenticated;");
   L.push(`SET LOCAL request.jwt.claims to '{"sub":"89000000-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';\n`);
 
-  // Use a temp table to stage items, then resolve presentation IDs and call RPC
   L.push("CREATE TEMPORARY TABLE _cp_items (");
   L.push("  idx int PRIMARY KEY,");
-  L.push("  product_id uuid NOT NULL,");
+  L.push("  product_slug text NOT NULL,");
   L.push("  pres_stable_key text NOT NULL,");
   L.push("  price_amount text NOT NULL,");
   L.push("  availability_status text NOT NULL");
   L.push(") ON COMMIT DROP;\n");
 
-  // Batch INSERT into temp table
   const batchSize = 200;
   for (let start = 0; start < plan.offers.length; start += batchSize) {
     const batch = plan.offers.slice(start, start + batchSize);
-    const values = batch.map((o, i) => `(${start + i}, '${o.product_uuid}', ${esc(o.pres_stable_key)}, ${esc(o.price_amount)}, ${esc(o.availability_status)})`).join(",");
+    const values = batch.map((o, i) => `(${start + i}, '${o.product_slug}', '${o.pres_stable_key}', ${esc(o.price_amount)}, '${o.availability_status}')`).join(",");
     L.push(`INSERT INTO _cp_items VALUES ${values};`);
   }
   L.push("");
 
-  L.push("-- Call RPC with resolved presentation IDs");
-  L.push(`SELECT public.admin_set_campaign_products('${CAMPAIGN_ID}', (SELECT updated_at FROM public.campaigns WHERE id = '${CAMPAIGN_ID}'), (`);
-  L.push("  SELECT coalesce(jsonb_agg(jsonb_build_object(");
-  L.push("    'product_id', t.product_id,");
+  L.push("SELECT public.admin_set_campaign_products(");
+  L.push(`  (SELECT id FROM public.campaigns WHERE business_unit_id = '${IMPORT_UNIT_ID}' AND number = ${CAMPAIGN_NUMBER}),`);
+  L.push(`  (SELECT updated_at FROM public.campaigns WHERE business_unit_id = '${IMPORT_UNIT_ID}' AND number = ${CAMPAIGN_NUMBER}),`);
+  L.push("  (SELECT coalesce(jsonb_agg(jsonb_build_object(");
+  L.push("    'product_id', p.id,");
   L.push("    'import_presentation_id', ip.id,");
   L.push("    'price_amount', t.price_amount::numeric,");
   L.push("    'availability_status', t.availability_status,");
   L.push("    'sort_order', t.idx");
   L.push("  ) ORDER BY t.idx), '[]'::jsonb)");
-  L.push("  FROM _cp_items t JOIN public.import_presentations ip ON ip.product_id = t.product_id AND ip.stable_key = t.pres_stable_key");
+  L.push("  FROM _cp_items t");
+  L.push(`  JOIN public.products p ON p.business_unit_id = '${IMPORT_UNIT_ID}' AND p.slug = t.product_slug`);
+  L.push("  JOIN public.import_presentations ip ON ip.product_id = p.id AND ip.stable_key = t.pres_stable_key");
   L.push("));\n");
 
   L.push("RESET role;\nCOMMIT;");
   return L.join("\n");
 }
 
-function verifySQL() {
+function buildVerifySQL_local(plan) {
+  // Plan-scoped verification — only checks rows belonging to this population
+  const slugs = plan.products.map((p) => `'${p.slug}'`).join(",");
+  const presKeys = plan.presentations.map((p) => `'${p.stable_key}'`).join(",");
+
   return `SELECT json_build_object(
-  'import_products', (SELECT count(*)::int FROM public.products WHERE business_unit_id = '${IMPORT_UNIT_ID}' AND slug LIKE 'import-%'),
-  'import_presentations', (SELECT count(*)::int FROM public.import_presentations),
-  'campaign_6_exists', (SELECT count(*)::int FROM public.campaigns WHERE id = '${CAMPAIGN_ID}'),
-  'campaign_6_status', (SELECT status FROM public.campaigns WHERE id = '${CAMPAIGN_ID}'),
-  'campaign_products', (SELECT count(*)::int FROM public.campaign_products WHERE campaign_id = '${CAMPAIGN_ID}'),
-  'null_price', (SELECT count(*)::int FROM public.campaign_products WHERE campaign_id = '${CAMPAIGN_ID}' AND price_amount IS NULL),
-  'null_presentation', (SELECT count(*)::int FROM public.campaign_products WHERE campaign_id = '${CAMPAIGN_ID}' AND import_presentation_id IS NULL),
-  'null_quantity_limit', (SELECT count(*)::int FROM public.campaign_products WHERE campaign_id = '${CAMPAIGN_ID}' AND quantity_limit IS NULL),
-  'avail', (SELECT jsonb_object_agg(availability_status, cnt) FROM (SELECT availability_status, count(*)::int cnt FROM public.campaign_products WHERE campaign_id = '${CAMPAIGN_ID}' GROUP BY availability_status) s)
+  'plan_products_exist', (SELECT count(*)::int FROM public.products WHERE business_unit_id = '${IMPORT_UNIT_ID}' AND slug IN (${slugs})),
+  'plan_products_total', ${plan.products.length},
+  'plan_presentations_exist', (SELECT count(*)::int FROM public.import_presentations ip JOIN public.products p ON ip.product_id = p.id WHERE p.business_unit_id = '${IMPORT_UNIT_ID}' AND p.slug IN (${slugs}) AND ip.stable_key IN (${presKeys})),
+  'plan_presentations_total', ${plan.presentations.length},
+  'campaign_6_exists', (SELECT count(*)::int FROM public.campaigns WHERE business_unit_id = '${IMPORT_UNIT_ID}' AND number = ${CAMPAIGN_NUMBER}),
+  'campaign_6_status', (SELECT status FROM public.campaigns WHERE business_unit_id = '${IMPORT_UNIT_ID}' AND number = ${CAMPAIGN_NUMBER}),
+  'plan_offers_exist', (SELECT count(*)::int FROM public.campaign_products cp JOIN public.campaigns c ON cp.campaign_id = c.id WHERE c.business_unit_id = '${IMPORT_UNIT_ID}' AND c.number = ${CAMPAIGN_NUMBER}),
+  'plan_offers_total', ${plan.offers.length},
+  'null_price', (SELECT count(*)::int FROM public.campaign_products cp JOIN public.campaigns c ON cp.campaign_id = c.id WHERE c.business_unit_id = '${IMPORT_UNIT_ID}' AND c.number = ${CAMPAIGN_NUMBER} AND cp.price_amount IS NULL),
+  'null_presentation', (SELECT count(*)::int FROM public.campaign_products cp JOIN public.campaigns c ON cp.campaign_id = c.id WHERE c.business_unit_id = '${IMPORT_UNIT_ID}' AND c.number = ${CAMPAIGN_NUMBER} AND cp.import_presentation_id IS NULL),
+  'null_quantity_limit', (SELECT count(*)::int FROM public.campaign_products cp JOIN public.campaigns c ON cp.campaign_id = c.id WHERE c.business_unit_id = '${IMPORT_UNIT_ID}' AND c.number = ${CAMPAIGN_NUMBER} AND cp.quantity_limit IS NULL),
+  'null_variant', (SELECT count(*)::int FROM public.campaign_products cp JOIN public.campaigns c ON cp.campaign_id = c.id WHERE c.business_unit_id = '${IMPORT_UNIT_ID}' AND c.number = ${CAMPAIGN_NUMBER} AND cp.product_variant_id IS NOT NULL),
+  'all_draft_products', (SELECT count(*)::int FROM public.products WHERE business_unit_id = '${IMPORT_UNIT_ID}' AND slug IN (${slugs}) AND publication_status != 'draft'),
+  'all_draft_presentations', (SELECT count(*)::int FROM public.import_presentations ip JOIN public.products p ON ip.product_id = p.id WHERE p.business_unit_id = '${IMPORT_UNIT_ID}' AND p.slug IN (${slugs}) AND ip.stable_key IN (${presKeys}) AND ip.publication_status != 'draft'),
+  'avail', (SELECT jsonb_object_agg(availability_status, cnt) FROM (SELECT cp.availability_status, count(*)::int cnt FROM public.campaign_products cp JOIN public.campaigns c ON cp.campaign_id = c.id WHERE c.business_unit_id = '${IMPORT_UNIT_ID}' AND c.number = ${CAMPAIGN_NUMBER} GROUP BY cp.availability_status) s),
+  'vanilla_freak_product', (SELECT count(*)::int FROM public.products WHERE business_unit_id = '${IMPORT_UNIT_ID}' AND slug LIKE '%vanilla-freak%'),
+  'vanilla_freak_offer', (SELECT count(*)::int FROM public.campaign_products cp JOIN public.products p ON cp.product_id = p.id WHERE p.slug LIKE '%vanilla-freak%'),
+  'cdn_preciux_iv_product', (SELECT count(*)::int FROM public.products WHERE business_unit_id = '${IMPORT_UNIT_ID}' AND slug LIKE '%cdn-preciux-iv%'),
+  'cdn_preciux_iv_offer', (SELECT count(*)::int FROM public.campaign_products cp JOIN public.products p ON cp.product_id = p.id WHERE p.slug LIKE '%cdn-preciux-iv%')
 )::text;`;
+}
+
+// ─── Helpers ────────────────────────────────────────────────────────────────
+
+function esc(s) {
+  return s === null || s === undefined ? "NULL" : `'${String(s).replace(/'/g, "''")}'`;
+}
+
+function sha256(data) {
+  return createHash("sha256").update(data).digest("hex");
 }
 
 // ─── Main ───────────────────────────────────────────────────────────────────
 
 async function main() {
   const { target, mode } = parseArgs(process.argv);
-  console.log(`[4J4B] target=${target} mode=${mode}`);
+  const identity = getTargetIdentity(target);
 
-  const reviewed = JSON.parse(await readFile(reviewedPath, "utf8"));
-  const overrides = JSON.parse(await readFile(overridesPath, "utf8"));
-  const plan = buildPlan(reviewed, overrides);
+  console.log(`[4J4B] Plan version: ${PLAN_VERSION}`);
+  console.log(`[4J4B] Target: ${identity.label}`);
+  console.log(`[4J4B] Mode: ${mode}`);
 
-  console.log(`[4J4B] Plan: ${plan.stats.products} products, ${plan.stats.presentations} presentations, ${plan.stats.offers} offers`);
+  assertTargetSafety(target, identity);
+
+  const reviewedRaw = await readFile(reviewedPath, "utf8");
+  const overridesRaw = await readFile(overridesPath, "utf8");
+  const reviewed = JSON.parse(reviewedRaw);
+  const overrides = JSON.parse(overridesRaw);
+  reviewed._sha256 = sha256(reviewedRaw);
+  overrides._sha256 = sha256(overridesRaw);
+
+  const plan = buildPopulationPlan(reviewed, overrides);
+
+  // Attach product_slug to presentations for SQL generation
+  const productSlugMap = new Map(plan.products.map((p) => [p.canonical_id, p.slug]));
+  for (const pr of plan.presentations) {
+    pr.product_slug = productSlugMap.get(pr.product_canonical_id);
+  }
+  // Attach product_slug to offers for SQL generation
+  for (const o of plan.offers) {
+    o.product_slug = productSlugMap.get(o.product_canonical_id);
+  }
+
+  console.log(`[4J4B] Plan: ${plan.stats.products} products, ${plan.stats.structural_presentations} presentations, ${plan.stats.priced_offers} offers`);
   console.log(`  skipped (no price): ${plan.stats.skipped_no_price}`);
   console.log(`  skipped (conflict): ${plan.stats.skipped_conflict}`);
   console.log(`  conflicts: ${plan.stats.conflicts}`);
@@ -450,20 +300,26 @@ async function main() {
     return;
   }
 
-  if (mode === "--verify") {
-    const c = getContainer();
-    assertDB(c);
-    console.log(`[4J4B] Verify:\n${psql(c, verifySQL())}`);
+  if (target === "staging") {
+    console.log(`[4J4B] Staging verify: connect to ${identity.label} and run verify SQL.`);
+    console.log(`[4J4B] Use: npx supabase db push --dry-run for schema-only check.`);
     return;
   }
 
-  // --apply
-  const c = getContainer();
-  assertDB(c);
-  console.log(`[4J4B] Applying...`);
-  psql(c, buildApplySQL(plan));
+  // Local operations
+  const container = identity.container;
+  assertDB(container);
+
+  if (mode === "--verify") {
+    console.log(`[4J4B] Verify:\n${psqlDocker(container, buildVerifySQL_local(plan))}`);
+    return;
+  }
+
+  // --apply (local only)
+  console.log(`[4J4B] Applying to local...`);
+  psqlDocker(container, buildApplySQL_local(plan));
   console.log(`[4J4B] Apply complete.`);
-  console.log(`[4J4B] Post-apply verify:\n${psql(c, verifySQL())}`);
+  console.log(`[4J4B] Post-apply verify:\n${psqlDocker(container, buildVerifySQL_local(plan))}`);
 }
 
 main().catch((err) => {

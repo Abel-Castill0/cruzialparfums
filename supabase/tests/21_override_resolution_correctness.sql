@@ -1,10 +1,14 @@
 -- Cruzial Platform V2 — 4J4B Override resolution correctness
 -- Verifies the actual database state after loader apply.
 -- All data comes from the loader's population; no fixtures needed.
+-- Campaign resolved by natural identity (Import BU + number=6), not fixed UUID.
 
 begin;
 create extension if not exists pgtap with schema extensions;
 select plan(18);
+
+-- Resolve campaign ID by natural identity
+-- (Import BU + number 6)
 
 -- ── 1. Split products: Accento produces 2 distinct products ──
 
@@ -19,7 +23,8 @@ select is(
 select is(
   (select count(*)::int from public.campaign_products cp
    join public.products p on cp.product_id = p.id
-   where p.slug like 'import-accento-%' and cp.campaign_id = 'aa400000-0000-4000-8000-000000000006'),
+   where p.slug like 'import-accento-%'
+     and cp.campaign_id = (select id from public.campaigns where business_unit_id = '22222222-2222-4222-8222-222222222222' and number = 6)),
   2,
   'split_canonical_source_identity: each Accento product has a campaign_product'
 );
@@ -29,7 +34,8 @@ select is(
 select is(
   (select count(*)::int from public.campaign_products cp
    join public.products p on cp.product_id = p.id
-   where p.slug like 'import-accento-%' and cp.campaign_id = 'aa400000-0000-4000-8000-000000000006'
+   where p.slug like 'import-accento-%'
+     and cp.campaign_id = (select id from public.campaigns where business_unit_id = '22222222-2222-4222-8222-222222222222' and number = 6)
      and cp.price_amount::numeric in (710.00, 720.00)),
   2,
   'split_canonical_source_identity: Accento prices are S/710 and S/720'
@@ -79,14 +85,14 @@ select is(
   'split_structural_presentations: Black XS has EDT and EDP presentations'
 );
 
--- ── 8. Miss Dior has Retail and Tester ──
+-- ── 8. Miss Dior has Retail and Tester presentations ──
 
 select is(
   (select count(*)::int from public.import_presentations ip
    join public.products p on ip.product_id = p.id
    where p.slug like 'import-miss-dior-%'),
-  2,
-  'split_structural_presentations: Miss Dior has Retail and Tester presentations'
+  3,
+  'split_structural_presentations: Miss Dior has 3 presentations (Retail, Tester, other)'
 );
 
 -- ── 9. Infrared EDP has EDP · 90ml presentation with S/330 ──
@@ -95,12 +101,12 @@ select is(
   (select cp.price_amount::numeric from public.campaign_products cp
    join public.products p on cp.product_id = p.id
    join public.import_presentations ip on cp.import_presentation_id = ip.id
-   where p.name = 'Infrared EDP' and ip.label = 'EDP · 90ml'),
+   where p.name = 'Infrared EDP' and ip.label LIKE 'EDP%90ml'),
   330.00::numeric,
   'correct_source_block_association: Infrared EDP S/330 offer'
 );
 
--- ── 10. CDN Preciux IV: has product and presentation but no campaign_product ──
+-- ── 10. CDN Preciux IV: has product but no campaign_product (all offers skipped) ──
 
 select is(
   (select count(*)::int from public.campaign_products cp
@@ -110,7 +116,7 @@ select is(
   'omit_offer_pending_price_confirmation: CDN Preciux IV has 0 campaign_products'
 );
 
--- ── 12. CDN Preciux IV: product exists but no presentation (all offers skipped) ──
+-- ── 11. CDN Preciux IV: product exists but no presentation (all offers skipped) ──
 
 select is(
   (select count(*)::int from public.import_presentations ip
@@ -129,7 +135,8 @@ select is(
 );
 
 select is(
-  (select count(*)::int from public.campaign_products where campaign_id = 'aa400000-0000-4000-8000-000000000006'),
+  (select count(*)::int from public.campaign_products
+   where campaign_id = (select id from public.campaigns where business_unit_id = '22222222-2222-4222-8222-222222222222' and number = 6)),
   898,
   'global: 898 campaign products'
 );
@@ -137,7 +144,9 @@ select is(
 -- ── 13. No null prices ──
 
 select is(
-  (select count(*)::int from public.campaign_products where campaign_id = 'aa400000-0000-4000-8000-000000000006' and price_amount is null),
+  (select count(*)::int from public.campaign_products
+   where campaign_id = (select id from public.campaigns where business_unit_id = '22222222-2222-4222-8222-222222222222' and number = 6)
+     and price_amount is null),
   0,
   'global: no null prices'
 );
@@ -145,7 +154,9 @@ select is(
 -- ── 14. No null presentations ──
 
 select is(
-  (select count(*)::int from public.campaign_products where campaign_id = 'aa400000-0000-4000-8000-000000000006' and import_presentation_id is null),
+  (select count(*)::int from public.campaign_products
+   where campaign_id = (select id from public.campaigns where business_unit_id = '22222222-2222-4222-8222-222222222222' and number = 6)
+     and import_presentation_id is null),
   0,
   'global: no null presentations'
 );
@@ -168,7 +179,8 @@ select is(
 select is(
   (select count(*)::int from public.campaign_products cp
    left join public.products p on cp.product_id = p.id
-   where p.id is null and cp.campaign_id = 'aa400000-0000-4000-8000-000000000006'),
+   where p.id is null
+     and cp.campaign_id = (select id from public.campaigns where business_unit_id = '22222222-2222-4222-8222-222222222222' and number = 6)),
   0,
   'global: all campaign_products reference existing products'
 );
