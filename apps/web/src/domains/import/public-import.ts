@@ -21,6 +21,8 @@ export type PublicImportCampaign = {
 
 export type PublicImportPresentation = {
   id: string;
+  offerId: string;
+  offerUpdatedAt: string;
   label: string;
   presentationClass: PublicImportPresentationClass;
   capacityMl: number | null;
@@ -113,6 +115,8 @@ export function mapPublicImportPresentations(value: Json): PublicImportPresentat
     const availability = item.availability;
     if (
       typeof item.id !== "string" ||
+      typeof item.offerId !== "string" ||
+      typeof item.offerUpdatedAt !== "string" ||
       typeof item.label !== "string" ||
       typeof presentationClass !== "string" ||
       !PRESENTATION_CLASSES.has(presentationClass as PublicImportPresentationClass) ||
@@ -125,6 +129,8 @@ export function mapPublicImportPresentations(value: Json): PublicImportPresentat
     const capacity = item.capacityMl;
     result.push({
       id: item.id,
+      offerId: item.offerId,
+      offerUpdatedAt: item.offerUpdatedAt,
       label: item.label,
       presentationClass: presentationClass as PublicImportPresentationClass,
       capacityMl: typeof capacity === "number" ? capacity : null,

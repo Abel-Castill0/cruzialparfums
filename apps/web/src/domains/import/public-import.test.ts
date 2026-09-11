@@ -14,6 +14,8 @@ import {
 
 const presentation = {
   id: "presentation-1",
+  offerId: "offer-1",
+  offerUpdatedAt: "2026-09-10T12:00:00Z",
   label: "100 ml",
   class: "single_fixed",
   capacityMl: 100,

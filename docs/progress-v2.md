@@ -140,6 +140,24 @@ Isolated:
   pgTAP 23 files / 599 assertions, Vitest 47 files / 362 assertions, lint 0,
   strict TS, production build. Staging migration applied, invariants preserved.
   Hosted closed-state verified. Preview: `cruzial-platform-v2-dvwpkmovd-cruzial.vercel.app`.
+- Import cart + server-authoritative order foundation (4J5B1) ✅
+  Migration `20260911010000_import_order_foundation.sql`: deposit snapshot,
+  import_presentation_id on order_lines, public catalog RPC offerId/offerUpdatedAt
+  passthrough, create_import_order_request RPC (validation, customer resolution,
+  deposit policy snapshot, advisory lock, idempotency, quantity limits, stale
+  offer detection). Import cart domain (localStorage, max 40 lines, qty 1–99,
+  dedupe by offerId), import order validation, import order repository (RPC),
+  import checkout server action. pgTAP 24 files / 626 assertions, Vitest 49
+  files / 391 assertions, lint 0, strict TS, production build.
+- Import cart + server-authoritative order foundation (4J5B1) ✅
+  Migration `20260911010000_import_order_foundation.sql`: deposit snapshot,
+  import_presentation_id on order_lines, public catalog RPC offerId/offerUpdatedAt
+  passthrough, create_import_order_request RPC (validation, customer resolution,
+  deposit policy snapshot, advisory lock, idempotency, quantity limits, stale
+  offer detection). Import cart domain (localStorage, max 40 lines, qty 1–99,
+  dedupe by offerId), import order validation, import order repository (RPC),
+  import checkout server action. pgTAP 24 files / 626 assertions, Vitest 49
+  files / 391 assertions, lint 0, strict TS, production build.
 
 Do not re-audit closed capabilities without evidence of regression.
 
@@ -866,8 +884,7 @@ White backgrounds are intentional.
 ## Next roadmap
 
 1. 4H2B — Public Parfums Supabase cutover after its blockers close
-2. 4J5B — Import cart + server-authoritative checkout + persistent order
-   request + deposit snapshot + WhatsApp handoff
+2. 4J5B2 — Import checkout UI + WhatsApp handoff (cart → checkout → confirm → message)
 3. Global production-readiness audit
 4. Production Supabase / Vercel
 5. Punto.pe DNS / SEO cutover

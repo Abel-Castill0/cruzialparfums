@@ -2430,6 +2430,23 @@ export type Database = {
           order_number: string
         }[]
       }
+      create_import_order_request: {
+        Args: {
+          p_request_id: string
+          p_customer: Json
+          p_delivery: Json
+          p_lines: Json
+        }
+        Returns: {
+          order_id: string
+          order_number: string
+          created: boolean
+          subtotal: number
+          deposit_percentage: number
+          deposit_amount: number
+          campaign_number: number
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
