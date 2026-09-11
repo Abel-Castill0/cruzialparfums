@@ -3,7 +3,6 @@
 import { revalidatePath } from "next/cache";
 import { requireUnitAdmin } from "@/lib/auth/admin-session";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { AdminImportOrdersRepository } from "@/domains/admin-import/orders-repository";
 
 export type ImportOrderActionState =
   | { status: "idle" }
@@ -14,23 +13,6 @@ const PEDIDOS_PATH = "/admin/import/pedidos";
 
 function orderDetailPath(id: string): string {
   return `/admin/import/pedidos/${id}`;
-}
-
-function friendlyOrderError(error: { type: string }): string {
-  switch (error.type) {
-    case "forbidden":
-      return "No tienes permiso de administrador para Cruzial Import.";
-    case "not_found":
-      return "El pedido no existe o no pertenece a Cruzial Import.";
-    case "conflict":
-      return "El pedido fue modificado por otra sesión. Recarga la página.";
-    case "unauthorized":
-      return "Tu sesión expiró. Vuelve a iniciar sesión.";
-    case "unknown":
-      return "No se pudo completar la operación. Intenta de nuevo.";
-    default:
-      return "No se pudo completar la operación. Intenta de nuevo.";
-  }
 }
 
 export async function updateImportOrderStatusAction(
@@ -54,7 +36,7 @@ export async function updateImportOrderStatusAction(
     return { status: "error", message: "El backend de administración no está configurado." };
   }
 
-  const { data, error } = await supabase.rpc("admin_import_update_order_status", {
+  const { error } = await supabase.rpc("admin_import_update_order_status", {
     p_order_id: orderId,
     p_expected_status: expectedStatus,
     p_new_status: newStatus,

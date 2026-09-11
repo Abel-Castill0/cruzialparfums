@@ -81,7 +81,7 @@ export async function updateImportCustomerAction(
     return { status: "error", message: "El backend de administración no está configurado." };
   }
 
-  const { data, error } = await supabase.rpc("admin_import_update_customer", {
+  const { error } = await supabase.rpc("admin_import_update_customer", {
     p_customer_id: customerId,
     p_full_name: fullName.trim(),
     ...(phone ? { p_phone: phone } : {}),
@@ -123,7 +123,7 @@ export async function verifyImportCustomerStatusAction(
     return { status: "error", message: "El backend de administración no está configurado." };
   }
 
-  const { data, error } = await supabase.rpc("admin_import_verify_customer_status", {
+  const { error } = await supabase.rpc("admin_import_verify_customer_status", {
     p_customer_id: customerId,
     p_new_status: newStatus,
   });
@@ -161,7 +161,7 @@ export async function archiveImportCustomerAction(
     return { status: "error", message: "El backend de administración no está configurado." };
   }
 
-  const { data, error } = await supabase.rpc("admin_import_archive_customer", {
+  const { error } = await supabase.rpc("admin_import_archive_customer", {
     p_customer_id: customerId,
   });
 
@@ -199,7 +199,7 @@ export async function linkImportCustomerOrderAction(
     return { status: "error", message: "El backend de administración no está configurado." };
   }
 
-  const { data, error } = await supabase.rpc("admin_import_link_customer_order", {
+  const { error } = await supabase.rpc("admin_import_link_customer_order", {
     p_order_id: orderId,
     p_customer_id: customerId,
   });

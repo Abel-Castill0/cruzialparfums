@@ -36,8 +36,6 @@ export function OrderStatusControls({ orderId, currentStatus, allowedTransitions
     null,
   );
 
-  const showCancellationReason = allowedTransitions.includes("cancelled");
-
   return (
     <section className={styles.section} aria-labelledby="actions-heading">
       <div className={styles.sectionTitle}>

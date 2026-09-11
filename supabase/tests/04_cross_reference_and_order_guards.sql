@@ -178,7 +178,7 @@ select throws_ok(
       '11111111-0000-4000-8000-000000000073',
       '11111111-1111-4111-8111-111111111111',
       'PARFUMS-FUTURE-STATE',
-      'confirmed'
+      'in_transit'
     )$$,
   '23514', null, 'an unconfirmed future order state cannot be invented'
 );
