@@ -13,6 +13,8 @@ export type ImportOrderRequestInput = {
   customer: {
     name: string;
     phone: string;
+  };
+  delivery: {
     district: string;
     address: string;
     note?: string;
@@ -30,9 +32,6 @@ export type ValidatedImportOrderRequest = {
   customer: {
     name: string;
     phone: string;
-    district: string;
-    address: string;
-    note: string;
   };
   delivery: {
     district: string;
@@ -113,11 +112,16 @@ export function validateAndResolveImportOrder(
       ? (candidate.customer as Record<string, unknown>)
       : {};
 
+  const delivery =
+    candidate.delivery && typeof candidate.delivery === "object"
+      ? (candidate.delivery as Record<string, unknown>)
+      : {};
+
   const name = normalizeText(customer.name, 120);
   const phone = normalizeText(customer.phone, 30);
-  const district = normalizeText(customer.district, 120);
-  const address = normalizeText(customer.address, 200);
-  const note = normalizeText(customer.note ?? "", 500);
+  const district = normalizeText(delivery.district, 120);
+  const address = normalizeText(delivery.address, 200);
+  const note = normalizeText(delivery.note ?? "", 500);
 
   const fieldErrors: ImportOrderValidationError["fieldErrors"] = {};
 
@@ -210,7 +214,7 @@ export function validateAndResolveImportOrder(
 
   return {
     requestId: candidate.requestId,
-    customer: { name, phone, district, address, note },
+    customer: { name, phone },
     delivery: { district, address, note },
     lines,
   };

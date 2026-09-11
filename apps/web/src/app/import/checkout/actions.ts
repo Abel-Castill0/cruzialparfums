@@ -33,7 +33,7 @@ function buildImportWhatsAppUrl(
   depositAmount: number,
   customerName: string,
   customerPhone: string,
-  customerDistrict: string,
+  deliveryDistrict: string,
 ): string {
   const encoded = encodeURIComponent(
     `Hola Cruzial Import — solicitud ${orderNumber}\n` +
@@ -42,10 +42,34 @@ function buildImportWhatsAppUrl(
       `Anticipo (${depositPercentage}%): S/ ${depositAmount.toFixed(2)}\n` +
       `Nombre: ${customerName}\n` +
       `Teléfono: ${customerPhone}\n` +
-      `Distrito: ${customerDistrict}\n` +
+      `Distrito: ${deliveryDistrict}\n` +
       `Adjunta tu comprobante de depósito para confirmar.`,
   );
   return `https://wa.me/${IMPORT_SETTINGS.whatsappNumber}?text=${encoded}`;
+}
+
+function importOrderErrorToMessage(error: {
+  type: string;
+  message?: string;
+}): string {
+  switch (error.type) {
+    case "cart_changed":
+      return "Uno o más productos cambiaron. Actualiza tu carrito antes de continuar.";
+    case "campaign_unavailable":
+      return "La campaña actual no está aceptando pedidos. Intenta más tarde.";
+    case "product_unavailable":
+      return "Uno o más productos ya no están disponibles. Actualiza tu carrito.";
+    case "duplicate_offer":
+      return "Tu carrito contiene productos duplicados. Revisa tu selección.";
+    case "deposit_policy_missing":
+      return "No se encontró la política de anticipo. Contacta soporte.";
+    case "deposit_policy_ambiguity":
+      return "Error de configuración de anticipo. Contacta soporte.";
+    case "invalid_input":
+      return "Los datos enviados no son válidos. Revisa e inténtalo otra vez.";
+    default:
+      return "No pudimos registrar tu solicitud. Tu carrito se conserva para que puedas intentarlo nuevamente.";
+  }
 }
 
 export async function createImportOrderRequest(
@@ -69,7 +93,8 @@ export async function createImportOrderRequest(
   }
 
   const persisted = await new ImportOrderRepository(client).create(validated);
-  if (!persisted.ok) return { status: "error", message: persisted.message };
+  if (!persisted.ok)
+    return { status: "error", message: importOrderErrorToMessage(persisted.error) };
 
   return {
     status: "success",
@@ -82,7 +107,7 @@ export async function createImportOrderRequest(
       persisted.data.depositAmount,
       validated.customer.name,
       validated.customer.phone,
-      validated.customer.district,
+      validated.delivery.district,
     ),
     created: persisted.data.created,
     subtotal: persisted.data.subtotal,

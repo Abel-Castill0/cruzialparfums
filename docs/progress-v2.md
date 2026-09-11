@@ -143,20 +143,14 @@ Isolated:
 - Import cart + server-authoritative order foundation (4J5B1) ✅
   Migration `20260911010000_import_order_foundation.sql`: deposit snapshot,
   import_presentation_id on order_lines, public catalog RPC offerId/offerUpdatedAt
-  passthrough, create_import_order_request RPC (validation, customer resolution,
-  deposit policy snapshot, advisory lock, idempotency, quantity limits, stale
-  offer detection). Import cart domain (localStorage, max 40 lines, qty 1–99,
-  dedupe by offerId), import order validation, import order repository (RPC),
-  import checkout server action. pgTAP 24 files / 626 assertions, Vitest 49
-  files / 391 assertions, lint 0, strict TS, production build.
-- Import cart + server-authoritative order foundation (4J5B1) ✅
-  Migration `20260911010000_import_order_foundation.sql`: deposit snapshot,
-  import_presentation_id on order_lines, public catalog RPC offerId/offerUpdatedAt
-  passthrough, create_import_order_request RPC (validation, customer resolution,
-  deposit policy snapshot, advisory lock, idempotency, quantity limits, stale
-  offer detection). Import cart domain (localStorage, max 40 lines, qty 1–99,
-  dedupe by offerId), import order validation, import order repository (RPC),
-  import checkout server action. pgTAP 24 files / 626 assertions, Vitest 49
+  passthrough, create_import_order_request RPC. Correction: ambiguous customer
+  → NULL (COUNT-based, never LIMIT 1), exact deposit policy time-window + exactly-one,
+  single authoritative commercial resolution with FOR UPDATE locks, campaign close
+  race prevention, duplicate offer DB defense, delivery from p_delivery, typed error
+  mapping (P2011–P2017), DB-level subtotal/deposit invariants. Import cart domain
+  (localStorage, max 40 lines, qty 1–99, dedupe by offerId), import order validation
+  (separate customer/delivery), import order repository (typed error mapping),
+  import checkout server action. pgTAP 24 files / 641 assertions, Vitest 49
   files / 391 assertions, lint 0, strict TS, production build.
 
 Do not re-audit closed capabilities without evidence of regression.

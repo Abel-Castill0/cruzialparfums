@@ -10,6 +10,8 @@ const VALID_REQUEST = {
   customer: {
     name: "Test Client",
     phone: "+51999111222",
+  },
+  delivery: {
     district: "San Isidro",
     address: "Av. Principal 123",
     note: "Test order",
@@ -32,6 +34,11 @@ describe("import order validation", () => {
       expect(result.lines).toHaveLength(1);
       expect(result.lines[0]!.offer_id).toBe(VALID_REQUEST.lines[0]!.offerId);
       expect(result.lines[0]!.quantity).toBe(2);
+      expect(result.customer.name).toBe("Test Client");
+      expect(result.customer.phone).toBe("+51999111222");
+      expect(result.delivery.district).toBe("San Isidro");
+      expect(result.delivery.address).toBe("Av. Principal 123");
+      expect(result.delivery.note).toBe("Test order");
     }
   });
 
@@ -113,10 +120,10 @@ describe("import order validation", () => {
     expect("ok" in result && result.ok).toBe(false);
   });
 
-  it("rejects customer missing required fields", () => {
+  it("rejects customer missing name", () => {
     const result = validateAndResolveImportOrder({
       ...VALID_REQUEST,
-      customer: { name: "", phone: "+51999111222", district: "San Isidro", address: "Av. 1" },
+      customer: { name: "", phone: "+51999111222" },
     });
     expect("ok" in result && result.ok).toBe(false);
     if ("ok" in result && !result.ok) {
@@ -127,7 +134,7 @@ describe("import order validation", () => {
   it("rejects invalid phone", () => {
     const result = validateAndResolveImportOrder({
       ...VALID_REQUEST,
-      customer: { ...VALID_REQUEST.customer, phone: "123" },
+      customer: { name: "Test", phone: "123" },
     });
     expect("ok" in result && result.ok).toBe(false);
     if ("ok" in result && !result.ok) {
@@ -138,7 +145,7 @@ describe("import order validation", () => {
   it("rejects missing district", () => {
     const result = validateAndResolveImportOrder({
       ...VALID_REQUEST,
-      customer: { ...VALID_REQUEST.customer, district: "" },
+      delivery: { district: "", address: "Av. 1" },
     });
     expect("ok" in result && result.ok).toBe(false);
     if ("ok" in result && !result.ok) {
@@ -149,7 +156,7 @@ describe("import order validation", () => {
   it("rejects missing address", () => {
     const result = validateAndResolveImportOrder({
       ...VALID_REQUEST,
-      customer: { ...VALID_REQUEST.customer, address: "" },
+      delivery: { district: "San Isidro", address: "" },
     });
     expect("ok" in result && result.ok).toBe(false);
     if ("ok" in result && !result.ok) {
@@ -160,23 +167,24 @@ describe("import order validation", () => {
   it("normalizes note to empty string when omitted", () => {
     const result = validateAndResolveImportOrder({
       ...VALID_REQUEST,
-      customer: { name: "Test", phone: "+51999111222", district: "San Isidro", address: "Av. 1" },
+      delivery: { district: "San Isidro", address: "Av. 1" },
     });
-    if ("ok" in result && result.ok) {
-      expect(result.customer.note).toBe("");
+    if (!("message" in result)) {
+      expect(result.delivery.note).toBe("");
     }
   });
 
   it("truncates oversized text fields", () => {
     const result = validateAndResolveImportOrder({
       ...VALID_REQUEST,
-      customer: {
-        ...VALID_REQUEST.customer,
+      delivery: {
+        district: "San Isidro",
+        address: "Av. 1",
         note: "x".repeat(600),
       },
     });
-    if ("ok" in result && result.ok) {
-      expect(result.customer.note.length).toBeLessThanOrEqual(501);
+    if (!("message" in result)) {
+      expect(result.delivery.note.length).toBeLessThanOrEqual(501);
     }
   });
 });
