@@ -1,7 +1,7 @@
 import "server-only";
 
 import { createServerClient } from "@supabase/ssr";
-import type { SupabaseClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import type { Database } from "./database.types";
 import { readSupabasePublicEnv, readSupabaseSecretKey } from "./env";
@@ -43,6 +43,27 @@ export async function createSupabaseServerClient(): Promise<SupabaseClient<Datab
           // only because that refresh exists.
         }
       },
+    },
+  });
+}
+
+/**
+ * Stateless anonymous server client for public read models.
+ *
+ * Public storefront reads must never inherit an admin/viewer cookie or spend
+ * time refreshing an unrelated stale session. The publishable key carries no
+ * elevated privilege: PostgreSQL still evaluates every call as `anon`, and
+ * the public RPC/RLS boundary remains authoritative.
+ */
+export function createSupabasePublicServerClient(): SupabaseClient<Database> | null {
+  const env = readSupabasePublicEnv();
+  if (!env) return null;
+
+  return createClient<Database>(env.url, env.publishableKey, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+      detectSessionInUrl: false,
     },
   });
 }

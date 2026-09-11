@@ -12,6 +12,13 @@ const nextConfig: NextConfig = {
         pathname: "/cruzialparfums/**",
         search: "",
       },
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com",
+        port: "",
+        pathname: "/**",
+        search: "",
+      },
     ],
   },
   // Minimal baseline hardening (4I2): no app page is meant to be framed by

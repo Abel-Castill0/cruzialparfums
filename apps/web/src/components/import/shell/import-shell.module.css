@@ -14,6 +14,29 @@
   gap: 16px;
 }
 
+.navigation {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: clamp(12px, 2vw, 28px);
+  white-space: nowrap;
+}
+
+.navigation a {
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-import-silver);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  transition: color 180ms ease;
+}
+
+.navigation a:hover { color: var(--color-import-white); }
+
 .lockup {
   display: flex;
   align-items: center;
@@ -56,7 +79,10 @@
 }
 
 .whatsapp {
+  min-height: 44px;
   padding: 8px 14px;
+  display: inline-flex;
+  align-items: center;
   border: 1px solid var(--color-import-silver);
   color: var(--color-import-white);
   font-size: 10px;
@@ -72,6 +98,9 @@
 }
 
 .back {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
   color: var(--color-import-silver);
   font-size: 10px;
   font-weight: 600;
@@ -114,6 +143,12 @@
   color: var(--color-import-white);
 }
 
+.footerInner a {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+}
+
 @media (max-width: 560px) {
   .headerInner {
     flex-wrap: wrap;
@@ -134,4 +169,8 @@
     flex-wrap: wrap;
     gap: 12px;
   }
+}
+
+@media (max-width: 900px) {
+  .navigation { display: none; }
 }

@@ -371,6 +371,15 @@ reset role;
 -- app.campaign_is_public() helper checked earlier.
 -- ---------------------------------------------------------------------------
 
+-- 4J5A makes public campaign selection fail closed unless exactly one eligible
+-- Import campaign is open. The earlier lifecycle fixture intentionally leaves
+-- campaign 6006 open, so close it before constructing this isolated one-open-
+-- campaign RLS matrix.
+update public.campaigns
+set status = 'closed'
+where number = 6006
+  and business_unit_id = '22222222-2222-4222-8222-222222222222';
+
 -- campaign_products_public_read (hardened in 20260907154401_integrity_hardening.sql)
 -- also requires the referenced product itself to be publicly visible
 -- (app.product_is_public: publication_status = 'published', not archived) —

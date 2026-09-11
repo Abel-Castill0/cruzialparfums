@@ -3,7 +3,7 @@ import { ImportFooter } from "@/components/import/shell/import-footer";
 import { ImportHeader } from "@/components/import/shell/import-header";
 
 export const metadata: Metadata = {
-  title: { default: "Cruzial Import", template: "%s — Cruzial Import" },
+  title: { default: "Cruzial Import", template: "%s | Cruzial Import" },
   description: "Importaciones, consolidados y productos seleccionados.",
 };
 

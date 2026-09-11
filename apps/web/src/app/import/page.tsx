@@ -1,198 +1,238 @@
-import type { Metadata } from "next";
+import type { Metadata, Route } from "next";
+import Image from "next/image";
+import Link from "next/link";
+import { ImportInformation } from "@/components/import/storefront/import-information";
+import {
+  availabilityLabel,
+  buildImportCatalogHref,
+  formatCampaignPrice,
+  parsePublicImportFilters,
+  presentationClassLabel,
+  type PublicImportProduct,
+} from "@/domains/import/public-import";
+import { PublicImportRepository } from "@/domains/import/public-import-repository";
 import { IMPORT_SETTINGS } from "@/domains/platform/settings";
+import { createSupabasePublicServerClient } from "@/lib/supabase/server";
 import styles from "./page.module.css";
 
 export const metadata: Metadata = {
-  title: "Cruzial Import",
-  description: "Importaciones, consolidados y productos seleccionados.",
+  title: "Consolidados y catálogo",
+  description: "Consulta el consolidado vigente y el catálogo público de Cruzial Import.",
 };
 
-// Foundation-only categories: data, not per-category code paths — adding a
-// real category later (e.g. a confirmed Relojes launch) means editing this
-// array, not writing a special case. No fake products/prices attached.
-const categories = [
-  {
-    title: "Consolidado",
-    note: "Compra grupal por campaña, con fechas y condiciones propias.",
-    badge: "Próximamente",
-  },
-  {
-    title: "Importaciones",
-    note: "Selección de productos traídos bajo pedido.",
-    badge: "Próximamente",
-  },
-  {
-    title: "Relojes",
-    note: "Una categoría más dentro de Import, no el catálogo completo.",
-    badge: "Próximamente",
-  },
-  {
-    title: "Más categorías",
-    note: "Import crece por campaña confirmada, no por catálogo masivo.",
-    badge: "Próximamente",
-  },
-] as const;
+type PageProps = {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+};
 
-const consolidatedSteps = [
-  { num: "01", title: "Se anuncia", text: "Una campaña se programa (scheduled) con fecha de apertura." },
-  { num: "02", title: "Se abre", text: "El consolidado queda abierto (open) para sumar pedidos hasta la fecha de cierre." },
-  { num: "03", title: "Se cierra", text: "Se cierra (closed) el consolidado y se procesa la compra grupal." },
-  { num: "04", title: "Se entrega", text: "Se despacha (fulfilled) por delivery privado, no por agencia." },
-] as const;
+function whatsappUrl(message = "Hola Cruzial Import, quiero más información.") {
+  return `https://wa.me/${IMPORT_SETTINGS.whatsappNumber}?text=${encodeURIComponent(message)}`;
+}
 
-const importFaqs = [
-  {
-    q: "¿Import comparte carrito o catálogo con Parfums?",
-    a: "No. Son dos negocios independientes dentro de Cruzial: carrito, catálogo, envío y condiciones propias para cada uno.",
-  },
-  {
-    q: "¿Cómo funciona el adelanto?",
-    a: "Cliente nuevo: 50% de adelanto. Cliente con compras previas confirmadas: 70%. El porcentaje final se valida con el pedido, no solo con lo que el navegador declara.",
-  },
-  {
-    q: "¿Cómo llega mi pedido?",
-    a: "Por delivery privado, no por Shalom ni otra agencia — ese es el método de envío exclusivo de Import.",
-  },
-  {
-    q: "¿Puedo comprar fuera de un consolidado?",
-    a: "Depende de la categoría y campaña. Escríbenos por WhatsApp para confirmar disponibilidad y condiciones exactas.",
-  },
-] as const;
+function formatClosingDate(value: string): string {
+  return new Intl.DateTimeFormat("es-PE", {
+    dateStyle: "long",
+    timeZone: "America/Lima",
+  }).format(new Date(value));
+}
 
-export default function ImportHomePage() {
-  const waUrl = `https://wa.me/${IMPORT_SETTINGS.whatsappNumber}?text=${encodeURIComponent("Hola Cruzial Import, quiero más información.")}`;
+function ClosedState({ unavailable = false }: { unavailable?: boolean }) {
+  return (
+    <>
+      <section className={styles.closedHero} aria-labelledby="import-closed-title">
+        <div className={styles.closedCopy}>
+          <p className={styles.eyebrow}>Cruzial Import</p>
+          <h1 id="import-closed-title">
+            {unavailable
+              ? "Catálogo no disponible por ahora."
+              : "El próximo consolidado se está preparando."}
+          </h1>
+          <p>
+            {unavailable
+              ? "No pudimos consultar el estado del consolidado. Inténtalo nuevamente o contáctanos."
+              : "Los productos y precios aparecerán cuando el próximo consolidado abra."}
+          </p>
+          <a
+            href={whatsappUrl()}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.primaryAction}
+          >
+            Consultar por WhatsApp
+          </a>
+        </div>
+        <div className={styles.closedVisual}>
+          <Image
+            src="/import/catalog-fallback.png"
+            alt="Composición gráfica de Cruzial Import"
+            fill
+            loading="eager"
+            sizes="(max-width: 767px) 100vw, 48vw"
+          />
+        </div>
+      </section>
+      <ImportInformation />
+    </>
+  );
+}
+
+function ProductCard({
+  product,
+  priority = false,
+}: {
+  product: PublicImportProduct;
+  priority?: boolean;
+}) {
+  const href = `/import/producto/${product.slug}` as Route;
+  return (
+    <article className={styles.productCard}>
+      <Link href={href} className={styles.productMedia}>
+        <Image
+          src={product.mediaUrl}
+          alt={product.mediaAlt}
+          fill
+          loading={priority ? "eager" : "lazy"}
+          sizes="(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 33vw"
+        />
+      </Link>
+      <div className={styles.productBody}>
+        <div className={styles.productIdentity}>
+          {product.brand ? <p>{product.brand}</p> : null}
+          <h2><Link href={href}>{product.name}</Link></h2>
+          {product.categoryName ? <span>{product.categoryName}</span> : null}
+        </div>
+        <div className={styles.presentationList}>
+          {product.presentations.map((presentation) => (
+            <div key={presentation.id} className={styles.presentationRow}>
+              <div>
+                <strong>{presentation.label}</strong>
+                <span>{presentationClassLabel(presentation.presentationClass)}</span>
+              </div>
+              <div className={styles.presentationPrice}>
+                <strong>{formatCampaignPrice(presentation.price, presentation.currency)}</strong>
+                <span data-availability={presentation.availability}>
+                  {availabilityLabel(presentation.availability)}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+        <Link href={href} className={styles.productLink}>
+          Ver producto <span aria-hidden="true">→</span>
+        </Link>
+      </div>
+    </article>
+  );
+}
+
+export default async function ImportHomePage({ searchParams }: PageProps) {
+  const rawParams = await searchParams;
+  const filters = parsePublicImportFilters(rawParams);
+  const supabase = createSupabasePublicServerClient();
+  if (!supabase) return <main className={styles.home}><ClosedState unavailable /></main>;
+
+  const result = await new PublicImportRepository(supabase).readCatalog(filters);
+  if (result.status === "closed") return <main className={styles.home}><ClosedState /></main>;
+  if (result.status === "error") return <main className={styles.home}><ClosedState unavailable /></main>;
+
+  const previousHref = buildImportCatalogHref(filters, { page: Math.max(1, filters.page - 1) });
+  const nextHref = buildImportCatalogHref(filters, {
+    page: Math.min(result.totalPages, filters.page + 1),
+  });
+  const invalidPage = filters.page > result.totalPages && result.total > 0;
 
   return (
     <main className={styles.home}>
-      <section className={styles.hero}>
-        <div className={styles.heroInner}>
-          <p className={styles.eyebrow}>Cruzial Import</p>
-          <h1>Importaciones y consolidados.</h1>
-          <p>
-            Un negocio independiente de Cruzial Parfums: catálogo, carrito,
-            envío y condiciones propias.
-          </p>
+      <section className={styles.campaignHero} aria-labelledby="campaign-title">
+        <div className={styles.campaignHeading}>
+          <p className={styles.eyebrow}>Consolidado #{result.campaign.number}</p>
+          <h1 id="campaign-title">{result.campaign.name}</h1>
+          <p>{result.campaign.publicMessage || "Precios exclusivos de este consolidado."}</p>
+          <a href="#catalogo" className={styles.primaryAction}>Ver catálogo</a>
         </div>
+        <dl className={styles.campaignFacts}>
+          <div><dt>Precios</dt><dd>Válidos para este consolidado</dd></div>
+          {result.campaign.closesAt ? (
+            <div><dt>Cierre</dt><dd>{formatClosingDate(result.campaign.closesAt)}</dd></div>
+          ) : null}
+          <div><dt>Atención</dt><dd>WhatsApp {IMPORT_SETTINGS.whatsappDisplay}</dd></div>
+        </dl>
       </section>
 
-      <div className={styles.status}>
-        <div className={styles.statusCard}>
-          <p className={styles.statusLabel}>Estado del consolidado</p>
-          <p className={styles.statusValue}>Sin consolidado activo por ahora</p>
-          <p className={styles.statusNote}>
-            Cuando exista una campaña real y confirmada, su fecha y condiciones
-            se mostrarán aquí — nunca una fecha estimada.
-          </p>
+      <section className={styles.catalog} id="catalogo" aria-labelledby="catalog-title">
+        <div className={styles.catalogHeading}>
+          <h2 id="catalog-title">Catálogo del consolidado</h2>
+          <p>Productos agrupados con todas sus presentaciones públicas.</p>
         </div>
-      </div>
 
-      <section className={styles.categories} aria-labelledby="import-categories-title">
-        <div className={styles.sectionHead}>
-          <p>Categorías</p>
-          <h2 id="import-categories-title">Lo que viene en Import</h2>
-        </div>
-        <div className={styles.categoryGrid}>
-          {categories.map((category) => (
-            <article key={category.title} className={styles.categoryCard} data-available="false">
-              <span className={styles.categoryTitle}>{category.title}</span>
-              <p className={styles.categoryNote}>{category.note}</p>
-              <span className={styles.categoryBadge}>{category.badge}</span>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className={styles.section} aria-labelledby="featured-import-title">
-        <div className={styles.sectionHead}>
-          <p>Selección Import</p>
-          <h2 id="featured-import-title">Productos destacados</h2>
-        </div>
-        <p className={styles.emptyNote}>
-          Todavía no hay un catálogo Import confirmado. Esta sección se activa
-          en cuanto exista una campaña o categoría real con productos.
-        </p>
-      </section>
-
-      <section className={styles.section} aria-labelledby="how-consolidated-title">
-        <div className={styles.sectionHead}>
-          <p>Cómo funciona</p>
-          <h2 id="how-consolidated-title">El consolidado, paso a paso</h2>
-        </div>
-        <div className={styles.stepGrid}>
-          {consolidatedSteps.map((step) => (
-            <article key={step.num}>
-              <span>{step.num}</span>
-              <h3>{step.title}</h3>
-              <p>{step.text}</p>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className={styles.depositSection} aria-labelledby="deposit-title">
-        <div>
-          <p className={styles.eyebrowLight}>Adelanto</p>
-          <h2 id="deposit-title">50% o 70%, según tu historial</h2>
-          <p>
-            Cliente nuevo: 50% de adelanto. Cliente con compras previas
-            confirmadas: 70%. Tu estado se valida con el pedido — declararlo
-            en el navegador no lo confirma por sí solo.
-          </p>
-        </div>
-        <div className={styles.depositCards}>
+        <form action="/import" method="get" className={styles.searchForm}>
+          <label htmlFor="import-search">Buscar por producto o marca</label>
           <div>
-            <strong>50%</strong>
-            <span>Cliente nuevo</span>
+            <input
+              id="import-search"
+              type="search"
+              name="q"
+              defaultValue={filters.query}
+              maxLength={120}
+              placeholder="Ejemplo: Armaf"
+            />
+            {filters.category ? (
+              <input type="hidden" name="categoria" value={filters.category} />
+            ) : null}
+            <button type="submit">Buscar</button>
           </div>
-          <div>
-            <strong>70%</strong>
-            <span>Cliente con historial confirmado</span>
-          </div>
-        </div>
-      </section>
+        </form>
 
-      <section className={styles.section} aria-labelledby="evidence-import-title">
-        <p className={styles.eyebrow}>Evidencia real</p>
-        <h2 id="evidence-import-title">Próximamente</h2>
-        <p className={styles.emptyNote}>
-          Reuniremos fotos reales de consolidados e importaciones despachadas.
-          No publicamos evidencia que no sea nuestra.
-        </p>
-      </section>
-
-      <section className={styles.deliverySection} aria-labelledby="delivery-title">
-        <div>
-          <p className={styles.eyebrow}>Envío</p>
-          <h2 id="delivery-title">Delivery privado</h2>
-          <p>
-            Import usa delivery privado, no la agencia Shalom que usa Parfums.
-            Es un método de envío propio de esta unidad de negocio.
-          </p>
-        </div>
-      </section>
-
-      <section className={styles.section} aria-labelledby="import-faq-title" id="faq">
-        <div className={styles.sectionHead}>
-          <p>Preguntas frecuentes</p>
-          <h2 id="import-faq-title">Antes de escribirnos</h2>
-        </div>
-        <div className={styles.faqGrid}>
-          {importFaqs.map((item) => (
-            <article key={item.q}>
-              <h3>{item.q}</h3>
-              <p>{item.a}</p>
-            </article>
+        <nav className={styles.categoryFilters} aria-label="Filtrar por categoría">
+          <Link
+            href={buildImportCatalogHref(filters, { category: "", page: 1 }) as Route}
+            aria-current={!filters.category ? "page" : undefined}
+          >
+            Todos
+          </Link>
+          {result.categories.map((category) => (
+            <Link
+              key={category.slug}
+              href={buildImportCatalogHref(filters, { category: category.slug, page: 1 }) as Route}
+              aria-current={filters.category === category.slug ? "page" : undefined}
+            >
+              {category.name} <span>{category.productCount}</span>
+            </Link>
           ))}
-        </div>
+        </nav>
+
+        <p className={styles.resultCount} aria-live="polite">
+          {result.total === 1 ? "1 producto" : `${result.total} productos`}
+          {filters.query ? ` para “${filters.query}”` : ""}
+        </p>
+
+        {result.products.length > 0 && !invalidPage ? (
+          <div className={styles.productGrid}>
+            {result.products.map((product, index) => (
+              <ProductCard key={product.id} product={product} priority={index === 0} />
+            ))}
+          </div>
+        ) : (
+          <div className={styles.emptyCatalog}>
+            <h3>No encontramos productos con estos filtros.</h3>
+            <p>Prueba otra búsqueda o vuelve a ver todo el consolidado.</p>
+            <Link href="/import">Limpiar filtros</Link>
+          </div>
+        )}
+
+        {result.totalPages > 1 ? (
+          <nav className={styles.pagination} aria-label="Paginación del catálogo">
+            {filters.page > 1 ? (
+              <Link href={previousHref as Route}>Anterior</Link>
+            ) : <span aria-disabled="true">Anterior</span>}
+            <p>Página {Math.min(filters.page, result.totalPages)} de {result.totalPages}</p>
+            {filters.page < result.totalPages ? (
+              <Link href={nextHref as Route}>Siguiente</Link>
+            ) : <span aria-disabled="true">Siguiente</span>}
+          </nav>
+        ) : null}
       </section>
 
-      <section className={styles.finalCta}>
-        <p className={styles.eyebrowLight}>Cruzial Import</p>
-        <h2>¿Quieres más información?</h2>
-        <a href={waUrl} target="_blank" rel="noopener noreferrer" className={styles.finalCtaLink}>
-          Escribir por WhatsApp <span aria-hidden="true">→</span>
-        </a>
-      </section>
+      <ImportInformation />
     </main>
   );
 }

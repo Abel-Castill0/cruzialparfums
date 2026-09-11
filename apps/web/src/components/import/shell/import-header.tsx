@@ -13,6 +13,12 @@ export function ImportHeader() {
             <span>Import</span>
           </span>
         </div>
+        <nav className={styles.navigation} aria-label="Navegación de Cruzial Import">
+          <Link href="/import">Inicio</Link>
+          <Link href="/import#catalogo">Catálogo</Link>
+          <Link href="/import#como-funciona">Cómo funciona</Link>
+          <Link href="/import#faq">FAQ</Link>
+        </nav>
         <div className={styles.headerActions}>
           <a
             className={styles.whatsapp}
@@ -22,9 +28,7 @@ export function ImportHeader() {
           >
             WhatsApp
           </a>
-          <Link href="/" className={styles.back}>
-            ← Volver a Cruzial
-          </Link>
+          <Link href="/" className={styles.back}>Cruzial</Link>
         </div>
       </div>
     </header>

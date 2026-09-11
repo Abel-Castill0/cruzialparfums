@@ -1,6 +1,6 @@
 # CRUZIAL PLATFORM V2 — CURRENT STATE
 
-Last updated: 2026-09-10
+Last updated: 2026-09-11
 
 ## Git
 
@@ -132,8 +132,49 @@ Isolated:
   Staging: dry-run exact (only these two migrations), applied, data invariants
   unchanged (844/912/898, campaign #6 draft, 898 unconfirmed, Vanilla
   Freak/CDN Preciux IV still 0 offers, 0 published products).
+- Public Import storefront + read model (4J5A) ✅ — fail-closed
+  current-campaign selector, anon-safe bounded RPCs, /import storefront
+  (search/category/pagination/canonical-product grouping/presentation UX),
+  /import/producto/[slug] detail, honest media fallback, closed state,
+  stateless anon Supabase client, accessibility, responsive, metadata.
+  pgTAP 23 files / 599 assertions, Vitest 47 files / 362 assertions, lint 0,
+  strict TS, production build. Staging migration applied, invariants preserved.
+  Hosted closed-state verified. Preview: `cruzial-platform-v2-dvwpkmovd-cruzial.vercel.app`.
 
 Do not re-audit closed capabilities without evidence of regression.
+
+### 4J5A — Public Import storefront + read model ✅ CLOSED
+
+Public Cruzial Import storefront and read model. Migration
+`20260911000000_public_import_catalog.sql`: fail-closed current-campaign
+selector (`app.public_import_campaign_id`), campaign/product/presentation
+RLS policies, anon-safe bounded RPCs (`public_get_import_current_campaign`,
+`public_list_import_categories`, `public_list_import_catalog`,
+`public_get_import_product`). Domain layer: `PublicImportRepository`,
+stateless anon server client, canonical-product grouping, presentation
+choices, server search/category filters/pagination, product detail, honest
+media fallback, closed/unavailable states, no cart/checkout/order behavior.
+
+pgTAP: 23 files / 599 assertions PASS (test 24 = 31 assertions covering
+campaign selection, publication gates, offer availability, search, category
+filter, pagination, direct RLS, multiple-campaign fail-closed, privilege
+boundary).
+
+Application gate: lint 0, strict TypeScript, Vitest 47 files / 362
+assertions, production build clean.
+
+Staging `iyxidhglyqkzoziyewlc`: migration applied, local/remote 27/27 in
+sync. Invariants: 844 products / 912 presentations / 898 offers preserved.
+Campaign #6 draft, archived_at null. 0 published products, 0 published
+presentations. 898 unconfirmed / 0 available / 0 out_of_stock. Vanilla Freak
+0 offers. CDN Preciux IV 0 offers. Public RPCs return 0 eligible. Anon
+direct table RLS returns 0 campaigns, 0 products, 0 campaign_products.
+
+Hosted closed-state: Preview `cruzial-platform-v2-dvwpkmovd-cruzial.vercel.app`
+renders "El próximo consolidado se está preparando." with fallback image,
+WhatsApp CTA, and ImportInformation. No draft data, prices, offers, campaign
+dates, or loader metadata leaked. Gateway (`/`) and Parfums (`/parfums`)
+smoke green.
 
 ### Follow-up — SQLSTATE 40001 audit (not yet scheduled)
 
@@ -825,11 +866,11 @@ White backgrounds are intentional.
 ## Next roadmap
 
 1. 4H2B — Public Parfums Supabase cutover after its blockers close
-2. 4J4 — After the remaining 4J3R decision and architecture authorization, use 4J2 to populate the reviewed Sexto Consolidado
-3. Import public order flow
-4. Global production-readiness audit
-5. Production Supabase / Vercel
-6. Punto.pe DNS / SEO cutover
+2. 4J5B — Import cart + server-authoritative checkout + persistent order
+   request + deposit snapshot + WhatsApp handoff
+3. Global production-readiness audit
+4. Production Supabase / Vercel
+5. Punto.pe DNS / SEO cutover
 
 Do not jump ahead automatically.
 
