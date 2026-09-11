@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ImportCartBadge } from "@/components/import/cart/import-cart-badge";
 import { IMPORT_SETTINGS } from "@/domains/platform/settings";
 import styles from "./import-shell.module.css";
 
@@ -20,6 +21,7 @@ export function ImportHeader() {
           <Link href="/import#faq">FAQ</Link>
         </nav>
         <div className={styles.headerActions}>
+          <ImportCartBadge />
           <a
             className={styles.whatsapp}
             href={`https://wa.me/${IMPORT_SETTINGS.whatsappNumber}`}

@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cache } from "react";
+import { ImportAddToCartButton } from "@/components/import/cart/import-add-to-cart";
 import {
   availabilityLabel,
   formatCampaignPrice,
@@ -96,11 +97,37 @@ export default async function ImportProductPage({ params }: ProductPageProps) {
             ))}
           </section>
 
+          <div className={styles.cartSection}>
+            <h2>Agregar al carrito</h2>
+            {product.presentations.filter((p) => p.availability === "available").length > 0 ? (
+              <div className={styles.presentationCartList}>
+                {product.presentations.map((presentation) => (
+                  <div key={presentation.id} className={styles.presentationCartItem}>
+                    <span className={styles.presentationCartLabel}>{presentation.label}</span>
+                    <ImportAddToCartButton
+                      line={{
+                        offerId: presentation.offerId,
+                        offerUpdatedAt: presentation.offerUpdatedAt,
+                        label: presentation.label,
+                        productName: product.name,
+                        price: presentation.price,
+                        currency: presentation.currency,
+                        quantity: 1,
+                      }}
+                      disabled={presentation.availability !== "available"}
+                    />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className={styles.allOutOfStock}>Todas las presentaciones están agotadas.</p>
+            )}
+          </div>
+
           <div className={styles.actions}>
             <a href={waUrl} target="_blank" rel="noopener noreferrer">Consultar por WhatsApp</a>
             <Link href={"/import#catalogo" as Route}>Volver al catálogo</Link>
           </div>
-          <p className={styles.notice}>Este catálogo es informativo. La solicitud de compra y el cálculo de adelanto todavía no están habilitados.</p>
         </div>
       </article>
     </main>

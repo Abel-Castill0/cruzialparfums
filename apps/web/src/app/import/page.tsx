@@ -1,6 +1,7 @@
 import type { Metadata, Route } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { ImportAddToCartButton } from "@/components/import/cart/import-add-to-cart";
 import { ImportInformation } from "@/components/import/storefront/import-information";
 import {
   availabilityLabel,
@@ -83,6 +84,11 @@ function ProductCard({
   priority?: boolean;
 }) {
   const href = `/import/producto/${product.slug}` as Route;
+  const availablePresentations = product.presentations.filter(
+    (p) => p.availability === "available",
+  );
+  const firstAvailable = availablePresentations[0];
+
   return (
     <article className={styles.productCard}>
       <Link href={href} className={styles.productMedia}>
@@ -116,6 +122,21 @@ function ProductCard({
             </div>
           ))}
         </div>
+        {firstAvailable ? (
+          <ImportAddToCartButton
+            line={{
+              offerId: firstAvailable.offerId,
+              offerUpdatedAt: firstAvailable.offerUpdatedAt,
+              label: firstAvailable.label,
+              productName: product.name,
+              price: firstAvailable.price,
+              currency: firstAvailable.currency,
+              quantity: 1,
+            }}
+          />
+        ) : (
+          <p className={styles.allOutOfStock}>Todas las presentaciones están agotadas</p>
+        )}
         <Link href={href} className={styles.productLink}>
           Ver producto <span aria-hidden="true">→</span>
         </Link>

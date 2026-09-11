@@ -254,6 +254,16 @@
 .presentationPrice { text-align: right; }
 .presentationPrice span[data-availability="out_of_stock"] { color: #a33a32; font-weight: 700; }
 .presentationPrice span[data-availability="available"] { color: #276343; font-weight: 700; }
+.allOutOfStock {
+  margin-top: 14px;
+  padding: 10px 14px;
+  border: 1px solid var(--import-line);
+  border-radius: 10px;
+  color: var(--import-muted);
+  font-size: 0.76rem;
+  text-align: center;
+}
+
 .productLink {
   min-height: 44px;
   margin-top: auto;

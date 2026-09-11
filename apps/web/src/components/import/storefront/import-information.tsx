@@ -8,7 +8,7 @@ const faqs = [
   },
   {
     question: "¿Cómo funciona el adelanto?",
-    answer: "El adelanto informativo es 50% para cliente nuevo y 70% para cliente con compras previas confirmadas. La validación ocurre al solicitar el pedido.",
+    answer: "El adelanto es 50% para cliente nuevo y 70% para cliente con compras previas confirmadas. Se calcula automáticamente al registrar tu solicitud.",
   },
   {
     question: "¿Cómo llega mi pedido?",
@@ -31,7 +31,7 @@ export function ImportInformation() {
         </div>
         <ol className={styles.processList}>
           <li><strong>Se abre</strong><span>El catálogo publica los productos, precios y disponibilidad confirmados para la campaña.</span></li>
-          <li><strong>Se solicita</strong><span>Durante la campaña se coordinan los productos elegidos. La solicitud de compra todavía no está habilitada.</span></li>
+          <li><strong>Se solicita</strong><span>Durante la campaña puedes agregar productos al carrito y registrar tu solicitud. El adelanto se valida al registrar.</span></li>
           <li><strong>Se cierra</strong><span>Al terminar el consolidado se procesa la compra grupal según sus condiciones.</span></li>
           <li><strong>Se entrega</strong><span>Los pedidos de Import se coordinan mediante delivery privado.</span></li>
         </ol>
@@ -40,7 +40,7 @@ export function ImportInformation() {
       <section className={styles.conditions} aria-labelledby="import-conditions-title">
         <div>
           <h2 id="import-conditions-title">Condiciones claras antes de pedir</h2>
-          <p>El adelanto se valida con el pedido. Los porcentajes son informativos y no se calculan en el navegador.</p>
+          <p>El adelanto se calcula automáticamente al registrar. Los porcentajes son referenciales y se validan server-side.</p>
         </div>
         <dl>
           <div><dt>50%</dt><dd>Cliente nuevo</dd></div>

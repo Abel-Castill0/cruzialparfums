@@ -6,6 +6,7 @@ import {
   type ImportOrderRequestInput,
   type ImportOrderValidationError,
 } from "@/domains/orders/import-order-request";
+import { readImportPublicContact } from "@/domains/import/import-public-contact";
 import { IMPORT_SETTINGS } from "@/domains/platform/settings";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
 
@@ -17,7 +18,7 @@ export type CreateImportOrderResult =
   | {
       status: "success";
       orderNumber: string;
-      whatsappUrl: string;
+      whatsappUrl: string | null;
       created: boolean;
       subtotal: number;
       depositPercentage: number;
@@ -25,7 +26,7 @@ export type CreateImportOrderResult =
       campaignNumber: number;
     };
 
-function buildImportWhatsAppUrl(
+function buildImportWhatsAppMessage(
   orderNumber: string,
   campaignNumber: number,
   subtotal: number,
@@ -34,18 +35,34 @@ function buildImportWhatsAppUrl(
   customerName: string,
   customerPhone: string,
   deliveryDistrict: string,
+  deliveryAddress: string,
 ): string {
-  const encoded = encodeURIComponent(
-    `Hola Cruzial Import — solicitud ${orderNumber}\n` +
-      `Campaña #${campaignNumber}\n` +
-      `Subtotal: S/ ${subtotal.toFixed(2)}\n` +
-      `Anticipo (${depositPercentage}%): S/ ${depositAmount.toFixed(2)}\n` +
-      `Nombre: ${customerName}\n` +
-      `Teléfono: ${customerPhone}\n` +
-      `Distrito: ${deliveryDistrict}\n` +
-      `Adjunta tu comprobante de depósito para confirmar.`,
-  );
-  return `https://wa.me/${IMPORT_SETTINGS.whatsappNumber}?text=${encoded}`;
+  const parts = [
+    `Hola Cruzial Import.`,
+    `Quiero continuar con mi solicitud ${orderNumber}`,
+    ``,
+    `Consolidado #${campaignNumber}`,
+    ``,
+    `Subtotal: S/ ${subtotal.toFixed(2)}`,
+    `Adelanto a coordinar (${depositPercentage}%): S/ ${depositAmount.toFixed(2)}`,
+    ``,
+    `Nombre: ${customerName}`,
+    `Teléfono: ${customerPhone}`,
+    ``,
+    `Delivery privado:`,
+    `Distrito: ${deliveryDistrict}`,
+    `Dirección: ${deliveryAddress}`,
+    ``,
+    `La solicitud ya fue registrada en Cruzial.`,
+  ];
+  return parts.join("\n");
+}
+
+function buildImportWhatsAppUrl(
+  whatsappNumber: string,
+  message: string,
+): string {
+  return `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
 }
 
 function importOrderErrorToMessage(error: {
@@ -56,9 +73,9 @@ function importOrderErrorToMessage(error: {
     case "cart_changed":
       return "Uno o más productos cambiaron. Actualiza tu carrito antes de continuar.";
     case "campaign_unavailable":
-      return "La campaña actual no está aceptando pedidos. Intenta más tarde.";
+      return "Este consolidado ya no está aceptando solicitudes.";
     case "product_unavailable":
-      return "Uno o más productos ya no están disponibles. Actualiza tu carrito.";
+      return "Uno o más productos ya no están disponibles.";
     case "duplicate_offer":
       return "Tu carrito contiene productos duplicados. Revisa tu selección.";
     case "deposit_policy_missing":
@@ -96,19 +113,25 @@ export async function createImportOrderRequest(
   if (!persisted.ok)
     return { status: "error", message: importOrderErrorToMessage(persisted.error) };
 
+  const contact = await readImportPublicContact(client);
+  const whatsappNumber = contact?.whatsappNumber ?? IMPORT_SETTINGS.whatsappNumber;
+
+  const message = buildImportWhatsAppMessage(
+    persisted.data.orderNumber,
+    persisted.data.campaignNumber,
+    persisted.data.subtotal,
+    persisted.data.depositPercentage,
+    persisted.data.depositAmount,
+    validated.customer.name,
+    validated.customer.phone,
+    validated.delivery.district,
+    validated.delivery.address,
+  );
+
   return {
     status: "success",
     orderNumber: persisted.data.orderNumber,
-    whatsappUrl: buildImportWhatsAppUrl(
-      persisted.data.orderNumber,
-      persisted.data.campaignNumber,
-      persisted.data.subtotal,
-      persisted.data.depositPercentage,
-      persisted.data.depositAmount,
-      validated.customer.name,
-      validated.customer.phone,
-      validated.delivery.district,
-    ),
+    whatsappUrl: buildImportWhatsAppUrl(whatsappNumber, message),
     created: persisted.data.created,
     subtotal: persisted.data.subtotal,
     depositPercentage: persisted.data.depositPercentage,
