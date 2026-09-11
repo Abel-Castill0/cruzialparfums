@@ -186,9 +186,14 @@ export default function ImportCheckoutPage() {
                   Abrir WhatsApp
                 </a>
               ) : (
-                <p className={styles.whatsappProblem}>
-                  No se pudo generar el enlace de WhatsApp. Contacta a soporte con tu número de solicitud: {d.orderNumber}
-                </p>
+                <>
+                  <p className={styles.whatsappProblem}>
+                    Tu solicitud fue registrada con el número {d.orderNumber}, pero no pudimos preparar el enlace de WhatsApp en este momento.
+                  </p>
+                  <p className={styles.whatsappProblem}>
+                    Contacta directamente a Cruzial Import para coordinar el delivery y la confirmación de tu solicitud.
+                  </p>
+                </>
               )}
               <button
                 type="button"

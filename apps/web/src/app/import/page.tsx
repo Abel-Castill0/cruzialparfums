@@ -87,7 +87,9 @@ function ProductCard({
   const availablePresentations = product.presentations.filter(
     (p) => p.availability === "available",
   );
-  const firstAvailable = availablePresentations[0];
+  const hasAvailable = availablePresentations.length > 0;
+  const isSinglePresentation = product.presentations.length === 1;
+  const singleAvailable = isSinglePresentation && hasAvailable ? availablePresentations[0] : null;
 
   return (
     <article className={styles.productCard}>
@@ -122,20 +124,24 @@ function ProductCard({
             </div>
           ))}
         </div>
-        {firstAvailable ? (
+        {singleAvailable ? (
           <ImportAddToCartButton
             line={{
-              offerId: firstAvailable.offerId,
-              offerUpdatedAt: firstAvailable.offerUpdatedAt,
-              label: firstAvailable.label,
+              offerId: singleAvailable.offerId,
+              offerUpdatedAt: singleAvailable.offerUpdatedAt,
+              label: singleAvailable.label,
               productName: product.name,
-              price: firstAvailable.price,
-              currency: firstAvailable.currency,
+              price: singleAvailable.price,
+              currency: singleAvailable.currency,
               quantity: 1,
             }}
           />
+        ) : hasAvailable ? (
+          <Link href={href} className={styles.choosePresentation}>
+            Elegir presentación <span aria-hidden="true">→</span>
+          </Link>
         ) : (
-          <p className={styles.allOutOfStock}>Todas las presentaciones están agotadas</p>
+          <p className={styles.allOutOfStock}>Agotado</p>
         )}
         <Link href={href} className={styles.productLink}>
           Ver producto <span aria-hidden="true">→</span>

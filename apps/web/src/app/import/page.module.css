@@ -264,6 +264,29 @@
   text-align: center;
 }
 
+.choosePresentation {
+  min-height: 44px;
+  margin-top: 14px;
+  padding: 11px 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid var(--import-accent);
+  border-radius: 12px;
+  color: var(--import-accent);
+  background: transparent;
+  font-size: 0.78rem;
+  font-weight: 650;
+  text-align: center;
+  transition: background-color 180ms ease, color 180ms ease;
+}
+
+.choosePresentation:hover {
+  color: #f5f8fc;
+  background: var(--import-accent);
+}
+
 .productLink {
   min-height: 44px;
   margin-top: auto;
@@ -325,6 +348,8 @@
   .primaryAction:hover { background: #c5d7e9; }
   .presentationPrice span[data-availability="out_of_stock"] { color: #f4aaa2; }
   .presentationPrice span[data-availability="available"] { color: #99d7b2; }
+  .choosePresentation { border-color: #dce8f5; color: #dce8f5; }
+  .choosePresentation:hover { color: #0b1f3d; background: #dce8f5; }
 }
 
 @media (max-width: 1023px) {
