@@ -152,6 +152,15 @@ Isolated:
   (separate customer/delivery), import order repository (typed error mapping),
   import checkout server action. pgTAP 24 files / 641 assertions, Vitest 49
   files / 391 assertions, lint 0, strict TS, production build.
+- Import cart UI + checkout + persisted success + WhatsApp handoff (4J5B2) ✅
+  useImportCart hook (useSyncExternalStore), ImportAddToCartButton, ImportCartBadge,
+  ImportCartLineItem, /import/carrito cart page, /import/checkout page with form
+  validation, server action reads DB-configured public_contact, WhatsApp message
+  built from persisted order snapshots, success state with sessionStorage persistence,
+  requestId reuse for idempotent retries, double-submit guard, stale/unavailable/
+  campaign-closed error UX, accessibility (aria-live, aria-invalid, 44px targets),
+  responsive (320–1440). pgTAP 24 files / 641 assertions, Vitest 51 files / 431
+  assertions, lint 0, strict TS, production build. No B2 migration added.
 
 Do not re-audit closed capabilities without evidence of regression.
 
@@ -878,7 +887,8 @@ White backgrounds are intentional.
 ## Next roadmap
 
 1. 4H2B — Public Parfums Supabase cutover after its blockers close
-2. 4J5B2 — Import checkout UI + WhatsApp handoff (cart → checkout → confirm → message)
+2. 4J6 — Full Cruzial Import Preview QA + UX/accessibility/performance/security
+   regression + production-readiness gate
 3. Global production-readiness audit
 4. Production Supabase / Vercel
 5. Punto.pe DNS / SEO cutover
