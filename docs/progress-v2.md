@@ -170,6 +170,24 @@ Isolated:
   available. Dark mode styles for choosePresentation added. Checkout success UX
   updated for null whatsappUrl with explicit guidance copy.
 
+- Import admin operations: orders + customers + verified 50/70 workflow
+  (4J5C1) ✅ — /admin/import/pedidos (inbox, detail, status lifecycle),
+  /admin/import/clientes (list, detail, edit, verify, archive), order status
+  mutations (pending→confirmed→fulfilled, cancel with reason), customer CRUD
+  with phone normalization + duplicate detection, customer verification
+  (new/returning/pending), order↔customer linking, create-customer-from-order
+  atomic RPC, server-authoritative audit, concurrency-safe status transitions
+  (FOR UPDATE + expected_status), snapshot immutability, viewer/admin
+  authorization, cross-BU isolation, dashboard counters. Migrations
+  20260911100000 (7 RPCs + phone normalizer) + 20260911100100 (grant correction
+  removing anon access). pgTAP 26 files / 671 assertions (30 new), Vitest 52
+  files / 455 assertions, lint 0, strict TS, production build. Staging:
+  31/31 migrations synced, 844 products / 912 presentations / 898 campaign #6
+  products preserved, 0 orders/0 customers untouched, RPCs confirmed
+  SECURITY DEFINER with anon denied / authenticated granted. Preview
+  `cruzial-platform-v2-hr9lwk1qj-cruzial.vercel.app` — public gateway,
+  /parfums, /import closed state clean, admin login renders.
+
 Do not re-audit closed capabilities without evidence of regression.
 
 ### 4J5A — Public Import storefront + read model ✅ CLOSED

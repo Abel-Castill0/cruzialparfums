@@ -1,4 +1,4 @@
-﻿export type Json =
+export type Json =
   | string
   | number
   | boolean
@@ -758,6 +758,7 @@ export type Database = {
           customer_id: string | null
           customer_snapshot: Json
           delivery_snapshot: Json
+          deposit_amount_snapshot: number | null
           deposit_percentage_snapshot: number | null
           deposit_policy_snapshot: Json | null
           id: string
@@ -781,6 +782,7 @@ export type Database = {
           customer_id?: string | null
           customer_snapshot?: Json
           delivery_snapshot?: Json
+          deposit_amount_snapshot?: number | null
           deposit_percentage_snapshot?: number | null
           deposit_policy_snapshot?: Json | null
           id?: string
@@ -804,6 +806,7 @@ export type Database = {
           customer_id?: string | null
           customer_snapshot?: Json
           delivery_snapshot?: Json
+          deposit_amount_snapshot?: number | null
           deposit_percentage_snapshot?: number | null
           deposit_policy_snapshot?: Json | null
           id?: string
@@ -2446,6 +2449,96 @@ export type Database = {
           deposit_amount: number
           campaign_number: number
         }[]
+      }
+      admin_import_update_order_status: {
+        Args: {
+          p_order_id: string
+          p_expected_status: string
+          p_new_status: string
+          p_reason?: string
+        }
+        Returns: {
+          id: string
+          business_unit_id: string
+          order_number: string
+          status: string
+          updated_at: string
+        }
+      }
+      admin_import_create_customer: {
+        Args: {
+          p_full_name: string
+          p_phone?: string
+          p_notes?: string
+        }
+        Returns: {
+          id: string
+          business_unit_id: string
+          full_name: string
+          phone: string | null
+          verified_customer_status: string
+          created_at: string
+        }
+      }
+      admin_import_update_customer: {
+        Args: {
+          p_customer_id: string
+          p_full_name: string
+          p_phone?: string
+          p_notes?: string
+        }
+        Returns: {
+          id: string
+          business_unit_id: string
+          full_name: string
+          phone: string | null
+          updated_at: string
+        }
+      }
+      admin_import_verify_customer_status: {
+        Args: {
+          p_customer_id: string
+          p_new_status: string
+        }
+        Returns: {
+          id: string
+          business_unit_id: string
+          verified_customer_status: string
+          verified_by: string | null
+          verified_at: string | null
+          updated_at: string
+        }
+      }
+      admin_import_archive_customer: {
+        Args: {
+          p_customer_id: string
+        }
+        Returns: {
+          id: string
+          business_unit_id: string
+          archived_at: string | null
+          updated_at: string
+        }
+      }
+      admin_import_link_customer_order: {
+        Args: {
+          p_order_id: string
+          p_customer_id: string
+        }
+        Returns: {
+          id: string
+          customer_id: string | null
+          updated_at: string
+        }
+      }
+      admin_import_create_customer_from_order: {
+        Args: {
+          p_order_id: string
+        }
+        Returns: {
+          action: string
+          customer_id: string
+        }
       }
     }
     Enums: {
