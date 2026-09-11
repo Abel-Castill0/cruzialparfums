@@ -161,6 +161,14 @@ Isolated:
   campaign-closed error UX, accessibility (aria-live, aria-invalid, 44px targets),
   responsive (320–1440). pgTAP 24 files / 641 assertions, Vitest 51 files / 431
   assertions, lint 0, strict TS, production build. No B2 migration added.
+  4J5B2 Correction Gate (ca200dc): (A) WhatsApp message now built from persisted
+  order truth via getPersistedImportOrderSummary — server reads orders/order_lines/
+  campaigns after RPC, never trusts validated request body. (B) public_contact is
+  fail-closed — no hardcoded IMPORT_SETTINGS fallback; missing/invalid contact →
+  whatsappUrl null with user-facing copy. (C) multi-presentation catalog cards
+  show "Elegir presentación" link to product detail instead of auto-adding first
+  available. Dark mode styles for choosePresentation added. Checkout success UX
+  updated for null whatsappUrl with explicit guidance copy.
 
 Do not re-audit closed capabilities without evidence of regression.
 
