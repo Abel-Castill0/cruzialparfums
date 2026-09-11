@@ -15,8 +15,11 @@ function buildImportWhatsAppMessage(summary: PersistedImportOrderSummary): strin
     `Subtotal: S/ ${summary.subtotalAmount.toFixed(2)}`,
     `Adelanto a coordinar (${summary.depositPercentageSnapshot}%): S/ ${summary.depositAmountSnapshot.toFixed(2)}`,
     ``,
+    `Nombre: ${summary.customerSnapshot.name}`,
+    `Teléfono: ${summary.customerSnapshot.phone}`,
+    ``,
     `Delivery privado:`,
-    `Distrito: ${summary.customerSnapshot.name ? summary.deliverySnapshot.district : ""}`,
+    `Distrito: ${summary.deliverySnapshot.district}`,
     `Dirección: ${summary.deliverySnapshot.address}`,
     ``,
     `La solicitud ya fue registrada en Cruzial.`,
@@ -64,16 +67,30 @@ describe("import whatsapp message builder — persisted summary", () => {
     expect(msg).toContain("Consolidado #6");
   });
 
+  it("includes persisted customer name", () => {
+    const msg = buildImportWhatsAppMessage(makeSummary());
+    expect(msg).toContain("Nombre: Juan Pérez");
+  });
+
+  it("includes persisted customer phone", () => {
+    const msg = buildImportWhatsAppMessage(makeSummary());
+    expect(msg).toContain("Teléfono: 51999111222");
+  });
+
+  it("includes persisted district directly from deliverySnapshot", () => {
+    const msg = buildImportWhatsAppMessage(makeSummary());
+    expect(msg).toContain("Distrito: San Isidro");
+  });
+
+  it("includes persisted delivery address", () => {
+    const msg = buildImportWhatsAppMessage(makeSummary());
+    expect(msg).toContain("Dirección: Av. 123");
+  });
+
   it("includes deposit percentage and amount from persisted summary", () => {
     const msg = buildImportWhatsAppMessage(makeSummary());
     expect(msg).toContain("50%");
     expect(msg).toContain("120.00");
-  });
-
-  it("includes persisted delivery district and address", () => {
-    const msg = buildImportWhatsAppMessage(makeSummary());
-    expect(msg).toContain("San Isidro");
-    expect(msg).toContain("Av. 123");
   });
 
   it("includes persisted item lines with qty × price = total", () => {
@@ -98,17 +115,34 @@ describe("import whatsapp message builder — persisted summary", () => {
 });
 
 describe("import idempotent retry — persisted truth wins", () => {
-  it("altered retry still uses original persisted delivery", () => {
+  it("altered retry cannot inject different customer name", () => {
+    const originalSummary = makeSummary({
+      customerSnapshot: { name: "Abel", phone: "51999111222" },
+    });
+    const msg = buildImportWhatsAppMessage(originalSummary);
+    expect(msg).toContain("Nombre: Abel");
+    expect(msg).not.toContain("Nombre: Different Person");
+  });
+
+  it("altered retry cannot inject different phone", () => {
+    const originalSummary = makeSummary({
+      customerSnapshot: { name: "Abel", phone: "51999111222" },
+    });
+    const msg = buildImportWhatsAppMessage(originalSummary);
+    expect(msg).toContain("Teléfono: 51999111222");
+    expect(msg).not.toContain("Teléfono: 0000000000");
+  });
+
+  it("altered retry cannot inject different district", () => {
     const originalSummary = makeSummary({
       deliverySnapshot: { district: "Lima", address: "Address A", note: "" },
     });
     const msg = buildImportWhatsAppMessage(originalSummary);
-    expect(msg).toContain("Lima");
-    expect(msg).toContain("Address A");
-    expect(msg).not.toContain("Different District");
+    expect(msg).toContain("Distrito: Lima");
+    expect(msg).not.toContain("Distrito: Different District");
   });
 
-  it("altered retry still uses original persisted lines/prices", () => {
+  it("altered retry cannot inject different lines/prices", () => {
     const originalSummary = makeSummary({
       lines: [
         {
@@ -128,14 +162,51 @@ describe("import idempotent retry — persisted truth wins", () => {
     const msg = buildImportWhatsAppMessage(originalSummary);
     expect(msg).toContain("Product A");
     expect(msg).toContain("210.00");
-    expect(msg).toContain("105.00");
+    expect(msg).not.toContain("Product B");
+    expect(msg).not.toContain("999.99");
   });
 
-  it("altered retry uses original persisted deposit values", () => {
+  it("altered retry cannot inject different deposit values", () => {
     const original = makeSummary({ depositPercentageSnapshot: 70, depositAmountSnapshot: 168.0 });
     const msg = buildImportWhatsAppMessage(original);
     expect(msg).toContain("70%");
     expect(msg).toContain("168.00");
+    expect(msg).not.toContain("Adelanto a coordinar (50%)");
+  });
+
+  it("persisted item lines remain authoritative", () => {
+    const summary = makeSummary({
+      lines: [
+        {
+          productNameSnapshot: "Lattafa Khamrah",
+          variantLabelSnapshot: "50 ml",
+          unitPriceAmount: 85.0,
+          quantity: 3,
+          lineTotalAmount: 255.0,
+          currency: "PEN",
+          sortOrder: 0,
+        },
+        {
+          productNameSnapshot: "Armaf Club de Nuit",
+          variantLabelSnapshot: "105 ml",
+          unitPriceAmount: 120.0,
+          quantity: 1,
+          lineTotalAmount: 120.0,
+          currency: "PEN",
+          sortOrder: 1,
+        },
+      ],
+      subtotalAmount: 375.0,
+      depositPercentageSnapshot: 50,
+      depositAmountSnapshot: 187.5,
+    });
+    const msg = buildImportWhatsAppMessage(summary);
+    expect(msg).toContain("• Lattafa Khamrah — 50 ml");
+    expect(msg).toContain("3 × S/ 85.00 = S/ 255.00");
+    expect(msg).toContain("• Armaf Club de Nuit — 105 ml");
+    expect(msg).toContain("1 × S/ 120.00 = S/ 120.00");
+    expect(msg).toContain("Subtotal: S/ 375.00");
+    expect(msg).toContain("Adelanto a coordinar (50%): S/ 187.50");
   });
 });
 
