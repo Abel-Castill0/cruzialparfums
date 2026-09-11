@@ -178,15 +178,20 @@ Isolated:
   (new/returning/pending), order↔customer linking, create-customer-from-order
   atomic RPC, server-authoritative audit, concurrency-safe status transitions
   (FOR UPDATE + expected_status), snapshot immutability, viewer/admin
-  authorization, cross-BU isolation, dashboard counters. Migrations
+  authorization, cross-BU isolation, dashboard counters. Concurrency gate:
+  partial unique index (customers_import_active_phone_uniq) on canonical
+  phone scoped to active Import customers, FOR UPDATE row locks on all
+  mutation RPCs, unique_violation → P2026, conditional UPDATE WHERE
+  customer_id IS NULL for create-from-order re-link. Migrations
   20260911100000 (7 RPCs + phone normalizer) + 20260911100100 (grant correction
   removing anon access) + 20260911100200 (final correction: canonical phone
   storage, verified provenance, auth-before-lookup existence oracle prevention,
   phone helper revoke, CHECK constraint expansion for full lifecycle, trigger
-  bypass for admin RPCs). pgTAP 26 files / 693 assertions (52 import ops, up
-  from 30), Vitest 52 files / 455 assertions, lint 0, strict TS, production
-  build. Staging: 32/32 migrations synced, 844 products / 0 orders / 0
-  customers untouched, all 8 RPCs SECURITY DEFINER with anon denied /
+  bypass for admin RPCs) + 20260911100300 (concurrency gate: unique index,
+  FOR UPDATE locks, unique_violation handling). pgTAP 25 files / 709
+  assertions, Vitest 52 files / 455 assertions, lint 0, strict TS, production
+  build. Staging: 33/33 migrations synced, 940 products / 0 orders / 0
+  customers untouched, all 7 RPCs SECURITY DEFINER with anon denied /
   authenticated granted. Preview
   `cruzial-platform-v2-hr9lwk1qj-cruzial.vercel.app` — public gateway,
   /parfums, /import closed state clean, admin login renders.

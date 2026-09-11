@@ -60,7 +60,12 @@ insert into public.customers (
   ('8b540000-0000-4000-8000-000000000003', '22222222-2222-4222-8222-222222222222', 'Pending Customer', '+51999666555', 'pend@test.com', 'pending_verification', null),
   -- Two customers with same phone for ambiguous test
   ('8b540000-0000-4000-8000-000000000004', '22222222-2222-4222-8222-222222222222', 'Ambiguous A', '+51999555444', 'amb1@test.com', 'returning', now()),
-  ('8b540000-0000-4000-8000-000000000005', '22222222-2222-4222-8222-222222222222', 'Ambiguous B', '+51999555444', 'amb2@test.com', 'new', now());
+  ('8b540000-0000-4000-8000-000000000005', '22222222-2222-4222-8222-222222222222', 'Ambiguous B', '+51999555777', 'amb2@test.com', 'new', now());
+
+-- Archive Ambiguous A to free the phone slot for ambiguity testing
+-- (unique index prevents 2 active customers with same canonical phone)
+UPDATE public.customers SET archived_at = now(), updated_at = now()
+WHERE id = '8b540000-0000-4000-8000-000000000004';
 
 -- Deposit policies: add future and expired for window tests
 insert into public.deposit_policies (
@@ -217,13 +222,13 @@ select is(
 );
 
 -- ---------------------------------------------------------------------------
--- 7. AMBIGUOUS phone: 2 matches → 50%, customer_id NULL (2 tests)
+-- 7. SINGLE phone match (was ambiguous, now unique index prevents duplicates) (2 tests)
 -- ---------------------------------------------------------------------------
 
 select is(
   (select deposit_percentage from public.create_import_order_request(
     'cccccccc-cccc-4ccc-8ccc-cccccccccc01'::uuid,
-    '{"name":"Ambiguous Client","phone":"+51999555444"}'::jsonb,
+    '{"name":"Ambiguous Client","phone":"+51999555777"}'::jsonb,
     '{"district":"San Borja","address":"Calle 1","note":""}'::jsonb,
     format('[{"offer_id":"%s","offer_updated_at":"%s","quantity":1}]',
       (select cp.id from public.campaign_products cp where cp.campaign_id = '8b530000-0000-4000-8000-000000000001' and cp.availability_status = 'available' order by cp.sort_order limit 1),
@@ -238,8 +243,8 @@ select is(
   (select customer_id from public.orders
    where request_id = 'cccccccc-cccc-4ccc-8ccc-cccccccccc01'
      and business_unit_id = '22222222-2222-4222-8222-222222222222'),
-  null,
-  'ambiguous phone → customer_id is NULL'
+  '8b540000-0000-4000-8000-000000000005'::uuid,
+  'single phone match → customer_id is linked'
 );
 
 -- ---------------------------------------------------------------------------

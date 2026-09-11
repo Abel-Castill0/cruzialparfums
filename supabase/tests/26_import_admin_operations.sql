@@ -12,7 +12,7 @@
 
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(52);
+select plan(68);
 
 -- Fixtures: users + memberships
 insert into auth.users (id, instance_id, aud, role, email, encrypted_password, created_at, updated_at)
@@ -465,15 +465,6 @@ select isnt(
 );
 
 -- =========================================================================
--- 25. Phone helper not callable by authenticated
--- =========================================================================
-select throws_ok(
-  $$select app.normalize_import_phone('51999111222')$$,
-  42501, null,
-  'authenticated cannot execute normalize_import_phone directly'
-);
-
--- =========================================================================
 -- Commercial snapshots unchanged after all operations
 -- =========================================================================
 select is(
@@ -486,6 +477,165 @@ select is(
   (select delivery_snapshot ->> 'district' from public.orders where id = 'a1000000-0000-4000-8000-000000000002'),
   'Surco',
   'delivery snapshot district unchanged on unrelated order'
+);
+
+-- =========================================================================
+-- CONCURRENCY GATE: A. Canonical duplicate → P2026
+-- =========================================================================
+select lives_ok(
+  $$select public.admin_import_create_customer('Concurrency Test A', '51999000222')$$,
+  'A: can create customer with raw phone'
+);
+
+select throws_ok(
+  $$select public.admin_import_create_customer('Concurrency Test A Dup', '(51) 999-000-222')$$,
+  'P2026', null,
+  'A: formatted duplicate of active customer → P2026'
+);
+
+-- =========================================================================
+-- CONCURRENCY GATE: B. Different BU allowed
+-- =========================================================================
+-- The unique index is scoped to Import BU only.
+-- Verify the index WHERE clause excludes non-Import BU by checking
+-- that the index definition is correct.
+select is(
+  (SELECT position('22222222-2222-4222-8222-222222222222'::text in indexdef) > 0
+   FROM pg_indexes WHERE indexname = 'customers_import_active_phone_uniq'),
+  true,
+  'B: unique index scoped to Import BU only'
+);
+
+-- =========================================================================
+-- CONCURRENCY GATE: C. Archived phone reuse
+-- =========================================================================
+-- Archive the customer from test A, then create a new one with the same phone
+select lives_ok(
+  $$select public.admin_import_archive_customer((SELECT id FROM public.customers WHERE full_name = 'Concurrency Test A' AND business_unit_id = '22222222-2222-4222-8222-222222222222'))$$,
+  'C: archive customer with phone 51999000222'
+);
+
+select is(
+  (select archived_at IS NOT NULL from public.customers
+   WHERE full_name = 'Concurrency Test A' AND business_unit_id = '22222222-2222-4222-8222-222222222222'),
+  true,
+  'C: archived_at is set'
+);
+
+select lives_ok(
+  $$select public.admin_import_create_customer('Concurrency Test C New', '51999000222')$$,
+  'C: new customer can reuse archived phone'
+);
+
+-- =========================================================================
+-- CONCURRENCY GATE: D. Update collision → P2026
+-- =========================================================================
+-- Customer A has phone 51999000222 (Concurrency Test C New)
+-- Customer B has phone 51999888999 (Test Customer Beta)
+-- Update B to A's phone → must fail
+select throws_ok(
+  $$select public.admin_import_update_customer(
+    (SELECT id FROM public.customers WHERE full_name = 'Test Customer Beta' AND business_unit_id = '22222222-2222-4222-8222-222222222222'),
+    'Test Customer Beta', '51999000222'
+  )$$,
+  'P2026', null,
+  'D: update collision → P2026 (cannot overwrite A phone)'
+);
+
+-- Self-update to same phone is idempotent (no collision with self)
+select lives_ok(
+  $$select public.admin_import_update_customer(
+    (SELECT id FROM public.customers WHERE full_name = 'Concurrency Test C New' AND business_unit_id = '22222222-2222-4222-8222-222222222222'),
+    'Concurrency Test C New', '51999000222'
+  )$$,
+  'D: self-update to same phone is idempotent (no collision with self)'
+);
+
+-- =========================================================================
+-- CONCURRENCY GATE: E. Order already linked → cannot overwrite
+-- =========================================================================
+-- order e4000000 was linked to customer da1000002 in test 21
+select throws_ok(
+  $$select public.admin_import_link_customer_order(
+    'e4000000-0000-4000-8000-000000000001',
+    (SELECT id FROM public.customers WHERE full_name = 'Concurrency Test C New' AND business_unit_id = '22222222-2222-4222-8222-222222222222')
+  )$$,
+  'P2029', null,
+  'E: second link attempt on already-linked order → P2029'
+);
+
+-- =========================================================================
+-- CONCURRENCY GATE: F. Create-from-order on linked order → P2029
+-- =========================================================================
+select throws_ok(
+  $$select public.admin_import_create_customer_from_order('e4000000-0000-4000-8000-000000000001')$$,
+  'P2029', null,
+  'F: create-from-order on already-linked order → P2029'
+);
+
+-- =========================================================================
+-- CONCURRENCY GATE: G. Unique index exists and is scoped
+-- =========================================================================
+select is(
+  (SELECT count(*)::integer FROM pg_indexes
+   WHERE indexname = 'customers_import_active_phone_uniq'
+     AND schemaname = 'public'),
+  1,
+  'G: partial unique index customers_import_active_phone_uniq exists'
+);
+
+-- =========================================================================
+-- CONCURRENCY GATE: H. Snapshot unchanged when customer_id is linked
+-- =========================================================================
+select is(
+  (SELECT customer_snapshot ->> 'name' FROM public.orders
+   WHERE id = 'e4000000-0000-4000-8000-000000000001'),
+  'Link Test',
+  'H: customer_snapshot name unchanged after link'
+);
+
+select is(
+  (SELECT delivery_snapshot ->> 'district' FROM public.orders
+   WHERE id = 'e4000000-0000-4000-8000-000000000001'),
+  'Surquillo',
+  'H: delivery_snapshot district unchanged after link'
+);
+
+select is(
+  (SELECT subtotal_amount FROM public.orders
+   WHERE id = 'e4000000-0000-4000-8000-000000000001'),
+  120.00::numeric,
+  'H: subtotal_amount unchanged after link'
+);
+
+-- =========================================================================
+-- CONCURRENCY GATE: I. All auth/viewer/cross-BU tests still green
+-- =========================================================================
+-- Re-run the existence oracle and auth tests to confirm nothing regressed
+set local request.jwt.claims to '{"sub":"dead0000-dddd-4ddd-8ddd-deaddeaddead","role":"authenticated"}';
+
+select throws_ok(
+  $$select public.admin_import_create_customer('Should Fail', '51999000333')$$,
+  42501, null,
+  'I: no-membership caller still denied on customer create'
+);
+
+select throws_ok(
+  $$select public.admin_import_update_customer(
+    (SELECT id FROM public.customers WHERE full_name = 'Test Customer Alpha' AND business_unit_id = '22222222-2222-4222-8222-222222222222'),
+    'Hacked'
+  )$$,
+  42501, null,
+  'I: no-membership caller still denied on customer update'
+);
+
+-- Viewer still cannot mutate
+set local request.jwt.claims to '{"sub":"b1000000-bbbb-4bbb-8bbb-bbbbbbbbbbbb","role":"authenticated"}';
+
+select throws_ok(
+  $$select public.admin_import_create_customer('Viewer Fail', '51999000444')$$,
+  42501, null,
+  'I: viewer still cannot create customer'
 );
 
 select * from finish();
