@@ -180,11 +180,14 @@ Isolated:
   (FOR UPDATE + expected_status), snapshot immutability, viewer/admin
   authorization, cross-BU isolation, dashboard counters. Migrations
   20260911100000 (7 RPCs + phone normalizer) + 20260911100100 (grant correction
-  removing anon access). pgTAP 26 files / 671 assertions (30 new), Vitest 52
-  files / 455 assertions, lint 0, strict TS, production build. Staging:
-  31/31 migrations synced, 844 products / 912 presentations / 898 campaign #6
-  products preserved, 0 orders/0 customers untouched, RPCs confirmed
-  SECURITY DEFINER with anon denied / authenticated granted. Preview
+  removing anon access) + 20260911100200 (final correction: canonical phone
+  storage, verified provenance, auth-before-lookup existence oracle prevention,
+  phone helper revoke, CHECK constraint expansion for full lifecycle, trigger
+  bypass for admin RPCs). pgTAP 26 files / 693 assertions (52 import ops, up
+  from 30), Vitest 52 files / 455 assertions, lint 0, strict TS, production
+  build. Staging: 32/32 migrations synced, 844 products / 0 orders / 0
+  customers untouched, all 8 RPCs SECURITY DEFINER with anon denied /
+  authenticated granted. Preview
   `cruzial-platform-v2-hr9lwk1qj-cruzial.vercel.app` — public gateway,
   /parfums, /import closed state clean, admin login renders.
 
