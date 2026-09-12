@@ -208,6 +208,22 @@ Isolated:
   `cruzial-platform-v2-hr9lwk1qj-cruzial.vercel.app` — public gateway,
   /parfums, /import closed state clean, admin login renders.
 
+- Import settings + audit + admin completion + DB contact single source
+  (4J5C2) ✅ — /admin/import/configuracion (public contact settings with
+  optimistic concurrency, role-gated viewer/admin, requireUnitAdmin("import")),
+  /admin/import/auditoria (audit log list with action/entity filters,
+  pagination, import-only events), /admin/import/auditoria/[id] (audit detail
+  with curated field diff, cross-BU not-found). Dashboard completion:
+  Configuración + Auditoría navigation cards, contact configured status,
+  consolidado state indicator. Public contact single source of truth:
+  readImportPublicContact DB helper is sole runtime authority, IMPORT_SETTINGS
+  removed from import storefront (page, product detail, header, footer,
+  information), ImportContactProvider context passes DB contact to client
+  components, fail-closed when contact missing/malformed. Checkout already
+  uses DB contact — no regression. 54 Vitest files / 499 tests, 26 pgTAP
+  files / 725 assertions, lint 0, strict TS, production build clean.
+  No DB migration added. Staging: no push needed.
+
 Do not re-audit closed capabilities without evidence of regression.
 
 ### 4J5A — Public Import storefront + read model ✅ CLOSED
