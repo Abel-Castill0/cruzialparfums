@@ -44,3 +44,10 @@
 .mediaActions button{min-height:40px;padding:0 10px;font-size:11px}
 .mediaUploadBar{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .mediaEmptyPrimary{padding:10px 12px;border:1px solid #a56f16;background:rgba(165,111,22,0.08);color:#7d530d;font-size:12px}
+.filterInput{min-height:40px;padding:0 10px;border:1px solid #c7d2df;font-size:13px;background:#fff}
+.filterButton{min-height:40px;border:1px solid #0b2d57;background:#0b2d57;color:white;padding:0 14px;font-size:13px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center}
+.blockerTable{width:100%;border-collapse:collapse;font-size:13px;margin-top:12px}
+.blockerTable th,.blockerTable td{text-align:left;padding:8px 10px;border-bottom:1px solid #d7e0e9}
+.blockerTable th{font-size:10px;text-transform:uppercase;color:#607087;font-weight:500}
+.blockerTable td a{color:#0b2d57;text-decoration:none}
+.blockerTable td a:hover{text-decoration:underline}

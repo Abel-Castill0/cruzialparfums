@@ -182,7 +182,7 @@ select throws_ok(
       '2000-01-01T00:00:00Z'::timestamptz,
       'TEST stale', null
     )$$,
-  '40001',
+  'P2011',
   null,
   'a stale expected_updated_at on update is rejected as a conflict'
 );
