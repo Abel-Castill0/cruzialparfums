@@ -5,7 +5,7 @@
 
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(37);
+select plan(39);
 
 -- ---------------------------------------------------------------------------
 -- Fixtures
@@ -175,9 +175,9 @@ select throws_ok(
       'commercial_type', 'test-parent-category', 'Stale overwrite', null, null,
       'published', 30
     )$$,
-  '40001',
+  'P2011',
   null,
-  'stale expected_updated_at is rejected'
+  'stale expected_updated_at is rejected (4J5E: was 40001)'
 );
 
 select lives_ok(
@@ -351,6 +351,34 @@ select is(
    from public.categories where slug = 'test-child-category'),
   'draft|true',
   'restore returns the category to draft without deleting hierarchy data'
+);
+
+-- ---------------------------------------------------------------------------
+-- 4J5E: optimistic concurrency uses P2011, not the reserved 40001
+-- serialization_failure class (see
+-- 20260912030000_global_40001_conflict_code_correction.sql). Both raises
+-- below are the early explicit-check branch, not the post-UPDATE zero-rows
+-- branch, so neither statement mutates a row or writes an audit entry.
+-- ---------------------------------------------------------------------------
+
+select throws_ok(
+  $$select public.admin_archive_category(
+      (select id from public.categories where slug = 'test-parent-category'),
+      '2000-01-01T00:00:00Z'::timestamptz
+    )$$,
+  'P2011',
+  null,
+  'archiving with a stale expected_updated_at is rejected as a conflict, not silently overwritten'
+);
+
+select throws_ok(
+  $$select public.admin_restore_category(
+      (select id from public.categories where slug = 'test-child-category'),
+      (select updated_at from public.categories where slug = 'test-child-category')
+    )$$,
+  'P2011',
+  null,
+  'restoring an already-active category is rejected as a conflict (archived_at is null), not a silent no-op'
 );
 
 select is(

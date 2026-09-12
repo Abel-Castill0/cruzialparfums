@@ -259,9 +259,9 @@ select throws_ok(
       '2000-01-01T00:00:00Z'::timestamptz,
       '[{"product_variant_id": "b1000000-0000-4000-8000-00000000000b", "quantity": 5, "sort_order": 0}]'::jsonb
     )$$,
-  '40001',
+  'P2011',
   null,
-  'a stale expected_updated_at on composition replace is rejected as a conflict'
+  'a stale expected_updated_at on composition replace is rejected as a conflict (4J5E: was 40001)'
 );
 
 select throws_ok(
@@ -270,9 +270,9 @@ select throws_ok(
       '2000-01-01T00:00:00Z'::timestamptz,
       'client_confirmed'
     )$$,
-  '40001',
+  'P2011',
   null,
-  'a stale expected_updated_at on verification update is rejected as a conflict'
+  'a stale expected_updated_at on verification update is rejected as a conflict (4J5E: was 40001)'
 );
 
 -- ---------------------------------------------------------------------------

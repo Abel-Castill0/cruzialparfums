@@ -106,7 +106,7 @@ select throws_ok(
 select throws_ok(
   $$select public.admin_update_public_contact_setting(
       'parfums', '2000-01-01T00:00:00Z', '51926390591', '926 390 591', 'dominiocruzial@gmail.com')$$,
-  '40001', null, 'a stale expected_updated_at is rejected without silent overwrite'
+  'P2011', null, 'a stale expected_updated_at is rejected without silent overwrite (4J5E: was 40001)'
 );
 reset role;
 

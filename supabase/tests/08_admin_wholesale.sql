@@ -155,7 +155,7 @@ select throws_ok(
   $$select public.admin_update_wholesale_policy(
       (select id from public.wholesale_policies where commercial_type = 'arabic'),
       '2000-01-01T00:00:00Z', 50, 8.00, true)$$,
-  '40001', null, 'a stale policy update is rejected without silent overwrite'
+  'P2011', null, 'a stale policy update is rejected without silent overwrite (4J5E: was 40001)'
 );
 
 set local request.jwt.claims to '{"sub":"33333333-cccc-4ccc-8ccc-cccccccccccc","role":"authenticated"}';

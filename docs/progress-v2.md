@@ -275,15 +275,64 @@ WhatsApp CTA, and ImportInformation. No draft data, prices, offers, campaign
 dates, or loader metadata leaked. Gateway (`/`) and Parfums (`/parfums`)
 smoke green.
 
-### Follow-up — SQLSTATE 40001 audit (not yet scheduled)
+### Global SQLSTATE 40001 / error-contract audit (4J5E) ✅ CLOSED
 
-4J4C found and fixed the `40001`→`P2011` local-hang defect only in the Import
-campaign + product/presentation RPCs it touches. The same `40001` convention
-is still used by closed-phase RPCs across Parfums products, categories,
-combos, wholesale, media, settings, and Import consolidados (pgTAP tests
-05/06/07/08/11/14/16 area). Whether the hang reproduces on hosted
-staging/production (different Kong/gateway config than local CLI) is
-unverified. Needs a dedicated Global QA follow-up, not a 4J4C sweep.
+Full inventory of every application-authored `raise ... using errcode =
+'40001'` across `supabase/migrations` and `supabase/tests`. For each
+occurrence, resolved the LATEST `create or replace function` definition of
+that function name (migrations are append-only; only the most recent
+redefinition is live) and classified it. Result: every live app-raised
+`40001` was the same misuse — an application-level optimistic-concurrency
+guard (`UPDATE ... WHERE updated_at = expected` returning zero rows), never
+a genuine Postgres-detected SERIALIZABLE conflict (none of these functions
+use SERIALIZABLE isolation, and Postgres itself never raises 40001 from a
+PL/pgSQL `RAISE`). No genuine database-generated 40001 exists anywhere in
+this codebase to preserve.
+
+Already corrected, no longer live (superseded before this audit, nothing to
+do): Import campaign RPCs (4J4C, `20260910020000`) and all 6 Media RPCs
+(4J5D, `20260912020000`) — both already raise `P2011`. Earlier `40001`
+raises for those same function names in now-superseded migration versions
+are dead history, left untouched (rewriting an applied migration is
+forbidden regardless).
+
+Still live, corrected in `20260912030000_global_40001_conflict_code_correction.sql`
+(38th migration, additive `create or replace function`, same technique as
+4J4C/4J5D): 16 functions across Products (`admin_update_product`,
+`admin_restore_product`, `admin_update_variant`, `admin_restore_variant`,
+`admin_update_inventory`), Categories (`admin_update_category`,
+`admin_archive_category`, `admin_restore_category` — 2 raise sites each),
+Combos (`admin_update_combo_verification`, `admin_archive_combo`,
+`admin_restore_combo`, `admin_set_combo_composition`,
+`admin_archive_variant`, `admin_archive_product` — the live bodies of the
+last two are the ones in `20260908040000`, not the dead ones in
+`20260908000435`), Wholesale (`admin_update_wholesale_policy`), and Settings
+(`admin_update_public_contact_setting`). All now raise `P2011`. No signature,
+auth, RLS, validation, or audit-write behavior changed — only the SQLSTATE
+literal on the stale-write branch(es).
+
+Caller impact: none. `mapPostgrestError()`
+(`apps/web/src/domains/admin-parfums/products-repository.ts`) already mapped
+both `40001` and `P2011` to `{ type: "conflict" }`, and every other
+admin-parfums repository delegates its default case to that function — zero
+TypeScript changes needed.
+
+Tests: updated 7 existing pgTAP assertions (tests 05/06/07/08/14) from
+`40001` to `P2011`; added 2 new regression assertions in test 06 proving
+`admin_archive_category`/`admin_restore_category` reject a stale/already-
+active write with `P2011` (both hit the early-check branch, so neither
+mutates a row or writes an audit entry — plan bumped 37→39). Full pgTAP
+gate: 27 files / 759 assertions, hermetic from `db reset`. Application gate:
+lint 0, strict TypeScript, Vitest 55 files / 528 tests, production build
+clean. No migration applied to staging yet as part of this checkpoint —
+scope was local-only audit + correction; staging apply is a normal deploy
+step, not part of 4J5E's own gate.
+
+Remaining evidence gap (unchanged from before this audit): whether the
+`40001`→504 hang reproduces on hosted staging/production's Kong/PostgREST
+config (vs. local Supabase CLI, where 4J4C reproduced it) was never
+verified either way — moot now since no live RPC raises `40001` any more,
+but flagged for completeness.
 
 ### 4H2A boundary
 

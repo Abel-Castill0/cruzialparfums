@@ -146,9 +146,9 @@ select throws_ok(
       'test-product-crud', 'TEST Product CRUD Renamed', 'Test Brand', null, null,
       null, null, 'always_available', 'active', 'draft', false, null, null, null
     )$$,
-  '40001',
+  'P2011',
   null,
-  'updating with a stale expected_updated_at is rejected as a conflict'
+  'updating with a stale expected_updated_at is rejected as a conflict (4J5E: was 40001)'
 );
 
 select lives_ok(
