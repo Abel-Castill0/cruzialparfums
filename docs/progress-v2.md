@@ -1,6 +1,6 @@
 # CRUZIAL PLATFORM V2 — CURRENT STATE
 
-Last updated: 2026-09-11
+Last updated: 2026-09-12
 
 ## Git
 
@@ -224,35 +224,22 @@ Isolated:
   26 pgTAP files / 725 assertions, lint 0, strict TS, production
   build clean. No DB migration added.
 
-- Import media + publication readiness (4J5D) ✅ — Preview gate closed.
-  Preview: `cruzial-platform-v2-7k45fefh0-cruzial.vercel.app`.
-  Migration `20260912010000_import_media_readiness.sql`: extended
-  `admin_list_import_products` with `p_media_state` filter
-  (with_primary/without_media/without_primary) + media count columns,
-  extended `admin_get_import_catalog_qa` with 4 media coverage counters,
-  added `admin_get_import_publication_readiness` blocker-report RPC.
-  Cloudinary operations generalized: `unitCode` param
-  (`"parfums" | "import"`) in `createUploadAuthorization` and
-  `isUploadResultValid`, folder namespacing preserved. Import media
-  server actions (`media-actions.ts`) reuse `requireUnitAdmin("import")`
-  + `AdminParfumsMediaRepository` + `createUploadAuthorization(id,"import")`.
-  Import `MediaManager` component: product-level only (no variant
-  selector), upload/list/archive/restore/reorder/setPrimary/updateAlt.
-  `catalog-schema.ts` updated with `mediaState` field + `parseImportCatalogFilters`.
-  `catalog-repository.ts` updated: `has_active_primary`, `active_media_count`
-  columns in list, 4 media fields in QA. Product list page: media filter
-  dropdown + per-product media badges. Publication readiness screen
-  (`/admin/import/publicacion`): campaign status, launch readiness
-  (LISTO/NO LISTO), blocker counts, media coverage, action links.
-  Dashboard (`/admin/import`): added Publicacion nav card + media coverage
-  QA section. pgTAP: 26 files / 725 assertions all green (test 22
-  updated for 9-arg `admin_list_import_products` signature + new QA
-  column types). Vitest 54 files / 499 tests, lint 0, strict TS,
-  production build clean. Staging: migration applied
-  (34th migration), invariants preserved (940 products / 844 Import /
-  96 Parfums / 912 presentations / 898 offers / campaign #6 draft /
-  0 eligible / 0 orders / 0 customers).
-
+- Import media + publication readiness (4J5D) ✅ — CORRECTION GATE CLOSED.
+  Preview: `cruzial-platform-v2-9uqyrw5qk-cruzial.vercel.app`.
+  Correction migration `20260912020000_import_media_publication_correction.sql`
+  (36th migration) applied to staging. Readiness semantics corrected:
+  campaign not-open-yet is NOT a product-level commercial blocker.
+  `admin_get_import_publication_readiness` rewritten: returns
+  `ready_for_manual_open`, `commercial_blockers`, `media_blockers`,
+  `publication_blockers`, `unconfirmed_offer_count`, `invalid_price_offer_count`,
+  `campaign_exists`. New `admin_list_import_publication_blockers` RPC:
+  per-product/per-offer blocker rows, filter/search/pagination.
+  Media write boundary closed: FOR ALL policy dropped, REVOKE INSERT/UPDATE/DELETE,
+  all 6 media RPCs SECURITY DEFINER with explicit REVOKE/GRANT. P2011 replaces 40001.
+  Publication UI rewritten with RPC error state, blocker table, search/filter.
+  Coverage: 27 pgTAP files / 757 assertions (32 new in test 28), 55 Vitest files /
+  528 tests (29 new). Lint 0, strict TS, production build clean.
+  Hosted authenticated Admin QA remains EVIDENCE GAP.
 Do not re-audit closed capabilities without evidence of regression.
 
 ### 4J5A — Public Import storefront + read model ✅ CLOSED
@@ -968,6 +955,7 @@ White backgrounds are intentional.
 - `sceptre-malachite` replacement asset missing.
 - Import operational/catalog/campaign work remains incomplete.
 - Production admin bootstrap/MFA/recovery still needs final operational decision.
+- Hosted authenticated Admin QA remains EVIDENCE GAP (no staging admin identity).
 - A formal Lighthouse (or PageSpeed Insights) run against the Preview is still
   outstanding — this environment has no Lighthouse tooling; only Navigation
   Timing was captured in 4I2.
@@ -984,7 +972,7 @@ White backgrounds are intentional.
 4. Production Supabase / Vercel
 5. Punto.pe DNS / SEO cutover
 
-Do not jump ahead automatically.
+4J5D correction gate closed. Do NOT start 4J6 without explicit instruction.
 
 ## Validation baseline
 
@@ -992,10 +980,10 @@ Current stable project has green:
 
 - lint
 - strict TypeScript
-- Vitest
+- Vitest (55 files / 528 tests)
 - Next production build
 - Supabase migrations from clean local DB
-- pgTAP
+- pgTAP (27 files / 757 assertions)
 - targeted browser/E2E gates
 
 Exact counts change as capabilities add tests.
