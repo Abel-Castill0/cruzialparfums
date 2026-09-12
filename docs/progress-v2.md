@@ -285,9 +285,10 @@ redefinition is live) and classified it. Result: every live app-raised
 `40001` was the same misuse — an application-level optimistic-concurrency
 guard (`UPDATE ... WHERE updated_at = expected` returning zero rows), never
 a genuine Postgres-detected SERIALIZABLE conflict (none of these functions
-use SERIALIZABLE isolation, and Postgres itself never raises 40001 from a
-PL/pgSQL `RAISE`). No genuine database-generated 40001 exists anywhere in
-this codebase to preserve.
+use SERIALIZABLE isolation). No genuine PostgreSQL engine-generated
+serialization failure was found anywhere in this codebase; the relevant
+`40001` occurrences were manually raised by application RPCs and used to
+represent optimistic domain conflicts.
 
 Already corrected, no longer live (superseded before this audit, nothing to
 do): Import campaign RPCs (4J4C, `20260910020000`) and all 6 Media RPCs
@@ -333,6 +334,52 @@ Remaining evidence gap (unchanged from before this audit): whether the
 config (vs. local Supabase CLI, where 4J4C reproduced it) was never
 verified either way — moot now since no live RPC raises `40001` any more,
 but flagged for completeness.
+
+### Hosted Staging Deployment + Fixtures + Admin QA (4J5F) 🚧 IN PROGRESS
+
+Goal: real hosted evidence (Browser → Vercel Preview → Next.js → hosted
+Supabase/PostgREST/RPC/RLS → staging DB), not another local/unit gate.
+
+Done so far:
+
+- **Staging migration**: dry-run proved exactly one pending migration
+  (4J5E's `20260912030000`); applied via `supabase db push --linked`;
+  `supabase migration list --linked` now shows 37/37 local=remote on
+  `cruzial-v2-staging` (`iyxidhglyqkzoziyewlc`).
+- **Preview/environment**: Vercel project `cruzial-platform-v2`, latest
+  Ready Preview `cruzial-platform-v2-9uqyrw5qk-cruzial.vercel.app`.
+  Production environment has **zero** env vars configured (structurally
+  cannot point at staging/prod data by mistake). Preview scope has the
+  expected 7 vars (checked names only, no values printed). Unauthenticated
+  smoke: `/`, `/parfums`, `/import` → 200; every real `/admin/parfums/*`
+  and `/admin/import/*` route → 307 → `/admin/login`, no bypass, no loop.
+- **Staging QA fixtures** (`supabase/provisioning/staging-qa-fixtures.sql`,
+  operator-run, not a migration, idempotent via `ON CONFLICT DO NOTHING`,
+  documented removal query in its own header): added, alongside the real
+  96-product/11-category/1-campaign/3-wholesale-policy client catalog
+  (untouched — verified before/after counts), 6 `staging-qa-*` Parfums
+  products (publishable-ready; blocked-by-missing-media; blocked-by-zero-
+  variants; archived/restorable; combo with `client_confirmed`
+  composition; combo with `pending_reconfirmation`/no items) + 1
+  `staging-qa-family` category, and 3 isolated Import campaigns numbered
+  9001/9002/9003 (draft/open/closed) that can never collide with a real
+  consolidado number — the real campaign #6 ("Sexto Consolidado") was
+  never read from or written to.
+
+Blocked (external, not a code defect): Phases 3/5/6/7 all require a real
+authenticated staging admin session. `admin_memberships.user_id` has a hard
+FK to `auth.users`, and the codebase's own
+`supabase/provisioning/grant-admin-membership.sql` deliberately requires a
+human operator to create that `auth.users` row first (no INSERT policy on
+`admin_memberships` by design, to block privilege escalation) — this
+matches this agent's own operating constraints, which prohibit creating
+accounts or entering passwords on the user's behalf regardless of
+authorization. **Required next action**: an operator creates one staging
+Auth user in `cruzial-v2-staging` (Studio → Auth → Users → Add user) and
+shares the email (not the password); the agent then runs
+`grant-admin-membership.sql` for `parfums`/`import` and continues Phases
+3, 5–9 (authenticated QA, hosted P2011 regression, blocker evidence, final
+gate).
 
 ### 4H2A boundary
 
