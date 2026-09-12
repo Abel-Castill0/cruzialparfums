@@ -376,8 +376,12 @@ select throws_ok(
 -- =========================================================================
 -- 19. Customer archive
 -- =========================================================================
+-- Reset to postgres for direct fixture insert (authenticated no longer has INSERT)
+reset role;
 insert into public.customers (id, business_unit_id, full_name, phone, verified_customer_status, verified_by, verified_at)
 values ('dc300000-0000-4000-8000-000000000001', '22222222-2222-4222-8222-222222222222', 'Archive Test', '51999000111', 'new', null, now());
+set local role authenticated;
+set local request.jwt.claims = '{"sub":"a1000000-aaaa-4aaa-8aaa-aaaaaaaaaaaa","app_metadata":{"business_unit_id":"22222222-2222-4222-8222-222222222222","role":"admin"}}';
 
 select lives_ok(
   $$select public.admin_import_archive_customer('dc300000-0000-4000-8000-000000000001')$$,

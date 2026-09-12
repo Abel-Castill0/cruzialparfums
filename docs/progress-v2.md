@@ -182,17 +182,29 @@ Isolated:
   partial unique index (customers_import_active_phone_uniq) on canonical
   phone scoped to active Import customers, FOR UPDATE row locks on all
   mutation RPCs, unique_violation → P2026, conditional UPDATE WHERE
-  customer_id IS NULL for create-from-order re-link. Migrations
+  customer_id IS NULL for create-from-order re-link. Write boundary gate:
+  DROP customers_admin_write (FOR ALL), orders_admin_insert,
+  orders_admin_update, order_lines_admin_insert, order_lines_admin_update
+  policies; REVOKE INSERT/UPDATE/DELETE on customers from authenticated;
+  REVOKE UPDATE/DELETE on orders+order_lines from authenticated (INSERT
+  already revoked); REVOKE EXECUTE on normalize_import_phone from
+  authenticated. No direct authenticated table writes remain — all mutations
+  flow through SECURITY DEFINER RPCs with audit trails. Migrations
   20260911100000 (7 RPCs + phone normalizer) + 20260911100100 (grant correction
   removing anon access) + 20260911100200 (final correction: canonical phone
   storage, verified provenance, auth-before-lookup existence oracle prevention,
   phone helper revoke, CHECK constraint expansion for full lifecycle, trigger
   bypass for admin RPCs) + 20260911100300 (concurrency gate: unique index,
-  FOR UPDATE locks, unique_violation handling). pgTAP 25 files / 709
-  assertions, Vitest 52 files / 455 assertions, lint 0, strict TS, production
-  build. Staging: 33/33 migrations synced, 940 products / 0 orders / 0
-  customers untouched, all 7 RPCs SECURITY DEFINER with anon denied /
-  authenticated granted. Preview
+  FOR UPDATE locks, unique_violation handling — note: file contains
+  CREATE UNIQUE INDEX CONCURRENTLY which succeeded on fresh reset/staging
+  because migrations run outside transaction blocks) +
+  20260911100400 (write boundary: DROP write policies, REVOKE table-level
+  write privileges, REVOKE phone helper from authenticated). pgTAP 26 files /
+  725 assertions (16 boundary tests), Vitest 52 files / 455 assertions,
+  lint 0, strict TS, production build. Staging: 34/34 migrations synced,
+  940 products (844 Import + 96 Parfums) / 0 orders / 0 customers, all 7
+  RPCs SECURITY DEFINER with anon denied / authenticated revoked for writes.
+  Preview
   `cruzial-platform-v2-hr9lwk1qj-cruzial.vercel.app` — public gateway,
   /parfums, /import closed state clean, admin login renders.
 
