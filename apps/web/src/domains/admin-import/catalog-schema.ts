@@ -29,6 +29,7 @@ export type ImportCatalogFilters = {
   archived: "active" | "archived" | "all";
   presentationState?: "with_active" | "without_active" | "without_published";
   offerState?: "with_offer" | "without_offer";
+  mediaState?: "with_primary" | "without_media" | "without_primary";
   page: number;
   pageSize: number;
 };
@@ -40,6 +41,7 @@ export function parseImportCatalogFilters(params: Record<string, string | string
   const archived = one(params.archived);
   const presentation = one(params.presentation);
   const offer = one(params.offer);
+  const media = one(params.media);
   return {
     query: (one(params.q) ?? "").trim().slice(0, 120),
     ...(member(IMPORT_PRODUCT_STATUSES, status) ? { publicationStatus: status } : {}),
@@ -47,6 +49,7 @@ export function parseImportCatalogFilters(params: Record<string, string | string
     archived: archived === "archived" || archived === "all" ? archived : "active",
     ...(presentation === "with_active" || presentation === "without_active" || presentation === "without_published" ? { presentationState: presentation } : {}),
     ...(offer === "with_offer" || offer === "without_offer" ? { offerState: offer } : {}),
+    ...(media === "with_primary" || media === "without_media" || media === "without_primary" ? { mediaState: media } : {}),
     page: Number.isInteger(rawPage) && rawPage > 0 ? rawPage : 1,
     pageSize: Number.isInteger(rawSize) ? Math.min(50, Math.max(1, rawSize)) : 40,
   };

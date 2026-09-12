@@ -32,6 +32,16 @@ const MAX_UPLOAD_BYTES = 10 * 1024 * 1024; // 10 MB — generous for a product p
 
 export { ALLOWED_FORMATS, MAX_UPLOAD_BYTES };
 
+type UnitCode = "parfums" | "import";
+
+function unitFolder(unitCode: UnitCode, productId: string): string {
+  return `cruzial/${unitCode}/products/${productId}`;
+}
+
+function unitPrefix(unitCode: UnitCode, productId: string): string {
+  return `${unitFolder(unitCode, productId)}/`;
+}
+
 function signParams(params: Record<string, string | number>, apiSecret: string): string {
   const toSign = Object.keys(params)
     .sort()
@@ -58,13 +68,13 @@ export type UploadAuthorization = {
  * the signature — Cloudinary itself rejects the request, this is not a
  * client-side-only restriction.
  */
-export function createUploadAuthorization(productId: string): UploadAuthorization | null {
+export function createUploadAuthorization(productId: string, unitCode: UnitCode = "parfums"): UploadAuthorization | null {
   assertServerOnly("createUploadAuthorization");
   const env = readCloudinaryEnv();
   if (!env) return null;
 
   const timestamp = Math.floor(Date.now() / 1000);
-  const folder = `cruzial/parfums/products/${productId}`;
+  const folder = unitFolder(unitCode, productId);
   const allowedFormats = ALLOWED_FORMATS.join(",");
 
   const signature = signParams({ allowed_formats: allowedFormats, folder, timestamp }, env.apiSecret);
@@ -120,8 +130,9 @@ export function isUploadResultValid(input: {
   format: string;
   bytes: number;
   productId: string;
+  unitCode?: UnitCode;
 }): boolean {
-  const expectedPrefix = `cruzial/parfums/products/${input.productId}/`;
+  const expectedPrefix = unitPrefix(input.unitCode ?? "parfums", input.productId);
   if (!input.publicId.startsWith(expectedPrefix)) return false;
   if (!(ALLOWED_FORMATS as readonly string[]).includes(input.format.toLowerCase())) return false;
   if (!Number.isFinite(input.bytes) || input.bytes <= 0 || input.bytes > MAX_UPLOAD_BYTES) return false;

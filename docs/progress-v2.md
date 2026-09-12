@@ -224,6 +224,35 @@ Isolated:
   26 pgTAP files / 725 assertions, lint 0, strict TS, production
   build clean. No DB migration added.
 
+- Import media + publication readiness (4J5D) ✅ — Preview gate closed.
+  Preview: `cruzial-platform-v2-7k45fefh0-cruzial.vercel.app`.
+  Migration `20260912010000_import_media_readiness.sql`: extended
+  `admin_list_import_products` with `p_media_state` filter
+  (with_primary/without_media/without_primary) + media count columns,
+  extended `admin_get_import_catalog_qa` with 4 media coverage counters,
+  added `admin_get_import_publication_readiness` blocker-report RPC.
+  Cloudinary operations generalized: `unitCode` param
+  (`"parfums" | "import"`) in `createUploadAuthorization` and
+  `isUploadResultValid`, folder namespacing preserved. Import media
+  server actions (`media-actions.ts`) reuse `requireUnitAdmin("import")`
+  + `AdminParfumsMediaRepository` + `createUploadAuthorization(id,"import")`.
+  Import `MediaManager` component: product-level only (no variant
+  selector), upload/list/archive/restore/reorder/setPrimary/updateAlt.
+  `catalog-schema.ts` updated with `mediaState` field + `parseImportCatalogFilters`.
+  `catalog-repository.ts` updated: `has_active_primary`, `active_media_count`
+  columns in list, 4 media fields in QA. Product list page: media filter
+  dropdown + per-product media badges. Publication readiness screen
+  (`/admin/import/publicacion`): campaign status, launch readiness
+  (LISTO/NO LISTO), blocker counts, media coverage, action links.
+  Dashboard (`/admin/import`): added Publicacion nav card + media coverage
+  QA section. pgTAP: 26 files / 725 assertions all green (test 22
+  updated for 9-arg `admin_list_import_products` signature + new QA
+  column types). Vitest 54 files / 499 tests, lint 0, strict TS,
+  production build clean. Staging: migration applied
+  (34th migration), invariants preserved (940 products / 844 Import /
+  96 Parfums / 912 presentations / 898 offers / campaign #6 draft /
+  0 eligible / 0 orders / 0 customers).
+
 Do not re-audit closed capabilities without evidence of regression.
 
 ### 4J5A — Public Import storefront + read model ✅ CLOSED

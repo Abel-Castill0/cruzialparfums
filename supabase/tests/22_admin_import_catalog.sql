@@ -20,7 +20,7 @@ insert into public.product_categories(product_id,category_id) values('4c4c2000-0
 
 set local role authenticated;
 set local request.jwt.claims='{"sub":"4c4c0000-0000-4000-8000-000000000001","role":"authenticated"}';
-select lives_ok($$select * from public.admin_list_import_products(null,null,null,'active',null,null,1,500)$$,'Import admin can list catalog; server caps page size');
+select lives_ok($$select * from public.admin_list_import_products(null,null,null,'active',null,null,null,1,500)$$,'Import admin can list catalog; server caps page size');
 select lives_ok($$select * from public.admin_get_import_catalog_qa()$$,'Import admin can read bounded QA counters');
 select lives_ok($$select public.admin_update_import_product('4c4c2000-0000-4000-8000-000000000001',(select updated_at from public.products where id='4c4c2000-0000-4000-8000-000000000001'),'Display edit','Nueva marca','4c4c1000-0000-4000-8000-000000000001','hidden')$$,'Import admin updates safe display/category/publication fields');
 reset role;
@@ -55,7 +55,7 @@ select is((select publication_status from public.import_presentations where prod
 
 set local role authenticated;
 set local request.jwt.claims='{"sub":"4c4c0000-0000-4000-8000-000000000002","role":"authenticated"}';
-select lives_ok($$select * from public.admin_list_import_products()$$,'Import viewer can read catalog');
+select lives_ok($$select * from public.admin_list_import_products(null,null,null,'active',null,null,null)$$,'Import viewer can read catalog');
 select throws_ok($$select public.admin_archive_import_product('4c4c2000-0000-4000-8000-000000000001',(select updated_at from public.products where id='4c4c2000-0000-4000-8000-000000000001'))$$,'42501',null,'Import viewer cannot mutate');
 reset role;
 set local role authenticated;

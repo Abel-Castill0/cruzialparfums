@@ -9,8 +9,8 @@ type PresentationRow=Database["public"]["Tables"]["import_presentations"]["Row"]
 type CategoryRow=Database["public"]["Tables"]["categories"]["Row"];
 type Rpc=(name:string,args?:Record<string,unknown>)=>Promise<{data:unknown;error:PostgrestError|null}>;
 
-export type ImportCatalogQa={products:number;presentations:number;active_campaigns:number;campaign_number:number|null;campaign_status:string|null;campaign_offers:number;draft_products:number;published_products:number;hidden_products:number;draft_presentations:number;published_presentations:number;unconfirmed_offers:number;available_offers:number;out_of_stock_offers:number;structures_without_offer:number};
-export type ImportCatalogItem={id:string;name:string;brand:string|null;slug:string;legacy_id:string|null;publication_status:string;archived_at:string|null;verification_status:string;updated_at:string;category_name:string|null;category_slug:string|null;active_presentations:number;published_presentations:number;campaign_offer_count:number;unconfirmed_offer_count:number;total_count:number};
+export type ImportCatalogQa={products:number;presentations:number;active_campaigns:number;campaign_number:number|null;campaign_status:string|null;campaign_offers:number;draft_products:number;published_products:number;hidden_products:number;draft_presentations:number;published_presentations:number;unconfirmed_offers:number;available_offers:number;out_of_stock_offers:number;structures_without_offer:number;products_with_primary_media:number;products_without_media:number;products_without_primary_media:number;total_active_media:number};
+export type ImportCatalogItem={id:string;name:string;brand:string|null;slug:string;legacy_id:string|null;publication_status:string;archived_at:string|null;verification_status:string;updated_at:string;category_name:string|null;category_slug:string|null;active_presentations:number;published_presentations:number;campaign_offer_count:number;unconfirmed_offer_count:number;has_active_primary:boolean;active_media_count:number;total_count:number};
 export type ImportProductDetail={
  product:ProductRow; categories:CategoryRow[]; category:CategoryRow|null;
  presentations:(PresentationRow&{offer:{price_amount:number;currency:string;availability_status:string}|null})[];
@@ -26,7 +26,7 @@ export class AdminImportCatalogRepository {
     return{ok:true,data:row as ImportCatalogQa};
   }
   async list(filters:ImportCatalogFilters):Promise<AdminRepositoryResult<{items:ImportCatalogItem[];total:number}>>{
-    const {data,error}=await this.rpc("admin_list_import_products",{p_query:filters.query||null,p_publication_status:filters.publicationStatus??null,p_category_slug:filters.categorySlug??null,p_archived:filters.archived,p_presentation_state:filters.presentationState??null,p_offer_state:filters.offerState??null,p_page:filters.page,p_page_size:filters.pageSize});
+    const {data,error}=await this.rpc("admin_list_import_products",{p_query:filters.query||null,p_publication_status:filters.publicationStatus??null,p_category_slug:filters.categorySlug??null,p_archived:filters.archived,p_presentation_state:filters.presentationState??null,p_offer_state:filters.offerState??null,p_media_state:filters.mediaState??null,p_page:filters.page,p_page_size:filters.pageSize});
     if(error)return{ok:false,error:mapPostgrestError(error)}; const items=(data??[]) as ImportCatalogItem[];
     return{ok:true,data:{items,total:Number(items[0]?.total_count??0)}};
   }

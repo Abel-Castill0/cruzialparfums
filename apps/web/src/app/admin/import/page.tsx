@@ -49,6 +49,7 @@ export default async function AdminImportPage() {
           <Link className={styles.linkCard} href="/admin/import/consolidados"><strong>Consolidado / Campañas</strong><span>Precios, disponibilidad y ciclo de vida por campaña.</span></Link>
           <Link className={styles.linkCard} href={"/admin/import/pedidos" as Route}><strong>Pedidos</strong><span>Bandeja de solicitudes, ciclo de vida y coordinación WhatsApp.</span></Link>
           <Link className={styles.linkCard} href={"/admin/import/clientes" as Route}><strong>Clientes</strong><span>Registro, verificación y gestión de clientes Import.</span></Link>
+          <Link className={styles.linkCard} href={"/admin/import/publicacion" as Route}><strong>Publicación</strong><span>Preparación de lanzamiento, cobertura de media y bloqueadores.</span></Link>
           <Link className={styles.linkCard} href={"/admin/import/configuracion" as Route}><strong>Configuración</strong><span>Contacto público: WhatsApp y correo visible para el cliente.</span></Link>
           <Link className={styles.linkCard} href={"/admin/import/auditoria" as Route}><strong>Auditoría</strong><span>Historial de cambios — solo lectura.</span></Link>
         </nav>
@@ -68,6 +69,12 @@ export default async function AdminImportPage() {
         {qa.ok ? <>
           <section className={styles.qaGrid} aria-label="Estado del catálogo">
             <Card n={qa.data.products} label="productos activos"/><Card n={qa.data.presentations} label="presentaciones activas"/><Card n={qa.data.active_campaigns} label="campañas no archivadas"/><Card n={qa.data.campaign_offers} label={`ofertas en #${qa.data.campaign_number ?? 6}`}/><Card n={qa.data.draft_products} label="productos en borrador"/><Card n={qa.data.published_products} label="productos publicados"/><Card n={qa.data.unconfirmed_offers} label="ofertas por confirmar"/><Card n={qa.data.out_of_stock_offers} label="ofertas agotadas"/><Card n={qa.data.structures_without_offer} label="estructuras sin oferta"/>
+          </section>
+          <section className={styles.qaGrid} aria-label="Cobertura de media">
+            <Card n={qa.data.products_with_primary_media} label="con imagen principal"/>
+            <Card n={qa.data.products_without_primary_media} label="sin imagen principal"/>
+            <Card n={qa.data.products_without_media} label="sin media alguna"/>
+            <Card n={qa.data.total_active_media} label="media activa total"/>
           </section>
           <section className={styles.panel}><h2>Visibilidad pública</h2><p className={styles.help}>El consolidado #{qa.data.campaign_number ?? 6} está en estado <strong>{qa.data.campaign_status ?? "sin configurar"}</strong>. La preparación estructural, la preparación comercial y la visibilidad pública son controles distintos; este panel no publica ni abre campañas automáticamente.</p></section>
         </> : <p className={styles.error}>No se pudieron cargar los contadores de QA.</p>}
