@@ -209,20 +209,20 @@ Isolated:
   /parfums, /import closed state clean, admin login renders.
 
 - Import settings + audit + admin completion + DB contact single source
-  (4J5C2) ✅ — /admin/import/configuracion (public contact settings with
-  optimistic concurrency, role-gated viewer/admin, requireUnitAdmin("import")),
-  /admin/import/auditoria (audit log list with action/entity filters,
-  pagination, import-only events), /admin/import/auditoria/[id] (audit detail
-  with curated field diff, cross-BU not-found). Dashboard completion:
-  Configuración + Auditoría navigation cards, contact configured status,
-  consolidado state indicator. Public contact single source of truth:
-  readImportPublicContact DB helper is sole runtime authority, IMPORT_SETTINGS
-  removed from import storefront (page, product detail, header, footer,
-  information), ImportContactProvider context passes DB contact to client
-  components, fail-closed when contact missing/malformed. Checkout already
-  uses DB contact — no regression. 54 Vitest files / 499 tests, 26 pgTAP
-  files / 725 assertions, lint 0, strict TS, production build clean.
-  No DB migration added. Staging: no push needed.
+  (4J5C2) ✅ — Preview gate closed.
+  Preview: `cruzial-platform-v2-7ld1ofykz-cruzial.vercel.app`.
+  SHA: `954585483c39ca623527235f488d73b59fe8f41e`.
+  Public smoke green: `/`, `/parfums`, `/import`, `/import/carrito`,
+  `/import/checkout`. `/import` closed. DB public_contact visible in
+  Import shell/storefront. No IMPORT_SETTINGS runtime fallback.
+  Admin unauth smoke green: `/admin`, `/admin/import`,
+  `/admin/import/configuracion`, `/admin/import/auditoria` — all
+  safely resolve to login flow, no data leak. No runtime errors.
+  Noindex/nofollow confirmed. Hosted authenticated Admin smoke:
+  explicit EVIDENCE GAP (no staging admin identity). Local
+  authenticated Admin/viewer QA green. 54 Vitest files / 499 tests,
+  26 pgTAP files / 725 assertions, lint 0, strict TS, production
+  build clean. No DB migration added.
 
 Do not re-audit closed capabilities without evidence of regression.
 
