@@ -1,3 +1,10 @@
+> [!IMPORTANT]
+> HISTORICAL / DETAILED ENGINEERING LOG.
+> DO NOT read this file by default in agent sessions.
+> Current project state is in `docs/current-v2.md`.
+> Search this file only when historical evidence for a specific capability is explicitly required.
+> Never full-read this file.
+
 # CRUZIAL PLATFORM V2 — CURRENT STATE
 
 Last updated: 2026-09-12

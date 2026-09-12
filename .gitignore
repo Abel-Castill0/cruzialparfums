@@ -18,3 +18,6 @@ tmp/
 
 # Vercel CLI local project link (4I2)
 .vercel
+
+# Node dependencies
+node_modules/

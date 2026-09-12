@@ -1,62 +1,127 @@
-# CLAUDE.md — CRUZIAL V2
+# CRUZIAL V2 - CLAUDE CODE
 
-@AGENTS.md
+## Active scope
 
-## Scope
+Default V2 scope:
+- apps/web
+- supabase
+- scripts
+- docs/current-v2.md
 
-Active development is Cruzial Platform V2 under `apps/web`, `supabase`, and
-`scripts`. Do not audit or modify the root legacy storefront unless the current
-capability explicitly requires it. Git and `docs/progress-v2.md` hold current
-implementation state; use Git history for historical detail.
+Root legacy storefront is OUT OF SCOPE unless the current task explicitly requires it.
+
+Current operational state:
+docs/current-v2.md
+
+Historical engineering log:
+docs/progress-v2.md
+
+Never full-read docs/progress-v2.md.
+For historical evidence, search an exact heading/term first and read only the matching range.
 
 ## Context budget
 
-- One capability per fresh session; clear unrelated history at boundaries.
-- Search before read and inspect only relevant ranges.
-- Never full-read large manifests, `supabase/staging/*.json`, logs, or historical
-  progress. Query counts, hashes, fields, or small excerpts programmatically.
-- Do not reread closed phases without evidence of regression.
-- Do not run a whole-repository or global audit unless explicitly requested.
+Context is a hard budget.
 
-## Output and tests
+Always:
+- search before reading;
+- scope searches to relevant V2 directories;
+- read only relevant ranges;
+- keep command output minimal;
+- use targeted tests while implementing;
+- run the complete required gate once at the end.
 
-Keep large test, build, migration, Cloudinary, and diff output out of the main
-context. Report exit status, failures, warnings, computed counts, and only the
-small excerpt needed to debug.
+Never by default:
+- scan the whole repository;
+- read all migrations;
+- read all documentation;
+- dump large JSON/manifests;
+- dump complete passing test output;
+- dump complete build output;
+- dump complete git diffs;
+- reread closed capabilities;
+- use agent teams;
+- spawn subagents for simple searches.
 
-Use targeted tests while developing and one relevant final gate at the
-capability checkpoint. Do not rerun unchanged green suites without a reason.
+Prefer:
+rg "<pattern>" apps/web supabase scripts
 
-## Documentation
+Do not search legacy root files unless explicitly required.
 
-`docs/progress-v2.md` is a current checkpoint, not complete project history.
+For migration/history analysis:
+search the function, RPC, table, migration name, or exact term first.
 
-Read only the relevant heading. Do not turn operational context files into
-session diaries.
+## Command output
+
+For successful commands retain only:
+- exit status;
+- counts;
+- warnings;
+- failures;
+- small relevant excerpts.
+
+Do not keep hundreds of successful test/build lines in context.
+
+## Testing
+
+During implementation:
+run targeted tests only.
+
+After implementation stabilizes:
+run one complete required gate.
+
+Do not rerun unchanged green suites without evidence requiring it.
 
 ## Git
 
-Checkpoint stable work before context/quota limits. Stage explicitly.
+Before changing files:
+- git status --short --branch --untracked-files=no
+- git rev-parse HEAD
+
+Do NOT print every untracked client asset by default.
+
+If untracked information is needed:
+- obtain a count first;
+- list only paths relevant to the current V2 task;
+- never dump the complete img/perfumes asset list unless explicitly required.
+
+Stage files explicitly.
 
 Never:
-
 - git add -A
 - git clean
 - git reset --hard
 - git restore .
+- broad checkout
+- rebase
+- merge
 
-Preserve client PNG/PDF and ignored env files.
+Preserve client PNG/PDF assets, env files, and unrelated user work.
 
-## Capability workflow
+## Safety
 
-1. `git status --short --branch`
-2. `git rev-parse HEAD`
-3. `git log -5 --oneline`
-4. search the relevant progress heading
-5. inspect only files directly required by the capability
-6. finish with the relevant gate, `git diff --check`, and scope review
-7. commit/push when authorized, update current progress compactly, and stop
+Never:
+- mutate production;
+- modify master before explicit cutover authorization;
+- weaken RLS or server authorization;
+- invent client commercial data;
+- rewrite already-applied migrations;
+- silently begin another capability.
 
-Never begin the next capability automatically. Global OWASP, UI, performance,
-and architecture audits belong only to the explicitly invoked final QA phase
-after Preview exists.
+## Compaction
+
+When compacting preserve only:
+- current objective;
+- changed files;
+- unresolved failures;
+- DB/migration state relevant to the current capability;
+- current test status;
+- next exact action.
+
+Discard:
+- successful exploratory commands;
+- passing logs;
+- obsolete hypotheses;
+- closed investigation.
+
+Never start the next gate automatically.
