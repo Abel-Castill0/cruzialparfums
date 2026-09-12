@@ -1,4 +1,3 @@
-import { IMPORT_SETTINGS } from "@/domains/platform/settings";
 import styles from "./import-information.module.css";
 
 const faqs = [
@@ -20,8 +19,14 @@ const faqs = [
   },
 ] as const;
 
-export function ImportInformation() {
-  const waUrl = `https://wa.me/${IMPORT_SETTINGS.whatsappNumber}?text=${encodeURIComponent("Hola Cruzial Import, quiero conocer cómo funciona el consolidado.")}`;
+export function ImportInformation({
+  contact,
+}: {
+  contact: { whatsappNumber: string } | null;
+}) {
+  const waUrl = contact
+    ? `https://wa.me/${contact.whatsappNumber}?text=${encodeURIComponent("Hola Cruzial Import, quiero conocer cómo funciona el consolidado.")}`
+    : "";
   return (
     <>
       <section className={styles.process} id="como-funciona" aria-labelledby="import-process-title">
@@ -69,7 +74,11 @@ export function ImportInformation() {
           <h2 id="import-contact-title">¿Necesitas confirmar una condición?</h2>
           <p>Escríbenos antes de solicitar. Te responderemos por el canal público de Cruzial Import.</p>
         </div>
-        <a href={waUrl} target="_blank" rel="noopener noreferrer">Escribir por WhatsApp</a>
+        {waUrl ? (
+          <a href={waUrl} target="_blank" rel="noopener noreferrer">Escribir por WhatsApp</a>
+        ) : (
+          <p role="status">El canal de contacto no está disponible temporalmente.</p>
+        )}
       </section>
     </>
   );

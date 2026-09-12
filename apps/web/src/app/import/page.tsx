@@ -12,7 +12,7 @@ import {
   type PublicImportProduct,
 } from "@/domains/import/public-import";
 import { PublicImportRepository } from "@/domains/import/public-import-repository";
-import { IMPORT_SETTINGS } from "@/domains/platform/settings";
+import { readImportPublicContact } from "@/domains/import/import-public-contact";
 import { createSupabasePublicServerClient } from "@/lib/supabase/server";
 import styles from "./page.module.css";
 
@@ -25,8 +25,8 @@ type PageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
-function whatsappUrl(message = "Hola Cruzial Import, quiero más información.") {
-  return `https://wa.me/${IMPORT_SETTINGS.whatsappNumber}?text=${encodeURIComponent(message)}`;
+function whatsappUrl(whatsappNumber: string, message = "Hola Cruzial Import, quiero más información.") {
+  return `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
 }
 
 function formatClosingDate(value: string): string {
@@ -36,7 +36,7 @@ function formatClosingDate(value: string): string {
   }).format(new Date(value));
 }
 
-function ClosedState({ unavailable = false }: { unavailable?: boolean }) {
+function ClosedState({ contact, unavailable = false }: { contact: { whatsappNumber: string } | null; unavailable?: boolean }) {
   return (
     <>
       <section className={styles.closedHero} aria-labelledby="import-closed-title">
@@ -52,14 +52,20 @@ function ClosedState({ unavailable = false }: { unavailable?: boolean }) {
               ? "No pudimos consultar el estado del consolidado. Inténtalo nuevamente o contáctanos."
               : "Los productos y precios aparecerán cuando el próximo consolidado abra."}
           </p>
-          <a
-            href={whatsappUrl()}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.primaryAction}
-          >
-            Consultar por WhatsApp
-          </a>
+          {contact ? (
+            <a
+              href={whatsappUrl(contact.whatsappNumber)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.primaryAction}
+            >
+              Consultar por WhatsApp
+            </a>
+          ) : (
+            <p className={styles.primaryAction} role="status">
+              El canal de contacto no está disponible temporalmente.
+            </p>
+          )}
         </div>
         <div className={styles.closedVisual}>
           <Image
@@ -71,7 +77,7 @@ function ClosedState({ unavailable = false }: { unavailable?: boolean }) {
           />
         </div>
       </section>
-      <ImportInformation />
+      <ImportInformation contact={contact} />
     </>
   );
 }
@@ -155,11 +161,17 @@ export default async function ImportHomePage({ searchParams }: PageProps) {
   const rawParams = await searchParams;
   const filters = parsePublicImportFilters(rawParams);
   const supabase = createSupabasePublicServerClient();
-  if (!supabase) return <main className={styles.home}><ClosedState unavailable /></main>;
+  if (!supabase) return <main className={styles.home}><ClosedState contact={null} unavailable /></main>;
 
-  const result = await new PublicImportRepository(supabase).readCatalog(filters);
-  if (result.status === "closed") return <main className={styles.home}><ClosedState /></main>;
-  if (result.status === "error") return <main className={styles.home}><ClosedState unavailable /></main>;
+  const [catalogResult, contact] = await Promise.all([
+    new PublicImportRepository(supabase).readCatalog(filters),
+    readImportPublicContact(supabase),
+  ]);
+
+  if (catalogResult.status === "closed") return <main className={styles.home}><ClosedState contact={contact} /></main>;
+  if (catalogResult.status === "error") return <main className={styles.home}><ClosedState contact={contact} unavailable /></main>;
+
+  const result = catalogResult;
 
   const previousHref = buildImportCatalogHref(filters, { page: Math.max(1, filters.page - 1) });
   const nextHref = buildImportCatalogHref(filters, {
@@ -181,7 +193,7 @@ export default async function ImportHomePage({ searchParams }: PageProps) {
           {result.campaign.closesAt ? (
             <div><dt>Cierre</dt><dd>{formatClosingDate(result.campaign.closesAt)}</dd></div>
           ) : null}
-          <div><dt>Atención</dt><dd>WhatsApp {IMPORT_SETTINGS.whatsappDisplay}</dd></div>
+          <div><dt>Atención</dt><dd>WhatsApp {contact?.whatsappDisplay ?? "no disponible"}</dd></div>
         </dl>
       </section>
 
@@ -259,7 +271,7 @@ export default async function ImportHomePage({ searchParams }: PageProps) {
         ) : null}
       </section>
 
-      <ImportInformation />
+      <ImportInformation contact={contact} />
     </main>
   );
 }

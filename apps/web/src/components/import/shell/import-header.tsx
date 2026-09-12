@@ -1,9 +1,14 @@
+"use client";
+
 import Link from "next/link";
 import { ImportCartBadge } from "@/components/import/cart/import-cart-badge";
-import { IMPORT_SETTINGS } from "@/domains/platform/settings";
+import { useImportContact } from "@/components/import/import-contact-context";
 import styles from "./import-shell.module.css";
 
 export function ImportHeader() {
+  const contact = useImportContact();
+  const whatsappNumber = contact?.whatsappNumber ?? "";
+
   return (
     <header className={styles.header}>
       <div className={styles.headerInner}>
@@ -22,14 +27,16 @@ export function ImportHeader() {
         </nav>
         <div className={styles.headerActions}>
           <ImportCartBadge />
-          <a
-            className={styles.whatsapp}
-            href={`https://wa.me/${IMPORT_SETTINGS.whatsappNumber}`}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            WhatsApp
-          </a>
+          {whatsappNumber ? (
+            <a
+              className={styles.whatsapp}
+              href={`https://wa.me/${whatsappNumber}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              WhatsApp
+            </a>
+          ) : null}
           <Link href="/" className={styles.back}>Cruzial</Link>
         </div>
       </div>

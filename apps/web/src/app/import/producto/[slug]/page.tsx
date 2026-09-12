@@ -10,7 +10,7 @@ import {
   presentationClassLabel,
 } from "@/domains/import/public-import";
 import { PublicImportRepository } from "@/domains/import/public-import-repository";
-import { IMPORT_SETTINGS } from "@/domains/platform/settings";
+import { readImportPublicContact } from "@/domains/import/import-public-contact";
 import { createSupabasePublicServerClient } from "@/lib/supabase/server";
 import styles from "./page.module.css";
 
@@ -19,7 +19,11 @@ type ProductPageProps = { params: Promise<{ slug: string }> };
 const readProduct = cache(async (slug: string) => {
   const supabase = createSupabasePublicServerClient();
   if (!supabase) return null;
-  return new PublicImportRepository(supabase).readProduct(slug);
+  const [product, contact] = await Promise.all([
+    new PublicImportRepository(supabase).readProduct(slug),
+    readImportPublicContact(supabase),
+  ]);
+  return product ? { ...product, contact } : null;
 });
 
 export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
@@ -46,8 +50,10 @@ export default async function ImportProductPage({ params }: ProductPageProps) {
   const { slug } = await params;
   const result = await readProduct(slug);
   if (!result) notFound();
-  const { product, campaign } = result;
-  const waUrl = `https://wa.me/${IMPORT_SETTINGS.whatsappNumber}?text=${encodeURIComponent("Hola Cruzial Import, quiero información sobre el consolidado vigente.")}`;
+  const { product, campaign, contact } = result;
+  const waUrl = contact
+    ? `https://wa.me/${contact.whatsappNumber}?text=${encodeURIComponent("Hola Cruzial Import, quiero información sobre el consolidado vigente.")}`
+    : "";
 
   return (
     <main className={styles.page}>
@@ -125,7 +131,11 @@ export default async function ImportProductPage({ params }: ProductPageProps) {
           </div>
 
           <div className={styles.actions}>
-            <a href={waUrl} target="_blank" rel="noopener noreferrer">Consultar por WhatsApp</a>
+            {waUrl ? (
+              <a href={waUrl} target="_blank" rel="noopener noreferrer">Consultar por WhatsApp</a>
+            ) : (
+              <span role="status">El canal de contacto no está disponible temporalmente.</span>
+            )}
             <Link href={"/import#catalogo" as Route}>Volver al catálogo</Link>
           </div>
         </div>
