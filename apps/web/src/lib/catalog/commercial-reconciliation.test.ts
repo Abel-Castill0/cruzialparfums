@@ -1124,7 +1124,7 @@ describe("4K-B2B.2C Batch C Peru market price research", () => {
     ["cedrat-boise-int", 120, 614],
     ["m-red-tobacco", 120, 609],
     ["tmw-parfum", 100, 407],
-    ["ultra-male", 125, 509],
+    ["ultra-male", 125, 405],
   ];
   // spicebomb-extreme: prior LOW (Batch B), upgraded to MEDIUM/provisional_market by Batch C.
   const batchCUpgraded: [string, number, number] = ["spicebomb-extreme", 90, 598];
@@ -1191,6 +1191,21 @@ describe("4K-B2B.2C Batch C Peru market price research", () => {
         && (variant.price_verification_status === "provisional_market" || variant.price_verification_status === "official_pdf" || variant.price_verification_status === "client_confirmed"),
     );
     expect(stale820or850AsConfirmed).toHaveLength(0);
+  });
+
+  it("(6R) 4K-B2B.2C-R reviewer correction: Ultra Male is 125 ml / EDT / S/405 / provisional_market, and the superseded unavailable S/509 observations are not the selected current reference anywhere in the reconciled catalog", () => {
+    const product = productById("ultra-male");
+    if (!product) throw new Error("Expected ultra-male in the reconciled catalog");
+    const bottle = bottleVariants(product).find((variant) => variant.size_ml === 125);
+    expect(bottle).toMatchObject({ price_amount: 405, price_verification_status: "provisional_market" });
+    expect(bottle?.price_amount).not.toBe(509);
+
+    const allBottleVariants = result.products.flatMap((p) => p.variants).filter((variant) => variant.variant_kind === "bottle");
+    const stale509AsConfirmed = allBottleVariants.filter(
+      (variant) => variant.price_amount === 509
+        && (variant.price_verification_status === "provisional_market" || variant.price_verification_status === "official_pdf" || variant.price_verification_status === "client_confirmed"),
+    );
+    expect(stale509AsConfirmed).toHaveLength(0);
   });
 
   it("(8) Batch A + Batch B provisional_market values remain unchanged by Batch C", () => {

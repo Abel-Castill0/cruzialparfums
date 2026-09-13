@@ -2,6 +2,7 @@
   "schema_version": 2,
   "purpose": "4K-B2B.1/4K-B2B.1A identity/size/concentration verification audit for the 24 legacy bottle price variants, prior to any Peru market price research (4K-B2B.2A+). No prices researched or mutated in either gate.",
   "gate": "4K-B2B.1A",
+  "current_state_corrected_by": "4K-B2B.2C-R -- corrected historical/current-state ambiguity left by 4K-B2B.2C: cdn-intense-man/cedrat-boise-int/m-red-tobacco current_* fields and top-level counts now reflect assets/data.js state AFTER the 4K-B2B.2C source corrections; pre-correction values preserved in each entry's pre_4K_B2B_2C_history field and in counts_history.pre_4K_B2B_2C. No guessing applied to bir-intense/le-beau-le-parfum/victory-elixir.",
   "supersedes": "4K-B2B.1 (schema_version 1 of this same file) -- corrects a miscount in that version's counts.identity_conflict/identity_confirmed (it said 22/2 but only 1 entry, victory-elixir, actually carried identity_status=IDENTITY_CONFLICT), reclassifies adg-profondo-edp, adds a concentration_status dimension, and records target-size evidence gathered from client photo label text that 4K-B2B.1 did not consult.",
   "authority_note": "Evidence hierarchy per gate instructions: (1) official client PDF (docs/client-source/CATALOGO DE DECANTS.pdf) / bottle image in project, (2) official manufacturer/brand website, (3) existing client product photography (img/perfumes/), (4) strong secondary references (Fragrantica, major official-retail listings) only when 1-3 are silent or ambiguous. The official 2026 PDF contains ONLY 3/5/10 ml decant prices -- confirmed in supabase/staging/pdf-2026-commercial-reconciliation.json (bottle_price_authority.pdf_contains_bottle_prices = false) -- so it supplies decant-price authority and (for bir-intense) a currency/name cross-check only; it is not itself a size authority for any bottle. A discontinued product (bir-intense) has no live official manufacturer page; client photography is used there as PRIMARY identity evidence but is explicitly NOT labeled official_brand authority (4K-B2B.1A Section F).",
   "source_of_24": {
@@ -13,12 +14,26 @@
     "identity_confirmed": 23,
     "identity_conflict": 1,
     "identity_unverified": 0,
-    "size_confirmed": 20,
-    "size_conflict": 4,
+    "size_confirmed": 22,
+    "size_conflict": 2,
     "size_unverified": 0,
     "concentration_confirmed": 21,
     "concentration_conflict": 2,
     "concentration_unverified": 1
+  },
+  "counts_history": {
+    "note": "counts above were recomputed in 4K-B2B.2C-R to reflect assets/data.js current-source state AFTER the 4K-B2B.2C corrections (source_corrections_applied_in_4K_B2B_2C) were applied. Pre-2C state (as originally audited in 4K-B2B.1A, before any of the three 2C source corrections existed) is preserved here.",
+    "pre_4K_B2B_2C": {
+      "identity_confirmed": 23,
+      "identity_conflict": 1,
+      "identity_unverified": 0,
+      "size_confirmed": 20,
+      "size_conflict": 4,
+      "size_unverified": 0,
+      "concentration_confirmed": 21,
+      "concentration_conflict": 2,
+      "concentration_unverified": 1
+    }
   },
   "source_corrections_applied_this_gate": [
     { "legacy_id": "dylan-blue", "field": "concentration", "from": "EDP", "to": "EDT", "authority": "official_brand (versace.com: Dylan Blue Pour Homme is Eau de Toilette)", "file": "assets/data.js" },
@@ -140,32 +155,34 @@
     },
     {
       "legacy_id": "cdn-intense-man",
-      "current_identity": { "brand": "Armaf", "name": "Club de Nuit Intense Man", "concentration": "EDP" },
+      "current_identity": { "brand": "Armaf", "name": "Club de Nuit Intense Man", "concentration": "EDT" },
       "verified_identity": { "brand": "Armaf", "name": "Club de Nuit Intense Man", "concentration": "EDT" },
       "current_size_ml": 105,
       "verified_size_ml": 105,
       "identity_status": "IDENTITY_CONFIRMED",
       "size_status": "SIZE_CONFIRMED",
       "concentration_status": "CONCENTRATION_CONFIRMED",
-      "current_concentration": "EDP",
+      "current_concentration": "EDT",
       "verified_concentration": "EDT",
+      "pre_4K_B2B_2C_history": { "current_identity_concentration": "EDP", "current_concentration": "EDP", "note": "Before 4K-B2B.2C, assets/data.js still read EDP; current_* fields above have been updated by 4K-B2B.2C-R to reflect the post-correction source state. The correction itself was applied in 4K-B2B.2C (source_corrections_applied_in_4K_B2B_2C)." },
       "evidence": "4K-B2B.1A Section D: exact edition determined from client bottle photography, not inferred from name/size alone. Client photo img/perfumes/ARMAF - CLUB DE NUIT INTENSE EDT.png (filename itself already says EDT) shows the distinctive rectangular black-glass bottle with a round pendant medallion on a chain -- this is the signature presentation unique to the flagship 'Club de Nuit Intense Man' EDT release, visually distinct from Armaf's Parfum/Parfum Extreme Edition bottles (different bottle shape) and from the Precieux line. Cross-checked against armafperfume.com / armaf.com: the 105 ml bottle of Club de Nuit Intense Man is officially EDT; the EDP variant of this fragrance is sold at 200 ml, a size not present in this catalog. Edition/concentration = EDT with high confidence.",
-      "notes": "Identity/edition/concentration all resolved with high confidence via bottle photography + official cross-check. 4K-B2B.2C CORRECTION APPLIED: assets/data.js concentration corrected EDP -> EDT (source_corrections_applied_in_4K_B2B_2C). No size change; bottle price now carries a provisional_market override (see bottle-market-research.json)."
+      "notes": "Identity/edition/concentration all resolved with high confidence via bottle photography + official cross-check. 4K-B2B.2C CORRECTION APPLIED: assets/data.js concentration corrected EDP -> EDT (source_corrections_applied_in_4K_B2B_2C). 4K-B2B.2C-R: current_concentration/current_identity fields above updated to reflect this post-correction source state (were still showing pre-correction EDP; see pre_4K_B2B_2C_history). No size change; bottle price now carries a provisional_market override (see bottle-market-research.json)."
     },
     {
       "legacy_id": "cedrat-boise-int",
       "current_identity": { "brand": "Mancera", "name": "Cedrat Boise Intense", "concentration": "EDP" },
       "verified_identity": { "brand": "Mancera", "name": "Intense Cedrat Boise", "concentration": "Extrait de Parfum (per client bottle label)" },
-      "current_size_ml": 100,
+      "current_size_ml": 120,
       "verified_size_ml": 120,
       "identity_status": "IDENTITY_CONFIRMED",
-      "size_status": "SIZE_CONFLICT",
+      "size_status": "SIZE_CONFIRMED",
       "target_size_status": "RESOLVED_BY_CLIENT_PHOTO",
       "concentration_status": "CONCENTRATION_CONFLICT",
       "current_concentration": "EDP",
       "verified_concentration": "Extrait de Parfum",
+      "pre_4K_B2B_2C_history": { "current_size_ml": 100, "note": "Before 4K-B2B.2C, assets/data.js still read 100 ml; current_size_ml above has been updated by 4K-B2B.2C-R to reflect the post-correction source state. The correction itself was applied in 4K-B2B.2C (source_corrections_applied_in_4K_B2B_2C)." },
       "evidence": "4K-B2B.1A: client photo img/perfumes/Mancera Cedrat Boise Intense (2).png has a fully legible product label reading 'MANCERA PARIS / INTENSE / CEDRAT BOISE / EXTRAIT DE PARFUM / 4 FL oz | 120 ML' -- this is direct, primary client-image evidence (not a guess and not the larger of two official sizes chosen arbitrarily) that the client's actual bottle is 120 ml Extrait de Parfum. This is also consistent with official/major-retail listings (so-avant-garde.com, jomashop.com, maxaroma.com), which list Mancera Intense Cedrat Boise only in 60 ml and 120 ml -- 120 ml matches exactly.",
-      "notes": "Target size RESOLVED (120 ml) via legible client photography, per Section C. 4K-B2B.2C CORRECTION APPLIED: assets/data.js bottle-size key corrected 100 -> 120 (source_corrections_applied_in_4K_B2B_2C) once accompanying Peru market price research was available; the 820 PEN legacy number was NOT reinterpreted as a verified 120ml price. Concentration is also a genuine mismatch (repo EDP vs. client label 'Extrait de Parfum') -- documented, not corrected, no truthful existing enum value change was in this gate's explicit scope."
+      "notes": "Target size RESOLVED (120 ml) via legible client photography, per Section C. 4K-B2B.2C CORRECTION APPLIED: assets/data.js bottle-size key corrected 100 -> 120 (source_corrections_applied_in_4K_B2B_2C) once accompanying Peru market price research was available; the 820 PEN legacy number was NOT reinterpreted as a verified 120ml price. 4K-B2B.2C-R: current_size_ml above updated to 120 to reflect this post-correction source state (see pre_4K_B2B_2C_history); size_status now SIZE_CONFIRMED. Concentration remains a genuine, still-uncorrected mismatch (repo EDP vs. client label 'Extrait de Parfum') -- documented, not corrected; concentration vocabulary is not widened in this gate."
     },
     {
       "legacy_id": "dylan-blue",
@@ -298,16 +315,17 @@
       "legacy_id": "m-red-tobacco",
       "current_identity": { "brand": "Mancera", "name": "Mancera Red Tobacco", "concentration": "EDP" },
       "verified_identity": { "brand": "Mancera", "name": "Red Tobacco", "concentration": "EDP" },
-      "current_size_ml": 100,
+      "current_size_ml": 120,
       "verified_size_ml": 120,
       "identity_status": "IDENTITY_CONFIRMED",
-      "size_status": "SIZE_CONFLICT",
+      "size_status": "SIZE_CONFIRMED",
       "target_size_status": "RESOLVED_BY_CLIENT_PHOTO",
       "concentration_status": "CONCENTRATION_CONFIRMED",
       "current_concentration": "EDP",
       "verified_concentration": "EDP",
+      "pre_4K_B2B_2C_history": { "current_size_ml": 100, "note": "Before 4K-B2B.2C, assets/data.js still read 100 ml; current_size_ml above has been updated by 4K-B2B.2C-R to reflect the post-correction source state. The correction itself was applied in 4K-B2B.2C (source_corrections_applied_in_4K_B2B_2C)." },
       "evidence": "4K-B2B.1A: client photo img/perfumes/Mancera Mancera Red Tobacco (2).png has a fully legible product label reading 'MANCERA PARIS / RED TOBACCO / EAU DE PARFUM / 4 FL oz | 120 ML' -- direct, primary client-image evidence that the client's actual bottle is 120 ml EDP (concentration matches repo exactly; only size differs). Consistent with official/major-retail listings (microperfumes.com and others) showing Mancera Red Tobacco only in 60 ml and 120 ml -- 120 ml matches exactly.",
-      "notes": "Target size RESOLVED (120 ml) via legible client photography, per Section C -- not an arbitrary 'pick the larger size' choice. 4K-B2B.2C CORRECTION APPLIED: assets/data.js bottle-size key corrected 100 -> 120 (source_corrections_applied_in_4K_B2B_2C) once accompanying Peru market price research was available; the 850 PEN legacy number was NOT reinterpreted as a verified 120ml price. Concentration confirmed correct as-is; no change needed."
+      "notes": "Target size RESOLVED (120 ml) via legible client photography, per Section C -- not an arbitrary 'pick the larger size' choice. 4K-B2B.2C CORRECTION APPLIED: assets/data.js bottle-size key corrected 100 -> 120 (source_corrections_applied_in_4K_B2B_2C) once accompanying Peru market price research was available; the 850 PEN legacy number was NOT reinterpreted as a verified 120ml price. 4K-B2B.2C-R: current_size_ml above updated to 120 to reflect this post-correction source state (see pre_4K_B2B_2C_history); size_status now SIZE_CONFIRMED. Concentration confirmed correct as-is; no change needed."
     },
     {
       "legacy_id": "sauvage-edt",

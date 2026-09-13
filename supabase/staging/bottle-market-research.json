@@ -5,7 +5,7 @@
   "gates_applied": ["4K-B2B.2A", "4K-B2B.2B", "4K-B2B.2C"],
   "research_date": "2026-09-13",
   "authority_note": "provisional_market prices recorded here are operator-authorized TEMPORARY market references only. They are not official_pdf and not client_confirmed. Evidence hierarchy per gate instructions: Tier1 official brand/Peru distributor, Tier2 established Peru department/perfume retailers (Ripley, Falabella, Oechsle, Perfumerias Unidas, PlazaVea), Tier3 established specialist Peru perfume stores, Tier4 Mercado Libre Peru as secondary corroboration only.",
-  "identity_reverification_source": "supabase/staging/bottle-identity-audit.json (4K-B2B.1A) — all targets below (Batch A and Batch B) were IDENTITY_CONFIRMED / SIZE_CONFIRMED / CONCENTRATION_CONFIRMED prior to price research; no mismatched listings (wrong flanker, wrong concentration, wrong size, sets/bundles, decants, testers) were accepted as observations.",
+  "identity_reverification_source": "supabase/staging/bottle-identity-audit.json (4K-B2B.1A) — all targets below (Batch A, Batch B, and Batch C) were IDENTITY_CONFIRMED / SIZE_CONFIRMED / CONCENTRATION_CONFIRMED prior to price research; no mismatched listings (wrong flanker, wrong concentration, wrong size, sets/bundles, decants, testers) were accepted as observations.",
   "entries": [
     {
       "legacy_id": "1-million-lucky",
@@ -977,30 +977,39 @@
       "legacy_id": "ultra-male",
       "verified_identity": { "brand": "Jean Paul Gaultier", "name": "Ultra Male Intense (current Peru retail listings also use the renamed 'Le Male Ultra')", "concentration": "EDT" },
       "size_ml": 125,
+      "review_correction": {
+        "gate": "4K-B2B.2C-R",
+        "reviewer": "ChatGPT independent review (GitHub + current external sources)",
+        "reason": "Original selected observations (Ripley 'Pronto disponible', SENTUA 'No Disponible') were BOTH unavailable at time of research, violating the requirement for realistic current purchasing evidence. Replaced with two currently-orderable Peru references.",
+        "old_selected_reference_pen": 509,
+        "new_selected_reference_pen": 405
+      },
       "observations": [
         {
-          "source_name": "Ripley Perú (vendido por Ripley)",
-          "source_url": "https://simple.ripley.com.pe/perfume-jean-paul-gaultier-ultra-male-intense-hombre-edt-125-ml-2014190884133p",
-          "observed_price_pen": 509.00,
+          "source_name": "MM Parfum",
+          "source_url_note": "Jean Paul Gaultier Ultra Male EDT 125 ml — Peru retailer, currently offered with add-to-cart",
+          "observed_price_pen": 419.00,
           "regular_price_pen": null,
-          "availability": "coming_soon_pronto_disponible",
-          "exact_size_ml": 125,
-          "exact_concentration": "EDT",
-          "seller_type": "tier2_department_store_direct",
-          "observation_date": "2026-09-13",
-          "notes": "Sold directly by Ripley. Title 'PERFUME JEAN PAUL GAULTIER ULTRA MALE INTENSE HOMBRE EDT 125 ML', internet price S/509.00 shown, but purchase button reads 'Pronto disponible' (temporarily not orderable)."
-        },
-        {
-          "source_name": "SENTUA Perú",
-          "source_url": "https://www.sentua.com/ultra-male-eau-de-toilette-125-ml-fragancias-jean-paul-gaultier",
-          "observed_price_pen": 509.00,
-          "regular_price_pen": null,
-          "availability": "no_disponible",
+          "availability": "in_stock_add_to_cart",
           "exact_size_ml": 125,
           "exact_concentration": "EDT",
           "seller_type": "tier3_specialist_peru_retailer",
           "observation_date": "2026-09-13",
-          "notes": "Titled 'Ultra Male Eau de Toilette 125 ml', S/509.00 catalog price shown but marked 'No Disponible' with a 'Notificarme disponibilidad' option; registro sanitario NSOC26517-16PE printed on the page."
+          "observation_source": "4K-B2B.2C-R reviewer verification",
+          "notes": "Jean Paul Gaultier Ultra Male EDT 125 ml, S/419.00, currently offered with an add-to-cart control (live purchasable price, not a catalog-only listing)."
+        },
+        {
+          "source_name": "Royal King Perú",
+          "source_url_note": "Jean Paul Gaultier Ultra Male EDT 125 ml — Peru retailer, currently offered with add-to-cart",
+          "observed_price_pen": 390.00,
+          "regular_price_pen": null,
+          "availability": "in_stock_add_to_cart",
+          "exact_size_ml": 125,
+          "exact_concentration": "EDT",
+          "seller_type": "tier3_specialist_peru_retailer",
+          "observation_date": "2026-09-13",
+          "observation_source": "4K-B2B.2C-R reviewer verification",
+          "notes": "Jean Paul Gaultier Ultra Male EDT 125 ml, S/390.00, currently offered with an add-to-cart control (live purchasable price, not a catalog-only listing)."
         }
       ],
       "excluded_observations": [
@@ -1008,16 +1017,40 @@
           "source_name": "Falabella Perú — 'JPG Le Male Ultra EDT 125ML'",
           "source_url": "https://www.falabella.com.pe/falabella-pe/product/15003549/le-male-ultra-jean-paul-gaultier-125-ml-hombre/15003549",
           "exclusion_reason": "Out of stock ('Producto sin stock') at time of research; no live price shown. 'Le Male Ultra' confirmed (via jeanpaulgaultier brand history) to be the current retail name for the same 'Ultra Male' fragrance line, not the base 'Le Male' — not an identity trap — but excluded here for lack of a live price."
+        },
+        {
+          "source_name": "Ripley Perú (vendido por Ripley) [PRIOR — superseded by 4K-B2B.2C-R]",
+          "source_url": "https://simple.ripley.com.pe/perfume-jean-paul-gaultier-ultra-male-intense-hombre-edt-125-ml-2014190884133p",
+          "observed_price_pen": 509.00,
+          "availability": "coming_soon_pronto_disponible",
+          "exact_size_ml": 125,
+          "exact_concentration": "EDT",
+          "seller_type": "tier2_department_store_direct",
+          "observation_date": "2026-09-13",
+          "exclusion_reason": "Excluded by 4K-B2B.2C-R reviewer correction: purchase button read 'Pronto disponible' (not currently orderable) at time of research, so this catalog price does not satisfy the realistic current purchasing evidence requirement. Preserved as prior/excluded evidence, not erased.",
+          "notes": "Sold directly by Ripley. Title 'PERFUME JEAN PAUL GAULTIER ULTRA MALE INTENSE HOMBRE EDT 125 ML', internet price S/509.00 shown, but purchase button reads 'Pronto disponible' (temporarily not orderable)."
+        },
+        {
+          "source_name": "SENTUA Perú [PRIOR — superseded by 4K-B2B.2C-R]",
+          "source_url": "https://www.sentua.com/ultra-male-eau-de-toilette-125-ml-fragancias-jean-paul-gaultier",
+          "observed_price_pen": 509.00,
+          "availability": "no_disponible",
+          "exact_size_ml": 125,
+          "exact_concentration": "EDT",
+          "seller_type": "tier3_specialist_peru_retailer",
+          "observation_date": "2026-09-13",
+          "exclusion_reason": "Excluded by 4K-B2B.2C-R reviewer correction: marked 'No Disponible' (not currently orderable) at time of research, so this catalog price does not satisfy the realistic current purchasing evidence requirement. Preserved as prior/excluded evidence, not erased.",
+          "notes": "Titled 'Ultra Male Eau de Toilette 125 ml', S/509.00 catalog price shown but marked 'No Disponible' with a 'Notificarme disponibilidad' option; registro sanitario NSOC26517-16PE printed on the page."
         }
       ],
-      "min_credible_pen": 509.00,
-      "max_credible_pen": 509.00,
-      "spread_percent": 0,
-      "selected_reference_pen": 509,
-      "selection_method": "median_of_2_credible_sources_exact_agreement",
+      "min_credible_pen": 390.00,
+      "max_credible_pen": 419.00,
+      "spread_percent": 7.44,
+      "selected_reference_pen": 405,
+      "selection_method": "midpoint_of_2_credible_currently_orderable_sources_rounded_to_integer_pen",
       "confidence": "MEDIUM",
       "verification_status_target": "provisional_market",
-      "reason": "2 independent Tier2/Tier3 Peru sources (Ripley, Sentua) quote the identical catalog price (S/509.00) for the exact Ultra Male Intense / EDT / 125ml target; a third Falabella listing for the same product agrees on identity but is out of stock with no live price. Capped at MEDIUM rather than HIGH because neither of the 2 counted observations is currently orderable ('pronto disponible' / 'no disponible') — the price is a verified current retail list price, not a completed live-purchase price, at the time of this research."
+      "reason": "4K-B2B.2C-R reviewer correction: 2 independent Tier3 Peru sources (MM Parfum S/419.00, Royal King Perú S/390.00) for the exact Ultra Male / EDT / 125ml target, both currently offered with add-to-cart (live purchasable prices). Reference set to the midpoint of S/390 and S/419, rounded to integer PEN = S/405. Confidence remains MEDIUM (2 sources, Tier3 specialist retailers, no Tier2 department-store confirmation). Prior Ripley/SENTUA S/509.00 observations are preserved above as excluded/superseded evidence because both were unavailable ('pronto disponible' / 'no disponible') and do not satisfy the realistic current purchasing evidence requirement."
     }
   ],
   "summary": {

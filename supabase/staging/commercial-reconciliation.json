@@ -24886,7 +24886,7 @@
           "variant_kind": "bottle",
           "size_ml": 125,
           "label": "Frasco 125 ml",
-          "price_amount": 509,
+          "price_amount": 405,
           "currency": "PEN",
           "publication_status": "draft",
           "price_verification_status": "provisional_market",
@@ -24895,7 +24895,7 @@
             "provenance": [
               "MARKET_RESEARCH"
             ],
-            "basis": "4K-B2B.2C Batch C Peru market research (supabase/staging/bottle-market-research.json, legacy_id=ultra-male, size_ml=125): MEDIUM confidence, median_of_2_credible_sources_exact_agreement, S/ 509 from 2 credible Peru observation(s) (S/ 509–S/ 509). Operator-authorized TEMPORARY market reference only — not official_pdf, not client_confirmed."
+            "basis": "4K-B2B.2C Batch C Peru market research (supabase/staging/bottle-market-research.json, legacy_id=ultra-male, size_ml=125): MEDIUM confidence, midpoint_of_2_credible_currently_orderable_sources_rounded_to_integer_pen, S/ 405 from 2 credible Peru observation(s) (S/ 390–S/ 419). Operator-authorized TEMPORARY market reference only — not official_pdf, not client_confirmed."
           },
           "publish_eligibility": "NOT_READY",
           "blockers": [
@@ -24973,7 +24973,7 @@
         "PROVISIONAL_MARKET_PRICES_REQUIRE_COMMERCIAL_APPROVAL"
       ],
       "conflicts": [],
-      "source_fingerprint": "983c46bd4f1ae018070871bd5244aa60c73c34336a14c2426fee74470aa5aa40"
+      "source_fingerprint": "0da0f44ee49f416ce4c5e2194147dfca3469f01f0663309c01fffdc22935d2b2"
     },
     {
       "legacy_id": "victory-elixir",

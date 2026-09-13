@@ -651,6 +651,48 @@ provisional_market writes.
 - Unresolved special cases carried forward unchanged: le-beau-le-parfum
   (TARGET_SIZE_UNRESOLVED), bir-intense and victory-elixir (concentration
   still unresolved) — none were in this gate's Batch-C target list.
+
+### 4K-B2B.2C-R — Reviewer Corrections + Vercel Diagnosis — CLOSED
+
+- Ultra Male reviewer correction: the 2 originally selected observations
+  (Ripley "Pronto disponible", SENTUA "No Disponible", S/509 both) were
+  BOTH unavailable, violating the realistic-current-purchasing-evidence
+  requirement. Replaced with 2 currently-orderable Peru sources (MM Parfum
+  S/419, Royal King Perú S/390, both add-to-cart). New reference =
+  midpoint of S/390/S/419 rounded to integer PEN = **S/405**, confidence
+  stays MEDIUM. Old S/509 Ripley/SENTUA observations preserved as
+  excluded/superseded evidence in bottle-market-research.json, not erased.
+- bottle-identity-audit.json current-state drift corrected: cdn-intense-man,
+  cedrat-boise-int, m-red-tobacco `current_concentration`/`current_size_ml`
+  fields (and cdn-intense-man's `current_identity.concentration`) now
+  reflect the post-2C assets/data.js state (EDT / 120 / 120 respectively)
+  instead of the stale pre-2C values; pre-correction values preserved per
+  entry in `pre_4K_B2B_2C_history`. Top-level counts recomputed:
+  size_confirmed 20->22, size_conflict 4->2 (pre-2C counts preserved in
+  `counts_history.pre_4K_B2B_2C`). bir-intense/le-beau-le-parfum/
+  victory-elixir left unguessed. `identity_reverification_source` text
+  corrected to mention Batch C (previously named only Batch A/B).
+- Regenerated supabase/staging/commercial-reconciliation.json via the
+  existing generic reconciliation mechanism: only the ultra-male 125 ml
+  bottle price changed (509 -> 405); 97 products, 315 variants, 17
+  provisional_market bottles, 7 legacy bottles, 288 official_pdf decants,
+  3 blocked combos, 0 conflicts — all unchanged.
+- 1 new focused Vitest test added asserting Ultra Male = 125 ml / EDT /
+  S/405 / provisional_market and that S/509 is not the selected reference
+  anywhere in the catalog (apps/web/src/lib/catalog/commercial-reconciliation.test.ts,
+  now 83 tests in that file). npm run commercial:check: byte-stable. npm
+  run check: PASS (601 tests, typecheck/lint/build all green). git diff
+  --check: clean.
+- Vercel deployment dpl_4tjwn8wdjYc87VNhFPtZwFrUQdQk diagnosed via
+  `npx vercel inspect --logs` (CLI already authenticated as
+  dominiocruzial-5459): build fails with "No Next.js version detected" —
+  root cause is **project/root-directory configuration** (the Vercel
+  project's Root Directory is not set to `apps/web`; there is no root
+  `package.json`/`next` dependency at repo root, so `next build` runs in
+  the wrong directory). Not a code/build issue — local `npm run check` and
+  `next build` pass cleanly. Predates this gate (a0b07f9 already failed
+  the same way). No deployment config was changed (root cause proof only,
+  per gate instructions).
 - Next: 4K-B2B.3 — NOT STARTED.
 
 ## Current evidence gaps
