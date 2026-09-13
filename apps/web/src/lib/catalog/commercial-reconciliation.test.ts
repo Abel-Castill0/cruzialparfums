@@ -730,3 +730,105 @@ describe("4K-B2B.1 variant-aware readiness contract", () => {
     }
   });
 });
+
+describe("4K-B2B.1A bottle identity audit corrections", () => {
+  const staging = JSON.parse(readFileSync(
+    resolve(repositoryRoot, "supabase/staging/legacy-catalog-staging.json"),
+    "utf8",
+  )) as LegacyStaging;
+  const result = reconcileCommercialCatalog({ staging, documentedBottlePriceCount: 24 });
+  const productById = (identity: string | null) =>
+    result.products.find((product) => (product.legacy_id ?? product.target_product.slug) === identity);
+  const bottleVariant = (product: ReconciledProduct) =>
+    product.variants.find((variant) => variant.variant_kind === "bottle");
+
+  it("keeps adg-profondo-edp's 100 ml bottle price untouched (the audit reclassification does not mutate the catalog)", () => {
+    const product = productById("adg-profondo-edp");
+    if (!product) throw new Error("Expected adg-profondo-edp in the reconciled catalog");
+    const bottle = bottleVariant(product);
+    expect(bottle).toMatchObject({ size_ml: 100, price_amount: 700, price_verification_status: "legacy" });
+  });
+
+  it("corrects Dylan Blue's concentration to EDT with no price change", () => {
+    const product = productById("dylan-blue");
+    if (!product) throw new Error("Expected dylan-blue in the reconciled catalog");
+    expect(product.target_product.concentration).toBe("EDT");
+    const bottle = bottleVariant(product);
+    expect(bottle).toMatchObject({ size_ml: 100, price_amount: 620, price_verification_status: "legacy" });
+  });
+
+  it("corrects By The Fireplace's concentration to EDT with no price change", () => {
+    const product = productById("by-the-fireplace");
+    if (!product) throw new Error("Expected by-the-fireplace in the reconciled catalog");
+    expect(product.target_product.concentration).toBe("EDT");
+    const bottle = bottleVariant(product);
+    expect(bottle).toMatchObject({ size_ml: 100, price_amount: 750, price_verification_status: "legacy" });
+  });
+
+  it("corrects Le Male Elixir's concentration to Parfum with no price change", () => {
+    const product = productById("le-male-elixir");
+    if (!product) throw new Error("Expected le-male-elixir in the reconciled catalog");
+    expect(product.target_product.concentration).toBe("Parfum");
+    const bottle = bottleVariant(product);
+    expect(bottle).toMatchObject({ size_ml: 75, price_amount: 600, price_verification_status: "legacy" });
+  });
+
+  it("leaves cdn-intense-man's, le-beau-le-parfum's, cedrat-boise-int's, m-red-tobacco's, bir-intense's and victory-elixir's source concentration/size untouched (deferred corrections, not in this gate's explicit scope)", () => {
+    const deferred: Array<[string, string, number]> = [
+      ["cdn-intense-man", "EDP", 105],
+      ["le-beau-le-parfum", "EDP", 100],
+      ["cedrat-boise-int", "EDP", 100],
+      ["m-red-tobacco", "EDP", 100],
+      ["bir-intense", "EDP", 100],
+      ["victory-elixir", "EDP", 100],
+    ];
+    for (const [legacyId, concentration, sizeMl] of deferred) {
+      const product = productById(legacyId);
+      if (!product) throw new Error(`Expected ${legacyId} in the reconciled catalog`);
+      expect(product.target_product.concentration).toBe(concentration);
+      const bottle = bottleVariant(product);
+      expect(bottle?.size_ml).toBe(sizeMl);
+    }
+  });
+
+  it("never silently assigns a resolved target size to an unresolved multi-size bottle variant (le-beau-le-parfum, bir-intense)", () => {
+    // The audit artifact records these as TARGET_SIZE_UNRESOLVED (75 vs 125 ml,
+    // and an illegible client photo, respectively) -- the reconciled catalog's
+    // actual bottle size_ml must stay exactly the legacy value, never silently
+    // switched to one of the candidate official sizes.
+    for (const legacyId of ["le-beau-le-parfum", "bir-intense"]) {
+      const product = productById(legacyId);
+      if (!product) throw new Error(`Expected ${legacyId} in the reconciled catalog`);
+      const bottle = bottleVariant(product);
+      expect(bottle?.size_ml).toBe(100);
+      expect(bottle?.price_verification_status).toBe("legacy");
+    }
+  });
+
+  it("keeps exactly 288 official_pdf decant prices after the concentration-only corrections (4K-B2A truth preserved)", () => {
+    expect(result.summary.confirmed_price_variants).toBe(288);
+    expect(result.summary.legacy_bottle_price_variants).toBe(24);
+    expect(result.summary.confirmed_bottle_price_variants).toBe(0);
+    expect(result.summary.staged_non_combo_products).toBe(97);
+    expect(result.summary.variants).toBe(315);
+    expect(result.summary.blocked).toBe(3);
+    expect(result.summary.conflicts).toBe(0);
+  });
+
+  it("performs no price mutation anywhere in the reconciled catalog from this gate's source edits", () => {
+    const persisted = JSON.parse(readFileSync(
+      resolve(repositoryRoot, "supabase/staging/commercial-reconciliation.json"),
+      "utf8",
+    )) as { products: ReconciledProduct[] };
+    const priceOf = (products: ReconciledProduct[]) =>
+      products
+        .flatMap((product) => product.variants.map((variant) => ({
+          legacy_id: product.legacy_id,
+          label: variant.label,
+          price_amount: variant.price_amount,
+        })))
+        .sort((a, b) => `${a.legacy_id}:${a.label}`.localeCompare(`${b.legacy_id}:${b.label}`));
+
+    expect(priceOf(result.products)).toEqual(priceOf(persisted.products));
+  });
+});

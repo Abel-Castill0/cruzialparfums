@@ -1,21 +1,36 @@
 {
-  "schema_version": 1,
-  "purpose": "4K-B2B.1 identity/size verification audit for the 24 legacy bottle price variants, prior to any Peru market price research (4K-B2B.2A+). No prices researched or mutated in this gate.",
-  "gate": "4K-B2B.1",
-  "authority_note": "Evidence hierarchy per gate instructions: (1) official client PDF (docs/client-source/CATALOGO DE DECANTS.pdf) / bottle image in project, (2) official manufacturer/brand website, (3) existing client product photography (img/perfumes/), (4) strong secondary references (Fragrantica, major official-retail listings) only when 1-3 are silent or ambiguous. The official 2026 PDF contains ONLY 3/5/10 ml decant prices — confirmed in supabase/staging/pdf-2026-commercial-reconciliation.json (bottle_price_authority.pdf_contains_bottle_prices = false) — so it supplies decant-price authority and (for bir-intense) a currency/name cross-check only; it is not itself a size authority for any bottle.",
+  "schema_version": 2,
+  "purpose": "4K-B2B.1/4K-B2B.1A identity/size/concentration verification audit for the 24 legacy bottle price variants, prior to any Peru market price research (4K-B2B.2A+). No prices researched or mutated in either gate.",
+  "gate": "4K-B2B.1A",
+  "supersedes": "4K-B2B.1 (schema_version 1 of this same file) -- corrects a miscount in that version's counts.identity_conflict/identity_confirmed (it said 22/2 but only 1 entry, victory-elixir, actually carried identity_status=IDENTITY_CONFLICT), reclassifies adg-profondo-edp, adds a concentration_status dimension, and records target-size evidence gathered from client photo label text that 4K-B2B.1 did not consult.",
+  "authority_note": "Evidence hierarchy per gate instructions: (1) official client PDF (docs/client-source/CATALOGO DE DECANTS.pdf) / bottle image in project, (2) official manufacturer/brand website, (3) existing client product photography (img/perfumes/), (4) strong secondary references (Fragrantica, major official-retail listings) only when 1-3 are silent or ambiguous. The official 2026 PDF contains ONLY 3/5/10 ml decant prices -- confirmed in supabase/staging/pdf-2026-commercial-reconciliation.json (bottle_price_authority.pdf_contains_bottle_prices = false) -- so it supplies decant-price authority and (for bir-intense) a currency/name cross-check only; it is not itself a size authority for any bottle. A discontinued product (bir-intense) has no live official manufacturer page; client photography is used there as PRIMARY identity evidence but is explicitly NOT labeled official_brand authority (4K-B2B.1A Section F).",
   "source_of_24": {
     "artifact": "supabase/staging/commercial-reconciliation.json",
     "summary.legacy_bottle_price_variants": 24,
     "selection_rule": "products[].variants[] where variant_kind == 'bottle' and price_verification_status == 'legacy'"
   },
   "counts": {
-    "identity_confirmed": 22,
-    "identity_conflict": 2,
+    "identity_confirmed": 23,
+    "identity_conflict": 1,
     "identity_unverified": 0,
-    "size_confirmed": 19,
-    "size_conflict": 5,
-    "size_unverified": 0
+    "size_confirmed": 20,
+    "size_conflict": 4,
+    "size_unverified": 0,
+    "concentration_confirmed": 21,
+    "concentration_conflict": 2,
+    "concentration_unverified": 1
   },
+  "source_corrections_applied_this_gate": [
+    { "legacy_id": "dylan-blue", "field": "concentration", "from": "EDP", "to": "EDT", "authority": "official_brand (versace.com: Dylan Blue Pour Homme is Eau de Toilette)", "file": "assets/data.js" },
+    { "legacy_id": "by-the-fireplace", "field": "concentration", "from": "EDP", "to": "EDT", "authority": "official_brand (maisonmargiela-fragrances.us: REPLICA By the Fireplace is Eau de Toilette)", "file": "assets/data.js" },
+    { "legacy_id": "le-male-elixir", "field": "concentration", "from": "EDP", "to": "Parfum", "authority": "official_brand (jeanpaulgaultier.com: Le Male Elixir is sold as Parfum, not EDP)", "file": "assets/data.js" }
+  ],
+  "source_corrections_not_applied": [
+    "cdn-intense-man concentration (EDP->EDT): identity/edition confirmed with high confidence via bottle photo + official cross-check (see entry), but not in this gate's explicit correction scope (4K-B2B.1A Section H names only dylan-blue/by-the-fireplace/le-male-elixir/le-beau-le-parfum-terminology) -- deferred to a future data-quality pass.",
+    "le-beau-le-parfum concentration terminology (official label 'Eau de Parfum Intense'): the existing 'EDP' value is the closest truthful representation already used for other 'Intense' variants in this catalog (e.g. cedrat-boise-int); left unchanged rather than widening the concentration vocabulary for one row. Manufacturer's exact label is documented in the entry instead.",
+    "cedrat-boise-int / m-red-tobacco bottle size (100ml source key): client photo legibly proves 120 ml for both (see entries), but the size key in assets/data.js is coupled to the unresearched legacy price (820/850 PEN) -- changing the size label without a price decision is out of scope for this gate (no price mutation permitted) and is deferred to 4K-B2B.2A/B alongside the price research that must accompany it.",
+    "victory-elixir name/concentration ('Invictus Victory Elixir' / Parfum Intense): client photo shows the correct trophy bottle but no legible text confirming concentration; per Section E, only correct when client photo + reliable evidence uniquely support it. Left unresolved."
+  ],
   "entries": [
     {
       "legacy_id": "1-million-lucky",
@@ -25,6 +40,9 @@
       "verified_size_ml": 100,
       "identity_status": "IDENTITY_CONFIRMED",
       "size_status": "SIZE_CONFIRMED",
+      "concentration_status": "CONCENTRATION_CONFIRMED",
+      "current_concentration": "EDT",
+      "verified_concentration": "EDT",
       "evidence": "Client photo img/perfumes/Paco Rabanne 1 Million Lucky.png; rabanne.com official listing; multiple official-retail listings, 100ml / 3.4oz EDT.",
       "notes": null
     },
@@ -36,6 +54,9 @@
       "verified_size_ml": 100,
       "identity_status": "IDENTITY_CONFIRMED",
       "size_status": "SIZE_CONFIRMED",
+      "concentration_status": "CONCENTRATION_CONFIRMED",
+      "current_concentration": "EDP",
+      "verified_concentration": "EDP",
       "evidence": "Client photo img/perfumes/AFNAN - 9PM.png (distinct from 9 PM Rebel/Elixir/Night Out flankers also in img/perfumes/); official-retail listings, 100ml EDP.",
       "notes": "Do not confuse with sibling flanker images '9 PM Rebel' / '9PM ELIXIR' / '9PM NIGHT OUT' present in the same asset folder."
     },
@@ -44,11 +65,14 @@
       "current_identity": { "brand": "Armani", "name": "Acqua di Gio Profondo EDP", "concentration": "EDP" },
       "verified_identity": { "brand": "Giorgio Armani", "name": "Acqua di Gio Profondo", "concentration": "EDP" },
       "current_size_ml": 100,
-      "verified_size_ml": null,
+      "verified_size_ml": 100,
       "identity_status": "IDENTITY_CONFIRMED",
-      "size_status": "SIZE_CONFLICT",
-      "evidence": "Client photo img/perfumes/GIORGIO ARMANI .-ACQUA DI GIO PROFONDO EDP.png confirms identity. armani.com official product pages list standalone bottles at 75 ml and 125 ml; a 100 ml size appears only inside Armani's separate refillable-flacon program (30/50/100 ml flacon + 150 ml refill canister), not as the standard retail bottle.",
-      "notes": "Repo's 100 ml does not match either standard official retail size (75/125 ml); it may correspond to the refillable-flacon variant instead. Left unresolved -- do not correct without client/order-history check (Section D)."
+      "size_status": "SIZE_CONFIRMED",
+      "concentration_status": "CONCENTRATION_CONFIRMED",
+      "current_concentration": "EDP",
+      "verified_concentration": "EDP",
+      "evidence": "CORRECTED IN 4K-B2B.1A: the 4K-B2B.1 SIZE_CONFLICT classification was wrong. Client photo img/perfumes/GIORGIO ARMANI .-ACQUA DI GIO PROFONDO EDP.png confirms identity. Current official Armani Beauty (armani.com / giorgioarmanibeauty-usa.com) offers Acqua di Gio Profondo Eau de Parfum in 30 ml, 50 ml and 100 ml as standard refillable retail flacon sizes (plus a 150 ml refill canister and a 200 ml size) -- 100 ml is a genuine current official size, not merely an internal refill-program artifact as the prior audit assumed.",
+      "notes": "4K-B2B.1A correction: SIZE_CONFLICT -> SIZE_CONFIRMED. No mutation needed; repo's 100 ml was already correct."
     },
     {
       "legacy_id": "asad-elixir",
@@ -58,6 +82,9 @@
       "verified_size_ml": 100,
       "identity_status": "IDENTITY_CONFIRMED",
       "size_status": "SIZE_CONFIRMED",
+      "concentration_status": "CONCENTRATION_CONFIRMED",
+      "current_concentration": "EDP",
+      "verified_concentration": "EDP",
       "evidence": "Client photo img/perfumes/Asad Elixir.png; lattafa.com official listing, 100 ml EDP.",
       "notes": null
     },
@@ -69,30 +96,42 @@
       "verified_size_ml": 100,
       "identity_status": "IDENTITY_CONFIRMED",
       "size_status": "SIZE_CONFIRMED",
+      "concentration_status": "CONCENTRATION_CONFIRMED",
+      "current_concentration": "EDP",
+      "verified_concentration": "EDP",
       "evidence": "Client photo img/perfumes/Bvlgari Bvlgari Man In Black.png; bulgari.com official listing includes 100 ml among its official flacon sizes (60/100/150 ml).",
       "notes": null
     },
     {
       "legacy_id": "bir-intense",
       "current_identity": { "brand": "Burberry", "name": "Burberry Brit Intense", "concentration": "EDP" },
-      "verified_identity": { "brand": "Burberry", "name": "Brit Intense (or Brit Rhythm for Him Intense -- ambiguous, see notes)", "concentration": "UNVERIFIED (secondary sources show the 'Intense' flanker as EDT, not EDP)" },
+      "verified_identity": { "brand": "Burberry", "name": "Brit Intense / Brit Rhythm for Him Intense (client_photo_confirmed, not official-current-manufacturer evidence)", "concentration": "UNVERIFIED" },
       "current_size_ml": 100,
       "verified_size_ml": null,
       "identity_status": "IDENTITY_CONFIRMED",
       "size_status": "SIZE_CONFLICT",
-      "evidence": "MANUAL-REVIEW CANDIDATE per gate instructions. Official PDF (docs/client-source/CATALOGO DE DECANTS.pdf, page 34) labels this only 'BIR Intense' -- an abbreviation, decoded from an overlapping text layer (see supabase/staging/pdf-2026-commercial-reconciliation.json:bir_intense and row_reconciliation, match_basis=DECODED_OVERLAPPING_PDF_TEXT_LAYER) -- it does NOT itself spell out 'Burberry Brit Intense'. Client photo img/perfumes/Burberry Burberry Brit Intense.png shows a charcoal/gunmetal rectangular bottle with a tonal check (nova-check) texture and silver cap, which visually matches Burberry's 2011 'Brit Intense' bottle design. Burberry has since discontinued this line; no current official Burberry product page exists to size-check against. Secondary references (Fragrantica/retail) for the closest matching discontinued Burberry 'Intense' men's flanker ('Brit Rhythm for Him Intense', 2013) show 90 ml EDT, not 100 ml EDP -- but that is a visually different (2013) bottle design, so it is not certain to be the same product as the client's photographed bottle.",
-      "notes": "IDENTITY_CONFIRMED at the brand+line level (Burberry Brit Intense) via client photography, which is stronger evidence here than the abbreviated/decoded PDF label. However concentration (repo EDP vs. likely EDT) and exact ml are NOT independently confirmable against a live official source because the product is discontinued. Recorded as SIZE_CONFLICT / concentration-unverified rather than guessed. Do not silently correct; this is the exact case Section D says to leave unresolved and report. Also relevant: assets/data.js:472 previously set legacy_hidden=true (2026-09-06 CLIENT_CONFIRMED, no stock), superseded for decant pricing purposes only by the 2026-09-13 PDF instruction per pdf-2026-commercial-reconciliation.json -- that supersession note does not extend to size/concentration."
+      "target_size_status": "TARGET_SIZE_UNRESOLVED",
+      "concentration_status": "CONCENTRATION_UNVERIFIED",
+      "current_concentration": "EDP",
+      "verified_concentration": null,
+      "identity_authority": "client_photo_confirmed",
+      "identity_confidence": "medium",
+      "evidence": "MANUAL-REVIEW CANDIDATE per 4K-B2B.1 gate instructions, re-affirmed in 4K-B2B.1A Section F. Official PDF (docs/client-source/CATALOGO DE DECANTS.pdf, page 34) labels this only 'BIR Intense' -- an abbreviation, decoded from an overlapping text layer (see supabase/staging/pdf-2026-commercial-reconciliation.json:bir_intense, match_basis=DECODED_OVERLAPPING_PDF_TEXT_LAYER) -- it does NOT itself spell out 'Burberry Brit Intense'. Client photo img/perfumes/Burberry Burberry Brit Intense.png and its (2) variant show a charcoal/gunmetal rectangular bottle with a tonal check (nova-check) texture and silver cap -- visually consistent with Burberry's 'Brit Intense' (2011) / 'Brit Rhythm for Him Intense' (2013) bottle family, but neither client image has legible volume text (unlike the Mancera photos below, whose labels are readable). The product is discontinued; no current official Burberry product page exists. Per 4K-B2B.1A Section F, this identity match is recorded as client_photo_confirmed at medium confidence -- explicitly NOT official_brand authority -- and the historical secondary reference for the closest-named 2013 flanker ('Brit Rhythm for Him Intense', 90 ml EDT) is noted for context only, not adopted as the size/concentration of record because that is visually a different-era bottle design.",
+      "notes": "IDENTITY_CONFIRMED at the brand+line level via client photography (stronger evidence here than the abbreviated/decoded PDF label). Size and concentration stay unresolved -- volume is not legible on either client photo, so per Section F the repo's bottle size is NOT mutated and target_size_status is TARGET_SIZE_UNRESOLVED, to be revisited only if/when clearer client evidence or a client decision surfaces (not in 4K-B2B.2A price research). Also relevant: assets/data.js:479 sets legacy_hidden=true (2026-09-06 CLIENT_CONFIRMED, no stock), superseded for decant pricing purposes only by the 2026-09-13 PDF instruction per pdf-2026-commercial-reconciliation.json -- that supersession does not extend to size/concentration."
     },
     {
       "legacy_id": "by-the-fireplace",
-      "current_identity": { "brand": "Maison Margiela", "name": "By The Fireplace", "concentration": "EDP" },
+      "current_identity": { "brand": "Maison Margiela", "name": "By The Fireplace", "concentration": "EDT" },
       "verified_identity": { "brand": "Maison Margiela", "name": "REPLICA By the Fireplace", "concentration": "EDT" },
       "current_size_ml": 100,
       "verified_size_ml": 100,
       "identity_status": "IDENTITY_CONFIRMED",
       "size_status": "SIZE_CONFIRMED",
+      "concentration_status": "CONCENTRATION_CONFIRMED",
+      "current_concentration": "EDT",
+      "verified_concentration": "EDT",
       "evidence": "Client photo img/perfumes/Maison Margiela By The Fireplace.png; maisonmargiela-fragrances.us official listing, 100 ml, Eau de Toilette (REPLICA line is EDT, not EDP).",
-      "notes": "CONCENTRATION MISMATCH (not size/identity): repo field says EDP; official Maison Margiela REPLICA line is EDT. Flagged for correction in a future data-quality pass; concentration correction is out of scope for this gate (Section D/F -- no price or size mutation performed here, and concentration is likewise left unresolved rather than silently changed)."
+      "notes": "4K-B2B.1A CORRECTION APPLIED: assets/data.js concentration corrected EDP -> EDT (source_corrections_applied_this_gate). No price or size change."
     },
     {
       "legacy_id": "cdn-intense-man",
@@ -102,30 +141,40 @@
       "verified_size_ml": 105,
       "identity_status": "IDENTITY_CONFIRMED",
       "size_status": "SIZE_CONFIRMED",
-      "evidence": "Client photo img/perfumes/ARMAF - CLUB DE NUIT INTENSE EDT.png (filename itself says EDT); armafperfume.com / armaf.com official listings: the 105 ml bottle of Club de Nuit Intense Man is the EDT concentration (the EDP variant is sold at 200 ml, a different size not in the legacy catalog).",
-      "notes": "CONCENTRATION MISMATCH (not size/identity): repo field says EDP; the 105 ml bottle is officially EDT. The client's own asset filename already disagreed with the repo's EDP field before this gate. Left unresolved for a future data-quality pass per Section D/F; no mutation performed."
+      "concentration_status": "CONCENTRATION_CONFIRMED",
+      "current_concentration": "EDP",
+      "verified_concentration": "EDT",
+      "evidence": "4K-B2B.1A Section D: exact edition determined from client bottle photography, not inferred from name/size alone. Client photo img/perfumes/ARMAF - CLUB DE NUIT INTENSE EDT.png (filename itself already says EDT) shows the distinctive rectangular black-glass bottle with a round pendant medallion on a chain -- this is the signature presentation unique to the flagship 'Club de Nuit Intense Man' EDT release, visually distinct from Armaf's Parfum/Parfum Extreme Edition bottles (different bottle shape) and from the Precieux line. Cross-checked against armafperfume.com / armaf.com: the 105 ml bottle of Club de Nuit Intense Man is officially EDT; the EDP variant of this fragrance is sold at 200 ml, a size not present in this catalog. Edition/concentration = EDT with high confidence.",
+      "notes": "Identity/edition/concentration all resolved with high confidence via bottle photography + official cross-check, but the assets/data.js correction is NOT applied in this gate -- 4K-B2B.1A Section H's explicit source-correction list does not name cdn-intense-man (see source_corrections_not_applied). Deferred to a future data-quality pass."
     },
     {
       "legacy_id": "cedrat-boise-int",
       "current_identity": { "brand": "Mancera", "name": "Cedrat Boise Intense", "concentration": "EDP" },
-      "verified_identity": { "brand": "Mancera", "name": "Intense Cedrat Boise", "concentration": "EDP (Extrait de Parfum on some listings)" },
+      "verified_identity": { "brand": "Mancera", "name": "Intense Cedrat Boise", "concentration": "Extrait de Parfum (per client bottle label)" },
       "current_size_ml": 100,
-      "verified_size_ml": null,
+      "verified_size_ml": 120,
       "identity_status": "IDENTITY_CONFIRMED",
       "size_status": "SIZE_CONFLICT",
-      "evidence": "Client photo img/perfumes/Mancera Cedrat Boise Intense.png confirms identity. Official/major-retail listings (so-avant-garde.com, jomashop.com, maxaroma.com) consistently show Mancera Intense Cedrat Boise in 60 ml and 120 ml -- no 100 ml size found anywhere.",
-      "notes": "Gate-flagged candidate, confirmed as instructed: repo's 100 ml does not match either official size (60/120 ml). Left unresolved -- correcting the size would require also revisiting the legacy price (820 PEN), which is out of scope (no price mutation this gate) and the linkage to 60 ml vs 120 ml is not determinable from the legacy data alone."
+      "target_size_status": "RESOLVED_BY_CLIENT_PHOTO",
+      "concentration_status": "CONCENTRATION_CONFLICT",
+      "current_concentration": "EDP",
+      "verified_concentration": "Extrait de Parfum",
+      "evidence": "4K-B2B.1A: client photo img/perfumes/Mancera Cedrat Boise Intense (2).png has a fully legible product label reading 'MANCERA PARIS / INTENSE / CEDRAT BOISE / EXTRAIT DE PARFUM / 4 FL oz | 120 ML' -- this is direct, primary client-image evidence (not a guess and not the larger of two official sizes chosen arbitrarily) that the client's actual bottle is 120 ml Extrait de Parfum. This is also consistent with official/major-retail listings (so-avant-garde.com, jomashop.com, maxaroma.com), which list Mancera Intense Cedrat Boise only in 60 ml and 120 ml -- 120 ml matches exactly.",
+      "notes": "Target size RESOLVED (120 ml) via legible client photography, per Section C. The assets/data.js bottle-size key is NOT mutated in this gate because it is coupled to the un-researched legacy price (820 PEN) and correcting one without the other risks an incoherent size/price pair; deferred to 4K-B2B.2A/B (see source_corrections_not_applied). Concentration is also a genuine mismatch (repo EDP vs. client label 'Extrait de Parfum') -- documented, not corrected, no truthful existing enum value change was in this gate's explicit scope."
     },
     {
       "legacy_id": "dylan-blue",
-      "current_identity": { "brand": "Versace", "name": "Dylan Blue", "concentration": "EDP" },
+      "current_identity": { "brand": "Versace", "name": "Dylan Blue", "concentration": "EDT" },
       "verified_identity": { "brand": "Versace", "name": "Dylan Blue Pour Homme", "concentration": "EDT" },
       "current_size_ml": 100,
       "verified_size_ml": 100,
       "identity_status": "IDENTITY_CONFIRMED",
       "size_status": "SIZE_CONFIRMED",
+      "concentration_status": "CONCENTRATION_CONFIRMED",
+      "current_concentration": "EDT",
+      "verified_concentration": "EDT",
       "evidence": "Client photo img/perfumes/Versace Dylan Blue.png; versace.com official listing includes 100 ml among official sizes (50/100/200 ml EDT).",
-      "notes": "Repo concentration field says EDP; official Dylan Blue Pour Homme (men's) line is EDT. Same category of concentration mismatch as by-the-fireplace/cdn-intense-man; left unresolved, size only is in scope for this gate."
+      "notes": "4K-B2B.1A CORRECTION APPLIED: assets/data.js concentration corrected EDP -> EDT (source_corrections_applied_this_gate). No price or size change."
     },
     {
       "legacy_id": "erba-pura",
@@ -135,6 +184,9 @@
       "verified_size_ml": 50,
       "identity_status": "IDENTITY_CONFIRMED",
       "size_status": "SIZE_CONFIRMED",
+      "concentration_status": "CONCENTRATION_CONFIRMED",
+      "current_concentration": "EDP",
+      "verified_concentration": "EDP",
       "evidence": "Client photo img/perfumes/Xerjoff Erba Pura.png; official/major-retail listings confirm Xerjoff Erba Pura EDP ships in 50 ml and 100 ml (both present in the legacy catalog as separate bottle variants).",
       "notes": "This legacy_id has two bottle-price variants (50 ml and 100 ml); both are listed as separate rows here."
     },
@@ -146,6 +198,9 @@
       "verified_size_ml": 100,
       "identity_status": "IDENTITY_CONFIRMED",
       "size_status": "SIZE_CONFIRMED",
+      "concentration_status": "CONCENTRATION_CONFIRMED",
+      "current_concentration": "EDP",
+      "verified_concentration": "EDP",
       "evidence": "Same as the 50 ml row above.",
       "notes": "Second bottle-price variant of the same legacy_id."
     },
@@ -157,6 +212,9 @@
       "verified_size_ml": 100,
       "identity_status": "IDENTITY_CONFIRMED",
       "size_status": "SIZE_CONFIRMED",
+      "concentration_status": "CONCENTRATION_CONFIRMED",
+      "current_concentration": "EDT",
+      "verified_concentration": "EDT",
       "evidence": "Client photo img/perfumes/Versace Eros EDT.png (distinct from VERSACE - EROS EDP.png / EROS FLAME.png also in the asset folder); versace.com official listing, 100 ml among official sizes (50/100/200 ml EDT).",
       "notes": "Do not confuse with sibling images 'VERSACE - EROS EDP' and 'VERSACE - EROS FLAME' present in the same asset folder."
     },
@@ -168,6 +226,9 @@
       "verified_size_ml": 100,
       "identity_status": "IDENTITY_CONFIRMED",
       "size_status": "SIZE_CONFIRMED",
+      "concentration_status": "CONCENTRATION_CONFIRMED",
+      "current_concentration": "EDP",
+      "verified_concentration": "EDP",
       "evidence": "Client photo img/perfumes/RASASI - HAWAS ICE.png (distinct from Hawas Elixir/Exotic/Verde/Chrome/Fire/Kobra/Tropical flankers also present); official-retail listings, 100 ml EDP.",
       "notes": "Do not confuse with sibling Hawas-line flanker images in the same asset folder."
     },
@@ -179,6 +240,9 @@
       "verified_size_ml": 100,
       "identity_status": "IDENTITY_CONFIRMED",
       "size_status": "SIZE_CONFIRMED",
+      "concentration_status": "CONCENTRATION_CONFIRMED",
+      "current_concentration": "EDP",
+      "verified_concentration": "EDP",
       "evidence": "Client photo img/perfumes/LATTAFA - KHAMRAH CLASICO.png (distinct from Khamrah Qahwa/Dukhan/Waha flankers also present); lattafa-usa.com official listing, 100 ml EDP.",
       "notes": "'Clásico' is a client/repo qualifier distinguishing the original Khamrah from its Qahwa/Dukhan/Waha flankers, not part of Lattafa's own product name; retained as-is per gate guidance against renaming for modern branding without an identity-correctness reason."
     },
@@ -190,19 +254,26 @@
       "verified_size_ml": null,
       "identity_status": "IDENTITY_CONFIRMED",
       "size_status": "SIZE_CONFLICT",
-      "evidence": "Client photo img/perfumes/JEAN PAUL GAULTIER - LE BEAU LE PARFUM.png confirms identity. jeanpaulgaultier.com official product page and multiple official-retail listings (jomashop, maxaroma) show only 75 ml and 125 ml -- no 100 ml size found anywhere.",
-      "notes": "Gate-flagged candidate, confirmed as instructed: repo's 100 ml does not match either official size (75/125 ml). Left unresolved for the same reason as cedrat-boise-int/m-red-tobacco -- correcting requires a price decision out of scope for this gate."
+      "target_size_status": "TARGET_SIZE_UNRESOLVED",
+      "concentration_status": "CONCENTRATION_CONFIRMED",
+      "current_concentration": "EDP",
+      "verified_concentration": "EDP (official label carries an additional 'Intense' qualifier -- see notes)",
+      "evidence": "Client photo img/perfumes/JEAN PAUL GAULTIER - LE BEAU LE PARFUM (2).png shows the standard JPG torso bottle (teal/black gradient, gold leaf medallion) with no legible volume text anywhere on the bottle or cap. jeanpaulgaultier.com official product page and multiple official-retail listings (jomashop, maxaroma) show only 75 ml and 125 ml as official sizes -- no 100 ml size found anywhere. Per 4K-B2B.1A Section B/C: the manufacturer's exact label is 'Le Beau Le Parfum Eau de Parfum Intense'; the repo's existing 'EDP' value is the closest truthful representation already used for other 'Intense' variants in this catalog, so it is not changed.",
+      "notes": "Repo's 100 ml does not match either official size (75/125 ml) and the client photo does not legibly prove which one Cruzial means to sell -- per Section C, target_size_status stays TARGET_SIZE_UNRESOLVED rather than arbitrarily picking 75 or 125. No source mutation. Do not apply a provisional price to this entry until the target size is defined (Section C)."
     },
     {
       "legacy_id": "le-male-elixir",
-      "current_identity": { "brand": "Jean Paul Gaultier", "name": "Le Male Elixir", "concentration": "EDP" },
+      "current_identity": { "brand": "Jean Paul Gaultier", "name": "Le Male Elixir", "concentration": "Parfum" },
       "verified_identity": { "brand": "Jean Paul Gaultier", "name": "Le Male Elixir Parfum", "concentration": "Parfum" },
       "current_size_ml": 75,
       "verified_size_ml": 75,
       "identity_status": "IDENTITY_CONFIRMED",
       "size_status": "SIZE_CONFIRMED",
+      "concentration_status": "CONCENTRATION_CONFIRMED",
+      "current_concentration": "Parfum",
+      "verified_concentration": "Parfum",
       "evidence": "Client photo img/perfumes/JEAN PAUL GAULTIER - LE MALE ELIXIR.png; jeanpaulgaultier.com official listing, 75 ml is one of two official sizes (75/125 ml Parfum).",
-      "notes": "Repo concentration field says EDP; JPG markets Le Male Elixir as 'Parfum', not EDP. Left unresolved (concentration correction out of scope); size itself matches an official offering exactly."
+      "notes": "4K-B2B.1A CORRECTION APPLIED: assets/data.js concentration corrected EDP -> Parfum (source_corrections_applied_this_gate). No price or size change."
     },
     {
       "legacy_id": "liquid-brun",
@@ -212,6 +283,9 @@
       "verified_size_ml": 100,
       "identity_status": "IDENTITY_CONFIRMED",
       "size_status": "SIZE_CONFIRMED",
+      "concentration_status": "CONCENTRATION_CONFIRMED",
+      "current_concentration": "EDP",
+      "verified_concentration": "EDP",
       "evidence": "Client photo img/perfumes/FRENCH AVENEU - LIQUID BRUN.png; french-avenue-parfum.com official listing, single 100 ml EDP offering (niche/clone house, no other official size found).",
       "notes": null
     },
@@ -220,11 +294,15 @@
       "current_identity": { "brand": "Mancera", "name": "Mancera Red Tobacco", "concentration": "EDP" },
       "verified_identity": { "brand": "Mancera", "name": "Red Tobacco", "concentration": "EDP" },
       "current_size_ml": 100,
-      "verified_size_ml": null,
+      "verified_size_ml": 120,
       "identity_status": "IDENTITY_CONFIRMED",
       "size_status": "SIZE_CONFLICT",
-      "evidence": "Client photo img/perfumes/Mancera Mancera Red Tobacco.png confirms identity. Official/major-retail listings (microperfumes.com and others) show Mancera Red Tobacco in 60 ml and 120 ml -- no 100 ml size found anywhere.",
-      "notes": "Gate-flagged candidate, confirmed as instructed: repo's 100 ml does not match either official size (60/120 ml). Left unresolved for the same reason as cedrat-boise-int/le-beau-le-parfum."
+      "target_size_status": "RESOLVED_BY_CLIENT_PHOTO",
+      "concentration_status": "CONCENTRATION_CONFIRMED",
+      "current_concentration": "EDP",
+      "verified_concentration": "EDP",
+      "evidence": "4K-B2B.1A: client photo img/perfumes/Mancera Mancera Red Tobacco (2).png has a fully legible product label reading 'MANCERA PARIS / RED TOBACCO / EAU DE PARFUM / 4 FL oz | 120 ML' -- direct, primary client-image evidence that the client's actual bottle is 120 ml EDP (concentration matches repo exactly; only size differs). Consistent with official/major-retail listings (microperfumes.com and others) showing Mancera Red Tobacco only in 60 ml and 120 ml -- 120 ml matches exactly.",
+      "notes": "Target size RESOLVED (120 ml) via legible client photography, per Section C -- not an arbitrary 'pick the larger size' choice. The assets/data.js bottle-size key is NOT mutated in this gate for the same reason as cedrat-boise-int (coupled to the un-researched legacy price, 850 PEN); deferred to 4K-B2B.2A/B. Concentration confirmed correct as-is; no change needed."
     },
     {
       "legacy_id": "sauvage-edt",
@@ -234,6 +312,9 @@
       "verified_size_ml": 100,
       "identity_status": "IDENTITY_CONFIRMED",
       "size_status": "SIZE_CONFIRMED",
+      "concentration_status": "CONCENTRATION_CONFIRMED",
+      "current_concentration": "EDT",
+      "verified_concentration": "EDT",
       "evidence": "Client photo img/perfumes/Dior Sauvage EDT.png; dior.com official listing/refill program, 100 ml among official retail sizes (30/60/100/200 ml family; 100 ml is the standard everyday size).",
       "notes": null
     },
@@ -245,6 +326,9 @@
       "verified_size_ml": 90,
       "identity_status": "IDENTITY_CONFIRMED",
       "size_status": "SIZE_CONFIRMED",
+      "concentration_status": "CONCENTRATION_CONFIRMED",
+      "current_concentration": "EDP",
+      "verified_concentration": "EDP",
       "evidence": "Client photo img/perfumes/Spicebomb Extreme.png; us.viktor-rolf.com official product page lists 90 ml, 50 ml and 10 ml as official EDP sizes -- 90 ml matches exactly.",
       "notes": null
     },
@@ -256,6 +340,9 @@
       "verified_size_ml": 100,
       "identity_status": "IDENTITY_CONFIRMED",
       "size_status": "SIZE_CONFIRMED",
+      "concentration_status": "CONCENTRATION_CONFIRMED",
+      "current_concentration": "Parfum",
+      "verified_concentration": "Parfum",
       "evidence": "Client photo img/perfumes/AZZARO.-AZZARO THE MOSTH WANTED PARFUM.png (distinct from 'THE MOSTH WANTED INTENSE EDP' also present); official-retail listings (Boots, Ulta, Macy's), 100 ml / 3.4oz Parfum.",
       "notes": "Do not confuse with sibling flanker image 'AZZARO THE MOSTH WANTED INTENSE EDP' in the same asset folder -- these are two different current products/legacy records."
     },
@@ -267,6 +354,9 @@
       "verified_size_ml": 125,
       "identity_status": "IDENTITY_CONFIRMED",
       "size_status": "SIZE_CONFIRMED",
+      "concentration_status": "CONCENTRATION_CONFIRMED",
+      "current_concentration": "EDT",
+      "verified_concentration": "EDT",
       "evidence": "Client photo img/perfumes/Jean Paul Gaultier Ultra Male.png; official/major-retail listings show Ultra Male (Intense) EDT in 40/75/125 ml -- 125 ml matches exactly.",
       "notes": null
     },
@@ -278,14 +368,18 @@
       "verified_size_ml": 100,
       "identity_status": "IDENTITY_CONFLICT",
       "size_status": "SIZE_CONFIRMED",
-      "evidence": "Client photo img/perfumes/Paco Rabanne Victory Elixir.png shows the trophy-shaped Invictus bottle. Official rabanne.com product page and major retailers (Sephora, Jomashop, FragranceX) sell this exclusively as 'Invictus Victory Elixir' -- there is no standalone 'Victory Elixir' product independent of the Invictus line. Size 3.4oz/100ml matches the official Parfum Intense bottle.",
-      "notes": "Repo name 'Victory Elixir' omits the 'Invictus' line name that is part of the product's actual commercial identity everywhere it is sold, and repo concentration says EDP while the official concentration is Parfum (Intense). Brand (Paco Rabanne / Rabanne) and bottle art are correct, and the 100 ml size is correct, so this is a naming-completeness/concentration conflict, not a wrong-fragrance conflict. IMPORTANT CROSS-REFERENCE: supabase/staging/legacy-catalog-staging.json also contains a SEPARATE legacy_id 'invictus-elixir' ('Invictus Elixir', decants only, identical 3/5/10 ml prices 24/32/51, no bottle variant) that scripts/commercial-reconciliation.mjs already archives via PRODUCT_LIFECYCLE_OVERRIDES as 'V2-only; absent from the current authoritative client PDF'. This corroborates that 'victory-elixir' (with the bottle variant audited here) is the live/current record for this fragrance and 'invictus-elixir' is a superseded duplicate -- do not merge or rename 'victory-elixir' into/onto 'invictus-elixir' or vice versa; they must stay two distinct historical rows. Left unresolved -- Section D says do not rename merely for modern branding unless identity correctness requires it; adding the 'Invictus' qualifier is arguably required for identity correctness (it is not merely rebranding) but is left for an explicit follow-up decision rather than corrected silently in this gate, especially given this pre-existing duplicate-identity history."
+      "concentration_status": "CONCENTRATION_CONFLICT",
+      "current_concentration": "EDP",
+      "verified_concentration": "Parfum (Parfum Intense)",
+      "evidence": "Client photo img/perfumes/Paco Rabanne Victory Elixir.png shows the trophy-shaped Invictus bottle with the gold 'V' medallion -- correct bottle art, but no legible label/back-text confirming concentration on the photographed bottle itself. Official rabanne.com product page and major retailers (Sephora, Jomashop, FragranceX) sell this exclusively as 'Invictus Victory Elixir' -- there is no standalone 'Victory Elixir' product independent of the Invictus line -- as a Parfum Intense concentration. Size 3.4oz/100ml matches the official Parfum Intense bottle.",
+      "notes": "Brand (Paco Rabanne / Rabanne) and bottle art are correct, and the 100 ml size is correct, so this is a naming-completeness/concentration conflict, not a wrong-fragrance conflict. Per 4K-B2B.1A Section E, correction is applied ONLY when client photo + reliable evidence uniquely support it together -- the photo does not itself show legible concentration/name text, so no source mutation is made; name and concentration stay IDENTITY_CONFLICT / CONCENTRATION_CONFLICT and unresolved. IMPORTANT CROSS-REFERENCE: supabase/staging/legacy-catalog-staging.json also contains a SEPARATE legacy_id 'invictus-elixir' ('Invictus Elixir', decants only, identical 3/5/10 ml prices 24/32/51, no bottle variant) that scripts/commercial-reconciliation.mjs already archives via PRODUCT_LIFECYCLE_OVERRIDES as 'V2-only; absent from the current authoritative client PDF'. This corroborates that 'victory-elixir' (with the bottle variant audited here) is the live/current record for this fragrance and 'invictus-elixir' is a superseded duplicate -- do not merge or rename 'victory-elixir' into/onto 'invictus-elixir' or vice versa; they must stay two distinct historical rows."
     }
   ],
   "readiness_contract": {
     "locked_in_gate": "4K-B2B.1",
+    "unchanged_in": "4K-B2B.1A",
     "statement": "PRODUCT CURRENTNESS/VISIBILITY, VARIANT COMMERCIAL READINESS, and PRICE AUTHORITY are three separate concepts. Variant-level publish_eligibility/blockers on each supabase/staging/commercial-reconciliation.json products[].variants[] entry are authoritative for that variant's own commercial readiness. Product-level products[].blockers is an audit rollup of child-variant issues -- it is NOT a storefront visibility gate and must never be read as 'all variants of this product are unpublishable'. A product with clean official_pdf decant variants (3/5/10 ml) and one legacy/provisional bottle variant must keep its decants individually publishable; the bottle's own blocker(s) stay scoped to the bottle variant only.",
     "future_obligation": "4K2 storefront/read-model code MUST evaluate variant-level readiness (publish_eligibility + blockers on the variant) when deciding whether to show/sell a specific variant. It MUST NOT use the product-level blockers array to hide sibling variants that are individually clean.",
-    "scope_of_this_gate": "No schema/field change and no new machine field were added -- the existing product vs. variant blockers/publish_eligibility fields in commercial-reconciliation.json already express this distinction unambiguously (see 4K-B2B.1 tests). Only the semantic contract and its consumption rule are documented and locked here, per Section F ('smallest implementation')."
+    "scope_of_this_gate": "No schema/field change and no new machine field were added to production -- the existing product vs. variant blockers/publish_eligibility fields in commercial-reconciliation.json already express this distinction unambiguously (see 4K-B2B.1 tests). Only the semantic contract and its consumption rule are documented and locked here, per Section F ('smallest implementation')."
   }
 }

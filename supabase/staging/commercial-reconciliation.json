@@ -5,12 +5,12 @@
     "business_unit_code": "parfums",
     "source_artifact": "supabase/staging/legacy-catalog-staging.json",
     "source_fingerprints": {
-      "assets/data.js": "40f01fef31674aeab6cd35d44a04f3b0d2b2b2274fa780ae2457c2a827735fea",
+      "assets/data.js": "c48d3c86a03cf73ff4ea35e24595a69d26e195d8aebaaaa9e0a1a22d0741567f",
       "docs/client-decisions.md": "136ac8cd6c77537483aac7a9be81850715982663eada681335489835fcb22848",
       "supabase/migrations/20260907154348_catalog.sql": "0933444fefb2a3f65d0c54d592f6a06ad078625b30f349d68a9363da4f06683e",
       "supabase/migrations/20260907154401_integrity_hardening.sql": "7bbc09f0180cd016b2e2f9bfe5429fd747c086e70ca0720eece5a9fec121d37e",
       "supabase/migrations/20260908070000_admin_parfums_wholesale.sql": "db4cf7d1503f8c943b99dc5a0246b1edc2a6bc3ae53ab0f62303b282817d575a",
-      "supabase/staging/legacy-catalog-staging.json": "6844b5949a582a24bed8b6c91c7a8dd0d94df2b504f18c3f918ae6948f263da6"
+      "supabase/staging/legacy-catalog-staging.json": "693234c32973ab29ccf320eed6d581a3adb323f4fea1d80979b7245f22a8f6f8"
     },
     "status_vocabulary": {
       "migration_status": [
@@ -6378,9 +6378,9 @@
         "name": "By The Fireplace",
         "brand": "Maison Margiela",
         "short_description": null,
-        "description": "By The Fireplace — fragancia de la familia gourmand, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+        "description": "By The Fireplace — fragancia de la familia gourmand, concentración EDT. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
         "gender": "unisex",
-        "concentration": "EDP",
+        "concentration": "EDT",
         "sales_mode": "always_available",
         "production_status": "active",
         "availability_status": "available",
@@ -6656,7 +6656,7 @@
         "LEGACY_PRICES_REQUIRE_COMMERCIAL_APPROVAL"
       ],
       "conflicts": [],
-      "source_fingerprint": "9857583589ad4ab13ec3961dd2fa82c0eef52eaa8f89ddb54c015deddd9a551f"
+      "source_fingerprint": "461d243ea13bff81363c0373be6461f5552039b4ea76555ab2bdeeac48a75f4d"
     },
     {
       "legacy_id": "cdn-intense-man",
@@ -7786,9 +7786,9 @@
         "name": "Dylan Blue",
         "brand": "Versace",
         "short_description": null,
-        "description": "Dylan Blue — fragancia de la familia fresco, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+        "description": "Dylan Blue — fragancia de la familia fresco, concentración EDT. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
         "gender": "men",
-        "concentration": "EDP",
+        "concentration": "EDT",
         "sales_mode": "always_available",
         "production_status": "active",
         "availability_status": "available",
@@ -8064,7 +8064,7 @@
         "LEGACY_PRICES_REQUIRE_COMMERCIAL_APPROVAL"
       ],
       "conflicts": [],
-      "source_fingerprint": "786e51af1717a5665400b6874d7154d03a4d973406cacce15a5c772b6e27f82e"
+      "source_fingerprint": "54e4922781bbcaae4b523f8006b849242a505bc64b34edac7752cd25644e7f70"
     },
     {
       "legacy_id": "eclaire",
@@ -14920,9 +14920,9 @@
         "name": "Le Male Elixir",
         "brand": "Jean Paul Gaultier",
         "short_description": null,
-        "description": "Le Male Elixir — fragancia de la familia especiado, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+        "description": "Le Male Elixir — fragancia de la familia especiado, concentración Parfum. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
         "gender": "men",
-        "concentration": "EDP",
+        "concentration": "Parfum",
         "sales_mode": "always_available",
         "production_status": "active",
         "availability_status": "available",
@@ -15199,7 +15199,7 @@
         "LEGACY_PRICES_REQUIRE_COMMERCIAL_APPROVAL"
       ],
       "conflicts": [],
-      "source_fingerprint": "9ff7c7e7a746c6a3412c6e9d08b7a3d74195dbb5d22b7a0c7e60232925a38125"
+      "source_fingerprint": "75093734e6c7a52421a4476dac1b83d753cbbe89e08abf5261d369e466414587"
     },
     {
       "legacy_id": null,

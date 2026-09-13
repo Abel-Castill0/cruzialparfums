@@ -471,7 +471,7 @@ window.CRUZIAL_PRODUCTS = [
   P("swy-intensely", "Armani", "Stronger With You Intensely", "men", "designer", "Gourmand", "EDP", T243251, ["Canela", "Ron", "Vainilla"], M.m6),
   P("swy-absolutely", "Armani", "Stronger With You Absolutely", "men", "designer", "Amaderado", "EDP", T263456, ["Madera", "Ámbar", "Café"], M.m7),
   P("ultra-male", "Jean Paul Gaultier", "Ultra Male", "men", "designer", "Fresco", "EDT", T243251, ["Pera", "Vainilla", "Lavanda"], M.m8, { bottle: { 125: 650 }, discontinued: true, desc: "Pera, vainilla y lavanda sobre una base ambarina golosa. Producto descontinuado: ya no se repone al agotar el stock restante." }),
-  P("le-male-elixir", "Jean Paul Gaultier", "Le Male Elixir", "men", "designer", "Especiado", "EDP", T243251, ["Miel", "Canela", "Tabaco"], M.m1, { bestseller: true, bottle: { 75: 600 } }),
+  P("le-male-elixir", "Jean Paul Gaultier", "Le Male Elixir", "men", "designer", "Especiado", "Parfum", T243251, ["Miel", "Canela", "Tabaco"], M.m1, { bestseller: true, bottle: { 75: 600 } }), // conc: CLIENT-PHOTO+OFFICIAL_BRAND corrected EDP -> Parfum (4K-B2B.1A)
   P("le-beau-le-parfum", "Jean Paul Gaultier", "Le Beau Le Parfum", "men", "designer", "Fresco", "EDP", T243251, ["Coco", "Madera", "Especias"], M.m2, { bottle: { 100: 680 } }),
   P("paradise-garden", "Lattafa", "Paradise Garden", "unisex", "designer", "Floral", "EDP", T243251, ["Flores", "Coco", "Ámbar"], M.m3),
   P("victory-elixir", "Paco Rabanne", "Victory Elixir", "men", "designer", "Especiado", "EDP", T243251, ["Especias", "Ámbar", "Café"], M.m4, { bottle: { 100: 650 } }),
@@ -479,7 +479,7 @@ window.CRUZIAL_PRODUCTS = [
   P("bir-intense", "Burberry", "Burberry Brit Intense", "men", "designer", "Amaderado", "EDP", T263456, ["Romero", "Cedro", "Ámbar"], M.m6, { bottle: { 100: 720 }, hidden: true }), // hidden: CLIENT_CONFIRMED 2026-09-06 — no lo tienen en inventario
   P("b-man-in-black", "Bvlgari", "Bvlgari Man In Black", "men", "designer", "Amaderado", "EDP", T263456, ["Ron", "Cuero", "Especias"], M.m7, { bottle: { 100: 760 } }),
   P("sauvage-edt", "Dior", "Sauvage EDT", "men", "designer", "Fresco", "EDT", T303869, ["Bergamota", "Pimienta", "Ámbar"], M.m8, { bestseller: true, bottle: { 100: 650 } }), // price template: CLIENT_CONFIRMED official 2026 PDF (4K-B2A) — was T223048, swapped with dylan-blue by a copy/paste bug
-  P("dylan-blue", "Versace", "Dylan Blue", "men", "designer", "Fresco", "EDP", T223048, ["Bergamota", "Agua", "Almizcle"], M.m1, { bottle: { 100: 620 } }), // price template: CLIENT_CONFIRMED official 2026 PDF (4K-B2A) — was T303869, swapped with sauvage-edt by a copy/paste bug
+  P("dylan-blue", "Versace", "Dylan Blue", "men", "designer", "Fresco", "EDT", T223048, ["Bergamota", "Agua", "Almizcle"], M.m1, { bottle: { 100: 620 } }), // price template: CLIENT_CONFIRMED official 2026 PDF (4K-B2A) — was T303869, swapped with sauvage-edt by a copy/paste bug; conc: OFFICIAL_BRAND corrected EDP -> EDT (4K-B2B.1A)
   P("adg-profondo-edp", "Armani", "Acqua di Gio Profondo EDP", "men", "designer", "Fresco", "EDP", T263456, ["Marino", "Bergamota", "Madera"], M.m2, { bottle: { 100: 700 } }),
   P("1-million-lucky", "Paco Rabanne", "One Million Lucky", "men", "designer", "Gourmand", "EDT", T263456, ["Ciruela", "Avellana", "Ámbar"], M.m3, { bottle: { 100: 780 } }), // name: CLIENT_CONFIRMED 2026-09-07 — "1"→"One" (numeral a palabra); "Lucky" se conserva porque la botella (foto) es inequívocamente esa variante, no la base "1 Million". legacy_id sin cambios.
   P("invictus-elixir", "Paco Rabanne", "Invictus Elixir", "men", "designer", "Fresco", "EDP", T243251, ["Acuático", "Ámbar", "Madera"], M.m1),
@@ -487,7 +487,7 @@ window.CRUZIAL_PRODUCTS = [
   P("cedrat-boise-int", "Mancera", "Cedrat Boise Intense", "men", "niche", "Cítrico", "EDP", T263456, ["Limón", "Cedro", "Almizcle"], M.m5, { bottle: { 100: 820 } }),
   P("m-red-tobacco", "Mancera", "Mancera Red Tobacco", "men", "niche", "Especiado", "EDP", T263456, ["Tabaco", "Canela", "Ámbar"], M.m6, { bottle: { 100: 850 } }),
   P("tmw-parfum", "Azzaro", "The Most Wanted Parfum", "men", "designer", "Especiado", "Parfum", T243251, ["Manzana", "Toffee", "Ámbar"], M.m7, { bottle: { 100: 700 } }),
-  P("by-the-fireplace", "Maison Margiela", "By The Fireplace", "unisex", "designer", "Gourmand", "EDP", T263456, ["Castaña", "Vainilla", "Madera"], M.m8, { bottle: { 100: 750 } }),
+  P("by-the-fireplace", "Maison Margiela", "By The Fireplace", "unisex", "designer", "Gourmand", "EDT", T263456, ["Castaña", "Vainilla", "Madera"], M.m8, { bottle: { 100: 750 } }), // conc: OFFICIAL_BRAND corrected EDP -> EDT, REPLICA line (4K-B2B.1A)
   P("erba-pura", "Xerjoff", "Erba Pura", "unisex", "niche", "Gourmand", "EDP", T404889, ["Fruta", "Vainilla", "Almizcle"], M.m2, { bestseller: true, bottle: { 50: 900, 100: 1350 } }),
   P("nautica-voyage", "Nautica", "Nautica Voyage", "men", "designer", "Acuático", "EDT", T121626, ["Marino", "Manzana", "Madera"], M.m5)
 ];

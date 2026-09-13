@@ -4,7 +4,7 @@
     "purpose": "legacy_visual_parity_only",
     "futureSeedEligible": false,
     "sourcePath": "assets/data.js",
-    "sourceSha256": "40f01fef31674aeab6cd35d44a04f3b0d2b2b2274fa780ae2457c2a827735fea",
+    "sourceSha256": "c48d3c86a03cf73ff4ea35e24595a69d26e195d8aebaaaa9e0a1a22d0741567f",
     "verificationStatus": "legacy",
     "counts": {
       "total": 99,
@@ -4282,7 +4282,7 @@
       "gender": "men",
       "type": "designer",
       "family": "Especiado",
-      "conc": "EDP",
+      "conc": "Parfum",
       "price": {
         "3": 24,
         "5": 32,
@@ -4300,7 +4300,7 @@
         "glow": "rgba(217,164,65,.45)"
       },
       "tag": "Designer",
-      "desc": "Le Male Elixir — fragancia de la familia especiado, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "desc": "Le Male Elixir — fragancia de la familia especiado, concentración Parfum. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
       "bottle": {
         "75": 600
       },
@@ -4662,7 +4662,7 @@
       "gender": "men",
       "type": "designer",
       "family": "Fresco",
-      "conc": "EDP",
+      "conc": "EDT",
       "price": {
         "3": 22,
         "5": 30,
@@ -4680,7 +4680,7 @@
         "glow": "rgba(217,164,65,.45)"
       },
       "tag": "Designer",
-      "desc": "Dylan Blue — fragancia de la familia fresco, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "desc": "Dylan Blue — fragancia de la familia fresco, concentración EDT. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
       "bottle": {
         "100": 620
       },
@@ -5042,7 +5042,7 @@
       "gender": "unisex",
       "type": "designer",
       "family": "Gourmand",
-      "conc": "EDP",
+      "conc": "EDT",
       "price": {
         "3": 26,
         "5": 34,
@@ -5060,7 +5060,7 @@
         "glow": "rgba(217,176,84,.4)"
       },
       "tag": "Designer",
-      "desc": "By The Fireplace — fragancia de la familia gourmand, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "desc": "By The Fireplace — fragancia de la familia gourmand, concentración EDT. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
       "bottle": {
         "100": 750
       },

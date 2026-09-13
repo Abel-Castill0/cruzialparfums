@@ -2,7 +2,7 @@
   "metadata": {
     "notice": "STAGING ONLY — not applied to any database, not a cutover",
     "generatedFrom": "assets/data.js",
-    "sourceSha256": "40f01fef31674aeab6cd35d44a04f3b0d2b2b2274fa780ae2457c2a827735fea",
+    "sourceSha256": "c48d3c86a03cf73ff4ea35e24595a69d26e195d8aebaaaa9e0a1a22d0741567f",
     "verificationStatus": "legacy",
     "publishEligible": false,
     "stagedProductPublicationStatus": "draft",
@@ -2142,9 +2142,9 @@
         "slug": "by-the-fireplace",
         "name": "By The Fireplace",
         "brand": "Maison Margiela",
-        "description": "By The Fireplace — fragancia de la familia gourmand, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+        "description": "By The Fireplace — fragancia de la familia gourmand, concentración EDT. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
         "gender": "unisex",
-        "concentration": "EDP",
+        "concentration": "EDT",
         "sales_mode": "always_available",
         "production_status": "active",
         "availability_status": "available",
@@ -2234,7 +2234,7 @@
           "sort_order": 1
         }
       ],
-      "fingerprint": "3132184b1912c5f5754f4a76bc76e703b6002ad94033867512ae22e732c5712a"
+      "fingerprint": "22ec1a047026083c65c66d5c8d1e1d6a26916923e648ba76a7b94d411d82d79e"
     },
     {
       "legacy_id": "cdn-intense-man",
@@ -2632,9 +2632,9 @@
         "slug": "dylan-blue",
         "name": "Dylan Blue",
         "brand": "Versace",
-        "description": "Dylan Blue — fragancia de la familia fresco, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+        "description": "Dylan Blue — fragancia de la familia fresco, concentración EDT. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
         "gender": "men",
-        "concentration": "EDP",
+        "concentration": "EDT",
         "sales_mode": "always_available",
         "production_status": "active",
         "availability_status": "available",
@@ -2724,7 +2724,7 @@
           "sort_order": 1
         }
       ],
-      "fingerprint": "93f2d752f3069550e0e54c097f2373bf9fbcaf95b37f31f1f3ac7a99cc6a7c85"
+      "fingerprint": "0750c0979047da9b8f8bf82868e2f3c16cd94c37d20cf72befb810e7395bb1c1"
     },
     {
       "legacy_id": "eclaire",
@@ -5094,9 +5094,9 @@
         "slug": "le-male-elixir",
         "name": "Le Male Elixir",
         "brand": "Jean Paul Gaultier",
-        "description": "Le Male Elixir — fragancia de la familia especiado, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+        "description": "Le Male Elixir — fragancia de la familia especiado, concentración Parfum. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
         "gender": "men",
-        "concentration": "EDP",
+        "concentration": "Parfum",
         "sales_mode": "always_available",
         "production_status": "active",
         "availability_status": "available",
@@ -5186,7 +5186,7 @@
           "sort_order": 1
         }
       ],
-      "fingerprint": "9f3afd595b43814a143ed14c8247268d1d61ebd8e0938124bad50e10655d1c27"
+      "fingerprint": "14d83b89f87ba8ee11ec8983878fd4796a964c082f4d9a20aba344c942526cff"
     },
     {
       "legacy_id": "liquid-brun",

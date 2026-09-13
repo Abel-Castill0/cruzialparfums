@@ -435,6 +435,52 @@ Peru price research, no provisional_market writes, no price mutation.
   TS errors, build OK).
 - Next: 4K-B2B.2A (Peru market price research) — NOT STARTED.
 
+## 4K-B2B.1A — bottle identity audit correction (CLOSED)
+
+Corrected factual errors/incompleteness in the 4K-B2B.1 audit before any
+market-price research. Audit factual correction only — no Peru research, no
+provisional_market writes.
+
+- adg-profondo-edp: 100 ml is SIZE_CONFIRMED (was wrongly SIZE_CONFLICT).
+  Current official Armani Beauty sells Acqua di Giò Profondo EDP in 30/50/100
+  ml refillable flacon sizes. No mutation needed — repo was already correct.
+- Proven concentration corrections applied to assets/data.js (source), then
+  regenerated legacy-catalog-staging.json / commercial-reconciliation.json /
+  apps/web/src/fixtures/generated/legacy-catalog.json — concentration text
+  only, zero price changes: dylan-blue EDP→EDT, by-the-fireplace EDP→EDT,
+  le-male-elixir EDP→Parfum. le-beau-le-parfum's "Eau de Parfum Intense"
+  label kept as EDP (closest truthful existing term; no enum widened).
+- cdn-intense-man: bottle photo (rectangular black glass + medallion pendant)
+  uniquely identifies the flagship EDT release; 105 ml is only sold as EDT
+  officially (EDP variant is 200 ml). High-confidence finding recorded in the
+  audit; source NOT mutated (outside this gate's explicit correction list).
+- Real size conflicts preserved, not guessed: cedrat-boise-int and
+  m-red-tobacco client photos are legible ("120 ML" printed on the label) —
+  target size RESOLVED at 120 ml via client photo (not "pick the larger
+  size"), but the assets/data.js size key is left unmutated because it's
+  coupled to an un-researched legacy price; deferred to B2B.2A/B.
+  le-beau-le-parfum and bir-intense stay TARGET_SIZE_UNRESOLVED — no legible
+  volume text on any client photo, no size invented.
+- victory-elixir: identity/concentration conflict preserved (client photo
+  confirms bottle art only, no legible label text) — not corrected.
+- bir-intense: identity stays client_photo_confirmed (medium confidence),
+  explicitly NOT labeled official-brand authority (product discontinued).
+  Size/concentration unresolved.
+- Corrected counts: identity 23 confirmed / 1 conflict (was miscounted as
+  22/2 in 4K-B2B.1 — bir-intense was always IDENTITY_CONFIRMED, only
+  victory-elixir is IDENTITY_CONFLICT); size 20 confirmed / 4 conflict
+  (adg-profondo-edp, bir-intense, cedrat-boise-int, le-beau-le-parfum,
+  m-red-tobacco minus adg-profondo-edp's reclassification); new
+  concentration dimension added: 21 confirmed / 2 conflict
+  (cedrat-boise-int, victory-elixir) / 1 unverified (bir-intense).
+- Zero price mutation anywhere; 288 confirmed_price_variants, 24
+  legacy_bottle_price_variants, 0 conflicts, 97/315/3 all unchanged from B2A.
+- npm run commercial:check: byte-stable. npm run check: PASS (563 tests, 0
+  TS errors, build OK). git diff --check: clean (local core.whitespace
+  cr-at-eol set; no file normalized).
+- Next: 4K-B2B.2A (Peru market price research) only after exact research
+  targets (resolved sizes) are safe to use — NOT STARTED.
+
 ## Current evidence gaps
 
 None outstanding for 4J5F. See Deferred defects above for the categoryId
