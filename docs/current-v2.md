@@ -116,8 +116,47 @@ order persisted, no WhatsApp trigger). Test count: 1, 1 passed, 0 failed
 (no early-return annotation, confirming the deep branch ran, not the
 closed/empty-catalog fallback).
 
+4J5G-B - CLOSED (authenticated Admin critical E2E)
+
+Auth bootstrap: local, gitignored Playwright storageState
+(apps/web/e2e/.auth/staging-admin.json, reuses the existing gitignored
+e2e/.auth/ convention) captured via one manual operator login
+(`npx playwright codegen --save-storage=... /admin/login`, staging QA
+identity configuser@gmail.com, memberships parfums/admin + import/admin).
+Claude never saw, requested, or stored the password; the local file was
+deleted after this gate and was never staged/committed.
+
+Added apps/web/e2e/admin-authenticated.spec.ts (4 tests, storageState reused,
+no membership mutation, no writes):
+- Admin shell: /admin loads authenticated (no /admin/login redirect), both
+  Cruzial Parfums and Cruzial Import units visible for the dual-admin member.
+- Parfums admin: /admin/parfums/productos?q=staging-qa-publishable opens the
+  existing [STAGING QA] product detail page authenticated.
+- Import admin: /admin/import/publicacion readiness reflects deterministic
+  QA fixtures — staging-qa-import-ready has 0 blockers,
+  staging-qa-import-no-media shows exactly "Sin imagen principal"
+  (missing_primary_media), staging-qa-import-no-offer shows exactly
+  "Sin oferta en consolidado" (missing_offer).
+- Session continuity: /admin -> Parfums -> Import -> reload stays
+  authenticated, no unexpected /admin/login redirect.
+
+Cross-business boundary (zero membership / Parfums-viewer / no Import
+membership) was proven manually in 4J5F and is not reproduced here by
+mutating DB state; this suite covers dual-admin runtime regression only.
+
+Full 4J5G Playwright suite ran once against hosted Preview
+(https://cruzial-platform-v2-8pi4yyvrm-cruzial.vercel.app): 9 total, 9
+passed, 0 failed (public hub, Parfums public journey, Import public
+journey, logged-out admin protection x2, + the 4 authenticated tests
+above).
+
+P0/P1 defects: none.
+Deferred P2/P3 (unchanged, not addressed in this gate): Import
+ingestion/categoryId contract mismatch (P2, 0/844 non-QA products
+affected); stale /admin footer copy.
+
 Next gate:
-4J5G-B - authenticated Admin E2E (NOT STARTED)
+4K - Parfums commercial-data closure (NOT STARTED)
 
 ## Last known automated gate
 
