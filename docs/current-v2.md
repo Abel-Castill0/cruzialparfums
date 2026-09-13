@@ -393,6 +393,48 @@ authoritative inputs (staleness was only the `docs/client-decisions.md`
 fingerprint recorded before its later update) and global `npm run check`
 PASS.
 
+## 4K-B2B.1 — bottle identity/size audit + readiness contract (CLOSED)
+
+Verified identity + bottle size for all 24 legacy bottle price variants
+(supabase/staging/commercial-reconciliation.json, legacy_bottle_price_variants
+= 24) against client photos (img/perfumes/) and official brand sources. No
+Peru price research, no provisional_market writes, no price mutation.
+
+- Identity: 22 IDENTITY_CONFIRMED, 2 IDENTITY_CONFLICT (bir-intense,
+  victory-elixir), 0 unverified.
+- Size: 19 SIZE_CONFIRMED, 5 SIZE_CONFLICT (adg-profondo-edp, bir-intense,
+  cedrat-boise-int, le-beau-le-parfum, m-red-tobacco), 0 unverified.
+- bir-intense: brand/line confirmed as Burberry Brit Intense via client
+  photography (PDF label "BIR Intense" alone is an abbreviation, decoded from
+  an overlapping text layer, not a full-name confirmation); exact ml/EDT-vs-
+  EDP not independently confirmable — product is discontinued, no live
+  official page. Left unresolved.
+- Gate-flagged size candidates confirmed conflicting as instructed: Cedrat
+  Boise Intense (repo 100 ml vs. official 60/120 ml), Red Tobacco (repo 100 ml
+  vs. official 60/120 ml), Le Beau Le Parfum (repo 100 ml vs. official
+  75/125 ml). All left unresolved — no price mutation this gate.
+- victory-elixir: official commercial name is "Invictus Victory Elixir"
+  (repo omits "Invictus"); official concentration is Parfum, repo says EDP.
+  Cross-referenced against the separately-archived "invictus-elixir" legacy
+  row (decants only, no bottle) — confirmed as a distinct superseded
+  duplicate, not to be merged with victory-elixir.
+- Also noted (not identity/size, no mutation): concentration-field mismatches
+  on by-the-fireplace, cdn-intense-man, dylan-blue, le-male-elixir (repo says
+  EDP, official concentration differs) — flagged for a future data-quality
+  pass.
+- Readiness contract locked: variant-level publish_eligibility/blockers are
+  authoritative for that variant's commercial readiness; product-level
+  `blockers` stays an audit rollup only, never a storefront visibility gate.
+  No schema change — documented + covered by 6 new focused tests in
+  apps/web/src/lib/catalog/commercial-reconciliation.test.ts ("4K-B2B.1
+  variant-aware readiness contract"). 4K2 storefront/read-model code must use
+  variant-level readiness when gating variant visibility.
+- Audit artifact: supabase/staging/bottle-identity-audit.json (all 24
+  entries, no market prices).
+- npm run commercial:check: byte-stable. npm run check: PASS (555 tests, 0
+  TS errors, build OK).
+- Next: 4K-B2B.2A (Peru market price research) — NOT STARTED.
+
 ## Current evidence gaps
 
 None outstanding for 4J5F. See Deferred defects above for the categoryId

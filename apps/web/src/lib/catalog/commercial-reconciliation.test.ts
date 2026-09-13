@@ -624,3 +624,109 @@ describe("4K-B2A official PDF commercial authority applied", () => {
     expect(SUPPLEMENTAL_PRODUCTS.map((product) => product.slug)).toEqual(["le-male-le-parfum"]);
   });
 });
+
+describe("4K-B2B.1 variant-aware readiness contract", () => {
+  // A product shaped like the real catalog: three clean official_pdf decants
+  // (3/5/10 ml) plus one legacy, commercially-unconfirmed bottle -- the exact
+  // shape the gate's Section E/F/G describe. Built with the generic fixture
+  // helper (not the real staging artifact) so this block stays independent of
+  // any specific legacy_id's live data.
+  function mixedReadinessProduct() {
+    const base = fixtureEntry();
+    const entry = fixtureEntry({
+      legacy_id: "mixed-readiness-product",
+      product: { ...base.product, legacy_id: "mixed-readiness-product", slug: "mixed-readiness-product" },
+      variants: [
+        { label: "3 ml", variant_kind: "decant", size_ml: 3, price_amount: 26, currency: "PEN", publication_status: "draft", price_verification_status: "legacy", sort_order: 0 },
+        { label: "5 ml", variant_kind: "decant", size_ml: 5, price_amount: 34, currency: "PEN", publication_status: "draft", price_verification_status: "legacy", sort_order: 1 },
+        { label: "10 ml", variant_kind: "decant", size_ml: 10, price_amount: 56, currency: "PEN", publication_status: "draft", price_verification_status: "legacy", sort_order: 2 },
+        { label: "Frasco 100 ml", variant_kind: "bottle", size_ml: 100, price_amount: 780, currency: "PEN", publication_status: "draft", price_verification_status: "legacy", sort_order: 3 },
+      ],
+    });
+    return reconcile([entry], {}, {
+      variantPriceOverrides: [3, 5, 10].map((size, index) => ({
+        legacy_id: "mixed-readiness-product",
+        variant_kind: "decant",
+        size_ml: size,
+        price_amount: [26, 34, 56][index],
+        price_verification_status: "official_pdf",
+        evidence: { provenance: ["OFFICIAL_PDF"], basis: "fixture: official 2026 catalogue" },
+      })),
+    });
+  }
+
+  it("keeps a legacy/provisional bottle blocker scoped to the bottle variant itself (G1)", () => {
+    const product = first(mixedReadinessProduct().products);
+    const bottle = product.variants.find((variant) => variant.variant_kind === "bottle");
+    if (!bottle) throw new Error("Expected a bottle variant");
+
+    expect(bottle.price_verification_status).toBe("legacy");
+    expect(bottle.blockers).toContain("LEGACY_PRICE_NOT_APPROVED_FOR_PUBLICATION");
+  });
+
+  it("keeps official_pdf decant siblings individually clean regardless of the bottle's blocker (G2)", () => {
+    const product = first(mixedReadinessProduct().products);
+    const decants = product.variants.filter((variant) => variant.variant_kind === "decant");
+
+    expect(decants).toHaveLength(3);
+    for (const decant of decants) {
+      expect(decant.price_verification_status).toBe("official_pdf");
+      expect(decant.blockers).toEqual([]);
+    }
+  });
+
+  it("lets the product-level blockers array report the child bottle issue as an audit rollup (G3)", () => {
+    const product = first(mixedReadinessProduct().products);
+    expect(product.blockers).toContain("LEGACY_PRICES_REQUIRE_COMMERCIAL_APPROVAL");
+  });
+
+  it("never treats the product-level aggregate blocker as all-variants-unpublishable (G4)", () => {
+    const product = first(mixedReadinessProduct().products);
+    // The aggregate rollup is non-empty (the bottle is blocked)...
+    expect(product.blockers.length).toBeGreaterThan(0);
+    // ...but that must not have suppressed or altered the clean decant
+    // variants' own readiness: they stay individually blocker-free and
+    // published-draft, independent of the product-level rollup.
+    const decants = product.variants.filter((variant) => variant.variant_kind === "decant");
+    expect(decants.every((variant) => variant.blockers.length === 0)).toBe(true);
+    expect(decants.every((variant) => variant.publication_status === "draft")).toBe(true);
+  });
+
+  it("leaves lifecycle/archive rules unaffected by variant-level bottle blockers (G5)", () => {
+    // Archiving is still governed solely by PRODUCT_LIFECYCLE_OVERRIDES
+    // (Part D/Section E), not by a variant's own commercial blockers -- a
+    // mixed-readiness product with no lifecycle override stays "draft".
+    const product = first(mixedReadinessProduct().products);
+    expect(product.target_product.publication_status).toBe("draft");
+  });
+
+  it("performs no price mutation on the real 24 legacy bottle variants in this gate (G6)", () => {
+    // Byte-for-byte against 4K-B2A's committed baseline (supabase/staging/commercial-reconciliation.json):
+    // every legacy bottle price variant keeps its exact price_amount and stays
+    // price_verification_status=legacy after this gate's re-run.
+    const persisted = JSON.parse(readFileSync(
+      resolve(repositoryRoot, "supabase/staging/commercial-reconciliation.json"),
+      "utf8",
+    )) as { products: ReconciledProduct[] };
+    const staging = JSON.parse(readFileSync(
+      resolve(repositoryRoot, "supabase/staging/legacy-catalog-staging.json"),
+      "utf8",
+    )) as LegacyStaging;
+    const fresh = reconcileCommercialCatalog({ staging });
+
+    const persistedBottles = persisted.products
+      .flatMap((product) => product.variants.map((variant) => ({ legacy_id: product.legacy_id, ...variant })))
+      .filter((variant) => variant.variant_kind === "bottle" && variant.price_verification_status === "legacy");
+    const freshBottles = fresh.products
+      .flatMap((product) => product.variants.map((variant) => ({ legacy_id: product.legacy_id, ...variant })))
+      .filter((variant) => variant.variant_kind === "bottle" && variant.price_verification_status === "legacy");
+
+    expect(freshBottles).toHaveLength(24);
+    expect(freshBottles.map((v) => ({ legacy_id: v.legacy_id, size_ml: v.size_ml, price_amount: v.price_amount })).sort((a, b) => stableSortKey(a) < stableSortKey(b) ? -1 : 1))
+      .toEqual(persistedBottles.map((v) => ({ legacy_id: v.legacy_id, size_ml: v.size_ml, price_amount: v.price_amount })).sort((a, b) => stableSortKey(a) < stableSortKey(b) ? -1 : 1));
+
+    function stableSortKey(v: { legacy_id: string | null; size_ml: number }) {
+      return `${v.legacy_id}:${v.size_ml}`;
+    }
+  });
+});
