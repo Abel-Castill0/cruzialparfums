@@ -1,6 +1,6 @@
 # CRUZIAL V2 - CURRENT CHECKPOINT
 
-Updated: 2026-09-12
+Updated: 2026-09-13
 
 ## Scope
 
@@ -42,13 +42,22 @@ Completed:
 - all live app-authored optimistic conflicts migrated from 40001 to P2011
 - staging migrations synchronized 37/37
 - Preview environment inspected
-- representative staging QA fixtures created
-- fixtures verified idempotent
+- 4J5F-A fixtures corrected and applied twice on staging; 9 QA products
+- Parfums structural mapper verified; misleading publication-blocker labels removed
+- Import synthetic ready / missing media / missing offer cases structurally verified
+- exactly two synthetic offers in #6; its row and 898 non-QA offers unchanged
+- exact cleanup prepared; not executed
 
-Current blocker:
-- staging Supabase Auth admin user must be manually created by operator
-- after creation, grant existing parfums/import memberships
-- then continue authenticated hosted QA
+Remaining blockers:
+1. Exact Preview -> staging binding evidence (iyxidhglyqkzoziyewlc).
+2. Operator-created staging Auth identity and legitimate unit memberships.
+3. Hosted authenticated Admin QA.
+4. Hosted stale-write P2011 evidence.
+5. Hosted publication blocker evidence, including existing Import RPC assertions:
+   staging has zero active memberships; RPC verification returned 42501.
+   Run supabase/provisioning/staging-qa-fixtures-readiness.sql with a legitimate
+   Import member session. Structural fixture checks are not authenticated RPC proof.
+6. Final automated 4J5F gate (not run during 4J5F-A).
 
 Do NOT start 4J5G until 4J5F closes.
 
