@@ -222,6 +222,12 @@ export type VariantFormInput = {
   sku: string | null;
   publicationStatus: PublicationStatus;
   sortOrder: number;
+  /** 4K-B2B.2A.1: explicit "client confirmed this price" assertion. Never
+   * inferred from a numeric price edit — the operator must check the box.
+   * See admin_update_variant (20260913020000_admin_variant_price_confirmation.sql),
+   * which is the only place this can actually transition
+   * price_verification_status. */
+  confirmClientPrice: boolean;
 };
 
 const MAX_LABEL_LENGTH = 60;
@@ -273,6 +279,7 @@ export function validateVariantForm(input: {
   sku?: unknown;
   publicationStatus?: unknown;
   sortOrder?: unknown;
+  confirmClientPrice?: unknown;
 }): ValidationResult<VariantFormInput> {
   const errors: FieldErrors = {};
 
@@ -315,6 +322,8 @@ export function validateVariantForm(input: {
     errors.sortOrder = "El orden debe ser un número entero.";
   }
 
+  const confirmClientPrice = input.confirmClientPrice === true;
+
   if (Object.keys(errors).length > 0) return { ok: false, errors };
 
   return {
@@ -328,6 +337,7 @@ export function validateVariantForm(input: {
       sku,
       publicationStatus: publicationStatus!,
       sortOrder: sortOrderParsed,
+      confirmClientPrice,
     },
   };
 }

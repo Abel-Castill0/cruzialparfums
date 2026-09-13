@@ -520,6 +520,46 @@ provisional_market writes.
   market-reference bottle prices pending client review.
 - Next: 4K-B2B.2B (remaining Batch B bottle variants) — NOT STARTED.
 
+### 4K-B2B.2A.1 — Admin explicit price confirmation (CLOSED)
+
+- Closed the Admin gap 4K-B2B.2A found: `admin_update_variant` now takes an
+  explicit `p_confirm_client_price boolean default false`
+  (supabase/migrations/20260913020000_admin_variant_price_confirmation.sql).
+  The old 10-arg signature was dropped first (not just `create or replace`)
+  so exactly one callable `admin_update_variant` contract exists — no
+  PostgREST overload ambiguity.
+- Numeric price edit alone never implies confirmation: unless the operator
+  explicitly passes `p_confirm_client_price => true`, the existing
+  `price_verification_status` (including `provisional_market`) is preserved
+  exactly. When confirmed, the same variant row transitions to
+  `client_confirmed` — no duplication.
+- `official_pdf` cannot be produced or downgraded through this RPC: it
+  raises `22023` if a confirmation is attempted on a variant already
+  `official_pdf`. Viewers get `42501`; a stale `p_expected_updated_at` still
+  gets `P2011`, confirmation flag or not. The transition is audited under
+  the existing `verification_update` action (same action
+  `admin_update_combo_verification` already uses), before/after captured
+  via `app.write_audit_log` — no second audit subsystem.
+- Admin UI (variant-row.tsx): a `provisional_market` variant shows a
+  "Precio referencial" badge and an explicit "Precio confirmado por el
+  cliente" checkbox, not a generic status dropdown. The DB stays
+  authoritative regardless of UI state.
+- Reconciliation-vs-operational-truth (Part H): `app.apply_parfums_commercial_import`
+  (supabase/migrations/20260908140000_controlled_commercial_import.sql)
+  is insert-only per variant (`if not exists ... insert`) — it never UPDATEs
+  an existing variant row, so a later Admin `client_confirmed` edit in
+  Supabase can never be overwritten by re-running the reconciliation
+  loader. No blocker for 4K-C/4K2 found here.
+- 14 new pgTAP tests added to supabase/tests/05_admin_product_mutations.sql
+  (plan 28 -> 42) plus 2 new Vitest tests in
+  apps/web/src/domains/admin-parfums/product-schema.test.ts (573 -> 575).
+  All local pgTAP suites re-run clean against the local Supabase DB (only
+  pre-existing, unrelated 28_4j5d_correction_gate.sql errors — missing
+  `create extension pgtap`, not touched here). npm run commercial:check:
+  byte-stable. npm run check: PASS. Migration applied locally only, not to
+  hosted staging (4K-C will handle controlled staging application).
+- Next: 4K-B2B.2B (remaining Batch B bottle variants) — NOT STARTED.
+
 ## Current evidence gaps
 
 None outstanding for 4J5F. See Deferred defects above for the categoryId

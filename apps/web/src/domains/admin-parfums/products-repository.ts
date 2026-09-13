@@ -352,6 +352,7 @@ export class AdminParfumsProductsRepository {
       p_sku: variant.sku,
       p_publication_status: variant.publicationStatus,
       p_sort_order: variant.sortOrder,
+      p_confirm_client_price: variant.confirmClientPrice,
     };
     const { data, error } = await this.supabase.rpc(
       "admin_update_variant",

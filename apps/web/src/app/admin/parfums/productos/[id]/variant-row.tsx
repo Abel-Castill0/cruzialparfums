@@ -89,7 +89,15 @@ export function VariantRow({
         <td data-label="Nombre">{variant.label}</td>
         <td data-label="Tipo">{variant.variant_kind === "bottle" ? "Frasco" : "Decant"}</td>
         <td data-label="Tamaño (ml)">{variant.size_ml ?? "—"}</td>
-        <td data-label="Precio">{variant.currency} {variant.price_amount.toFixed(2)}</td>
+        <td data-label="Precio">
+          {variant.currency} {variant.price_amount.toFixed(2)}
+          {variant.price_verification_status === "provisional_market" ? (
+            <>
+              {" "}
+              <span className={formStyles.badge}>Precio referencial</span>
+            </>
+          ) : null}
+        </td>
         <td data-label="Inventario">
           {inventory
             ? `${inventory.inventory_mode === "tracked_quantity" ? `${inventory.quantity_on_hand ?? 0} u.` : "Solo estado"} · ${inventory.availability_status === "available" ? "Disponible" : "Agotado"}`
@@ -176,6 +184,20 @@ export function VariantRow({
               {variantErrors.sortOrder ? <p id={`${errorIdPrefix}-sort-error`} className={formStyles.error} role="alert">{variantErrors.sortOrder}</p> : null}
             </label>
           </div>
+
+          {variant.price_verification_status === "provisional_market" ? (
+            <div className={formStyles.featuredBlock}>
+              <p className={formStyles.hint}>
+                Este precio es una referencia de mercado (<span className={formStyles.badge}>Precio referencial</span>),
+                no un precio oficial confirmado.
+              </p>
+              <label className={formStyles.checkboxLabel}>
+                <input type="checkbox" name="confirmClientPrice" defaultChecked={false} />
+                Precio confirmado por el cliente
+              </label>
+            </div>
+          ) : null}
+
           <div className={`${styles.formActions} ${styles.spacingTop}`}>
             <button type="submit" className={styles.primaryButton} disabled={variantPending}>
               {variantPending ? "Guardando…" : "Guardar variante"}

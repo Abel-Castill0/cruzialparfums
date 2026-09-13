@@ -119,7 +119,7 @@ async function getRepositoryOrError(): Promise<
 function rawEntries(formData: FormData): Record<string, unknown> {
   const entries: Record<string, unknown> = {};
   for (const [key, value] of formData.entries()) {
-    if (key === "isFeatured") {
+    if (key === "isFeatured" || key === "confirmClientPrice") {
       entries[key] = value === "on" || value === "true";
       continue;
     }
@@ -127,6 +127,7 @@ function rawEntries(formData: FormData): Record<string, unknown> {
   }
   // Checkboxes that are unchecked never appear in FormData at all.
   if (!entries.isFeatured) entries.isFeatured = false;
+  if (!entries.confirmClientPrice) entries.confirmClientPrice = false;
   return entries;
 }
 

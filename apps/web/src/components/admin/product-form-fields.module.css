@@ -97,6 +97,19 @@
   height: 18px;
 }
 
+.badge {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 3px;
+  background: #f2e6c9;
+  color: #6b4f0f;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  vertical-align: middle;
+}
+
 @media (max-width: 640px) {
   .grid {
     grid-template-columns: 1fr;

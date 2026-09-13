@@ -2337,6 +2337,7 @@ export type Database = {
       }
       admin_update_variant: {
         Args: {
+          p_confirm_client_price?: boolean
           p_currency: string
           p_expected_updated_at: string
           p_label: string

@@ -7,7 +7,7 @@
 
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(28);
+select plan(42);
 
 -- ---------------------------------------------------------------------------
 -- Fixtures
@@ -192,6 +192,173 @@ select is(
   1,
   'the price-changing variant update wrote a price_change audit row'
 );
+
+-- ---------------------------------------------------------------------------
+-- 4K-B2B.2A.1: explicit Admin price confirmation
+-- (provisional_market -> client_confirmed, without duplicating the variant)
+-- ---------------------------------------------------------------------------
+
+-- A fresh variant, isolated from '3 ml' (which gets archived further below).
+select lives_ok(
+  $$select public.admin_create_variant(
+      (select id from public.products where slug = 'test-product-crud'),
+      '10 ml', 'bottle', 10, 60.00
+    )$$,
+  'Parfums admin creates a second variant for the price-confirmation tests'
+);
+
+-- admin_create_variant always lands on the column default ('legacy'); seed
+-- 'provisional_market' directly as test setup — the same state a real row
+-- would already be in from the 4K-B1 reconciliation widening
+-- (20260913010000_commercial_authority_extensions.sql). No RPC produces this
+-- value; it is not something this test exercises through the API surface.
+update public.product_variants set price_verification_status = 'provisional_market'
+where id = (select pv.id from public.product_variants pv join public.products p
+  on p.id = pv.product_id where p.slug = 'test-product-crud' and pv.label = '10 ml');
+
+-- A numeric price edit alone must never imply confirmation.
+select lives_ok(
+  $$select public.admin_update_variant(
+      (select pv.id from public.product_variants pv join public.products p
+         on p.id = pv.product_id where p.slug = 'test-product-crud' and pv.label = '10 ml'),
+      (select pv.updated_at from public.product_variants pv join public.products p
+         on p.id = pv.product_id where p.slug = 'test-product-crud' and pv.label = '10 ml'),
+      '10 ml', 'bottle', 10, 65.00, 'PEN', null, 'draft', 0
+    )$$,
+  'Parfums admin edits the provisional variant price without confirming it'
+);
+
+select is(
+  (select price_verification_status from public.product_variants pv join public.products p
+     on p.id = pv.product_id where p.slug = 'test-product-crud' and pv.label = '10 ml'),
+  'provisional_market',
+  'an unconfirmed numeric price edit leaves price_verification_status untouched'
+);
+
+-- Explicit confirmation via p_confirm_client_price => true transitions the
+-- same variant row.
+select lives_ok(
+  $$select public.admin_update_variant(
+      (select pv.id from public.product_variants pv join public.products p
+         on p.id = pv.product_id where p.slug = 'test-product-crud' and pv.label = '10 ml'),
+      (select pv.updated_at from public.product_variants pv join public.products p
+         on p.id = pv.product_id where p.slug = 'test-product-crud' and pv.label = '10 ml'),
+      '10 ml', 'bottle', 10, 65.00, 'PEN', null, 'draft', 0,
+      p_confirm_client_price => true
+    )$$,
+  'Parfums admin explicitly confirms the client-reviewed price'
+);
+
+select is(
+  (select price_verification_status from public.product_variants pv join public.products p
+     on p.id = pv.product_id where p.slug = 'test-product-crud' and pv.label = '10 ml'),
+  'client_confirmed',
+  'the explicit confirmation transitions price_verification_status to client_confirmed'
+);
+
+select is(
+  (select count(*)::int from public.product_variants pv join public.products p
+     on p.id = pv.product_id where p.slug = 'test-product-crud' and pv.label = '10 ml'),
+  1,
+  'the confirmation transitioned the same variant row, not a duplicate'
+);
+
+select is(
+  (select count(*)::int from public.audit_log
+     where entity_type = 'product_variant' and action = 'verification_update'
+       and entity_id = (select pv.id from public.product_variants pv join public.products p
+         on p.id = pv.product_id where p.slug = 'test-product-crud' and pv.label = '10 ml')),
+  1,
+  'the confirmation wrote its own verification_update audit row'
+);
+
+-- Re-confirming an already client_confirmed variant is idempotent.
+select lives_ok(
+  $$select public.admin_update_variant(
+      (select pv.id from public.product_variants pv join public.products p
+         on p.id = pv.product_id where p.slug = 'test-product-crud' and pv.label = '10 ml'),
+      (select pv.updated_at from public.product_variants pv join public.products p
+         on p.id = pv.product_id where p.slug = 'test-product-crud' and pv.label = '10 ml'),
+      '10 ml', 'bottle', 10, 65.00, 'PEN', null, 'draft', 0,
+      p_confirm_client_price => true
+    )$$,
+  'Re-confirming an already client_confirmed variant is idempotent'
+);
+
+select is(
+  (select price_verification_status from public.product_variants pv join public.products p
+     on p.id = pv.product_id where p.slug = 'test-product-crud' and pv.label = '10 ml'),
+  'client_confirmed',
+  'an already client_confirmed variant remains client_confirmed'
+);
+
+-- A stale expected_updated_at is still rejected, confirmation flag or not.
+select throws_ok(
+  $$select public.admin_update_variant(
+      (select pv.id from public.product_variants pv join public.products p
+         on p.id = pv.product_id where p.slug = 'test-product-crud' and pv.label = '10 ml'),
+      '2000-01-01T00:00:00Z'::timestamptz,
+      '10 ml', 'bottle', 10, 65.00, 'PEN', null, 'draft', 0,
+      p_confirm_client_price => true
+    )$$,
+  'P2011',
+  null,
+  'confirming with a stale expected_updated_at is still rejected as a conflict'
+);
+
+-- official_pdf is the reconciled-source authority; this RPC must never let
+-- an Admin manually produce or downgrade it.
+select lives_ok(
+  $$select public.admin_create_variant(
+      (select id from public.products where slug = 'test-product-crud'),
+      '15 ml', 'bottle', 15, 90.00
+    )$$,
+  'Parfums admin creates a third variant to exercise the official_pdf guard'
+);
+
+update public.product_variants set price_verification_status = 'official_pdf'
+where id = (select pv.id from public.product_variants pv join public.products p
+  on p.id = pv.product_id where p.slug = 'test-product-crud' and pv.label = '15 ml');
+
+select throws_ok(
+  $$select public.admin_update_variant(
+      (select pv.id from public.product_variants pv join public.products p
+         on p.id = pv.product_id where p.slug = 'test-product-crud' and pv.label = '15 ml'),
+      (select pv.updated_at from public.product_variants pv join public.products p
+         on p.id = pv.product_id where p.slug = 'test-product-crud' and pv.label = '15 ml'),
+      '15 ml', 'bottle', 15, 90.00, 'PEN', null, 'draft', 0,
+      p_confirm_client_price => true
+    )$$,
+  '22023',
+  null,
+  'admin_update_variant refuses to manually override an official_pdf price verification status'
+);
+
+select is(
+  (select price_verification_status from public.product_variants pv join public.products p
+     on p.id = pv.product_id where p.slug = 'test-product-crud' and pv.label = '15 ml'),
+  'official_pdf',
+  'the refused confirmation attempt leaves official_pdf untouched'
+);
+
+-- A viewer can see the variant but can never confirm its price.
+set local request.jwt.claims to '{"sub":"cccccccc-cccc-4ccc-8ccc-cccccccccccc","role":"authenticated"}';
+
+select throws_ok(
+  $$select public.admin_update_variant(
+      (select pv.id from public.product_variants pv join public.products p
+         on p.id = pv.product_id where p.slug = 'test-product-crud' and pv.label = '10 ml'),
+      (select pv.updated_at from public.product_variants pv join public.products p
+         on p.id = pv.product_id where p.slug = 'test-product-crud' and pv.label = '10 ml'),
+      '10 ml', 'bottle', 10, 65.00, 'PEN', null, 'draft', 0,
+      p_confirm_client_price => true
+    )$$,
+  '42501',
+  null,
+  'a Parfums viewer cannot confirm a client price'
+);
+
+set local request.jwt.claims to '{"sub":"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
 
 -- ---------------------------------------------------------------------------
 -- Categories

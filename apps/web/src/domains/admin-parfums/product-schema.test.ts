@@ -159,6 +159,25 @@ describe("validateVariantForm", () => {
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.errors.currency).toBeDefined();
   });
+
+  // 4K-B2B.2A.1: confirmClientPrice defaults to false and requires an
+  // explicit `true` — a numeric price edit alone must never imply
+  // confirmation. Mirrors how isFeatured is coerced in validateProductForm.
+  it("defaults confirmClientPrice to false when omitted", () => {
+    const result = validateVariantForm(validInput);
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.value.confirmClientPrice).toBe(false);
+  });
+
+  it("only treats a literal boolean true as an explicit price confirmation", () => {
+    const truthy = validateVariantForm({ ...validInput, confirmClientPrice: true });
+    expect(truthy.ok).toBe(true);
+    if (truthy.ok) expect(truthy.value.confirmClientPrice).toBe(true);
+
+    const stringOn = validateVariantForm({ ...validInput, confirmClientPrice: "on" });
+    expect(stringOn.ok).toBe(true);
+    if (stringOn.ok) expect(stringOn.value.confirmClientPrice).toBe(false);
+  });
 });
 
 describe("validateInventoryForm", () => {
