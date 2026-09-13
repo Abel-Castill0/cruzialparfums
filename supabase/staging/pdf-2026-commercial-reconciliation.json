@@ -30,6 +30,22 @@
     "decant_price_rows_changed": 6,
     "combos_reconciled": 3
   },
+  "row_reconciliation": {
+    "note": "Added in 4K-A3.1 to make product-level and decant-row-level counts individually explicit and separately auditable; no change to any figure computed in 4K-A3 (see counts above for the same values under their original field names).",
+    "pdf_product_count": 96,
+    "v2_product_count": 96,
+    "matched_product_count": 95,
+    "pdf_only_product_count": 1,
+    "v2_only_product_count": 1,
+    "pdf_decant_row_count": 288,
+    "comparable_decant_row_count": 285,
+    "exact_price_match_row_count": 279,
+    "changed_price_row_count": 6,
+    "pdf_only_price_row_count": 3,
+    "v2_only_price_row_count": 3,
+    "ambiguous_price_row_count": 0,
+    "arithmetic_check": "pdf_decant_row_count(288) = comparable_decant_row_count(285) + pdf_only_price_row_count(3); comparable_decant_row_count(285) = exact_price_match_row_count(279) + changed_price_row_count(6); pdf_only_price_row_count = pdf_only_product_count(1) x 3; v2_only_price_row_count = v2_only_product_count(1) x 3. All hold."
+  },
   "product_reconciliation": [
     {
       "legacy_id": "khamrah-clasico",
