@@ -5,6 +5,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   normalizeCategorySlug,
+  PRICE_VERIFICATION_STATUSES,
   reconcileCommercialCatalog,
   serializeCommercialReconciliation,
   type LegacyStaging,
@@ -63,10 +64,15 @@ function fixtureEntry(overrides: Partial<LegacyStagingEntry> = {}): LegacyStagin
   };
 }
 
-function reconcile(entries: LegacyStagingEntry[], staging: Partial<LegacyStaging> = {}) {
+function reconcile(
+  entries: LegacyStagingEntry[],
+  staging: Partial<LegacyStaging> = {},
+  overrides: Record<string, unknown> = {},
+) {
   return reconcileCommercialCatalog({
     staging: { entries, blocked: [], invalid: [], ...staging },
     sourceFingerprints: { fixture: "abc123" },
+    ...overrides,
   });
 }
 
@@ -274,5 +280,200 @@ describe("commercial reconciliation", () => {
     expect(reverse.products.map((product) => product.legacy_id)).toEqual(["alpha", "zulu"]);
     expect(serializeCommercialReconciliation(reverse)).toBe(serializeCommercialReconciliation(forward));
     expect(serializeCommercialReconciliation(reverse)).toBe(serializeCommercialReconciliation(reverse));
+  });
+});
+
+describe("4K-B1 commercial authority reconciliation infrastructure", () => {
+  it("keeps a variant legacy and unchanged when no override targets it", () => {
+    const product = first(reconcile([fixtureEntry()]).products);
+    expect(first(product.variants)).toMatchObject({ price_amount: 12, price_verification_status: "legacy" });
+  });
+
+  it("lets an official_pdf variant price override win deterministically over the legacy price", () => {
+    const entry = fixtureEntry();
+    const result = reconcile([entry], {}, {
+      variantPriceOverrides: [{
+        legacy_id: "sample-product",
+        variant_kind: "decant",
+        size_ml: 3,
+        price_amount: 30,
+        price_verification_status: "official_pdf",
+        evidence: { provenance: ["OFFICIAL_PDF"], basis: "2026 catalogue, page 12" },
+      }],
+    });
+    const variant = first(first(result.products).variants);
+
+    expect(variant.price_amount).toBe(30);
+    expect(variant.price_verification_status).toBe("official_pdf");
+    expect(variant.price_provenance).toEqual({ provenance: ["OFFICIAL_PDF"], basis: "2026 catalogue, page 12" });
+    expect(variant.blockers).toEqual([]);
+    expect(first(result.products).warnings).toContain("VARIANT_PRICE_OVERRIDE_APPLIED");
+  });
+
+  it("keeps a provisional_market price non-official/non-client-confirmed and blocked from publication", () => {
+    const entry = fixtureEntry();
+    const result = reconcile([entry], {}, {
+      variantPriceOverrides: [{
+        legacy_id: "sample-product",
+        variant_kind: "decant",
+        size_ml: 3,
+        price_amount: 18,
+        price_verification_status: "provisional_market",
+        evidence: { provenance: ["UNKNOWN"], basis: "Operator market research, not client-confirmed" },
+      }],
+    });
+    const product = first(result.products);
+    const variant = first(product.variants);
+
+    expect(variant.price_verification_status).toBe("provisional_market");
+    expect(PRICE_VERIFICATION_STATUSES).toContain("provisional_market");
+    expect(variant.price_verification_status).not.toBe("official_pdf");
+    expect(variant.price_verification_status).not.toBe("client_confirmed");
+    expect(variant.blockers).toContain("PROVISIONAL_MARKET_PRICE_REQUIRES_COMMERCIAL_APPROVAL");
+    expect(product.blockers).toContain("PROVISIONAL_MARKET_PRICES_REQUIRE_COMMERCIAL_APPROVAL");
+    expect(result.summary.confirmed_price_variants).toBe(0);
+  });
+
+  it("lets a client_confirmed override supersede a weaker provenance deterministically", () => {
+    const entry = fixtureEntry();
+    const result = reconcile([entry], {}, {
+      variantPriceOverrides: [{
+        legacy_id: "sample-product",
+        variant_kind: "decant",
+        size_ml: 3,
+        price_amount: 33,
+        price_verification_status: "client_confirmed",
+        evidence: { provenance: ["CLIENT_CONFIRMED"], basis: "Client confirmed via WhatsApp 2026-09-13" },
+      }],
+    });
+    const variant = first(first(result.products).variants);
+
+    expect(variant.price_amount).toBe(33);
+    expect(variant.price_verification_status).toBe("client_confirmed");
+    expect(variant.blockers).toEqual([]);
+    expect(result.summary.confirmed_price_variants).toBe(1);
+  });
+
+  it("lets a documented lifecycle override archive a product while preserving its identity and history", () => {
+    const entry = fixtureEntry();
+    const result = reconcile([entry], {}, {
+      productLifecycleOverrides: [{
+        legacy_id: "sample-product",
+        publication_status: "archived",
+        evidence: { provenance: ["OFFICIAL_PDF"], basis: "Absent from the 2026 official PDF; excluded from current authority" },
+      }],
+    });
+    const product = first(result.products);
+
+    expect(product.legacy_id).toBe("sample-product");
+    expect(product.target_product.publication_status).toBe("archived");
+    expect(product.field_provenance.publication_status).toEqual({
+      provenance: ["OFFICIAL_PDF"],
+      basis: "Absent from the 2026 official PDF; excluded from current authority",
+    });
+    expect(product.warnings).toContain("CURRENT_AUTHORITY_LIFECYCLE_OVERRIDE_APPLIED");
+    expect(product.conflicts).toEqual([]);
+  });
+
+  it("represents a supplemental official-source product without requiring a legacy source row", () => {
+    const result = reconcile([], {}, {
+      supplementalProducts: [{
+        slug: "le-male-le-parfum",
+        name: "Le Male Le Parfum",
+        brand: "Jean Paul Gaultier",
+        variants: [{
+          label: "3 ml",
+          variant_kind: "decant",
+          size_ml: 3,
+          price_amount: 1,
+          currency: "PEN",
+          publication_status: "draft",
+          price_verification_status: "unknown",
+          sort_order: 0,
+        }],
+      }],
+      variantPriceOverrides: [{
+        slug: "le-male-le-parfum",
+        variant_kind: "decant",
+        size_ml: 3,
+        price_amount: 24,
+        price_verification_status: "official_pdf",
+        evidence: { provenance: ["OFFICIAL_PDF"], basis: "2026 catalogue, page 32" },
+      }],
+    });
+    const product = first(result.products);
+
+    expect(product.legacy_id).toBeNull();
+    expect(product.target_product.slug).toBe("le-male-le-parfum");
+    expect(product.target_product.verification_status).toBe("unknown");
+    expect(first(product.variants).price_amount).toBe(24);
+    expect(first(product.variants).price_verification_status).toBe("official_pdf");
+    expect(fieldEvidence(product, "description").provenance).toEqual(["UNKNOWN"]);
+    expect(fieldEvidence(product, "gender").provenance).toEqual(["UNKNOWN"]);
+  });
+
+  it("does not fabricate unresolved fields on a supplemental product", () => {
+    const result = reconcile([], {}, {
+      supplementalProducts: [{
+        slug: "unresolved-supplement",
+        name: "Unresolved Supplement",
+        variants: [first(fixtureEntry().variants)],
+      }],
+    });
+    const product = first(result.products);
+
+    expect(product.target_product.brand).toBeNull();
+    expect(product.target_product.description).toBeNull();
+    expect(product.target_product.gender).toBeNull();
+    expect(product.target_product.concentration).toBeNull();
+  });
+
+  it("fails loudly on duplicate/conflicting variant price overrides instead of letting one silently win", () => {
+    expect(() => reconcile([fixtureEntry()], {}, {
+      variantPriceOverrides: [
+        {
+          legacy_id: "sample-product",
+          variant_kind: "decant",
+          size_ml: 3,
+          price_amount: 30,
+          price_verification_status: "official_pdf",
+          evidence: { provenance: ["OFFICIAL_PDF"], basis: "First" },
+        },
+        {
+          legacy_id: "sample-product",
+          variant_kind: "decant",
+          size_ml: 3,
+          price_amount: 18,
+          price_verification_status: "provisional_market",
+          evidence: { provenance: ["UNKNOWN"], basis: "Second, conflicting" },
+        },
+      ],
+    })).toThrow(/[Cc]onflicting/);
+  });
+
+  it("fails loudly on a variant price override that asserts legacy authority", () => {
+    expect(() => reconcile([fixtureEntry()], {}, {
+      variantPriceOverrides: [{
+        legacy_id: "sample-product",
+        variant_kind: "decant",
+        size_ml: 3,
+        price_amount: 12,
+        price_verification_status: "legacy",
+        evidence: { provenance: ["legacy"], basis: "Should not be allowed as an override" },
+      }],
+    })).toThrow(/legacy/);
+  });
+
+  it("leaves reconciliation output byte-identical when every override collection is empty (backward compatibility)", () => {
+    const staging: LegacyStaging = { entries: [fixtureEntry()], blocked: [], invalid: [] };
+    const withoutOverrides = serializeCommercialReconciliation(reconcileCommercialCatalog({ staging }));
+    const withEmptyOverrides = serializeCommercialReconciliation(reconcileCommercialCatalog({
+      staging,
+      variantPriceOverrides: [],
+      productLifecycleOverrides: [],
+      supplementalProducts: [],
+    }));
+
+    expect(withEmptyOverrides).toBe(withoutOverrides);
   });
 });

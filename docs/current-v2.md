@@ -156,7 +156,7 @@ ingestion/categoryId contract mismatch (P2, 0/844 non-QA products
 affected); stale /admin footer copy.
 
 Next gate:
-4K - Parfums commercial-data closure (4K-A3 done, 4K-B NOT STARTED)
+4K - Parfums commercial-data closure (4K-A3 done, 4K-B1 done, 4K-B2 NOT STARTED)
 
 ## 4K-A3 — official 2026 PDF reconciliation (read-only)
 
@@ -200,6 +200,77 @@ variant's price_verification_status, or to emit publication_status
 'archived' for a legacy product); fix the assets/data.js price swap; add
 Le Male Le Parfum; unhide bir-intense; unblock the 3 combo staging
 entries. See the artifact's `remaining_unresolved_before_4k_b`.
+
+## 4K-B1 — commercial authority reconciliation infrastructure (no data applied)
+
+Infrastructure only. No PDF prices/products applied, no product unhidden,
+no product archived, no combo populated. That is 4K-B2.
+
+Semantic distinction now modeled explicitly (previously undistinguished for
+prices, and value-vs-evidence conflated for lifecycle):
+
+- **legacy** — parity-only, unverified, never promoted (unchanged).
+- **provisional_market** — new. An operator-approved, temporary researched
+  price. Cannot equal and does not satisfy `official_pdf` or
+  `client_confirmed`; always blocked from publish
+  (`PROVISIONAL_MARKET_PRICE_REQUIRES_COMMERCIAL_APPROVAL`); excluded from
+  `summary.confirmed_price_variants`.
+- **official_pdf** — a documented current official-source value (unchanged
+  meaning, now actually assignable to a variant).
+- **client_confirmed** — explicit client confirmation (unchanged meaning,
+  now actually assignable to a variant); highest authority.
+
+New generic mechanisms in scripts/commercial-reconciliation.mjs (all empty
+by default; see supabase/migrations/20260913010000_commercial_authority_extensions.sql
+for the matching `provisional_market` DB check-constraint value):
+
+- `VARIANT_PRICE_OVERRIDES` — product identity (legacy_id, or slug for a
+  supplemental product) + variant kind/size -> authoritative price +
+  verification status + evidence. Deterministic, keyed lookup; a duplicate
+  or conflicting entry throws at build time instead of one silently
+  winning; an override cannot assert `legacy` authority.
+- `PRODUCT_LIFECYCLE_OVERRIDES` — product identity -> an actual
+  `publication_status` value (draft/published/hidden/archived) with
+  evidence, superseding the value FIELD_OVERRIDES could only annotate,
+  not change. This is the "no longer belongs to the current official
+  catalog" (archived) and "supersede a prior hidden decision" mechanism —
+  generic and source-driven, with no per-product name check anywhere in
+  the code. Preserves the row (no delete).
+- `SUPPLEMENTAL_PRODUCTS` — a product the current official source carries
+  that legacy never did. Maps through the same `reconcileProduct`
+  pipeline with `legacy_id: null` (identity is the slug); unresolved
+  fields stay null with `UNKNOWN` field_provenance rather than being
+  invented; `verification_status` starts `unknown`, not `legacy`.
+
+Verified backward-compatible: with all three collections empty, reconciliation
+output is byte-identical to pre-B1 (`--check` passes unchanged: 96 products,
+312 variants, 0 conflicts; also asserted in
+apps/web/src/lib/catalog/commercial-reconciliation.test.ts).
+
+Combo model (Part G): inspected only, unchanged. `public.combos` /
+`public.combo_items` already support member composition (via
+`combo_items.product_variant_id`), per-member size (via the referenced
+variant's `size_ml`), combo price (via the combo's own product/variant row),
+and official-source provenance (`combos.composition_verification_status`
+already allows `client_confirmed`; a combo's own price would use the same
+`VARIANT_PRICE_OVERRIDES` mechanism once a combo has a real product row).
+No combo-specific change needed.
+
+Field-level overrides (Part F): confirmed sufficient for what B2 needs.
+`FIELD_OVERRIDES` documents evidence for values already correct in
+assets/data.js; `PRODUCT_LIFECYCLE_OVERRIDES` (new) is what actually flips
+BIR Intense's `publication_status` away from `hidden` in B2; discontinued
+vs. available is already modeled as independent axes (no change needed).
+
+Tests: 10 new (apps/web/src/lib/catalog/commercial-reconciliation.test.ts),
+22 total in that file, all passing. Targeted vitest run only; full
+`db:test`/`check` gate not run (schema change is a single narrow, additive
+check-constraint value; no functional migration risk).
+
+Next:
+4K-B2 — apply verified PDF commercial truth (populate the overrides above,
+fix the Sauvage/Dylan price swap, add Le Male Le Parfum, unhide BIR Intense,
+archive Invictus Elixir, populate the 3 combos).
 
 ## Last known automated gate
 

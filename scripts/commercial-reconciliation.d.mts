@@ -67,13 +67,56 @@ export interface CommercialReconciliationArtifact {
   conflicts: Array<{ code: string; legacy_ids: string[]; detail: string }>;
 }
 
+export type PriceVerificationStatus =
+  | "unknown"
+  | "legacy"
+  | "provisional_market"
+  | "official_pdf"
+  | "client_confirmed";
+
+export interface VariantPriceOverride {
+  legacy_id?: string | null;
+  slug?: string;
+  variant_kind: string;
+  size_ml: number | null;
+  price_amount: number;
+  price_verification_status: PriceVerificationStatus;
+  evidence: Evidence;
+}
+
+export interface ProductLifecycleOverride {
+  legacy_id?: string | null;
+  slug?: string;
+  publication_status: "draft" | "published" | "hidden" | "archived";
+  evidence: Evidence;
+}
+
+export interface SupplementalProduct {
+  slug: string;
+  name: string;
+  brand?: string | null;
+  description?: string | null;
+  gender?: string | null;
+  concentration?: string | null;
+  variants?: Array<Record<string, unknown>>;
+  categories?: Array<{ kind: string; slug: string }>;
+  fieldEvidence?: Record<string, Evidence>;
+}
+
 export const MIGRATION_STATUSES: readonly string[];
 export const PUBLISH_ELIGIBILITIES: readonly string[];
 export const PROVENANCE_VALUES: readonly Provenance[];
+export const PRICE_VERIFICATION_STATUSES: readonly PriceVerificationStatus[];
+export const VARIANT_PRICE_OVERRIDES: readonly VariantPriceOverride[];
+export const PRODUCT_LIFECYCLE_OVERRIDES: readonly ProductLifecycleOverride[];
+export const SUPPLEMENTAL_PRODUCTS: readonly SupplementalProduct[];
 export function normalizeCategorySlug(value: string): string;
 export function reconcileCommercialCatalog(input: {
   staging: LegacyStaging;
   sourceFingerprints?: Record<string, string>;
   documentedBottlePriceCount?: number;
+  variantPriceOverrides?: VariantPriceOverride[];
+  productLifecycleOverrides?: ProductLifecycleOverride[];
+  supplementalProducts?: SupplementalProduct[];
 }): CommercialReconciliationArtifact;
 export function serializeCommercialReconciliation(artifact: unknown): string;

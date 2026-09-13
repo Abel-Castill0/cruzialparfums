@@ -41,6 +41,165 @@ export const PROVENANCE_VALUES = Object.freeze([
   "legacy",
 ]);
 
+// price_verification_status is the compact, DB-persisted commercial-authority
+// state for one variant row. field_provenance/price_provenance (above) is the
+// richer audit trail (evidence + basis) behind that state. The two are
+// deliberately separate concepts already: this list is the full authority
+// vocabulary, ordered weakest-to-strongest. 'provisional_market' is an
+// operator-approved, temporary researched price — it MUST NOT be conflated
+// with 'official_pdf' or 'client_confirmed' anywhere in this file.
+export const PRICE_VERIFICATION_STATUSES = Object.freeze([
+  "unknown",
+  "legacy",
+  "provisional_market",
+  "official_pdf",
+  "client_confirmed",
+]);
+const PRICE_AUTHORITY_RANK = Object.freeze(
+  Object.fromEntries(PRICE_VERIFICATION_STATUSES.map((status, index) => [status, index])),
+);
+
+// Empty by default. An override is a single documented commercial-authority
+// decision for one variant identity (product identity + variant kind + size).
+// Populating these arrays is a 4K-B2 concern; 4K-B1 only proves the mechanism
+// is generic, deterministic, and a no-op when empty (see Part H).
+export const VARIANT_PRICE_OVERRIDES = Object.freeze([]);
+
+// Empty by default. A lifecycle override lets a newer, named source (e.g. the
+// official PDF) supersede a product's derived publication_status — the
+// "this legacy product no longer belongs to the current official catalog"
+// (archived) case, or a superseded hidden/visibility decision. It changes the
+// actual target value, unlike FIELD_OVERRIDES below which only annotates
+// provenance for values assumed already correct in assets/data.js.
+export const PRODUCT_LIFECYCLE_OVERRIDES = Object.freeze([]);
+
+// Empty by default. A supplemental product exists only in a current
+// authoritative source (e.g. the official PDF) and has no legacy_id / no row
+// in assets/data.js. See supplementalToStagingEntry for the generic mapping.
+export const SUPPLEMENTAL_PRODUCTS = Object.freeze([]);
+
+/**
+ * The stable reconciliation identity for an entry: its legacy_id when one
+ * exists, otherwise its slug (the only identity a supplemental, official-
+ * source-only product can have). Used uniformly so override lookups never
+ * need to branch on where a product came from.
+ */
+function productIdentity(entry) {
+  return entry.legacy_id ?? entry.product?.slug ?? null;
+}
+
+function variantIdentityKey(identity, variant) {
+  return `${identity}:${variant.variant_kind}:${variant.size_ml ?? "null"}`;
+}
+
+/**
+ * Builds a Map from an overrides array, failing loudly on any duplicate key
+ * instead of letting a later entry silently win. This is the generic
+ * duplicate/conflict guard required for every override collection below.
+ */
+function buildOverrideIndex(overrides, keyOf, validate, label) {
+  const index = new Map();
+  for (const override of overrides) {
+    const key = keyOf(override);
+    if (index.has(key)) {
+      throw new Error(`Conflicting ${label} override for ${key}: duplicate authority entries are not allowed.`);
+    }
+    validate(override, key);
+    index.set(key, override);
+  }
+  return index;
+}
+
+function validateVariantPriceOverride(override, key) {
+  if (!isPositiveFiniteNumber(override.price_amount)) {
+    throw new Error(`Invalid ${key} price override: price_amount must be a positive finite number.`);
+  }
+  if (override.price_verification_status === "legacy" || override.price_verification_status === "unknown") {
+    throw new Error(`Invalid ${key} price override: an override must assert real authority, not '${override.price_verification_status}'.`);
+  }
+  if (!PRICE_VERIFICATION_STATUSES.includes(override.price_verification_status)) {
+    throw new Error(`Invalid ${key} price override: unknown price_verification_status '${override.price_verification_status}'.`);
+  }
+  if (!override.evidence?.basis) {
+    throw new Error(`Invalid ${key} price override: evidence with a basis is required for every override.`);
+  }
+}
+
+function validateLifecycleOverride(override, key) {
+  if (!["draft", "published", "hidden", "archived"].includes(override.publication_status)) {
+    throw new Error(`Invalid ${key} lifecycle override: unknown publication_status '${override.publication_status}'.`);
+  }
+  if (!override.evidence?.basis) {
+    throw new Error(`Invalid ${key} lifecycle override: evidence with a basis is required for every override.`);
+  }
+}
+
+function isPositiveFiniteNumber(value) {
+  return typeof value === "number" && Number.isFinite(value) && value > 0;
+}
+
+/**
+ * Maps one SUPPLEMENTAL_PRODUCTS record (Part E: a product the current
+ * official source carries but the legacy catalogue never did) into the same
+ * LegacyStagingEntry shape reconcileProduct already understands, so no
+ * separate code path is needed downstream. legacy_id is null by design —
+ * identity is the slug. Anything the source doesn't state stays null with
+ * UNKNOWN field_provenance; nothing is invented (Part E requirement).
+ */
+function supplementalToStagingEntry(supplemental) {
+  if (supplemental.legacy_id) {
+    throw new Error(`Supplemental product '${supplemental.slug}' must not declare a legacy_id: it is official-source-only by definition.`);
+  }
+  if (!supplemental.slug || !supplemental.name) {
+    throw new Error("Supplemental product entries require both slug and name.");
+  }
+  return {
+    legacy_id: null,
+    source: "official_pdf_supplement",
+    fieldEvidence: supplemental.fieldEvidence ?? {},
+    product: {
+      legacy_id: null,
+      slug: supplemental.slug,
+      name: supplemental.name,
+      brand: supplemental.brand ?? null,
+      description: supplemental.description ?? null,
+      gender: supplemental.gender ?? null,
+      concentration: supplemental.concentration ?? null,
+      // Conservative structural defaults only — the same defaults the schema
+      // itself uses — never a fabricated commercial claim.
+      sales_mode: "always_available",
+      production_status: "active",
+      availability_status: "available",
+      publication_status: "draft",
+      is_featured: false,
+      featured_rank: null,
+      featured_from: null,
+      featured_until: null,
+      verification_status: "unknown",
+      specs: { legacy_hidden: false, legacy_bestseller_unverified: false },
+    },
+    variants: supplemental.variants ?? [],
+    categories: supplemental.categories ?? [],
+    fingerprint: sha256(JSON.stringify({
+      slug: supplemental.slug,
+      name: supplemental.name,
+      variants: supplemental.variants ?? [],
+    })),
+  };
+}
+
+/**
+ * Only 'client_confirmed' and 'official_pdf' are strong enough to clear a
+ * variant for publication. 'legacy' and 'provisional_market' both block it —
+ * for different, explicit reasons — so neither can silently pass as verified
+ * client truth (Part C).
+ */
+function variantPriceBlockers(priceVerificationStatus) {
+  if (priceVerificationStatus === "legacy") return ["LEGACY_PRICE_NOT_APPROVED_FOR_PUBLICATION"];
+  if (priceVerificationStatus === "provisional_market") return ["PROVISIONAL_MARKET_PRICE_REQUIRES_COMMERCIAL_APPROVAL"];
+  return [];
+}
+
 const COMMERCIAL_TYPE_MAP = Object.freeze({
   arab: "arabic",
   arabic: "arabic",
@@ -151,21 +310,27 @@ function targetCategoryName(category) {
   return sourceName ? `${sourceName[0].toLocaleUpperCase("es-PE")}${sourceName.slice(1)}` : null;
 }
 
-function defaultFieldProvenance() {
+function defaultFieldProvenance(entry) {
+  const isSupplemental = entry?.source === "official_pdf_supplement";
   return Object.fromEntries(PRODUCT_FIELDS.map((field) => [
     field,
     field === "short_description"
       ? evidence(["UNKNOWN"], "The legacy staging contract has no short description; the optional target remains null")
-      : evidence(["legacy"], "Preserved from the legacy staging artifact without approval promotion"),
+      : isSupplemental
+        ? evidence(["UNKNOWN"], "Official-source supplemental product; field is not confirmed by any source and is not fabricated")
+        : evidence(["legacy"], "Preserved from the legacy staging artifact without approval promotion"),
   ]));
 }
 
-function checkProductConstraints(entry, targetProduct, targetVariants) {
+function checkProductConstraints(entry, targetProduct, targetVariants, { hasLifecycleOverride = false } = {}) {
   const conflicts = [];
   const add = (code, detail) => conflicts.push({ code, detail });
   const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/u;
 
-  if (!entry.legacy_id) add("MISSING_LEGACY_ID", "legacy_id is required for stable reconciliation identity");
+  // A supplemental, official-source-only product has no legacy_id by design
+  // (Part E); its stable identity is its slug instead. This is a source-type
+  // branch, not a per-product one.
+  if (!entry.legacy_id && entry.source !== "official_pdf_supplement") add("MISSING_LEGACY_ID", "legacy_id is required for stable reconciliation identity");
   if (!targetProduct.name) add("MISSING_PRODUCT_NAME", "products.name is required");
   if (!targetProduct.slug || !slugPattern.test(targetProduct.slug) || targetProduct.slug.length > 120) {
     add("INVALID_TARGET_SLUG", `products.slug is incompatible with the current contract: ${String(targetProduct.slug)}`);
@@ -179,8 +344,14 @@ function checkProductConstraints(entry, targetProduct, targetVariants) {
   if (!["legacy", "client_confirmed", "derived_validated", "official_pdf", "unknown"].includes(targetProduct.verification_status)) add("INVALID_VERIFICATION_STATUS", targetProduct.verification_status);
   if (targetProduct.featured_rank !== null && (!targetProduct.is_featured || !Number.isInteger(targetProduct.featured_rank) || targetProduct.featured_rank < 0)) add("INVALID_FEATURED_RANK", String(targetProduct.featured_rank));
   if (targetProduct.featured_from && targetProduct.featured_until && Date.parse(targetProduct.featured_until) <= Date.parse(targetProduct.featured_from)) add("INVALID_FEATURED_WINDOW", "featured_until must be later than featured_from");
-  if (targetProduct.publication_status === "hidden" && !targetProduct.specs.legacy_hidden) add("HIDDEN_STATUS_CONTRADICTION", "target is hidden without legacy_hidden evidence");
-  if (targetProduct.specs.legacy_hidden && targetProduct.publication_status !== "hidden") add("HIDDEN_STATUS_CONTRADICTION", "legacy_hidden must map to the independent hidden publication state");
+  // A documented lifecycle override is a newer, named source superseding the
+  // derived hidden/draft state on purpose (Part D/F); it is exempt from the
+  // legacy_hidden agreement check below, which otherwise guards against an
+  // *undocumented* mismatch.
+  if (!hasLifecycleOverride) {
+    if (targetProduct.publication_status === "hidden" && !targetProduct.specs.legacy_hidden) add("HIDDEN_STATUS_CONTRADICTION", "target is hidden without legacy_hidden evidence");
+    if (targetProduct.specs.legacy_hidden && targetProduct.publication_status !== "hidden") add("HIDDEN_STATUS_CONTRADICTION", "legacy_hidden must map to the independent hidden publication state");
+  }
   if (targetVariants.length === 0) add("NO_USABLE_VARIANT", "product has no variant compatible with product_variants");
 
   const labels = new Set();
@@ -193,12 +364,16 @@ function checkProductConstraints(entry, targetProduct, targetVariants) {
     if (variant.size_ml !== null && (typeof variant.size_ml !== "number" || !Number.isFinite(variant.size_ml) || variant.size_ml <= 0)) add("INVALID_VARIANT_SIZE", `${variant.label}: ${String(variant.size_ml)}`);
     if (variant.currency !== "PEN") add("INVALID_VARIANT_CURRENCY", `${variant.label}: ${variant.currency}`);
     if (!["draft", "published", "archived"].includes(variant.publication_status)) add("INVALID_VARIANT_PUBLICATION_STATUS", `${variant.label}: ${variant.publication_status}`);
-    if (!["legacy", "client_confirmed", "official_pdf", "unknown"].includes(variant.price_verification_status)) add("INVALID_PRICE_VERIFICATION_STATUS", `${variant.label}: ${variant.price_verification_status}`);
+    if (!PRICE_VERIFICATION_STATUSES.includes(variant.price_verification_status)) add("INVALID_PRICE_VERIFICATION_STATUS", `${variant.label}: ${variant.price_verification_status}`);
   }
   return conflicts;
 }
 
-function reconcileProduct(entry) {
+function reconcileProduct(entry, overrideIndexes = {}) {
+  const { variantPriceOverrideIndex = new Map(), productLifecycleOverrideIndex = new Map() } = overrideIndexes;
+  const identity = productIdentity(entry);
+  const lifecycleOverride = productLifecycleOverrideIndex.get(identity);
+
   const targetProduct = {
     legacy_id: entry.legacy_id,
     slug: entry.product.slug,
@@ -211,47 +386,57 @@ function reconcileProduct(entry) {
     sales_mode: entry.product.sales_mode,
     production_status: entry.product.production_status,
     availability_status: entry.product.availability_status,
-    publication_status: entry.product.specs?.legacy_hidden ? "hidden" : "draft",
+    publication_status: lifecycleOverride?.publication_status ?? (entry.product.specs?.legacy_hidden ? "hidden" : "draft"),
     is_featured: Boolean(entry.product.is_featured),
     featured_rank: entry.product.featured_rank ?? null,
     featured_from: entry.product.featured_from ?? null,
     featured_until: entry.product.featured_until ?? null,
-    verification_status: "legacy",
+    verification_status: entry.source === "official_pdf_supplement" ? "unknown" : "legacy",
     specs: entry.product.specs ?? {},
   };
-  const fieldProvenance = defaultFieldProvenance();
-  fieldProvenance.publication_status = evidence(
-    ["DERIVED_VALIDATED"],
-    "Conservative migration policy maps unapproved products to draft; explicit legacy_hidden maps to the schema's hidden state",
-  );
+  const fieldProvenance = defaultFieldProvenance(entry);
+  fieldProvenance.publication_status = lifecycleOverride
+    ? lifecycleOverride.evidence
+    : evidence(
+      ["DERIVED_VALIDATED"],
+      "Conservative migration policy maps unapproved products to draft; explicit legacy_hidden maps to the schema's hidden state",
+    );
   fieldProvenance.verification_status = evidence(
     ["DERIVED_VALIDATED"],
     "Conservative reduction to legacy because one database column cannot express mixed field-level evidence",
   );
 
-  const overrides = FIELD_OVERRIDES[entry.legacy_id] ?? {};
+  const overrides = { ...(FIELD_OVERRIDES[identity] ?? {}), ...(entry.fieldEvidence ?? {}) };
   for (const [field, provenance] of Object.entries(overrides)) fieldProvenance[field] = provenance;
 
   const variants = [...(entry.variants ?? [])]
-    .map((variant) => ({
-      variant_kind: variant.variant_kind,
-      size_ml: variant.size_ml ?? null,
-      label: variant.label,
-      price_amount: variant.price_amount,
-      currency: variant.currency,
-      publication_status: "draft",
-      price_verification_status: variant.price_verification_status,
-      sort_order: variant.sort_order,
-      price_provenance: evidence([variant.price_verification_status], "Preserved exactly from assets/data.js through the existing legacy ETL"),
-      publish_eligibility: variant.price_verification_status === "client_confirmed" || variant.price_verification_status === "official_pdf" ? "NOT_READY" : "NOT_READY",
-      blockers: variant.price_verification_status === "legacy" ? ["LEGACY_PRICE_NOT_APPROVED_FOR_PUBLICATION"] : [],
-    }))
+    .map((variant) => {
+      const priceOverride = variantPriceOverrideIndex.get(variantIdentityKey(identity, variant));
+      const priceAmount = priceOverride?.price_amount ?? variant.price_amount;
+      const priceVerificationStatus = priceOverride?.price_verification_status ?? variant.price_verification_status;
+      const priceProvenance = priceOverride
+        ? priceOverride.evidence
+        : evidence([variant.price_verification_status], "Preserved exactly from assets/data.js through the existing legacy ETL");
+      return {
+        variant_kind: variant.variant_kind,
+        size_ml: variant.size_ml ?? null,
+        label: variant.label,
+        price_amount: priceAmount,
+        currency: variant.currency,
+        publication_status: "draft",
+        price_verification_status: priceVerificationStatus,
+        sort_order: variant.sort_order,
+        price_provenance: priceProvenance,
+        publish_eligibility: priceVerificationStatus === "client_confirmed" || priceVerificationStatus === "official_pdf" ? "NOT_READY" : "NOT_READY",
+        blockers: variantPriceBlockers(priceVerificationStatus),
+      };
+    })
     .sort((left, right) => left.sort_order - right.sort_order || stableCompare(left.label, right.label));
 
   const categories = [...(entry.categories ?? [])]
     .map((category) => {
       const targetSlug = targetCategorySlug(category);
-      const override = CATEGORY_PROVENANCE_OVERRIDES[`${entry.legacy_id}:${category.kind}`];
+      const override = CATEGORY_PROVENANCE_OVERRIDES[`${identity}:${category.kind}`];
       const transformation = targetSlug && targetSlug !== category.slug
         ? category.kind === "commercial_type"
           ? "EXPLICIT_STABLE_IDENTITY_MAP"
@@ -269,7 +454,7 @@ function reconcileProduct(entry) {
     })
     .sort((left, right) => stableCompare(`${left.kind}:${left.target_slug}`, `${right.kind}:${right.target_slug}`));
 
-  const localConflicts = checkProductConstraints(entry, targetProduct, variants);
+  const localConflicts = checkProductConstraints(entry, targetProduct, variants, { hasLifecycleOverride: Boolean(lifecycleOverride) });
   for (const category of categories) {
     if (!["commercial_type", "olfactory_family"].includes(category.kind)) localConflicts.push({ code: "INVALID_CATEGORY_KIND", detail: category.kind });
     if (!category.target_slug) localConflicts.push({ code: "INVALID_COMMERCIAL_TYPE", detail: `${category.kind}:${category.source_slug}` });
@@ -289,6 +474,9 @@ function reconcileProduct(entry) {
   if (targetProduct.production_status === "discontinued" && targetProduct.availability_status === "available") warnings.push("DISCONTINUED_AVAILABLE_PRESERVED_INDEPENDENTLY");
   if (targetProduct.specs.legacy_bestseller_unverified) warnings.push("LEGACY_BESTSELLER_RETAINED_ONLY_AS_UNVERIFIED_METADATA");
   if (targetProduct.publication_status === "hidden") warnings.push("HIDDEN_PUBLICATION_DOES_NOT_IMPLY_OUT_OF_STOCK");
+  if (lifecycleOverride) warnings.push("CURRENT_AUTHORITY_LIFECYCLE_OVERRIDE_APPLIED");
+  if (variants.some((variant) => variantPriceOverrideIndex.has(variantIdentityKey(identity, variant)))) warnings.push("VARIANT_PRICE_OVERRIDE_APPLIED");
+  if (variants.some((variant) => variant.price_verification_status === "provisional_market")) warnings.push("PROVISIONAL_MARKET_PRICE_NOT_CLIENT_CONFIRMED");
 
   const product = {
     legacy_id: entry.legacy_id,
@@ -311,12 +499,13 @@ function reconcileProduct(entry) {
     },
     media_dependency: {
       manifest: "supabase/staging/client-media-reconciliation.json",
-      lookup_key: entry.legacy_id,
+      lookup_key: identity,
       write_status: "DEFERRED_TO_4F2B",
     },
     warnings: warnings.sort(stableCompare),
     blockers: [
       ...(variants.some((variant) => variant.price_verification_status === "legacy") ? ["LEGACY_PRICES_REQUIRE_COMMERCIAL_APPROVAL"] : []),
+      ...(variants.some((variant) => variant.price_verification_status === "provisional_market") ? ["PROVISIONAL_MARKET_PRICES_REQUIRE_COMMERCIAL_APPROVAL"] : []),
       ...(targetProduct.publication_status === "hidden" ? ["CLIENT_CONFIRMED_HIDDEN"] : []),
       ...localConflicts.map((conflict) => conflict.code),
     ].sort(stableCompare),
@@ -336,7 +525,10 @@ function reconcileProduct(entry) {
 function globalConflicts(staging, products, documentedBottlePriceCount) {
   const conflicts = [];
   const duplicateValues = (values) => [...new Set(values.filter((value, index) => values.indexOf(value) !== index))].sort(stableCompare);
-  for (const legacyId of duplicateValues((staging.entries ?? []).map((entry) => entry.legacy_id))) conflicts.push({ code: "DUPLICATE_LEGACY_ID", legacy_ids: [legacyId], detail: legacyId });
+  // null is not a real identity collision — a supplemental, official-source
+  // product legitimately has no legacy_id (Part E), and Postgres itself
+  // allows multiple nulls under the unit+legacy_id unique constraint.
+  for (const legacyId of duplicateValues(products.map((product) => product.legacy_id).filter((legacyId) => legacyId !== null))) conflicts.push({ code: "DUPLICATE_LEGACY_ID", legacy_ids: [legacyId], detail: legacyId });
   for (const slug of duplicateValues(products.map((product) => product.target_product.slug))) conflicts.push({ code: "DUPLICATE_TARGET_SLUG", legacy_ids: products.filter((product) => product.target_product.slug === slug).map((product) => product.legacy_id).sort(stableCompare), detail: slug });
 
   const categoryIdentities = new Map();
@@ -372,8 +564,33 @@ function globalConflicts(staging, products, documentedBottlePriceCount) {
   return conflicts.sort((left, right) => stableCompare(`${left.code}:${left.detail}`, `${right.code}:${right.detail}`));
 }
 
-export function reconcileCommercialCatalog({ staging, sourceFingerprints = {}, documentedBottlePriceCount }) {
-  const products = [...(staging.entries ?? [])].map(reconcileProduct).sort((left, right) => stableCompare(left.legacy_id, right.legacy_id));
+export function reconcileCommercialCatalog({
+  staging,
+  sourceFingerprints = {},
+  documentedBottlePriceCount,
+  variantPriceOverrides = VARIANT_PRICE_OVERRIDES,
+  productLifecycleOverrides = PRODUCT_LIFECYCLE_OVERRIDES,
+  supplementalProducts = SUPPLEMENTAL_PRODUCTS,
+}) {
+  const variantPriceOverrideIndex = buildOverrideIndex(
+    variantPriceOverrides,
+    (override) => variantIdentityKey(override.legacy_id ?? override.slug, override),
+    validateVariantPriceOverride,
+    "variant price",
+  );
+  const productLifecycleOverrideIndex = buildOverrideIndex(
+    productLifecycleOverrides,
+    (override) => override.legacy_id ?? override.slug,
+    validateLifecycleOverride,
+    "product lifecycle",
+  );
+  const overrideIndexes = { variantPriceOverrideIndex, productLifecycleOverrideIndex };
+
+  const supplementalEntries = supplementalProducts.map(supplementalToStagingEntry);
+  const allEntries = [...(staging.entries ?? []), ...supplementalEntries];
+  const products = allEntries
+    .map((entry) => reconcileProduct(entry, overrideIndexes))
+    .sort((left, right) => stableCompare(productIdentity({ legacy_id: left.legacy_id, product: left.target_product }), productIdentity({ legacy_id: right.legacy_id, product: right.target_product })));
   const conflicts = globalConflicts(staging, products, documentedBottlePriceCount);
   const globallyBlockedIds = new Set(conflicts.flatMap((conflict) => conflict.legacy_ids));
   for (const product of products) {
