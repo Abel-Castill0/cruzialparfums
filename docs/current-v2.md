@@ -386,6 +386,13 @@ artifact) — confirmed pre-existing at HEAD c010631, unrelated to this gate,
 out of scope for 4K-B2A.1. All other gate steps (catalog:check, test:4j4b,
 lint, typecheck, test, build) verified PASS individually.
 
+## 4K-B2A.2 — commercial artifact refresh (CLOSED)
+
+4K-B2A final validation restored: commercial artifact regenerated from final
+authoritative inputs (staleness was only the `docs/client-decisions.md`
+fingerprint recorded before its later update) and global `npm run check`
+PASS.
+
 ## Current evidence gaps
 
 None outstanding for 4J5F. See Deferred defects above for the categoryId
