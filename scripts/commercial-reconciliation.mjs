@@ -10,6 +10,7 @@
 
 import { createHash } from "node:crypto";
 import { readFile, writeFile } from "node:fs/promises";
+import { createRequire } from "node:module";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -23,7 +24,12 @@ const paths = Object.freeze({
   integritySchema: resolve(repositoryRoot, "supabase/migrations/20260907154401_integrity_hardening.sql"),
   wholesaleSchema: resolve(repositoryRoot, "supabase/migrations/20260908070000_admin_parfums_wholesale.sql"),
   output: resolve(repositoryRoot, "supabase/staging/commercial-reconciliation.json"),
+  pdfReconciliation: resolve(repositoryRoot, "supabase/staging/pdf-2026-commercial-reconciliation.json"),
 });
+
+// Synchronous JSON read: VARIANT_PRICE_OVERRIDES below is a top-level frozen
+// export derived from this persisted artifact, not a runtime fetch.
+const pdfReconciliation = createRequire(import.meta.url)(paths.pdfReconciliation);
 
 export const MIGRATION_STATUSES = Object.freeze([
   "MIGRATABLE_DRAFT",
@@ -59,24 +65,102 @@ const PRICE_AUTHORITY_RANK = Object.freeze(
   Object.fromEntries(PRICE_VERIFICATION_STATUSES.map((status, index) => [status, index])),
 );
 
-// Empty by default. An override is a single documented commercial-authority
-// decision for one variant identity (product identity + variant kind + size).
-// Populating these arrays is a 4K-B2 concern; 4K-B1 only proves the mechanism
-// is generic, deterministic, and a no-op when empty (see Part H).
-export const VARIANT_PRICE_OVERRIDES = Object.freeze([]);
+const OFFICIAL_PDF_DECANT_EVIDENCE = evidence(
+  ["OFFICIAL_PDF"],
+  "Official 2026 client PDF (docs/client-source/CATALOGO DE DECANTS.pdf), independently reconciled and persisted in " +
+  "supabase/staging/pdf-2026-commercial-reconciliation.json (4K-A3/4K-A3.1); applied as decant price authority in 4K-B2A. " +
+  "\"Guíate del PDF, ese está actualizado.\" — client, 2026-09-13.",
+);
 
-// Empty by default. A lifecycle override lets a newer, named source (e.g. the
-// official PDF) supersede a product's derived publication_status — the
-// "this legacy product no longer belongs to the current official catalog"
-// (archived) case, or a superseded hidden/visibility decision. It changes the
-// actual target value, unlike FIELD_OVERRIDES below which only annotates
-// provenance for values assumed already correct in assets/data.js.
-export const PRODUCT_LIFECYCLE_OVERRIDES = Object.freeze([]);
+/**
+ * The smallest deterministic mapping that satisfies the 4K-B2A Part A/B
+ * contract: every one of the persisted artifact's 95 matched, current-PDF
+ * decant rows (285 = 95 x 3ml/5ml/10ml) becomes one official_pdf variant
+ * price override, at the PDF's own numeric value — whether or not that value
+ * happens to already match the current legacy price. No per-product
+ * conditionals are hand-written; the 279 unchanged rows and the 6 corrected
+ * Sauvage EDT / Dylan Blue rows are produced by the exact same loop from the
+ * exact same persisted source.
+ */
+function officialPdfDecantVariantPriceOverrides(reconciliation) {
+  const sizes = [3, 5, 10];
+  return reconciliation.product_reconciliation.map((product) => sizes.map((size, index) => ({
+    legacy_id: product.legacy_id,
+    variant_kind: "decant",
+    size_ml: size,
+    price_amount: product.decant_price_3_5_10.official_pdf[index],
+    price_verification_status: "official_pdf",
+    evidence: OFFICIAL_PDF_DECANT_EVIDENCE,
+  }))).flat();
+}
 
-// Empty by default. A supplemental product exists only in a current
-// authoritative source (e.g. the official PDF) and has no legacy_id / no row
-// in assets/data.js. See supplementalToStagingEntry for the generic mapping.
-export const SUPPLEMENTAL_PRODUCTS = Object.freeze([]);
+// Populated from the persisted 4K-A3/4K-A3.1 PDF reconciliation artifact
+// (Part A/B). Every current-PDF-matched decant row — unchanged and corrected
+// alike — gets official_pdf authority; bottle variants and the V2-only
+// invictus-elixir decant rows are untouched because they have no entry in
+// reconciliation.product_reconciliation (Part H/D).
+export const VARIANT_PRICE_OVERRIDES = Object.freeze(officialPdfDecantVariantPriceOverrides(pdfReconciliation));
+
+// A lifecycle override lets a newer, named source (e.g. the official PDF)
+// supersede a product's derived publication_status — the "this legacy product
+// no longer belongs to the current official catalog" (archived) case, or a
+// superseded hidden/visibility decision. It changes the actual target value,
+// unlike FIELD_OVERRIDES below which only annotates provenance for values
+// assumed already correct in assets/data.js.
+export const PRODUCT_LIFECYCLE_OVERRIDES = Object.freeze([
+  {
+    // Part D: absent from the current authoritative client PDF. Archived from
+    // the current active catalog; the row/history stay intact (no delete),
+    // and its existing legacy decant prices are deliberately left out of
+    // VARIANT_PRICE_OVERRIDES above so they are never reinterpreted as
+    // official_pdf.
+    legacy_id: "invictus-elixir",
+    publication_status: "archived",
+    evidence: evidence(
+      ["UNKNOWN"],
+      "V2-only; absent from the current authoritative client PDF (supabase/staging/pdf-2026-commercial-reconciliation.json " +
+      "-> v2_only_products). The PDF is silent on this product, which is not itself evidence of discontinuation, but it is no " +
+      "longer part of the client's current authoritative catalog, so it is archived from current active authority while its " +
+      "record and price history remain readable. 4K-B2A Part D.",
+    ),
+  },
+  {
+    // Part E: the newer official PDF (active, priced, non-discontinued)
+    // supersedes the 2026-09-06 CLIENT_CONFIRMED no-stock hidden decision
+    // recorded inline at assets/data.js:472 and in docs/client-decisions.md.
+    // That original decision is left in place as history; this override only
+    // changes what current commercial authority computes. draft (not
+    // published) because unhiding is not the same claim as publish-ready.
+    legacy_id: "bir-intense",
+    publication_status: "draft",
+    evidence: evidence(
+      ["OFFICIAL_PDF"],
+      "Confirmed active/current in the official 2026 PDF (page 34; decant prices 26/34/56 exact match). This newer " +
+      "authoritative source supersedes the 2026-09-06 CLIENT_CONFIRMED hidden decision, which was based on then-current " +
+      "no-stock information now superseded by client instruction 2026-09-13 (\"Guíate del PDF, ese está actualizado.\"). " +
+      "4K-B2A Part E.",
+    ),
+  },
+]);
+
+/**
+ * Official-PDF-only product with no legacy_id / no row in assets/data.js
+ * (Part C). Only the PDF-evidenced fields are set; everything the persisted
+ * reconciliation artifact does not state (brand, gender, concentration,
+ * notes, bestseller, bottle price, media) is left null/UNKNOWN by
+ * supplementalToStagingEntry's own defaults rather than guessed.
+ */
+export const SUPPLEMENTAL_PRODUCTS = Object.freeze([
+  {
+    slug: "le-male-le-parfum",
+    name: "Le Male Le Parfum",
+    variants: [
+      { label: "3 ml", variant_kind: "decant", size_ml: 3, price_amount: 24, currency: "PEN", sort_order: 0, price_verification_status: "official_pdf" },
+      { label: "5 ml", variant_kind: "decant", size_ml: 5, price_amount: 32, currency: "PEN", sort_order: 1, price_verification_status: "official_pdf" },
+      { label: "10 ml", variant_kind: "decant", size_ml: 10, price_amount: 51, currency: "PEN", sort_order: 2, price_verification_status: "official_pdf" },
+    ],
+  },
+]);
 
 /**
  * The stable reconciliation identity for an entry: its legacy_id when one
@@ -416,7 +500,12 @@ function reconcileProduct(entry, overrideIndexes = {}) {
       const priceVerificationStatus = priceOverride?.price_verification_status ?? variant.price_verification_status;
       const priceProvenance = priceOverride
         ? priceOverride.evidence
-        : evidence([variant.price_verification_status], "Preserved exactly from assets/data.js through the existing legacy ETL");
+        : evidence(
+          [variant.price_verification_status],
+          entry.source === "official_pdf_supplement"
+            ? OFFICIAL_PDF_DECANT_EVIDENCE.basis
+            : "Preserved exactly from assets/data.js through the existing legacy ETL",
+        );
       return {
         variant_kind: variant.variant_kind,
         size_ml: variant.size_ml ?? null,
@@ -602,6 +691,12 @@ export function reconcileCommercialCatalog({
   }
 
   const blocked = [
+    // A blocked combo stays BLOCKED for migration/publish either way (Part G:
+    // do not weaken readiness to force a combo publishable) — but
+    // composition_verification_status/source_state/provenance reflect what the
+    // upstream staging item actually documents, so an official-PDF-confirmed
+    // composition (see etl-legacy-catalog.mjs's officialPdfMembers handling)
+    // is not left indistinguishable from a genuinely still-pending one.
     ...(staging.blocked ?? []).map((item) => ({
       legacy_id: item.legacy_id ?? null,
       entity: "combo",
@@ -609,9 +704,11 @@ export function reconcileCommercialCatalog({
       publish_eligibility: "BLOCKED",
       reason: item.reason,
       target_tables: [],
-      provenance: ["UNKNOWN"],
-      composition_verification_status: "pending_reconfirmation",
-      source_state: "CLIENT_PROVIDED_PENDING_RECONFIRMATION",
+      provenance: item.composition_verification_status === "official_pdf" ? ["OFFICIAL_PDF"] : ["UNKNOWN"],
+      composition_verification_status: item.composition_verification_status ?? "pending_reconfirmation",
+      source_state: item.source_state ?? "CLIENT_PROVIDED_PENDING_RECONFIRMATION",
+      ...(item.composition_legacy_ids ? { composition_legacy_ids: item.composition_legacy_ids } : {}),
+      ...(item.decant_price_3_5_10 ? { decant_price_3_5_10: item.decant_price_3_5_10 } : {}),
     })),
     ...(staging.invalid ?? []).map((item) => ({
       legacy_id: item.legacy_id ?? null,

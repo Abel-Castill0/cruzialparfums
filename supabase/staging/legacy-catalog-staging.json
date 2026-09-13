@@ -2,7 +2,7 @@
   "metadata": {
     "notice": "STAGING ONLY — not applied to any database, not a cutover",
     "generatedFrom": "assets/data.js",
-    "sourceSha256": "f2cc900aa8851474b3e6d3e799deeac2103ed77da7f1e66034c1f05a9624021a",
+    "sourceSha256": "40f01fef31674aeab6cd35d44a04f3b0d2b2b2274fa780ae2457c2a827735fea",
     "verificationStatus": "legacy",
     "publishEligible": false,
     "stagedProductPublicationStatus": "draft",
@@ -15,15 +15,52 @@
   "blocked": [
     {
       "legacy_id": "combo-cuarteto",
-      "reason": "combo composition is CLIENT_PROVIDED_PENDING_RECONFIRMATION"
+      "reason": "combo composition and price confirmed against the official 2026 PDF; combo product/target-table creation is deferred to a later gate",
+      "composition_verification_status": "official_pdf",
+      "source_state": "OFFICIAL_PDF_CONFIRMED",
+      "composition_legacy_ids": [
+        "khamrah-qahwa",
+        "khamrah-clasico",
+        "khamrah-waha",
+        "khamrah-dukhan"
+      ],
+      "decant_price_3_5_10": [
+        40,
+        55,
+        89
+      ]
     },
     {
       "legacy_id": "combo-vainilla",
-      "reason": "combo composition is CLIENT_PROVIDED_PENDING_RECONFIRMATION"
+      "reason": "combo composition and price confirmed against the official 2026 PDF; combo product/target-table creation is deferred to a later gate",
+      "composition_verification_status": "official_pdf",
+      "source_state": "OFFICIAL_PDF_CONFIRMED",
+      "composition_legacy_ids": [
+        "yara-pink",
+        "yara-candy",
+        "eclaire"
+      ],
+      "decant_price_3_5_10": [
+        27,
+        39,
+        65
+      ]
     },
     {
       "legacy_id": "combo-tulum",
-      "reason": "combo composition is CLIENT_PROVIDED_PENDING_RECONFIRMATION"
+      "reason": "combo composition and price confirmed against the official 2026 PDF; combo product/target-table creation is deferred to a later gate",
+      "composition_verification_status": "official_pdf",
+      "source_state": "OFFICIAL_PDF_CONFIRMED",
+      "composition_legacy_ids": [
+        "odyssey-aqua",
+        "hawas-tropical",
+        "supremacy-colle"
+      ],
+      "decant_price_3_5_10": [
+        31,
+        42,
+        71
+      ]
     }
   ],
   "invalid": [],
@@ -2624,7 +2661,7 @@
           "label": "3 ml",
           "variant_kind": "decant",
           "size_ml": 3,
-          "price_amount": 30,
+          "price_amount": 22,
           "currency": "PEN",
           "publication_status": "draft",
           "price_verification_status": "legacy",
@@ -2634,7 +2671,7 @@
           "label": "5 ml",
           "variant_kind": "decant",
           "size_ml": 5,
-          "price_amount": 38,
+          "price_amount": 30,
           "currency": "PEN",
           "publication_status": "draft",
           "price_verification_status": "legacy",
@@ -2644,7 +2681,7 @@
           "label": "10 ml",
           "variant_kind": "decant",
           "size_ml": 10,
-          "price_amount": 69,
+          "price_amount": 48,
           "currency": "PEN",
           "publication_status": "draft",
           "price_verification_status": "legacy",
@@ -2687,7 +2724,7 @@
           "sort_order": 1
         }
       ],
-      "fingerprint": "77a5e752b5997337c69ff5442c58202264c233052ef1b86673cd365333629112"
+      "fingerprint": "93f2d752f3069550e0e54c097f2373bf9fbcaf95b37f31f1f3ac7a99cc6a7c85"
     },
     {
       "legacy_id": "eclaire",
@@ -7478,7 +7515,7 @@
           "label": "3 ml",
           "variant_kind": "decant",
           "size_ml": 3,
-          "price_amount": 22,
+          "price_amount": 30,
           "currency": "PEN",
           "publication_status": "draft",
           "price_verification_status": "legacy",
@@ -7488,7 +7525,7 @@
           "label": "5 ml",
           "variant_kind": "decant",
           "size_ml": 5,
-          "price_amount": 30,
+          "price_amount": 38,
           "currency": "PEN",
           "publication_status": "draft",
           "price_verification_status": "legacy",
@@ -7498,7 +7535,7 @@
           "label": "10 ml",
           "variant_kind": "decant",
           "size_ml": 10,
-          "price_amount": 48,
+          "price_amount": 69,
           "currency": "PEN",
           "publication_status": "draft",
           "price_verification_status": "legacy",
@@ -7541,7 +7578,7 @@
           "sort_order": 1
         }
       ],
-      "fingerprint": "f4f494069419d8a7a0e4808d8454b73d8c066a11d1084aecc11374951c9890ae"
+      "fingerprint": "b9ff97e3b285db475d091c637ab4a2cf038402d97c35ed1945e2184d2a553f9e"
     },
     {
       "legacy_id": "sceptre-malachite",

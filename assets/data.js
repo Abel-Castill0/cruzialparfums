@@ -73,7 +73,14 @@ const P = (id, brand, name, gender, type, family, conc, price, notes, mood, extr
      or demand. No UI surface (filter, badge, sort, copy) may present it as fact until
      real sales data confirms it. See CLAUDE.md → ZERO INVENTED COMMERCE. */
   bestseller: !!(extra && extra.bestseller),
-  discontinued: !!(extra && extra.discontinued)
+  discontinued: !!(extra && extra.discontinued),
+  // officialPdfMembers: combo-only. Member legacy_ids CLIENT_CONFIRMED against
+  // the official 2026 PDF (page 5 render; see
+  // supabase/staging/pdf-2026-commercial-reconciliation.json -> combos).
+  // Presence of this array (not the combo type alone) is what the ETL reads
+  // to mark a combo's composition/price as official_pdf-confirmed instead of
+  // CLIENT_PROVIDED_PENDING_RECONFIRMATION — 4K-B2A Part G.
+  officialPdfMembers: (extra && extra.officialPdfMembers) || null
 });
 
 /* Precios según el catálogo */
@@ -451,9 +458,9 @@ window.CRUZIAL_PRODUCTS = [
   P("royal-blend-sequoia", "Maison Alhambra", "Royal Blend Sequoia", "men", "arab", "Amaderado", "EDP", T121626, ["Cedro", "Especias", "Ámbar"], M.m5),
 
   /* ================= COMBOS ÁRABES ================= */
-  P("combo-cuarteto", "", "Cuarteto Oriental", "unisex", "combo", "Ámbar", "EDP", { 3: 40, 5: 55, 10: 89 }, ["4 fragancias", "Orientales", "Selección"], M.m4, { desc: "Khamrah Clásico, Khamrah Qahwa, Khamrah Dukhan y Khamrah Waha — 4 fragancias árabes de la línea Khamrah (Lattafa). Rinde hasta 600 atomizaciones en su formato 10 ml.", tag: "Combo" }),
-  P("combo-vainilla", "", "Vainilla Freak", "unisex", "combo", "Gourmand", "EDP", { 3: 27, 5: 39, 10: 65 }, ["Vainilla", "Gourmand", "Dulce"], M.m2, { desc: "Yara Pink, Yara Candy y Eclaire — 3 fragancias gourmand para amantes de la vainilla. Rinde hasta 450 atomizaciones en su formato 10 ml.", tag: "Combo" }),
-  P("combo-tulum", "", "Set Tulum", "unisex", "combo", "Fresco", "EDP", { 3: 31, 5: 42, 10: 71 }, ["Fresco", "Cálido", "Veraniego"], M.m6, { desc: "Odyssey Aqua, Hawas Tropical y Supremacy Collection — 3 fragancias frescas con espíritu playero. Rinde hasta 450 atomizaciones en su formato 10 ml.", tag: "Combo" }),
+  P("combo-cuarteto", "", "Cuarteto Oriental", "unisex", "combo", "Ámbar", "EDP", { 3: 40, 5: 55, 10: 89 }, ["4 fragancias", "Orientales", "Selección"], M.m4, { desc: "Khamrah Clásico, Khamrah Qahwa, Khamrah Dukhan y Khamrah Waha — 4 fragancias árabes de la línea Khamrah (Lattafa). Rinde hasta 600 atomizaciones en su formato 10 ml.", tag: "Combo", officialPdfMembers: ["khamrah-qahwa", "khamrah-clasico", "khamrah-waha", "khamrah-dukhan"] }),
+  P("combo-vainilla", "", "Vainilla Freak", "unisex", "combo", "Gourmand", "EDP", { 3: 27, 5: 39, 10: 65 }, ["Vainilla", "Gourmand", "Dulce"], M.m2, { desc: "Yara Pink, Yara Candy y Eclaire — 3 fragancias gourmand para amantes de la vainilla. Rinde hasta 450 atomizaciones en su formato 10 ml.", tag: "Combo", officialPdfMembers: ["yara-pink", "yara-candy", "eclaire"] }),
+  P("combo-tulum", "", "Set Tulum", "unisex", "combo", "Fresco", "EDP", { 3: 31, 5: 42, 10: 71 }, ["Fresco", "Cálido", "Veraniego"], M.m6, { desc: "Odyssey Aqua, Hawas Tropical y Supremacy Collection — 3 fragancias frescas con espíritu playero. Rinde hasta 450 atomizaciones en su formato 10 ml.", tag: "Combo", officialPdfMembers: ["odyssey-aqua", "hawas-tropical", "supremacy-colle"] }),
 
   /* ================= PERFUMERÍA DE DISEÑADOR Y NICHO ================= */
   P("212-edt", "Carolina Herrera", "212 EDT", "men", "designer", "Fresco", "EDT", T223048, ["Bergamota", "Flor de naranjo", "Madera"], M.m1),
@@ -471,8 +478,8 @@ window.CRUZIAL_PRODUCTS = [
   P("purple-melancholia", "Valentino", "Purple Melancholia", "unisex", "designer", "Floral", "EDP", T263456, ["Violeta", "Flores", "Ámbar"], M.m5), // brand: CLIENT_CONFIRMED 2026-08-30; type: CLIENT_CONFIRMED 2026-09-06 (designer, no niche)
   P("bir-intense", "Burberry", "Burberry Brit Intense", "men", "designer", "Amaderado", "EDP", T263456, ["Romero", "Cedro", "Ámbar"], M.m6, { bottle: { 100: 720 }, hidden: true }), // hidden: CLIENT_CONFIRMED 2026-09-06 — no lo tienen en inventario
   P("b-man-in-black", "Bvlgari", "Bvlgari Man In Black", "men", "designer", "Amaderado", "EDP", T263456, ["Ron", "Cuero", "Especias"], M.m7, { bottle: { 100: 760 } }),
-  P("sauvage-edt", "Dior", "Sauvage EDT", "men", "designer", "Fresco", "EDT", T223048, ["Bergamota", "Pimienta", "Ámbar"], M.m8, { bestseller: true, bottle: { 100: 650 } }),
-  P("dylan-blue", "Versace", "Dylan Blue", "men", "designer", "Fresco", "EDP", T303869, ["Bergamota", "Agua", "Almizcle"], M.m1, { bottle: { 100: 620 } }),
+  P("sauvage-edt", "Dior", "Sauvage EDT", "men", "designer", "Fresco", "EDT", T303869, ["Bergamota", "Pimienta", "Ámbar"], M.m8, { bestseller: true, bottle: { 100: 650 } }), // price template: CLIENT_CONFIRMED official 2026 PDF (4K-B2A) — was T223048, swapped with dylan-blue by a copy/paste bug
+  P("dylan-blue", "Versace", "Dylan Blue", "men", "designer", "Fresco", "EDP", T223048, ["Bergamota", "Agua", "Almizcle"], M.m1, { bottle: { 100: 620 } }), // price template: CLIENT_CONFIRMED official 2026 PDF (4K-B2A) — was T303869, swapped with sauvage-edt by a copy/paste bug
   P("adg-profondo-edp", "Armani", "Acqua di Gio Profondo EDP", "men", "designer", "Fresco", "EDP", T263456, ["Marino", "Bergamota", "Madera"], M.m2, { bottle: { 100: 700 } }),
   P("1-million-lucky", "Paco Rabanne", "One Million Lucky", "men", "designer", "Gourmand", "EDT", T263456, ["Ciruela", "Avellana", "Ámbar"], M.m3, { bottle: { 100: 780 } }), // name: CLIENT_CONFIRMED 2026-09-07 — "1"→"One" (numeral a palabra); "Lucky" se conserva porque la botella (foto) es inequívocamente esa variante, no la base "1 Million". legacy_id sin cambios.
   P("invictus-elixir", "Paco Rabanne", "Invictus Elixir", "men", "designer", "Fresco", "EDP", T243251, ["Acuático", "Ámbar", "Madera"], M.m1),

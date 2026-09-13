@@ -51,7 +51,7 @@ Product corrections:
 | `red-intensely` | Dumont Paris / Nitro Red Intensely | CLIENT_CONFIRMED + DERIVED_VALIDATED |
 | `reserve-privee` | Givenchy / Gentleman Réserve Privée | CLIENT_CONFIRMED + DERIVED_VALIDATED |
 | `purple-melancholia` | Valentino / designer | CLIENT_CONFIRMED |
-| `bir-intense` | hidden | CLIENT_CONFIRMED |
+| `bir-intense` | no longer hidden — 2026-09-06 no-stock hidden decision superseded by the official 2026 PDF (active/current/priced, page 34); `publication_status` computed via `PRODUCT_LIFECYCLE_OVERRIDES` (4K-B2A), original hidden decision preserved as history at assets/data.js:472 | OFFICIAL_PDF (supersedes prior CLIENT_CONFIRMED) |
 | `cdn-preciux-i` | Club de Nuit Precieux I | DERIVED_VALIDATED |
 | `amber-o-gold-e` | Amber Oud Gold Edition | DERIVED_VALIDATED |
 | `supremacy-noi` | Supremacy Not Only Intense | CLIENT_CONFIRMED |

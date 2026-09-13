@@ -156,7 +156,7 @@ ingestion/categoryId contract mismatch (P2, 0/844 non-QA products
 affected); stale /admin footer copy.
 
 Next gate:
-4K - Parfums commercial-data closure (4K-A3 done, 4K-B1 done, 4K-B2 NOT STARTED)
+4K - Parfums commercial-data closure (4K-A3 done, 4K-B1 done, 4K-B2A done, 4K-B2B NOT STARTED)
 
 ## 4K-A3 — official 2026 PDF reconciliation (read-only)
 
@@ -271,6 +271,88 @@ Next:
 4K-B2 — apply verified PDF commercial truth (populate the overrides above,
 fix the Sauvage/Dylan price swap, add Le Male Le Parfum, unhide BIR Intense,
 archive Invictus Elixir, populate the 3 combos).
+
+## 4K-B2A — apply official PDF Parfums truth (CLOSED)
+
+Populated the 4K-B1 mechanisms from the persisted 4K-A3/4K-A3.1 artifact
+(supabase/staging/pdf-2026-commercial-reconciliation.json). Full-bottle
+prices (24 variants) are explicitly untouched — 4K-B2B, not started.
+
+- `VARIANT_PRICE_OVERRIDES` is now built by one small deterministic
+  function (`officialPdfDecantVariantPriceOverrides`) over
+  `product_reconciliation`'s 95 matched products x 3 sizes = 285 decant
+  rows, not hand-written. Every one gets `price_verification_status:
+  "official_pdf"` at the PDF's own value: 279 rows keep their existing
+  number, 6 rows (Sauvage EDT + Dylan Blue) get the corrected number.
+  `summary.confirmed_price_variants` = 288 (285 + Le Male's 3).
+- assets/data.js:474-475 — the actual copy/paste bug fixed at the source:
+  Sauvage EDT now uses the 30/38/69 template, Dylan Blue the 22/30/48
+  template (both were swapped). Both legacy-catalog-staging.json and the
+  commercial reconciliation artifact were regenerated and are `--check`
+  clean.
+- Le Male Le Parfum added via `SUPPLEMENTAL_PRODUCTS` (slug
+  `le-male-le-parfum`, `legacy_id: null`): 3 decant rows at
+  S/24 · S/32 · S/51, `official_pdf`. Brand/gender/concentration/notes/
+  bestseller/bottle price/media all stay null/UNKNOWN — none of it is
+  evidenced by the persisted PDF reconciliation, so none of it is invented
+  (`publish_eligibility: NOT_READY`, as expected for a supplemental with
+  missing metadata/media).
+- Invictus Elixir — `PRODUCT_LIFECYCLE_OVERRIDES` sets
+  `publication_status: "archived"` (row/history preserved, not deleted).
+  Its existing decant prices are deliberately excluded from
+  `VARIANT_PRICE_OVERRIDES` and stay `legacy` — never reinterpreted as
+  official_pdf, since the PDF is silent on this product.
+- BIR Intense — `PRODUCT_LIFECYCLE_OVERRIDES` sets `publication_status:
+  "draft"` (not `hidden`, not `published`). The 2026-09-06
+  CLIENT_CONFIRMED no-stock hidden decision is superseded, not deleted:
+  assets/data.js:472's `hidden: true` and its inline comment are left
+  untouched as history; only what commercial authority computes changed.
+  Its decant prices (26/34/56) now carry `official_pdf` via the same
+  generic mapping as every other matched product.
+- Discontinued products (Lovely Cherry, Bright Peach, Ultra Male): no
+  mutation needed for the discontinued-but-available semantic (already
+  correct); their decant prices now carry `official_pdf` like everything
+  else in the matched set. Still `DISCONTINUED_AVAILABLE_PRESERVED_INDEPENDENTLY`,
+  never archived/hidden/out_of_stock from this alone.
+- Combos — composition is data the client already had right in
+  assets/data.js (`CRUZIAL_COMBO_CONTENTS` member lists and the 3 combo
+  products' own decant prices already matched the PDF exactly). Added
+  `officialPdfMembers` on each combo product in assets/data.js (data, not
+  logic) so etl-legacy-catalog.mjs's existing combo-blocking branch reports
+  `composition_verification_status: "official_pdf"` /
+  `source_state: "OFFICIAL_PDF_CONFIRMED"` plus the member legacy_ids and
+  decant price array, instead of the generic
+  `CLIENT_PROVIDED_PENDING_RECONFIRMATION` a combo without that field still
+  gets. Combos stay `migration_status: "BLOCKED"` (no combo product row
+  exists yet — readiness is not weakened just to force a publish state).
+- Bottle prices: untouched, still `legacy`, `confirmed_bottle_price_variants`
+  stays 0 (verified in a dedicated test) — explicitly 4K-B2B.
+
+Regenerated artifacts: supabase/staging/legacy-catalog-staging.json (2
+products updated: sauvage-edt, dylan-blue), supabase/staging/commercial-reconciliation.json
+(97 products, 315 variants, 3 blocked, 0 conflicts),
+apps/web/src/fixtures/generated/legacy-catalog.json. All three `--check`
+clean.
+
+Tests: apps/web/src/lib/catalog/commercial-reconciliation.test.ts — 33
+total (was 22), all passing. New "4K-B2A official PDF commercial authority
+applied" describe block asserts each of: an unchanged official-PDF price
+gets `official_pdf` status; Sauvage/Dylan corrections; Le Male's 3 prices
+and un-fabricated fields; Invictus archived-not-deleted with its price
+never reinterpreted; BIR Intense no longer hidden; discontinued products
+stay available; combo composition/price representation; bottle prices
+never promoted; and no duplicate `VARIANT_PRICE_OVERRIDES` keys. The
+generic-mechanism tests above that block were updated so a synthetic
+fixture is isolated from the real (now populated) default overrides.
+
+No DB writes. No Supabase migration applied in this gate (4K-B1's migration
+was already introduced and is unrelated to this gate's data-only changes).
+No publication. `docs/client-decisions.md`'s `bir-intense` row updated to
+reflect the supersession.
+
+Next gate:
+4K-B2B — full-bottle price commercial approval (24 bottle variants;
+explicitly out of scope for 4K-B2A). NOT STARTED.
 
 ## Last known automated gate
 

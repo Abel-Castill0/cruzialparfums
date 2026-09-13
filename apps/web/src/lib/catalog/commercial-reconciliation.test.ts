@@ -6,8 +6,11 @@ import { describe, expect, it } from "vitest";
 import {
   normalizeCategorySlug,
   PRICE_VERIFICATION_STATUSES,
+  PRODUCT_LIFECYCLE_OVERRIDES,
   reconcileCommercialCatalog,
   serializeCommercialReconciliation,
+  SUPPLEMENTAL_PRODUCTS,
+  VARIANT_PRICE_OVERRIDES,
   type LegacyStaging,
   type LegacyStagingEntry,
   type ReconciledProduct,
@@ -72,6 +75,14 @@ function reconcile(
   return reconcileCommercialCatalog({
     staging: { entries, blocked: [], invalid: [], ...staging },
     sourceFingerprints: { fixture: "abc123" },
+    // Isolated from the module's real 4K-B2A default overrides/supplements by
+    // default, so a generic-mechanism test using a synthetic fixture never
+    // silently picks up production overrides (e.g. the real Le Male
+    // supplemental sorting ahead of a "sample-product" fixture). Tests that
+    // want to exercise a specific override pass it explicitly via `overrides`.
+    variantPriceOverrides: [],
+    productLifecycleOverrides: [],
+    supplementalProducts: [],
     ...overrides,
   });
 }
@@ -97,9 +108,12 @@ describe("commercial reconciliation", () => {
     const result = reconcileCommercialCatalog({ staging, documentedBottlePriceCount: 24 });
 
     expect(result.summary).toMatchObject({
-      legacy_products_considered: 99,
-      staged_non_combo_products: 96,
-      variants: 312,
+      // 4K-B2A applies default overrides/supplements: +1 supplemental product
+      // (Le Male Le Parfum) and its 3 decant variants on top of the 96
+      // legacy-staged products / 312 legacy variants.
+      legacy_products_considered: 100,
+      staged_non_combo_products: 97,
+      variants: 315,
       blocked: 3,
       conflicts: 0,
     });
@@ -115,19 +129,20 @@ describe("commercial reconciliation", () => {
     }));
   });
 
-  it("keeps every current legacy price exact, legacy, draft, and not publishable", () => {
+  it("keeps every variant draft, and every bottle price legacy and unconfirmed (4K-B2A Part H)", () => {
     const staging = JSON.parse(readFileSync(
       resolve(repositoryRoot, "supabase/staging/legacy-catalog-staging.json"),
       "utf8",
     )) as LegacyStaging;
     const result = reconcileCommercialCatalog({ staging });
-    const sourcePrices = (staging.entries ?? []).flatMap((entry) => entry.variants.map((variant) => variant.price_amount));
     const targetVariants = result.products.flatMap((product) => product.variants);
+    const bottleVariants = targetVariants.filter((variant) => variant.variant_kind === "bottle");
 
-    expect(targetVariants.map((variant) => variant.price_amount)).toEqual(sourcePrices);
-    expect(targetVariants.every((variant) => variant.price_verification_status === "legacy")).toBe(true);
     expect(targetVariants.every((variant) => variant.publication_status === "draft")).toBe(true);
-    expect(result.summary.confirmed_price_variants).toBe(0);
+    // The official 2026 PDF has no full-bottle prices (4K-A3 bottle_price_authority
+    // finding); bottle rows must never be silently promoted to official_pdf.
+    expect(bottleVariants).toHaveLength(24);
+    expect(bottleVariants.every((variant) => variant.price_verification_status === "legacy")).toBe(true);
     expect(result.summary.legacy_bottle_price_variants).toBe(24);
     expect(result.summary.confirmed_bottle_price_variants).toBe(0);
   });
@@ -148,6 +163,12 @@ describe("commercial reconciliation", () => {
   });
 
   it("maps the client-confirmed hidden state independently from availability", () => {
+    // "bir-intense" is safe here: reconcile()'s helper defaults every override
+    // collection to empty (see its definition above), so this generic-fixture
+    // test never picks up the real PRODUCT_LIFECYCLE_OVERRIDES entry that
+    // legacy_id carries in production (4K-B2A Part E) — that entry is
+    // exercised separately in the "4K-B2A official PDF commercial authority
+    // applied" describe block below, against the real staging artifact.
     const base = fixtureEntry();
     const entry = fixtureEntry({
       legacy_id: "bir-intense",
@@ -245,6 +266,9 @@ describe("commercial reconciliation", () => {
     const result = reconcileCommercialCatalog({
       staging: { entries: [fixtureEntry()], blocked: [], invalid: [] },
       documentedBottlePriceCount: 23,
+      variantPriceOverrides: [],
+      productLifecycleOverrides: [],
+      supplementalProducts: [],
     });
 
     expect(result.conflicts).toContainEqual({
@@ -464,16 +488,139 @@ describe("4K-B1 commercial authority reconciliation infrastructure", () => {
     })).toThrow(/legacy/);
   });
 
-  it("leaves reconciliation output byte-identical when every override collection is empty (backward compatibility)", () => {
+  it("applies no override at all when every override collection is passed explicitly empty (mechanism is inert without input)", () => {
+    // 4K-B2A populated the module's real default exports, so this no longer
+    // compares against the *default* call (see the 4K-B2A describe block
+    // below for what the real, populated defaults do) — it proves the
+    // mechanism itself, not any particular data set, is a no-op when empty.
     const staging: LegacyStaging = { entries: [fixtureEntry()], blocked: [], invalid: [] };
-    const withoutOverrides = serializeCommercialReconciliation(reconcileCommercialCatalog({ staging }));
-    const withEmptyOverrides = serializeCommercialReconciliation(reconcileCommercialCatalog({
+    const result = reconcileCommercialCatalog({
       staging,
       variantPriceOverrides: [],
       productLifecycleOverrides: [],
       supplementalProducts: [],
-    }));
+    });
+    const product = first(result.products);
 
-    expect(withEmptyOverrides).toBe(withoutOverrides);
+    expect(product.target_product.publication_status).toBe("draft");
+    expect(first(product.variants)).toMatchObject({ price_amount: 12, price_verification_status: "legacy" });
+    expect(product.warnings).not.toContain("VARIANT_PRICE_OVERRIDE_APPLIED");
+    expect(product.warnings).not.toContain("CURRENT_AUTHORITY_LIFECYCLE_OVERRIDE_APPLIED");
+  });
+});
+
+describe("4K-B2A official PDF commercial authority applied", () => {
+  const staging = JSON.parse(readFileSync(
+    resolve(repositoryRoot, "supabase/staging/legacy-catalog-staging.json"),
+    "utf8",
+  )) as LegacyStaging;
+  const result = reconcileCommercialCatalog({ staging, documentedBottlePriceCount: 24 });
+  const productById = (identity: string | null) =>
+    result.products.find((product) => (product.legacy_id ?? product.target_product.slug) === identity);
+  const variantByLabel = (product: ReconciledProduct, label: string) =>
+    product.variants.find((variant) => variant.label === label);
+
+  it("gives an unchanged official-PDF decant price official_pdf status without changing its number (1)", () => {
+    // khamrah-clasico is one of the 279 comparable rows where v2_current already equalled official_pdf.
+    const product = productById("khamrah-clasico");
+    if (!product) throw new Error("Expected khamrah-clasico in the reconciled catalog");
+    expect(variantByLabel(product, "3 ml")).toMatchObject({ price_amount: 12, price_verification_status: "official_pdf" });
+  });
+
+  it("corrects Sauvage EDT to the official PDF prices (2)", () => {
+    const product = productById("sauvage-edt");
+    if (!product) throw new Error("Expected sauvage-edt in the reconciled catalog");
+    expect(variantByLabel(product, "3 ml")).toMatchObject({ price_amount: 30, price_verification_status: "official_pdf" });
+    expect(variantByLabel(product, "5 ml")).toMatchObject({ price_amount: 38, price_verification_status: "official_pdf" });
+    expect(variantByLabel(product, "10 ml")).toMatchObject({ price_amount: 69, price_verification_status: "official_pdf" });
+  });
+
+  it("corrects Dylan Blue to the official PDF prices (3)", () => {
+    const product = productById("dylan-blue");
+    if (!product) throw new Error("Expected dylan-blue in the reconciled catalog");
+    expect(variantByLabel(product, "3 ml")).toMatchObject({ price_amount: 22, price_verification_status: "official_pdf" });
+    expect(variantByLabel(product, "5 ml")).toMatchObject({ price_amount: 30, price_verification_status: "official_pdf" });
+    expect(variantByLabel(product, "10 ml")).toMatchObject({ price_amount: 48, price_verification_status: "official_pdf" });
+  });
+
+  it("adds Le Male Le Parfum as a supplemental product with all 3 official_pdf prices (4)", () => {
+    const product = productById("le-male-le-parfum");
+    if (!product) throw new Error("Expected le-male-le-parfum in the reconciled catalog");
+    expect(product.legacy_id).toBeNull();
+    expect(variantByLabel(product, "3 ml")).toMatchObject({ price_amount: 24, price_verification_status: "official_pdf" });
+    expect(variantByLabel(product, "5 ml")).toMatchObject({ price_amount: 32, price_verification_status: "official_pdf" });
+    expect(variantByLabel(product, "10 ml")).toMatchObject({ price_amount: 51, price_verification_status: "official_pdf" });
+    // Not fabricated: no evidence in the persisted PDF reconciliation states a brand.
+    expect(product.target_product.brand).toBeNull();
+  });
+
+  it("archives invictus-elixir instead of deleting it, and does not reinterpret its price as official_pdf (5)", () => {
+    const product = productById("invictus-elixir");
+    if (!product) throw new Error("Expected invictus-elixir to still be present (archived, not deleted)");
+    expect(product.target_product.publication_status).toBe("archived");
+    expect(product.variants.every((variant) => variant.price_verification_status !== "official_pdf")).toBe(true);
+  });
+
+  it("no longer keeps bir-intense hidden solely due to the superseded 2026-09-06 no-stock decision (6)", () => {
+    const product = productById("bir-intense");
+    if (!product) throw new Error("Expected bir-intense in the reconciled catalog");
+    expect(product.target_product.publication_status).not.toBe("hidden");
+    expect(variantByLabel(product, "3 ml")).toMatchObject({ price_amount: 26, price_verification_status: "official_pdf" });
+    expect(variantByLabel(product, "5 ml")).toMatchObject({ price_amount: 34, price_verification_status: "official_pdf" });
+    expect(variantByLabel(product, "10 ml")).toMatchObject({ price_amount: 56, price_verification_status: "official_pdf" });
+  });
+
+  it("keeps manufacturer-discontinued products available/sellable, not archived/hidden/out_of_stock (7)", () => {
+    for (const legacyId of ["lovely-cherry", "bright-peach", "ultra-male"]) {
+      const product = productById(legacyId);
+      if (!product) throw new Error(`Expected ${legacyId} in the reconciled catalog`);
+      expect(product.target_product.production_status).toBe("discontinued");
+      expect(product.target_product.availability_status).toBe("available");
+      expect(product.target_product.publication_status).not.toBe("archived");
+      expect(product.target_product.publication_status).not.toBe("hidden");
+      expect(product.warnings).toContain("DISCONTINUED_AVAILABLE_PRESERVED_INDEPENDENTLY");
+    }
+  });
+
+  it("represents official-PDF-confirmed combo composition and price for all 3 combos (8)", () => {
+    const expected: Record<string, { members: string[]; price: number[] }> = {
+      "combo-cuarteto": { members: ["khamrah-qahwa", "khamrah-clasico", "khamrah-waha", "khamrah-dukhan"], price: [40, 55, 89] },
+      "combo-vainilla": { members: ["yara-pink", "yara-candy", "eclaire"], price: [27, 39, 65] },
+      "combo-tulum": { members: ["odyssey-aqua", "hawas-tropical", "supremacy-colle"], price: [31, 42, 71] },
+    };
+    for (const [legacyId, { members, price }] of Object.entries(expected)) {
+      const blockedCombo = result.blocked.find((item) => item.legacy_id === legacyId) as
+        | { composition_verification_status?: string; composition_legacy_ids?: string[]; decant_price_3_5_10?: number[] }
+        | undefined;
+      if (!blockedCombo) throw new Error(`Expected ${legacyId} in result.blocked`);
+      expect(blockedCombo.composition_verification_status).toBe("official_pdf");
+      expect(blockedCombo.composition_legacy_ids).toEqual(members);
+      expect(blockedCombo.decant_price_3_5_10).toEqual(price);
+    }
+  });
+
+  it("never gives a bottle variant official_pdf authority (9)", () => {
+    const bottleVariants = result.products.flatMap((product) => product.variants).filter((variant) => variant.variant_kind === "bottle");
+    expect(bottleVariants.length).toBeGreaterThan(0);
+    expect(bottleVariants.every((variant) => variant.price_verification_status !== "official_pdf")).toBe(true);
+    expect(bottleVariants.every((variant) => variant.price_verification_status !== "client_confirmed")).toBe(true);
+  });
+
+  it("builds VARIANT_PRICE_OVERRIDES deterministically with no duplicate override keys (10)", () => {
+    const keys = VARIANT_PRICE_OVERRIDES.map((override) => `${override.legacy_id ?? override.slug}:${override.variant_kind}:${override.size_ml}`);
+    expect(new Set(keys).size).toBe(keys.length);
+    expect(VARIANT_PRICE_OVERRIDES).toHaveLength(285);
+    expect(() => reconcileCommercialCatalog({ staging, documentedBottlePriceCount: 24 })).not.toThrow();
+    // Re-running is byte-identical: the mapping is a pure function of the persisted artifact.
+    const again = reconcileCommercialCatalog({ staging, documentedBottlePriceCount: 24 });
+    expect(serializeCommercialReconciliation(again)).toBe(serializeCommercialReconciliation(result));
+  });
+
+  it("declares exactly the two documented lifecycle overrides and one supplemental product", () => {
+    expect(PRODUCT_LIFECYCLE_OVERRIDES.map((override) => override.legacy_id ?? override.slug).sort()).toEqual([
+      "bir-intense",
+      "invictus-elixir",
+    ]);
+    expect(SUPPLEMENTAL_PRODUCTS.map((product) => product.slug)).toEqual(["le-male-le-parfum"]);
   });
 });

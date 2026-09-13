@@ -260,14 +260,32 @@ async function build() {
       continue;
     }
 
-    // Combos carry a composition that is still
-    // CLIENT_PROVIDED_PENDING_RECONFIRMATION, so they are reported rather than
-    // staged: loading them would imply a verified set.
+    // Combos are reported rather than staged as products (loading them would
+    // imply a verified standalone product row, which the current schema does
+    // not model for a multi-member set). Composition/price confirmation is a
+    // separate axis from that staging exclusion: a combo whose product entry
+    // carries `officialPdfMembers` (4K-B2A) has had its member list and price
+    // matched against the official 2026 PDF, so it is reported as
+    // OFFICIAL_PDF_CONFIRMED instead of the still-pending default; a combo
+    // without that field keeps the original pending-reconfirmation state.
     if (product.type === "combo") {
       report.blocked += 1;
+      const confirmedMembers = Array.isArray(product.officialPdfMembers) && product.officialPdfMembers.length > 0
+        ? product.officialPdfMembers
+        : null;
       blocked.push({
         legacy_id: product.id,
-        reason: "combo composition is CLIENT_PROVIDED_PENDING_RECONFIRMATION",
+        reason: confirmedMembers
+          ? "combo composition and price confirmed against the official 2026 PDF; combo product/target-table creation is deferred to a later gate"
+          : "combo composition is CLIENT_PROVIDED_PENDING_RECONFIRMATION",
+        ...(confirmedMembers
+          ? {
+              composition_verification_status: "official_pdf",
+              source_state: "OFFICIAL_PDF_CONFIRMED",
+              composition_legacy_ids: confirmedMembers,
+              decant_price_3_5_10: [product.price?.[3], product.price?.[5], product.price?.[10]],
+            }
+          : {}),
       });
       continue;
     }
