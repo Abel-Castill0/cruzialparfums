@@ -20,12 +20,16 @@ export default defineConfig({
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
   // Only auto-start a local dev server when targeting the local default —
   // hosted/staging runs (E2E_BASE_URL set) never spawn a local server.
-  webServer: isLocalTarget
+  // The property is omitted entirely (not set to undefined) when not needed,
+  // since exactOptionalPropertyTypes forbids an explicit undefined here.
+  ...(isLocalTarget
     ? {
-        command: "npm run dev",
-        url: baseURL,
-        reuseExistingServer: true,
-        timeout: 60_000,
+        webServer: {
+          command: "npm run dev",
+          url: baseURL,
+          reuseExistingServer: true,
+          timeout: 60_000,
+        },
       }
-    : undefined,
+    : {}),
 });

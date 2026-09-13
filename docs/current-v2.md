@@ -360,7 +360,7 @@ pgTAP:
 27 files / 759 assertions PASS
 
 Vitest:
-55 files / 528 tests PASS
+55 files / 549 tests PASS
 
 Lint:
 0 errors / warnings
@@ -370,6 +370,21 @@ strict PASS
 
 Production build:
 PASS
+
+## 4K-B2A.1 — Playwright/Vitest isolation (CLOSED)
+
+Playwright E2E specs (`apps/web/e2e/**`) and Vitest unit tests are now
+isolated: added `apps/web/vitest.config.mts` (default excludes + `e2e/**`).
+`npm run test` runs Vitest only (55 files / 549 tests PASS); `npm run
+test:e2e -- --list` collects the existing 9-test/5-file Playwright suite
+unaffected. Fixed `apps/web/playwright.config.ts` `exactOptionalPropertyTypes`
+typecheck failure by omitting `webServer` via object spread instead of
+assigning it `undefined`.
+
+`npm run check` still aborts at `commercial:check` (stale reconciliation
+artifact) — confirmed pre-existing at HEAD c010631, unrelated to this gate,
+out of scope for 4K-B2A.1. All other gate steps (catalog:check, test:4j4b,
+lint, typecheck, test, build) verified PASS individually.
 
 ## Current evidence gaps
 
