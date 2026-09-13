@@ -156,7 +156,50 @@ ingestion/categoryId contract mismatch (P2, 0/844 non-QA products
 affected); stale /admin footer copy.
 
 Next gate:
-4K - Parfums commercial-data closure (NOT STARTED)
+4K - Parfums commercial-data closure (4K-A3 done, 4K-B NOT STARTED)
+
+## 4K-A3 — official 2026 PDF reconciliation (read-only)
+
+Client instruction 2026-09-13: "Guíate del PDF, ese está actualizado." The
+2026 catalog PDF (docs/client-source/CATALOGO DE DECANTS.pdf, untracked) is
+current commercial authority for Parfums decant prices, combo
+composition/prices and discontinued labeling. It has NO full-bottle prices.
+
+Independently parsed (not copied from an earlier session's claims) and
+reconciled against supabase/staging/legacy-catalog-staging.json. Full
+evidence: supabase/staging/pdf-2026-commercial-reconciliation.json.
+
+- 96 PDF products / 288 decant rows vs 96 V2 staged products: 95 matched,
+  0 ambiguous.
+- PDF-only: Le Male Le Parfum (24/32/51). V2-only: Invictus Elixir.
+- Only 2 of 288 rows actually differ: Sauvage EDT and Dylan Blue have their
+  price-template constants swapped in assets/data.js:474-475 (copy/paste
+  bug, not a real 2026 price change). Official: Sauvage EDT 30/38/69,
+  Dylan Blue 22/30/48.
+- DESCONTINUADO (Lovely Cherry, Bright Peach, Ultra Male) clarified:
+  manufacturer no longer makes it; Cruzial's remaining stock stays
+  sellable. discontinued != archived != out_of_stock != hidden. Already
+  modeled correctly (production_status='discontinued',
+  availability_status='available'); no mutation needed for this fact
+  alone.
+- BIR Intense is active/current/priced (26/34/56) in the PDF. The 2026-09-06
+  CLIENT_CONFIRMED_HIDDEN decision (out-of-stock basis) is superseded by
+  the newer PDF instruction — recorded, not yet flipped in code/data.
+- Combos confirmed by rendering PDF page 5 and reading bottle labels
+  (no member list exists as text): Cuarteto Oriental = Khamrah Qahwa /
+  Clásico / Waha / Dukhan (40/55/89, high confidence); Vainilla Freak =
+  Yara Pink / Yara Candy / Eclaire (27/39/65, medium-high — Yara variants
+  not individually legible); Set Tulum = Odyssey Aqua / Hawas Tropical /
+  Supremacy Collection (31/42/71, high confidence).
+- No DB writes, no publication, no code/data mutation performed by this
+  gate.
+
+Remaining before 4K-B can apply any of this: extend
+scripts/commercial-reconciliation.mjs (no mechanism today to promote a
+variant's price_verification_status, or to emit publication_status
+'archived' for a legacy product); fix the assets/data.js price swap; add
+Le Male Le Parfum; unhide bir-intense; unblock the 3 combo staging
+entries. See the artifact's `remaining_unresolved_before_4k_b`.
 
 ## Last known automated gate
 
