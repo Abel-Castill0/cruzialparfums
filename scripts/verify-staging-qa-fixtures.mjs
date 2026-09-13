@@ -58,3 +58,30 @@ assert.ok(!/\blike\b/i.test(cleanup),"Cleanup must have no wildcard selectors");
 assert.ok(cleanup.includes("md5('4J5F-A/offer/'||q.slug)::uuid"));
 assert.ok(cleanup.includes("p.name=q.name"));
 console.log("PASS: 3 actual Parfums mappings; Next Image data URI; exact cleanup selectors");
+
+// 4J5G-A3: campaign 9002 ([STAGING QA] Open) public QA link, read-only.
+const c9002Sql = `
+select
+ (select count(*) from public.campaign_products cp join public.campaigns c on c.id=cp.campaign_id
+   where c.business_unit_id='22222222-2222-4222-8222-222222222222' and c.number=9002) as c9002_offers,
+ (select p.slug from public.campaign_products cp join public.campaigns c on c.id=cp.campaign_id
+   join public.products p on p.id=cp.product_id
+   where c.business_unit_id='22222222-2222-4222-8222-222222222222' and c.number=9002) as c9002_product_slug,
+ (select count(*) from public.campaign_products where id='a232ab79-7a07-77d0-076d-b9d888cd61e3'
+   and price_amount=0.01 and availability_status='available') as c6_qa_offer_intact;
+`;
+const c9002Args = ["--no-install","supabase","db","query","--linked","--project-ref",ref,c9002Sql.replaceAll("\n"," ").trim()];
+const r9002 = shell
+ ? spawnSync(shell,["-NoProfile","-Command","npx " + c9002Args.map(x=>"'"+x.replaceAll("'","''")+"'").join(" ")],{encoding:"utf8",windowsHide:true})
+ : spawnSync("npx",c9002Args,{encoding:"utf8"});
+assert.equal(r9002.status,0,"Read-only campaign 9002 query failed: " + (r9002.stderr + r9002.stdout).slice(-1600));
+const result9002 = JSON.parse(r9002.stdout.slice(r9002.stdout.indexOf("{")));
+assert.ok(!result9002.error,"Campaign 9002 query returned error");
+const row9002 = result9002.rows[0];
+assert.equal(row9002.c9002_offers, 1, "Campaign 9002 must have exactly one QA public offer");
+assert.equal(row9002.c9002_product_slug, "staging-qa-import-ready");
+assert.equal(row9002.c6_qa_offer_intact, 1, "Campaign #6 QA offer for staging-qa-import-ready must remain intact");
+const link = readFileSync("supabase/provisioning/staging-qa-fixtures-campaign-9002-link.sql","utf8");
+assert.ok(!/\blike\b/i.test(link), "9002 link fixture must have no wildcard selectors");
+assert.ok(cleanup.includes("md5('4J5G-A3/offer/staging-qa-import-ready-9002')::uuid"));
+console.log("PASS: campaign 9002 has exactly one QA offer (staging-qa-import-ready); campaign #6 unchanged");

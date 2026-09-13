@@ -87,16 +87,34 @@ Ran once against hosted staging Preview
 - Parfums public critical journey: PASS (catalog -> add product -> checkout
   reached with populated cart/total; form left unsubmitted to avoid
   persisting an order request)
-- Import public critical journey: PASS, partial by current data state —
-  campaign is open but its catalog currently returns 0 products for the
-  default filters, so the test verifies campaign + empty-catalog surface
-  only (cart/checkout substeps not reachable with current staging data,
-  not a test defect)
 - Logged-out Admin protection (/admin/parfums, /admin/import ->
   /admin/login, no loop, no protected content): PASS
 
 Test count: 5 (4 journeys; admin-protection parametrized over 2 routes) —
 5 passed, 0 failed.
+
+4J5G-A3 - CLOSED (follow-up on Import public journey)
+
+4J5G-A2 diagnosed the empty-catalog state above as a staging fixture gap
+(campaign 9002, "[STAGING QA] Open", had zero campaign_products rows), not
+an application defect. Fixed by extending provisioning with one
+deterministic public QA offer:
+supabase/provisioning/staging-qa-fixtures-campaign-9002-link.sql links the
+existing staging-qa-import-ready product/presentation to campaign 9002
+(idempotent upsert, exact id md5('4J5G-A3/offer/staging-qa-import-ready-9002')).
+Cleanup added to staging-qa-fixtures-cleanup.sql by exact id (no wildcard).
+Verified read-only in scripts/verify-staging-qa-fixtures.mjs: campaign 9002
+has exactly one QA offer, its product is staging-qa-import-ready, and
+campaign #6's own QA offer for the same product is unchanged (900 rows,
+same id/price/availability).
+
+Import public critical journey (apps/web/e2e/import-public-journey.spec.ts)
+re-run against the same hosted Preview now exercises the full branch:
+campaign -> public QA product catalog -> add to cart -> cart populated with
+price -> checkout reached with the same total -> stopped before submit (no
+order persisted, no WhatsApp trigger). Test count: 1, 1 passed, 0 failed
+(no early-return annotation, confirming the deep branch ran, not the
+closed/empty-catalog fallback).
 
 Next gate:
 4J5G-B - authenticated Admin E2E (NOT STARTED)

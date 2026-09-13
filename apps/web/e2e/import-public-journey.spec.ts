@@ -45,10 +45,17 @@ test("import: catalog discovery to checkout boundary, or documented current stat
   await addButton.click();
 
   await page.goto("/import/carrito");
-  await expect(page.getByRole("list", { name: "Productos en el carrito" })).toBeVisible();
+  const cartList = page.getByRole("list", { name: "Productos en el carrito" });
+  await expect(cartList).toBeVisible();
+  // Cart is populated: at least one item row with a price, not just an empty list.
+  await expect(cartList.getByRole("listitem").first()).toBeVisible();
+  await expect(cartList).toContainText(/S\/\s?[\d.,]+/);
 
   await page.getByRole("link", { name: "Continuar al checkout" }).click();
   await expect(page).toHaveURL(/\/import\/checkout/);
-  // Checkout renders its form phase without submitting it.
-  await expect(page.locator("form").first()).toBeVisible();
+  // Checkout renders its form phase, with the same cart total carried over,
+  // without submitting it (submission would persist a real order request).
+  const checkoutForm = page.locator("form").first();
+  await expect(checkoutForm).toBeVisible();
+  await expect(page.getByText(/S\/\s?[\d.,]+/).first()).toBeVisible();
 });

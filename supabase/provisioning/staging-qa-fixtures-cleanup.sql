@@ -2,8 +2,15 @@
 -- Verify linked ref, pass --linked --project-ref iyxidhglyqkzoziyewlc explicitly.
 -- Exact unit + slug + name + brand; never a prefix or campaign-only selector.
 -- #6 and real offers are never deleted. Transaction/FKs reject unexpected references.
+-- 4J5G-A3 addition: removes ONLY the one deterministic campaign-9002 QA link
+-- added by staging-qa-fixtures-campaign-9002-link.sql, by its exact id.
+-- No wildcard/pattern selector. Campaign #6's offer for the same product
+-- is a distinct row (different id) and is untouched by this delete.
 begin;
 set local lock_timeout='5s';
+
+delete from public.campaign_products
+ where id=md5('4J5G-A3/offer/staging-qa-import-ready-9002')::uuid;
 create temp table qa_cleanup_products on commit drop as
 select p.id,p.slug,p.business_unit_id from public.products p join(values
 ('11111111-1111-4111-8111-111111111111','staging-qa-publishable','[STAGING QA] Parfums Mapper Ready'),
