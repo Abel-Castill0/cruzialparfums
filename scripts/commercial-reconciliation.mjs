@@ -101,14 +101,18 @@ function officialPdfDecantVariantPriceOverrides(reconciliation) {
 }
 
 /**
- * 4K-B2B.2A Part H: bottle-only provisional_market overrides, built from the
- * persisted Batch A Peru market-research artifact (supabase/staging/
- * bottle-market-research.json). Only HIGH/MEDIUM-confidence entries with a
- * non-null selected_reference_pen are applied; LOW-confidence/unresolved
- * entries are deliberately skipped so their variant stays at whatever
- * authority it already had (Part E: "LOW remains legacy/unresolved"). This
- * never targets a decant row (variant_kind is always "bottle" here) and never
- * touches the official_pdf 3/5/10 ml overrides above.
+ * 4K-B2B.2A Part H (extended by 4K-B2B.2B Batch B): bottle-only
+ * provisional_market overrides, built from the persisted Peru
+ * market-research artifact (supabase/staging/bottle-market-research.json),
+ * which now holds both Batch A and Batch B entries. Only HIGH/MEDIUM-
+ * confidence entries with a non-null selected_reference_pen are applied;
+ * LOW-confidence/unresolved entries are deliberately skipped so their
+ * variant stays at whatever authority it already had (Part E: "LOW remains
+ * legacy/unresolved"). This never targets a decant row (variant_kind is
+ * always "bottle" here) and never touches the official_pdf 3/5/10 ml
+ * overrides above. Keyed by legacy_id + size_ml, so a legacy_id with two
+ * bottle-price variants (e.g. erba-pura 50 ml / 100 ml) gets one override
+ * per size, never merged.
  */
 function bottleMarketPriceOverrides(research) {
   return research.entries
@@ -121,7 +125,7 @@ function bottleMarketPriceOverrides(research) {
       price_verification_status: "provisional_market",
       evidence: evidence(
         ["MARKET_RESEARCH"],
-        `4K-B2B.2A Batch A Peru market research (supabase/staging/bottle-market-research.json, legacy_id=${entry.legacy_id}): ` +
+        `${entry.gate ?? "4K-B2B.2A"} Batch ${entry.batch ?? "A"} Peru market research (supabase/staging/bottle-market-research.json, legacy_id=${entry.legacy_id}, size_ml=${entry.size_ml}): ` +
         `${entry.confidence} confidence, ${entry.selection_method}, S/ ${entry.selected_reference_pen} from ` +
         `${entry.observations.length} credible Peru observation(s) (S/ ${entry.min_credible_pen}–S/ ${entry.max_credible_pen}). ` +
         "Operator-authorized TEMPORARY market reference only — not official_pdf, not client_confirmed.",

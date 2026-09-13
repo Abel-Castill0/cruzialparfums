@@ -1,10 +1,11 @@
 {
   "schema_version": 1,
-  "purpose": "4K-B2B.2A Peru market price research for Batch A (8 exact bottle presentations named in the gate). Provides evidence for provisional_market VARIANT_PRICE_OVERRIDES entries applied in scripts/commercial-reconciliation.mjs. Does not itself mutate assets/data.js or the official PDF decant prices.",
+  "purpose": "Peru market price research across two batches (4K-B2B.2A Batch A, 4K-B2B.2B Batch B) of exact bottle presentations named in each gate. Provides evidence for provisional_market VARIANT_PRICE_OVERRIDES entries applied in scripts/commercial-reconciliation.mjs. Does not itself mutate assets/data.js or the official PDF decant prices.",
   "gate": "4K-B2B.2A",
+  "gates_applied": ["4K-B2B.2A", "4K-B2B.2B"],
   "research_date": "2026-09-13",
   "authority_note": "provisional_market prices recorded here are operator-authorized TEMPORARY market references only. They are not official_pdf and not client_confirmed. Evidence hierarchy per gate instructions: Tier1 official brand/Peru distributor, Tier2 established Peru department/perfume retailers (Ripley, Falabella, Oechsle, Perfumerias Unidas, PlazaVea), Tier3 established specialist Peru perfume stores, Tier4 Mercado Libre Peru as secondary corroboration only.",
-  "identity_reverification_source": "supabase/staging/bottle-identity-audit.json (4K-B2B.1A) — all 8 targets below were IDENTITY_CONFIRMED / SIZE_CONFIRMED / CONCENTRATION_CONFIRMED at 100 ml prior to price research; no mismatched listings (wrong flanker, wrong concentration, wrong size, sets/bundles, decants, testers) were accepted as observations.",
+  "identity_reverification_source": "supabase/staging/bottle-identity-audit.json (4K-B2B.1A) — all targets below (Batch A and Batch B) were IDENTITY_CONFIRMED / SIZE_CONFIRMED / CONCENTRATION_CONFIRMED prior to price research; no mismatched listings (wrong flanker, wrong concentration, wrong size, sets/bundles, decants, testers) were accepted as observations.",
   "entries": [
     {
       "legacy_id": "1-million-lucky",
@@ -347,6 +348,390 @@
       "confidence": "HIGH",
       "verification_status_target": "provisional_market",
       "reason": "Exact identity/concentration/size; 2 strong Tier2 department-store-direct Peru sources in exact agreement."
+    },
+    {
+      "batch": "B",
+      "gate": "4K-B2B.2B",
+      "legacy_id": "erba-pura",
+      "verified_identity": { "brand": "Xerjoff", "name": "Erba Pura", "concentration": "EDP" },
+      "size_ml": 50,
+      "observations": [
+        {
+          "source_name": "Falabella Perú",
+          "source_url": "https://www.falabella.com.pe/falabella-pe/product/141353794/ERBA-PURA-EAU-DE-PARFUM-50ML/141353795",
+          "observed_price_pen": 719.00,
+          "regular_price_pen": null,
+          "availability": "in_stock",
+          "exact_size_ml": 50,
+          "exact_concentration": "EDP",
+          "seller_type": "tier2_department_store_direct",
+          "observation_date": "2026-09-13",
+          "notes": "Falabella listing for the 50 ml presentation specifically (distinct product id from the 100 ml listing). Search-engine result snippet did not surface a separate struck-through regular price."
+        },
+        {
+          "source_name": "Ripley Perú (marketplace)",
+          "source_url": "https://simple.ripley.com.pe/perfume-xerjoff-erba-pura-edp-unisex-50ml-pmp20000982274",
+          "observed_price_pen": 615.00,
+          "regular_price_pen": 879.00,
+          "availability": "in_stock",
+          "exact_size_ml": 50,
+          "exact_concentration": "EDP",
+          "seller_type": "tier2_marketplace_on_major_department_platform",
+          "observation_date": "2026-09-13",
+          "notes": "S/879 regular anchor with 30% discount to S/615 current."
+        }
+      ],
+      "excluded_observations": [],
+      "min_credible_pen": 615.00,
+      "max_credible_pen": 719.00,
+      "spread_percent": 15.6,
+      "selected_reference_pen": 667,
+      "selection_method": "midpoint_of_2_credible_sources",
+      "confidence": "MEDIUM",
+      "verification_status_target": "provisional_market",
+      "reason": "2 credible Tier2 Peru sources (Falabella direct, Ripley marketplace) for the exact 50 ml presentation, distinct from the 100 ml variant. Reasonable spread (15.6%); capped at MEDIUM because the Falabella observation could not be independently confirmed as a non-promotional current price from the search snippet alone."
+    },
+    {
+      "batch": "B",
+      "gate": "4K-B2B.2B",
+      "legacy_id": "erba-pura",
+      "verified_identity": { "brand": "Xerjoff", "name": "Erba Pura", "concentration": "EDP" },
+      "size_ml": 100,
+      "observations": [
+        {
+          "source_name": "Beauty Pacific Perú",
+          "source_url": "https://www.beautypacific.com/products/erba-pura-edp-100ml-1",
+          "observed_price_pen": 999.00,
+          "regular_price_pen": null,
+          "availability": "in_stock",
+          "exact_size_ml": 100,
+          "exact_concentration": "EDP",
+          "seller_type": "tier3_specialist_perfume_store",
+          "observation_date": "2026-09-13",
+          "notes": "Specialist Peru perfume retailer with identifiable business presence."
+        },
+        {
+          "source_name": "Maison Niche Perú",
+          "source_url": "https://maisonniche.com.pe/products/8033488156329",
+          "observed_price_pen": 999.00,
+          "regular_price_pen": null,
+          "availability": "in_stock",
+          "exact_size_ml": 100,
+          "exact_concentration": "EDP",
+          "seller_type": "tier3_specialist_perfume_store",
+          "observation_date": "2026-09-13",
+          "notes": "Niche-fragrance specialist store; price agrees exactly with Beauty Pacific."
+        },
+        {
+          "source_name": "Ripley Perú (marketplace)",
+          "source_url": "https://simple.ripley.com.pe/xerjoff-erba-pura-eau-de-parfum-100-ml-pmp20001071888",
+          "observed_price_pen": 839.90,
+          "regular_price_pen": 1190.90,
+          "availability": "in_stock",
+          "exact_size_ml": 100,
+          "exact_concentration": "EDP",
+          "seller_type": "tier2_marketplace_on_major_department_platform",
+          "observation_date": "2026-09-13",
+          "notes": "29% discount from S/1,190.90 anchor to S/839.90 current."
+        },
+        {
+          "source_name": "OneMarie",
+          "source_url": "https://onemarie.com/product/PR-45B567E7",
+          "observed_price_pen": 799.00,
+          "regular_price_pen": 999.00,
+          "availability": "in_stock",
+          "exact_size_ml": 100,
+          "exact_concentration": "EDP",
+          "seller_type": "tier3_specialist_perfume_store",
+          "observation_date": "2026-09-13",
+          "notes": "20% discount from S/999 anchor to S/799 current."
+        }
+      ],
+      "excluded_observations": [
+        {
+          "source_name": "Casa Flores",
+          "source_url": "https://casaflores.pe/products/erba-pura-de-xerjoff-100ml",
+          "exclusion_reason": "No-stock ghost price (S/990 listed but out of stock at time of research)."
+        }
+      ],
+      "min_credible_pen": 799.00,
+      "max_credible_pen": 999.00,
+      "spread_percent": 22.2,
+      "selected_reference_pen": 919,
+      "selection_method": "median_of_4_credible_sources",
+      "confidence": "HIGH",
+      "verification_status_target": "provisional_market",
+      "reason": "4 credible independent Peru sources (1 Tier2 marketplace + 3 Tier3 specialists) for the exact 100 ml presentation, two of which agree exactly at S/999; spread (22.2%) is within tolerance. Niche/specialist retail is the normal channel for this brand in Peru (no Tier1 official distributor found), so HIGH reflects strong source count and agreement rather than Tier1 evidence."
+    },
+    {
+      "batch": "B",
+      "gate": "4K-B2B.2B",
+      "legacy_id": "hawas-ice",
+      "verified_identity": { "brand": "Rasasi", "name": "Hawas Ice", "concentration": "EDP" },
+      "size_ml": 100,
+      "observations": [
+        {
+          "source_name": "Falabella Perú (marketplace: Thunder Parfum)",
+          "source_url": "https://www.falabella.com.pe/falabella-pe/product/135477453/rasasi-hawas-ice-eau-de-parfum-para-hombre-100ml/135477454",
+          "observed_price_pen": 199.99,
+          "regular_price_pen": null,
+          "availability": "in_stock",
+          "exact_size_ml": 100,
+          "exact_concentration": "EDP",
+          "seller_type": "tier2_marketplace_on_major_department_platform",
+          "observation_date": "2026-09-13",
+          "notes": null
+        },
+        {
+          "source_name": "Maison Arabia",
+          "source_url": "https://maisonarabia.com.pe/products/rasasi-hawas-ice-100-ml-edp",
+          "observed_price_pen": 249.00,
+          "regular_price_pen": null,
+          "availability": "in_stock",
+          "exact_size_ml": 100,
+          "exact_concentration": "EDP",
+          "seller_type": "tier3_specialist_arabic_perfume_store",
+          "observation_date": "2026-09-13",
+          "notes": null
+        },
+        {
+          "source_name": "Eternal Parfum",
+          "source_url": "https://eternalparfum.com/product/hawas-ice-100ml-edp-rasasi/",
+          "observed_price_pen": 195.00,
+          "regular_price_pen": null,
+          "availability": "in_stock",
+          "exact_size_ml": 100,
+          "exact_concentration": "EDP",
+          "seller_type": "tier3_specialist_perfume_store",
+          "observation_date": "2026-09-13",
+          "notes": null
+        }
+      ],
+      "excluded_observations": [
+        {
+          "source_name": "Uperfect Perú",
+          "source_url": "https://uperfect.pe/products/hawas-ice",
+          "exclusion_reason": "No-stock ghost price (S/165 sale price shown but out of stock at time of research)."
+        },
+        {
+          "source_name": "Vampor Perú",
+          "source_url": "https://vampor.pe/products/rasasi-hawas-ice-eau-de-parfum",
+          "exclusion_reason": "No-stock ghost price (out of stock at time of research)."
+        },
+        {
+          "source_name": "Hourglass Perú",
+          "source_url": "https://hourglassperu.com/producto/hawas-ice-rasasi-edp-100ml",
+          "exclusion_reason": "Outlier — S/299.99 is >40% above the coherent 3-source cluster (S/195–249); excluded as a stale/premium specialist anchor rather than folded into the reference to avoid pulling the median upward on thin evidence."
+        }
+      ],
+      "min_credible_pen": 195.00,
+      "max_credible_pen": 249.00,
+      "spread_percent": 24.3,
+      "selected_reference_pen": 200,
+      "selection_method": "median_of_3_credible_sources",
+      "confidence": "MEDIUM",
+      "verification_status_target": "provisional_market",
+      "reason": "3 credible Peru sources (1 Tier2 marketplace + 2 Tier3 specialists) after excluding two out-of-stock ghost listings and one outlier; spread (24.3%) within tolerance. Capped at MEDIUM (no Tier1/Tier2-direct agreement)."
+    },
+    {
+      "batch": "B",
+      "gate": "4K-B2B.2B",
+      "legacy_id": "khamrah-clasico",
+      "verified_identity": { "brand": "Lattafa", "name": "Khamrah", "concentration": "EDP" },
+      "size_ml": 100,
+      "observations": [],
+      "excluded_observations": [
+        {
+          "source_name": "Ripley Perú — 'PERFUME LATTAFA KHAMRAH HOMBRE EDP 100 ML' (pmp20000415196)",
+          "source_url": "https://simple.ripley.com.pe/perfume-lattafa-khamrah-hombre-edp-100-ml-pmp20000415196",
+          "exclusion_reason": "Correct product/URL for the non-Qahwa/non-Dukhan 'Khamrah Clásico' target, but the search-tool summary returned internally conflicting current-price figures (S/129.90 vs S/124.00) for the same listing without a way to confirm which is the actual current price within this gate's research budget; not counted as a verified observation."
+        },
+        {
+          "source_name": "Falabella Perú — 'Khamrah Eau De Parfum 100 Ml' (20956260 / 126081533)",
+          "source_url": "https://www.falabella.com.pe/falabella-pe/product/20956260/khamrah-eau-de-parfum-100-ml/20956260",
+          "exclusion_reason": "Correct product page for the non-Qahwa/non-Dukhan target, but no price was rendered in the search-tool result; direct re-verification was not achievable within this gate's research budget."
+        },
+        {
+          "source_name": "Falabella Perú — 'Khamrah Dukhan Eau de Parfum 100 ml' / 'Khamrah Qahwa Eau de Parfum 100ml'",
+          "source_url": "https://www.falabella.com.pe/falabella-pe/product/143392306/khamrah-dukhan-eau-de-parfum-100-ml/143392307",
+          "exclusion_reason": "Wrong flanker (Dukhan / Qahwa, not the base 'Clásico' Khamrah) — invalid substitution per Part A / identity guard traps."
+        }
+      ],
+      "min_credible_pen": null,
+      "max_credible_pen": null,
+      "selected_reference_pen": null,
+      "selection_method": "no_credible_source",
+      "confidence": "LOW",
+      "verification_status_target": "legacy",
+      "reason": "No usable verified price observation for the exact base Khamrah ('Clásico') product after rejecting flanker-mismatched (Qahwa/Dukhan) listings and two ambiguous/unconfirmable price readings on otherwise-correct product pages. Left unresolved per Part E/F (LOW remains legacy/unresolved)."
+    },
+    {
+      "batch": "B",
+      "gate": "4K-B2B.2B",
+      "legacy_id": "le-male-elixir",
+      "verified_identity": { "brand": "Jean Paul Gaultier", "name": "Le Male Elixir Parfum", "concentration": "Parfum" },
+      "size_ml": 75,
+      "observations": [
+        {
+          "source_name": "Falabella Perú",
+          "source_url": "https://www.falabella.com.pe/falabella-pe/product/19939520/le-male-elixir-parfum-75ml-jean-paul-gaultier-hombre/19939520",
+          "observed_price_pen": 439.00,
+          "regular_price_pen": null,
+          "availability": "in_stock",
+          "exact_size_ml": 75,
+          "exact_concentration": "Parfum",
+          "seller_type": "tier2_department_store_direct",
+          "observation_date": "2026-09-13",
+          "notes": null
+        },
+        {
+          "source_name": "Ripley Perú (product code 2014318406131p)",
+          "source_url": "https://simple.ripley.com.pe/perfume-jean-paul-gaultier-le-male-elixir-parfum-hombre-75-ml-2014318406131p",
+          "observed_price_pen": 489.00,
+          "regular_price_pen": null,
+          "availability": "in_stock",
+          "exact_size_ml": 75,
+          "exact_concentration": "Parfum",
+          "seller_type": "tier2_department_store_direct",
+          "observation_date": "2026-09-13",
+          "notes": "Product URL/code matches the correct 'PARFUM HOMBRE 75 ML' listing exactly, but the search-tool summary mislabeled it in prose as 'Elixir Absolu ... EDP'; that prose label is not trusted (no 'Le Male Elixir Absolu' product exists per identity audit) and the price is attributed to the URL-verified 75 ml Parfum listing instead."
+        }
+      ],
+      "excluded_observations": [],
+      "min_credible_pen": 439.00,
+      "max_credible_pen": 489.00,
+      "spread_percent": 10.8,
+      "selected_reference_pen": 464,
+      "selection_method": "midpoint_of_2_credible_sources",
+      "confidence": "MEDIUM",
+      "verification_status_target": "provisional_market",
+      "reason": "2 credible Tier2 department-store-direct Peru sources with tight spread (10.8%); only 2 of the preferred 3 sources for this higher-value target were found within budget, and one required a label-vs-URL disambiguation, so capped at MEDIUM."
+    },
+    {
+      "batch": "B",
+      "gate": "4K-B2B.2B",
+      "legacy_id": "liquid-brun",
+      "verified_identity": { "brand": "French Avenue (Fragrance World)", "name": "Liquid Brun", "concentration": "EDP" },
+      "size_ml": 100,
+      "observations": [],
+      "excluded_observations": [
+        {
+          "source_name": "Pulse Peru",
+          "source_url": "https://pulseperu.com/products/liquid-brun-edp-by-french-avenue",
+          "exclusion_reason": "No-stock ghost price (S/260 listed but out of stock at time of research)."
+        },
+        {
+          "source_name": "Ripley Perú (pmp20001178999)",
+          "source_url": "https://simple.ripley.com.pe/french-avenue-liquid-brun-for-men-eau-de-parfum-100-ml-pmp20001178999",
+          "exclusion_reason": "Correct product page but no price was rendered in the search-tool result; direct re-verification not achievable within this gate's research budget."
+        },
+        {
+          "source_name": "Sigma Essence Perú / Lujo Perfume",
+          "source_url": "https://sigmaessenceperu.com/product/liquid-brun-de-french-avenue/",
+          "exclusion_reason": "Only a whole-site price range was returned (e.g. 'S/10–S/169'), not a per-product price; not usable as a verified single-item observation."
+        }
+      ],
+      "min_credible_pen": null,
+      "max_credible_pen": null,
+      "selected_reference_pen": null,
+      "selection_method": "no_credible_source",
+      "confidence": "LOW",
+      "verification_status_target": "legacy",
+      "reason": "No usable verified point-price observation found for the exact target within this gate's research budget after rejecting an out-of-stock ghost listing and a non-specific site-wide price range. Left unresolved per Part E/F (LOW remains legacy/unresolved)."
+    },
+    {
+      "batch": "B",
+      "gate": "4K-B2B.2B",
+      "legacy_id": "sauvage-edt",
+      "verified_identity": { "brand": "Dior", "name": "Sauvage", "concentration": "EDT" },
+      "size_ml": 100,
+      "observations": [
+        {
+          "source_name": "Passim Perú",
+          "source_url": "https://passimperu.com/producto/dior-sauvage-edt-sellado/",
+          "observed_price_pen": 429.00,
+          "regular_price_pen": null,
+          "availability": "in_stock",
+          "exact_size_ml": 100,
+          "exact_concentration": "EDT",
+          "seller_type": "tier3_specialist_perfume_store",
+          "observation_date": "2026-09-13",
+          "notes": "Listing explicit about sealed/original stock ('sellado')."
+        },
+        {
+          "source_name": "RoyalLux Perú",
+          "source_url": "https://royalluxperu.com/product/PR-43D7B366",
+          "observed_price_pen": 399.00,
+          "regular_price_pen": 519.00,
+          "availability": "in_stock",
+          "exact_size_ml": 100,
+          "exact_concentration": "EDT",
+          "seller_type": "tier3_specialist_perfume_store",
+          "observation_date": "2026-09-13",
+          "notes": "S/120 discount from S/519 anchor to S/399 current."
+        }
+      ],
+      "excluded_observations": [
+        {
+          "source_name": "Ripley Perú",
+          "source_url": "https://simple.ripley.com.pe/dior-sauvage-eau-de-toilette-100ml-2014173809610p",
+          "exclusion_reason": "Search-tool summary returned an internally inconsistent/garbled price figure ('S/174.990' with discounts to '139.990'/'124.990') that could not be confirmed as a real current price within this gate's research budget; not counted as a verified observation."
+        },
+        {
+          "source_name": "Falabella Perú",
+          "source_url": "https://www.falabella.com.pe/falabella-pe/product/prod18461263/Dior-Sauvage-Eau-de-Toilette/14728733",
+          "exclusion_reason": "Correct product page but no price was rendered in the search-tool result; direct re-verification not achievable within this gate's research budget."
+        }
+      ],
+      "min_credible_pen": 399.00,
+      "max_credible_pen": 429.00,
+      "spread_percent": 7.2,
+      "selected_reference_pen": 414,
+      "selection_method": "midpoint_of_2_credible_sources",
+      "confidence": "MEDIUM",
+      "verification_status_target": "provisional_market",
+      "reason": "2 credible Tier3 specialist Peru sources with tight spread (7.2%); only 2 of the preferred 3 sources for this higher-value target were confirmed within budget (a Ripley and a Falabella listing existed but neither yielded a trustworthy price figure), and neither confirmed source is Tier1/Tier2-direct, so capped at MEDIUM."
+    },
+    {
+      "batch": "B",
+      "gate": "4K-B2B.2B",
+      "legacy_id": "spicebomb-extreme",
+      "verified_identity": { "brand": "Viktor & Rolf", "name": "Spicebomb Extreme", "concentration": "EDP" },
+      "size_ml": 90,
+      "observations": [
+        {
+          "source_name": "Falabella Perú",
+          "source_url": "https://www.falabella.com.pe/falabella-pe/shop/viktor-and-rolf-spicebomb-extreme",
+          "observed_price_pen": 596.90,
+          "regular_price_pen": 1249.00,
+          "availability": "in_stock",
+          "exact_size_ml": 90,
+          "exact_concentration": "EDP",
+          "seller_type": "tier2_department_store_direct",
+          "observation_date": "2026-09-13",
+          "notes": "52% discount from S/1,249 anchor to S/596.90 current, explicitly 'For Men Eau de Parfum' 90 ml."
+        }
+      ],
+      "excluded_observations": [
+        {
+          "source_name": "Oechsle Perú (1001407792)",
+          "source_url": "https://www.oechsle.pe/viktor-rolf-extreme-edp-90-ml-1001407792/p",
+          "exclusion_reason": "Out of stock at time of research; no price rendered."
+        },
+        {
+          "source_name": "MercadoLibre Perú (MPE19588958, MPE-613429364)",
+          "source_url": "https://www.mercadolibre.com.pe/spicebomb-extreme-edp-90ml-para-hombre/p/MPE19588958",
+          "exclusion_reason": "Tier4 secondary-corroboration only per gate hierarchy (S/444.99–S/489 range observed); not counted toward the required 2-independent-credible-source minimum on its own."
+        }
+      ],
+      "min_credible_pen": 596.90,
+      "max_credible_pen": 596.90,
+      "spread_percent": null,
+      "selected_reference_pen": null,
+      "selection_method": "insufficient_independent_sources",
+      "confidence": "LOW",
+      "verification_status_target": "legacy",
+      "reason": "Only one credible Peru source (Falabella, Tier2 direct) found within this gate's research scope after Oechsle proved out-of-stock and MercadoLibre listings only qualify as Tier4 secondary corroboration, not a counted independent source. The gate's minimum of two independent credible sources was not met; left unresolved per Part E/F (LOW remains legacy/unresolved). MercadoLibre's S/444.99-489 range is directionally consistent with (below) the single Falabella observation, which is noted as corroborating context only, not used in selection."
     }
   ],
   "summary": {
@@ -354,6 +739,20 @@
     "high_confidence": 2,
     "medium_confidence": 4,
     "low_or_unresolved": 2,
-    "provisional_market_candidates": 6
+    "provisional_market_candidates": 6,
+    "batch_b": {
+      "researched": 8,
+      "high_confidence": 1,
+      "medium_confidence": 4,
+      "low_or_unresolved": 3,
+      "provisional_market_candidates": 5
+    },
+    "combined_after_batch_b": {
+      "researched": 16,
+      "high_confidence": 3,
+      "medium_confidence": 8,
+      "low_or_unresolved": 5,
+      "provisional_market_candidates": 11
+    }
   }
 }

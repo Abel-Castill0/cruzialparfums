@@ -49,11 +49,11 @@
     "blocked": 3,
     "excluded": 0,
     "variants": 315,
-    "legacy_price_variants": 21,
+    "legacy_price_variants": 16,
     "confirmed_price_variants": 288,
-    "legacy_bottle_price_variants": 18,
+    "legacy_bottle_price_variants": 13,
     "confirmed_bottle_price_variants": 0,
-    "provisional_market_bottle_price_variants": 6,
+    "provisional_market_bottle_price_variants": 11,
     "commercial_categories": 3,
     "olfactory_categories": 8,
     "category_relationships": 192,
@@ -1636,7 +1636,7 @@
             "provenance": [
               "MARKET_RESEARCH"
             ],
-            "basis": "4K-B2B.2A Batch A Peru market research (supabase/staging/bottle-market-research.json, legacy_id=9pm): MEDIUM confidence, midpoint_of_2_credible_sources, S/ 206 from 2 credible Peru observation(s) (S/ 167–S/ 245.9). Operator-authorized TEMPORARY market reference only — not official_pdf, not client_confirmed."
+            "basis": "4K-B2B.2A Batch A Peru market research (supabase/staging/bottle-market-research.json, legacy_id=9pm, size_ml=100): MEDIUM confidence, midpoint_of_2_credible_sources, S/ 206 from 2 credible Peru observation(s) (S/ 167–S/ 245.9). Operator-authorized TEMPORARY market reference only — not official_pdf, not client_confirmed."
           },
           "publish_eligibility": "NOT_READY",
           "blockers": [
@@ -1714,7 +1714,7 @@
         "PROVISIONAL_MARKET_PRICES_REQUIRE_COMMERCIAL_APPROVAL"
       ],
       "conflicts": [],
-      "source_fingerprint": "90cebb67f9889cbf92f4e164f5c7413cecfce24488c7461dfe7bbcae49f09bfc"
+      "source_fingerprint": "5bac47ea104914ebe83f4762657e606c969a3dd3fddfdc8276e21142f1c78379"
     },
     {
       "legacy_id": "9pm-elixir",
@@ -2732,7 +2732,7 @@
             "provenance": [
               "MARKET_RESEARCH"
             ],
-            "basis": "4K-B2B.2A Batch A Peru market research (supabase/staging/bottle-market-research.json, legacy_id=adg-profondo-edp): MEDIUM confidence, midpoint_of_2_credible_sources, S/ 329 from 2 credible Peru observation(s) (S/ 309–S/ 349). Operator-authorized TEMPORARY market reference only — not official_pdf, not client_confirmed."
+            "basis": "4K-B2B.2A Batch A Peru market research (supabase/staging/bottle-market-research.json, legacy_id=adg-profondo-edp, size_ml=100): MEDIUM confidence, midpoint_of_2_credible_sources, S/ 329 from 2 credible Peru observation(s) (S/ 309–S/ 349). Operator-authorized TEMPORARY market reference only — not official_pdf, not client_confirmed."
           },
           "publish_eligibility": "NOT_READY",
           "blockers": [
@@ -2809,7 +2809,7 @@
         "PROVISIONAL_MARKET_PRICES_REQUIRE_COMMERCIAL_APPROVAL"
       ],
       "conflicts": [],
-      "source_fingerprint": "8c7dc3ee53913cdcd9c6b9463ededc53aeb8687952daf7d311f3376932e15c67"
+      "source_fingerprint": "a17e3b572651d5b7c51bc21ae0df47d70b88a7bd718bd87ee387811bbcecb4e5"
     },
     {
       "legacy_id": "amber-o-gold-e",
@@ -4900,7 +4900,7 @@
             "provenance": [
               "MARKET_RESEARCH"
             ],
-            "basis": "4K-B2B.2A Batch A Peru market research (supabase/staging/bottle-market-research.json, legacy_id=asad-elixir): MEDIUM confidence, midpoint_of_2_credible_sources, S/ 168 from 2 credible Peru observation(s) (S/ 146–S/ 189.9). Operator-authorized TEMPORARY market reference only — not official_pdf, not client_confirmed."
+            "basis": "4K-B2B.2A Batch A Peru market research (supabase/staging/bottle-market-research.json, legacy_id=asad-elixir, size_ml=100): MEDIUM confidence, midpoint_of_2_credible_sources, S/ 168 from 2 credible Peru observation(s) (S/ 146–S/ 189.9). Operator-authorized TEMPORARY market reference only — not official_pdf, not client_confirmed."
           },
           "publish_eligibility": "NOT_READY",
           "blockers": [
@@ -4978,7 +4978,7 @@
         "PROVISIONAL_MARKET_PRICES_REQUIRE_COMMERCIAL_APPROVAL"
       ],
       "conflicts": [],
-      "source_fingerprint": "de40b1ac52e3c2cead7a9ce8980a62dc097fa64725430befdb0a37780db35888"
+      "source_fingerprint": "9064cb6615e43a9f8567c8cb608333abd07b07275c7b3038fe04adcc51199912"
     },
     {
       "legacy_id": "azzaro-tmw-edp",
@@ -5460,7 +5460,7 @@
             "provenance": [
               "MARKET_RESEARCH"
             ],
-            "basis": "4K-B2B.2A Batch A Peru market research (supabase/staging/bottle-market-research.json, legacy_id=b-man-in-black): MEDIUM confidence, midpoint_of_2_credible_sources, S/ 535 from 2 credible Peru observation(s) (S/ 520–S/ 549). Operator-authorized TEMPORARY market reference only — not official_pdf, not client_confirmed."
+            "basis": "4K-B2B.2A Batch A Peru market research (supabase/staging/bottle-market-research.json, legacy_id=b-man-in-black, size_ml=100): MEDIUM confidence, midpoint_of_2_credible_sources, S/ 535 from 2 credible Peru observation(s) (S/ 520–S/ 549). Operator-authorized TEMPORARY market reference only — not official_pdf, not client_confirmed."
           },
           "publish_eligibility": "NOT_READY",
           "blockers": [
@@ -5537,7 +5537,7 @@
         "PROVISIONAL_MARKET_PRICES_REQUIRE_COMMERCIAL_APPROVAL"
       ],
       "conflicts": [],
-      "source_fingerprint": "a98b4a1e31eff79074969c5db5334d054325680482bcaf2c9aa9625f7dd15ee5"
+      "source_fingerprint": "504440d050565f7ac04258e742a627ccec25a8c6d2c7c9edc78f22f378522c9c"
     },
     {
       "legacy_id": "bharara-king",
@@ -7994,7 +7994,7 @@
             "provenance": [
               "MARKET_RESEARCH"
             ],
-            "basis": "4K-B2B.2A Batch A Peru market research (supabase/staging/bottle-market-research.json, legacy_id=dylan-blue): HIGH confidence, median_of_2_credible_sources_exact_agreement, S/ 375 from 2 credible Peru observation(s) (S/ 375.2–S/ 375.2). Operator-authorized TEMPORARY market reference only — not official_pdf, not client_confirmed."
+            "basis": "4K-B2B.2A Batch A Peru market research (supabase/staging/bottle-market-research.json, legacy_id=dylan-blue, size_ml=100): HIGH confidence, median_of_2_credible_sources_exact_agreement, S/ 375 from 2 credible Peru observation(s) (S/ 375.2–S/ 375.2). Operator-authorized TEMPORARY market reference only — not official_pdf, not client_confirmed."
           },
           "publish_eligibility": "NOT_READY",
           "blockers": [
@@ -8071,7 +8071,7 @@
         "PROVISIONAL_MARKET_PRICES_REQUIRE_COMMERCIAL_APPROVAL"
       ],
       "conflicts": [],
-      "source_fingerprint": "9f4fbe6d1597c990cdf98d462efdec191af202db8bfdcf41c3282a9cdf0cddce"
+      "source_fingerprint": "e1583c8585a2bf31766737f026f8e51a6e70bde31812740a48e4b0184a60c444"
     },
     {
       "legacy_id": "eclaire",
@@ -9081,40 +9081,40 @@
           "variant_kind": "bottle",
           "size_ml": 50,
           "label": "Frasco 50 ml",
-          "price_amount": 900,
+          "price_amount": 667,
           "currency": "PEN",
           "publication_status": "draft",
-          "price_verification_status": "legacy",
+          "price_verification_status": "provisional_market",
           "sort_order": 3,
           "price_provenance": {
             "provenance": [
-              "legacy"
+              "MARKET_RESEARCH"
             ],
-            "basis": "Preserved exactly from assets/data.js through the existing legacy ETL"
+            "basis": "4K-B2B.2B Batch B Peru market research (supabase/staging/bottle-market-research.json, legacy_id=erba-pura, size_ml=50): MEDIUM confidence, midpoint_of_2_credible_sources, S/ 667 from 2 credible Peru observation(s) (S/ 615–S/ 719). Operator-authorized TEMPORARY market reference only — not official_pdf, not client_confirmed."
           },
           "publish_eligibility": "NOT_READY",
           "blockers": [
-            "LEGACY_PRICE_NOT_APPROVED_FOR_PUBLICATION"
+            "PROVISIONAL_MARKET_PRICE_REQUIRES_COMMERCIAL_APPROVAL"
           ]
         },
         {
           "variant_kind": "bottle",
           "size_ml": 100,
           "label": "Frasco 100 ml",
-          "price_amount": 1350,
+          "price_amount": 919,
           "currency": "PEN",
           "publication_status": "draft",
-          "price_verification_status": "legacy",
+          "price_verification_status": "provisional_market",
           "sort_order": 4,
           "price_provenance": {
             "provenance": [
-              "legacy"
+              "MARKET_RESEARCH"
             ],
-            "basis": "Preserved exactly from assets/data.js through the existing legacy ETL"
+            "basis": "4K-B2B.2B Batch B Peru market research (supabase/staging/bottle-market-research.json, legacy_id=erba-pura, size_ml=100): HIGH confidence, median_of_4_credible_sources, S/ 919 from 4 credible Peru observation(s) (S/ 799–S/ 999). Operator-authorized TEMPORARY market reference only — not official_pdf, not client_confirmed."
           },
           "publish_eligibility": "NOT_READY",
           "blockers": [
-            "LEGACY_PRICE_NOT_APPROVED_FOR_PUBLICATION"
+            "PROVISIONAL_MARKET_PRICE_REQUIRES_COMMERCIAL_APPROVAL"
           ]
         }
       ],
@@ -9181,13 +9181,14 @@
       },
       "warnings": [
         "LEGACY_BESTSELLER_RETAINED_ONLY_AS_UNVERIFIED_METADATA",
+        "PROVISIONAL_MARKET_PRICE_NOT_CLIENT_CONFIRMED",
         "VARIANT_PRICE_OVERRIDE_APPLIED"
       ],
       "blockers": [
-        "LEGACY_PRICES_REQUIRE_COMMERCIAL_APPROVAL"
+        "PROVISIONAL_MARKET_PRICES_REQUIRE_COMMERCIAL_APPROVAL"
       ],
       "conflicts": [],
-      "source_fingerprint": "992c8aa915405c30f7ba1af942b2b4e1d2f00002f9f607b2d759ff4cb3c41408"
+      "source_fingerprint": "f3f3655691510761b307b8421c591fc86c05d1e502d24e4798dfecc717d02bcc"
     },
     {
       "legacy_id": "eros-edt",
@@ -9401,7 +9402,7 @@
             "provenance": [
               "MARKET_RESEARCH"
             ],
-            "basis": "4K-B2B.2A Batch A Peru market research (supabase/staging/bottle-market-research.json, legacy_id=eros-edt): HIGH confidence, median_of_2_credible_sources_exact_agreement, S/ 375 from 2 credible Peru observation(s) (S/ 375.2–S/ 375.2). Operator-authorized TEMPORARY market reference only — not official_pdf, not client_confirmed."
+            "basis": "4K-B2B.2A Batch A Peru market research (supabase/staging/bottle-market-research.json, legacy_id=eros-edt, size_ml=100): HIGH confidence, median_of_2_credible_sources_exact_agreement, S/ 375 from 2 credible Peru observation(s) (S/ 375.2–S/ 375.2). Operator-authorized TEMPORARY market reference only — not official_pdf, not client_confirmed."
           },
           "publish_eligibility": "NOT_READY",
           "blockers": [
@@ -9479,7 +9480,7 @@
         "PROVISIONAL_MARKET_PRICES_REQUIRE_COMMERCIAL_APPROVAL"
       ],
       "conflicts": [],
-      "source_fingerprint": "79d16451aa35b3f13f7e36b1ef50f9b5c6a7e7f4c320346d72f8c25e2bb62102"
+      "source_fingerprint": "58e13ae954829b925b7abe59ff3fcba8476c106d36b03cee3ba619f02b2582e3"
     },
     {
       "legacy_id": "eros-flame",
@@ -11292,20 +11293,20 @@
           "variant_kind": "bottle",
           "size_ml": 100,
           "label": "Frasco 100 ml",
-          "price_amount": 380,
+          "price_amount": 200,
           "currency": "PEN",
           "publication_status": "draft",
-          "price_verification_status": "legacy",
+          "price_verification_status": "provisional_market",
           "sort_order": 3,
           "price_provenance": {
             "provenance": [
-              "legacy"
+              "MARKET_RESEARCH"
             ],
-            "basis": "Preserved exactly from assets/data.js through the existing legacy ETL"
+            "basis": "4K-B2B.2B Batch B Peru market research (supabase/staging/bottle-market-research.json, legacy_id=hawas-ice, size_ml=100): MEDIUM confidence, median_of_3_credible_sources, S/ 200 from 3 credible Peru observation(s) (S/ 195–S/ 249). Operator-authorized TEMPORARY market reference only — not official_pdf, not client_confirmed."
           },
           "publish_eligibility": "NOT_READY",
           "blockers": [
-            "LEGACY_PRICE_NOT_APPROVED_FOR_PUBLICATION"
+            "PROVISIONAL_MARKET_PRICE_REQUIRES_COMMERCIAL_APPROVAL"
           ]
         }
       ],
@@ -11372,13 +11373,14 @@
       },
       "warnings": [
         "LEGACY_BESTSELLER_RETAINED_ONLY_AS_UNVERIFIED_METADATA",
+        "PROVISIONAL_MARKET_PRICE_NOT_CLIENT_CONFIRMED",
         "VARIANT_PRICE_OVERRIDE_APPLIED"
       ],
       "blockers": [
-        "LEGACY_PRICES_REQUIRE_COMMERCIAL_APPROVAL"
+        "PROVISIONAL_MARKET_PRICES_REQUIRE_COMMERCIAL_APPROVAL"
       ],
       "conflicts": [],
-      "source_fingerprint": "27634f9b5f27df8f84688d93404ab0e49a98f1f9b3e39f638b4e0ba1f4de576b"
+      "source_fingerprint": "f7a83be4e359f6e5e1702c86512b0125070cd610ce86356f66801b253e78913d"
     },
     {
       "legacy_id": "hawas-kobra",
@@ -15121,20 +15123,20 @@
           "variant_kind": "bottle",
           "size_ml": 75,
           "label": "Frasco 75 ml",
-          "price_amount": 600,
+          "price_amount": 464,
           "currency": "PEN",
           "publication_status": "draft",
-          "price_verification_status": "legacy",
+          "price_verification_status": "provisional_market",
           "sort_order": 3,
           "price_provenance": {
             "provenance": [
-              "legacy"
+              "MARKET_RESEARCH"
             ],
-            "basis": "Preserved exactly from assets/data.js through the existing legacy ETL"
+            "basis": "4K-B2B.2B Batch B Peru market research (supabase/staging/bottle-market-research.json, legacy_id=le-male-elixir, size_ml=75): MEDIUM confidence, midpoint_of_2_credible_sources, S/ 464 from 2 credible Peru observation(s) (S/ 439–S/ 489). Operator-authorized TEMPORARY market reference only — not official_pdf, not client_confirmed."
           },
           "publish_eligibility": "NOT_READY",
           "blockers": [
-            "LEGACY_PRICE_NOT_APPROVED_FOR_PUBLICATION"
+            "PROVISIONAL_MARKET_PRICE_REQUIRES_COMMERCIAL_APPROVAL"
           ]
         }
       ],
@@ -15201,13 +15203,14 @@
       },
       "warnings": [
         "LEGACY_BESTSELLER_RETAINED_ONLY_AS_UNVERIFIED_METADATA",
+        "PROVISIONAL_MARKET_PRICE_NOT_CLIENT_CONFIRMED",
         "VARIANT_PRICE_OVERRIDE_APPLIED"
       ],
       "blockers": [
-        "LEGACY_PRICES_REQUIRE_COMMERCIAL_APPROVAL"
+        "PROVISIONAL_MARKET_PRICES_REQUIRE_COMMERCIAL_APPROVAL"
       ],
       "conflicts": [],
-      "source_fingerprint": "75093734e6c7a52421a4476dac1b83d753cbbe89e08abf5261d369e466414587"
+      "source_fingerprint": "bc8b38d77576b50b99960263bfba925d3f08ac80b29201645cf2ccb96d18b031"
     },
     {
       "legacy_id": null,
@@ -22396,20 +22399,20 @@
           "variant_kind": "bottle",
           "size_ml": 100,
           "label": "Frasco 100 ml",
-          "price_amount": 650,
+          "price_amount": 414,
           "currency": "PEN",
           "publication_status": "draft",
-          "price_verification_status": "legacy",
+          "price_verification_status": "provisional_market",
           "sort_order": 3,
           "price_provenance": {
             "provenance": [
-              "legacy"
+              "MARKET_RESEARCH"
             ],
-            "basis": "Preserved exactly from assets/data.js through the existing legacy ETL"
+            "basis": "4K-B2B.2B Batch B Peru market research (supabase/staging/bottle-market-research.json, legacy_id=sauvage-edt, size_ml=100): MEDIUM confidence, midpoint_of_2_credible_sources, S/ 414 from 2 credible Peru observation(s) (S/ 399–S/ 429). Operator-authorized TEMPORARY market reference only — not official_pdf, not client_confirmed."
           },
           "publish_eligibility": "NOT_READY",
           "blockers": [
-            "LEGACY_PRICE_NOT_APPROVED_FOR_PUBLICATION"
+            "PROVISIONAL_MARKET_PRICE_REQUIRES_COMMERCIAL_APPROVAL"
           ]
         }
       ],
@@ -22476,13 +22479,14 @@
       },
       "warnings": [
         "LEGACY_BESTSELLER_RETAINED_ONLY_AS_UNVERIFIED_METADATA",
+        "PROVISIONAL_MARKET_PRICE_NOT_CLIENT_CONFIRMED",
         "VARIANT_PRICE_OVERRIDE_APPLIED"
       ],
       "blockers": [
-        "LEGACY_PRICES_REQUIRE_COMMERCIAL_APPROVAL"
+        "PROVISIONAL_MARKET_PRICES_REQUIRE_COMMERCIAL_APPROVAL"
       ],
       "conflicts": [],
-      "source_fingerprint": "f72c958ab7c01bd3f4200704ca645ebc739ed76ec09b0df60dfaae17b63b6354"
+      "source_fingerprint": "d28eb5ad8351d80e3984af8051fad8eac291c567b3836eb90a3b62f3045e93b3"
     },
     {
       "legacy_id": "sceptre-malachite",

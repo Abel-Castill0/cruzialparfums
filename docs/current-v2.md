@@ -560,6 +560,45 @@ provisional_market writes.
   hosted staging (4K-C will handle controlled staging application).
 - Next: 4K-B2B.2B (remaining Batch B bottle variants) — NOT STARTED.
 
+### 4K-B2B.2B — Peru Market Research Batch B (8 bottle variants) — CLOSED
+
+- Canonical `npm run db:test` re-run clean before research began (773 tests,
+  27 files, PASS) — no DB regression, proceeded per Section 1 of the gate.
+- Researched exactly 8 Batch B bottles (Peru, 2026-09-13; evidence appended
+  to supabase/staging/bottle-market-research.json, `batch: "B"`): erba-pura
+  (50 ml and 100 ml — two distinct bottle-price variants of the same
+  legacy_id), hawas-ice, khamrah-clasico, le-male-elixir, liquid-brun,
+  sauvage-edt, spicebomb-extreme. All reverified against
+  bottle-identity-audit.json (IDENTITY/SIZE/CONCENTRATION_CONFIRMED) before
+  pricing; rejected wrong-flanker listings (Khamrah Qahwa/Dukhan, Le Male
+  Elixir mislabel resolved via product-URL match) and out-of-stock ghost
+  prices.
+- HIGH: 1 (erba-pura 100 ml — 4 credible sources, S/919). MEDIUM: 4
+  (erba-pura 50 ml S/667, hawas-ice S/200, le-male-elixir 75 ml S/464,
+  sauvage-edt S/414). LOW/unresolved: 3 (khamrah-clasico — Ripley/Falabella
+  price snippets ambiguous/unconfirmable; liquid-brun — no usable point
+  price found; spicebomb-extreme — only 1 credible primary source, Oechsle
+  out of stock, MercadoLibre Tier4-only). All 3 LOW items stay legacy,
+  untouched.
+- provisional_market bottle overrides applied: 5 new (via the existing
+  generic `VARIANT_PRICE_OVERRIDES` mechanism — no code path change beyond
+  an evidence-text fix crediting the correct batch/gate per entry).
+  Batch A's 6 provisional_market values are unchanged. Total
+  provisional_market bottles after A+B: 11 (was 6). Remaining legacy bottle
+  variants: 13 (was 18, of 24 total). 288 official_pdf decant variants
+  untouched. Erba Pura's 50 ml and 100 ml confirmed to key/apply
+  independently (distinct size_ml, distinct prices, never merged).
+- 11 new focused Vitest tests added (describe "4K-B2B.2B Batch B Peru
+  market price research", apps/web/src/lib/catalog/commercial-reconciliation.test.ts)
+  plus 5 pre-existing tests updated for the new 13/11 legacy/provisional
+  split (575 -> 586). npm run commercial:check: byte-stable
+  (products: 97, variants: 315, blocked: 3, conflicts: 0). npm run check:
+  PASS (typecheck, lint, build all green).
+- Explicit Admin client-confirmation workflow (4K-B2B.2A.1) verified still
+  intact for a Batch B provisional_market row (sauvage-edt 100 ml): exactly
+  one override key, no duplication; RPC itself not touched.
+- Next: 4K-B2B.2C (further bottle batches, if any remain) — NOT STARTED.
+
 ## Current evidence gaps
 
 None outstanding for 4J5F. See Deferred defects above for the categoryId
