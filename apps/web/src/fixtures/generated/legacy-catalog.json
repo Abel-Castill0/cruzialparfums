@@ -4,7 +4,7 @@
     "purpose": "legacy_visual_parity_only",
     "futureSeedEligible": false,
     "sourcePath": "assets/data.js",
-    "sourceSha256": "c48d3c86a03cf73ff4ea35e24595a69d26e195d8aebaaaa9e0a1a22d0741567f",
+    "sourceSha256": "45e55845203eeeca3cd5a2844cf1a4a1a3909b4934f05ad36f4a00f89a3220f9",
     "verificationStatus": "legacy",
     "counts": {
       "total": 99,
@@ -3019,7 +3019,7 @@
       "gender": "men",
       "type": "arab",
       "family": "Cítrico",
-      "conc": "EDP",
+      "conc": "EDT",
       "price": {
         "3": 12,
         "5": 16,
@@ -3037,7 +3037,7 @@
         "glow": "rgba(224,178,83,.45)"
       },
       "tag": "Árabe",
-      "desc": "Club de Nuit Intense Man — fragancia de la familia cítrico, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+      "desc": "Club de Nuit Intense Man — fragancia de la familia cítrico, concentración EDT. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
       "bottle": {
         "105": 420
       },
@@ -4918,7 +4918,7 @@
       "tag": "Nicho",
       "desc": "Cedrat Boise Intense — fragancia de la familia cítrico, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
       "bottle": {
-        "100": 820
+        "120": 820
       },
       "hidden": false,
       "outOfStock": false,
@@ -4966,7 +4966,7 @@
       "tag": "Nicho",
       "desc": "Mancera Red Tobacco — fragancia de la familia especiado, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
       "bottle": {
-        "100": 850
+        "120": 850
       },
       "hidden": false,
       "outOfStock": false,

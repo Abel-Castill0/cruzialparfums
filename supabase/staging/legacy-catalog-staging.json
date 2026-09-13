@@ -2,7 +2,7 @@
   "metadata": {
     "notice": "STAGING ONLY — not applied to any database, not a cutover",
     "generatedFrom": "assets/data.js",
-    "sourceSha256": "c48d3c86a03cf73ff4ea35e24595a69d26e195d8aebaaaa9e0a1a22d0741567f",
+    "sourceSha256": "45e55845203eeeca3cd5a2844cf1a4a1a3909b4934f05ad36f4a00f89a3220f9",
     "verificationStatus": "legacy",
     "publishEligible": false,
     "stagedProductPublicationStatus": "draft",
@@ -2244,9 +2244,9 @@
         "slug": "cdn-intense-man",
         "name": "Club de Nuit Intense Man",
         "brand": "Armaf",
-        "description": "Club de Nuit Intense Man — fragancia de la familia cítrico, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+        "description": "Club de Nuit Intense Man — fragancia de la familia cítrico, concentración EDT. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
         "gender": "men",
-        "concentration": "EDP",
+        "concentration": "EDT",
         "sales_mode": "always_available",
         "production_status": "active",
         "availability_status": "available",
@@ -2336,7 +2336,7 @@
           "sort_order": 1
         }
       ],
-      "fingerprint": "8bf21ae24f30ffcc57f595f386aa350a9d8431b5182ede221d00e303697ca294"
+      "fingerprint": "312cd522cd122e71d5e8888704bea943196d8ee6158707152c9c8c943f2637a7"
     },
     {
       "legacy_id": "cdn-preciux-i",
@@ -2586,9 +2586,9 @@
           "sort_order": 2
         },
         {
-          "label": "Frasco 100 ml",
+          "label": "Frasco 120 ml",
           "variant_kind": "bottle",
-          "size_ml": 100,
+          "size_ml": 120,
           "price_amount": 820,
           "currency": "PEN",
           "publication_status": "draft",
@@ -2622,7 +2622,7 @@
           "sort_order": 1
         }
       ],
-      "fingerprint": "297af95ee41600f560d20b4c0dcab164019af7d5ed21de501e4d782d4270d09b"
+      "fingerprint": "d5a327f9608b39479f93127b60461e0e60064e4dcf49f79c2a746d1705e4b336"
     },
     {
       "legacy_id": "dylan-blue",
@@ -5431,9 +5431,9 @@
           "sort_order": 2
         },
         {
-          "label": "Frasco 100 ml",
+          "label": "Frasco 120 ml",
           "variant_kind": "bottle",
-          "size_ml": 100,
+          "size_ml": 120,
           "price_amount": 850,
           "currency": "PEN",
           "publication_status": "draft",
@@ -5467,7 +5467,7 @@
           "sort_order": 1
         }
       ],
-      "fingerprint": "c6fe5a57186339a53e057979c8a21ef8973ed6162ff3c933d8b9675cd3d9b700"
+      "fingerprint": "ca77df9a98bf6543591ec87ae3ef58b045d0089ad759ec01fdad8664ff33506b"
     },
     {
       "legacy_id": "m-sky-elixir",

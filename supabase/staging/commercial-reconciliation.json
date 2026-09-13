@@ -5,12 +5,12 @@
     "business_unit_code": "parfums",
     "source_artifact": "supabase/staging/legacy-catalog-staging.json",
     "source_fingerprints": {
-      "assets/data.js": "c48d3c86a03cf73ff4ea35e24595a69d26e195d8aebaaaa9e0a1a22d0741567f",
+      "assets/data.js": "45e55845203eeeca3cd5a2844cf1a4a1a3909b4934f05ad36f4a00f89a3220f9",
       "docs/client-decisions.md": "7d8726b39de8034bf5b9ad71f7eb2d4d6f414094b40df6937cf9ec6afd2d9ae7",
       "supabase/migrations/20260907154348_catalog.sql": "0933444fefb2a3f65d0c54d592f6a06ad078625b30f349d68a9363da4f06683e",
       "supabase/migrations/20260907154401_integrity_hardening.sql": "7bbc09f0180cd016b2e2f9bfe5429fd747c086e70ca0720eece5a9fec121d37e",
       "supabase/migrations/20260908070000_admin_parfums_wholesale.sql": "db4cf7d1503f8c943b99dc5a0246b1edc2a6bc3ae53ab0f62303b282817d575a",
-      "supabase/staging/legacy-catalog-staging.json": "693234c32973ab29ccf320eed6d581a3adb323f4fea1d80979b7245f22a8f6f8"
+      "supabase/staging/legacy-catalog-staging.json": "1aa15e0d7da8b99f2cf3f57540fe8717ccea020d510df6474b059bb3c45699cd"
     },
     "status_vocabulary": {
       "migration_status": [
@@ -49,11 +49,11 @@
     "blocked": 3,
     "excluded": 0,
     "variants": 315,
-    "legacy_price_variants": 16,
+    "legacy_price_variants": 10,
     "confirmed_price_variants": 288,
-    "legacy_bottle_price_variants": 13,
+    "legacy_bottle_price_variants": 7,
     "confirmed_bottle_price_variants": 0,
-    "provisional_market_bottle_price_variants": 11,
+    "provisional_market_bottle_price_variants": 17,
     "commercial_categories": 3,
     "olfactory_categories": 8,
     "category_relationships": 192,
@@ -6674,9 +6674,9 @@
         "name": "Club de Nuit Intense Man",
         "brand": "Armaf",
         "short_description": null,
-        "description": "Club de Nuit Intense Man — fragancia de la familia cítrico, concentración EDP. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
+        "description": "Club de Nuit Intense Man — fragancia de la familia cítrico, concentración EDT. Decant 100% original, preparado con material limpio y empaquetado con protección para garantizar el bienestar del contenido.",
         "gender": "men",
-        "concentration": "EDP",
+        "concentration": "EDT",
         "sales_mode": "always_available",
         "production_status": "active",
         "availability_status": "available",
@@ -6867,20 +6867,20 @@
           "variant_kind": "bottle",
           "size_ml": 105,
           "label": "Frasco 105 ml",
-          "price_amount": 420,
+          "price_amount": 207,
           "currency": "PEN",
           "publication_status": "draft",
-          "price_verification_status": "legacy",
+          "price_verification_status": "provisional_market",
           "sort_order": 3,
           "price_provenance": {
             "provenance": [
-              "legacy"
+              "MARKET_RESEARCH"
             ],
-            "basis": "Preserved exactly from assets/data.js through the existing legacy ETL"
+            "basis": "4K-B2B.2C Batch C Peru market research (supabase/staging/bottle-market-research.json, legacy_id=cdn-intense-man, size_ml=105): MEDIUM confidence, midpoint_of_2_credible_sources, S/ 207 from 2 credible Peru observation(s) (S/ 197.1–S/ 216.9). Operator-authorized TEMPORARY market reference only — not official_pdf, not client_confirmed."
           },
           "publish_eligibility": "NOT_READY",
           "blockers": [
-            "LEGACY_PRICE_NOT_APPROVED_FOR_PUBLICATION"
+            "PROVISIONAL_MARKET_PRICE_REQUIRES_COMMERCIAL_APPROVAL"
           ]
         }
       ],
@@ -6947,13 +6947,14 @@
       },
       "warnings": [
         "LEGACY_BESTSELLER_RETAINED_ONLY_AS_UNVERIFIED_METADATA",
+        "PROVISIONAL_MARKET_PRICE_NOT_CLIENT_CONFIRMED",
         "VARIANT_PRICE_OVERRIDE_APPLIED"
       ],
       "blockers": [
-        "LEGACY_PRICES_REQUIRE_COMMERCIAL_APPROVAL"
+        "PROVISIONAL_MARKET_PRICES_REQUIRE_COMMERCIAL_APPROVAL"
       ],
       "conflicts": [],
-      "source_fingerprint": "e9dcce36847b4b408b5e3081b253b52f5cd023ba9d6c42923b029afd70bd97ac"
+      "source_fingerprint": "78573bed84f847e600fa500d591cc62dd69c795b4380e959f25d5e857980d90a"
     },
     {
       "legacy_id": "cdn-preciux-i",
@@ -7693,22 +7694,22 @@
         },
         {
           "variant_kind": "bottle",
-          "size_ml": 100,
-          "label": "Frasco 100 ml",
-          "price_amount": 820,
+          "size_ml": 120,
+          "label": "Frasco 120 ml",
+          "price_amount": 614,
           "currency": "PEN",
           "publication_status": "draft",
-          "price_verification_status": "legacy",
+          "price_verification_status": "provisional_market",
           "sort_order": 3,
           "price_provenance": {
             "provenance": [
-              "legacy"
+              "MARKET_RESEARCH"
             ],
-            "basis": "Preserved exactly from assets/data.js through the existing legacy ETL"
+            "basis": "4K-B2B.2C Batch C Peru market research (supabase/staging/bottle-market-research.json, legacy_id=cedrat-boise-int, size_ml=120): MEDIUM confidence, midpoint_of_2_credible_sources, S/ 614 from 2 credible Peru observation(s) (S/ 599–S/ 629). Operator-authorized TEMPORARY market reference only — not official_pdf, not client_confirmed."
           },
           "publish_eligibility": "NOT_READY",
           "blockers": [
-            "LEGACY_PRICE_NOT_APPROVED_FOR_PUBLICATION"
+            "PROVISIONAL_MARKET_PRICE_REQUIRES_COMMERCIAL_APPROVAL"
           ]
         }
       ],
@@ -7774,13 +7775,14 @@
         "write_status": "DEFERRED_TO_4F2B"
       },
       "warnings": [
+        "PROVISIONAL_MARKET_PRICE_NOT_CLIENT_CONFIRMED",
         "VARIANT_PRICE_OVERRIDE_APPLIED"
       ],
       "blockers": [
-        "LEGACY_PRICES_REQUIRE_COMMERCIAL_APPROVAL"
+        "PROVISIONAL_MARKET_PRICES_REQUIRE_COMMERCIAL_APPROVAL"
       ],
       "conflicts": [],
-      "source_fingerprint": "fb916e22420f38c1a9bc7809addf75cda6fb92c996545ea7a36f186d07c3d531"
+      "source_fingerprint": "fd0f49b462607465c764b8a2fdaa80214f7b2e4e4e39f596fa53aae5dc424bd1"
     },
     {
       "legacy_id": "dylan-blue",
@@ -16203,22 +16205,22 @@
         },
         {
           "variant_kind": "bottle",
-          "size_ml": 100,
-          "label": "Frasco 100 ml",
-          "price_amount": 850,
+          "size_ml": 120,
+          "label": "Frasco 120 ml",
+          "price_amount": 609,
           "currency": "PEN",
           "publication_status": "draft",
-          "price_verification_status": "legacy",
+          "price_verification_status": "provisional_market",
           "sort_order": 3,
           "price_provenance": {
             "provenance": [
-              "legacy"
+              "MARKET_RESEARCH"
             ],
-            "basis": "Preserved exactly from assets/data.js through the existing legacy ETL"
+            "basis": "4K-B2B.2C Batch C Peru market research (supabase/staging/bottle-market-research.json, legacy_id=m-red-tobacco, size_ml=120): MEDIUM confidence, midpoint_of_2_credible_sources, S/ 609 from 2 credible Peru observation(s) (S/ 589–S/ 629). Operator-authorized TEMPORARY market reference only — not official_pdf, not client_confirmed."
           },
           "publish_eligibility": "NOT_READY",
           "blockers": [
-            "LEGACY_PRICE_NOT_APPROVED_FOR_PUBLICATION"
+            "PROVISIONAL_MARKET_PRICE_REQUIRES_COMMERCIAL_APPROVAL"
           ]
         }
       ],
@@ -16284,13 +16286,14 @@
         "write_status": "DEFERRED_TO_4F2B"
       },
       "warnings": [
+        "PROVISIONAL_MARKET_PRICE_NOT_CLIENT_CONFIRMED",
         "VARIANT_PRICE_OVERRIDE_APPLIED"
       ],
       "blockers": [
-        "LEGACY_PRICES_REQUIRE_COMMERCIAL_APPROVAL"
+        "PROVISIONAL_MARKET_PRICES_REQUIRE_COMMERCIAL_APPROVAL"
       ],
       "conflicts": [],
-      "source_fingerprint": "68f14ca7850d4f163449a4ff95a68a094d3c792d044b51bd401388a5b7928d33"
+      "source_fingerprint": "aaa58fb4e3ca520adadedb48ab68b55f4d027d6c990dc42f19e90b14d66aa1f2"
     },
     {
       "legacy_id": "m-sky-elixir",
@@ -22960,20 +22963,20 @@
           "variant_kind": "bottle",
           "size_ml": 90,
           "label": "Frasco 90 ml",
-          "price_amount": 680,
+          "price_amount": 598,
           "currency": "PEN",
           "publication_status": "draft",
-          "price_verification_status": "legacy",
+          "price_verification_status": "provisional_market",
           "sort_order": 3,
           "price_provenance": {
             "provenance": [
-              "legacy"
+              "MARKET_RESEARCH"
             ],
-            "basis": "Preserved exactly from assets/data.js through the existing legacy ETL"
+            "basis": "4K-B2B.2B Batch B Peru market research (supabase/staging/bottle-market-research.json, legacy_id=spicebomb-extreme, size_ml=90): MEDIUM confidence, midpoint_of_2_credible_sources, S/ 598 from 2 credible Peru observation(s) (S/ 596.9–S/ 599). Operator-authorized TEMPORARY market reference only — not official_pdf, not client_confirmed."
           },
           "publish_eligibility": "NOT_READY",
           "blockers": [
-            "LEGACY_PRICE_NOT_APPROVED_FOR_PUBLICATION"
+            "PROVISIONAL_MARKET_PRICE_REQUIRES_COMMERCIAL_APPROVAL"
           ]
         }
       ],
@@ -23039,13 +23042,14 @@
         "write_status": "DEFERRED_TO_4F2B"
       },
       "warnings": [
+        "PROVISIONAL_MARKET_PRICE_NOT_CLIENT_CONFIRMED",
         "VARIANT_PRICE_OVERRIDE_APPLIED"
       ],
       "blockers": [
-        "LEGACY_PRICES_REQUIRE_COMMERCIAL_APPROVAL"
+        "PROVISIONAL_MARKET_PRICES_REQUIRE_COMMERCIAL_APPROVAL"
       ],
       "conflicts": [],
-      "source_fingerprint": "9ada426f948e16c7c37e9d61575c2adb480fd5ac1b753fa17767fa23388c33de"
+      "source_fingerprint": "0eb673ff6fc9ecb746ca80663f862e0df7eb69fe5280c1bf320891709ce5c7f2"
     },
     {
       "legacy_id": "sublime",
@@ -24591,20 +24595,20 @@
           "variant_kind": "bottle",
           "size_ml": 100,
           "label": "Frasco 100 ml",
-          "price_amount": 700,
+          "price_amount": 407,
           "currency": "PEN",
           "publication_status": "draft",
-          "price_verification_status": "legacy",
+          "price_verification_status": "provisional_market",
           "sort_order": 3,
           "price_provenance": {
             "provenance": [
-              "legacy"
+              "MARKET_RESEARCH"
             ],
-            "basis": "Preserved exactly from assets/data.js through the existing legacy ETL"
+            "basis": "4K-B2B.2C Batch C Peru market research (supabase/staging/bottle-market-research.json, legacy_id=tmw-parfum, size_ml=100): HIGH confidence, median_of_3_credible_sources_exact_agreement, S/ 407 from 3 credible Peru observation(s) (S/ 407.2–S/ 407.2). Operator-authorized TEMPORARY market reference only — not official_pdf, not client_confirmed."
           },
           "publish_eligibility": "NOT_READY",
           "blockers": [
-            "LEGACY_PRICE_NOT_APPROVED_FOR_PUBLICATION"
+            "PROVISIONAL_MARKET_PRICE_REQUIRES_COMMERCIAL_APPROVAL"
           ]
         }
       ],
@@ -24670,13 +24674,14 @@
         "write_status": "DEFERRED_TO_4F2B"
       },
       "warnings": [
+        "PROVISIONAL_MARKET_PRICE_NOT_CLIENT_CONFIRMED",
         "VARIANT_PRICE_OVERRIDE_APPLIED"
       ],
       "blockers": [
-        "LEGACY_PRICES_REQUIRE_COMMERCIAL_APPROVAL"
+        "PROVISIONAL_MARKET_PRICES_REQUIRE_COMMERCIAL_APPROVAL"
       ],
       "conflicts": [],
-      "source_fingerprint": "8b43eac652b044e598c543ec72c9ea1e8319b27b8ea9307f1a1954950b09eaeb"
+      "source_fingerprint": "a19807f047d02d3b7929025bc37e9a259a037389eeae67bc8b2cec2d3823c0ca"
     },
     {
       "legacy_id": "ultra-male",
@@ -24881,20 +24886,20 @@
           "variant_kind": "bottle",
           "size_ml": 125,
           "label": "Frasco 125 ml",
-          "price_amount": 650,
+          "price_amount": 509,
           "currency": "PEN",
           "publication_status": "draft",
-          "price_verification_status": "legacy",
+          "price_verification_status": "provisional_market",
           "sort_order": 3,
           "price_provenance": {
             "provenance": [
-              "legacy"
+              "MARKET_RESEARCH"
             ],
-            "basis": "Preserved exactly from assets/data.js through the existing legacy ETL"
+            "basis": "4K-B2B.2C Batch C Peru market research (supabase/staging/bottle-market-research.json, legacy_id=ultra-male, size_ml=125): MEDIUM confidence, median_of_2_credible_sources_exact_agreement, S/ 509 from 2 credible Peru observation(s) (S/ 509–S/ 509). Operator-authorized TEMPORARY market reference only — not official_pdf, not client_confirmed."
           },
           "publish_eligibility": "NOT_READY",
           "blockers": [
-            "LEGACY_PRICE_NOT_APPROVED_FOR_PUBLICATION"
+            "PROVISIONAL_MARKET_PRICE_REQUIRES_COMMERCIAL_APPROVAL"
           ]
         }
       ],
@@ -24961,13 +24966,14 @@
       },
       "warnings": [
         "DISCONTINUED_AVAILABLE_PRESERVED_INDEPENDENTLY",
+        "PROVISIONAL_MARKET_PRICE_NOT_CLIENT_CONFIRMED",
         "VARIANT_PRICE_OVERRIDE_APPLIED"
       ],
       "blockers": [
-        "LEGACY_PRICES_REQUIRE_COMMERCIAL_APPROVAL"
+        "PROVISIONAL_MARKET_PRICES_REQUIRE_COMMERCIAL_APPROVAL"
       ],
       "conflicts": [],
-      "source_fingerprint": "162263ef5391fd2b44f9231a2cedf69239fc819463f4b1740e075b9cc51f436d"
+      "source_fingerprint": "983c46bd4f1ae018070871bd5244aa60c73c34336a14c2426fee74470aa5aa40"
     },
     {
       "legacy_id": "victory-elixir",

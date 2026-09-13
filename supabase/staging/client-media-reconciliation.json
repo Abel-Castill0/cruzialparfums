@@ -8,7 +8,7 @@
     "migration_blocked_until": "Commercial Data Reconciliation legacy -> Supabase provides stable product IDs"
   },
   "source_fingerprints": {
-    "legacy_catalog_sha256": "f2cc900aa8851474b3e6d3e799deeac2103ed77da7f1e66034c1f05a9624021a",
+    "legacy_catalog_sha256": "45e55845203eeeca3cd5a2844cf1a4a1a3909b4934f05ad36f4a00f89a3220f9",
     "client_filename_inventory_sha256": "8b7a22f132f0b592bfc08627101a0a6aa4e476da17c1a94546f5c6854bac0bbc"
   },
   "records": [

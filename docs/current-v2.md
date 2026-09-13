@@ -599,6 +599,60 @@ provisional_market writes.
   one override key, no duplication; RPC itself not touched.
 - Next: 4K-B2B.2C (further bottle batches, if any remain) — NOT STARTED.
 
+### 4K-B2B.2C — Peru Market Research Batch C / Final Resolvable Bottle Batch — CLOSED
+
+- Canonical `npm run db:test` re-run clean before research began (773 tests,
+  27 files, PASS) — no DB regression, proceeded per Section 1 of the gate.
+- Pre-research metadata corrections (assets/data.js, recorded in
+  bottle-identity-audit.json `source_corrections_applied_in_4K_B2B_2C`):
+  cdn-intense-man concentration EDP -> EDT (armaf.com: the 105 ml bottle is
+  EDT, EDP variant is 200 ml); cedrat-boise-int and m-red-tobacco bottle-size
+  key 100 -> 120 ml (client photo legibly reads 120 ML for both; no
+  historical/order dependency found on the 100 ml key in local DB). The
+  pre-existing 820/850 PEN legacy numbers stayed attached to the corrected
+  keys as inert history only — never reinterpreted as verified 120 ml
+  prices.
+- Researched exactly 8 Batch C targets (Peru, 2026-09-13; evidence appended
+  to supabase/staging/bottle-market-research.json, `batch: "C"`, 5 new
+  entries): cdn-intense-man, cedrat-boise-int, m-red-tobacco, tmw-parfum,
+  ultra-male, plus 3 prior-LOW upgrade attempts (in place, prior evidence
+  preserved): 1-million-lucky, by-the-fireplace, spicebomb-extreme. Rejected
+  wrong-flanker listings (plain Cedrat Boise instead of Intense, mismatched
+  concentration/out-of-stock/internally-inconsistent Ripley Spicebomb
+  Extreme listing) and confirmed "Le Male Ultra" is JPG's current retail
+  name for the Ultra Male line, not the base Le Male (not an identity trap).
+- HIGH: 1 (tmw-parfum — 3 sources in exact agreement, S/407). MEDIUM: 5
+  (cdn-intense-man S/207, cedrat-boise-int S/614, m-red-tobacco S/609,
+  ultra-male S/509, spicebomb-extreme S/598). LOW/unresolved: 2
+  (1-million-lucky — re-search found no qualifying second Peru source;
+  by-the-fireplace — re-search found no Peru retailer carrying the exact
+  EDT/100ml REPLICA target). Both stay legacy, untouched.
+- Prior LOW upgrade: spicebomb-extreme LOW -> MEDIUM (new Oechsle
+  marketplace observation, S/599, in near-exact agreement with the existing
+  Falabella observation, S/596.90); prior LOW evidence preserved in the
+  artifact (`prior_confidence: "LOW"`). 1-million-lucky and by-the-fireplace
+  remain LOW; their prior evidence and this gate's additional search
+  attempts are both recorded, no forced override.
+- provisional_market bottle overrides applied: 6 new (5 new Batch C targets
+  + the spicebomb-extreme upgrade), via the existing generic
+  `VARIANT_PRICE_OVERRIDES` mechanism — no code path change. Batch A+B's 11
+  provisional_market values are unchanged. Total provisional_market bottles
+  after A+B+C: 17 (was 11). Remaining legacy bottle variants: 7 (was 13, of
+  24 total). 288 official_pdf decant variants untouched.
+- 14 new focused Vitest tests added (describe "4K-B2B.2C Batch C Peru
+  market price research", apps/web/src/lib/catalog/commercial-reconciliation.test.ts)
+  plus pre-existing tests updated for the new 7/17 legacy/provisional split
+  and for cdn-intense-man's now-applied EDT correction. npm run
+  commercial:check: byte-stable (products: 97, variants: 315, blocked: 3,
+  conflicts: 0). npm run check: PASS (typecheck, lint, build all green).
+- Explicit Admin client-confirmation workflow (4K-B2B.2A.1) verified still
+  intact for a Batch C provisional_market row (tmw-parfum 100 ml): exactly
+  one override key, no duplication; RPC itself not touched.
+- Unresolved special cases carried forward unchanged: le-beau-le-parfum
+  (TARGET_SIZE_UNRESOLVED), bir-intense and victory-elixir (concentration
+  still unresolved) — none were in this gate's Batch-C target list.
+- Next: 4K-B2B.3 — NOT STARTED.
+
 ## Current evidence gaps
 
 None outstanding for 4J5F. See Deferred defects above for the categoryId
