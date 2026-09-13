@@ -6,7 +6,7 @@
     "source_artifact": "supabase/staging/legacy-catalog-staging.json",
     "source_fingerprints": {
       "assets/data.js": "c48d3c86a03cf73ff4ea35e24595a69d26e195d8aebaaaa9e0a1a22d0741567f",
-      "docs/client-decisions.md": "136ac8cd6c77537483aac7a9be81850715982663eada681335489835fcb22848",
+      "docs/client-decisions.md": "7d8726b39de8034bf5b9ad71f7eb2d4d6f414094b40df6937cf9ec6afd2d9ae7",
       "supabase/migrations/20260907154348_catalog.sql": "0933444fefb2a3f65d0c54d592f6a06ad078625b30f349d68a9363da4f06683e",
       "supabase/migrations/20260907154401_integrity_hardening.sql": "7bbc09f0180cd016b2e2f9bfe5429fd747c086e70ca0720eece5a9fec121d37e",
       "supabase/migrations/20260908070000_admin_parfums_wholesale.sql": "db4cf7d1503f8c943b99dc5a0246b1edc2a6bc3ae53ab0f62303b282817d575a",
@@ -29,6 +29,7 @@
         "CLIENT_CONFIRMED",
         "DERIVED_VALIDATED",
         "MARKETING_COPY",
+        "MARKET_RESEARCH",
         "UNKNOWN",
         "legacy"
       ]
@@ -48,10 +49,11 @@
     "blocked": 3,
     "excluded": 0,
     "variants": 315,
-    "legacy_price_variants": 27,
+    "legacy_price_variants": 21,
     "confirmed_price_variants": 288,
-    "legacy_bottle_price_variants": 24,
+    "legacy_bottle_price_variants": 18,
     "confirmed_bottle_price_variants": 0,
+    "provisional_market_bottle_price_variants": 6,
     "commercial_categories": 3,
     "olfactory_categories": 8,
     "category_relationships": 192,
@@ -1625,20 +1627,20 @@
           "variant_kind": "bottle",
           "size_ml": 100,
           "label": "Frasco 100 ml",
-          "price_amount": 350,
+          "price_amount": 206,
           "currency": "PEN",
           "publication_status": "draft",
-          "price_verification_status": "legacy",
+          "price_verification_status": "provisional_market",
           "sort_order": 3,
           "price_provenance": {
             "provenance": [
-              "legacy"
+              "MARKET_RESEARCH"
             ],
-            "basis": "Preserved exactly from assets/data.js through the existing legacy ETL"
+            "basis": "4K-B2B.2A Batch A Peru market research (supabase/staging/bottle-market-research.json, legacy_id=9pm): MEDIUM confidence, midpoint_of_2_credible_sources, S/ 206 from 2 credible Peru observation(s) (S/ 167–S/ 245.9). Operator-authorized TEMPORARY market reference only — not official_pdf, not client_confirmed."
           },
           "publish_eligibility": "NOT_READY",
           "blockers": [
-            "LEGACY_PRICE_NOT_APPROVED_FOR_PUBLICATION"
+            "PROVISIONAL_MARKET_PRICE_REQUIRES_COMMERCIAL_APPROVAL"
           ]
         }
       ],
@@ -1705,13 +1707,14 @@
       },
       "warnings": [
         "LEGACY_BESTSELLER_RETAINED_ONLY_AS_UNVERIFIED_METADATA",
+        "PROVISIONAL_MARKET_PRICE_NOT_CLIENT_CONFIRMED",
         "VARIANT_PRICE_OVERRIDE_APPLIED"
       ],
       "blockers": [
-        "LEGACY_PRICES_REQUIRE_COMMERCIAL_APPROVAL"
+        "PROVISIONAL_MARKET_PRICES_REQUIRE_COMMERCIAL_APPROVAL"
       ],
       "conflicts": [],
-      "source_fingerprint": "c6b1a4612932ed9e00682672f5860d9d298d4e124763d660a62ddb8170573e40"
+      "source_fingerprint": "90cebb67f9889cbf92f4e164f5c7413cecfce24488c7461dfe7bbcae49f09bfc"
     },
     {
       "legacy_id": "9pm-elixir",
@@ -2720,20 +2723,20 @@
           "variant_kind": "bottle",
           "size_ml": 100,
           "label": "Frasco 100 ml",
-          "price_amount": 700,
+          "price_amount": 329,
           "currency": "PEN",
           "publication_status": "draft",
-          "price_verification_status": "legacy",
+          "price_verification_status": "provisional_market",
           "sort_order": 3,
           "price_provenance": {
             "provenance": [
-              "legacy"
+              "MARKET_RESEARCH"
             ],
-            "basis": "Preserved exactly from assets/data.js through the existing legacy ETL"
+            "basis": "4K-B2B.2A Batch A Peru market research (supabase/staging/bottle-market-research.json, legacy_id=adg-profondo-edp): MEDIUM confidence, midpoint_of_2_credible_sources, S/ 329 from 2 credible Peru observation(s) (S/ 309–S/ 349). Operator-authorized TEMPORARY market reference only — not official_pdf, not client_confirmed."
           },
           "publish_eligibility": "NOT_READY",
           "blockers": [
-            "LEGACY_PRICE_NOT_APPROVED_FOR_PUBLICATION"
+            "PROVISIONAL_MARKET_PRICE_REQUIRES_COMMERCIAL_APPROVAL"
           ]
         }
       ],
@@ -2799,13 +2802,14 @@
         "write_status": "DEFERRED_TO_4F2B"
       },
       "warnings": [
+        "PROVISIONAL_MARKET_PRICE_NOT_CLIENT_CONFIRMED",
         "VARIANT_PRICE_OVERRIDE_APPLIED"
       ],
       "blockers": [
-        "LEGACY_PRICES_REQUIRE_COMMERCIAL_APPROVAL"
+        "PROVISIONAL_MARKET_PRICES_REQUIRE_COMMERCIAL_APPROVAL"
       ],
       "conflicts": [],
-      "source_fingerprint": "bc731ac6ca9c5e5cbbdf32064ea29be5955b11389c4c39126ec5c1bd624c72c4"
+      "source_fingerprint": "8c7dc3ee53913cdcd9c6b9463ededc53aeb8687952daf7d311f3376932e15c67"
     },
     {
       "legacy_id": "amber-o-gold-e",
@@ -4887,20 +4891,20 @@
           "variant_kind": "bottle",
           "size_ml": 100,
           "label": "Frasco 100 ml",
-          "price_amount": 360,
+          "price_amount": 168,
           "currency": "PEN",
           "publication_status": "draft",
-          "price_verification_status": "legacy",
+          "price_verification_status": "provisional_market",
           "sort_order": 3,
           "price_provenance": {
             "provenance": [
-              "legacy"
+              "MARKET_RESEARCH"
             ],
-            "basis": "Preserved exactly from assets/data.js through the existing legacy ETL"
+            "basis": "4K-B2B.2A Batch A Peru market research (supabase/staging/bottle-market-research.json, legacy_id=asad-elixir): MEDIUM confidence, midpoint_of_2_credible_sources, S/ 168 from 2 credible Peru observation(s) (S/ 146–S/ 189.9). Operator-authorized TEMPORARY market reference only — not official_pdf, not client_confirmed."
           },
           "publish_eligibility": "NOT_READY",
           "blockers": [
-            "LEGACY_PRICE_NOT_APPROVED_FOR_PUBLICATION"
+            "PROVISIONAL_MARKET_PRICE_REQUIRES_COMMERCIAL_APPROVAL"
           ]
         }
       ],
@@ -4967,13 +4971,14 @@
       },
       "warnings": [
         "LEGACY_BESTSELLER_RETAINED_ONLY_AS_UNVERIFIED_METADATA",
+        "PROVISIONAL_MARKET_PRICE_NOT_CLIENT_CONFIRMED",
         "VARIANT_PRICE_OVERRIDE_APPLIED"
       ],
       "blockers": [
-        "LEGACY_PRICES_REQUIRE_COMMERCIAL_APPROVAL"
+        "PROVISIONAL_MARKET_PRICES_REQUIRE_COMMERCIAL_APPROVAL"
       ],
       "conflicts": [],
-      "source_fingerprint": "0523eaf50f682ebe212dfbd6db00b9f401f3f8bab3f8dd92a26f7d109bb4da1b"
+      "source_fingerprint": "de40b1ac52e3c2cead7a9ce8980a62dc097fa64725430befdb0a37780db35888"
     },
     {
       "legacy_id": "azzaro-tmw-edp",
@@ -5446,20 +5451,20 @@
           "variant_kind": "bottle",
           "size_ml": 100,
           "label": "Frasco 100 ml",
-          "price_amount": 760,
+          "price_amount": 535,
           "currency": "PEN",
           "publication_status": "draft",
-          "price_verification_status": "legacy",
+          "price_verification_status": "provisional_market",
           "sort_order": 3,
           "price_provenance": {
             "provenance": [
-              "legacy"
+              "MARKET_RESEARCH"
             ],
-            "basis": "Preserved exactly from assets/data.js through the existing legacy ETL"
+            "basis": "4K-B2B.2A Batch A Peru market research (supabase/staging/bottle-market-research.json, legacy_id=b-man-in-black): MEDIUM confidence, midpoint_of_2_credible_sources, S/ 535 from 2 credible Peru observation(s) (S/ 520–S/ 549). Operator-authorized TEMPORARY market reference only — not official_pdf, not client_confirmed."
           },
           "publish_eligibility": "NOT_READY",
           "blockers": [
-            "LEGACY_PRICE_NOT_APPROVED_FOR_PUBLICATION"
+            "PROVISIONAL_MARKET_PRICE_REQUIRES_COMMERCIAL_APPROVAL"
           ]
         }
       ],
@@ -5525,13 +5530,14 @@
         "write_status": "DEFERRED_TO_4F2B"
       },
       "warnings": [
+        "PROVISIONAL_MARKET_PRICE_NOT_CLIENT_CONFIRMED",
         "VARIANT_PRICE_OVERRIDE_APPLIED"
       ],
       "blockers": [
-        "LEGACY_PRICES_REQUIRE_COMMERCIAL_APPROVAL"
+        "PROVISIONAL_MARKET_PRICES_REQUIRE_COMMERCIAL_APPROVAL"
       ],
       "conflicts": [],
-      "source_fingerprint": "221bf611d281ebb15873bdaec645a89fe5bf047a42bf352e07e36f61964e20b9"
+      "source_fingerprint": "a98b4a1e31eff79074969c5db5334d054325680482bcaf2c9aa9625f7dd15ee5"
     },
     {
       "legacy_id": "bharara-king",
@@ -7979,20 +7985,20 @@
           "variant_kind": "bottle",
           "size_ml": 100,
           "label": "Frasco 100 ml",
-          "price_amount": 620,
+          "price_amount": 375,
           "currency": "PEN",
           "publication_status": "draft",
-          "price_verification_status": "legacy",
+          "price_verification_status": "provisional_market",
           "sort_order": 3,
           "price_provenance": {
             "provenance": [
-              "legacy"
+              "MARKET_RESEARCH"
             ],
-            "basis": "Preserved exactly from assets/data.js through the existing legacy ETL"
+            "basis": "4K-B2B.2A Batch A Peru market research (supabase/staging/bottle-market-research.json, legacy_id=dylan-blue): HIGH confidence, median_of_2_credible_sources_exact_agreement, S/ 375 from 2 credible Peru observation(s) (S/ 375.2–S/ 375.2). Operator-authorized TEMPORARY market reference only — not official_pdf, not client_confirmed."
           },
           "publish_eligibility": "NOT_READY",
           "blockers": [
-            "LEGACY_PRICE_NOT_APPROVED_FOR_PUBLICATION"
+            "PROVISIONAL_MARKET_PRICE_REQUIRES_COMMERCIAL_APPROVAL"
           ]
         }
       ],
@@ -8058,13 +8064,14 @@
         "write_status": "DEFERRED_TO_4F2B"
       },
       "warnings": [
+        "PROVISIONAL_MARKET_PRICE_NOT_CLIENT_CONFIRMED",
         "VARIANT_PRICE_OVERRIDE_APPLIED"
       ],
       "blockers": [
-        "LEGACY_PRICES_REQUIRE_COMMERCIAL_APPROVAL"
+        "PROVISIONAL_MARKET_PRICES_REQUIRE_COMMERCIAL_APPROVAL"
       ],
       "conflicts": [],
-      "source_fingerprint": "54e4922781bbcaae4b523f8006b849242a505bc64b34edac7752cd25644e7f70"
+      "source_fingerprint": "9f4fbe6d1597c990cdf98d462efdec191af202db8bfdcf41c3282a9cdf0cddce"
     },
     {
       "legacy_id": "eclaire",
@@ -9385,20 +9392,20 @@
           "variant_kind": "bottle",
           "size_ml": 100,
           "label": "Frasco 100 ml",
-          "price_amount": 580,
+          "price_amount": 375,
           "currency": "PEN",
           "publication_status": "draft",
-          "price_verification_status": "legacy",
+          "price_verification_status": "provisional_market",
           "sort_order": 3,
           "price_provenance": {
             "provenance": [
-              "legacy"
+              "MARKET_RESEARCH"
             ],
-            "basis": "Preserved exactly from assets/data.js through the existing legacy ETL"
+            "basis": "4K-B2B.2A Batch A Peru market research (supabase/staging/bottle-market-research.json, legacy_id=eros-edt): HIGH confidence, median_of_2_credible_sources_exact_agreement, S/ 375 from 2 credible Peru observation(s) (S/ 375.2–S/ 375.2). Operator-authorized TEMPORARY market reference only — not official_pdf, not client_confirmed."
           },
           "publish_eligibility": "NOT_READY",
           "blockers": [
-            "LEGACY_PRICE_NOT_APPROVED_FOR_PUBLICATION"
+            "PROVISIONAL_MARKET_PRICE_REQUIRES_COMMERCIAL_APPROVAL"
           ]
         }
       ],
@@ -9465,13 +9472,14 @@
       },
       "warnings": [
         "LEGACY_BESTSELLER_RETAINED_ONLY_AS_UNVERIFIED_METADATA",
+        "PROVISIONAL_MARKET_PRICE_NOT_CLIENT_CONFIRMED",
         "VARIANT_PRICE_OVERRIDE_APPLIED"
       ],
       "blockers": [
-        "LEGACY_PRICES_REQUIRE_COMMERCIAL_APPROVAL"
+        "PROVISIONAL_MARKET_PRICES_REQUIRE_COMMERCIAL_APPROVAL"
       ],
       "conflicts": [],
-      "source_fingerprint": "f2327dd7c8508c756814210474d5c79eed703574d8f6a5314c741c25c9afb6bf"
+      "source_fingerprint": "79d16451aa35b3f13f7e36b1ef50f9b5c6a7e7f4c320346d72f8c25e2bb62102"
     },
     {
       "legacy_id": "eros-flame",

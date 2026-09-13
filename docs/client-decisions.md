@@ -115,3 +115,8 @@ Consolidados:
 - whether the “Précieux” or “Amber Gold Elixir es E.” notes imply any further
   correction beyond the confirmed rows above
 - Production cutover window
+
+## 4K-B2B.2A note (2026-09-13)
+
+Operator authorized temporary market-reference bottle prices pending client
+review.

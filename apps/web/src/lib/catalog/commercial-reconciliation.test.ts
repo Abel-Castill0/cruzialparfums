@@ -129,7 +129,7 @@ describe("commercial reconciliation", () => {
     }));
   });
 
-  it("keeps every variant draft, and every bottle price legacy and unconfirmed (4K-B2A Part H)", () => {
+  it("keeps every variant draft, and every bottle price legacy/provisional_market and never confirmed (4K-B2A Part H, 4K-B2B.2A)", () => {
     const staging = JSON.parse(readFileSync(
       resolve(repositoryRoot, "supabase/staging/legacy-catalog-staging.json"),
       "utf8",
@@ -140,10 +140,13 @@ describe("commercial reconciliation", () => {
 
     expect(targetVariants.every((variant) => variant.publication_status === "draft")).toBe(true);
     // The official 2026 PDF has no full-bottle prices (4K-A3 bottle_price_authority
-    // finding); bottle rows must never be silently promoted to official_pdf.
+    // finding); bottle rows must never be silently promoted to official_pdf. As of
+    // 4K-B2B.2A Batch A, 6 of the 24 carry an operator-authorized provisional_market
+    // price instead of legacy — still never official_pdf/client_confirmed.
     expect(bottleVariants).toHaveLength(24);
-    expect(bottleVariants.every((variant) => variant.price_verification_status === "legacy")).toBe(true);
-    expect(result.summary.legacy_bottle_price_variants).toBe(24);
+    expect(bottleVariants.every((variant) => variant.price_verification_status === "legacy" || variant.price_verification_status === "provisional_market")).toBe(true);
+    expect(result.summary.legacy_bottle_price_variants).toBe(18);
+    expect(result.summary.provisional_market_bottle_price_variants).toBe(6);
     expect(result.summary.confirmed_bottle_price_variants).toBe(0);
   });
 
@@ -609,7 +612,9 @@ describe("4K-B2A official PDF commercial authority applied", () => {
   it("builds VARIANT_PRICE_OVERRIDES deterministically with no duplicate override keys (10)", () => {
     const keys = VARIANT_PRICE_OVERRIDES.map((override) => `${override.legacy_id ?? override.slug}:${override.variant_kind}:${override.size_ml}`);
     expect(new Set(keys).size).toBe(keys.length);
-    expect(VARIANT_PRICE_OVERRIDES).toHaveLength(285);
+    // 285 official_pdf decant overrides (4K-B2A) + 6 provisional_market bottle
+    // overrides applied in 4K-B2B.2A Batch A (supabase/staging/bottle-market-research.json).
+    expect(VARIANT_PRICE_OVERRIDES).toHaveLength(291);
     expect(() => reconcileCommercialCatalog({ staging, documentedBottlePriceCount: 24 })).not.toThrow();
     // Re-running is byte-identical: the mapping is a pure function of the persisted artifact.
     const again = reconcileCommercialCatalog({ staging, documentedBottlePriceCount: 24 });
@@ -700,10 +705,10 @@ describe("4K-B2B.1 variant-aware readiness contract", () => {
     expect(product.target_product.publication_status).toBe("draft");
   });
 
-  it("performs no price mutation on the real 24 legacy bottle variants in this gate (G6)", () => {
-    // Byte-for-byte against 4K-B2A's committed baseline (supabase/staging/commercial-reconciliation.json):
-    // every legacy bottle price variant keeps its exact price_amount and stays
-    // price_verification_status=legacy after this gate's re-run.
+  it("performs no price mutation on the remaining 18 legacy bottle variants (G6, updated for 4K-B2B.2A Batch A)", () => {
+    // Byte-for-byte against the committed baseline (supabase/staging/commercial-reconciliation.json):
+    // every bottle price variant still at price_verification_status=legacy (18, after
+    // 4K-B2B.2A Batch A moved 6 to provisional_market) keeps its exact price_amount.
     const persisted = JSON.parse(readFileSync(
       resolve(repositoryRoot, "supabase/staging/commercial-reconciliation.json"),
       "utf8",
@@ -721,7 +726,7 @@ describe("4K-B2B.1 variant-aware readiness contract", () => {
       .flatMap((product) => product.variants.map((variant) => ({ legacy_id: product.legacy_id, ...variant })))
       .filter((variant) => variant.variant_kind === "bottle" && variant.price_verification_status === "legacy");
 
-    expect(freshBottles).toHaveLength(24);
+    expect(freshBottles).toHaveLength(18);
     expect(freshBottles.map((v) => ({ legacy_id: v.legacy_id, size_ml: v.size_ml, price_amount: v.price_amount })).sort((a, b) => stableSortKey(a) < stableSortKey(b) ? -1 : 1))
       .toEqual(persistedBottles.map((v) => ({ legacy_id: v.legacy_id, size_ml: v.size_ml, price_amount: v.price_amount })).sort((a, b) => stableSortKey(a) < stableSortKey(b) ? -1 : 1));
 
@@ -742,19 +747,19 @@ describe("4K-B2B.1A bottle identity audit corrections", () => {
   const bottleVariant = (product: ReconciledProduct) =>
     product.variants.find((variant) => variant.variant_kind === "bottle");
 
-  it("keeps adg-profondo-edp's 100 ml bottle price untouched (the audit reclassification does not mutate the catalog)", () => {
+  it("adg-profondo-edp's 100 ml bottle price: the 4K-B2B.1A audit reclassification alone did not mutate the catalog (100 ml stayed SIZE_CONFIRMED); 4K-B2B.2A Batch A separately applied a provisional_market price", () => {
     const product = productById("adg-profondo-edp");
     if (!product) throw new Error("Expected adg-profondo-edp in the reconciled catalog");
     const bottle = bottleVariant(product);
-    expect(bottle).toMatchObject({ size_ml: 100, price_amount: 700, price_verification_status: "legacy" });
+    expect(bottle).toMatchObject({ size_ml: 100, price_amount: 329, price_verification_status: "provisional_market" });
   });
 
-  it("corrects Dylan Blue's concentration to EDT with no price change", () => {
+  it("corrects Dylan Blue's concentration to EDT; 4K-B2B.2A Batch A separately applied a provisional_market bottle price", () => {
     const product = productById("dylan-blue");
     if (!product) throw new Error("Expected dylan-blue in the reconciled catalog");
     expect(product.target_product.concentration).toBe("EDT");
     const bottle = bottleVariant(product);
-    expect(bottle).toMatchObject({ size_ml: 100, price_amount: 620, price_verification_status: "legacy" });
+    expect(bottle).toMatchObject({ size_ml: 100, price_amount: 375, price_verification_status: "provisional_market" });
   });
 
   it("corrects By The Fireplace's concentration to EDT with no price change", () => {
@@ -807,7 +812,8 @@ describe("4K-B2B.1A bottle identity audit corrections", () => {
 
   it("keeps exactly 288 official_pdf decant prices after the concentration-only corrections (4K-B2A truth preserved)", () => {
     expect(result.summary.confirmed_price_variants).toBe(288);
-    expect(result.summary.legacy_bottle_price_variants).toBe(24);
+    expect(result.summary.legacy_bottle_price_variants).toBe(18);
+    expect(result.summary.provisional_market_bottle_price_variants).toBe(6);
     expect(result.summary.confirmed_bottle_price_variants).toBe(0);
     expect(result.summary.staged_non_combo_products).toBe(97);
     expect(result.summary.variants).toBe(315);
@@ -830,5 +836,114 @@ describe("4K-B2B.1A bottle identity audit corrections", () => {
         .sort((a, b) => `${a.legacy_id}:${a.label}`.localeCompare(`${b.legacy_id}:${b.label}`));
 
     expect(priceOf(result.products)).toEqual(priceOf(persisted.products));
+  });
+});
+
+describe("4K-B2B.2A Batch A Peru market price research", () => {
+  const staging = JSON.parse(readFileSync(
+    resolve(repositoryRoot, "supabase/staging/legacy-catalog-staging.json"),
+    "utf8",
+  )) as LegacyStaging;
+  const result = reconcileCommercialCatalog({ staging, documentedBottlePriceCount: 24 });
+  const productById = (identity: string | null) =>
+    result.products.find((product) => (product.legacy_id ?? product.target_product.slug) === identity);
+  const bottleVariant = (product: ReconciledProduct) =>
+    product.variants.find((variant) => variant.variant_kind === "bottle");
+
+  const appliedTargets: Array<[string, number]> = [
+    ["9pm", 206],
+    ["adg-profondo-edp", 329],
+    ["asad-elixir", 168],
+    ["b-man-in-black", 535],
+    ["dylan-blue", 375],
+    ["eros-edt", 375],
+  ];
+  const lowConfidenceTargets = ["1-million-lucky", "by-the-fireplace"];
+
+  it("(1) every applied Batch A market price targets the bottle variant only, never a decant", () => {
+    for (const [legacyId] of appliedTargets) {
+      const product = productById(legacyId);
+      if (!product) throw new Error(`Expected ${legacyId} in the reconciled catalog`);
+      const provisionalVariants = product.variants.filter((variant) => variant.price_verification_status === "provisional_market");
+      expect(provisionalVariants.length).toBeGreaterThan(0);
+      expect(provisionalVariants.every((variant) => variant.variant_kind === "bottle")).toBe(true);
+    }
+  });
+
+  it("(2)+(3) every applied Batch A market price is provisional_market, and none becomes official_pdf/client_confirmed", () => {
+    for (const [legacyId, priceAmount] of appliedTargets) {
+      const product = productById(legacyId);
+      if (!product) throw new Error(`Expected ${legacyId} in the reconciled catalog`);
+      const bottle = bottleVariant(product);
+      expect(bottle).toMatchObject({ size_ml: 100, price_amount: priceAmount, price_verification_status: "provisional_market" });
+      expect(bottle?.price_verification_status).not.toBe("official_pdf");
+      expect(bottle?.price_verification_status).not.toBe("client_confirmed");
+      expect(bottle?.blockers).toContain("PROVISIONAL_MARKET_PRICE_REQUIRES_COMMERCIAL_APPROVAL");
+    }
+  });
+
+  it("(4) all 288 decant official_pdf variants remain untouched by Batch A", () => {
+    const decantVariants = result.products.flatMap((product) => product.variants).filter((variant) => variant.variant_kind === "decant");
+    const officialPdfDecants = decantVariants.filter((variant) => variant.price_verification_status === "official_pdf");
+    expect(officialPdfDecants).toHaveLength(288);
+  });
+
+  it("(5) each researched legacy_id gets at most one override for the target size (no duplicate/no double-application)", () => {
+    const batchALegacyIds = [...appliedTargets.map(([legacyId]) => legacyId), ...lowConfidenceTargets];
+    const overridesForBatchA = VARIANT_PRICE_OVERRIDES.filter(
+      (override) => override.variant_kind === "bottle" && batchALegacyIds.includes(override.legacy_id ?? ""),
+    );
+    expect(overridesForBatchA).toHaveLength(appliedTargets.length);
+    const keys = overridesForBatchA.map((override) => `${override.legacy_id}:${override.variant_kind}:${override.size_ml}`);
+    expect(new Set(keys).size).toBe(keys.length);
+  });
+
+  it("(6) LOW-confidence/unresolved Batch A items (1-million-lucky, by-the-fireplace) stay unchanged at legacy", () => {
+    for (const legacyId of lowConfidenceTargets) {
+      const product = productById(legacyId);
+      if (!product) throw new Error(`Expected ${legacyId} in the reconciled catalog`);
+      const bottle = bottleVariant(product);
+      expect(bottle?.price_verification_status).toBe("legacy");
+      const hasOverride = VARIANT_PRICE_OVERRIDES.some((override) => override.legacy_id === legacyId && override.variant_kind === "bottle");
+      expect(hasOverride).toBe(false);
+    }
+  });
+
+  it("(7) product lifecycle states remain unchanged by Batch A", () => {
+    for (const [legacyId] of appliedTargets) {
+      const product = productById(legacyId);
+      if (!product) throw new Error(`Expected ${legacyId} in the reconciled catalog`);
+      expect(product.target_product.publication_status).toBe("draft");
+    }
+  });
+
+  it("(8) archived Invictus (invictus-elixir) remains archived after Batch A", () => {
+    const product = productById("invictus-elixir");
+    if (!product) throw new Error("Expected invictus-elixir in the reconciled catalog");
+    expect(product.target_product.publication_status).toBe("archived");
+  });
+
+  it("(9) BIR Intense (bir-intense) is untouched by Batch A (not a Batch A target; stays draft, legacy bottle price)", () => {
+    const product = productById("bir-intense");
+    if (!product) throw new Error("Expected bir-intense in the reconciled catalog");
+    expect(product.target_product.publication_status).toBe("draft");
+    const bottle = bottleVariant(product);
+    expect(bottle?.price_verification_status).toBe("legacy");
+  });
+
+  it("(10) B2B.1 variant-readiness isolation remains true: a provisional_market bottle blocker never appears on that product's decant rows", () => {
+    for (const [legacyId] of appliedTargets) {
+      const product = productById(legacyId);
+      if (!product) throw new Error(`Expected ${legacyId} in the reconciled catalog`);
+      const decants = product.variants.filter((variant) => variant.variant_kind === "decant");
+      for (const decant of decants) {
+        expect(decant.blockers).not.toContain("PROVISIONAL_MARKET_PRICE_REQUIRES_COMMERCIAL_APPROVAL");
+      }
+    }
+  });
+
+  it("summary.provisional_market_bottle_price_variants is exactly 6 after Batch A", () => {
+    expect(result.summary.provisional_market_bottle_price_variants).toBe(6);
+    expect(result.summary.legacy_bottle_price_variants).toBe(18);
   });
 });

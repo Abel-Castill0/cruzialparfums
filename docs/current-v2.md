@@ -481,6 +481,45 @@ provisional_market writes.
 - Next: 4K-B2B.2A (Peru market price research) only after exact research
   targets (resolved sizes) are safe to use — NOT STARTED.
 
+### 4K-B2B.2A — Peru Market Research Batch A (8 bottle variants) — CLOSED
+
+- Researched exactly 8 Batch A bottles (Peru, 2026-09-13; evidence in
+  supabase/staging/bottle-market-research.json): 1-million-lucky, 9pm,
+  adg-profondo-edp, asad-elixir, b-man-in-black, by-the-fireplace,
+  dylan-blue, eros-edt. All 8 reverified against bottle-identity-audit.json
+  (IDENTITY/SIZE/CONCENTRATION_CONFIRMED, 100 ml) before pricing; no
+  mismatched-flanker/concentration/size listing accepted.
+- HIGH: 2 (dylan-blue, eros-edt — 2 Tier2 department-store-direct sources in
+  exact agreement, S/375). MEDIUM: 4 (9pm S/206, adg-profondo-edp S/329,
+  asad-elixir S/168, b-man-in-black S/535). LOW/unresolved: 2
+  (1-million-lucky — only 1 credible source; by-the-fireplace — no valid
+  Peru listing at the exact EDT 100 ml target after rejecting an EDP
+  mismatch and an out-of-stock ghost price). Both LOW items stay legacy,
+  untouched.
+- provisional_market bottle overrides applied: 6 (via VARIANT_PRICE_OVERRIDES
+  in scripts/commercial-reconciliation.mjs, bottle-only, size_ml=100).
+  Remaining legacy bottle variants: 18 (was 24). 288 official_pdf decant
+  variants untouched. Added `provisional_market_bottle_price_variants` to
+  the reconciliation summary; added `MARKET_RESEARCH` to PROVENANCE_VALUES.
+- No research anomalies beyond the two LOW/unresolved items above and one
+  borderline price spread (9pm, 38.2%, documented and kept at MEDIUM rather
+  than excluded — marketplace-vs-specialist-store gap, not a stale listing).
+- Admin editability (Part J): `admin_update_variant`
+  (supabase/migrations/20260908000435_admin_parfums_product_mutations.sql)
+  does NOT accept/update `price_verification_status` — only price_amount,
+  label, kind, size, currency, sku, publication_status, sort_order. An
+  operator cannot transition a bottle price provisional_market ->
+  client_confirmed through the existing admin RPC/UI without a schema/RPC
+  change; missing capability is a `p_price_verification_status` parameter
+  on `admin_update_variant` (no variant duplication needed once added).
+- 10 new focused Vitest tests added (describe "4K-B2B.2A Batch A Peru
+  market price research", apps/web/src/lib/catalog/commercial-reconciliation.test.ts)
+  plus 5 pre-existing tests updated for the new 18/6 legacy/provisional
+  split. npm run commercial:check: byte-stable. npm run check: PASS.
+- docs/client-decisions.md note: operator authorized temporary
+  market-reference bottle prices pending client review.
+- Next: 4K-B2B.2B (remaining Batch B bottle variants) — NOT STARTED.
+
 ## Current evidence gaps
 
 None outstanding for 4J5F. See Deferred defects above for the categoryId

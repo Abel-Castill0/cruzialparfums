@@ -1,0 +1,359 @@
+{
+  "schema_version": 1,
+  "purpose": "4K-B2B.2A Peru market price research for Batch A (8 exact bottle presentations named in the gate). Provides evidence for provisional_market VARIANT_PRICE_OVERRIDES entries applied in scripts/commercial-reconciliation.mjs. Does not itself mutate assets/data.js or the official PDF decant prices.",
+  "gate": "4K-B2B.2A",
+  "research_date": "2026-09-13",
+  "authority_note": "provisional_market prices recorded here are operator-authorized TEMPORARY market references only. They are not official_pdf and not client_confirmed. Evidence hierarchy per gate instructions: Tier1 official brand/Peru distributor, Tier2 established Peru department/perfume retailers (Ripley, Falabella, Oechsle, Perfumerias Unidas, PlazaVea), Tier3 established specialist Peru perfume stores, Tier4 Mercado Libre Peru as secondary corroboration only.",
+  "identity_reverification_source": "supabase/staging/bottle-identity-audit.json (4K-B2B.1A) — all 8 targets below were IDENTITY_CONFIRMED / SIZE_CONFIRMED / CONCENTRATION_CONFIRMED at 100 ml prior to price research; no mismatched listings (wrong flanker, wrong concentration, wrong size, sets/bundles, decants, testers) were accepted as observations.",
+  "entries": [
+    {
+      "legacy_id": "1-million-lucky",
+      "verified_identity": { "brand": "Paco Rabanne", "name": "One Million Lucky", "concentration": "EDT" },
+      "size_ml": 100,
+      "observations": [
+        {
+          "source_name": "Ripley Perú (vendido por Ripley)",
+          "source_url": "https://simple.ripley.com.pe/perfume-rabanne-1-million-lucky-hombre-edt-100-ml-2014211812138p",
+          "observed_price_pen": 217.50,
+          "regular_price_pen": 435.00,
+          "availability": "in_stock",
+          "exact_size_ml": 100,
+          "exact_concentration": "EDT",
+          "seller_type": "tier2_department_store_direct",
+          "observation_date": "2026-09-13",
+          "notes": "Sold directly by Ripley (not a marketplace seller). Current internet price used."
+        }
+      ],
+      "excluded_observations": [
+        {
+          "source_name": "MercadoLibre Perú (listing search)",
+          "source_url": "https://listado.mercadolibre.com.pe/1-million-lucky",
+          "exclusion_reason": "Tier4 aggregate search-result listing only, no single verifiable per-seller price/stock/authenticity captured within this gate's research budget; not counted toward the 2-source minimum."
+        },
+        {
+          "source_name": "Perfumerias Unidas — '1 Million Eau de Toilette 100 ml'",
+          "source_url": "https://www.perfumeriasunidas.com/1-million-eau-de-toilette-100-ml-paco-rabanne.html",
+          "exclusion_reason": "Wrong flanker (base 'One Million', not 'One Million Lucky') — invalid substitution per Part A."
+        },
+        {
+          "source_name": "Falabella Perú — 'One Million' 100 ml",
+          "source_url": "https://www.falabella.com.pe/falabella-pe/product/11591539/one-million-fragancia-de-hombre-100-ml-rabanne/11591539",
+          "exclusion_reason": "Wrong flanker (base 'One Million', not 'One Million Lucky') — invalid substitution per Part A."
+        }
+      ],
+      "min_credible_pen": 217.50,
+      "max_credible_pen": 217.50,
+      "selected_reference_pen": null,
+      "selection_method": "insufficient_independent_sources",
+      "confidence": "LOW",
+      "verification_status_target": "legacy",
+      "reason": "Only one credible Tier2 Peru observation found within this gate's research scope; the gate's minimum of two independent credible sources was not met after excluding mismatched-flanker and low-verifiability listings. Left unresolved per Part E (LOW remains legacy/unresolved)."
+    },
+    {
+      "legacy_id": "9pm",
+      "verified_identity": { "brand": "Afnan", "name": "9 PM", "concentration": "EDP" },
+      "size_ml": 100,
+      "observations": [
+        {
+          "source_name": "Falabella Perú (marketplace: Perfumes Premium Peru)",
+          "source_url": "https://www.falabella.com.pe/falabella-pe/product/128678329/afnan-9-pm-eau-de-parfum-para-hombre-100ml/128678330",
+          "observed_price_pen": 245.90,
+          "regular_price_pen": 259.00,
+          "availability": "in_stock_ship_next_day",
+          "exact_size_ml": 100,
+          "exact_concentration": "EDP",
+          "seller_type": "tier2_marketplace_on_major_department_platform",
+          "observation_date": "2026-09-13",
+          "notes": "Falabella platform marketplace seller with 5(9) rating. S/669 struck-through anchor excluded as an anomalous clearance-style ghost anchor; S/259 regular / S/245.90 current used instead."
+        },
+        {
+          "source_name": "PerfumesArabes.pe",
+          "source_url": "https://perfumesarabes.pe/afnan-perfumes/9pm-afnan-perfumes/",
+          "observed_price_pen": 167.00,
+          "regular_price_pen": 199.00,
+          "availability": "in_stock",
+          "exact_size_ml": 100,
+          "exact_concentration": "EDP",
+          "seller_type": "tier3_specialist_arabic_perfume_store",
+          "observation_date": "2026-09-13",
+          "notes": "Add-to-cart active; specialist Peru Arabic-perfume retailer with identifiable business presence."
+        }
+      ],
+      "excluded_observations": [
+        {
+          "source_name": "Ripley Mercado (COMPRAFACIL USA EXPRESS)",
+          "source_url": "https://simple.ripley.com.pe/perfume-afnan-9-pm-edp-hombre-100ml-pmp20000982268",
+          "exclusion_reason": "International/cross-border import listing ('compra internacional', DNI required, subject to import process) — not domestic Peru retail stock."
+        },
+        {
+          "source_name": "Easy Buy Perú",
+          "source_url": "https://www.easybuy.pe/products/afnan-9-pm-perfume-100-ml-eau-de-parfum",
+          "exclusion_reason": "No-stock ghost price ('Agotado' / sold out at time of research)."
+        }
+      ],
+      "min_credible_pen": 167.00,
+      "max_credible_pen": 245.90,
+      "spread_percent": 38.2,
+      "selected_reference_pen": 206,
+      "selection_method": "midpoint_of_2_credible_sources",
+      "confidence": "MEDIUM",
+      "verification_status_target": "provisional_market",
+      "reason": "Exactly 2 strong credible Peru sources; spread (38.2%) is at the upper edge of the tolerance band, attributable to a genuine marketplace-vs-specialist-store pricing gap rather than a stale/wrong-edition listing, so both sources are kept and confidence is capped at MEDIUM rather than HIGH."
+    },
+    {
+      "legacy_id": "adg-profondo-edp",
+      "verified_identity": { "brand": "Giorgio Armani", "name": "Acqua di Gio Profondo", "concentration": "EDP" },
+      "size_ml": 100,
+      "observations": [
+        {
+          "source_name": "Ripley Perú (vendido por Ripley)",
+          "source_url": "https://simple.ripley.com.pe/perfume-giorgio-armani-acqua-di-gio-profondo-hombre-edp-100-ml-2014357073998p",
+          "observed_price_pen": 349.00,
+          "regular_price_pen": 579.00,
+          "availability": "in_stock",
+          "exact_size_ml": 100,
+          "exact_concentration": "EDP",
+          "seller_type": "tier2_department_store_direct",
+          "observation_date": "2026-09-13",
+          "notes": "Sold directly by Ripley."
+        },
+        {
+          "source_name": "Perfumes Premium Peru",
+          "source_url": "https://perfumespremiumperu.com/product/giorgio-armani-acqua-di-gio-profondo-for-men-edp-100-ml/",
+          "observed_price_pen": 309.00,
+          "regular_price_pen": 469.00,
+          "availability": "in_stock",
+          "exact_size_ml": 100,
+          "exact_concentration": "EDP",
+          "seller_type": "tier3_specialist_perfume_store",
+          "observation_date": "2026-09-13",
+          "notes": "Identified via search snippet; specialist Peru perfume retailer with identifiable business presence."
+        }
+      ],
+      "excluded_observations": [
+        {
+          "source_name": "Falabella Perú",
+          "source_url": "https://www.falabella.com.pe/falabella-pe/product/20529307/acqua-di-gio-profondo-edp-100-ml-hombre/20529307",
+          "exclusion_reason": "No-stock ghost price ('Producto sin stock')."
+        }
+      ],
+      "min_credible_pen": 309.00,
+      "max_credible_pen": 349.00,
+      "spread_percent": 12.2,
+      "selected_reference_pen": 329,
+      "selection_method": "midpoint_of_2_credible_sources",
+      "confidence": "MEDIUM",
+      "verification_status_target": "provisional_market",
+      "reason": "2 credible sources with reasonable spread (12.2%); one Tier2 official department-store direct sale and one Tier3 specialist, so capped at MEDIUM rather than HIGH per Part E (HIGH requires >=2 STRONG sources; Tier3 is somewhat weaker)."
+    },
+    {
+      "legacy_id": "asad-elixir",
+      "verified_identity": { "brand": "Lattafa", "name": "Asad Elixir", "concentration": "EDP" },
+      "size_ml": 100,
+      "observations": [
+        {
+          "source_name": "Ripley Mercado (BERAUS IMPORT — Vendedor Destacado)",
+          "source_url": "https://simple.ripley.com.pe/perfume-lattafa-asad-elixir-100ml-hombre-pmp20001279458",
+          "observed_price_pen": 189.90,
+          "regular_price_pen": 249.00,
+          "availability": "in_stock_ship_next_day",
+          "exact_size_ml": 100,
+          "exact_concentration": "EDP",
+          "seller_type": "tier2_marketplace_featured_seller_on_major_department_platform",
+          "observation_date": "2026-09-13",
+          "notes": "'Vendedor Destacado' (featured seller) domestic listing, 'Llega mañana' — not a cross-border import listing."
+        },
+        {
+          "source_name": "PlazaVea",
+          "source_url": "https://www.plazavea.com.pe/perfume-lattafa-asad-elixir-edp-hombre-3-4-oz-100-ml-101937927/p",
+          "observed_price_pen": 146.00,
+          "regular_price_pen": 189.00,
+          "availability": "in_stock_slow_shipping",
+          "exact_size_ml": 100,
+          "exact_concentration": "EDP",
+          "seller_type": "tier2_department_store_direct",
+          "observation_date": "2026-09-13",
+          "notes": "PlazaVea direct listing; delivery noted as up to 20 business days but product is purchasable, not a ghost listing."
+        }
+      ],
+      "excluded_observations": [
+        {
+          "source_name": "Falabella Perú",
+          "source_url": "https://www.falabella.com.pe/falabella-pe/product/150944553/lattafa-asad-elixir-for-men-eau-de-parfum-100-ml/150944554",
+          "exclusion_reason": "No stock/no price rendered at time of research."
+        }
+      ],
+      "min_credible_pen": 146.00,
+      "max_credible_pen": 189.90,
+      "spread_percent": 30.1,
+      "selected_reference_pen": 168,
+      "selection_method": "midpoint_of_2_credible_sources",
+      "confidence": "MEDIUM",
+      "verification_status_target": "provisional_market",
+      "reason": "2 credible sources within tolerance (30.1% spread, under the 35-40% threshold) but wider than the ADG Profondo pair and one source is a marketplace seller rather than a retailer's own direct sale, so capped at MEDIUM."
+    },
+    {
+      "legacy_id": "b-man-in-black",
+      "verified_identity": { "brand": "Bvlgari", "name": "Man In Black", "concentration": "EDP" },
+      "size_ml": 100,
+      "observations": [
+        {
+          "source_name": "Ripley Mercado (Bono&Guerlan)",
+          "source_url": "https://simple.ripley.com.pe/ (product code 6421455, 'BULGARI MAN IN BLACK EDP 100 ML')",
+          "observed_price_pen": 549.00,
+          "regular_price_pen": 599.00,
+          "availability": "in_stock",
+          "exact_size_ml": 100,
+          "exact_concentration": "EDP",
+          "seller_type": "tier2_marketplace_on_major_department_platform",
+          "observation_date": "2026-09-13",
+          "notes": "Reached via Ripley product 2014168202044's 'productos similares' rail, own product page confirms 100 ml EDP (the 2014168202044 listing itself is a 90 ml EDP and was rejected as a size mismatch)."
+        },
+        {
+          "source_name": "Beauty Store Peru",
+          "source_url": "https://www.beautystoreperu.com/products/bvlgari-man-in-black-edp",
+          "observed_price_pen": 520.00,
+          "regular_price_pen": 620.00,
+          "availability": "in_stock_2_4_days",
+          "exact_size_ml": 100,
+          "exact_concentration": "EDP",
+          "seller_type": "tier3_specialist_perfume_store",
+          "observation_date": "2026-09-13",
+          "notes": "States 'productos originales y auténticos'; specialist Peru fragrance retailer with identifiable business presence."
+        }
+      ],
+      "excluded_observations": [
+        {
+          "source_name": "Ripley Perú — 'PERFUME BVLGARI MAN IN BLACK HOMBRE EDP' (product code 2014168202044)",
+          "source_url": "https://simple.ripley.com.pe/perfume-bvlgari-man-in-black-hombre-edp-2014168202044p",
+          "exclusion_reason": "Wrong size — page specifications state 90 ml, not the 100 ml target."
+        },
+        {
+          "source_name": "Falabella Perú",
+          "source_url": "https://www.falabella.com.pe/falabella-pe/product/144238315/Bvlgari-Man-in-Black-Eau-de-Parfum-100-ml/144238316",
+          "exclusion_reason": "No price rendered / no stock at time of research."
+        }
+      ],
+      "min_credible_pen": 520.00,
+      "max_credible_pen": 549.00,
+      "spread_percent": 5.4,
+      "selected_reference_pen": 535,
+      "selection_method": "midpoint_of_2_credible_sources",
+      "confidence": "MEDIUM",
+      "verification_status_target": "provisional_market",
+      "reason": "2 credible sources with tight spread (5.4%), but both are marketplace/specialist sellers rather than an official brand or direct department-store sale, so capped at MEDIUM."
+    },
+    {
+      "legacy_id": "by-the-fireplace",
+      "verified_identity": { "brand": "Maison Margiela", "name": "REPLICA By the Fireplace", "concentration": "EDT" },
+      "size_ml": 100,
+      "observations": [],
+      "excluded_observations": [
+        {
+          "source_name": "Falabella Perú — 'Maison Margiela Replica By the Fireplace EDP 100 ml'",
+          "source_url": "https://www.falabella.com.pe/falabella-pe/product/145423000/Maison-Margiela-Replica-By-the-Fireplace-EDP-100-ml/145423001",
+          "exclusion_reason": "Concentration mismatch — listing is EDP, target is EDT (REPLICA line, per bottle-identity-audit.json). Invalid substitution per Part A."
+        },
+        {
+          "source_name": "Esencia Perfumes (esenciaperfumes.com.pe)",
+          "source_url": "https://esenciaperfumes.com.pe/products/replica-by-the-fireplace",
+          "exclusion_reason": "No-stock ghost price (S/699 listed but out of stock at time of research; page also could not be reached for direct re-verification within this gate's research budget)."
+        }
+      ],
+      "min_credible_pen": null,
+      "max_credible_pen": null,
+      "selected_reference_pen": null,
+      "selection_method": "no_credible_source",
+      "confidence": "LOW",
+      "verification_status_target": "legacy",
+      "reason": "No valid current-purchasable Peru listing found for the exact target (REPLICA By the Fireplace, EDT, 100 ml) after rejecting a concentration-mismatched EDP listing and an out-of-stock ghost price. Left unresolved per Part E/F (LOW remains legacy/unresolved); niche Maison Margiela REPLICA line has very limited mainstream Peru retail presence."
+    },
+    {
+      "legacy_id": "dylan-blue",
+      "verified_identity": { "brand": "Versace", "name": "Dylan Blue Pour Homme", "concentration": "EDT" },
+      "size_ml": 100,
+      "observations": [
+        {
+          "source_name": "Ripley Perú (vendido por Ripley)",
+          "source_url": "https://simple.ripley.com.pe/edt-versace-dylan-blue-para-hombre-100-ml-2014189915619p",
+          "observed_price_pen": 375.20,
+          "regular_price_pen": 469.00,
+          "availability": "in_stock",
+          "exact_size_ml": 100,
+          "exact_concentration": "EDT",
+          "seller_type": "tier2_department_store_direct",
+          "observation_date": "2026-09-13",
+          "notes": "Sold directly by Ripley."
+        },
+        {
+          "source_name": "Falabella Perú",
+          "source_url": "https://www.falabella.com.pe/falabella-pe/product/15873363/Dylan-Blue-Versace-Edt-100-Ml-Hombre/15873363",
+          "observed_price_pen": 375.20,
+          "regular_price_pen": 469.00,
+          "availability": "in_stock",
+          "exact_size_ml": 100,
+          "exact_concentration": "EDT",
+          "seller_type": "tier2_department_store_direct",
+          "observation_date": "2026-09-13",
+          "notes": "Sold directly by Falabella; price exactly matches Ripley's direct listing, consistent with a common official Versace Peru distribution price for this fragrance line."
+        }
+      ],
+      "excluded_observations": [],
+      "min_credible_pen": 375.20,
+      "max_credible_pen": 375.20,
+      "spread_percent": 0,
+      "selected_reference_pen": 375,
+      "selection_method": "median_of_2_credible_sources_exact_agreement",
+      "confidence": "HIGH",
+      "verification_status_target": "provisional_market",
+      "reason": "Exact identity/concentration/size; 2 strong Tier2 department-store-direct Peru sources in exact agreement."
+    },
+    {
+      "legacy_id": "eros-edt",
+      "verified_identity": { "brand": "Versace", "name": "Eros", "concentration": "EDT" },
+      "size_ml": 100,
+      "observations": [
+        {
+          "source_name": "Ripley Perú (vendido por Ripley)",
+          "source_url": "https://simple.ripley.com.pe/edt-versace-eros-para-hombre-100-ml-2014184354697p",
+          "observed_price_pen": 375.20,
+          "regular_price_pen": 469.00,
+          "availability": "in_stock",
+          "exact_size_ml": 100,
+          "exact_concentration": "EDT",
+          "seller_type": "tier2_department_store_direct",
+          "observation_date": "2026-09-13",
+          "notes": "Sold directly by Ripley; distinct listing from Eros EDP / Eros Flame (rejected flankers not used)."
+        },
+        {
+          "source_name": "Falabella Perú",
+          "source_url": "https://www.falabella.com.pe/falabella-pe/product/15679495/Fragancia-Versace-Hombre-Eros-EDT-100-ml-/15679495",
+          "observed_price_pen": 375.20,
+          "regular_price_pen": 469.00,
+          "availability": "in_stock",
+          "exact_size_ml": 100,
+          "exact_concentration": "EDT",
+          "seller_type": "tier2_department_store_direct",
+          "observation_date": "2026-09-13",
+          "notes": "Sold directly by Falabella; price exactly matches Ripley's direct listing."
+        }
+      ],
+      "excluded_observations": [],
+      "min_credible_pen": 375.20,
+      "max_credible_pen": 375.20,
+      "spread_percent": 0,
+      "selected_reference_pen": 375,
+      "selection_method": "median_of_2_credible_sources_exact_agreement",
+      "confidence": "HIGH",
+      "verification_status_target": "provisional_market",
+      "reason": "Exact identity/concentration/size; 2 strong Tier2 department-store-direct Peru sources in exact agreement."
+    }
+  ],
+  "summary": {
+    "researched": 8,
+    "high_confidence": 2,
+    "medium_confidence": 4,
+    "low_or_unresolved": 2,
+    "provisional_market_candidates": 6
+  }
+}

@@ -25,11 +25,16 @@ const paths = Object.freeze({
   wholesaleSchema: resolve(repositoryRoot, "supabase/migrations/20260908070000_admin_parfums_wholesale.sql"),
   output: resolve(repositoryRoot, "supabase/staging/commercial-reconciliation.json"),
   pdfReconciliation: resolve(repositoryRoot, "supabase/staging/pdf-2026-commercial-reconciliation.json"),
+  bottleMarketResearch: resolve(repositoryRoot, "supabase/staging/bottle-market-research.json"),
 });
 
 // Synchronous JSON read: VARIANT_PRICE_OVERRIDES below is a top-level frozen
 // export derived from this persisted artifact, not a runtime fetch.
 const pdfReconciliation = createRequire(import.meta.url)(paths.pdfReconciliation);
+
+// Synchronous JSON read: same rationale as pdfReconciliation above. Populated
+// by 4K-B2B.2A Batch A Peru market price research (Part G).
+const bottleMarketResearch = createRequire(import.meta.url)(paths.bottleMarketResearch);
 
 export const MIGRATION_STATUSES = Object.freeze([
   "MIGRATABLE_DRAFT",
@@ -43,6 +48,7 @@ export const PROVENANCE_VALUES = Object.freeze([
   "CLIENT_CONFIRMED",
   "DERIVED_VALIDATED",
   "MARKETING_COPY",
+  "MARKET_RESEARCH",
   "UNKNOWN",
   "legacy",
 ]);
@@ -94,12 +100,47 @@ function officialPdfDecantVariantPriceOverrides(reconciliation) {
   }))).flat();
 }
 
+/**
+ * 4K-B2B.2A Part H: bottle-only provisional_market overrides, built from the
+ * persisted Batch A Peru market-research artifact (supabase/staging/
+ * bottle-market-research.json). Only HIGH/MEDIUM-confidence entries with a
+ * non-null selected_reference_pen are applied; LOW-confidence/unresolved
+ * entries are deliberately skipped so their variant stays at whatever
+ * authority it already had (Part E: "LOW remains legacy/unresolved"). This
+ * never targets a decant row (variant_kind is always "bottle" here) and never
+ * touches the official_pdf 3/5/10 ml overrides above.
+ */
+function bottleMarketPriceOverrides(research) {
+  return research.entries
+    .filter((entry) => (entry.confidence === "HIGH" || entry.confidence === "MEDIUM") && entry.selected_reference_pen !== null)
+    .map((entry) => ({
+      legacy_id: entry.legacy_id,
+      variant_kind: "bottle",
+      size_ml: entry.size_ml,
+      price_amount: entry.selected_reference_pen,
+      price_verification_status: "provisional_market",
+      evidence: evidence(
+        ["MARKET_RESEARCH"],
+        `4K-B2B.2A Batch A Peru market research (supabase/staging/bottle-market-research.json, legacy_id=${entry.legacy_id}): ` +
+        `${entry.confidence} confidence, ${entry.selection_method}, S/ ${entry.selected_reference_pen} from ` +
+        `${entry.observations.length} credible Peru observation(s) (S/ ${entry.min_credible_pen}–S/ ${entry.max_credible_pen}). ` +
+        "Operator-authorized TEMPORARY market reference only — not official_pdf, not client_confirmed.",
+      ),
+    }));
+}
+
 // Populated from the persisted 4K-A3/4K-A3.1 PDF reconciliation artifact
 // (Part A/B). Every current-PDF-matched decant row — unchanged and corrected
 // alike — gets official_pdf authority; bottle variants and the V2-only
 // invictus-elixir decant rows are untouched because they have no entry in
-// reconciliation.product_reconciliation (Part H/D).
-export const VARIANT_PRICE_OVERRIDES = Object.freeze(officialPdfDecantVariantPriceOverrides(pdfReconciliation));
+// reconciliation.product_reconciliation (Part H/D). Concatenated with the
+// 4K-B2B.2A bottle-only provisional_market overrides derived from the Batch A
+// market-research artifact (Part H) — the two sets can never collide because
+// one is exclusively variant_kind "decant" and the other exclusively "bottle".
+export const VARIANT_PRICE_OVERRIDES = Object.freeze([
+  ...officialPdfDecantVariantPriceOverrides(pdfReconciliation),
+  ...bottleMarketPriceOverrides(bottleMarketResearch),
+]);
 
 // A lifecycle override lets a newer, named source (e.g. the official PDF)
 // supersede a product's derived publication_status — the "this legacy product
@@ -755,6 +796,7 @@ export function reconcileCommercialCatalog({
     confirmed_price_variants: variants.filter((variant) => variant.price_verification_status === "client_confirmed" || variant.price_verification_status === "official_pdf").length,
     legacy_bottle_price_variants: variants.filter((variant) => variant.variant_kind === "bottle" && variant.price_verification_status === "legacy").length,
     confirmed_bottle_price_variants: variants.filter((variant) => variant.variant_kind === "bottle" && (variant.price_verification_status === "client_confirmed" || variant.price_verification_status === "official_pdf")).length,
+    provisional_market_bottle_price_variants: variants.filter((variant) => variant.variant_kind === "bottle" && variant.price_verification_status === "provisional_market").length,
     commercial_categories: [...uniqueCategories.keys()].filter((key) => key.startsWith("commercial_type:")).length,
     olfactory_categories: [...uniqueCategories.keys()].filter((key) => key.startsWith("olfactory_family:")).length,
     category_relationships: products.reduce((total, product) => total + product.categories.length, 0),
