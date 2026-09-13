@@ -75,8 +75,31 @@ Deferred defects (not fixed this gate):
    Affects staging-qa-import-ready, -no-media, -no-offer.
 2. (P2, known) old /admin footer copy says modules are pending.
 
+4J5G-A - CLOSED
+
+E2E harness: Playwright (none existed; introduced minimal, Chromium-only,
+apps/web/playwright.config.ts + apps/web/e2e/, baseURL via E2E_BASE_URL env,
+trace/screenshot retained on failure only).
+
+Ran once against hosted staging Preview
+(https://cruzial-platform-v2-8pi4yyvrm-cruzial.vercel.app):
+- Public hub/navigation: PASS
+- Parfums public critical journey: PASS (catalog -> add product -> checkout
+  reached with populated cart/total; form left unsubmitted to avoid
+  persisting an order request)
+- Import public critical journey: PASS, partial by current data state —
+  campaign is open but its catalog currently returns 0 products for the
+  default filters, so the test verifies campaign + empty-catalog surface
+  only (cart/checkout substeps not reachable with current staging data,
+  not a test defect)
+- Logged-out Admin protection (/admin/parfums, /admin/import ->
+  /admin/login, no loop, no protected content): PASS
+
+Test count: 5 (4 journeys; admin-protection parametrized over 2 routes) —
+5 passed, 0 failed.
+
 Next gate:
-4J5G - Critical Browser E2E (NOT STARTED this session)
+4J5G-B - authenticated Admin E2E (NOT STARTED)
 
 ## Last known automated gate
 
