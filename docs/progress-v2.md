@@ -342,7 +342,7 @@ config (vs. local Supabase CLI, where 4J4C reproduced it) was never
 verified either way — moot now since no live RPC raises `40001` any more,
 but flagged for completeness.
 
-### Hosted Staging Deployment + Fixtures + Admin QA (4J5F) 🚧 IN PROGRESS
+### Hosted Staging Deployment + Fixtures + Admin QA (4J5F) ✅ CLOSED
 
 Goal: real hosted evidence (Browser → Vercel Preview → Next.js → hosted
 Supabase/PostgREST/RPC/RLS → staging DB), not another local/unit gate.
@@ -387,6 +387,33 @@ shares the email (not the password); the agent then runs
 `grant-admin-membership.sql` for `parfums`/`import` and continues Phases
 3, 5–9 (authenticated QA, hosted P2011 regression, blocker evidence, final
 gate).
+
+**4J5F FINAL closure**: operator provisioned `configuser@gmail.com` with
+`parfums/admin` + `import/admin` staging memberships and logged in manually
+(this agent never saw the password). Hosted authenticated QA passed in
+full: refresh/logout/re-login, logged-out redirect, zero-membership
+boundary, Parfums/viewer read-only, cross-business denial, dual-admin
+access, and Import readiness (Ready / Sin Media / Sin Oferta) all green.
+
+Hosted P2011: attempted first against the synthetic Import fixture
+`ccf4e585-bf96-09e6-20e6-d8f9130968c9` ([STAGING QA] Import Sin Media) per
+plan, but discovered all three `staging-qa-import-*` fixtures have no
+`categoryId`, and the Import product editor requires one client- and
+server-side to save at all — blocking even a Name-only edit without
+touching category (out of scope). Deferred as a defect; re-ran P2011
+against the Parfums fixture `staging-qa-publishable` ([STAGING QA] Parfums
+Mapper Ready) instead, which shares the same `expected_updated_at`/`40001`
+optimistic-concurrency contract. Two-tab scenario: T2 save succeeded, stale
+T1 save was rejected with "Esto fue modificado por otra sesión. Recarga la
+página antes de continuar." (200 response, no 5xx/504/hang/retry/partial
+mutation), refreshed TAB A showed T2 authoritative. Fixture Name restored
+exactly; mapper-ready condition (variant/media/categories) unchanged.
+
+Final automated gate: pgTAP 27 files/759 assertions PASS; Vitest 55
+files/528 tests PASS; lint 0 warnings; strict TypeScript PASS; production
+build PASS; `git diff --check` PASS.
+
+4J5G (Critical Browser E2E) NOT started this session.
 
 ### 4H2A boundary
 

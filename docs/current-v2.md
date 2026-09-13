@@ -35,31 +35,48 @@ Separate catalog/business rules/carts/orders/settings.
 
 ## Current gate
 
-4J5F - Hosted Staging QA
+4J5F - CLOSED
 
-Completed:
-- 4J5E global SQLSTATE audit
-- all live app-authored optimistic conflicts migrated from 40001 to P2011
-- staging migrations synchronized 37/37
-- Preview environment inspected
-- 4J5F-A fixtures corrected and applied twice on staging; 9 QA products
-- Parfums structural mapper verified; misleading publication-blocker labels removed
-- Import synthetic ready / missing media / missing offer cases structurally verified
-- exactly two synthetic offers in #6; its row and 898 non-QA offers unchanged
-- exact cleanup prepared; not executed
+Hosted evidence completed:
+- Preview -> Supabase staging (iyxidhglyqkzoziyewlc) runtime binding
+- Supabase Auth Site URL/callback
+- authenticated hard refresh / logout / re-login
+- logged-out protected route redirect (/admin/import -> /admin/login)
+- zero-membership boundary ("Sin unidades asignadas")
+- Parfums/viewer read-only boundary
+- cross-business denial without Import membership (direct /admin/import redirected)
+- dual-admin hosted access (Parfums ADMINISTRADOR + Import ADMINISTRADOR)
+- Import readiness: staging-qa-import-ready (0 blockers), staging-qa-import-no-media
+  (missing_primary_media only), staging-qa-import-no-offer (missing_offer only)
+- hosted stale-write P2011 (see below) and fixture restored after P2011
+- final automated gate green (counts below)
 
-Remaining blockers:
-1. Exact Preview -> staging binding evidence (iyxidhglyqkzoziyewlc).
-2. Operator-created staging Auth identity and legitimate unit memberships.
-3. Hosted authenticated Admin QA.
-4. Hosted stale-write P2011 evidence.
-5. Hosted publication blocker evidence, including existing Import RPC assertions:
-   staging has zero active memberships; RPC verification returned 42501.
-   Run supabase/provisioning/staging-qa-fixtures-readiness.sql with a legitimate
-   Import member session. Structural fixture checks are not authenticated RPC proof.
-6. Final automated 4J5F gate (not run during 4J5F-A).
+Hosted P2011 fixture note: the three [STAGING QA] Import fixtures
+(Import Ready / Sin Media / Sin Oferta) have no categoryId, and the Import
+product editor requires categoryId client- and server-side to save at all
+(see Deferred defects). P2011 was therefore proven against a Parfums
+synthetic fixture instead — staging-qa-publishable
+([STAGING QA] Parfums Mapper Ready) — which uses the same
+expected_updated_at / 40001-conflict contract
+(apps/web/src/domains/admin-parfums/products-repository.ts:91-97).
+Scenario: TAB B renamed to "[STAGING QA] P2011 T2" -> saved OK; TAB A (stale,
+unrefreshed) renamed to "[STAGING QA] P2011 T1-STALE" -> saved and rejected
+with "Esto fue modificado por otra sesión. Recarga la página antes de
+continuar." (POST returned 200, no 5xx/504/hang/retry/partial mutation).
+Refreshed TAB A showed authoritative "[STAGING QA] P2011 T2". Fixture Name
+restored to exactly "[STAGING QA] Parfums Mapper Ready"; mapper-ready
+condition (1 variant, 1 principal media, categories) unchanged.
 
-Do NOT start 4J5G until 4J5F closes.
+Deferred defects (not fixed this gate):
+1. Import QA products without categoryId satisfy readiness semantics but
+   cannot be re-saved through the standard Import product editor (client
+   `required` at apps/web/src/app/admin/import/productos/import-product-editor.tsx:16
+   plus server validation at apps/web/src/domains/admin-import/catalog-schema.ts:99).
+   Affects staging-qa-import-ready, -no-media, -no-offer.
+2. (P2, known) old /admin footer copy says modules are pending.
+
+Next gate:
+4J5G - Critical Browser E2E (NOT STARTED this session)
 
 ## Last known automated gate
 
@@ -80,9 +97,8 @@ PASS
 
 ## Current evidence gaps
 
-- authenticated hosted Admin QA
-- hosted stale-write P2011 regression
-- hosted publication blocker evidence
+None outstanding for 4J5F. See Deferred defects above for the categoryId
+Import-editor gap carried into 4J5G.
 
 ## Important rules
 
