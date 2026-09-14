@@ -553,10 +553,43 @@
     {
       "batch": "B",
       "gate": "4K-B2B.2B",
+      "review_correction": {
+        "gate": "4K-B2B.3",
+        "reviewer": "ChatGPT independent review (GitHub + current external sources)",
+        "reason": "4K-B2B.2B found no usable price for the exact base 'Clásico' Khamrah after rejecting ambiguous/unconfirmable price readings. 4K-B2B.3 reviewer supplied two currently-available direct Peru sources for the exact target.",
+        "old_selected_reference_pen": null
+      },
       "legacy_id": "khamrah-clasico",
-      "verified_identity": { "brand": "Lattafa", "name": "Khamrah", "concentration": "EDP" },
+      "verified_identity": { "brand": "Lattafa", "name": "Khamrah original / \"Clásico\"", "concentration": "EDP" },
       "size_ml": 100,
-      "observations": [],
+      "observations": [
+        {
+          "source_name": "Falabella Perú (vendido por Falabella)",
+          "source_url": "https://www.falabella.com.pe/falabella-pe/product/20956260/khamrah-eau-de-parfum-100-ml/20956260",
+          "observed_price_pen": 258.24,
+          "regular_price_pen": null,
+          "availability": "in_stock",
+          "exact_size_ml": 100,
+          "exact_concentration": "EDP",
+          "seller_type": "tier2_department_store_direct",
+          "observation_date": "2026-09-13",
+          "observation_source": "4K-B2B.3 reviewer verification",
+          "notes": "4K-B2B.3 reviewer re-verification of the same correct base-Khamrah product page excluded in 4K-B2B.2B for lack of a rendered price; direct Falabella sale, currently available, S/258.24."
+        },
+        {
+          "source_name": "Alamo Parfums Perú",
+          "source_url_note": "Lattafa Khamrah original EDP 100 ml — Peru specialist retailer, currently available",
+          "observed_price_pen": 227.00,
+          "regular_price_pen": null,
+          "availability": "in_stock",
+          "exact_size_ml": 100,
+          "exact_concentration": "EDP",
+          "seller_type": "tier3_specialist_peru_retailer",
+          "observation_date": "2026-09-13",
+          "observation_source": "4K-B2B.3 reviewer verification",
+          "notes": "4K-B2B.3 reviewer-supplied specialist Peru source for the exact base 'Clásico' Khamrah, currently available, S/227.00."
+        }
+      ],
       "excluded_observations": [
         {
           "source_name": "Ripley Perú — 'PERFUME LATTAFA KHAMRAH HOMBRE EDP 100 ML' (pmp20000415196)",
@@ -564,23 +597,20 @@
           "exclusion_reason": "Correct product/URL for the non-Qahwa/non-Dukhan 'Khamrah Clásico' target, but the search-tool summary returned internally conflicting current-price figures (S/129.90 vs S/124.00) for the same listing without a way to confirm which is the actual current price within this gate's research budget; not counted as a verified observation."
         },
         {
-          "source_name": "Falabella Perú — 'Khamrah Eau De Parfum 100 Ml' (20956260 / 126081533)",
-          "source_url": "https://www.falabella.com.pe/falabella-pe/product/20956260/khamrah-eau-de-parfum-100-ml/20956260",
-          "exclusion_reason": "Correct product page for the non-Qahwa/non-Dukhan target, but no price was rendered in the search-tool result; direct re-verification was not achievable within this gate's research budget."
-        },
-        {
           "source_name": "Falabella Perú — 'Khamrah Dukhan Eau de Parfum 100 ml' / 'Khamrah Qahwa Eau de Parfum 100ml'",
           "source_url": "https://www.falabella.com.pe/falabella-pe/product/143392306/khamrah-dukhan-eau-de-parfum-100-ml/143392307",
           "exclusion_reason": "Wrong flanker (Dukhan / Qahwa, not the base 'Clásico' Khamrah) — invalid substitution per Part A / identity guard traps."
         }
       ],
-      "min_credible_pen": null,
-      "max_credible_pen": null,
-      "selected_reference_pen": null,
-      "selection_method": "no_credible_source",
-      "confidence": "LOW",
-      "verification_status_target": "legacy",
-      "reason": "No usable verified price observation for the exact base Khamrah ('Clásico') product after rejecting flanker-mismatched (Qahwa/Dukhan) listings and two ambiguous/unconfirmable price readings on otherwise-correct product pages. Left unresolved per Part E/F (LOW remains legacy/unresolved)."
+      "min_credible_pen": 227.00,
+      "max_credible_pen": 258.24,
+      "spread_percent": 13.8,
+      "selected_reference_pen": 243,
+      "selection_method": "midpoint_of_2_credible_sources",
+      "confidence": "MEDIUM",
+      "prior_confidence": "LOW",
+      "verification_status_target": "provisional_market",
+      "reason": "4K-B2B.3 reviewer-approved decision: 2 credible Peru sources for the exact base Khamrah ('Clásico') target (Falabella direct S/258.24, Alamo Parfums Perú S/227.00), both currently available. Midpoint S/243 rounded to integer PEN; capped at MEDIUM (one Tier2 direct, one Tier3 specialist). Upgrades the prior LOW/legacy status."
     },
     {
       "batch": "B",
@@ -627,10 +657,43 @@
     {
       "batch": "B",
       "gate": "4K-B2B.2B",
+      "review_correction": {
+        "gate": "4K-B2B.3",
+        "reviewer": "ChatGPT independent review (GitHub + current external sources)",
+        "reason": "4K-B2B.2B found no usable point-price observation after rejecting an out-of-stock listing and a non-specific site-wide range. 4K-B2B.3 reviewer supplied two currently-available direct/exact Peru sources for the exact target.",
+        "old_selected_reference_pen": null
+      },
       "legacy_id": "liquid-brun",
       "verified_identity": { "brand": "French Avenue (Fragrance World)", "name": "Liquid Brun", "concentration": "EDP" },
       "size_ml": 100,
-      "observations": [],
+      "observations": [
+        {
+          "source_name": "Falabella Perú (marketplace)",
+          "source_url_note": "French Avenue Liquid Brun EDP 100 ml — Falabella Perú marketplace, currently available",
+          "observed_price_pen": 159.90,
+          "regular_price_pen": null,
+          "availability": "in_stock",
+          "exact_size_ml": 100,
+          "exact_concentration": "EDP",
+          "seller_type": "tier2_marketplace_on_major_department_platform",
+          "observation_date": "2026-09-13",
+          "observation_source": "4K-B2B.3 reviewer verification",
+          "notes": "4K-B2B.3 reviewer-supplied Falabella Perú marketplace listing (STAL) for the exact target, currently available, S/159.90."
+        },
+        {
+          "source_name": "Ripley Perú (pmp20001178999)",
+          "source_url": "https://simple.ripley.com.pe/french-avenue-liquid-brun-for-men-eau-de-parfum-100-ml-pmp20001178999",
+          "observed_price_pen": 199.90,
+          "regular_price_pen": null,
+          "availability": "in_stock",
+          "exact_size_ml": 100,
+          "exact_concentration": "EDP",
+          "seller_type": "tier2_department_store_direct",
+          "observation_date": "2026-09-13",
+          "observation_source": "4K-B2B.3 reviewer verification",
+          "notes": "4K-B2B.3 reviewer re-verification of the same correct product page excluded in 4K-B2B.2B for lack of a rendered price; exact 100 ml listing, S/199.90."
+        }
+      ],
       "excluded_observations": [
         {
           "source_name": "Pulse Peru",
@@ -638,23 +701,20 @@
           "exclusion_reason": "No-stock ghost price (S/260 listed but out of stock at time of research)."
         },
         {
-          "source_name": "Ripley Perú (pmp20001178999)",
-          "source_url": "https://simple.ripley.com.pe/french-avenue-liquid-brun-for-men-eau-de-parfum-100-ml-pmp20001178999",
-          "exclusion_reason": "Correct product page but no price was rendered in the search-tool result; direct re-verification not achievable within this gate's research budget."
-        },
-        {
           "source_name": "Sigma Essence Perú / Lujo Perfume",
           "source_url": "https://sigmaessenceperu.com/product/liquid-brun-de-french-avenue/",
           "exclusion_reason": "Only a whole-site price range was returned (e.g. 'S/10–S/169'), not a per-product price; not usable as a verified single-item observation."
         }
       ],
-      "min_credible_pen": null,
-      "max_credible_pen": null,
-      "selected_reference_pen": null,
-      "selection_method": "no_credible_source",
-      "confidence": "LOW",
-      "verification_status_target": "legacy",
-      "reason": "No usable verified point-price observation found for the exact target within this gate's research budget after rejecting an out-of-stock ghost listing and a non-specific site-wide price range. Left unresolved per Part E/F (LOW remains legacy/unresolved)."
+      "min_credible_pen": 159.90,
+      "max_credible_pen": 199.90,
+      "spread_percent": 20.0,
+      "selected_reference_pen": 180,
+      "selection_method": "midpoint_of_2_credible_sources",
+      "confidence": "MEDIUM",
+      "prior_confidence": "LOW",
+      "verification_status_target": "provisional_market",
+      "reason": "4K-B2B.3 reviewer-approved decision: 2 credible Peru sources for the exact target (Falabella Perú marketplace S/159.90, Ripley exact 100 ml listing S/199.90), both currently available. Midpoint S/180; capped at MEDIUM. Upgrades the prior LOW/legacy status."
     },
     {
       "batch": "B",
@@ -1051,6 +1111,55 @@
       "confidence": "MEDIUM",
       "verification_status_target": "provisional_market",
       "reason": "4K-B2B.2C-R reviewer correction: 2 independent Tier3 Peru sources (MM Parfum S/419.00, Royal King Perú S/390.00) for the exact Ultra Male / EDT / 125ml target, both currently offered with add-to-cart (live purchasable prices). Reference set to the midpoint of S/390 and S/419, rounded to integer PEN = S/405. Confidence remains MEDIUM (2 sources, Tier3 specialist retailers, no Tier2 department-store confirmation). Prior Ripley/SENTUA S/509.00 observations are preserved above as excluded/superseded evidence because both were unavailable ('pronto disponible' / 'no disponible') and do not satisfy the realistic current purchasing evidence requirement."
+    },
+    {
+      "batch": "closure",
+      "gate": "4K-B2B.3",
+      "reviewer": "ChatGPT independent review (GitHub + current external sources)",
+      "legacy_id": "victory-elixir",
+      "canonical_identity_note": "Canonical identity per supabase/staging/bottle-identity-audit.json (4K-B2B.1A, cross-checked by this gate's EAN evidence): Rabanne Invictus Victory Elixir, exact 100 ml SKU / EAN 3349668614523. This entry does NOT rewrite assets/data.js's product concentration merely because different retailers label the same EAN EDP, Parfum, or Parfum Intense — see concentration_nomenclature_conflict below.",
+      "verified_identity": { "brand": "Rabanne (Paco Rabanne)", "name": "Invictus Victory Elixir", "concentration": "Parfum Intense (per official rabanne.com); retailer listings for the same EAN 3349668614523 are inconsistent, see concentration_nomenclature_conflict" },
+      "ean": "3349668614523",
+      "size_ml": 100,
+      "concentration_nomenclature_conflict": "Ripley and Falabella direct listings for exact EAN 3349668614523 do not use a single consistent concentration label across the two retailers (some Peru retail copy for this SKU reads 'Eau de Parfum' while the official brand line is 'Parfum Intense'). This gate documents the conflict rather than asserting which retailer label is correct or silently normalizing assets/data.js's existing 'EDP' concentration value; see bottle-identity-audit.json for the full identity/concentration audit trail. No concentration value is changed in this closure.",
+      "observations": [
+        {
+          "source_name": "Ripley Perú (vendido por Ripley)",
+          "source_url_note": "Rabanne Invictus Victory Elixir, exact 100 ml SKU / EAN 3349668614523 — Peru direct, currently available",
+          "observed_price_pen": 559.00,
+          "regular_price_pen": null,
+          "availability": "in_stock",
+          "exact_size_ml": 100,
+          "exact_ean": "3349668614523",
+          "seller_type": "tier2_department_store_direct",
+          "observation_date": "2026-09-13",
+          "observation_source": "4K-B2B.3 reviewer verification",
+          "notes": "Direct Ripley sale (not a marketplace seller), exact 100 ml / EAN 3349668614523 match, currently available, S/559.00."
+        },
+        {
+          "source_name": "Falabella Perú (vendido por Falabella)",
+          "source_url_note": "Rabanne Invictus Victory Elixir, exact 100 ml SKU / EAN 3349668614523 — Peru direct, currently available",
+          "observed_price_pen": 569.00,
+          "regular_price_pen": null,
+          "availability": "in_stock",
+          "exact_size_ml": 100,
+          "exact_ean": "3349668614523",
+          "seller_type": "tier2_department_store_direct",
+          "observation_date": "2026-09-13",
+          "observation_source": "4K-B2B.3 reviewer verification",
+          "notes": "Direct Falabella sale (not a marketplace seller), exact 100 ml / EAN 3349668614523 match, currently available, S/569.00."
+        }
+      ],
+      "excluded_observations": [],
+      "min_credible_pen": 559.00,
+      "max_credible_pen": 569.00,
+      "spread_percent": 1.8,
+      "selected_reference_pen": 564,
+      "selection_method": "midpoint_of_2_tier2_direct_sources",
+      "confidence": "HIGH",
+      "prior_confidence": null,
+      "verification_status_target": "provisional_market",
+      "reason": "4K-B2B.3 reviewer-approved decision: 2 strong Tier2 department-store-direct Peru sources (Ripley S/559.00, Falabella S/569.00) for the exact 100 ml SKU / EAN 3349668614523, tight spread (1.8%). Midpoint S/564. HIGH confidence per Part E of the gate instructions (2 direct Tier2 sources in close agreement). This is a new bottle-market-research entry for a legacy_id not previously researched; it does not merge with or supersede the separate, archived 'invictus-elixir' decant-only legacy_id (see bottle-identity-audit.json cross-reference note)."
     }
   ],
   "summary": {
@@ -1090,6 +1199,20 @@
       "medium_confidence": 13,
       "low_or_unresolved": 4,
       "provisional_market_candidates": 17
+    },
+    "closure_4K_B2B_3": {
+      "gate": "4K-B2B.3",
+      "reviewer": "ChatGPT independent review (GitHub + current external sources)",
+      "promoted_to_provisional_market": ["khamrah-clasico", "liquid-brun", "victory-elixir"],
+      "explicitly_closed_unresolved": ["1-million-lucky", "by-the-fireplace", "le-beau-le-parfum", "bir-intense"],
+      "note": "le-beau-le-parfum and bir-intense have no rows above (never had a completed price-research attempt in Batch A/B/C; their target bottle size/concentration remain unresolved per bottle-identity-audit.json) and are explicitly not re-researched here."
+    },
+    "combined_after_4K_B2B_3": {
+      "researched": 22,
+      "high_confidence": 5,
+      "medium_confidence": 15,
+      "low_or_unresolved": 2,
+      "provisional_market_candidates": 20
     }
   }
 }

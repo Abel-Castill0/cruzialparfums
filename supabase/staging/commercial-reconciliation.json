@@ -49,11 +49,11 @@
     "blocked": 3,
     "excluded": 0,
     "variants": 315,
-    "legacy_price_variants": 10,
+    "legacy_price_variants": 7,
     "confirmed_price_variants": 288,
-    "legacy_bottle_price_variants": 7,
+    "legacy_bottle_price_variants": 4,
     "confirmed_bottle_price_variants": 0,
-    "provisional_market_bottle_price_variants": 17,
+    "provisional_market_bottle_price_variants": 20,
     "commercial_categories": 3,
     "olfactory_categories": 8,
     "category_relationships": 192,
@@ -13739,20 +13739,20 @@
           "variant_kind": "bottle",
           "size_ml": 100,
           "label": "Frasco 100 ml",
-          "price_amount": 380,
+          "price_amount": 243,
           "currency": "PEN",
           "publication_status": "draft",
-          "price_verification_status": "legacy",
+          "price_verification_status": "provisional_market",
           "sort_order": 3,
           "price_provenance": {
             "provenance": [
-              "legacy"
+              "MARKET_RESEARCH"
             ],
-            "basis": "Preserved exactly from assets/data.js through the existing legacy ETL"
+            "basis": "4K-B2B.2B Batch B Peru market research (supabase/staging/bottle-market-research.json, legacy_id=khamrah-clasico, size_ml=100): MEDIUM confidence, midpoint_of_2_credible_sources, S/ 243 from 2 credible Peru observation(s) (S/ 227–S/ 258.24). Operator-authorized TEMPORARY market reference only — not official_pdf, not client_confirmed."
           },
           "publish_eligibility": "NOT_READY",
           "blockers": [
-            "LEGACY_PRICE_NOT_APPROVED_FOR_PUBLICATION"
+            "PROVISIONAL_MARKET_PRICE_REQUIRES_COMMERCIAL_APPROVAL"
           ]
         }
       ],
@@ -13819,13 +13819,14 @@
       },
       "warnings": [
         "LEGACY_BESTSELLER_RETAINED_ONLY_AS_UNVERIFIED_METADATA",
+        "PROVISIONAL_MARKET_PRICE_NOT_CLIENT_CONFIRMED",
         "VARIANT_PRICE_OVERRIDE_APPLIED"
       ],
       "blockers": [
-        "LEGACY_PRICES_REQUIRE_COMMERCIAL_APPROVAL"
+        "PROVISIONAL_MARKET_PRICES_REQUIRE_COMMERCIAL_APPROVAL"
       ],
       "conflicts": [],
-      "source_fingerprint": "30f6f6d59036b07ff62908b77b77ba8f10d5190b84124dafa237246346fd7946"
+      "source_fingerprint": "d5eb2a94820c810fd6a96b34a45452808f8c4a0172d27d9e5fc1eca48d04b33c"
     },
     {
       "legacy_id": "khamrah-dukhan",
@@ -15647,20 +15648,20 @@
           "variant_kind": "bottle",
           "size_ml": 100,
           "label": "Frasco 100 ml",
-          "price_amount": 450,
+          "price_amount": 180,
           "currency": "PEN",
           "publication_status": "draft",
-          "price_verification_status": "legacy",
+          "price_verification_status": "provisional_market",
           "sort_order": 3,
           "price_provenance": {
             "provenance": [
-              "legacy"
+              "MARKET_RESEARCH"
             ],
-            "basis": "Preserved exactly from assets/data.js through the existing legacy ETL"
+            "basis": "4K-B2B.2B Batch B Peru market research (supabase/staging/bottle-market-research.json, legacy_id=liquid-brun, size_ml=100): MEDIUM confidence, midpoint_of_2_credible_sources, S/ 180 from 2 credible Peru observation(s) (S/ 159.9–S/ 199.9). Operator-authorized TEMPORARY market reference only — not official_pdf, not client_confirmed."
           },
           "publish_eligibility": "NOT_READY",
           "blockers": [
-            "LEGACY_PRICE_NOT_APPROVED_FOR_PUBLICATION"
+            "PROVISIONAL_MARKET_PRICE_REQUIRES_COMMERCIAL_APPROVAL"
           ]
         }
       ],
@@ -15727,13 +15728,14 @@
       },
       "warnings": [
         "LEGACY_BESTSELLER_RETAINED_ONLY_AS_UNVERIFIED_METADATA",
+        "PROVISIONAL_MARKET_PRICE_NOT_CLIENT_CONFIRMED",
         "VARIANT_PRICE_OVERRIDE_APPLIED"
       ],
       "blockers": [
-        "LEGACY_PRICES_REQUIRE_COMMERCIAL_APPROVAL"
+        "PROVISIONAL_MARKET_PRICES_REQUIRE_COMMERCIAL_APPROVAL"
       ],
       "conflicts": [],
-      "source_fingerprint": "14bf8e50d1d66d6d37456bee6a54491df10566a964384e33d306c3345b988e77"
+      "source_fingerprint": "838d55e57fdfa8d92c8eb2cf9f2f48e43eb4ecea584ba14720e7440183266357"
     },
     {
       "legacy_id": "lovely-cherry",
@@ -25178,20 +25180,20 @@
           "variant_kind": "bottle",
           "size_ml": 100,
           "label": "Frasco 100 ml",
-          "price_amount": 650,
+          "price_amount": 564,
           "currency": "PEN",
           "publication_status": "draft",
-          "price_verification_status": "legacy",
+          "price_verification_status": "provisional_market",
           "sort_order": 3,
           "price_provenance": {
             "provenance": [
-              "legacy"
+              "MARKET_RESEARCH"
             ],
-            "basis": "Preserved exactly from assets/data.js through the existing legacy ETL"
+            "basis": "4K-B2B.3 Batch closure Peru market research (supabase/staging/bottle-market-research.json, legacy_id=victory-elixir, size_ml=100): HIGH confidence, midpoint_of_2_tier2_direct_sources, S/ 564 from 2 credible Peru observation(s) (S/ 559–S/ 569). Operator-authorized TEMPORARY market reference only — not official_pdf, not client_confirmed."
           },
           "publish_eligibility": "NOT_READY",
           "blockers": [
-            "LEGACY_PRICE_NOT_APPROVED_FOR_PUBLICATION"
+            "PROVISIONAL_MARKET_PRICE_REQUIRES_COMMERCIAL_APPROVAL"
           ]
         }
       ],
@@ -25257,13 +25259,14 @@
         "write_status": "DEFERRED_TO_4F2B"
       },
       "warnings": [
+        "PROVISIONAL_MARKET_PRICE_NOT_CLIENT_CONFIRMED",
         "VARIANT_PRICE_OVERRIDE_APPLIED"
       ],
       "blockers": [
-        "LEGACY_PRICES_REQUIRE_COMMERCIAL_APPROVAL"
+        "PROVISIONAL_MARKET_PRICES_REQUIRE_COMMERCIAL_APPROVAL"
       ],
       "conflicts": [],
-      "source_fingerprint": "74dd22a7f2cc75f7c3a35d69b8cb6960d41bf161c68ec8a6e52c80838c60c5af"
+      "source_fingerprint": "3ac40e260e79a739e03c51d47bee6cf3265b1b3232a0acdab286f6a6e81e4ef4"
     },
     {
       "legacy_id": "vulcan-feu",

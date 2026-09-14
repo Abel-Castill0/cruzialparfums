@@ -695,6 +695,55 @@ provisional_market writes.
   per gate instructions).
 - Next: 4K-B2B.3 — NOT STARTED.
 
+### 4K-B2B.3 — Bottle Research Closure / Reviewer Decisions — CLOSED
+
+- Applied 3 reviewer-approved (ChatGPT independent review) price decisions to
+  supabase/staging/bottle-market-research.json, upgrading each from
+  LOW/legacy (or previously unresearched) to provisional_market:
+  - **khamrah-clasico** (Lattafa Khamrah original / "Clásico", EDP, 100 ml):
+    Falabella Perú direct S/258.24 + Alamo Parfums Perú S/227 -> midpoint
+    **S/243**, MEDIUM confidence.
+  - **liquid-brun** (French Avenue Liquid Brun, EDP, 100 ml): Falabella Perú
+    marketplace STAL S/159.90 + Ripley exact 100 ml S/199.90 -> midpoint
+    **S/180**, MEDIUM confidence.
+  - **victory-elixir** (Rabanne Invictus Victory Elixir, exact 100 ml SKU /
+    EAN 3349668614523): Ripley direct S/559 + Falabella direct S/569 ->
+    midpoint **S/564**, HIGH confidence (new entry — not previously
+    researched). Concentration nomenclature conflict (retailers labeling the
+    same EAN inconsistently vs. the brand's "Parfum Intense" line)
+    documented, not resolved; assets/data.js concentration value untouched.
+- Explicitly closed the other 4 unresolved bottles as intentional
+  LOW/legacy, not to be re-researched without new client evidence:
+  **1-million-lucky** (only one strong Peru direct source; MercadoLibre
+  Tier4 conflicts materially), **by-the-fireplace** (Ripley exact EDT 100ml
+  orderable but MM Parfum sold out; insufficient two-current-source
+  evidence), **le-beau-le-parfum** (EXPLICIT_UNRESOLVED — official sizes
+  75/125ml, client target size unknown), **bir-intense**
+  (EXPLICIT_UNRESOLVED — target bottle size/concentration unresolved).
+- bottle-identity-audit.json: added a narrow `closure_4K_B2B_3` note to the
+  victory-elixir entry recording the canonical identity (Rabanne Invictus
+  Victory Elixir), EAN 3349668614523, target size 100ml, and the verified
+  concentration-terminology conflict — `identity_status`/
+  `concentration_status` remain IDENTITY_CONFLICT/CONCENTRATION_CONFLICT as
+  originally audited (no lifecycle change); victory-elixir stays a distinct
+  record from the archived invictus-elixir.
+- Regenerated supabase/staging/commercial-reconciliation.json: 97 products,
+  315 variants, **20 provisional_market bottles, 4 legacy bottles**, 288
+  official_pdf decants, 3 blocked combos, 0 conflicts.
+- 9 new focused Vitest tests added (describe "4K-B2B.3 bottle market
+  research closure (reviewer decisions)") plus updated pre-existing count
+  assertions across the file (302->305 VARIANT_PRICE_OVERRIDES, 17->20
+  provisional_market / 7->4 legacy bottle counts) — 92 tests in
+  commercial-reconciliation.test.ts, 610 tests total. npm run
+  commercial:check: byte-stable. npm run check: PASS (610 tests,
+  lint/typecheck/build all green). git diff --check: clean.
+- Bottle price market-research phase is now CLOSED: 20 provisional_market
+  bottles, 4 explicit unresolved legacy bottles (1-million-lucky,
+  by-the-fireplace, le-beau-le-parfum, bir-intense) — do not keep
+  reopening those four without new client evidence or a materially new
+  source.
+- Next: 4K-C — NOT STARTED.
+
 ## Current evidence gaps
 
 None outstanding for 4J5F. See Deferred defects above for the categoryId
