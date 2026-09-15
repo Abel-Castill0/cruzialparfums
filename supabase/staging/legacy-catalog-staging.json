@@ -7,62 +7,12 @@
     "publishEligible": false,
     "stagedProductPublicationStatus": "draft",
     "counts": {
-      "staged": 96,
-      "blocked": 3,
+      "staged": 99,
+      "blocked": 0,
       "invalid": 0
     }
   },
-  "blocked": [
-    {
-      "legacy_id": "combo-cuarteto",
-      "reason": "combo composition and price confirmed against the official 2026 PDF; combo product/target-table creation is deferred to a later gate",
-      "composition_verification_status": "official_pdf",
-      "source_state": "OFFICIAL_PDF_CONFIRMED",
-      "composition_legacy_ids": [
-        "khamrah-qahwa",
-        "khamrah-clasico",
-        "khamrah-waha",
-        "khamrah-dukhan"
-      ],
-      "decant_price_3_5_10": [
-        40,
-        55,
-        89
-      ]
-    },
-    {
-      "legacy_id": "combo-vainilla",
-      "reason": "combo composition and price confirmed against the official 2026 PDF; combo product/target-table creation is deferred to a later gate",
-      "composition_verification_status": "official_pdf",
-      "source_state": "OFFICIAL_PDF_CONFIRMED",
-      "composition_legacy_ids": [
-        "yara-pink",
-        "yara-candy",
-        "eclaire"
-      ],
-      "decant_price_3_5_10": [
-        27,
-        39,
-        65
-      ]
-    },
-    {
-      "legacy_id": "combo-tulum",
-      "reason": "combo composition and price confirmed against the official 2026 PDF; combo product/target-table creation is deferred to a later gate",
-      "composition_verification_status": "official_pdf",
-      "source_state": "OFFICIAL_PDF_CONFIRMED",
-      "composition_legacy_ids": [
-        "odyssey-aqua",
-        "hawas-tropical",
-        "supremacy-colle"
-      ],
-      "decant_price_3_5_10": [
-        31,
-        42,
-        71
-      ]
-    }
-  ],
+  "blocked": [],
   "invalid": [],
   "entries": [
     {
@@ -2623,6 +2573,277 @@
         }
       ],
       "fingerprint": "d5a327f9608b39479f93127b60461e0e60064e4dcf49f79c2a746d1705e4b336"
+    },
+    {
+      "legacy_id": "combo-cuarteto",
+      "product": {
+        "business_unit_id": "11111111-1111-4111-8111-111111111111",
+        "legacy_id": "combo-cuarteto",
+        "slug": "combo-cuarteto",
+        "name": "Cuarteto Oriental",
+        "brand": "",
+        "description": "Khamrah Clásico, Khamrah Qahwa, Khamrah Dukhan y Khamrah Waha — 4 fragancias árabes de la línea Khamrah (Lattafa). Rinde hasta 600 atomizaciones en su formato 10 ml.",
+        "gender": "unisex",
+        "concentration": "EDP",
+        "sales_mode": "always_available",
+        "production_status": "active",
+        "availability_status": "available",
+        "publication_status": "draft",
+        "is_featured": false,
+        "featured_rank": null,
+        "featured_from": null,
+        "featured_until": null,
+        "verification_status": "legacy",
+        "specs": {
+          "family": "Ámbar",
+          "notes": [
+            "4 fragancias",
+            "Orientales",
+            "Selección"
+          ],
+          "tag": "Combo",
+          "legacy_hidden": false,
+          "legacy_bestseller_unverified": false
+        }
+      },
+      "variants": [
+        {
+          "label": "3 ml",
+          "variant_kind": "decant",
+          "size_ml": 3,
+          "price_amount": 40,
+          "currency": "PEN",
+          "publication_status": "draft",
+          "price_verification_status": "legacy",
+          "sort_order": 0
+        },
+        {
+          "label": "5 ml",
+          "variant_kind": "decant",
+          "size_ml": 5,
+          "price_amount": 55,
+          "currency": "PEN",
+          "publication_status": "draft",
+          "price_verification_status": "legacy",
+          "sort_order": 1
+        },
+        {
+          "label": "10 ml",
+          "variant_kind": "decant",
+          "size_ml": 10,
+          "price_amount": 89,
+          "currency": "PEN",
+          "publication_status": "draft",
+          "price_verification_status": "legacy",
+          "sort_order": 2
+        }
+      ],
+      "categories": [
+        {
+          "kind": "olfactory_family",
+          "slug": "ámbar"
+        }
+      ],
+      "media": [
+        {
+          "provider": "legacy_static",
+          "secure_url": "img/combos/set-cuarteto.webp",
+          "alt": "Cuarteto Oriental",
+          "is_primary": true,
+          "sort_order": 0
+        }
+      ],
+      "combo": {
+        "composition_verification_status": "official_pdf",
+        "source_state": "OFFICIAL_PDF_CONFIRMED",
+        "composition_legacy_ids": [
+          "khamrah-qahwa",
+          "khamrah-clasico",
+          "khamrah-waha",
+          "khamrah-dukhan"
+        ]
+      },
+      "fingerprint": "25c12fefb912ee5d51406217650f476d735182e64ed800b48084fc74da18323f"
+    },
+    {
+      "legacy_id": "combo-tulum",
+      "product": {
+        "business_unit_id": "11111111-1111-4111-8111-111111111111",
+        "legacy_id": "combo-tulum",
+        "slug": "combo-tulum",
+        "name": "Set Tulum",
+        "brand": "",
+        "description": "Odyssey Aqua, Hawas Tropical y Supremacy Collection — 3 fragancias frescas con espíritu playero. Rinde hasta 450 atomizaciones en su formato 10 ml.",
+        "gender": "unisex",
+        "concentration": "EDP",
+        "sales_mode": "always_available",
+        "production_status": "active",
+        "availability_status": "available",
+        "publication_status": "draft",
+        "is_featured": false,
+        "featured_rank": null,
+        "featured_from": null,
+        "featured_until": null,
+        "verification_status": "legacy",
+        "specs": {
+          "family": "Fresco",
+          "notes": [
+            "Fresco",
+            "Cálido",
+            "Veraniego"
+          ],
+          "tag": "Combo",
+          "legacy_hidden": false,
+          "legacy_bestseller_unverified": false
+        }
+      },
+      "variants": [
+        {
+          "label": "3 ml",
+          "variant_kind": "decant",
+          "size_ml": 3,
+          "price_amount": 31,
+          "currency": "PEN",
+          "publication_status": "draft",
+          "price_verification_status": "legacy",
+          "sort_order": 0
+        },
+        {
+          "label": "5 ml",
+          "variant_kind": "decant",
+          "size_ml": 5,
+          "price_amount": 42,
+          "currency": "PEN",
+          "publication_status": "draft",
+          "price_verification_status": "legacy",
+          "sort_order": 1
+        },
+        {
+          "label": "10 ml",
+          "variant_kind": "decant",
+          "size_ml": 10,
+          "price_amount": 71,
+          "currency": "PEN",
+          "publication_status": "draft",
+          "price_verification_status": "legacy",
+          "sort_order": 2
+        }
+      ],
+      "categories": [
+        {
+          "kind": "olfactory_family",
+          "slug": "fresco"
+        }
+      ],
+      "media": [
+        {
+          "provider": "legacy_static",
+          "secure_url": "img/combos/set-tulum.webp",
+          "alt": "Set Tulum",
+          "is_primary": true,
+          "sort_order": 0
+        }
+      ],
+      "combo": {
+        "composition_verification_status": "official_pdf",
+        "source_state": "OFFICIAL_PDF_CONFIRMED",
+        "composition_legacy_ids": [
+          "odyssey-aqua",
+          "hawas-tropical",
+          "supremacy-colle"
+        ]
+      },
+      "fingerprint": "0464498b483e332b38f41bf49e6eebb16dec0c6f2e6a2db800c47ee7c2f12dd5"
+    },
+    {
+      "legacy_id": "combo-vainilla",
+      "product": {
+        "business_unit_id": "11111111-1111-4111-8111-111111111111",
+        "legacy_id": "combo-vainilla",
+        "slug": "combo-vainilla",
+        "name": "Vainilla Freak",
+        "brand": "",
+        "description": "Yara Pink, Yara Candy y Eclaire — 3 fragancias gourmand para amantes de la vainilla. Rinde hasta 450 atomizaciones en su formato 10 ml.",
+        "gender": "unisex",
+        "concentration": "EDP",
+        "sales_mode": "always_available",
+        "production_status": "active",
+        "availability_status": "available",
+        "publication_status": "draft",
+        "is_featured": false,
+        "featured_rank": null,
+        "featured_from": null,
+        "featured_until": null,
+        "verification_status": "legacy",
+        "specs": {
+          "family": "Gourmand",
+          "notes": [
+            "Vainilla",
+            "Gourmand",
+            "Dulce"
+          ],
+          "tag": "Combo",
+          "legacy_hidden": false,
+          "legacy_bestseller_unverified": false
+        }
+      },
+      "variants": [
+        {
+          "label": "3 ml",
+          "variant_kind": "decant",
+          "size_ml": 3,
+          "price_amount": 27,
+          "currency": "PEN",
+          "publication_status": "draft",
+          "price_verification_status": "legacy",
+          "sort_order": 0
+        },
+        {
+          "label": "5 ml",
+          "variant_kind": "decant",
+          "size_ml": 5,
+          "price_amount": 39,
+          "currency": "PEN",
+          "publication_status": "draft",
+          "price_verification_status": "legacy",
+          "sort_order": 1
+        },
+        {
+          "label": "10 ml",
+          "variant_kind": "decant",
+          "size_ml": 10,
+          "price_amount": 65,
+          "currency": "PEN",
+          "publication_status": "draft",
+          "price_verification_status": "legacy",
+          "sort_order": 2
+        }
+      ],
+      "categories": [
+        {
+          "kind": "olfactory_family",
+          "slug": "gourmand"
+        }
+      ],
+      "media": [
+        {
+          "provider": "legacy_static",
+          "secure_url": "img/combos/set-vainilla.webp",
+          "alt": "Vainilla Freak",
+          "is_primary": true,
+          "sort_order": 0
+        }
+      ],
+      "combo": {
+        "composition_verification_status": "official_pdf",
+        "source_state": "OFFICIAL_PDF_CONFIRMED",
+        "composition_legacy_ids": [
+          "yara-pink",
+          "yara-candy",
+          "eclaire"
+        ]
+      },
+      "fingerprint": "7ab57b122b275cf32312edd9dd2a7d0ee15abe7f06b93128ded7d3421914c24f"
     },
     {
       "legacy_id": "dylan-blue",

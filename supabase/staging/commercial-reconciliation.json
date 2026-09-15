@@ -10,7 +10,8 @@
       "supabase/migrations/20260907154348_catalog.sql": "0933444fefb2a3f65d0c54d592f6a06ad078625b30f349d68a9363da4f06683e",
       "supabase/migrations/20260907154401_integrity_hardening.sql": "7bbc09f0180cd016b2e2f9bfe5429fd747c086e70ca0720eece5a9fec121d37e",
       "supabase/migrations/20260908070000_admin_parfums_wholesale.sql": "db4cf7d1503f8c943b99dc5a0246b1edc2a6bc3ae53ab0f62303b282817d575a",
-      "supabase/staging/legacy-catalog-staging.json": "1aa15e0d7da8b99f2cf3f57540fe8717ccea020d510df6474b059bb3c45699cd"
+      "supabase/staging/legacy-catalog-staging.json": "136c7ae7d31336a3d7c6b859e38b3c3d2887bc1fc70347c8a2d93289dbdd96bf",
+      "supabase/staging/pdf-2026-commercial-reconciliation.json": "13393139c0b7401e2c57fbb7d8101fc0881457c1c2fd135dfac7d1751800432c"
     },
     "status_vocabulary": {
       "migration_status": [
@@ -43,20 +44,25 @@
   },
   "summary": {
     "legacy_products_considered": 100,
-    "staged_non_combo_products": 97,
-    "migratable_draft": 88,
+    "staged_non_combo_products": 100,
+    "migratable_draft": 91,
     "migratable_with_verified_fields": 9,
-    "blocked": 3,
+    "blocked": 0,
     "excluded": 0,
-    "variants": 315,
+    "variants": 324,
     "legacy_price_variants": 7,
-    "confirmed_price_variants": 288,
+    "official_pdf_price_variants": 297,
+    "provisional_market_price_variants": 20,
+    "confirmed_price_variants": 297,
     "legacy_bottle_price_variants": 4,
     "confirmed_bottle_price_variants": 0,
     "provisional_market_bottle_price_variants": 20,
     "commercial_categories": 3,
     "olfactory_categories": 8,
-    "category_relationships": 192,
+    "category_relationships": 195,
+    "combo_targets": 3,
+    "combo_presentations": 9,
+    "combo_items": 30,
     "status_overrides": 0,
     "provenance_overrides": 14,
     "conflicts": 0
@@ -7783,6 +7789,768 @@
       ],
       "conflicts": [],
       "source_fingerprint": "fd0f49b462607465c764b8a2fdaa80214f7b2e4e4e39f596fa53aae5dc424bd1"
+    },
+    {
+      "legacy_id": "combo-cuarteto",
+      "migration_status": "MIGRATABLE_DRAFT",
+      "publish_eligibility": "NOT_READY",
+      "target_product": {
+        "legacy_id": "combo-cuarteto",
+        "slug": "combo-cuarteto",
+        "name": "Cuarteto Oriental",
+        "brand": "",
+        "short_description": null,
+        "description": "Khamrah Clásico, Khamrah Qahwa, Khamrah Dukhan y Khamrah Waha — 4 fragancias árabes de la línea Khamrah (Lattafa). Rinde hasta 600 atomizaciones en su formato 10 ml.",
+        "gender": "unisex",
+        "concentration": "EDP",
+        "sales_mode": "always_available",
+        "production_status": "active",
+        "availability_status": "available",
+        "publication_status": "draft",
+        "is_featured": false,
+        "featured_rank": null,
+        "featured_from": null,
+        "featured_until": null,
+        "verification_status": "legacy",
+        "specs": {
+          "family": "Ámbar",
+          "notes": [
+            "4 fragancias",
+            "Orientales",
+            "Selección"
+          ],
+          "tag": "Combo",
+          "legacy_hidden": false,
+          "legacy_bestseller_unverified": false
+        }
+      },
+      "field_provenance": {
+        "legacy_id": {
+          "provenance": [
+            "legacy"
+          ],
+          "basis": "Preserved from the legacy staging artifact without approval promotion"
+        },
+        "slug": {
+          "provenance": [
+            "legacy"
+          ],
+          "basis": "Preserved from the legacy staging artifact without approval promotion"
+        },
+        "name": {
+          "provenance": [
+            "legacy"
+          ],
+          "basis": "Preserved from the legacy staging artifact without approval promotion"
+        },
+        "brand": {
+          "provenance": [
+            "legacy"
+          ],
+          "basis": "Preserved from the legacy staging artifact without approval promotion"
+        },
+        "short_description": {
+          "provenance": [
+            "UNKNOWN"
+          ],
+          "basis": "The legacy staging contract has no short description; the optional target remains null"
+        },
+        "description": {
+          "provenance": [
+            "legacy"
+          ],
+          "basis": "Preserved from the legacy staging artifact without approval promotion"
+        },
+        "gender": {
+          "provenance": [
+            "legacy"
+          ],
+          "basis": "Preserved from the legacy staging artifact without approval promotion"
+        },
+        "concentration": {
+          "provenance": [
+            "legacy"
+          ],
+          "basis": "Preserved from the legacy staging artifact without approval promotion"
+        },
+        "sales_mode": {
+          "provenance": [
+            "legacy"
+          ],
+          "basis": "Preserved from the legacy staging artifact without approval promotion"
+        },
+        "production_status": {
+          "provenance": [
+            "legacy"
+          ],
+          "basis": "Preserved from the legacy staging artifact without approval promotion"
+        },
+        "availability_status": {
+          "provenance": [
+            "legacy"
+          ],
+          "basis": "Preserved from the legacy staging artifact without approval promotion"
+        },
+        "publication_status": {
+          "provenance": [
+            "DERIVED_VALIDATED"
+          ],
+          "basis": "Conservative migration policy maps unapproved products to draft; explicit legacy_hidden maps to the schema's hidden state"
+        },
+        "is_featured": {
+          "provenance": [
+            "legacy"
+          ],
+          "basis": "Preserved from the legacy staging artifact without approval promotion"
+        },
+        "featured_rank": {
+          "provenance": [
+            "legacy"
+          ],
+          "basis": "Preserved from the legacy staging artifact without approval promotion"
+        },
+        "featured_from": {
+          "provenance": [
+            "legacy"
+          ],
+          "basis": "Preserved from the legacy staging artifact without approval promotion"
+        },
+        "featured_until": {
+          "provenance": [
+            "legacy"
+          ],
+          "basis": "Preserved from the legacy staging artifact without approval promotion"
+        },
+        "verification_status": {
+          "provenance": [
+            "DERIVED_VALIDATED"
+          ],
+          "basis": "Conservative reduction to legacy because one database column cannot express mixed field-level evidence"
+        },
+        "specs": {
+          "provenance": [
+            "legacy"
+          ],
+          "basis": "Preserved from the legacy staging artifact without approval promotion"
+        }
+      },
+      "variants": [
+        {
+          "variant_kind": "decant",
+          "size_ml": 3,
+          "label": "3 ml",
+          "price_amount": 40,
+          "currency": "PEN",
+          "publication_status": "draft",
+          "price_verification_status": "official_pdf",
+          "sort_order": 0,
+          "price_provenance": {
+            "provenance": [
+              "OFFICIAL_PDF"
+            ],
+            "basis": "Official 2026 client PDF combo definition persisted in supabase/staging/pdf-2026-commercial-reconciliation.json; name, ordered composition, and 3/5/10 selling prices cross-checked before materialization."
+          },
+          "publish_eligibility": "NOT_READY",
+          "blockers": []
+        },
+        {
+          "variant_kind": "decant",
+          "size_ml": 5,
+          "label": "5 ml",
+          "price_amount": 55,
+          "currency": "PEN",
+          "publication_status": "draft",
+          "price_verification_status": "official_pdf",
+          "sort_order": 1,
+          "price_provenance": {
+            "provenance": [
+              "OFFICIAL_PDF"
+            ],
+            "basis": "Official 2026 client PDF combo definition persisted in supabase/staging/pdf-2026-commercial-reconciliation.json; name, ordered composition, and 3/5/10 selling prices cross-checked before materialization."
+          },
+          "publish_eligibility": "NOT_READY",
+          "blockers": []
+        },
+        {
+          "variant_kind": "decant",
+          "size_ml": 10,
+          "label": "10 ml",
+          "price_amount": 89,
+          "currency": "PEN",
+          "publication_status": "draft",
+          "price_verification_status": "official_pdf",
+          "sort_order": 2,
+          "price_provenance": {
+            "provenance": [
+              "OFFICIAL_PDF"
+            ],
+            "basis": "Official 2026 client PDF combo definition persisted in supabase/staging/pdf-2026-commercial-reconciliation.json; name, ordered composition, and 3/5/10 selling prices cross-checked before materialization."
+          },
+          "publish_eligibility": "NOT_READY",
+          "blockers": []
+        }
+      ],
+      "categories": [
+        {
+          "kind": "olfactory_family",
+          "source_slug": "ámbar",
+          "target_slug": "ambar",
+          "source_provenance": {
+            "provenance": [
+              "legacy"
+            ],
+            "basis": "Preserved from legacy staging; normalization does not upgrade evidence"
+          },
+          "transformation": "ASCII_SLUG_NORMALIZATION",
+          "migration_eligibility": "MIGRATABLE",
+          "publication_intent": "draft"
+        }
+      ],
+      "inventory_intent": {
+        "applies_to_each_variant": true,
+        "inventory_mode": "status_only",
+        "quantity_on_hand": null,
+        "availability_status": "available",
+        "field_provenance": {
+          "inventory_mode": {
+            "provenance": [
+              "DERIVED_VALIDATED"
+            ],
+            "basis": "Safest current-schema mode while the operating model is unknown"
+          },
+          "quantity_on_hand": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "basis": "No reliable quantity evidence; no quantity is invented"
+          },
+          "availability_status": {
+            "provenance": [
+              "legacy"
+            ],
+            "basis": "Preserved independently from production and publication status"
+          }
+        }
+      },
+      "media_dependency": {
+        "manifest": "supabase/staging/client-media-reconciliation.json",
+        "lookup_key": "combo-cuarteto",
+        "write_status": "DEFERRED_TO_4F2B"
+      },
+      "warnings": [
+        "VARIANT_PRICE_OVERRIDE_APPLIED"
+      ],
+      "blockers": [],
+      "conflicts": [],
+      "source_fingerprint": "9169f7b2702938c8baf4957998570b1f67a45f20bd570c3fbbc2540cff81a273"
+    },
+    {
+      "legacy_id": "combo-tulum",
+      "migration_status": "MIGRATABLE_DRAFT",
+      "publish_eligibility": "NOT_READY",
+      "target_product": {
+        "legacy_id": "combo-tulum",
+        "slug": "combo-tulum",
+        "name": "Set Tulum",
+        "brand": "",
+        "short_description": null,
+        "description": "Odyssey Aqua, Hawas Tropical y Supremacy Collection — 3 fragancias frescas con espíritu playero. Rinde hasta 450 atomizaciones en su formato 10 ml.",
+        "gender": "unisex",
+        "concentration": "EDP",
+        "sales_mode": "always_available",
+        "production_status": "active",
+        "availability_status": "available",
+        "publication_status": "draft",
+        "is_featured": false,
+        "featured_rank": null,
+        "featured_from": null,
+        "featured_until": null,
+        "verification_status": "legacy",
+        "specs": {
+          "family": "Fresco",
+          "notes": [
+            "Fresco",
+            "Cálido",
+            "Veraniego"
+          ],
+          "tag": "Combo",
+          "legacy_hidden": false,
+          "legacy_bestseller_unverified": false
+        }
+      },
+      "field_provenance": {
+        "legacy_id": {
+          "provenance": [
+            "legacy"
+          ],
+          "basis": "Preserved from the legacy staging artifact without approval promotion"
+        },
+        "slug": {
+          "provenance": [
+            "legacy"
+          ],
+          "basis": "Preserved from the legacy staging artifact without approval promotion"
+        },
+        "name": {
+          "provenance": [
+            "legacy"
+          ],
+          "basis": "Preserved from the legacy staging artifact without approval promotion"
+        },
+        "brand": {
+          "provenance": [
+            "legacy"
+          ],
+          "basis": "Preserved from the legacy staging artifact without approval promotion"
+        },
+        "short_description": {
+          "provenance": [
+            "UNKNOWN"
+          ],
+          "basis": "The legacy staging contract has no short description; the optional target remains null"
+        },
+        "description": {
+          "provenance": [
+            "legacy"
+          ],
+          "basis": "Preserved from the legacy staging artifact without approval promotion"
+        },
+        "gender": {
+          "provenance": [
+            "legacy"
+          ],
+          "basis": "Preserved from the legacy staging artifact without approval promotion"
+        },
+        "concentration": {
+          "provenance": [
+            "legacy"
+          ],
+          "basis": "Preserved from the legacy staging artifact without approval promotion"
+        },
+        "sales_mode": {
+          "provenance": [
+            "legacy"
+          ],
+          "basis": "Preserved from the legacy staging artifact without approval promotion"
+        },
+        "production_status": {
+          "provenance": [
+            "legacy"
+          ],
+          "basis": "Preserved from the legacy staging artifact without approval promotion"
+        },
+        "availability_status": {
+          "provenance": [
+            "legacy"
+          ],
+          "basis": "Preserved from the legacy staging artifact without approval promotion"
+        },
+        "publication_status": {
+          "provenance": [
+            "DERIVED_VALIDATED"
+          ],
+          "basis": "Conservative migration policy maps unapproved products to draft; explicit legacy_hidden maps to the schema's hidden state"
+        },
+        "is_featured": {
+          "provenance": [
+            "legacy"
+          ],
+          "basis": "Preserved from the legacy staging artifact without approval promotion"
+        },
+        "featured_rank": {
+          "provenance": [
+            "legacy"
+          ],
+          "basis": "Preserved from the legacy staging artifact without approval promotion"
+        },
+        "featured_from": {
+          "provenance": [
+            "legacy"
+          ],
+          "basis": "Preserved from the legacy staging artifact without approval promotion"
+        },
+        "featured_until": {
+          "provenance": [
+            "legacy"
+          ],
+          "basis": "Preserved from the legacy staging artifact without approval promotion"
+        },
+        "verification_status": {
+          "provenance": [
+            "DERIVED_VALIDATED"
+          ],
+          "basis": "Conservative reduction to legacy because one database column cannot express mixed field-level evidence"
+        },
+        "specs": {
+          "provenance": [
+            "legacy"
+          ],
+          "basis": "Preserved from the legacy staging artifact without approval promotion"
+        }
+      },
+      "variants": [
+        {
+          "variant_kind": "decant",
+          "size_ml": 3,
+          "label": "3 ml",
+          "price_amount": 31,
+          "currency": "PEN",
+          "publication_status": "draft",
+          "price_verification_status": "official_pdf",
+          "sort_order": 0,
+          "price_provenance": {
+            "provenance": [
+              "OFFICIAL_PDF"
+            ],
+            "basis": "Official 2026 client PDF combo definition persisted in supabase/staging/pdf-2026-commercial-reconciliation.json; name, ordered composition, and 3/5/10 selling prices cross-checked before materialization."
+          },
+          "publish_eligibility": "NOT_READY",
+          "blockers": []
+        },
+        {
+          "variant_kind": "decant",
+          "size_ml": 5,
+          "label": "5 ml",
+          "price_amount": 42,
+          "currency": "PEN",
+          "publication_status": "draft",
+          "price_verification_status": "official_pdf",
+          "sort_order": 1,
+          "price_provenance": {
+            "provenance": [
+              "OFFICIAL_PDF"
+            ],
+            "basis": "Official 2026 client PDF combo definition persisted in supabase/staging/pdf-2026-commercial-reconciliation.json; name, ordered composition, and 3/5/10 selling prices cross-checked before materialization."
+          },
+          "publish_eligibility": "NOT_READY",
+          "blockers": []
+        },
+        {
+          "variant_kind": "decant",
+          "size_ml": 10,
+          "label": "10 ml",
+          "price_amount": 71,
+          "currency": "PEN",
+          "publication_status": "draft",
+          "price_verification_status": "official_pdf",
+          "sort_order": 2,
+          "price_provenance": {
+            "provenance": [
+              "OFFICIAL_PDF"
+            ],
+            "basis": "Official 2026 client PDF combo definition persisted in supabase/staging/pdf-2026-commercial-reconciliation.json; name, ordered composition, and 3/5/10 selling prices cross-checked before materialization."
+          },
+          "publish_eligibility": "NOT_READY",
+          "blockers": []
+        }
+      ],
+      "categories": [
+        {
+          "kind": "olfactory_family",
+          "source_slug": "fresco",
+          "target_slug": "fresco",
+          "source_provenance": {
+            "provenance": [
+              "legacy"
+            ],
+            "basis": "Preserved from legacy staging; normalization does not upgrade evidence"
+          },
+          "transformation": "NONE",
+          "migration_eligibility": "MIGRATABLE",
+          "publication_intent": "draft"
+        }
+      ],
+      "inventory_intent": {
+        "applies_to_each_variant": true,
+        "inventory_mode": "status_only",
+        "quantity_on_hand": null,
+        "availability_status": "available",
+        "field_provenance": {
+          "inventory_mode": {
+            "provenance": [
+              "DERIVED_VALIDATED"
+            ],
+            "basis": "Safest current-schema mode while the operating model is unknown"
+          },
+          "quantity_on_hand": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "basis": "No reliable quantity evidence; no quantity is invented"
+          },
+          "availability_status": {
+            "provenance": [
+              "legacy"
+            ],
+            "basis": "Preserved independently from production and publication status"
+          }
+        }
+      },
+      "media_dependency": {
+        "manifest": "supabase/staging/client-media-reconciliation.json",
+        "lookup_key": "combo-tulum",
+        "write_status": "DEFERRED_TO_4F2B"
+      },
+      "warnings": [
+        "VARIANT_PRICE_OVERRIDE_APPLIED"
+      ],
+      "blockers": [],
+      "conflicts": [],
+      "source_fingerprint": "ddfe306c6960adc89d762c5a18686f0b9348cae42699bfca4c270f380890cf3b"
+    },
+    {
+      "legacy_id": "combo-vainilla",
+      "migration_status": "MIGRATABLE_DRAFT",
+      "publish_eligibility": "NOT_READY",
+      "target_product": {
+        "legacy_id": "combo-vainilla",
+        "slug": "combo-vainilla",
+        "name": "Vainilla Freak",
+        "brand": "",
+        "short_description": null,
+        "description": "Yara Pink, Yara Candy y Eclaire — 3 fragancias gourmand para amantes de la vainilla. Rinde hasta 450 atomizaciones en su formato 10 ml.",
+        "gender": "unisex",
+        "concentration": "EDP",
+        "sales_mode": "always_available",
+        "production_status": "active",
+        "availability_status": "available",
+        "publication_status": "draft",
+        "is_featured": false,
+        "featured_rank": null,
+        "featured_from": null,
+        "featured_until": null,
+        "verification_status": "legacy",
+        "specs": {
+          "family": "Gourmand",
+          "notes": [
+            "Vainilla",
+            "Gourmand",
+            "Dulce"
+          ],
+          "tag": "Combo",
+          "legacy_hidden": false,
+          "legacy_bestseller_unverified": false
+        }
+      },
+      "field_provenance": {
+        "legacy_id": {
+          "provenance": [
+            "legacy"
+          ],
+          "basis": "Preserved from the legacy staging artifact without approval promotion"
+        },
+        "slug": {
+          "provenance": [
+            "legacy"
+          ],
+          "basis": "Preserved from the legacy staging artifact without approval promotion"
+        },
+        "name": {
+          "provenance": [
+            "legacy"
+          ],
+          "basis": "Preserved from the legacy staging artifact without approval promotion"
+        },
+        "brand": {
+          "provenance": [
+            "legacy"
+          ],
+          "basis": "Preserved from the legacy staging artifact without approval promotion"
+        },
+        "short_description": {
+          "provenance": [
+            "UNKNOWN"
+          ],
+          "basis": "The legacy staging contract has no short description; the optional target remains null"
+        },
+        "description": {
+          "provenance": [
+            "legacy"
+          ],
+          "basis": "Preserved from the legacy staging artifact without approval promotion"
+        },
+        "gender": {
+          "provenance": [
+            "legacy"
+          ],
+          "basis": "Preserved from the legacy staging artifact without approval promotion"
+        },
+        "concentration": {
+          "provenance": [
+            "legacy"
+          ],
+          "basis": "Preserved from the legacy staging artifact without approval promotion"
+        },
+        "sales_mode": {
+          "provenance": [
+            "legacy"
+          ],
+          "basis": "Preserved from the legacy staging artifact without approval promotion"
+        },
+        "production_status": {
+          "provenance": [
+            "legacy"
+          ],
+          "basis": "Preserved from the legacy staging artifact without approval promotion"
+        },
+        "availability_status": {
+          "provenance": [
+            "legacy"
+          ],
+          "basis": "Preserved from the legacy staging artifact without approval promotion"
+        },
+        "publication_status": {
+          "provenance": [
+            "DERIVED_VALIDATED"
+          ],
+          "basis": "Conservative migration policy maps unapproved products to draft; explicit legacy_hidden maps to the schema's hidden state"
+        },
+        "is_featured": {
+          "provenance": [
+            "legacy"
+          ],
+          "basis": "Preserved from the legacy staging artifact without approval promotion"
+        },
+        "featured_rank": {
+          "provenance": [
+            "legacy"
+          ],
+          "basis": "Preserved from the legacy staging artifact without approval promotion"
+        },
+        "featured_from": {
+          "provenance": [
+            "legacy"
+          ],
+          "basis": "Preserved from the legacy staging artifact without approval promotion"
+        },
+        "featured_until": {
+          "provenance": [
+            "legacy"
+          ],
+          "basis": "Preserved from the legacy staging artifact without approval promotion"
+        },
+        "verification_status": {
+          "provenance": [
+            "DERIVED_VALIDATED"
+          ],
+          "basis": "Conservative reduction to legacy because one database column cannot express mixed field-level evidence"
+        },
+        "specs": {
+          "provenance": [
+            "legacy"
+          ],
+          "basis": "Preserved from the legacy staging artifact without approval promotion"
+        }
+      },
+      "variants": [
+        {
+          "variant_kind": "decant",
+          "size_ml": 3,
+          "label": "3 ml",
+          "price_amount": 27,
+          "currency": "PEN",
+          "publication_status": "draft",
+          "price_verification_status": "official_pdf",
+          "sort_order": 0,
+          "price_provenance": {
+            "provenance": [
+              "OFFICIAL_PDF"
+            ],
+            "basis": "Official 2026 client PDF combo definition persisted in supabase/staging/pdf-2026-commercial-reconciliation.json; name, ordered composition, and 3/5/10 selling prices cross-checked before materialization."
+          },
+          "publish_eligibility": "NOT_READY",
+          "blockers": []
+        },
+        {
+          "variant_kind": "decant",
+          "size_ml": 5,
+          "label": "5 ml",
+          "price_amount": 39,
+          "currency": "PEN",
+          "publication_status": "draft",
+          "price_verification_status": "official_pdf",
+          "sort_order": 1,
+          "price_provenance": {
+            "provenance": [
+              "OFFICIAL_PDF"
+            ],
+            "basis": "Official 2026 client PDF combo definition persisted in supabase/staging/pdf-2026-commercial-reconciliation.json; name, ordered composition, and 3/5/10 selling prices cross-checked before materialization."
+          },
+          "publish_eligibility": "NOT_READY",
+          "blockers": []
+        },
+        {
+          "variant_kind": "decant",
+          "size_ml": 10,
+          "label": "10 ml",
+          "price_amount": 65,
+          "currency": "PEN",
+          "publication_status": "draft",
+          "price_verification_status": "official_pdf",
+          "sort_order": 2,
+          "price_provenance": {
+            "provenance": [
+              "OFFICIAL_PDF"
+            ],
+            "basis": "Official 2026 client PDF combo definition persisted in supabase/staging/pdf-2026-commercial-reconciliation.json; name, ordered composition, and 3/5/10 selling prices cross-checked before materialization."
+          },
+          "publish_eligibility": "NOT_READY",
+          "blockers": []
+        }
+      ],
+      "categories": [
+        {
+          "kind": "olfactory_family",
+          "source_slug": "gourmand",
+          "target_slug": "gourmand",
+          "source_provenance": {
+            "provenance": [
+              "legacy"
+            ],
+            "basis": "Preserved from legacy staging; normalization does not upgrade evidence"
+          },
+          "transformation": "NONE",
+          "migration_eligibility": "MIGRATABLE",
+          "publication_intent": "draft"
+        }
+      ],
+      "inventory_intent": {
+        "applies_to_each_variant": true,
+        "inventory_mode": "status_only",
+        "quantity_on_hand": null,
+        "availability_status": "available",
+        "field_provenance": {
+          "inventory_mode": {
+            "provenance": [
+              "DERIVED_VALIDATED"
+            ],
+            "basis": "Safest current-schema mode while the operating model is unknown"
+          },
+          "quantity_on_hand": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "basis": "No reliable quantity evidence; no quantity is invented"
+          },
+          "availability_status": {
+            "provenance": [
+              "legacy"
+            ],
+            "basis": "Preserved independently from production and publication status"
+          }
+        }
+      },
+      "media_dependency": {
+        "manifest": "supabase/staging/client-media-reconciliation.json",
+        "lookup_key": "combo-vainilla",
+        "write_status": "DEFERRED_TO_4F2B"
+      },
+      "warnings": [
+        "VARIANT_PRICE_OVERRIDE_APPLIED"
+      ],
+      "blockers": [],
+      "conflicts": [],
+      "source_fingerprint": "d2ac74be4489a9ca14b1c8fe50642279a92784cd43225ea05f163297b3f95669"
     },
     {
       "legacy_id": "dylan-blue",
@@ -26877,77 +27645,467 @@
       "source_fingerprint": "c974937f8d78f77c42b406b23594a3c5fa6f3389e7f175cb1119802338c9b391"
     }
   ],
-  "blocked": [
+  "combo_targets": [
     {
-      "legacy_id": "combo-cuarteto",
-      "entity": "combo",
-      "migration_status": "BLOCKED",
-      "publish_eligibility": "BLOCKED",
-      "reason": "combo composition and price confirmed against the official 2026 PDF; combo product/target-table creation is deferred to a later gate",
-      "target_tables": [],
-      "provenance": [
-        "OFFICIAL_PDF"
-      ],
+      "product": {
+        "legacy_id": "combo-cuarteto",
+        "slug": "combo-cuarteto"
+      },
       "composition_verification_status": "official_pdf",
-      "source_state": "OFFICIAL_PDF_CONFIRMED",
-      "composition_legacy_ids": [
-        "khamrah-qahwa",
-        "khamrah-clasico",
-        "khamrah-waha",
-        "khamrah-dukhan"
-      ],
-      "decant_price_3_5_10": [
-        40,
-        55,
-        89
+      "presentations": [
+        {
+          "variant": {
+            "variant_kind": "decant",
+            "size_ml": 3
+          },
+          "items": [
+            {
+              "product": {
+                "legacy_id": "khamrah-qahwa",
+                "slug": "khamrah-qahwa"
+              },
+              "variant": {
+                "variant_kind": "decant",
+                "size_ml": 3
+              },
+              "quantity": 1,
+              "sort_order": 0
+            },
+            {
+              "product": {
+                "legacy_id": "khamrah-clasico",
+                "slug": "khamrah-clasico"
+              },
+              "variant": {
+                "variant_kind": "decant",
+                "size_ml": 3
+              },
+              "quantity": 1,
+              "sort_order": 1
+            },
+            {
+              "product": {
+                "legacy_id": "khamrah-waha",
+                "slug": "khamrah-waha"
+              },
+              "variant": {
+                "variant_kind": "decant",
+                "size_ml": 3
+              },
+              "quantity": 1,
+              "sort_order": 2
+            },
+            {
+              "product": {
+                "legacy_id": "khamrah-dukhan",
+                "slug": "khamrah-dukhan"
+              },
+              "variant": {
+                "variant_kind": "decant",
+                "size_ml": 3
+              },
+              "quantity": 1,
+              "sort_order": 3
+            }
+          ]
+        },
+        {
+          "variant": {
+            "variant_kind": "decant",
+            "size_ml": 5
+          },
+          "items": [
+            {
+              "product": {
+                "legacy_id": "khamrah-qahwa",
+                "slug": "khamrah-qahwa"
+              },
+              "variant": {
+                "variant_kind": "decant",
+                "size_ml": 5
+              },
+              "quantity": 1,
+              "sort_order": 0
+            },
+            {
+              "product": {
+                "legacy_id": "khamrah-clasico",
+                "slug": "khamrah-clasico"
+              },
+              "variant": {
+                "variant_kind": "decant",
+                "size_ml": 5
+              },
+              "quantity": 1,
+              "sort_order": 1
+            },
+            {
+              "product": {
+                "legacy_id": "khamrah-waha",
+                "slug": "khamrah-waha"
+              },
+              "variant": {
+                "variant_kind": "decant",
+                "size_ml": 5
+              },
+              "quantity": 1,
+              "sort_order": 2
+            },
+            {
+              "product": {
+                "legacy_id": "khamrah-dukhan",
+                "slug": "khamrah-dukhan"
+              },
+              "variant": {
+                "variant_kind": "decant",
+                "size_ml": 5
+              },
+              "quantity": 1,
+              "sort_order": 3
+            }
+          ]
+        },
+        {
+          "variant": {
+            "variant_kind": "decant",
+            "size_ml": 10
+          },
+          "items": [
+            {
+              "product": {
+                "legacy_id": "khamrah-qahwa",
+                "slug": "khamrah-qahwa"
+              },
+              "variant": {
+                "variant_kind": "decant",
+                "size_ml": 10
+              },
+              "quantity": 1,
+              "sort_order": 0
+            },
+            {
+              "product": {
+                "legacy_id": "khamrah-clasico",
+                "slug": "khamrah-clasico"
+              },
+              "variant": {
+                "variant_kind": "decant",
+                "size_ml": 10
+              },
+              "quantity": 1,
+              "sort_order": 1
+            },
+            {
+              "product": {
+                "legacy_id": "khamrah-waha",
+                "slug": "khamrah-waha"
+              },
+              "variant": {
+                "variant_kind": "decant",
+                "size_ml": 10
+              },
+              "quantity": 1,
+              "sort_order": 2
+            },
+            {
+              "product": {
+                "legacy_id": "khamrah-dukhan",
+                "slug": "khamrah-dukhan"
+              },
+              "variant": {
+                "variant_kind": "decant",
+                "size_ml": 10
+              },
+              "quantity": 1,
+              "sort_order": 3
+            }
+          ]
+        }
       ]
     },
     {
-      "legacy_id": "combo-tulum",
-      "entity": "combo",
-      "migration_status": "BLOCKED",
-      "publish_eligibility": "BLOCKED",
-      "reason": "combo composition and price confirmed against the official 2026 PDF; combo product/target-table creation is deferred to a later gate",
-      "target_tables": [],
-      "provenance": [
-        "OFFICIAL_PDF"
-      ],
+      "product": {
+        "legacy_id": "combo-tulum",
+        "slug": "combo-tulum"
+      },
       "composition_verification_status": "official_pdf",
-      "source_state": "OFFICIAL_PDF_CONFIRMED",
-      "composition_legacy_ids": [
-        "odyssey-aqua",
-        "hawas-tropical",
-        "supremacy-colle"
-      ],
-      "decant_price_3_5_10": [
-        31,
-        42,
-        71
+      "presentations": [
+        {
+          "variant": {
+            "variant_kind": "decant",
+            "size_ml": 3
+          },
+          "items": [
+            {
+              "product": {
+                "legacy_id": "odyssey-aqua",
+                "slug": "odyssey-aqua"
+              },
+              "variant": {
+                "variant_kind": "decant",
+                "size_ml": 3
+              },
+              "quantity": 1,
+              "sort_order": 0
+            },
+            {
+              "product": {
+                "legacy_id": "hawas-tropical",
+                "slug": "hawas-tropical"
+              },
+              "variant": {
+                "variant_kind": "decant",
+                "size_ml": 3
+              },
+              "quantity": 1,
+              "sort_order": 1
+            },
+            {
+              "product": {
+                "legacy_id": "supremacy-colle",
+                "slug": "supremacy-colle"
+              },
+              "variant": {
+                "variant_kind": "decant",
+                "size_ml": 3
+              },
+              "quantity": 1,
+              "sort_order": 2
+            }
+          ]
+        },
+        {
+          "variant": {
+            "variant_kind": "decant",
+            "size_ml": 5
+          },
+          "items": [
+            {
+              "product": {
+                "legacy_id": "odyssey-aqua",
+                "slug": "odyssey-aqua"
+              },
+              "variant": {
+                "variant_kind": "decant",
+                "size_ml": 5
+              },
+              "quantity": 1,
+              "sort_order": 0
+            },
+            {
+              "product": {
+                "legacy_id": "hawas-tropical",
+                "slug": "hawas-tropical"
+              },
+              "variant": {
+                "variant_kind": "decant",
+                "size_ml": 5
+              },
+              "quantity": 1,
+              "sort_order": 1
+            },
+            {
+              "product": {
+                "legacy_id": "supremacy-colle",
+                "slug": "supremacy-colle"
+              },
+              "variant": {
+                "variant_kind": "decant",
+                "size_ml": 5
+              },
+              "quantity": 1,
+              "sort_order": 2
+            }
+          ]
+        },
+        {
+          "variant": {
+            "variant_kind": "decant",
+            "size_ml": 10
+          },
+          "items": [
+            {
+              "product": {
+                "legacy_id": "odyssey-aqua",
+                "slug": "odyssey-aqua"
+              },
+              "variant": {
+                "variant_kind": "decant",
+                "size_ml": 10
+              },
+              "quantity": 1,
+              "sort_order": 0
+            },
+            {
+              "product": {
+                "legacy_id": "hawas-tropical",
+                "slug": "hawas-tropical"
+              },
+              "variant": {
+                "variant_kind": "decant",
+                "size_ml": 10
+              },
+              "quantity": 1,
+              "sort_order": 1
+            },
+            {
+              "product": {
+                "legacy_id": "supremacy-colle",
+                "slug": "supremacy-colle"
+              },
+              "variant": {
+                "variant_kind": "decant",
+                "size_ml": 10
+              },
+              "quantity": 1,
+              "sort_order": 2
+            }
+          ]
+        }
       ]
     },
     {
-      "legacy_id": "combo-vainilla",
-      "entity": "combo",
-      "migration_status": "BLOCKED",
-      "publish_eligibility": "BLOCKED",
-      "reason": "combo composition and price confirmed against the official 2026 PDF; combo product/target-table creation is deferred to a later gate",
-      "target_tables": [],
-      "provenance": [
-        "OFFICIAL_PDF"
-      ],
+      "product": {
+        "legacy_id": "combo-vainilla",
+        "slug": "combo-vainilla"
+      },
       "composition_verification_status": "official_pdf",
-      "source_state": "OFFICIAL_PDF_CONFIRMED",
-      "composition_legacy_ids": [
-        "yara-pink",
-        "yara-candy",
-        "eclaire"
-      ],
-      "decant_price_3_5_10": [
-        27,
-        39,
-        65
+      "presentations": [
+        {
+          "variant": {
+            "variant_kind": "decant",
+            "size_ml": 3
+          },
+          "items": [
+            {
+              "product": {
+                "legacy_id": "yara-pink",
+                "slug": "yara-pink"
+              },
+              "variant": {
+                "variant_kind": "decant",
+                "size_ml": 3
+              },
+              "quantity": 1,
+              "sort_order": 0
+            },
+            {
+              "product": {
+                "legacy_id": "yara-candy",
+                "slug": "yara-candy"
+              },
+              "variant": {
+                "variant_kind": "decant",
+                "size_ml": 3
+              },
+              "quantity": 1,
+              "sort_order": 1
+            },
+            {
+              "product": {
+                "legacy_id": "eclaire",
+                "slug": "eclaire"
+              },
+              "variant": {
+                "variant_kind": "decant",
+                "size_ml": 3
+              },
+              "quantity": 1,
+              "sort_order": 2
+            }
+          ]
+        },
+        {
+          "variant": {
+            "variant_kind": "decant",
+            "size_ml": 5
+          },
+          "items": [
+            {
+              "product": {
+                "legacy_id": "yara-pink",
+                "slug": "yara-pink"
+              },
+              "variant": {
+                "variant_kind": "decant",
+                "size_ml": 5
+              },
+              "quantity": 1,
+              "sort_order": 0
+            },
+            {
+              "product": {
+                "legacy_id": "yara-candy",
+                "slug": "yara-candy"
+              },
+              "variant": {
+                "variant_kind": "decant",
+                "size_ml": 5
+              },
+              "quantity": 1,
+              "sort_order": 1
+            },
+            {
+              "product": {
+                "legacy_id": "eclaire",
+                "slug": "eclaire"
+              },
+              "variant": {
+                "variant_kind": "decant",
+                "size_ml": 5
+              },
+              "quantity": 1,
+              "sort_order": 2
+            }
+          ]
+        },
+        {
+          "variant": {
+            "variant_kind": "decant",
+            "size_ml": 10
+          },
+          "items": [
+            {
+              "product": {
+                "legacy_id": "yara-pink",
+                "slug": "yara-pink"
+              },
+              "variant": {
+                "variant_kind": "decant",
+                "size_ml": 10
+              },
+              "quantity": 1,
+              "sort_order": 0
+            },
+            {
+              "product": {
+                "legacy_id": "yara-candy",
+                "slug": "yara-candy"
+              },
+              "variant": {
+                "variant_kind": "decant",
+                "size_ml": 10
+              },
+              "quantity": 1,
+              "sort_order": 1
+            },
+            {
+              "product": {
+                "legacy_id": "eclaire",
+                "slug": "eclaire"
+              },
+              "variant": {
+                "variant_kind": "decant",
+                "size_ml": 10
+              },
+              "quantity": 1,
+              "sort_order": 2
+            }
+          ]
+        }
       ]
     }
   ],
+  "blocked": [],
   "conflicts": []
 }

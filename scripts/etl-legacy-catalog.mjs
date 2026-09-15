@@ -219,9 +219,88 @@ function fingerprint(entry) {
         variants: entry.variants,
         categories: entry.categories,
         media: entry.media,
+        ...(entry.combo ? { combo: entry.combo } : {}),
       }),
     )
     .digest("hex");
+}
+
+function confirmedComboMetadata(product) {
+  const compositionLegacyIds = Array.isArray(product.officialPdfMembers) && product.officialPdfMembers.length > 0
+    ? [...product.officialPdfMembers]
+    : null;
+  const hasExactPositivePrices = DECANT_SIZES.every((size) => isPositiveNumber(product.price?.[size]));
+  if (!compositionLegacyIds || !hasExactPositivePrices) return null;
+  return {
+    composition_verification_status: "official_pdf",
+    source_state: "OFFICIAL_PDF_CONFIRMED",
+    composition_legacy_ids: compositionLegacyIds,
+  };
+}
+
+/**
+ * Pure catalogue transformation used by both the CLI and focused tests.
+ * Confirmed combos deliberately use the same normal staging-entry shape as
+ * every other product; the additional `combo` object carries only the
+ * composition authority needed by the reconciliation layer.
+ */
+export function buildLegacyCatalogEntries(products, previousEntries = []) {
+  const previousByLegacyId = new Map(previousEntries.map((entry) => [entry.legacy_id, entry]));
+  const seenIds = new Set();
+  const entries = [];
+  const report = { created: 0, updated: 0, unchanged: 0, blocked: 0, invalid: 0 };
+  const blocked = [];
+  const invalid = [];
+
+  for (const product of products) {
+    const problems = validate(product, seenIds);
+    if (product.id) seenIds.add(product.id);
+
+    if (problems.length > 0) {
+      report.invalid += 1;
+      invalid.push({ legacy_id: product.id ?? null, problems });
+      continue;
+    }
+
+    const combo = product.type === "combo" ? confirmedComboMetadata(product) : null;
+    if (product.type === "combo" && !combo) {
+      report.blocked += 1;
+      blocked.push({
+        legacy_id: product.id,
+        reason: Array.isArray(product.officialPdfMembers) && product.officialPdfMembers.length > 0
+          ? "official-PDF-confirmed combo requires valid positive 3/5/10 prices"
+          : "combo composition is CLIENT_PROVIDED_PENDING_RECONFIRMATION",
+      });
+      continue;
+    }
+
+    const variants = buildVariants(product);
+    if (variants.length === 0) {
+      report.blocked += 1;
+      blocked.push({ legacy_id: product.id, reason: "no usable price on any variant" });
+      continue;
+    }
+
+    const entry = {
+      legacy_id: product.id,
+      product: buildProductRow(product),
+      variants,
+      categories: categoriesFor(product),
+      media: buildMedia(product),
+      ...(combo ? { combo } : {}),
+    };
+    entry.fingerprint = fingerprint(entry);
+
+    const before = previousByLegacyId.get(product.id);
+    if (!before) report.created += 1;
+    else if (before.fingerprint !== entry.fingerprint) report.updated += 1;
+    else report.unchanged += 1;
+
+    entries.push(entry);
+  }
+
+  entries.sort((a, b) => a.legacy_id.localeCompare(b.legacy_id));
+  return { entries, blocked, invalid, report };
 }
 
 async function readPreviousStaging() {
@@ -244,77 +323,10 @@ async function build() {
   const products = legacyWindow.CRUZIAL_PRODUCTS ?? [];
   const previous = await readPreviousStaging();
 
-  const seenIds = new Set();
-  const entries = [];
-  const report = { created: 0, updated: 0, unchanged: 0, blocked: 0, invalid: 0 };
-  const blocked = [];
-  const invalid = [];
-
-  for (const product of products) {
-    const problems = validate(product, seenIds);
-    if (product.id) seenIds.add(product.id);
-
-    if (problems.length > 0) {
-      report.invalid += 1;
-      invalid.push({ legacy_id: product.id ?? null, problems });
-      continue;
-    }
-
-    // Combos are reported rather than staged as products (loading them would
-    // imply a verified standalone product row, which the current schema does
-    // not model for a multi-member set). Composition/price confirmation is a
-    // separate axis from that staging exclusion: a combo whose product entry
-    // carries `officialPdfMembers` (4K-B2A) has had its member list and price
-    // matched against the official 2026 PDF, so it is reported as
-    // OFFICIAL_PDF_CONFIRMED instead of the still-pending default; a combo
-    // without that field keeps the original pending-reconfirmation state.
-    if (product.type === "combo") {
-      report.blocked += 1;
-      const confirmedMembers = Array.isArray(product.officialPdfMembers) && product.officialPdfMembers.length > 0
-        ? product.officialPdfMembers
-        : null;
-      blocked.push({
-        legacy_id: product.id,
-        reason: confirmedMembers
-          ? "combo composition and price confirmed against the official 2026 PDF; combo product/target-table creation is deferred to a later gate"
-          : "combo composition is CLIENT_PROVIDED_PENDING_RECONFIRMATION",
-        ...(confirmedMembers
-          ? {
-              composition_verification_status: "official_pdf",
-              source_state: "OFFICIAL_PDF_CONFIRMED",
-              composition_legacy_ids: confirmedMembers,
-              decant_price_3_5_10: [product.price?.[3], product.price?.[5], product.price?.[10]],
-            }
-          : {}),
-      });
-      continue;
-    }
-
-    const variants = buildVariants(product);
-    if (variants.length === 0) {
-      report.blocked += 1;
-      blocked.push({ legacy_id: product.id, reason: "no usable price on any variant" });
-      continue;
-    }
-
-    const entry = {
-      legacy_id: product.id,
-      product: buildProductRow(product),
-      variants,
-      categories: categoriesFor(product),
-      media: buildMedia(product),
-    };
-    entry.fingerprint = fingerprint(entry);
-
-    const before = previous.byLegacyId.get(product.id);
-    if (!before) report.created += 1;
-    else if (before.fingerprint !== entry.fingerprint) report.updated += 1;
-    else report.unchanged += 1;
-
-    entries.push(entry);
-  }
-
-  entries.sort((a, b) => a.legacy_id.localeCompare(b.legacy_id));
+  const { entries, blocked, invalid, report } = buildLegacyCatalogEntries(
+    products,
+    [...previous.byLegacyId.values()],
+  );
 
   const artifact = {
     metadata: {
@@ -343,24 +355,34 @@ async function build() {
   return { artifact, previousRaw: previous.raw, report };
 }
 
-const { artifact, previousRaw, report } = await build();
-const serialized = `${JSON.stringify(artifact, null, 2)}\n`;
+async function main() {
+  const { artifact, previousRaw, report } = await build();
+  const serialized = `${JSON.stringify(artifact, null, 2)}\n`;
 
-if (process.argv.includes("--check")) {
-  if (previousRaw === null) {
-    throw new Error("Staging artifact is missing. Run node scripts/etl-legacy-catalog.mjs.");
+  if (process.argv.includes("--check")) {
+    if (previousRaw === null) {
+      throw new Error("Staging artifact is missing. Run node scripts/etl-legacy-catalog.mjs.");
+    }
+    if (previousRaw !== serialized) {
+      throw new Error("Staging artifact is stale. Re-run the ETL and commit the result.");
+    }
+    console.log("Legacy catalog staging artifact is deterministic and current.");
+  } else {
+    await mkdir(dirname(stagingPath), { recursive: true });
+    await writeFile(stagingPath, serialized, "utf8");
+    console.log(`Wrote ${stagingPath}`);
   }
-  if (previousRaw !== serialized) {
-    throw new Error("Staging artifact is stale. Re-run the ETL and commit the result.");
-  }
-  console.log("Legacy catalog staging artifact is deterministic and current.");
-} else {
-  await mkdir(dirname(stagingPath), { recursive: true });
-  await writeFile(stagingPath, serialized, "utf8");
-  console.log(`Wrote ${stagingPath}`);
+
+  console.log(
+    `ETL report — created: ${report.created}, updated: ${report.updated}, ` +
+      `unchanged: ${report.unchanged}, blocked: ${report.blocked}, invalid: ${report.invalid}`,
+  );
 }
 
-console.log(
-  `ETL report — created: ${report.created}, updated: ${report.updated}, ` +
-    `unchanged: ${report.unchanged}, blocked: ${report.blocked}, invalid: ${report.invalid}`,
-);
+const invokedPath = process.argv[1] ? resolve(process.argv[1]) : null;
+if (invokedPath === fileURLToPath(import.meta.url)) {
+  main().catch((error) => {
+    console.error(error instanceof Error ? error.message : error);
+    process.exitCode = 1;
+  });
+}

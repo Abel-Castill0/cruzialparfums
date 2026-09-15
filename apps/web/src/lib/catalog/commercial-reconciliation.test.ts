@@ -112,13 +112,12 @@ describe("commercial reconciliation", () => {
       // (Le Male Le Parfum) and its 3 decant variants on top of the 96
       // legacy-staged products / 312 legacy variants.
       legacy_products_considered: 100,
-      staged_non_combo_products: 97,
-      variants: 315,
-      blocked: 3,
+      staged_non_combo_products: 100,
+      variants: 324,
+      blocked: 0,
       conflicts: 0,
     });
-    expect(result.blocked).toHaveLength(3);
-    expect(result.blocked.every((item) => item.entity === "combo")).toBe(true);
+    expect(result.blocked).toHaveLength(0);
     expect(result.conflicts).toEqual([]);
     expect(result.category_targets).toHaveLength(11);
     expect(result.category_targets).toContainEqual(expect.objectContaining({
@@ -587,20 +586,20 @@ describe("4K-B2A official PDF commercial authority applied", () => {
     }
   });
 
-  it("represents official-PDF-confirmed combo composition and price for all 3 combos (8)", () => {
+  it("materializes official-PDF-confirmed combo composition and price for all 3 combos (8)", () => {
     const expected: Record<string, { members: string[]; price: number[] }> = {
       "combo-cuarteto": { members: ["khamrah-qahwa", "khamrah-clasico", "khamrah-waha", "khamrah-dukhan"], price: [40, 55, 89] },
       "combo-vainilla": { members: ["yara-pink", "yara-candy", "eclaire"], price: [27, 39, 65] },
       "combo-tulum": { members: ["odyssey-aqua", "hawas-tropical", "supremacy-colle"], price: [31, 42, 71] },
     };
     for (const [legacyId, { members, price }] of Object.entries(expected)) {
-      const blockedCombo = result.blocked.find((item) => item.legacy_id === legacyId) as
-        | { composition_verification_status?: string; composition_legacy_ids?: string[]; decant_price_3_5_10?: number[] }
-        | undefined;
-      if (!blockedCombo) throw new Error(`Expected ${legacyId} in result.blocked`);
-      expect(blockedCombo.composition_verification_status).toBe("official_pdf");
-      expect(blockedCombo.composition_legacy_ids).toEqual(members);
-      expect(blockedCombo.decant_price_3_5_10).toEqual(price);
+      const product = productById(legacyId);
+      const target = result.combo_targets?.find((combo) => combo.product.legacy_id === legacyId);
+      if (!product || !target) throw new Error(`Expected materialized ${legacyId}`);
+      expect(product.variants.map((variant) => variant.price_amount)).toEqual(price);
+      expect(product.variants.every((variant) => variant.price_verification_status === "official_pdf")).toBe(true);
+      expect(target.composition_verification_status).toBe("official_pdf");
+      expect(target.presentations[0]?.items.map((item) => item.product.legacy_id)).toEqual(members);
     }
   });
 
@@ -811,14 +810,14 @@ describe("4K-B2B.1A bottle identity audit corrections", () => {
     }
   });
 
-  it("keeps exactly 288 official_pdf decant prices after the concentration-only corrections (4K-B2A truth preserved)", () => {
-    expect(result.summary.confirmed_price_variants).toBe(288);
+  it("keeps 288 individual official_pdf decants and adds exactly 9 official combo selling variants", () => {
+    expect(result.summary.confirmed_price_variants).toBe(297);
     expect(result.summary.legacy_bottle_price_variants).toBe(4);
     expect(result.summary.provisional_market_bottle_price_variants).toBe(20);
     expect(result.summary.confirmed_bottle_price_variants).toBe(0);
-    expect(result.summary.staged_non_combo_products).toBe(97);
-    expect(result.summary.variants).toBe(315);
-    expect(result.summary.blocked).toBe(3);
+    expect(result.summary.staged_non_combo_products).toBe(100);
+    expect(result.summary.variants).toBe(324);
+    expect(result.summary.blocked).toBe(0);
     expect(result.summary.conflicts).toBe(0);
   });
 
@@ -886,7 +885,7 @@ describe("4K-B2B.2A Batch A Peru market price research", () => {
   it("(4) all 288 decant official_pdf variants remain untouched by Batch A", () => {
     const decantVariants = result.products.flatMap((product) => product.variants).filter((variant) => variant.variant_kind === "decant");
     const officialPdfDecants = decantVariants.filter((variant) => variant.price_verification_status === "official_pdf");
-    expect(officialPdfDecants).toHaveLength(288);
+    expect(officialPdfDecants).toHaveLength(297);
   });
 
   it("(5) each researched legacy_id gets at most one override for the target size (no duplicate/no double-application)", () => {
@@ -1037,7 +1036,7 @@ describe("4K-B2B.2B Batch B Peru market price research", () => {
   it("(5) all 288 decant official_pdf variants remain untouched by Batch B", () => {
     const decantVariants = result.products.flatMap((product) => product.variants).filter((variant) => variant.variant_kind === "decant");
     const officialPdfDecants = decantVariants.filter((variant) => variant.price_verification_status === "official_pdf");
-    expect(officialPdfDecants).toHaveLength(288);
+    expect(officialPdfDecants).toHaveLength(297);
   });
 
   it("(6) LOW-confidence/unresolved Batch B targets (none remain as of 4K-B2B.3 — khamrah-clasico/liquid-brun/spicebomb-extreme were all since upgraded) stay unchanged at legacy", () => {
@@ -1253,7 +1252,7 @@ describe("4K-B2B.2C Batch C Peru market price research", () => {
   it("(11) all 288 decant official_pdf variants remain untouched by Batch C", () => {
     const decantVariants = result.products.flatMap((product) => product.variants).filter((variant) => variant.variant_kind === "decant");
     const officialPdfDecants = decantVariants.filter((variant) => variant.price_verification_status === "official_pdf");
-    expect(officialPdfDecants).toHaveLength(288);
+    expect(officialPdfDecants).toHaveLength(297);
   });
 
   it("(12) the explicit Admin confirmation workflow (4K-B2B.2A.1) remains valid for a Batch C provisional_market variant: same variant identity, no duplicate", () => {
@@ -1350,10 +1349,10 @@ describe("4K-B2B.3 bottle market research closure (reviewer decisions)", () => {
     expect(allBottleVariants.filter((variant) => variant.price_verification_status === "legacy")).toHaveLength(expectedUnresolved.length);
   });
 
-  it("288 decants remain official_pdf", () => {
+  it("288 individual decants plus 9 combo selling variants are official_pdf", () => {
     const decantVariants = result.products.flatMap((product) => product.variants).filter((variant) => variant.variant_kind === "decant");
     const officialPdfDecants = decantVariants.filter((variant) => variant.price_verification_status === "official_pdf");
-    expect(officialPdfDecants).toHaveLength(288);
+    expect(officialPdfDecants).toHaveLength(297);
   });
 
   it("no duplicate bottle override keys exist", () => {
@@ -1370,5 +1369,152 @@ describe("4K-B2B.3 bottle market research closure (reviewer decisions)", () => {
     expect(overridesForThisVariant[0].price_verification_status).toBe("provisional_market");
     const bottle = bottleVariants(productById("victory-elixir")!)[0];
     expect(bottle.blockers).toContain("PROVISIONAL_MARKET_PRICE_REQUIRES_COMMERCIAL_APPROVAL");
+  });
+});
+
+describe("4K-C2 official combo materialization", () => {
+  const committedStaging = JSON.parse(readFileSync(
+    resolve(repositoryRoot, "supabase/staging/legacy-catalog-staging.json"),
+    "utf8",
+  )) as LegacyStaging;
+
+  const run = (staging: LegacyStaging) => reconcileCommercialCatalog({
+    staging,
+    documentedBottlePriceCount: 24,
+  });
+  const comboEntry = (staging: LegacyStaging, legacyId: string) => {
+    const entry = staging.entries?.find((candidate) => candidate.legacy_id === legacyId);
+    if (!entry?.combo) throw new Error(`Expected staged combo ${legacyId}`);
+    return entry;
+  };
+  const productEntry = (staging: LegacyStaging, legacyId: string) => {
+    const entry = staging.entries?.find((candidate) => candidate.legacy_id === legacyId);
+    if (!entry) throw new Error(`Expected staged product ${legacyId}`);
+    return entry;
+  };
+
+  it("emits exactly 3 targets, 9 presentations, and 30 deterministic quantity-one items", () => {
+    const result = run(committedStaging);
+    const targets = result.combo_targets ?? [];
+    const presentations = targets.flatMap((combo) => combo.presentations);
+    const items = presentations.flatMap((presentation) => presentation.items);
+
+    expect(targets).toHaveLength(3);
+    expect(presentations).toHaveLength(9);
+    expect(items).toHaveLength(30);
+    expect(items.every((item) => item.quantity === 1)).toBe(true);
+    for (const presentation of presentations) {
+      expect(presentation.items.every((item) => item.variant.size_ml === presentation.variant.size_ml)).toBe(true);
+      expect(presentation.items.map((item) => item.sort_order)).toEqual(
+        presentation.items.map((_, index) => index),
+      );
+    }
+  });
+
+  it("promotes the exact three official combo price sets while keeping every combo draft", () => {
+    const result = run(committedStaging);
+    const expected: Record<string, number[]> = {
+      "combo-cuarteto": [40, 55, 89],
+      "combo-vainilla": [27, 39, 65],
+      "combo-tulum": [31, 42, 71],
+    };
+
+    for (const [legacyId, prices] of Object.entries(expected)) {
+      const product = result.products.find((candidate) => candidate.legacy_id === legacyId);
+      expect(product?.target_product.publication_status).toBe("draft");
+      expect(product?.variants.map((variant) => variant.price_amount)).toEqual(prices);
+      expect(product?.variants.every((variant) => variant.price_verification_status === "official_pdf")).toBe(true);
+    }
+    expect(result.blocked).toEqual([]);
+    expect(result.conflicts).toEqual([]);
+  });
+
+  it("preserves all pre-C2 authority and lifecycle invariants", () => {
+    const result = run(committedStaging);
+    const individualOfficialPdf = result.products
+      .filter((product) => !product.legacy_id?.startsWith("combo-"))
+      .flatMap((product) => product.variants)
+      .filter((variant) => variant.variant_kind === "decant" && variant.price_verification_status === "official_pdf");
+    const bottles = result.products.flatMap((product) => product.variants).filter((variant) => variant.variant_kind === "bottle");
+    const byIdentity = (identity: string) => result.products.find(
+      (product) => (product.legacy_id ?? product.target_product.slug) === identity,
+    );
+
+    expect(individualOfficialPdf).toHaveLength(288);
+    expect(bottles.filter((variant) => variant.price_verification_status === "provisional_market")).toHaveLength(20);
+    expect(bottles.filter((variant) => variant.price_verification_status === "legacy")).toHaveLength(4);
+    expect(byIdentity("invictus-elixir")?.target_product.publication_status).toBe("archived");
+    expect(byIdentity("bir-intense")?.target_product.publication_status).toBe("draft");
+    expect(byIdentity("le-male-le-parfum")?.legacy_id).toBeNull();
+    expect(byIdentity("le-male-le-parfum")?.target_product.slug).toBe("le-male-le-parfum");
+    for (const identity of ["lovely-cherry", "bright-peach", "ultra-male"]) {
+      expect(byIdentity(identity)?.target_product).toMatchObject({
+        production_status: "discontinued",
+        availability_status: "available",
+      });
+    }
+  });
+
+  it("uses each reconciled member slug instead of assuming legacy_id equals slug", () => {
+    const staging = structuredClone(committedStaging);
+    productEntry(staging, "yara-pink").product.slug = "yara-pink-canonical";
+    const result = run(staging);
+    const vanilla = result.combo_targets?.find((combo) => combo.product.legacy_id === "combo-vainilla");
+
+    expect(vanilla?.presentations[0]?.items[0]?.product).toEqual({
+      legacy_id: "yara-pink",
+      slug: "yara-pink-canonical",
+    });
+  });
+
+  it("fails closed when a member product is missing", () => {
+    const staging = structuredClone(committedStaging);
+    staging.entries = staging.entries?.filter((entry) => entry.legacy_id !== "eclaire");
+    const result = run(staging);
+
+    expect(result.combo_targets?.some((combo) => combo.product.legacy_id === "combo-vainilla")).toBe(false);
+    expect(result.conflicts).toContainEqual(expect.objectContaining({
+      code: "MISSING_COMBO_MEMBER_PRODUCT",
+      legacy_ids: ["combo-vainilla"],
+    }));
+  });
+
+  it("fails closed when a member lacks a required same-size decant presentation", () => {
+    const staging = structuredClone(committedStaging);
+    const member = productEntry(staging, "khamrah-qahwa");
+    member.variants = member.variants.filter((variant) => variant.size_ml !== 5);
+    const result = run(staging);
+
+    expect(result.combo_targets?.some((combo) => combo.product.legacy_id === "combo-cuarteto")).toBe(false);
+    expect(result.conflicts).toContainEqual(expect.objectContaining({ code: "MISSING_COMBO_MEMBER_DECANT" }));
+  });
+
+  it("fails closed on duplicate members", () => {
+    const staging = structuredClone(committedStaging);
+    comboEntry(staging, "combo-tulum").combo!.composition_legacy_ids[2] = "odyssey-aqua";
+    const result = run(staging);
+
+    expect(result.combo_targets?.some((combo) => combo.product.legacy_id === "combo-tulum")).toBe(false);
+    expect(result.conflicts).toContainEqual(expect.objectContaining({ code: "DUPLICATE_COMBO_MEMBER" }));
+  });
+
+  it("does not promote a combo with invalid or missing source authority", () => {
+    const staging = structuredClone(committedStaging);
+    comboEntry(staging, "combo-vainilla").combo!.composition_verification_status = "unknown";
+    const result = run(staging);
+    const vanilla = result.products.find((product) => product.legacy_id === "combo-vainilla");
+
+    expect(result.combo_targets?.some((combo) => combo.product.legacy_id === "combo-vainilla")).toBe(false);
+    expect(vanilla?.variants.every((variant) => variant.price_verification_status === "legacy")).toBe(true);
+    expect(result.conflicts).toContainEqual(expect.objectContaining({ code: "INVALID_COMBO_AUTHORITY" }));
+  });
+
+  it("does not materialize a staged definition whose price differs from committed PDF evidence", () => {
+    const staging = structuredClone(committedStaging);
+    comboEntry(staging, "combo-cuarteto").variants[0]!.price_amount = 999;
+    const result = run(staging);
+
+    expect(result.combo_targets?.some((combo) => combo.product.legacy_id === "combo-cuarteto")).toBe(false);
+    expect(result.conflicts).toContainEqual(expect.objectContaining({ code: "COMBO_PDF_DEFINITION_MISMATCH" }));
   });
 });

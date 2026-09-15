@@ -820,6 +820,42 @@ provisional_market writes.
 - Hosted Supabase was untouched.
 - Next: 4K-C2 — NOT STARTED.
 
+### 4K-C2 — Materialize the Three Official Parfums Combos Locally — CLOSED
+
+- The generic legacy ETL now stages a combo only when it has a non-empty
+  `officialPdfMembers` composition and valid positive 3/5/10 prices. Confirmed
+  combos retain the normal product, variant, category, media-pointer, and
+  fingerprint material plus explicit `official_pdf` composition metadata;
+  unconfirmed combos remain blocked. Generated staging is 99 products / 0
+  blocked / 0 invalid, with the original 96 non-combo entries semantically
+  unchanged.
+- Reconciliation cross-checks each staged combo's exact source name, ordered
+  members, and 3/5/10 prices against the committed official-PDF evidence before
+  promotion. Missing/duplicate members, missing member presentations, invalid
+  authority, self-reference, identity ambiguity, or source/PDF drift fail
+  closed. Member references use reconciled target slugs, never display labels.
+- Materialized definitions: Cuarteto Oriental (40/55/89; 4 members), Vainilla
+  Freak (27/39/65; 3 members), and Set Tulum (31/42/71; 3 members). Composition
+  and all 9 combo selling variants are `official_pdf`; all combo products and
+  variants remain `draft` and are not published. The loader's existing media
+  deferral remains unchanged.
+- Commercial artifact: 100 products / 324 variants / 297 `official_pdf` prices
+  (288 individual decants + 9 combo variants) / 20 `provisional_market`
+  bottles / 7 legacy variants, including the unchanged 4 unresolved legacy
+  bottles; 11 categories / 195 relationships / 324 inventory intents; 3 combo
+  targets / 9 presentations / 30 items; 0 blocked / 0 conflicts. All 97
+  pre-existing reconciled products are semantically unchanged.
+- Local reset, dry-run, apply, verify, and second-apply idempotency passed. The
+  final verify is an exact no-op at 11 categories / 100 products / 324 variants
+  / 195 relationships / 324 inventory / 3 combos / 30 combo items, with zero
+  conflicts. pgTAP passes 28 files / 823 tests. Fourteen focused Vitest tests
+  cover ETL staging, authority/source validation, exact materialization,
+  preserved prior truth, deterministic member mapping/order, and fail-closed
+  negative cases. `commercial:check` is byte-stable and the complete `npm run
+  check` passes (56 Vitest files / 628 tests, lint, strict typecheck, and build).
+- Hosted Supabase, Production, and DNS were untouched. Next: 4K-C3 — NOT
+  STARTED.
+
 ## Current evidence gaps
 
 None outstanding for 4J5F. See Deferred defects above for the categoryId

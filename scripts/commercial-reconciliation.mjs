@@ -78,6 +78,13 @@ const OFFICIAL_PDF_DECANT_EVIDENCE = evidence(
   "\"Guíate del PDF, ese está actualizado.\" — client, 2026-09-13.",
 );
 
+const OFFICIAL_PDF_COMBO_EVIDENCE = evidence(
+  ["OFFICIAL_PDF"],
+  "Official 2026 client PDF combo definition persisted in supabase/staging/pdf-2026-commercial-reconciliation.json; " +
+  "name, ordered composition, and 3/5/10 selling prices cross-checked before materialization.",
+);
+const COMBO_SIZES = Object.freeze([3, 5, 10]);
+
 /**
  * The smallest deterministic mapping that satisfies the 4K-B2A Part A/B
  * contract: every one of the persisted artifact's 95 matched, current-PDF
@@ -698,6 +705,121 @@ function globalConflicts(staging, products, documentedBottlePriceCount) {
   return conflicts.sort((left, right) => stableCompare(`${left.code}:${left.detail}`, `${right.code}:${right.detail}`));
 }
 
+function arraysEqual(left, right) {
+  return left.length === right.length && left.every((value, index) => value === right[index]);
+}
+
+/**
+ * Validate every structured combo before either its selling-price authority
+ * or composition target can be emitted. Invalid combos remain ordinary draft
+ * product rows but receive a reconciliation conflict and no combo target;
+ * this makes the pipeline fail closed without discarding their source data.
+ */
+function reconcileComboMaterialization(entries, products, comboEvidence) {
+  const comboEntries = entries.filter((entry) => entry.combo !== undefined);
+  const targets = [];
+  const priceOverrides = [];
+  const conflicts = [];
+  const identityCounts = new Map();
+  for (const entry of comboEntries) {
+    const identity = productIdentity(entry);
+    identityCounts.set(identity, (identityCounts.get(identity) ?? 0) + 1);
+  }
+
+  const productsByLegacyId = new Map();
+  for (const product of products) {
+    if (product.legacy_id === null) continue;
+    const matches = productsByLegacyId.get(product.legacy_id) ?? [];
+    matches.push(product);
+    productsByLegacyId.set(product.legacy_id, matches);
+  }
+
+  for (const entry of comboEntries) {
+    const identity = productIdentity(entry);
+    const local = [];
+    const add = (code, detail) => local.push({ code, legacy_ids: [identity], detail });
+    const combo = entry.combo ?? {};
+    const members = Array.isArray(combo.composition_legacy_ids) ? combo.composition_legacy_ids : [];
+    const productMatches = productsByLegacyId.get(entry.legacy_id) ?? [];
+    const comboProduct = productMatches[0];
+
+    if ((identityCounts.get(identity) ?? 0) !== 1) add("DUPLICATE_COMBO_IDENTITY", `Combo identity '${identity}' is not unique.`);
+    if (combo.composition_verification_status !== "official_pdf" || combo.source_state !== "OFFICIAL_PDF_CONFIRMED") {
+      add("INVALID_COMBO_AUTHORITY", `Combo '${identity}' lacks explicit official_pdf composition authority.`);
+    }
+    if (members.length === 0) add("MISSING_COMBO_MEMBERS", `Combo '${identity}' has no confirmed composition members.`);
+    if (new Set(members).size !== members.length) add("DUPLICATE_COMBO_MEMBER", `Combo '${identity}' repeats a composition member.`);
+    if (members.includes(identity)) add("COMBO_SELF_REFERENCE", `Combo '${identity}' references itself.`);
+    if (productMatches.length !== 1) add("INVALID_COMBO_PRODUCT_IDENTITY", `Combo '${identity}' does not resolve to exactly one reconciled product.`);
+
+    const pdfMatches = comboEvidence.filter((candidate) => candidate.name === entry.product?.name);
+    if (pdfMatches.length !== 1) {
+      add("COMBO_PDF_IDENTITY_MISMATCH", `Combo '${identity}' does not match exactly one committed PDF definition by source name.`);
+    }
+    const pdfCombo = pdfMatches[0];
+    const stagedPrices = COMBO_SIZES.map((size) => entry.variants?.find(
+      (variant) => variant.variant_kind === "decant" && variant.size_ml === size,
+    )?.price_amount);
+    const exactComboVariants = (entry.variants ?? []).filter((variant) => variant.variant_kind === "decant");
+    if (exactComboVariants.length !== COMBO_SIZES.length || stagedPrices.some((price) => !isPositiveFiniteNumber(price))) {
+      add("INVALID_COMBO_PRESENTATIONS", `Combo '${identity}' must have exactly one positive 3/5/10 decant selling variant.`);
+    }
+    if (pdfCombo && (!arraysEqual(members, pdfCombo.members_legacy_ids ?? []) || !arraysEqual(stagedPrices, pdfCombo.decant_price_3_5_10 ?? []))) {
+      add("COMBO_PDF_DEFINITION_MISMATCH", `Combo '${identity}' staged members/prices differ from the committed PDF evidence.`);
+    }
+
+    const resolvedMembers = [];
+    for (const memberIdentity of members) {
+      const matches = productsByLegacyId.get(memberIdentity) ?? [];
+      if (matches.length !== 1) {
+        add("MISSING_COMBO_MEMBER_PRODUCT", `Combo '${identity}' member '${memberIdentity}' does not resolve to exactly one reconciled product.`);
+        continue;
+      }
+      const member = matches[0];
+      for (const size of COMBO_SIZES) {
+        const variants = member.variants.filter((variant) => variant.variant_kind === "decant" && variant.size_ml === size);
+        if (variants.length !== 1) add("MISSING_COMBO_MEMBER_DECANT", `Combo '${identity}' member '${memberIdentity}' lacks one unique ${size}ml decant variant.`);
+      }
+      resolvedMembers.push(member);
+    }
+
+    if (local.length > 0) {
+      conflicts.push(...local);
+      continue;
+    }
+
+    for (const [index, size] of COMBO_SIZES.entries()) {
+      priceOverrides.push({
+        legacy_id: entry.legacy_id,
+        variant_kind: "decant",
+        size_ml: size,
+        price_amount: pdfCombo.decant_price_3_5_10[index],
+        price_verification_status: "official_pdf",
+        evidence: OFFICIAL_PDF_COMBO_EVIDENCE,
+      });
+    }
+    targets.push({
+      product: { legacy_id: comboProduct.legacy_id, slug: comboProduct.target_product.slug },
+      composition_verification_status: "official_pdf",
+      presentations: COMBO_SIZES.map((size) => ({
+        variant: { variant_kind: "decant", size_ml: size },
+        items: resolvedMembers.map((member, sortOrder) => ({
+          product: { legacy_id: member.legacy_id, slug: member.target_product.slug },
+          variant: { variant_kind: "decant", size_ml: size },
+          quantity: 1,
+          sort_order: sortOrder,
+        })),
+      })),
+    });
+  }
+
+  return {
+    targets: targets.sort((left, right) => stableCompare(left.product.slug, right.product.slug)),
+    priceOverrides,
+    conflicts: conflicts.sort((left, right) => stableCompare(`${left.code}:${left.detail}`, `${right.code}:${right.detail}`)),
+  };
+}
+
 export function reconcileCommercialCatalog({
   staging,
   sourceFingerprints = {},
@@ -705,8 +827,9 @@ export function reconcileCommercialCatalog({
   variantPriceOverrides = VARIANT_PRICE_OVERRIDES,
   productLifecycleOverrides = PRODUCT_LIFECYCLE_OVERRIDES,
   supplementalProducts = SUPPLEMENTAL_PRODUCTS,
+  comboEvidence = pdfReconciliation.combos ?? [],
 }) {
-  const variantPriceOverrideIndex = buildOverrideIndex(
+  const baseVariantPriceOverrideIndex = buildOverrideIndex(
     variantPriceOverrides,
     (override) => variantIdentityKey(override.legacy_id ?? override.slug, override),
     validateVariantPriceOverride,
@@ -718,14 +841,27 @@ export function reconcileCommercialCatalog({
     validateLifecycleOverride,
     "product lifecycle",
   );
-  const overrideIndexes = { variantPriceOverrideIndex, productLifecycleOverrideIndex };
+  const baseOverrideIndexes = { variantPriceOverrideIndex: baseVariantPriceOverrideIndex, productLifecycleOverrideIndex };
 
   const supplementalEntries = supplementalProducts.map(supplementalToStagingEntry);
   const allEntries = [...(staging.entries ?? []), ...supplementalEntries];
-  const products = allEntries
-    .map((entry) => reconcileProduct(entry, overrideIndexes))
+  const preliminaryProducts = allEntries
+    .map((entry) => reconcileProduct(entry, baseOverrideIndexes))
     .sort((left, right) => stableCompare(productIdentity({ legacy_id: left.legacy_id, product: left.target_product }), productIdentity({ legacy_id: right.legacy_id, product: right.target_product })));
-  const conflicts = globalConflicts(staging, products, documentedBottlePriceCount);
+  const comboMaterialization = reconcileComboMaterialization(allEntries, preliminaryProducts, comboEvidence);
+  const variantPriceOverrideIndex = buildOverrideIndex(
+    [...variantPriceOverrides, ...comboMaterialization.priceOverrides],
+    (override) => variantIdentityKey(override.legacy_id ?? override.slug, override),
+    validateVariantPriceOverride,
+    "variant price",
+  );
+  const products = allEntries
+    .map((entry) => reconcileProduct(entry, { variantPriceOverrideIndex, productLifecycleOverrideIndex }))
+    .sort((left, right) => stableCompare(productIdentity({ legacy_id: left.legacy_id, product: left.target_product }), productIdentity({ legacy_id: right.legacy_id, product: right.target_product })));
+  const conflicts = [
+    ...globalConflicts(staging, products, documentedBottlePriceCount),
+    ...comboMaterialization.conflicts,
+  ].sort((left, right) => stableCompare(`${left.code}:${left.detail}`, `${right.code}:${right.detail}`));
   const globallyBlockedIds = new Set(conflicts.flatMap((conflict) => conflict.legacy_ids));
   for (const product of products) {
     if (globallyBlockedIds.has(product.legacy_id)) {
@@ -787,6 +923,11 @@ export function reconcileCommercialCatalog({
   })).sort((left, right) => stableCompare(`${left.kind}:${left.slug}`, `${right.kind}:${right.slug}`));
   const count = (predicate) => products.filter(predicate).length;
   const variants = products.flatMap((product) => product.variants);
+  const comboPresentations = comboMaterialization.targets.reduce((total, combo) => total + combo.presentations.length, 0);
+  const comboItems = comboMaterialization.targets.reduce(
+    (total, combo) => total + combo.presentations.reduce((subtotal, presentation) => subtotal + presentation.items.length, 0),
+    0,
+  );
   const overrideCount = Object.values(FIELD_OVERRIDES).reduce((total, fields) => total + Object.keys(fields).length, 0) + Object.keys(CATEGORY_PROVENANCE_OVERRIDES).length;
   const summary = {
     legacy_products_considered: products.length + blocked.length,
@@ -797,6 +938,8 @@ export function reconcileCommercialCatalog({
     excluded: count((product) => product.migration_status === "EXCLUDED"),
     variants: variants.length,
     legacy_price_variants: variants.filter((variant) => variant.price_verification_status === "legacy").length,
+    official_pdf_price_variants: variants.filter((variant) => variant.price_verification_status === "official_pdf").length,
+    provisional_market_price_variants: variants.filter((variant) => variant.price_verification_status === "provisional_market").length,
     confirmed_price_variants: variants.filter((variant) => variant.price_verification_status === "client_confirmed" || variant.price_verification_status === "official_pdf").length,
     legacy_bottle_price_variants: variants.filter((variant) => variant.variant_kind === "bottle" && variant.price_verification_status === "legacy").length,
     confirmed_bottle_price_variants: variants.filter((variant) => variant.variant_kind === "bottle" && (variant.price_verification_status === "client_confirmed" || variant.price_verification_status === "official_pdf")).length,
@@ -804,6 +947,9 @@ export function reconcileCommercialCatalog({
     commercial_categories: [...uniqueCategories.keys()].filter((key) => key.startsWith("commercial_type:")).length,
     olfactory_categories: [...uniqueCategories.keys()].filter((key) => key.startsWith("olfactory_family:")).length,
     category_relationships: products.reduce((total, product) => total + product.categories.length, 0),
+    combo_targets: comboMaterialization.targets.length,
+    combo_presentations: comboPresentations,
+    combo_items: comboItems,
     status_overrides: products.filter((product) => product.target_product.publication_status === "hidden").length,
     provenance_overrides: overrideCount,
     conflicts: conflicts.length,
@@ -831,6 +977,7 @@ export function reconcileCommercialCatalog({
     summary,
     category_targets: categoryTargets,
     products,
+    combo_targets: comboMaterialization.targets,
     blocked,
     conflicts,
   };
@@ -848,6 +995,7 @@ async function buildArtifact() {
     "supabase/migrations/20260907154401_integrity_hardening.sql": paths.integritySchema,
     "supabase/migrations/20260908070000_admin_parfums_wholesale.sql": paths.wholesaleSchema,
     "supabase/staging/legacy-catalog-staging.json": paths.legacyStaging,
+    "supabase/staging/pdf-2026-commercial-reconciliation.json": paths.pdfReconciliation,
   }).map(async ([name, path]) => [name, await readFile(path, "utf8")]));
   const sourceMap = Object.fromEntries(sources);
   const sourceFingerprints = Object.fromEntries(sources.map(([name, raw]) => [name, sha256(raw)]));

@@ -3,6 +3,7 @@ export type Provenance =
   | "CLIENT_CONFIRMED"
   | "DERIVED_VALIDATED"
   | "MARKETING_COPY"
+  | "MARKET_RESEARCH"
   | "UNKNOWN"
   | "legacy";
 
@@ -20,6 +21,12 @@ export interface LegacyStagingEntry {
   };
   variants: Array<Record<string, unknown>>;
   categories: Array<{ kind: string; slug: string }>;
+  media?: Array<Record<string, unknown>>;
+  combo?: {
+    composition_verification_status: string;
+    source_state: string;
+    composition_legacy_ids: string[];
+  };
   fingerprint?: string;
 }
 
@@ -143,5 +150,10 @@ export function reconcileCommercialCatalog(input: {
   variantPriceOverrides?: VariantPriceOverride[];
   productLifecycleOverrides?: ProductLifecycleOverride[];
   supplementalProducts?: SupplementalProduct[];
+  comboEvidence?: Array<{
+    name: string;
+    members_legacy_ids: string[];
+    decant_price_3_5_10: number[];
+  }>;
 }): CommercialReconciliationArtifact;
 export function serializeCommercialReconciliation(artifact: unknown): string;
