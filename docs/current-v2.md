@@ -856,6 +856,36 @@ provisional_market writes.
 - Hosted Supabase, Production, and DNS were untouched. Next: 4K-C3 — NOT
   STARTED.
 
+### 4K-C3A-R1 — Staging QA combo C1A compatibility — CLOSED locally
+
+- 4K-C3A correctly stopped before any remote mutation: hosted
+  `staging-qa-combo-ready` had one historical `combo_items` row but zero
+  variants belonging to its own combo product, so C1A could not map that row
+  to exactly one `combo_product_variant_id`.
+- Added the staging-only, non-migration bridge
+  `supabase/provisioning/staging-qa-combo-c1a-bridge.sql`. It asserts exact
+  unit/slug/name/brand/combo ownership, fails on variant/inventory conflicts,
+  fingerprints non-QA rows, and idempotently creates exactly one deterministic
+  5 ml own presentation plus status-only inventory for each ready/pending QA
+  combo. It never modifies `combo_items`; C1A remains responsible for the
+  historical backfill.
+- Updated `staging-qa-fixtures.sql` for the current schema: both combo fixtures
+  have one deterministic own 5 ml presentation; ready is published +
+  `client_confirmed` with exactly one variant-aware composition pointing to
+  `staging-qa-publishable` / 5 ml; pending is draft +
+  `pending_reconfirmation` with zero items. Added focused read-only verification.
+- Local pre-C1A reproduction matched hosted evidence (2 combos / 1 item / 0
+  own variants). Bridge run twice produced 2 then 0 variant/inventory inserts,
+  preserved the historical item, and the unmodified C1A migration backfilled
+  that item to the ready combo's own variant. Current-schema provisioning run
+  twice was idempotent; unchanged exact cleanup removed all 9 QA products and
+  preserved the non-QA local prerequisite. `db:test`: PASS (28 files / 823
+  tests).
+- R1 made no hosted mutation, applied no remote migration, imported no
+  commercial manifest, and touched neither Production nor DNS. 4K-C3A remains
+  BLOCKED/not closed until a separately authorized hosted R2 succeeds. 4K-C3B
+  NOT STARTED.
+
 ## Current evidence gaps
 
 None outstanding for 4J5F. See Deferred defects above for the categoryId

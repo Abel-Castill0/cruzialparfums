@@ -44,6 +44,21 @@ do $$ begin
 end $$;
 update qa_products q set id=p.id from public.products p where p.business_unit_id=q.unit and p.slug=q.slug;
 
+do $$
+declare q record; expected_status text; expected_id uuid;
+begin
+ for q in select * from qa_products where slug in('staging-qa-combo-ready','staging-qa-combo-pending') and id is not null loop
+  expected_status:=case when q.slug='staging-qa-combo-ready' then 'published' else 'draft' end;
+  expected_id:=md5('4J5F-A/variant/'||q.slug)::uuid;
+  if exists(select 1 from public.product_variants v where v.product_id=q.id and (
+    v.id<>expected_id or v.variant_kind<>'decant' or v.size_ml<>5 or v.label<>'5 ml'
+    or v.price_amount<>0.01 or btrim(v.currency)<>'PEN' or v.publication_status<>expected_status
+    or v.price_verification_status<>'unknown' or v.sort_order<>0 or v.archived_at is not null)) then
+   raise exception 'QA combo presentation collision: %',q.slug;
+  end if;
+ end loop;
+end $$;
+
 -- Fingerprints cover exact IDs and every field of ALL non-QA rows in touched tables.
 -- In-memory only; no sensitive row contents leave Postgres. Transaction locks avoid races.
 create or replace function pg_temp.qa_fingerprint() returns jsonb language plpgsql as $$
@@ -136,6 +151,17 @@ begin
  end if;
  end if;
  end loop;
+ for q in select * from qa_products where slug in('staging-qa-combo-ready','staging-qa-combo-pending') loop
+  vid:=md5('4J5F-A/variant/'||q.slug)::uuid;
+  insert into public.product_variants(id,product_id,variant_kind,size_ml,label,price_amount,currency,
+   publication_status,sort_order,price_verification_status,archived_at)
+  values(vid,q.id,'decant',5,'5 ml',0.01,'PEN',
+   case when q.slug='staging-qa-combo-ready' then 'published' else 'draft' end,0,'unknown',null)
+  on conflict(id) do nothing;
+  insert into public.inventory(id,product_variant_id,inventory_mode,quantity_on_hand,availability_status)
+  values(md5('4J5F-A/inventory/'||q.slug)::uuid,vid,'status_only',null,'available')
+  on conflict(product_variant_id) do nothing;
+ end loop;
  for q in select * from(values(9001,'Draft','draft'),(9002,'Open','open'),(9003,'Closed','closed')) v(num,label,status) loop
  insert into public.campaigns(business_unit_id,number,name,status)
  values('22222222-2222-4222-8222-222222222222',q.num,'[STAGING QA] '||q.label,q.status)
@@ -144,12 +170,17 @@ begin
  for q in select * from qa_products where slug in('staging-qa-combo-ready','staging-qa-combo-pending') loop
  insert into public.combos(product_id,composition_verification_status)
  values(q.id,case when q.slug='staging-qa-combo-ready' then 'client_confirmed' else 'pending_reconfirmation' end)
- on conflict(product_id) do nothing;
+ on conflict(product_id) do update set composition_verification_status=excluded.composition_verification_status,
+  archived_at=null where combos.composition_verification_status is distinct from excluded.composition_verification_status
+  or combos.archived_at is not null;
  if q.slug='staging-qa-combo-ready' then
- select id into cid from public.combos where product_id=q.id;
- insert into public.combo_items(combo_id,product_variant_id,quantity,sort_order)
- select cid,v.id,1,0 from public.product_variants v join qa_products p on p.id=v.product_id
- where p.slug='staging-qa-publishable' and v.label='5 ml' on conflict(combo_id,product_variant_id) do nothing;
+  select id into cid from public.combos where product_id=q.id;
+  insert into public.combo_items(combo_id,combo_product_variant_id,product_variant_id,quantity,sort_order)
+  select cid,md5('4J5F-A/variant/staging-qa-combo-ready')::uuid,v.id,1,0
+  from public.product_variants v join qa_products p on p.id=v.product_id
+  where p.slug='staging-qa-publishable' and v.label='5 ml'
+  on conflict(combo_id,combo_product_variant_id,product_variant_id)
+  do update set quantity=excluded.quantity,sort_order=excluded.sort_order;
  end if;
  end loop;
 end $$;
@@ -216,6 +247,35 @@ begin
   or not m.is_primary or m.archived_at is not null) then raise exception 'Unexpected QA media'; end if;
  if exists(select 1 from public.product_media m join qa_products owned on owned.id=m.product_id
   where owned.slug in('staging-qa-blocked-media','staging-qa-import-no-media')) then raise exception 'No-media scenario has media'; end if;
+ for q in select * from qa_products where slug in('staging-qa-combo-ready','staging-qa-combo-pending') loop
+  if (select count(*) from public.product_variants v where v.product_id=q.id)<>1 then
+   raise exception 'QA combo must have exactly one own presentation: %',q.slug; end if;
+  if not exists(select 1 from public.product_variants v join public.inventory i on i.product_variant_id=v.id
+   where v.id=md5('4J5F-A/variant/'||q.slug)::uuid and v.product_id=q.id and v.variant_kind='decant'
+   and v.size_ml=5 and v.label='5 ml' and v.price_amount=0.01 and btrim(v.currency)='PEN'
+   and v.publication_status=(case when q.slug='staging-qa-combo-ready' then 'published' else 'draft' end)
+   and v.price_verification_status='unknown' and v.sort_order=0 and v.archived_at is null
+   and i.id=md5('4J5F-A/inventory/'||q.slug)::uuid and i.inventory_mode='status_only'
+   and i.quantity_on_hand is null and i.availability_status='available') then
+   raise exception 'QA combo own presentation contract mismatch: %',q.slug; end if;
+  if not exists(select 1 from public.combos c where c.product_id=q.id
+   and c.composition_verification_status=(case when q.slug='staging-qa-combo-ready' then 'client_confirmed' else 'pending_reconfirmation' end)) then
+   raise exception 'QA combo authority mismatch: %',q.slug; end if;
+ end loop;
+ if (select count(*) from public.combo_items ci join public.combos c on c.id=ci.combo_id
+  join qa_products owned on owned.id=c.product_id where owned.slug='staging-qa-combo-ready')<>1 then
+  raise exception 'Ready QA combo must have exactly one composition row'; end if;
+ if not exists(select 1 from public.combo_items ci join public.combos c on c.id=ci.combo_id
+  join qa_products ready on ready.id=c.product_id
+  join public.product_variants ingredient on ingredient.id=ci.product_variant_id
+  join qa_products publishable on publishable.id=ingredient.product_id
+  where ready.slug='staging-qa-combo-ready' and publishable.slug='staging-qa-publishable'
+  and ci.combo_product_variant_id=md5('4J5F-A/variant/staging-qa-combo-ready')::uuid
+  and ingredient.label='5 ml' and ci.quantity=1 and ci.sort_order=0) then
+  raise exception 'Ready QA combo composition mapping mismatch'; end if;
+ if exists(select 1 from public.combo_items ci join public.combos c on c.id=ci.combo_id
+  join qa_products owned on owned.id=c.product_id where owned.slug='staging-qa-combo-pending') then
+  raise exception 'Pending QA combo must have zero composition rows'; end if;
 end $$;
 select '4J5F-A applied' as status,(select count(*) from qa_products) as qa_products,
  (select count(*) from qa_offers_before) as unchanged_non_qa_offers,
