@@ -11,7 +11,7 @@
 
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(39);
+select plan(60);
 
 -- ---------------------------------------------------------------------------
 -- Fixtures
@@ -52,12 +52,14 @@ insert into public.products (id, business_unit_id, slug, name, publication_statu
 -- failing earlier on RLS invisibility with an unrelated "not found".
 insert into public.product_variants (id, product_id, label, variant_kind, price_amount, sort_order, publication_status) values
   ('a1000000-0000-4000-8000-00000000000a', 'a0000000-0000-4000-8000-00000000000a', '3 ml', 'decant', 12.00, 0, 'draft'),
+  ('a5000000-0000-4000-8000-00000000000a', 'a0000000-0000-4000-8000-00000000000a', '5 ml', 'decant', 18.00, 1, 'draft'),
   ('b1000000-0000-4000-8000-00000000000b', 'b0000000-0000-4000-8000-00000000000b', '3 ml', 'decant', 10.00, 0, 'draft'),
   ('c1000000-0000-4000-8000-00000000000c', 'c0000000-0000-4000-8000-00000000000c', '3 ml', 'decant', 11.00, 0, 'draft'),
   ('d1000000-0000-4000-8000-00000000000d', 'd0000000-0000-4000-8000-00000000000d', '3 ml', 'decant', 9.00, 0, 'published');
 
 insert into public.inventory (product_variant_id, inventory_mode, availability_status) values
   ('a1000000-0000-4000-8000-00000000000a', 'status_only', 'available'),
+  ('a5000000-0000-4000-8000-00000000000a', 'status_only', 'available'),
   ('b1000000-0000-4000-8000-00000000000b', 'status_only', 'available'),
   ('c1000000-0000-4000-8000-00000000000c', 'status_only', 'available'),
   ('d1000000-0000-4000-8000-00000000000d', 'status_only', 'available');
@@ -145,8 +147,8 @@ select lives_ok(
       (select id from public.combos where product_id = 'a0000000-0000-4000-8000-00000000000a'),
       (select updated_at from public.combos where product_id = 'a0000000-0000-4000-8000-00000000000a'),
       '[
-        {"product_variant_id": "b1000000-0000-4000-8000-00000000000b", "quantity": 2, "sort_order": 0},
-        {"product_variant_id": "c1000000-0000-4000-8000-00000000000c", "quantity": 1, "sort_order": 1}
+        {"combo_product_variant_id": "a1000000-0000-4000-8000-00000000000a", "product_variant_id": "b1000000-0000-4000-8000-00000000000b", "quantity": 2, "sort_order": 0},
+        {"combo_product_variant_id": "a1000000-0000-4000-8000-00000000000a", "product_variant_id": "c1000000-0000-4000-8000-00000000000c", "quantity": 1, "sort_order": 1}
       ]'::jsonb
     )$$,
   'Parfums admin sets a two-item composition atomically'
@@ -175,8 +177,8 @@ select throws_ok(
       (select id from public.combos where product_id = 'a0000000-0000-4000-8000-00000000000a'),
       (select updated_at from public.combos where product_id = 'a0000000-0000-4000-8000-00000000000a'),
       '[
-        {"product_variant_id": "b1000000-0000-4000-8000-00000000000b", "quantity": 1, "sort_order": 0},
-        {"product_variant_id": "b1000000-0000-4000-8000-00000000000b", "quantity": 1, "sort_order": 1}
+        {"combo_product_variant_id": "a1000000-0000-4000-8000-00000000000a", "product_variant_id": "b1000000-0000-4000-8000-00000000000b", "quantity": 1, "sort_order": 0},
+        {"combo_product_variant_id": "a1000000-0000-4000-8000-00000000000a", "product_variant_id": "b1000000-0000-4000-8000-00000000000b", "quantity": 1, "sort_order": 1}
       ]'::jsonb
     )$$,
   '23505',
@@ -200,9 +202,9 @@ select throws_ok(
       (select id from public.combos where product_id = 'a0000000-0000-4000-8000-00000000000a'),
       (select updated_at from public.combos where product_id = 'a0000000-0000-4000-8000-00000000000a'),
       '[
-        {"product_variant_id": "b1000000-0000-4000-8000-00000000000b", "quantity": 2, "sort_order": 0},
-        {"product_variant_id": "c1000000-0000-4000-8000-00000000000c", "quantity": 1, "sort_order": 1},
-        {"product_variant_id": "a1000000-0000-4000-8000-00000000000a", "quantity": 1, "sort_order": 2}
+        {"combo_product_variant_id": "a1000000-0000-4000-8000-00000000000a", "product_variant_id": "b1000000-0000-4000-8000-00000000000b", "quantity": 2, "sort_order": 0},
+        {"combo_product_variant_id": "a1000000-0000-4000-8000-00000000000a", "product_variant_id": "c1000000-0000-4000-8000-00000000000c", "quantity": 1, "sort_order": 1},
+        {"combo_product_variant_id": "a1000000-0000-4000-8000-00000000000a", "product_variant_id": "a1000000-0000-4000-8000-00000000000a", "quantity": 1, "sort_order": 2}
       ]'::jsonb
     )$$,
   '23514',
@@ -216,7 +218,7 @@ select throws_ok(
       (select id from public.combos where product_id = 'a0000000-0000-4000-8000-00000000000a'),
       (select updated_at from public.combos where product_id = 'a0000000-0000-4000-8000-00000000000a'),
       '[
-        {"product_variant_id": "d1000000-0000-4000-8000-00000000000d", "quantity": 1, "sort_order": 0}
+        {"combo_product_variant_id": "a1000000-0000-4000-8000-00000000000a", "product_variant_id": "d1000000-0000-4000-8000-00000000000d", "quantity": 1, "sort_order": 0}
       ]'::jsonb
     )$$,
   '23514',
@@ -239,9 +241,9 @@ select throws_ok(
       (select id from public.combos where product_id = 'a0000000-0000-4000-8000-00000000000a'),
       (select updated_at from public.combos where product_id = 'a0000000-0000-4000-8000-00000000000a'),
       '[
-        {"product_variant_id": "b1000000-0000-4000-8000-00000000000b", "quantity": 2, "sort_order": 0},
-        {"product_variant_id": "c1000000-0000-4000-8000-00000000000c", "quantity": 1, "sort_order": 1},
-        {"product_variant_id": "e1000000-0000-4000-8000-00000000000e", "quantity": 1, "sort_order": 2}
+        {"combo_product_variant_id": "a1000000-0000-4000-8000-00000000000a", "product_variant_id": "b1000000-0000-4000-8000-00000000000b", "quantity": 2, "sort_order": 0},
+        {"combo_product_variant_id": "a1000000-0000-4000-8000-00000000000a", "product_variant_id": "c1000000-0000-4000-8000-00000000000c", "quantity": 1, "sort_order": 1},
+        {"combo_product_variant_id": "a1000000-0000-4000-8000-00000000000a", "product_variant_id": "e1000000-0000-4000-8000-00000000000e", "quantity": 1, "sort_order": 2}
       ]'::jsonb
     )$$,
   '22023',
@@ -257,7 +259,7 @@ select throws_ok(
   $$select public.admin_set_combo_composition(
       (select id from public.combos where product_id = 'a0000000-0000-4000-8000-00000000000a'),
       '2000-01-01T00:00:00Z'::timestamptz,
-      '[{"product_variant_id": "b1000000-0000-4000-8000-00000000000b", "quantity": 5, "sort_order": 0}]'::jsonb
+      '[{"combo_product_variant_id": "a1000000-0000-4000-8000-00000000000a", "product_variant_id": "b1000000-0000-4000-8000-00000000000b", "quantity": 5, "sort_order": 0}]'::jsonb
     )$$,
   'P2011',
   null,
@@ -300,6 +302,224 @@ select is(
        and entity_id = (select id from public.combos where product_id = 'a0000000-0000-4000-8000-00000000000a')),
   1,
   'the verification change wrote exactly one audit_log row'
+);
+
+select throws_ok(
+  $$select public.admin_update_combo_verification(
+      (select id from public.combos where product_id = 'a0000000-0000-4000-8000-00000000000a'),
+      (select updated_at from public.combos where product_id = 'a0000000-0000-4000-8000-00000000000a'),
+      'official_pdf'
+    )$$,
+  '22023',
+  null,
+  'Admin cannot manually manufacture official_pdf source authority'
+);
+
+reset role;
+update public.combos
+set composition_verification_status = 'official_pdf'
+where product_id = 'a0000000-0000-4000-8000-00000000000a';
+set local role authenticated;
+set local request.jwt.claims to '{"sub":"dddddddd-dddd-4ddd-8ddd-dddddddddddd","role":"authenticated"}';
+
+select lives_ok(
+  $$select public.admin_set_combo_composition(
+      (select id from public.combos where product_id = 'a0000000-0000-4000-8000-00000000000a'),
+      (select updated_at from public.combos where product_id = 'a0000000-0000-4000-8000-00000000000a'),
+      '[
+        {"combo_product_variant_id": "a1000000-0000-4000-8000-00000000000a", "product_variant_id": "b1000000-0000-4000-8000-00000000000b", "quantity": 3, "sort_order": 0},
+        {"combo_product_variant_id": "a1000000-0000-4000-8000-00000000000a", "product_variant_id": "c1000000-0000-4000-8000-00000000000c", "quantity": 1, "sort_order": 1}
+      ]'::jsonb
+    )$$,
+  'a quantity change atomically replaces composition'
+);
+
+select is(
+  (select composition_verification_status from public.combos where product_id = 'a0000000-0000-4000-8000-00000000000a'),
+  'pending_reconfirmation',
+  'a quantity change downgrades official_pdf authority'
+);
+
+select is(
+  (select count(*)::int from public.audit_log
+   where entity_type = 'combo' and action = 'verification_update'
+     and entity_id = (select id from public.combos where product_id = 'a0000000-0000-4000-8000-00000000000a')
+     and before->>'composition_verification_status' = 'official_pdf'
+     and after->>'composition_verification_status' = 'pending_reconfirmation'),
+  1,
+  'automatic authority downgrade is observable with old/new status in the existing audit log'
+);
+
+reset role;
+update public.combos set composition_verification_status = 'official_pdf'
+where product_id = 'a0000000-0000-4000-8000-00000000000a';
+set local role authenticated;
+set local request.jwt.claims to '{"sub":"dddddddd-dddd-4ddd-8ddd-dddddddddddd","role":"authenticated"}';
+
+select lives_ok(
+  $$select public.admin_set_combo_composition(
+      (select id from public.combos where product_id = 'a0000000-0000-4000-8000-00000000000a'),
+      (select updated_at from public.combos where product_id = 'a0000000-0000-4000-8000-00000000000a'),
+      '[
+        {"combo_product_variant_id": "a1000000-0000-4000-8000-00000000000a", "product_variant_id": "c1000000-0000-4000-8000-00000000000c", "quantity": 1, "sort_order": 0},
+        {"combo_product_variant_id": "a1000000-0000-4000-8000-00000000000a", "product_variant_id": "b1000000-0000-4000-8000-00000000000b", "quantity": 3, "sort_order": 1}
+      ]'::jsonb
+    )$$,
+  'sort-only replacement succeeds'
+);
+select is(
+  (select composition_verification_status from public.combos where product_id = 'a0000000-0000-4000-8000-00000000000a'),
+  'official_pdf',
+  'sort-only replacement preserves official_pdf authority'
+);
+
+select lives_ok(
+  $$select public.admin_set_combo_composition(
+      (select id from public.combos where product_id = 'a0000000-0000-4000-8000-00000000000a'),
+      (select updated_at from public.combos where product_id = 'a0000000-0000-4000-8000-00000000000a'),
+      '[
+        {"combo_product_variant_id": "a1000000-0000-4000-8000-00000000000a", "product_variant_id": "c1000000-0000-4000-8000-00000000000c", "quantity": 1, "sort_order": 0},
+        {"combo_product_variant_id": "a1000000-0000-4000-8000-00000000000a", "product_variant_id": "b1000000-0000-4000-8000-00000000000b", "quantity": 3, "sort_order": 1}
+      ]'::jsonb
+    )$$,
+  'identical semantic replacement succeeds'
+);
+select is(
+  (select composition_verification_status from public.combos where product_id = 'a0000000-0000-4000-8000-00000000000a'),
+  'official_pdf',
+  'identical semantic replacement preserves authority'
+);
+
+select lives_ok(
+  $$select public.admin_update_combo_verification(
+      (select id from public.combos where product_id = 'a0000000-0000-4000-8000-00000000000a'),
+      (select updated_at from public.combos where product_id = 'a0000000-0000-4000-8000-00000000000a'),
+      'client_confirmed'
+    )$$,
+  'Admin may explicitly set client_confirmed before a semantic edit'
+);
+
+select lives_ok(
+  $$select public.admin_set_combo_composition(
+      (select id from public.combos where product_id = 'a0000000-0000-4000-8000-00000000000a'),
+      (select updated_at from public.combos where product_id = 'a0000000-0000-4000-8000-00000000000a'),
+      '[
+        {"combo_product_variant_id": "a1000000-0000-4000-8000-00000000000a", "product_variant_id": "c1000000-0000-4000-8000-00000000000c", "quantity": 1, "sort_order": 0},
+        {"combo_product_variant_id": "a1000000-0000-4000-8000-00000000000a", "product_variant_id": "b1000000-0000-4000-8000-00000000000b", "quantity": 3, "sort_order": 1},
+        {"combo_product_variant_id": "a5000000-0000-4000-8000-00000000000a", "product_variant_id": "b1000000-0000-4000-8000-00000000000b", "quantity": 1, "sort_order": 0},
+        {"combo_product_variant_id": "a5000000-0000-4000-8000-00000000000a", "product_variant_id": "c1000000-0000-4000-8000-00000000000c", "quantity": 1, "sort_order": 1}
+      ]'::jsonb
+    )$$,
+  'same ingredient can be composed independently under a second combo presentation'
+);
+select is(
+  (select composition_verification_status from public.combos where product_id = 'a0000000-0000-4000-8000-00000000000a'),
+  'pending_reconfirmation',
+  'semantic presentation edit downgrades client_confirmed authority'
+);
+select is(
+  (select count(*)::int from public.combo_items where product_variant_id = 'b1000000-0000-4000-8000-00000000000b'),
+  2,
+  'the same ingredient is stored once in each of two combo presentations'
+);
+
+select throws_ok(
+  $$select public.admin_set_combo_composition(
+      (select id from public.combos where product_id = 'a0000000-0000-4000-8000-00000000000a'),
+      (select updated_at from public.combos where product_id = 'a0000000-0000-4000-8000-00000000000a'),
+      '[
+        {"combo_product_variant_id": "a1000000-0000-4000-8000-00000000000a", "product_variant_id": "b1000000-0000-4000-8000-00000000000b", "quantity": 1, "sort_order": 0},
+        {"combo_product_variant_id": "a1000000-0000-4000-8000-00000000000a", "product_variant_id": "b1000000-0000-4000-8000-00000000000b", "quantity": 2, "sort_order": 1}
+      ]'::jsonb
+    )$$,
+  '23505', null,
+  'duplicate ingredient within the same combo presentation is rejected'
+);
+
+select throws_ok(
+  $$select public.admin_set_combo_composition(
+      (select id from public.combos where product_id = 'a0000000-0000-4000-8000-00000000000a'),
+      (select updated_at from public.combos where product_id = 'a0000000-0000-4000-8000-00000000000a'),
+      '[{"combo_product_variant_id": "b1000000-0000-4000-8000-00000000000b", "product_variant_id": "c1000000-0000-4000-8000-00000000000c", "quantity": 1, "sort_order": 0}]'::jsonb
+    )$$,
+  '23514', null,
+  'a combo-product variant belonging to another product is rejected by the database'
+);
+
+select throws_ok(
+  $$select public.admin_set_combo_composition(
+      (select id from public.combos where product_id = 'a0000000-0000-4000-8000-00000000000a'),
+      (select updated_at from public.combos where product_id = 'a0000000-0000-4000-8000-00000000000a'),
+      '[{"combo_product_variant_id": "a1000000-0000-4000-8000-00000000000a", "product_variant_id": "c1000000-0000-4000-8000-00000000000c", "quantity": 0, "sort_order": 0}]'::jsonb
+    )$$,
+  '23514', null,
+  'positive quantity constraint remains enforced'
+);
+
+select lives_ok(
+  $$select public.admin_archive_variant(
+      'a5000000-0000-4000-8000-00000000000a',
+      (select updated_at from public.product_variants where id = 'a5000000-0000-4000-8000-00000000000a')
+    )$$,
+  'a combo presentation can be archived without deleting its historical composition'
+);
+
+select lives_ok(
+  $$select public.admin_update_combo_verification(
+      (select id from public.combos where product_id = 'a0000000-0000-4000-8000-00000000000a'),
+      (select updated_at from public.combos where product_id = 'a0000000-0000-4000-8000-00000000000a'),
+      'client_confirmed'
+    )$$,
+  'client authority is established before an archived-presentation sort-only pass'
+);
+
+select lives_ok(
+  $$select public.admin_set_combo_composition(
+      (select id from public.combos where product_id = 'a0000000-0000-4000-8000-00000000000a'),
+      (select updated_at from public.combos where product_id = 'a0000000-0000-4000-8000-00000000000a'),
+      '[
+        {"combo_product_variant_id": "a1000000-0000-4000-8000-00000000000a", "product_variant_id": "c1000000-0000-4000-8000-00000000000c", "quantity": 1, "sort_order": 0},
+        {"combo_product_variant_id": "a1000000-0000-4000-8000-00000000000a", "product_variant_id": "b1000000-0000-4000-8000-00000000000b", "quantity": 3, "sort_order": 1},
+        {"combo_product_variant_id": "a5000000-0000-4000-8000-00000000000a", "product_variant_id": "c1000000-0000-4000-8000-00000000000c", "quantity": 1, "sort_order": 0},
+        {"combo_product_variant_id": "a5000000-0000-4000-8000-00000000000a", "product_variant_id": "b1000000-0000-4000-8000-00000000000b", "quantity": 1, "sort_order": 1}
+      ]'::jsonb
+    )$$,
+  'sort-only reorder keeps archived presentation history representable'
+);
+
+select is(
+  (select composition_verification_status from public.combos where product_id = 'a0000000-0000-4000-8000-00000000000a'),
+  'client_confirmed',
+  'sort-only replacement preserves client_confirmed authority'
+);
+
+select throws_ok(
+  $$select public.admin_set_combo_composition(
+      (select id from public.combos where product_id = 'a0000000-0000-4000-8000-00000000000a'),
+      (select updated_at from public.combos where product_id = 'a0000000-0000-4000-8000-00000000000a'),
+      '[
+        {"combo_product_variant_id": "a1000000-0000-4000-8000-00000000000a", "product_variant_id": "c1000000-0000-4000-8000-00000000000c", "quantity": 1, "sort_order": 0},
+        {"combo_product_variant_id": "a1000000-0000-4000-8000-00000000000a", "product_variant_id": "b1000000-0000-4000-8000-00000000000b", "quantity": 3, "sort_order": 1},
+        {"combo_product_variant_id": "a5000000-0000-4000-8000-00000000000a", "product_variant_id": "c1000000-0000-4000-8000-00000000000c", "quantity": 2, "sort_order": 0},
+        {"combo_product_variant_id": "a5000000-0000-4000-8000-00000000000a", "product_variant_id": "b1000000-0000-4000-8000-00000000000b", "quantity": 1, "sort_order": 1}
+      ]'::jsonb
+    )$$,
+  '22023', null,
+  'quantity changes under an archived combo presentation are rejected'
+);
+
+select throws_ok(
+  $$select public.admin_set_combo_composition(
+      (select id from public.combos where product_id = 'a0000000-0000-4000-8000-00000000000a'),
+      (select updated_at from public.combos where product_id = 'a0000000-0000-4000-8000-00000000000a'),
+      '[
+        {"combo_product_variant_id": "a1000000-0000-4000-8000-00000000000a", "product_variant_id": "c1000000-0000-4000-8000-00000000000c", "quantity": 1, "sort_order": 0},
+        {"combo_product_variant_id": "a1000000-0000-4000-8000-00000000000a", "product_variant_id": "b1000000-0000-4000-8000-00000000000b", "quantity": 3, "sort_order": 1},
+        {"combo_product_variant_id": "a5000000-0000-4000-8000-00000000000a", "product_variant_id": "c1000000-0000-4000-8000-00000000000c", "quantity": 1, "sort_order": 0}
+      ]'::jsonb
+    )$$,
+  '22023', null,
+  'removing a historical line under an archived combo presentation is rejected'
 );
 
 -- ---------------------------------------------------------------------------
@@ -349,7 +569,7 @@ select is(
   (select count(*)::int from public.combo_items ci
     join public.combos c on c.id = ci.combo_id
     where c.product_id = 'a0000000-0000-4000-8000-00000000000a'),
-  2,
+  4,
   'the archived combo keeps its full composition (no cascade)'
 );
 

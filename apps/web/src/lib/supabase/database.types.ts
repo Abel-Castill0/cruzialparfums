@@ -350,6 +350,7 @@ export type Database = {
       combo_items: {
         Row: {
           combo_id: string
+          combo_product_variant_id: string
           created_at: string
           id: string
           product_variant_id: string
@@ -358,6 +359,7 @@ export type Database = {
         }
         Insert: {
           combo_id: string
+          combo_product_variant_id: string
           created_at?: string
           id?: string
           product_variant_id: string
@@ -366,6 +368,7 @@ export type Database = {
         }
         Update: {
           combo_id?: string
+          combo_product_variant_id?: string
           created_at?: string
           id?: string
           product_variant_id?: string
@@ -378,6 +381,20 @@ export type Database = {
             columns: ["combo_id"]
             isOneToOne: false
             referencedRelation: "combos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "combo_items_combo_product_variant_id_fkey"
+            columns: ["combo_product_variant_id"]
+            isOneToOne: false
+            referencedRelation: "admin_parfums_wholesale_catalog"
+            referencedColumns: ["variant_id"]
+          },
+          {
+            foreignKeyName: "combo_items_combo_product_variant_id_fkey"
+            columns: ["combo_product_variant_id"]
+            isOneToOne: false
+            referencedRelation: "product_variants"
             referencedColumns: ["id"]
           },
           {
@@ -656,6 +673,7 @@ export type Database = {
           created_at: string
           currency: string
           id: string
+          import_presentation_id: string | null
           line_total_amount: number
           order_id: string
           product_id: string | null
@@ -673,6 +691,7 @@ export type Database = {
           created_at?: string
           currency?: string
           id?: string
+          import_presentation_id?: string | null
           line_total_amount: number
           order_id: string
           product_id?: string | null
@@ -690,6 +709,7 @@ export type Database = {
           created_at?: string
           currency?: string
           id?: string
+          import_presentation_id?: string | null
           line_total_amount?: number
           order_id?: string
           product_id?: string | null
@@ -707,6 +727,13 @@ export type Database = {
             columns: ["campaign_product_id"]
             isOneToOne: false
             referencedRelation: "campaign_products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_lines_import_presentation_id_fkey"
+            columns: ["import_presentation_id"]
+            isOneToOne: false
+            referencedRelation: "import_presentations"
             referencedColumns: ["id"]
           },
           {
@@ -1452,6 +1479,63 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      admin_archive_import_presentation: {
+        Args: { p_expected_updated_at: string; p_presentation_id: string }
+        Returns: {
+          archived_at: string | null
+          capacity_ml: number | null
+          composition: Json | null
+          created_at: string
+          id: string
+          label: string
+          presentation_class: string
+          product_id: string
+          publication_status: string
+          source_metadata: Json
+          stable_key: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "import_presentations"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      admin_archive_import_product: {
+        Args: { p_expected_updated_at: string; p_product_id: string }
+        Returns: {
+          archived_at: string | null
+          availability_status: string
+          brand: string | null
+          business_unit_id: string
+          concentration: string | null
+          created_at: string
+          description: string | null
+          featured_from: string | null
+          featured_rank: number | null
+          featured_until: string | null
+          gender: string | null
+          id: string
+          is_featured: boolean
+          legacy_id: string | null
+          name: string
+          production_status: string
+          publication_status: string
+          sales_mode: string
+          short_description: string | null
+          slug: string
+          specs: Json
+          updated_at: string
+          verification_status: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "products"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       admin_archive_media: {
         Args: { p_expected_updated_at: string; p_media_id: string }
         Returns: {
@@ -1622,6 +1706,34 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      admin_create_import_presentation: {
+        Args: {
+          p_capacity_ml?: number
+          p_label: string
+          p_presentation_class: string
+          p_product_id: string
+        }
+        Returns: {
+          archived_at: string | null
+          capacity_ml: number | null
+          composition: Json | null
+          created_at: string
+          id: string
+          label: string
+          presentation_class: string
+          product_id: string
+          publication_status: string
+          source_metadata: Json
+          stable_key: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "import_presentations"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       admin_create_product: {
         Args: {
           p_brand?: string
@@ -1778,6 +1890,207 @@ export type Database = {
           variant_publication_status: string
         }[]
       }
+      admin_get_import_catalog_qa: {
+        Args: never
+        Returns: {
+          active_campaigns: number
+          available_offers: number
+          campaign_number: number
+          campaign_offers: number
+          campaign_status: string
+          draft_presentations: number
+          draft_products: number
+          hidden_products: number
+          out_of_stock_offers: number
+          presentations: number
+          products: number
+          products_with_primary_media: number
+          products_without_media: number
+          products_without_primary_media: number
+          published_presentations: number
+          published_products: number
+          structures_without_offer: number
+          total_active_media: number
+          unconfirmed_offers: number
+        }[]
+      }
+      admin_get_import_publication_readiness: { Args: never; Returns: Json }
+      admin_import_archive_customer: {
+        Args: { p_customer_id: string }
+        Returns: {
+          archived_at: string | null
+          business_unit_id: string
+          created_at: string
+          document_id: string | null
+          email: string | null
+          full_name: string
+          id: string
+          notes: string | null
+          phone: string | null
+          updated_at: string
+          verified_at: string | null
+          verified_by: string | null
+          verified_customer_status: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "customers"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      admin_import_create_customer: {
+        Args: { p_full_name: string; p_notes?: string; p_phone?: string }
+        Returns: {
+          archived_at: string | null
+          business_unit_id: string
+          created_at: string
+          document_id: string | null
+          email: string | null
+          full_name: string
+          id: string
+          notes: string | null
+          phone: string | null
+          updated_at: string
+          verified_at: string | null
+          verified_by: string | null
+          verified_customer_status: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "customers"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      admin_import_create_customer_from_order: {
+        Args: { p_order_id: string }
+        Returns: Json
+      }
+      admin_import_link_customer_order: {
+        Args: { p_customer_id: string; p_order_id: string }
+        Returns: {
+          archived_at: string | null
+          business_unit_id: string
+          campaign_id: string | null
+          channel: string
+          claimed_customer_status: string | null
+          created_at: string
+          currency: string
+          customer_id: string | null
+          customer_snapshot: Json
+          delivery_snapshot: Json
+          deposit_amount_snapshot: number | null
+          deposit_percentage_snapshot: number | null
+          deposit_policy_snapshot: Json | null
+          id: string
+          notes: string | null
+          order_number: string
+          request_id: string | null
+          shipping_method_id: string | null
+          status: string
+          subtotal_amount: number
+          updated_at: string
+          verified_customer_status_snapshot: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "orders"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      admin_import_update_customer: {
+        Args: {
+          p_customer_id: string
+          p_full_name: string
+          p_notes?: string
+          p_phone?: string
+        }
+        Returns: {
+          archived_at: string | null
+          business_unit_id: string
+          created_at: string
+          document_id: string | null
+          email: string | null
+          full_name: string
+          id: string
+          notes: string | null
+          phone: string | null
+          updated_at: string
+          verified_at: string | null
+          verified_by: string | null
+          verified_customer_status: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "customers"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      admin_import_update_order_status: {
+        Args: {
+          p_expected_status: string
+          p_new_status: string
+          p_order_id: string
+          p_reason?: string
+        }
+        Returns: {
+          archived_at: string | null
+          business_unit_id: string
+          campaign_id: string | null
+          channel: string
+          claimed_customer_status: string | null
+          created_at: string
+          currency: string
+          customer_id: string | null
+          customer_snapshot: Json
+          delivery_snapshot: Json
+          deposit_amount_snapshot: number | null
+          deposit_percentage_snapshot: number | null
+          deposit_policy_snapshot: Json | null
+          id: string
+          notes: string | null
+          order_number: string
+          request_id: string | null
+          shipping_method_id: string | null
+          status: string
+          subtotal_amount: number
+          updated_at: string
+          verified_customer_status_snapshot: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "orders"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      admin_import_verify_customer_status: {
+        Args: { p_customer_id: string; p_new_status: string }
+        Returns: {
+          archived_at: string | null
+          business_unit_id: string
+          created_at: string
+          document_id: string | null
+          email: string | null
+          full_name: string
+          id: string
+          notes: string | null
+          phone: string | null
+          updated_at: string
+          verified_at: string | null
+          verified_by: string | null
+          verified_customer_status: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "customers"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       admin_list_audit_log: {
         Args: {
           p_action?: string
@@ -1795,6 +2108,59 @@ export type Database = {
           entity_id: string
           entity_type: string
           id: string
+          total_count: number
+        }[]
+      }
+      admin_list_import_products: {
+        Args: {
+          p_archived?: string
+          p_category_slug?: string
+          p_media_state?: string
+          p_offer_state?: string
+          p_page?: number
+          p_page_size?: number
+          p_presentation_state?: string
+          p_publication_status?: string
+          p_query?: string
+        }
+        Returns: {
+          active_media_count: number
+          active_presentations: number
+          archived_at: string
+          brand: string
+          campaign_offer_count: number
+          category_name: string
+          category_slug: string
+          has_active_primary: boolean
+          id: string
+          legacy_id: string
+          name: string
+          publication_status: string
+          published_presentations: number
+          slug: string
+          total_count: number
+          unconfirmed_offer_count: number
+          updated_at: string
+          verification_status: string
+        }[]
+      }
+      admin_list_import_publication_blockers: {
+        Args: {
+          p_blocker?: string
+          p_page?: number
+          p_page_size?: number
+          p_query?: string
+        }
+        Returns: {
+          blocker_code: string
+          blocker_label: string
+          brand: string
+          offer_id: string
+          presentation_id: string
+          presentation_label: string
+          product_id: string
+          product_name: string
+          slug: string
           total_count: number
         }[]
       }
@@ -1905,6 +2271,63 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "combos"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      admin_restore_import_presentation: {
+        Args: { p_expected_updated_at: string; p_presentation_id: string }
+        Returns: {
+          archived_at: string | null
+          capacity_ml: number | null
+          composition: Json | null
+          created_at: string
+          id: string
+          label: string
+          presentation_class: string
+          product_id: string
+          publication_status: string
+          source_metadata: Json
+          stable_key: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "import_presentations"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      admin_restore_import_product: {
+        Args: { p_expected_updated_at: string; p_product_id: string }
+        Returns: {
+          archived_at: string | null
+          availability_status: string
+          brand: string | null
+          business_unit_id: string
+          concentration: string | null
+          created_at: string
+          description: string | null
+          featured_from: string | null
+          featured_rank: number | null
+          featured_until: string | null
+          gender: string | null
+          id: string
+          is_featured: boolean
+          legacy_id: string | null
+          name: string
+          production_status: string
+          publication_status: string
+          sales_mode: string
+          short_description: string | null
+          slug: string
+          specs: Json
+          updated_at: string
+          verification_status: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "products"
           isOneToOne: true
           isSetofReturn: false
         }
@@ -2059,6 +2482,7 @@ export type Database = {
         }
         Returns: {
           combo_id: string
+          combo_product_variant_id: string
           created_at: string
           id: string
           product_variant_id: string
@@ -2196,6 +2620,77 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "combos"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      admin_update_import_presentation: {
+        Args: {
+          p_capacity_ml: number
+          p_expected_updated_at: string
+          p_label: string
+          p_presentation_class: string
+          p_presentation_id: string
+          p_publication_status: string
+        }
+        Returns: {
+          archived_at: string | null
+          capacity_ml: number | null
+          composition: Json | null
+          created_at: string
+          id: string
+          label: string
+          presentation_class: string
+          product_id: string
+          publication_status: string
+          source_metadata: Json
+          stable_key: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "import_presentations"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      admin_update_import_product: {
+        Args: {
+          p_brand: string
+          p_category_id: string
+          p_expected_updated_at: string
+          p_name: string
+          p_product_id: string
+          p_publication_status: string
+        }
+        Returns: {
+          archived_at: string | null
+          availability_status: string
+          brand: string | null
+          business_unit_id: string
+          concentration: string | null
+          created_at: string
+          description: string | null
+          featured_from: string | null
+          featured_rank: number | null
+          featured_until: string | null
+          gender: string | null
+          id: string
+          is_featured: boolean
+          legacy_id: string | null
+          name: string
+          production_status: string
+          publication_status: string
+          sales_mode: string
+          short_description: string | null
+          slug: string
+          specs: Json
+          updated_at: string
+          verification_status: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "products"
           isOneToOne: true
           isSetofReturn: false
         }
@@ -2420,6 +2915,23 @@ export type Database = {
           threshold_reached: boolean
         }[]
       }
+      create_import_order_request: {
+        Args: {
+          p_customer: Json
+          p_delivery: Json
+          p_lines: Json
+          p_request_id: string
+        }
+        Returns: {
+          campaign_number: number
+          created: boolean
+          deposit_amount: number
+          deposit_percentage: number
+          order_id: string
+          order_number: string
+          subtotal: number
+        }[]
+      }
       create_parfums_order_request: {
         Args: {
           p_customer_snapshot: Json
@@ -2434,112 +2946,60 @@ export type Database = {
           order_number: string
         }[]
       }
-      create_import_order_request: {
-        Args: {
-          p_request_id: string
-          p_customer: Json
-          p_delivery: Json
-          p_lines: Json
-        }
+      public_get_import_current_campaign: {
+        Args: never
         Returns: {
-          order_id: string
-          order_number: string
-          created: boolean
-          subtotal: number
-          deposit_percentage: number
-          deposit_amount: number
-          campaign_number: number
+          closes_at: string
+          name: string
+          number: number
+          opens_at: string
+          public_message: string
         }[]
       }
-      admin_import_update_order_status: {
-        Args: {
-          p_order_id: string
-          p_expected_status: string
-          p_new_status: string
-          p_reason?: string
-        }
+      public_get_import_product: {
+        Args: { p_slug: string }
         Returns: {
-          id: string
-          business_unit_id: string
-          order_number: string
-          status: string
-          updated_at: string
-        }
+          brand: string
+          campaign_closes_at: string
+          campaign_name: string
+          campaign_number: number
+          category_name: string
+          category_slug: string
+          media_alt: string
+          media_url: string
+          name: string
+          presentations: Json
+          product_id: string
+          slug: string
+        }[]
       }
-      admin_import_create_customer: {
+      public_list_import_catalog: {
         Args: {
-          p_full_name: string
-          p_phone?: string
-          p_notes?: string
+          p_category_slug?: string
+          p_page?: number
+          p_page_size?: number
+          p_query?: string
         }
         Returns: {
-          id: string
-          business_unit_id: string
-          full_name: string
-          phone: string | null
-          verified_customer_status: string
-          created_at: string
-        }
+          brand: string
+          category_name: string
+          category_slug: string
+          media_alt: string
+          media_url: string
+          name: string
+          presentations: Json
+          product_id: string
+          slug: string
+          total_count: number
+        }[]
       }
-      admin_import_update_customer: {
-        Args: {
-          p_customer_id: string
-          p_full_name: string
-          p_phone?: string
-          p_notes?: string
-        }
+      public_list_import_categories: {
+        Args: never
         Returns: {
-          id: string
-          business_unit_id: string
-          full_name: string
-          phone: string | null
-          updated_at: string
-        }
-      }
-      admin_import_verify_customer_status: {
-        Args: {
-          p_customer_id: string
-          p_new_status: string
-        }
-        Returns: {
-          id: string
-          business_unit_id: string
-          verified_customer_status: string
-          verified_by: string | null
-          verified_at: string | null
-          updated_at: string
-        }
-      }
-      admin_import_archive_customer: {
-        Args: {
-          p_customer_id: string
-        }
-        Returns: {
-          id: string
-          business_unit_id: string
-          archived_at: string | null
-          updated_at: string
-        }
-      }
-      admin_import_link_customer_order: {
-        Args: {
-          p_order_id: string
-          p_customer_id: string
-        }
-        Returns: {
-          id: string
-          customer_id: string | null
-          updated_at: string
-        }
-      }
-      admin_import_create_customer_from_order: {
-        Args: {
-          p_order_id: string
-        }
-        Returns: {
-          action: string
-          customer_id: string
-        }
+          name: string
+          product_count: number
+          slug: string
+        }[]
       }
     }
     Enums: {

@@ -2,7 +2,7 @@
 
 import { useRef, useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import type { CompositionVerificationStatus } from "@/domains/admin-parfums/combo-schema";
+import type { PersistedCompositionVerificationStatus } from "@/domains/admin-parfums/combo-schema";
 import { VERIFICATION_STATUS_LABELS } from "@/domains/admin-parfums/combo-schema";
 import styles from "../productos/page.module.css";
 
@@ -11,7 +11,7 @@ export function ComboFilters({
 }: {
   initial: {
     search: string;
-    verificationStatus: CompositionVerificationStatus | undefined;
+    verificationStatus: PersistedCompositionVerificationStatus | undefined;
     includeArchived: boolean;
   };
 }) {

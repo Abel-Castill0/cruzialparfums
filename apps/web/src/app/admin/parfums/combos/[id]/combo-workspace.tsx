@@ -1,7 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import type { ComboCompositionItem, ComboRow, EligibleVariant } from "@/domains/admin-parfums/combos-repository";
+import type {
+  ComboCompositionItem,
+  ComboProductVariant,
+  ComboRow,
+  EligibleVariant,
+} from "@/domains/admin-parfums/combos-repository";
 import { ComboEditor } from "./combo-editor";
 import { CompositionManager } from "./composition-manager";
 
@@ -20,11 +25,13 @@ import { CompositionManager } from "./composition-manager";
  */
 export function ComboWorkspace({
   combo: initialCombo,
+  comboProductVariants,
   items,
   eligibleVariants,
   disabled,
 }: {
   combo: ComboRow;
+  comboProductVariants: ComboProductVariant[];
   items: ComboCompositionItem[];
   eligibleVariants: EligibleVariant[];
   disabled: boolean;
@@ -34,12 +41,18 @@ export function ComboWorkspace({
 
   return (
     <>
-      <ComboEditor combo={combo} onChange={setCombo} disabled={disabled} />
+      <ComboEditor
+        key={combo.composition_verification_status}
+        combo={combo}
+        onChange={setCombo}
+        disabled={disabled}
+      />
 
       <CompositionManager
         comboId={combo.id}
         comboUpdatedAt={combo.updated_at}
-        onUpdatedAtChange={(updatedAt) => setCombo((previous) => ({ ...previous, updated_at: updatedAt }))}
+        onComboChange={setCombo}
+        comboProductVariants={comboProductVariants}
         items={items}
         eligibleVariants={eligibleVariants}
         disabled={disabled || isArchived}

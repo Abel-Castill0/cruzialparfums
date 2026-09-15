@@ -744,6 +744,36 @@ provisional_market writes.
   source.
 - Next: 4K-C — NOT STARTED.
 
+### 4K-C1A — Variant-Aware Combo Composition Contract — CLOSED
+
+- `combo_items` now targets both the combo's sellable product variant and
+  the ingredient variant. Composition is independently grouped and ordered
+  per combo presentation; the same ingredient may appear in different
+  presentations without becoming a duplicate.
+- Historical rows backfill only when the owning combo product has exactly
+  one product variant in total. Any ambiguous historical row aborts the
+  migration instead of inferring from active state, size, order, price, or
+  labels.
+- `official_pdf` is persisted source authority and is readable/labeled in
+  Admin, but is absent from Admin create/edit choices and rejected by the
+  manual verification RPC. Admin may still edit an authorized composition.
+- Semantic composition changes (presentation + ingredient + quantity)
+  atomically downgrade `official_pdf` or `client_confirmed` to
+  `pending_reconfirmation` and record the old/new authority in the existing
+  audit log. Identical semantic replacements and sort-only changes preserve
+  authority.
+- Archived combo presentations keep their historical rows and allow only
+  unchanged semantic pass-through (including presentation-local sort-only
+  changes); additions, removals, ingredient replacements, and quantity
+  changes are rejected.
+- Admin read/UI is variant-aware and grouped by combo presentation, with
+  composite row identity and presentation-local reorder/add/remove behavior.
+- Commercial reconciliation remains 97 products / 315 variants / 288
+  official_pdf decants / 20 provisional_market bottles / 4 legacy bottles /
+  3 blocked combos / 0 conflicts. Commercial artifacts are unchanged and
+  hosted Supabase was not touched.
+- Next: 4K-C1B — NOT STARTED.
+
 ## Current evidence gaps
 
 None outstanding for 4J5F. See Deferred defects above for the categoryId

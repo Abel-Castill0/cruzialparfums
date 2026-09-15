@@ -10,25 +10,49 @@
 import { isValidUuid, type FieldErrors, type ValidationResult } from "./product-schema";
 export { isValidExpectedTimestamp } from "./category-schema";
 
-const VERIFICATION_STATUSES = ["pending_reconfirmation", "client_confirmed", "unknown"] as const;
+export const PERSISTED_VERIFICATION_STATUSES = [
+  "pending_reconfirmation",
+  "client_confirmed",
+  "official_pdf",
+  "unknown",
+] as const;
+export const ADMIN_EDITABLE_VERIFICATION_STATUSES = [
+  "pending_reconfirmation",
+  "client_confirmed",
+  "unknown",
+] as const;
 
-export type CompositionVerificationStatus = (typeof VERIFICATION_STATUSES)[number];
+export type PersistedCompositionVerificationStatus = (typeof PERSISTED_VERIFICATION_STATUSES)[number];
+export type AdminEditableCompositionVerificationStatus = (typeof ADMIN_EDITABLE_VERIFICATION_STATUSES)[number];
+/** Backward-compatible name for callers whose values come from persisted rows. */
+export type CompositionVerificationStatus = PersistedCompositionVerificationStatus;
 
-export function isVerificationStatus(value: unknown): value is CompositionVerificationStatus {
-  return typeof value === "string" && (VERIFICATION_STATUSES as readonly string[]).includes(value);
+export function isVerificationStatus(value: unknown): value is PersistedCompositionVerificationStatus {
+  return typeof value === "string" && (PERSISTED_VERIFICATION_STATUSES as readonly string[]).includes(value);
+}
+
+export function isAdminEditableVerificationStatus(value: unknown): value is AdminEditableCompositionVerificationStatus {
+  return typeof value === "string" && (ADMIN_EDITABLE_VERIFICATION_STATUSES as readonly string[]).includes(value);
 }
 
 /** Copy shown in the Admin UI — never "verified"/"confirmed" by default, and
  * never the raw enum value. */
-export const VERIFICATION_STATUS_LABELS: Record<CompositionVerificationStatus, string> = {
+export const VERIFICATION_STATUS_LABELS: Record<PersistedCompositionVerificationStatus, string> = {
   pending_reconfirmation: "Pendiente de reconfirmación",
   client_confirmed: "Confirmado por cliente",
+  official_pdf: "Confirmado por PDF oficial",
   unknown: "Desconocido",
+};
+
+export const ADMIN_EDITABLE_VERIFICATION_STATUS_LABELS: Record<AdminEditableCompositionVerificationStatus, string> = {
+  pending_reconfirmation: VERIFICATION_STATUS_LABELS.pending_reconfirmation,
+  client_confirmed: VERIFICATION_STATUS_LABELS.client_confirmed,
+  unknown: VERIFICATION_STATUS_LABELS.unknown,
 };
 
 export type ComboCreateInput = {
   productId: string;
-  compositionVerificationStatus: CompositionVerificationStatus;
+  compositionVerificationStatus: AdminEditableCompositionVerificationStatus;
 };
 
 /** Defaults to pending_reconfirmation — client_confirmed is never inferred,
@@ -48,7 +72,7 @@ export function validateComboCreateForm(input: {
     input.compositionVerificationStatus === undefined || input.compositionVerificationStatus === ""
       ? "pending_reconfirmation"
       : input.compositionVerificationStatus;
-  if (!isVerificationStatus(rawStatus)) {
+  if (!isAdminEditableVerificationStatus(rawStatus)) {
     errors.compositionVerificationStatus = "Selecciona un estado de verificación válido.";
   }
 
@@ -58,25 +82,35 @@ export function validateComboCreateForm(input: {
     ok: true,
     value: {
       productId,
-      compositionVerificationStatus: rawStatus as CompositionVerificationStatus,
+      compositionVerificationStatus: rawStatus as AdminEditableCompositionVerificationStatus,
     },
   };
 }
 
 export function validateVerificationStatusInput(
   value: unknown,
-): ValidationResult<CompositionVerificationStatus> {
-  if (!isVerificationStatus(value)) {
+): ValidationResult<AdminEditableCompositionVerificationStatus> {
+  if (!isAdminEditableVerificationStatus(value)) {
     return { ok: false, errors: { compositionVerificationStatus: "Selecciona un estado de verificación válido." } };
   }
   return { ok: true, value };
 }
 
 export type ComboItemInput = {
+  comboProductVariantId: string;
   productVariantId: string;
   quantity: number;
   sortOrder: number;
 };
+
+export function toComboCompositionPayload(items: ComboItemInput[]) {
+  return items.map((item) => ({
+    combo_product_variant_id: item.comboProductVariantId,
+    product_variant_id: item.productVariantId,
+    quantity: item.quantity,
+    sort_order: item.sortOrder,
+  }));
+}
 
 const MAX_QUANTITY = 999;
 const MAX_ITEMS = 200;
@@ -104,16 +138,24 @@ export function validateComboItems(rawItems: unknown): ValidationResult<ComboIte
     const item = (raw ?? {}) as Record<string, unknown>;
     const key = `items.${index}`;
 
+    const comboProductVariantId =
+      typeof item.comboProductVariantId === "string" ? item.comboProductVariantId : "";
+    if (!isValidUuid(comboProductVariantId)) {
+      errors[`${key}.comboProductVariantId`] = "Selecciona una presentación válida del combo.";
+      return;
+    }
+
     const productVariantId = typeof item.productVariantId === "string" ? item.productVariantId : "";
     if (!isValidUuid(productVariantId)) {
       errors[`${key}.productVariantId`] = "Selecciona una variante válida.";
       return;
     }
-    if (seen.has(productVariantId)) {
+    const compositeKey = `${comboProductVariantId}:${productVariantId}`;
+    if (seen.has(compositeKey)) {
       errors[`${key}.productVariantId`] = "Esta variante ya está en la composición.";
       return;
     }
-    seen.add(productVariantId);
+    seen.add(compositeKey);
 
     // Number(null)/Number("") are both 0 — reject a missing quantity
     // explicitly rather than silently defaulting it, same guard as
@@ -133,7 +175,7 @@ export function validateComboItems(rawItems: unknown): ValidationResult<ComboIte
       errors[`${key}.sortOrder`] = "El orden debe ser un entero.";
     }
 
-    parsed.push({ productVariantId, quantity, sortOrder });
+    parsed.push({ comboProductVariantId, productVariantId, quantity, sortOrder });
   });
 
   if (Object.keys(errors).length > 0) return { ok: false, errors };

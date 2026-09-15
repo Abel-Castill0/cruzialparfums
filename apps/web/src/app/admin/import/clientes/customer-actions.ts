@@ -52,11 +52,11 @@ export async function createImportCustomerAction(
   revalidatePath(CLIENTES_PATH);
   revalidatePath("/admin/import");
 
-  const result = Array.isArray(data) ? data[0] : data;
+  const result = (Array.isArray(data) ? data[0] : data) as { id: string };
   return {
     status: "success",
     message: "Cliente creado correctamente.",
-    customerId: result?.id,
+    customerId: result.id,
   };
 }
 
@@ -252,9 +252,9 @@ export async function createCustomerFromOrderAction(
     return { status: "error", message: "No se pudo procesar. Intenta de nuevo." };
   }
 
-  const result = Array.isArray(data) ? data[0] : data;
-  const action = result?.action;
-  const customerId = result?.customer_id;
+  const result = (Array.isArray(data) ? data[0] : data) as { action: string; customer_id: string };
+  const action = result.action;
+  const customerId = result.customer_id;
 
   revalidatePath(`/admin/import/pedidos/${orderId}`);
   revalidatePath(CLIENTES_PATH);

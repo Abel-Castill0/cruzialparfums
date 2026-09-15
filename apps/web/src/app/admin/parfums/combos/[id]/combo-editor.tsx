@@ -2,7 +2,12 @@
 
 import { useState, useTransition } from "react";
 import type { ComboRow } from "@/domains/admin-parfums/combos-repository";
-import { VERIFICATION_STATUS_LABELS, type CompositionVerificationStatus } from "@/domains/admin-parfums/combo-schema";
+import {
+  ADMIN_EDITABLE_VERIFICATION_STATUS_LABELS,
+  VERIFICATION_STATUS_LABELS,
+  isAdminEditableVerificationStatus,
+  type AdminEditableCompositionVerificationStatus,
+} from "@/domains/admin-parfums/combo-schema";
 import { archiveComboAction, restoreComboAction, updateVerificationAction } from "../actions";
 import formStyles from "@/components/admin/product-form-fields.module.css";
 import styles from "../../productos/page.module.css";
@@ -26,16 +31,18 @@ export function ComboEditor({
   onChange: (next: ComboRow) => void;
   disabled: boolean;
 }) {
-  const [status, setStatus] = useState<CompositionVerificationStatus>(
-    combo.composition_verification_status as CompositionVerificationStatus,
-  );
+  const initialEditableStatus = isAdminEditableVerificationStatus(combo.composition_verification_status)
+    ? combo.composition_verification_status
+    : "pending_reconfirmation";
+  const [status, setStatus] = useState<AdminEditableCompositionVerificationStatus>(initialEditableStatus);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const [archivePending, setArchivePending] = useState(false);
   const [archiveError, setArchiveError] = useState<string | null>(null);
 
-  const dirty = status !== combo.composition_verification_status;
+  const isOfficialPdf = combo.composition_verification_status === "official_pdf";
+  const dirty = !isOfficialPdf && status !== combo.composition_verification_status;
   const isArchived = combo.archived_at !== null;
 
   function handleSaveVerification() {
@@ -62,7 +69,9 @@ export function ComboEditor({
       : await archiveComboAction(combo.id, combo.updated_at);
     if (result.status === "success") {
       onChange(result.data);
-      setStatus(result.data.composition_verification_status as CompositionVerificationStatus);
+      if (isAdminEditableVerificationStatus(result.data.composition_verification_status)) {
+        setStatus(result.data.composition_verification_status);
+      }
     } else if (result.status === "error") {
       setArchiveError(result.message);
     }
@@ -87,17 +96,25 @@ export function ComboEditor({
       {saved ? <p className={styles.savedNote} role="status">Guardado.</p> : null}
 
       <div className={formStyles.grid}>
+        {isOfficialPdf ? (
+          <div className={formStyles.field}>
+            <span>Estado de verificación de la composición</span>
+            <p className={styles.notice} role="status">
+              {VERIFICATION_STATUS_LABELS.official_pdf} — autoridad de fuente, no editable manualmente.
+            </p>
+          </div>
+        ) : (
         <label className={formStyles.field}>
           <span>Estado de verificación de la composición</span>
           <select
             value={status}
             onChange={(event) => {
-              setStatus(event.target.value as CompositionVerificationStatus);
+              if (isAdminEditableVerificationStatus(event.target.value)) setStatus(event.target.value);
               setSaved(false);
             }}
             disabled={disabled || busy || isArchived}
           >
-            {Object.entries(VERIFICATION_STATUS_LABELS).map(([value, label]) => (
+            {Object.entries(ADMIN_EDITABLE_VERIFICATION_STATUS_LABELS).map(([value, label]) => (
               <option key={value} value={value}>{label}</option>
             ))}
           </select>
@@ -106,10 +123,11 @@ export function ComboEditor({
             automáticamente por tener ítems en la composición.
           </p>
         </label>
+        )}
       </div>
 
       <div className={`${styles.formActions} ${styles.spacingTop}`}>
-        {!disabled ? (
+        {!disabled && !isOfficialPdf ? (
           <button
             type="button"
             className={styles.primaryButton}

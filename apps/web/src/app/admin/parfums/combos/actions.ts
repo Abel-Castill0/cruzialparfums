@@ -215,7 +215,7 @@ export async function setComboCompositionAction(
   if (!validation.ok) return { status: "field_errors", errors: validation.errors };
 
   for (const item of validation.value) {
-    if (!isValidUuid(item.productVariantId)) {
+    if (!isValidUuid(item.comboProductVariantId) || !isValidUuid(item.productVariantId)) {
       return { status: "error", message: "Identificador de variante inválido." };
     }
   }

@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import type { EligibleProduct } from "@/domains/admin-parfums/combos-repository";
-import { VERIFICATION_STATUS_LABELS } from "@/domains/admin-parfums/combo-schema";
+import { ADMIN_EDITABLE_VERIFICATION_STATUS_LABELS } from "@/domains/admin-parfums/combo-schema";
 import { createComboAction, type ComboActionState } from "../actions";
 import formStyles from "@/components/admin/product-form-fields.module.css";
 import styles from "../../productos/page.module.css";
@@ -54,7 +54,7 @@ export function NewComboForm({ eligibleProducts }: { eligibleProducts: EligibleP
               aria-invalid={!!errors.compositionVerificationStatus}
               aria-describedby={errors.compositionVerificationStatus ? "err-verification" : "hint-verification"}
             >
-              {Object.entries(VERIFICATION_STATUS_LABELS).map(([value, label]) => (
+              {Object.entries(ADMIN_EDITABLE_VERIFICATION_STATUS_LABELS).map(([value, label]) => (
                 <option key={value} value={value}>{label}</option>
               ))}
             </select>

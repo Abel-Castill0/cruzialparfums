@@ -2,7 +2,12 @@ import "server-only";
 
 import type { PostgrestError, SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/database.types";
-import type { ComboItemInput, CompositionVerificationStatus } from "./combo-schema";
+import type {
+  AdminEditableCompositionVerificationStatus,
+  ComboItemInput,
+  PersistedCompositionVerificationStatus,
+} from "./combo-schema";
+import { toComboCompositionPayload } from "./combo-schema";
 import {
   mapPostgrestError,
   type AdminRepositoryError,
@@ -69,7 +74,7 @@ export type ComboListItem = ComboRow & {
 
 export type ComboListFilters = {
   search?: string;
-  verificationStatus?: CompositionVerificationStatus;
+  verificationStatus?: PersistedCompositionVerificationStatus;
   includeArchived?: boolean;
 };
 
@@ -100,6 +105,10 @@ export type EligibleVariant = {
 
 export type ComboCompositionItem = {
   id: string;
+  comboProductVariantId: string;
+  comboVariantLabel: string;
+  comboVariantSizeMl: number | null;
+  comboVariantArchived: boolean;
   productVariantId: string;
   quantity: number;
   sortOrder: number;
@@ -114,9 +123,18 @@ export type ComboCompositionItem = {
   productArchived: boolean;
 };
 
+export type ComboProductVariant = {
+  id: string;
+  label: string;
+  sizeMl: number | null;
+  sortOrder: number;
+  archived: boolean;
+};
+
 export type ComboDetail = {
   combo: ComboRow;
   product: Pick<ProductRow, "id" | "name" | "slug" | "brand" | "publication_status" | "archived_at">;
+  comboProductVariants: ComboProductVariant[];
   items: ComboCompositionItem[];
 };
 
@@ -202,17 +220,35 @@ export class AdminParfumsCombosRepository {
       };
     };
 
-    // One query with embedded joins for variant + its own product — not one
-    // query per combo_items row.
+    const { data: comboVariantRows, error: comboVariantsError } = await this.supabase
+      .from("product_variants")
+      .select("id, label, size_ml, sort_order, archived_at")
+      .eq("product_id", product.id)
+      .order("sort_order", { ascending: true });
+
+    if (comboVariantsError) return { ok: false, error: mapPostgrestError(comboVariantsError) };
+
+    const comboProductVariants: ComboProductVariant[] = (comboVariantRows ?? []).map((variant) => ({
+      id: variant.id,
+      label: variant.label,
+      sizeMl: variant.size_ml,
+      sortOrder: variant.sort_order,
+      archived: variant.archived_at !== null,
+    }));
+    const comboVariantsById = new Map(comboProductVariants.map((variant) => [variant.id, variant]));
+
+    // One query with embedded joins for ingredient variant + its product,
+    // never one query per combo_items row.
     const { data: itemRows, error: itemsError } = await this.supabase
       .from("combo_items")
       .select(
         // A single string literal, not a concatenation — supabase-js needs
         // this as a literal type to type-check the embedded relations at
         // compile time; a `+`-built string degrades to an untyped result.
-        "id, product_variant_id, quantity, sort_order, created_at, variant:product_variants(id, label, size_ml, price_amount, currency, archived_at, product:products(id, name, brand, archived_at))",
+        "id, combo_product_variant_id, product_variant_id, quantity, sort_order, created_at, variant:product_variants!combo_items_product_variant_id_fkey(id, label, size_ml, price_amount, currency, archived_at, product:products(id, name, brand, archived_at))",
       )
       .eq("combo_id", comboId)
+      .order("combo_product_variant_id", { ascending: true })
       .order("sort_order", { ascending: true });
 
     if (itemsError) return { ok: false, error: mapPostgrestError(itemsError) };
@@ -227,8 +263,13 @@ export class AdminParfumsCombosRepository {
         archived_at: string | null;
         product: { id: string; name: string; brand: string | null; archived_at: string | null } | null;
       };
+      const comboVariant = comboVariantsById.get(row.combo_product_variant_id);
       return {
         id: row.id,
+        comboProductVariantId: row.combo_product_variant_id,
+        comboVariantLabel: comboVariant?.label ?? "(presentación eliminada)",
+        comboVariantSizeMl: comboVariant?.sizeMl ?? null,
+        comboVariantArchived: comboVariant?.archived ?? true,
         productVariantId: row.product_variant_id,
         quantity: row.quantity,
         sortOrder: row.sort_order,
@@ -256,6 +297,7 @@ export class AdminParfumsCombosRepository {
           publication_status: product.publication_status,
           archived_at: product.archived_at,
         },
+        comboProductVariants,
         items,
       },
     };
@@ -324,7 +366,7 @@ export class AdminParfumsCombosRepository {
 
   async create(input: {
     productId: string;
-    compositionVerificationStatus: CompositionVerificationStatus;
+    compositionVerificationStatus: AdminEditableCompositionVerificationStatus;
   }): Promise<ComboMutationResult<ComboRow>> {
     const { data, error } = await this.supabase.rpc("admin_create_combo", {
       p_product_id: input.productId,
@@ -337,7 +379,7 @@ export class AdminParfumsCombosRepository {
   async updateVerification(
     comboId: string,
     expectedUpdatedAt: string,
-    status: CompositionVerificationStatus,
+    status: AdminEditableCompositionVerificationStatus,
   ): Promise<ComboMutationResult<ComboRow>> {
     const { data, error } = await this.supabase.rpc("admin_update_combo_verification", {
       p_combo_id: comboId,
@@ -375,11 +417,7 @@ export class AdminParfumsCombosRepository {
     expectedUpdatedAt: string,
     items: ComboItemInput[],
   ): Promise<ComboMutationResult<{ combo: ComboRow; items: ComboItemRow[] }>> {
-    const payload = items.map((item) => ({
-      product_variant_id: item.productVariantId,
-      quantity: item.quantity,
-      sort_order: item.sortOrder,
-    }));
+    const payload = toComboCompositionPayload(items);
 
     const { data, error } = await this.supabase.rpc("admin_set_combo_composition", {
       p_combo_id: comboId,

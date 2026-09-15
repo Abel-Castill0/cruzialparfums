@@ -63,7 +63,7 @@ export default async function EditComboPage({
     );
   }
 
-  const { combo, product, items } = detailResult.data;
+  const { combo, product, comboProductVariants, items } = detailResult.data;
   const canWrite = membership.role === "admin";
 
   // Eligible additions exclude this combo's own product (the DB rejects a
@@ -105,7 +105,13 @@ export default async function EditComboPage({
           </p>
         </section>
 
-        <ComboWorkspace combo={combo} items={items} eligibleVariants={eligibleVariants} disabled={!canWrite} />
+        <ComboWorkspace
+          combo={combo}
+          comboProductVariants={comboProductVariants}
+          items={items}
+          eligibleVariants={eligibleVariants}
+          disabled={!canWrite}
+        />
       </main>
     </div>
   );
