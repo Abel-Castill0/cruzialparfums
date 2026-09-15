@@ -774,6 +774,37 @@ provisional_market writes.
   hosted Supabase was not touched.
 - Next: 4K-C1B — NOT STARTED.
 
+### 4K-C1B — Controlled Commercial Loader: Supplemental Identity + Variant-Aware Combos — CLOSED
+
+- 4K-C1A remains CLOSED and its constraints/Admin authority guard are unchanged.
+- The controlled Parfums loader now has two explicit product identities:
+  non-null `legacy_id` is authoritative with no slug fallback; explicit null
+  `legacy_id` uses the canonical unit-scoped slug and is persisted as null.
+  Slug ownership, legacy/slug cross-identity, duplicate identity, and
+  incompatible supplemental collisions fail during planning before mutation.
+- Variant identity is `(product identity, variant_kind, size_ml)` (including
+  explicit null size), never the display label. Missing or ambiguous canonical
+  variants fail closed.
+- Optional source `combo_targets` plan/apply/verify combo products, sellable
+  presentation variants, ingredient variants, quantity, presentation-local
+  order, and explicit composition authority. The loader maps these to
+  `combo_product_variant_id` + `product_variant_id`; repeated apply converges
+  to no-op. Missing/duplicate/conflicting/cross-scope references are refused.
+- `official_pdf` is accepted only when explicitly present in the trusted
+  operator source. Missing authority defaults to `pending_reconfirmation`;
+  the Admin RPC still cannot assign `official_pdf` manually.
+- Safety remains local-only: the CLI derives the Docker container from
+  `supabase/config.toml`, has no hosted URL/key path, performs insert-or-verify
+  within exact source scope, and neither hosted Supabase nor production/DNS
+  was touched. Staging enablement remains outside C1B.
+- Validation: commercial artifact byte-stable (97 products / 315 variants /
+  288 official_pdf decants / 20 provisional_market bottles / 4 unresolved
+  legacy bottles / 3 blocked combos / 0 conflicts); loader dry-run 97/315,
+  zero conflicts, zero combo writes; database reset + pgTAP PASS (28 files,
+  823 tests); `npm run check` PASS (55 files / 614 Vitest tests, lint,
+  typecheck, build). Commercial artifacts are unchanged.
+- Next: 4K-C2 — NOT STARTED.
+
 ## Current evidence gaps
 
 None outstanding for 4J5F. See Deferred defects above for the categoryId

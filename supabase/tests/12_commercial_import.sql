@@ -95,7 +95,7 @@ select results_eq(
 );
 select is(
   (app.plan_parfums_commercial_import(payload)->'operations')::text,
-  '{"inventory": {"insert": 0, "conflict": 0, "unchanged": 1}, "products": {"insert": 0, "conflict": 0, "unchanged": 1}, "variants": {"insert": 0, "conflict": 0, "unchanged": 1}, "categories": {"insert": 0, "conflict": 0, "unchanged": 2}, "relationships": {"insert": 0, "conflict": 0, "unchanged": 1}}'::jsonb::text,
+  '{"inventory": {"insert": 0, "conflict": 0, "unchanged": 1}, "products": {"insert": 0, "conflict": 0, "unchanged": 1}, "variants": {"insert": 0, "conflict": 0, "unchanged": 1}, "categories": {"insert": 0, "conflict": 0, "unchanged": 2}, "relationships": {"insert": 0, "conflict": 0, "unchanged": 1}, "combos": {"insert": 0, "conflict": 0, "unchanged": 0}, "combo_items": {"insert": 0, "conflict": 0, "unchanged": 0}}'::jsonb::text,
   'second plan is fully unchanged and idempotent'
 ) from phase4h1b1_manifest;
 

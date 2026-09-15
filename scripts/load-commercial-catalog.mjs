@@ -88,7 +88,7 @@ function invokeImport(container, manifestRaw, apply) {
 
 function printPlan(plan) {
   console.log(`Commercial loader ${plan.mode}: applied=${plan.applied}, refused=${plan.refused}, conflicts=${plan.conflict_count}`);
-  for (const entity of ["categories", "products", "variants", "relationships", "inventory"]) {
+  for (const entity of ["categories", "products", "variants", "relationships", "inventory", "combos", "combo_items"]) {
     const operation = plan.operations[entity];
     console.log(`${entity}: insert=${operation.insert}, unchanged=${operation.unchanged}, conflict=${operation.conflict}`);
   }
@@ -102,8 +102,11 @@ function verificationQuery(manifestRaw) {
   return `
 with manifest as (select ${manifest}::jsonb as payload),
 expected_products as (
-  select value->>'legacy_id' as legacy_id
+  select value->>'legacy_id' as legacy_id, value #>> '{target_product,slug}' as slug
   from manifest, jsonb_array_elements(payload->'products')
+),
+expected_combos as (
+  select value from manifest, jsonb_array_elements(coalesce(payload->'combo_targets', '[]'::jsonb))
 ),
 expected_categories as (
   select value->>'slug' as slug
@@ -112,7 +115,9 @@ expected_categories as (
 imported_products as (
   select product.* from public.products product
   join public.business_units unit on unit.id = product.business_unit_id and unit.code = 'parfums'
-  join expected_products expected on expected.legacy_id = product.legacy_id
+  join expected_products expected on
+    (expected.legacy_id is not null and expected.legacy_id = product.legacy_id)
+    or (expected.legacy_id is null and product.legacy_id is null and expected.slug = product.slug)
 ),
 imported_variants as (
   select variant.* from public.product_variants variant
@@ -131,7 +136,15 @@ select jsonb_build_object(
   'published_products', (select count(*) from imported_products where publication_status = 'published'),
   'published_variants', (select count(*) from imported_variants where publication_status = 'published'),
   'promoted_prices', (select count(*) from imported_variants where price_verification_status <> 'legacy'),
-  'combos', (select count(*) from public.combos combo join imported_products product on product.id = combo.product_id),
+  'combos', (select count(*) from public.combos combo join imported_products product on product.id = combo.product_id
+    where exists (select 1 from expected_combos expected where
+      (expected.value #>> '{product,legacy_id}' is not null and expected.value #>> '{product,legacy_id}' = product.legacy_id)
+      or (expected.value #> '{product,legacy_id}' = 'null'::jsonb and product.legacy_id is null and expected.value #>> '{product,slug}' = product.slug))),
+  'combo_items', (select count(*) from public.combo_items item join public.combos combo on combo.id = item.combo_id
+    join imported_products product on product.id = combo.product_id
+    where exists (select 1 from expected_combos expected where
+      (expected.value #>> '{product,legacy_id}' is not null and expected.value #>> '{product,legacy_id}' = product.legacy_id)
+      or (expected.value #> '{product,legacy_id}' = 'null'::jsonb and product.legacy_id is null and expected.value #>> '{product,slug}' = product.slug))),
   'media', (select count(*) from public.product_media media join imported_products product on product.id = media.product_id),
   'bir_intense_hidden', (select count(*) from imported_products where legacy_id = 'bir-intense' and publication_status = 'hidden'),
   'discontinued_available', (select count(*) from imported_products where production_status = 'discontinued' and availability_status = 'available')
@@ -139,7 +152,8 @@ select jsonb_build_object(
 `;
 }
 
-function adminSmokeQuery() {
+function adminSmokeQuery(manifestRaw) {
+  const manifest = dollarQuote(manifestRaw);
   return `
 begin;
 insert into auth.users (id, instance_id, aud, role, email, encrypted_password, created_at, updated_at)
@@ -150,9 +164,20 @@ select '4b1b0000-0000-4000-8000-000000000001', id, 'admin'
 from public.business_units where code = 'parfums';
 set local role authenticated;
 set local request.jwt.claims to '{"sub":"4b1b0000-0000-4000-8000-000000000001","role":"authenticated"}';
+with manifest as (select ${manifest}::jsonb as payload),
+expected_products as (
+  select value->>'legacy_id' legacy_id, value #>> '{target_product,slug}' slug
+  from manifest, jsonb_array_elements(payload->'products')
+), expected_categories as (
+  select value->>'slug' slug from manifest, jsonb_array_elements(payload->'category_targets')
+)
 select jsonb_build_object(
-  'visible_products', (select count(*) from public.products product join public.business_units unit on unit.id = product.business_unit_id where unit.code = 'parfums'),
-  'visible_categories', (select count(*) from public.categories category join public.business_units unit on unit.id = category.business_unit_id where unit.code = 'parfums'),
+  'visible_products', (select count(*) from public.products product join public.business_units unit on unit.id = product.business_unit_id
+    join expected_products expected on (expected.legacy_id is not null and expected.legacy_id=product.legacy_id)
+      or (expected.legacy_id is null and product.legacy_id is null and expected.slug=product.slug)
+    where unit.code = 'parfums'),
+  'visible_categories', (select count(*) from public.categories category join public.business_units unit on unit.id = category.business_unit_id
+    join expected_categories expected on expected.slug=category.slug where unit.code = 'parfums'),
   'corrected_product', (select jsonb_build_object('name', name, 'brand', brand, 'verification_status', verification_status, 'publication_status', publication_status) from public.products where legacy_id = 'reserve-privee'),
   'normal_product', (select jsonb_build_object('name', name, 'verification_status', verification_status, 'publication_status', publication_status) from public.products where legacy_id = '9pm'),
   'legacy_draft_prices', (select count(*) from public.product_variants variant join public.products product on product.id = variant.product_id where product.legacy_id in ('reserve-privee', '9pm') and variant.price_verification_status = 'legacy' and variant.publication_status = 'draft')
@@ -161,14 +186,25 @@ rollback;
 `;
 }
 
-function anonymousSmokeQuery() {
+function anonymousSmokeQuery(manifestRaw) {
+  const manifest = dollarQuote(manifestRaw);
   return `
 begin;
 set local role anon;
 set local request.jwt.claims to '{"role":"anon"}';
+with manifest as (select ${manifest}::jsonb as payload),
+expected_products as (
+  select value->>'legacy_id' legacy_id, value #>> '{target_product,slug}' slug
+  from manifest, jsonb_array_elements(payload->'products')
+), expected_categories as (
+  select value->>'slug' slug from manifest, jsonb_array_elements(payload->'category_targets')
+)
 select jsonb_build_object(
-  'visible_imported_products', (select count(*) from public.products where legacy_id is not null),
-  'visible_draft_categories', (select count(*) from public.categories where publication_status = 'draft')
+  'visible_imported_products', (select count(*) from public.products product join expected_products expected
+    on (expected.legacy_id is not null and expected.legacy_id=product.legacy_id)
+      or (expected.legacy_id is null and product.legacy_id is null and expected.slug=product.slug)),
+  'visible_draft_categories', (select count(*) from public.categories category join expected_categories expected on expected.slug=category.slug
+    where category.publication_status = 'draft')
 )::text;
 rollback;
 `;
@@ -181,6 +217,11 @@ function assertVerification(manifest, plan, actual, admin, anonymous) {
     categories: manifest.category_targets.length,
     relationships: manifest.products.reduce((total, product) => total + product.categories.length, 0),
     inventory: manifest.products.reduce((total, product) => total + product.variants.length, 0),
+    combos: (manifest.combo_targets ?? []).length,
+    combo_items: (manifest.combo_targets ?? []).reduce(
+      (total, combo) => total + combo.presentations.reduce((presentationTotal, presentation) => presentationTotal + presentation.items.length, 0),
+      0,
+    ),
   };
   for (const [entity, count] of Object.entries(expected)) {
     if (actual[entity] !== count) throw new Error(`Verification failed for ${entity}: expected ${count}, got ${actual[entity]}`);
@@ -188,8 +229,22 @@ function assertVerification(manifest, plan, actual, admin, anonymous) {
       throw new Error(`Idempotency verification failed for ${entity}.`);
     }
   }
-  for (const guard of ["published_products", "published_variants", "promoted_prices", "combos", "media"]) {
-    if (actual[guard] !== 0) throw new Error(`Verification guard failed: ${guard}=${actual[guard]}`);
+  const expectedPublishedProducts = manifest.products.filter((product) => product.target_product.publication_status === "published").length;
+  const expectedPublishedVariants = manifest.products.reduce(
+    (total, product) => total + product.variants.filter((variant) => variant.publication_status === "published").length,
+    0,
+  );
+  const expectedPromotedPrices = manifest.products.reduce(
+    (total, product) => total + product.variants.filter((variant) => variant.price_verification_status !== "legacy").length,
+    0,
+  );
+  for (const [guard, expectedCount] of Object.entries({
+    published_products: expectedPublishedProducts,
+    published_variants: expectedPublishedVariants,
+    promoted_prices: expectedPromotedPrices,
+    media: 0,
+  })) {
+    if (actual[guard] !== expectedCount) throw new Error(`Verification guard failed: ${guard}, expected ${expectedCount}, got ${actual[guard]}`);
   }
   if (actual.bir_intense_hidden !== 1) throw new Error("bir-intense is not hidden exactly once.");
   if (actual.discontinued_available !== 3) throw new Error(`Expected 3 discontinued+available products, got ${actual.discontinued_available}.`);
@@ -222,8 +277,8 @@ async function main() {
   printPlan(plan);
   if (plan.conflict_count > 0) throw new Error("Cannot verify a conflicted local import.");
   const actual = parseJsonOutput(runPsql(container, verificationQuery(manifestRaw)));
-  const admin = parseJsonOutput(runPsql(container, adminSmokeQuery()));
-  const anonymous = parseJsonOutput(runPsql(container, anonymousSmokeQuery()));
+  const admin = parseJsonOutput(runPsql(container, adminSmokeQuery(manifestRaw)));
+  const anonymous = parseJsonOutput(runPsql(container, anonymousSmokeQuery(manifestRaw)));
   assertVerification(manifest, plan, actual, admin, anonymous);
   console.log(`Verification: ${JSON.stringify(actual)}`);
   console.log(`Admin smoke: ${JSON.stringify(admin)}`);

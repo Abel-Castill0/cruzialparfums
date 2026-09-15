@@ -44,7 +44,7 @@ export interface ReconciledCategory extends Record<string, unknown> {
 }
 
 export interface ReconciledProduct {
-  legacy_id: string;
+  legacy_id: string | null;
   migration_status: string;
   publish_eligibility: string;
   target_product: Record<string, unknown>;
@@ -58,11 +58,36 @@ export interface ReconciledProduct {
   source_fingerprint: string;
 }
 
+export interface CommercialProductReference {
+  legacy_id: string | null;
+  slug: string;
+}
+
+export interface CommercialVariantReference {
+  variant_kind: string;
+  size_ml: number | null;
+}
+
+export interface CommercialComboTarget {
+  product: CommercialProductReference;
+  composition_verification_status?: "pending_reconfirmation" | "client_confirmed" | "official_pdf" | "unknown";
+  presentations: Array<{
+    variant: CommercialVariantReference;
+    items: Array<{
+      product: CommercialProductReference;
+      variant: CommercialVariantReference;
+      quantity: number;
+      sort_order: number;
+    }>;
+  }>;
+}
+
 export interface CommercialReconciliationArtifact {
   metadata: Record<string, unknown>;
   summary: Record<string, number>;
   category_targets: Array<Record<string, unknown>>;
   products: ReconciledProduct[];
+  combo_targets?: CommercialComboTarget[];
   blocked: Array<Record<string, unknown>>;
   conflicts: Array<{ code: string; legacy_ids: string[]; detail: string }>;
 }
