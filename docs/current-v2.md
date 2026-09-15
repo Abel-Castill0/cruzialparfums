@@ -805,6 +805,21 @@ provisional_market writes.
   typecheck, build). Commercial artifacts are unchanged.
 - Next: 4K-C2 — NOT STARTED.
 
+### 4K-C1B-R — Manifest-Driven Commercial Loader Verification — CLOSED
+
+- Reviewer inspection found stale product-specific and fixed-count lifecycle
+  verification in the controlled loader. Source-scoped lifecycle smoke counts
+  and the Admin-visible legacy draft price count are now derived from and
+  compared with the current manifest; exact plan verification remains intact.
+- BIR Intense remains in its current authoritative `draft` publication state.
+  Commercial truth and the commercial artifact are unchanged.
+- Local reset plus the canonical current-manifest dry/apply/verify flow passes:
+  97 products, 315 variants, 192 relationships, 315 inventory rows, 0
+  materialized combos, and 0 combo items. The 3 reconciliation combo
+  definitions remain blocked and were not materialized.
+- Hosted Supabase was untouched.
+- Next: 4K-C2 — NOT STARTED.
+
 ## Current evidence gaps
 
 None outstanding for 4J5F. See Deferred defects above for the categoryId

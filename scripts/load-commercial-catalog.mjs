@@ -134,6 +134,8 @@ select jsonb_build_object(
   'inventory', (select count(*) from public.inventory inventory
     join imported_variants variant on variant.id = inventory.product_variant_id),
   'published_products', (select count(*) from imported_products where publication_status = 'published'),
+  'hidden_products', (select count(*) from imported_products where publication_status = 'hidden'),
+  'archived_products', (select count(*) from imported_products where publication_status = 'archived'),
   'published_variants', (select count(*) from imported_variants where publication_status = 'published'),
   'promoted_prices', (select count(*) from imported_variants where price_verification_status <> 'legacy'),
   'combos', (select count(*) from public.combos combo join imported_products product on product.id = combo.product_id
@@ -146,7 +148,6 @@ select jsonb_build_object(
       (expected.value #>> '{product,legacy_id}' is not null and expected.value #>> '{product,legacy_id}' = product.legacy_id)
       or (expected.value #> '{product,legacy_id}' = 'null'::jsonb and product.legacy_id is null and expected.value #>> '{product,slug}' = product.slug))),
   'media', (select count(*) from public.product_media media join imported_products product on product.id = media.product_id),
-  'bir_intense_hidden', (select count(*) from imported_products where legacy_id = 'bir-intense' and publication_status = 'hidden'),
   'discontinued_available', (select count(*) from imported_products where production_status = 'discontinued' and availability_status = 'available')
 )::text;
 `;
@@ -178,9 +179,10 @@ select jsonb_build_object(
     where unit.code = 'parfums'),
   'visible_categories', (select count(*) from public.categories category join public.business_units unit on unit.id = category.business_unit_id
     join expected_categories expected on expected.slug=category.slug where unit.code = 'parfums'),
-  'corrected_product', (select jsonb_build_object('name', name, 'brand', brand, 'verification_status', verification_status, 'publication_status', publication_status) from public.products where legacy_id = 'reserve-privee'),
-  'normal_product', (select jsonb_build_object('name', name, 'verification_status', verification_status, 'publication_status', publication_status) from public.products where legacy_id = '9pm'),
-  'legacy_draft_prices', (select count(*) from public.product_variants variant join public.products product on product.id = variant.product_id where product.legacy_id in ('reserve-privee', '9pm') and variant.price_verification_status = 'legacy' and variant.publication_status = 'draft')
+  'legacy_draft_prices', (select count(*) from public.product_variants variant join public.products product on product.id = variant.product_id
+    join expected_products expected on (expected.legacy_id is not null and expected.legacy_id=product.legacy_id)
+      or (expected.legacy_id is null and product.legacy_id is null and expected.slug=product.slug)
+    where variant.price_verification_status = 'legacy' and variant.publication_status = 'draft')
 )::text;
 rollback;
 `;
@@ -230,6 +232,11 @@ function assertVerification(manifest, plan, actual, admin, anonymous) {
     }
   }
   const expectedPublishedProducts = manifest.products.filter((product) => product.target_product.publication_status === "published").length;
+  const expectedHiddenProducts = manifest.products.filter((product) => product.target_product.publication_status === "hidden").length;
+  const expectedArchivedProducts = manifest.products.filter((product) => product.target_product.publication_status === "archived").length;
+  const expectedDiscontinuedAvailable = manifest.products.filter(
+    (product) => product.target_product.production_status === "discontinued" && product.target_product.availability_status === "available",
+  ).length;
   const expectedPublishedVariants = manifest.products.reduce(
     (total, product) => total + product.variants.filter((variant) => variant.publication_status === "published").length,
     0,
@@ -238,21 +245,27 @@ function assertVerification(manifest, plan, actual, admin, anonymous) {
     (total, product) => total + product.variants.filter((variant) => variant.price_verification_status !== "legacy").length,
     0,
   );
+  const expectedLegacyDraftPrices = manifest.products.reduce(
+    (total, product) => total + product.variants.filter(
+      (variant) => variant.price_verification_status === "legacy" && variant.publication_status === "draft",
+    ).length,
+    0,
+  );
   for (const [guard, expectedCount] of Object.entries({
     published_products: expectedPublishedProducts,
+    hidden_products: expectedHiddenProducts,
+    archived_products: expectedArchivedProducts,
+    discontinued_available: expectedDiscontinuedAvailable,
     published_variants: expectedPublishedVariants,
     promoted_prices: expectedPromotedPrices,
     media: 0,
   })) {
     if (actual[guard] !== expectedCount) throw new Error(`Verification guard failed: ${guard}, expected ${expectedCount}, got ${actual[guard]}`);
   }
-  if (actual.bir_intense_hidden !== 1) throw new Error("bir-intense is not hidden exactly once.");
-  if (actual.discontinued_available !== 3) throw new Error(`Expected 3 discontinued+available products, got ${actual.discontinued_available}.`);
   if (admin.visible_products !== expected.products || admin.visible_categories !== expected.categories) throw new Error("Parfums Admin smoke count mismatch.");
-  if (admin.corrected_product?.name !== "Gentleman Réserve Privée" || admin.corrected_product?.brand !== "Givenchy") throw new Error("Corrected-product Admin smoke failed.");
-  if (admin.corrected_product?.verification_status !== "legacy" || admin.corrected_product?.publication_status !== "draft") throw new Error("Corrected product was commercially promoted.");
-  if (admin.normal_product?.name !== "9 PM" || admin.normal_product?.verification_status !== "legacy" || admin.normal_product?.publication_status !== "draft") throw new Error("Normal legacy-product Admin smoke failed.");
-  if (admin.legacy_draft_prices < 1) throw new Error("Admin smoke found no legacy draft prices.");
+  if (admin.legacy_draft_prices !== expectedLegacyDraftPrices) {
+    throw new Error(`Admin smoke legacy draft price mismatch: expected ${expectedLegacyDraftPrices}, got ${admin.legacy_draft_prices}.`);
+  }
   if (anonymous.visible_imported_products !== 0 || anonymous.visible_draft_categories !== 0) throw new Error("Anonymous RLS exposed imported draft data.");
 }
 
