@@ -908,6 +908,22 @@ provisional_market writes.
   rerun is deferred to separately authorized R2F2. 4K-C3A remains NOT CLOSED,
   and 4K-C3B is NOT STARTED.
 
+### 4K-C3A-R2F2 — CLOSED hosted staging compatibility
+
+- Proven hosted target: `cruzial-v2-staging`
+  (`iyxidhglyqkzoziyewlc`). The migration ledger remained synchronized through
+  `20260915010000`, with zero pending or remote-only migrations.
+- The pre-write focused combo verifier passed. The layered Import QA offer
+  state was exactly 2/1/0 for ready/no-media/no-offer.
+- The corrected permanent base fixture executed exactly once and committed
+  successfully. The legitimate campaign-9002 extension was preserved
+  byte-semantically; campaign #6 was preserved by full-row hash; and all 898
+  non-QA campaign-#6 offers were preserved by count and aggregate hash.
+- The post-write Import QA offer state remained exactly 2/1/0. The post-write
+  focused combo verifier and the general staging QA verifier both passed.
+- No commercial manifest was imported. Production and DNS were untouched.
+  R2 parent: CLOSED. 4K-C3A parent: CLOSED. 4K-C3B: NOT STARTED.
+
 ## Current evidence gaps
 
 None outstanding for 4J5F. See Deferred defects above for the categoryId
