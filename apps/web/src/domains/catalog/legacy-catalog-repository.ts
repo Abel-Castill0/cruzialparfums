@@ -35,10 +35,11 @@ function toCatalogProduct(
     atomizaciones: legacyComboContent.atomizaciones,
     heroImageUrl: mediaSource.resolve(legacyComboContent.heroImage)?.url ?? null,
     heroCta: legacyComboContent.heroCta,
-    verificationStatus: "client_provided_pending_reconfirmation",
+    verificationStatus: "pending_reconfirmation",
   } : null;
 
   return {
+    productId: null,
     legacyId: product.legacy_id,
     slug: product.id,
     brand: product.brand,
@@ -71,6 +72,7 @@ function toCatalogProduct(
     comboContent,
     variants: [
       ...Object.entries(product.price).map(([size, price], sortOrder) => ({
+        dbVariantId: null,
         variantId: `decant-${size}ml`,
         kind: "decant" as const,
         sizeMl: size,
@@ -81,6 +83,7 @@ function toCatalogProduct(
         priceVerificationStatus: product.pricingVerificationStatus,
       })),
       ...Object.entries(product.bottle ?? {}).map(([size, price], index) => ({
+        dbVariantId: null,
         variantId: `bottle-${size}ml`,
         kind: "bottle" as const,
         sizeMl: size,
@@ -152,7 +155,7 @@ export class LegacyCatalogRepository implements PublicCatalogRepository {
   listWholesale(): CatalogWholesaleProduct[] {
     return this.listFragrances()
       .flatMap((product) => {
-        const prices = catalogFixture.wholesale[product.legacyId];
+        const prices = product.legacyId ? catalogFixture.wholesale[product.legacyId] : undefined;
         return prices ? [{ product, prices, verificationStatus: "legacy" as const }] : [];
       })
       .sort((a, b) =>
@@ -173,6 +176,14 @@ export class LegacyCatalogRepository implements PublicCatalogRepository {
       (candidate) => candidate.id === slug && !candidate.hidden,
     );
     return product ? toCatalogProduct(product, this.mediaSource) : null;
+  }
+
+  findByProductId(_productId: string): CatalogProduct | null {
+    return null;
+  }
+
+  resolveCartIdentity(identity: string): CatalogProduct | null {
+    return this.findByLegacyId(identity);
   }
 
   listRelated(product: CatalogProduct, limit = 4): CatalogProduct[] {

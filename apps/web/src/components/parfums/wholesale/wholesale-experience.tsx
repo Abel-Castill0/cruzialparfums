@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useMemo, useState, type FormEvent } from "react";
 import { Breadcrumbs } from "@/components/parfums/navigation/breadcrumbs";
 import type { CatalogWholesaleProduct } from "@/domains/catalog/types";
+import { cartIdentity } from "@/domains/catalog/types";
 import {
   filterWholesaleCatalog,
   type WholesaleFilter,
@@ -47,7 +48,7 @@ export function WholesaleExperience({
     [entries, query, filter],
   );
   const policyLine = useMemo(
-    () => entries.filter((entry) => isWholesalePolicyEligible(entry.product.legacyId)),
+    () => entries.filter((entry) => isWholesalePolicyEligible(cartIdentity(entry.product))),
     [entries],
   );
 

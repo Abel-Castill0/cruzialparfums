@@ -20,9 +20,10 @@ export function resolveParfumsCart(
   lines: readonly ParfumsCartLine[],
   products: readonly CatalogProduct[],
 ): ResolvedParfumsCartLine[] {
-  const byId = new Map(products.map((product) => [product.legacyId, product]));
+  const byLegacyId = new Map(products.filter((p) => p.legacyId !== null).map((product) => [product.legacyId!, product]));
+  const byProductId = new Map(products.filter((p) => p.productId !== null).map((product) => [product.productId!, product]));
   return lines.flatMap((line) => {
-    const product = byId.get(line.productId);
+    const product = byProductId.get(line.productId) ?? byLegacyId.get(line.productId);
     if (!product || product.discontinued) return [];
     const variant = listProductPurchaseVariants(product).find(
       (candidate) => candidate.variantId === line.variantId,

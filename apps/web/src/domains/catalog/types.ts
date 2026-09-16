@@ -7,7 +7,10 @@ export type CatalogVerificationStatus =
 /** @deprecated Fixture-only alias. Public catalog code uses CatalogVerificationStatus. */
 export type LegacyVerificationStatus = "legacy";
 export type ComboCompositionVerificationStatus =
-  | "client_provided_pending_reconfirmation"
+  | "official_pdf"
+  | "pending_reconfirmation"
+  | "client_confirmed"
+  | "unknown"
   | null;
 
 export type CatalogProductType = "arab" | "designer" | "niche" | "combo";
@@ -70,13 +73,36 @@ export type LegacyComboContent = {
   heroCta: string;
 };
 
-export type CatalogComboContent = Omit<LegacyComboContent, "heroImage"> & {
+/**
+ * DB-backed combo content fields that Supabase truth provides.
+ * heroCta and atomizaciones are presentation-only legacy fields not
+ * present in the database — they remain optional for legacy compat.
+ */
+export type CatalogComboContent = {
+  name: string;
+  desc: string;
+  perfumes: string[];
+  ml: number;
   heroImageUrl: string | null;
-  verificationStatus: "client_provided_pending_reconfirmation";
+  verificationStatus: ComboCompositionVerificationStatus;
+  /** Legacy presentation-only. Not in DB. */
+  heroCta?: string;
+  /** Legacy presentation-only. Not in DB. */
+  atomizaciones?: string;
 };
 
 export type CatalogProductVariant = {
-  /** Compatibility identity used by the current cart; never a database UUID. */
+  /**
+   * Canonical database identity. UUID from product_variants.id.
+   * Stable across page reloads, safe for cart/order validation.
+   * null when sourced from the legacy fixture (no DB row).
+   */
+  dbVariantId: string | null;
+  /**
+   * Compatibility alias used by the current cart and legacy fixture.
+   * Format: `decant-{size}ml` or `bottle-{size}ml`.
+   * Retained for backward-compatible localStorage cart entries.
+   */
   variantId: string;
   kind: "decant" | "bottle";
   sizeMl: string;
@@ -96,7 +122,18 @@ export type CatalogProductMedia = {
 };
 
 export type CatalogProduct = {
-  legacyId: string;
+  /**
+   * Canonical database identity. UUID from products.id.
+   * Stable across page reloads, safe for cart/order validation.
+   * null when sourced from the legacy fixture (no DB row).
+   */
+  productId: string | null;
+  /**
+   * Legacy compatibility identifier. Used by the cart, order validation,
+   * and legacy URL redirects. null for supplemental products that have
+   * no legacy origin.
+   */
+  legacyId: string | null;
   slug: string;
   brand: string;
   name: string;
@@ -129,6 +166,17 @@ export type CatalogProduct = {
   media: CatalogProductMedia[];
 };
 
+/**
+ * Returns the best available runtime cart/order identity for a product.
+ * Prefers canonical productId (Supabase UUID) when available, falls back
+ * to legacyId for pre-cutover products. Throws if neither exists.
+ */
+export function cartIdentity(product: CatalogProduct): string {
+  if (product.productId) return product.productId;
+  if (product.legacyId) return product.legacyId;
+  throw new Error(`Product "${product.name}" has no cart identity (both productId and legacyId are null)`);
+}
+
 /** Shared provider-neutral read boundary. Both repositories satisfy it. */
 export interface PublicCatalogRepository {
   list(): CatalogProduct[];
@@ -137,6 +185,13 @@ export interface PublicCatalogRepository {
   listFeatured(): CatalogProduct[];
   findByLegacyId(legacyId: string): CatalogProduct | null;
   findBySlug(slug: string): CatalogProduct | null;
+  findByProductId(productId: string): CatalogProduct | null;
+  /**
+   * Provider-neutral cart identity resolution. Accepts a cart line productId
+   * which may be either a canonical product UUID or a legacy identifier.
+   * Tries productId match first, then legacyId. Returns null if not found.
+   */
+  resolveCartIdentity(identity: string): CatalogProduct | null;
   listRelated(product: CatalogProduct, limit?: number): CatalogProduct[];
 }
 

@@ -16,6 +16,7 @@ import {
 } from "@/domains/carts/parfums-cart";
 import { resolveParfumsCart } from "@/domains/carts/parfums-cart-pricing";
 import type { CatalogProduct } from "@/domains/catalog/types";
+import { cartIdentity } from "@/domains/catalog/types";
 import { CartLine } from "@/components/parfums/cart/cart-line";
 import { useParfumsCart } from "@/components/parfums/cart/use-parfums-cart";
 import type { HeaderSearchProduct } from "./site-header";
@@ -187,8 +188,8 @@ function CartDrawer({ open, onClose, products }: { open: boolean; onClose: () =>
               key={line.key}
               line={line}
               compact
-              onQuantity={(quantity) => setQuantity(line.product.legacyId, line.variant.variantId, quantity)}
-              onRemove={() => remove(line.product.legacyId, line.variant.variantId)}
+               onQuantity={(quantity) => setQuantity(cartIdentity(line.product), line.variant.variantId, quantity)}
+               onRemove={() => remove(cartIdentity(line.product), line.variant.variantId)}
             />
           ))}
           {persistenceError ? <p className={styles.drawerError} role="alert">No pudimos guardar el cambio. Revisa el almacenamiento del navegador.</p> : null}

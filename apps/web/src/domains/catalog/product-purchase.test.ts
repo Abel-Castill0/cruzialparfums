@@ -13,10 +13,10 @@ describe("product purchase contract", () => {
 
   it("exposes decants and the legacy bottle as variants", () => {
     expect(listProductPurchaseVariants(product)).toEqual([
-      { group: "decant", size: 3, price: 12, variantId: "decant-3ml" },
-      { group: "decant", size: 5, price: 16, variantId: "decant-5ml" },
-      { group: "decant", size: 10, price: 26, variantId: "decant-10ml" },
-      { group: "bottle", size: 100, price: 380, variantId: "bottle-100ml" },
+      { group: "decant", size: 3, price: 12, variantId: "decant-3ml", dbVariantId: null },
+      { group: "decant", size: 5, price: 16, variantId: "decant-5ml", dbVariantId: null },
+      { group: "decant", size: 10, price: 26, variantId: "decant-10ml", dbVariantId: null },
+      { group: "bottle", size: 100, price: 380, variantId: "bottle-100ml", dbVariantId: null },
     ]);
   });
 

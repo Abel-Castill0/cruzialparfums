@@ -16,14 +16,14 @@ const customer = {
 };
 
 function validInput() {
-  return { requestId, lines: [{ productId: product.legacyId, variantId: variant.variantId, quantity: 2 }], customer };
+  return { requestId, lines: [{ productId: product.legacyId!, variantId: variant.variantId, quantity: 2 }], customer };
 }
 
 describe("Parfums public order revalidation", () => {
-  it("rebuilds snapshots and subtotal from the legacy repository", () => {
-    const result = validateAndResolveParfumsOrder(validInput());
-    expect("ok" in result).toBe(false);
-    if ("ok" in result) return;
+  it("rebuilds snapshots and subtotal from the repository", () => {
+    const result = validateAndResolveParfumsOrder(validInput(), repository);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
     expect(result.lines.at(0)).toMatchObject({
       legacy_product_id: product.legacyId,
       legacy_variant_id: variant.variantId,
@@ -35,8 +35,8 @@ describe("Parfums public order revalidation", () => {
 
   it("ignores forged browser commercial fields", () => {
     const input = { ...validInput(), subtotal: 0, lines: [{ ...validInput().lines[0], unit_price: 0, line_total: 0, product_name: "Forged" }] };
-    const result = validateAndResolveParfumsOrder(input);
-    if ("ok" in result) throw new Error(result.message);
+    const result = validateAndResolveParfumsOrder(input, repository);
+    if (!result.ok) throw new Error(result.message);
     expect(result.lines.at(0)?.unit_price_amount).toBe(variant.price.toFixed(2));
     expect(result.lines.at(0)?.product_name).not.toBe("Forged");
     expect(result.subtotal).toBe(variant.price * 2);
@@ -49,10 +49,10 @@ describe("Parfums public order revalidation", () => {
     ["absurd quantity", { ...validInput(), lines: [{ productId: product.legacyId, variantId: variant.variantId, quantity: 100 }] }],
     ["empty cart", { ...validInput(), lines: [] }],
   ])("rejects %s", (_name, input) => {
-    expect(validateAndResolveParfumsOrder(input)).toMatchObject({ ok: false });
+    expect(validateAndResolveParfumsOrder(input, repository)).toMatchObject({ ok: false });
   });
 
   it("rejects a hidden product through the public repository contract", () => {
-    expect(validateAndResolveParfumsOrder({ ...validInput(), lines: [{ productId: "bir-intense", variantId: "decant-3ml", quantity: 1 }] })).toMatchObject({ ok: false });
+    expect(validateAndResolveParfumsOrder({ ...validInput(), lines: [{ productId: "bir-intense", variantId: "decant-3ml", quantity: 1 }] }, repository)).toMatchObject({ ok: false });
   });
 });

@@ -9,6 +9,7 @@ import {
   addParfumsCartLine,
   PARFUMS_CART_UPDATED_EVENT,
 } from "@/domains/carts/parfums-cart";
+import { cartIdentity } from "@/domains/catalog/types";
 import {
   calculatePurchaseTotal,
   clampPurchaseQuantity,
@@ -85,7 +86,7 @@ export function ProductDetailExperience({
 
   function addSelection() {
     const mutation = addParfumsCartLine(localStorage, {
-      productId: product.legacyId,
+      productId: cartIdentity(product),
       variantId: selected.variantId,
       quantity,
     });

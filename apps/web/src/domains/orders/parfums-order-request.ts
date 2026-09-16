@@ -1,6 +1,6 @@
 import { isProductPurchasable } from "../catalog/availability";
-import { LegacyCatalogRepository } from "../catalog/legacy-catalog-repository";
 import { listProductPurchaseVariants } from "../catalog/product-purchase";
+import type { PublicCatalogRepository } from "../catalog/types";
 import type { ParfumsCheckoutCustomer } from "../whatsapp/parfums-message-builder";
 
 export const PARFUMS_ORDER_MAX_LINES = 40;
@@ -20,12 +20,15 @@ export type ParfumsOrderRequestInput = {
 };
 
 export type ParfumsOrderLineSnapshot = {
-  legacy_product_id: string;
-  legacy_variant_id: string;
-  source: "assets/data.js";
+  product_id: string | null;
+  product_variant_id: string | null;
+  source: "supabase_catalog" | "assets/data.js";
+  legacy_product_id: string | null;
+  legacy_variant_id: string | null;
   product_name: string;
   variant_label: string;
-  unit_price_amount: string;
+  /** Present for v1 compatibility and WhatsApp message. Ignored by v2 RPC. */
+  unit_price_amount?: string;
   currency: "PEN";
   quantity: number;
   variant_snapshot: {
@@ -37,6 +40,7 @@ export type ParfumsOrderLineSnapshot = {
 };
 
 export type ValidatedParfumsOrderRequest = {
+  ok: true;
   requestId: string;
   customerSnapshot: { name: string; phone: string };
   deliverySnapshot: { district: string; delivery: string; note: string };
@@ -60,7 +64,7 @@ function normalizeText(value: unknown, max: number) {
 
 export function validateAndResolveParfumsOrder(
   input: unknown,
-  repository = new LegacyCatalogRepository(),
+  repository: PublicCatalogRepository,
 ): ValidatedParfumsOrderRequest | ParfumsOrderValidationError {
   if (!input || typeof input !== "object") {
     return { ok: false, message: "No pudimos leer la solicitud. Revisa los datos e inténtalo otra vez." };
@@ -117,7 +121,7 @@ export function validateAndResolveParfumsOrder(
     }
     seen.add(key);
 
-    const product = repository.findByLegacyId(line.productId);
+    const product = repository.resolveCartIdentity(line.productId);
     if (!product || !isProductPurchasable(product)) {
       return { ok: false, message: "Uno de los productos ya no está disponible. Actualiza tu carrito.", fieldErrors: { cart: "Retira el producto no disponible." } };
     }
@@ -130,9 +134,11 @@ export function validateAndResolveParfumsOrder(
     const lineTotal = variant.price * quantity;
     subtotal += lineTotal;
     snapshots.push({
+      product_id: product.productId,
+      product_variant_id: variant.dbVariantId ?? null,
+      source: product.productId ? "supabase_catalog" : "assets/data.js",
       legacy_product_id: product.legacyId,
       legacy_variant_id: variant.variantId,
-      source: "assets/data.js",
       product_name: `${product.brand} ${product.name}`.trim(),
       variant_label: product.type === "combo"
         ? `Set · ${variant.size} ml c/u`
@@ -150,6 +156,7 @@ export function validateAndResolveParfumsOrder(
   }
 
   return {
+    ok: true as const,
     requestId: candidate.requestId,
     customerSnapshot: { name, phone },
     deliverySnapshot: { district, delivery, note },

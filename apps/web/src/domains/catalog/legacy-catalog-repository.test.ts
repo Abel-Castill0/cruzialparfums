@@ -37,8 +37,7 @@ describe("LegacyCatalogRepository", () => {
       "Set Tulum",
     ]);
     expect(combos.every((combo) =>
-      combo.comboContent?.verificationStatus ===
-        "client_provided_pending_reconfirmation"
+      combo.comboContent?.verificationStatus === "pending_reconfirmation"
     )).toBe(true);
   });
 

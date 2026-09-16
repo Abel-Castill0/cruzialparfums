@@ -7,17 +7,23 @@ export type ProductPurchaseVariant = {
   size: number;
   price: number;
   variantId: string;
+  /** Canonical DB UUID from product_variants. null for legacy fixture variants. */
+  dbVariantId: string | null;
 };
 
 export function listProductPurchaseVariants(
   product: CatalogProduct,
 ): ProductPurchaseVariant[] {
+  const variantById = new Map(
+    product.variants.map((v) => [v.variantId, v.dbVariantId]),
+  );
   const decants = Object.entries(product.decantPrices)
     .map(([size, price]) => ({
       group: "decant" as const,
       size: Number(size),
       price,
       variantId: `decant-${size}ml`,
+      dbVariantId: variantById.get(`decant-${size}ml`) ?? null,
     }))
     .sort((a, b) => a.size - b.size);
   const bottles = Object.entries(product.bottlePrices ?? {})
@@ -26,6 +32,7 @@ export function listProductPurchaseVariants(
       size: Number(size),
       price,
       variantId: `bottle-${size}ml`,
+      dbVariantId: variantById.get(`bottle-${size}ml`) ?? null,
     }))
     .sort((a, b) => a.size - b.size);
   return [...decants, ...bottles];

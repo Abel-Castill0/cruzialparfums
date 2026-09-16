@@ -9,6 +9,7 @@ import {
   addParfumsCartLine,
   PARFUMS_CART_UPDATED_EVENT,
 } from "@/domains/carts/parfums-cart";
+import { cartIdentity } from "@/domains/catalog/types";
 import {
   addComboLine,
   calculateComboLinesTotal,
@@ -41,7 +42,7 @@ function ComboCard({ combo, onAdded, preload }: { combo: CatalogProduct; onAdded
 
   function add() {
     const mutation = addParfumsCartLine(localStorage, {
-      productId: combo.legacyId,
+      productId: cartIdentity(combo),
       variantId: `decant-${size}ml`,
       quantity: 1,
     });
@@ -161,7 +162,7 @@ export function CombosExperience({
           <span>Se reproducen los nombres, precios y composiciones recibidos del sitio legacy, pendientes de reconfirmación comercial.</span>
         </div>
         <div className={styles.comboGrid}>
-          {combos.map((combo, index) => <ComboCard key={combo.legacyId} combo={combo} onAdded={announce} preload={index === 0} />)}
+          {combos.map((combo, index) => <ComboCard key={cartIdentity(combo)} combo={combo} onAdded={announce} preload={index === 0} />)}
         </div>
       </section>
 
@@ -183,20 +184,20 @@ export function CombosExperience({
             <div className={styles.picker} role="listbox" aria-label="Selecciona fragancias para tu combo" aria-multiselectable="true">
               {visible.length === 0 ? <p className={styles.noResults}>No encontramos fragancias con ese nombre.</p> : null}
               {visible.map((product) => {
-                const line = lines.find((candidate) => candidate.productId === product.legacyId);
+                const line = lines.find((candidate) => candidate.productId === cartIdentity(product));
                 const isSelected = Boolean(line);
                 const disabled = lines.length >= COMBO_MAX_ITEMS && !isSelected;
                 const referenceSize = line?.size ?? COMBO_SIZES[0];
                 return (
                   <button
-                    key={product.legacyId}
+                    key={cartIdentity(product)}
                     type="button"
                     role="option"
                     aria-selected={isSelected}
                     disabled={disabled}
                     className={`${styles.pickerItem} ${isSelected ? styles.pickerSelected : ""}`}
-                    onClick={() => toggle(product.legacyId)}
-                    data-combo-option={product.legacyId}
+                    onClick={() => toggle(cartIdentity(product))}
+                    data-combo-option={cartIdentity(product)}
                   >
                     <span className={styles.check} aria-hidden="true">✓</span>
                     <span className={styles.thumb}>{product.imageUrl ? <Image src={product.imageUrl} alt="" fill sizes="58px" className={styles.thumbImage} /> : null}</span>
@@ -216,11 +217,11 @@ export function CombosExperience({
             {resolved.length === 0 ? <p className={styles.emptySummary}>Selecciona fragancias del listado para verlas aquí.</p> : (
               <ul>
                 {resolved.map((entry) => (
-                  <li key={entry.product.legacyId}>
+                  <li key={cartIdentity(entry.product)}>
                     <div className={styles.summaryLineHead}>
                       <span>{entry.product.name}</span>
                       <strong>{money(entry.price)}</strong>
-                      <button type="button" onClick={() => toggle(entry.product.legacyId)} aria-label={`Quitar ${entry.product.name} del combo`}>×</button>
+                      <button type="button" onClick={() => toggle(cartIdentity(entry.product))} aria-label={`Quitar ${entry.product.name} del combo`}>×</button>
                     </div>
                     <div className={styles.summaryLineSizes} role="group" aria-label={`Tamaño de ${entry.product.name}`}>
                       {COMBO_SIZES.map((value) => (
@@ -229,7 +230,7 @@ export function CombosExperience({
                           type="button"
                           aria-pressed={entry.line.size === value}
                           className={entry.line.size === value ? styles.selected : ""}
-                          onClick={() => changeLineSize(entry.product.legacyId, value)}
+                          onClick={() => changeLineSize(cartIdentity(entry.product), value)}
                         >
                           {value} ml
                         </button>

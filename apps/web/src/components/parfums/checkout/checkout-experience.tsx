@@ -12,6 +12,7 @@ import { CartLine } from "@/components/parfums/cart/cart-line";
 import { useParfumsCart } from "@/components/parfums/cart/use-parfums-cart";
 import { Breadcrumbs } from "@/components/parfums/navigation/breadcrumbs";
 import type { CatalogProduct } from "@/domains/catalog/types";
+import { cartIdentity } from "@/domains/catalog/types";
 import { handoffStorageKey } from "@/domains/orders/parfums-order-handoff";
 import { PARFUMS_DELIVERY_OPTIONS } from "@/domains/orders/parfums-order-request";
 import type { ParfumsCheckoutCustomer } from "@/domains/whatsapp/parfums-message-builder";
@@ -62,7 +63,7 @@ export function CheckoutExperience({
       const actionResult = await createParfumsOrderRequest({
         requestId,
         lines: lines.map((line) => ({
-          productId: line.product.legacyId,
+          productId: cartIdentity(line.product),
           variantId: line.variant.variantId,
           quantity: line.quantity,
         })),
@@ -116,8 +117,8 @@ export function CheckoutExperience({
                 <CartLine
                   key={line.key}
                   line={line}
-                  onQuantity={(quantity) => { resetAttempt(); setQuantity(line.product.legacyId, line.variant.variantId, quantity); }}
-                  onRemove={() => { resetAttempt(); remove(line.product.legacyId, line.variant.variantId); }}
+                  onQuantity={(quantity) => { resetAttempt(); setQuantity(cartIdentity(line.product), line.variant.variantId, quantity); }}
+                  onRemove={() => { resetAttempt(); remove(cartIdentity(line.product), line.variant.variantId); }}
                 />
               ))}
             </div>

@@ -9,6 +9,7 @@ import {
   addParfumsCartLine,
   PARFUMS_CART_UPDATED_EVENT,
 } from "@/domains/carts/parfums-cart";
+import { cartIdentity } from "@/domains/catalog/types";
 import type { CatalogProduct } from "@/domains/catalog/types";
 import {
   EMPTY_FINDER_ANSWERS,
@@ -61,7 +62,7 @@ function Results({ products, answers, onRestart, onNotice }: {
   function add(product: CatalogProduct) {
     const size = 3;
     const mutation = addParfumsCartLine(localStorage, {
-      productId: product.legacyId,
+      productId: cartIdentity(product),
       variantId: `decant-${size}ml`,
       quantity: 1,
     });

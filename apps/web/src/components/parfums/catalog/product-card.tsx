@@ -8,6 +8,7 @@ import {
   addParfumsCartLine,
   PARFUMS_CART_UPDATED_EVENT,
 } from "@/domains/carts/parfums-cart";
+import { cartIdentity } from "@/domains/catalog/types";
 import { isProductPurchasable } from "@/domains/catalog/availability";
 import { minimumPrice } from "@/domains/catalog/catalog-query";
 import { clampPurchaseQuantity } from "@/domains/catalog/product-purchase";
@@ -52,7 +53,7 @@ export function ProductCard({
   function addSelection() {
     const group = mode === "bottle" ? "bottle" : "decant";
     const mutation = addParfumsCartLine(localStorage, {
-      productId: product.legacyId,
+      productId: cartIdentity(product),
       variantId: `${group}-${currentVariant.size}ml`,
       quantity,
     });

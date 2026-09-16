@@ -2946,6 +2946,20 @@ export type Database = {
           order_number: string
         }[]
       }
+      create_parfums_order_request_v2: {
+        Args: {
+          p_customer_snapshot: Json
+          p_delivery_snapshot: Json
+          p_lines: Json
+          p_request_id: string
+          p_shipping_method_code: string
+        }
+        Returns: {
+          created: boolean
+          order_id: string
+          order_number: string
+        }[]
+      }
       public_get_import_current_campaign: {
         Args: never
         Returns: {

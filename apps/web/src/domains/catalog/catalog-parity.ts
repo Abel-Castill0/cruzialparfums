@@ -1,4 +1,5 @@
 import type { CatalogProduct, CatalogProductVariant } from "./types";
+import { cartIdentity } from "./types";
 
 export type CatalogParityClassification =
   | "EXPECTED_BLOCKED"
@@ -55,8 +56,8 @@ export function compareCatalogs(
   legacyProducts: readonly CatalogProduct[],
   supabaseProducts: readonly CatalogProduct[],
 ): CatalogParityDifference[] {
-  const legacyById = new Map(legacyProducts.map((item) => [item.legacyId, item]));
-  const supabaseById = new Map(supabaseProducts.map((item) => [item.legacyId, item]));
+  const legacyById = new Map(legacyProducts.map((item) => [cartIdentity(item), item]));
+  const supabaseById = new Map(supabaseProducts.map((item) => [cartIdentity(item), item]));
   const identities = [...new Set([...legacyById.keys(), ...supabaseById.keys()])].sort();
   const differences: CatalogParityDifference[] = [];
 

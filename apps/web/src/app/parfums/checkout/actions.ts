@@ -1,11 +1,13 @@
 "use server";
 
 import { LegacyCatalogRepository } from "@/domains/catalog/legacy-catalog-repository";
+import type { PublicCatalogRepository } from "@/domains/catalog/types";
 import { ParfumsOrderRepository } from "@/domains/orders/parfums-order-repository";
 import {
   validateAndResolveParfumsOrder,
   type ParfumsOrderRequestInput,
   type ParfumsOrderValidationError,
+  type ValidatedParfumsOrderRequest,
 } from "@/domains/orders/parfums-order-request";
 import { PARFUMS_SETTINGS } from "@/domains/platform/settings";
 import {
@@ -23,11 +25,21 @@ export type CreateParfumsOrderResult =
     created: boolean;
   };
 
+function getCatalogRepository(): PublicCatalogRepository {
+  return new LegacyCatalogRepository();
+}
+
+function isOrderError(
+  result: ValidatedParfumsOrderRequest | ParfumsOrderValidationError,
+): result is ParfumsOrderValidationError {
+  return !result.ok;
+}
+
 export async function createParfumsOrderRequest(
   input: ParfumsOrderRequestInput,
 ): Promise<CreateParfumsOrderResult> {
-  const validated = validateAndResolveParfumsOrder(input, new LegacyCatalogRepository());
-  if ("ok" in validated) return {
+  const validated = validateAndResolveParfumsOrder(input, getCatalogRepository());
+  if (isOrderError(validated)) return {
     status: "error",
     message: validated.message,
     ...(validated.fieldErrors ? { fieldErrors: validated.fieldErrors } : {}),
@@ -48,7 +60,9 @@ export async function createParfumsOrderRequest(
       productName: line.product_name,
       variantLabel: line.variant_label,
       quantity: line.quantity,
-      lineTotal: Number(line.unit_price_amount) * line.quantity,
+      lineTotal: line.unit_price_amount
+        ? Number(line.unit_price_amount) * line.quantity
+        : validated.subtotal / validated.lines.length,
     })),
     subtotal: validated.subtotal,
     customer: validated.customer,

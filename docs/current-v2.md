@@ -993,6 +993,48 @@ provisional_market writes.
   cleanup SQL (no wildcards, exact md5 selectors, p.name=q.name).
 - C3B parent: CLOSED. 4K2: NOT STARTED. Production/DNS untouched.
 
+### 4K2-B0.1 — CORRECTED RUNTIME CONTRACTS — CLOSED locally
+
+- Price authority corrected: v2 RPC obtains canonical price_amount and
+  currency from product_variants in DB. Submitted unit_price_amount is
+  never trusted as price authority. Subtotal derives from DB canonical prices.
+- Product/variant relationship enforced: single atomic lookup resolves
+  exact product+variant pair, proves variant.product_id = product_id,
+  enforces BU scope, rejects archived products/variants.
+- Mixed authority rejected: all lines must carry both product_id and
+  product_variant_id (v2) or both be legacy (v1). Mixed in one request
+  is impossible / rejected.
+- Readiness corrected: discontinued does NOT block storefront visibility.
+  "descontinuado" (production stopped) and "agotado" (no stock) are
+  independent facts per client-confirmed contract. out_of_stock is the
+  only purchase blocker.
+- Pre-publication readiness classifier added: operates on raw database
+  state for admin/C1 publication planning. Checks publication_status,
+  hidden, archived, variant publication and price verification.
+- Dead readiness blockers removed: variant_not_published, product_not_published,
+  product_archived never fired on mapped CatalogProduct (repository filters
+  first). Runtime classifier now only checks price verification.
+- Combo read model implemented: combo_items with ingredient products fetched
+  via PostgREST nested select. Perfumes array, ml, verificationStatus mapped.
+  heroCta/atomizaciones are optional presentation-only legacy fields, not
+  filled with fake values.
+- Media URL reverted to HTTPS-only: /^https:\/\// filter. No verified
+  HTTP legacy_static data requiring insecure transport.
+- RPC types added: create_parfums_order_request_v2 added to Database type
+  contract. No `as` cast to suppress missing RPC definition.
+- Repository: ParfumsOrderRepository uses explicit v1/v2 branching with
+  mixed-authority guard. Type guard for checkout discriminated union.
+- ProductPurchaseVariant type extended with dbVariantId for order snapshots.
+- Validation: 57 Vitest files, 680 tests, 0 failures.
+- New pgTAP test file: tests/29_parfums_order_v2_authority.sql (28 tests)
+  covering price authority, product/variant ownership, mixed authority,
+  idempotency, archived product/variant, failure atomicity.
+- Hosted migration 20260916020000: NOT applied hosted. Local only.
+- Hosted publication statuses: untouched.
+- Runtime cutover: NOT STARTED. All /parfums pages and checkout use
+  LegacyCatalogRepository. SupabasePublicCatalogRepository only in tests.
+- Production/DNS: untouched.
+
 ## Current evidence gaps
 
 None outstanding for 4J5F. See Deferred defects above for the categoryId

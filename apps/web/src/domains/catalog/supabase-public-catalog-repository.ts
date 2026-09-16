@@ -7,6 +7,8 @@ import type {
   CatalogProductType,
   CatalogProductVariant,
   CatalogVerificationStatus,
+  CatalogComboContent,
+  ComboCompositionVerificationStatus,
   PublicCatalogRepository,
 } from "./types";
 
@@ -22,6 +24,7 @@ type PublicCategory = {
 };
 
 export type PublicProductRow = {
+  id: string;
   business_unit_id: string;
   legacy_id: string | null;
   slug: string;
@@ -67,10 +70,39 @@ export type PublicProductRow = {
     sort_order: number;
     category: PublicCategory | PublicCategory[] | null;
   }>;
+  combos: {
+    composition_verification_status: string;
+    combo_items: Array<{
+      product_variant_id: string;
+      combo_product_variant_id: string;
+      quantity: number;
+      sort_order: number;
+      product_variants: {
+        id: string;
+        product_id: string;
+        label: string;
+        size_ml: number | string | null;
+        products: {
+          brand: string | null;
+          name: string;
+        };
+      };
+      combo_product_variants: {
+        id: string;
+        product_id: string;
+        label: string;
+        size_ml: number | string | null;
+        products: {
+          brand: string | null;
+          name: string;
+        };
+      };
+    }>;
+  } | null;
 };
 
 const PUBLIC_PRODUCT_SELECT = `
-  business_unit_id, legacy_id, slug, brand, name, description, gender,
+  id, business_unit_id, legacy_id, slug, brand, name, description, gender,
   concentration, production_status, availability_status, publication_status,
   archived_at, is_featured, featured_rank, featured_from, featured_until,
   verification_status, notes:specs->notes, tag:specs->>tag,
@@ -79,7 +111,13 @@ const PUBLIC_PRODUCT_SELECT = `
   product_media(provider, secure_url, alt, is_primary, sort_order, archived_at,
     product_variant_id, media_role:metadata->>media_role),
   product_categories(sort_order, category:categories(business_unit_id, kind,
-    slug, name, publication_status, archived_at))
+    slug, name, publication_status, archived_at)),
+  combos:combos(composition_verification_status, combo_items(
+    product_variant_id, combo_product_variant_id, quantity, sort_order,
+    product_variants:product_variants(id, product_id, label, size_ml,
+      products:products(brand, name)),
+    combo_product_variants:combo_product_variants(id, product_id, label, size_ml,
+      products:products(brand, name))))
 `;
 
 function asStringArray(value: Json | undefined): string[] {
@@ -123,6 +161,12 @@ function commercialType(category: PublicCategory | null): CatalogProductType | n
   return null;
 }
 
+function comboVerificationStatus(value: string): ComboCompositionVerificationStatus {
+  if (value === "official_pdf" || value === "pending_reconfirmation"
+    || value === "client_confirmed" || value === "unknown") return value;
+  return "unknown";
+}
+
 function decimal(value: number | string): string | null {
   const raw = typeof value === "number" ? value.toFixed(2) : value.trim();
   if (!/^\d{1,10}(?:\.\d{1,2})?$/.test(raw)) return null;
@@ -146,6 +190,7 @@ function mapVariants(row: PublicProductRow): CatalogProductVariant[] {
       const priceAmount = decimal(item.price_amount);
       if (!kind || !sizeMl || !priceAmount || item.currency !== "PEN") return [];
       return [{
+        dbVariantId: item.id,
         variantId: `${kind}-${sizeMl}ml`,
         kind,
         sizeMl,
@@ -172,7 +217,7 @@ function mapMedia(row: PublicProductRow): MappedPublicMedia[] {
     .filter((item) => item.publication_status === "published" && item.archived_at === null)
     .map((item) => item.id));
   return row.product_media
-    .filter((item) => item.provider === "cloudinary"
+    .filter((item) => (item.provider === "cloudinary" || item.provider === "legacy_static")
       && item.archived_at === null
       && (item.product_variant_id === null || publicVariantIds.has(item.product_variant_id))
       && /^https:\/\//.test(item.secure_url))
@@ -187,6 +232,35 @@ function mapMedia(row: PublicProductRow): MappedPublicMedia[] {
       || a.sortOrder - b.sortOrder || a.url.localeCompare(b.url));
 }
 
+function buildComboContent(row: PublicProductRow): CatalogComboContent | null {
+  const comboItems = row.combos?.combo_items ?? [];
+  if (comboItems.length === 0) return null;
+
+  const perfumes: string[] = [];
+  for (const item of comboItems) {
+    const ingredient = item.product_variants?.products;
+    if (!ingredient) return null;
+    const name = [ingredient.brand, ingredient.name].filter(Boolean).join(" ");
+    if (!name) return null;
+    perfumes.push(name);
+  }
+
+  const firstItem = comboItems[0];
+  const presentationVariant = firstItem?.combo_product_variants;
+  const ml = presentationVariant?.size_ml != null
+    ? Number(presentationVariant.size_ml)
+    : 0;
+
+  return {
+    name: row.name,
+    desc: row.description ?? "",
+    perfumes,
+    ml,
+    heroImageUrl: null,
+    verificationStatus: comboVerificationStatus(row.combos?.composition_verification_status ?? "unknown"),
+  };
+}
+
 /** Pure mapping seam used by local publication fixtures and the parity oracle. */
 export function mapPublicProduct(row: PublicProductRow): CatalogProduct | null {
   if (row.business_unit_id !== PARFUMS_BUSINESS_UNIT_ID
@@ -196,11 +270,13 @@ export function mapPublicProduct(row: PublicProductRow): CatalogProduct | null {
   const mappedGender = gender(row.gender);
   const production = productionStatus(row.production_status);
   const availability = availabilityStatus(row.availability_status);
-  if (!row.legacy_id || !type || !family || !mappedGender || !production || !availability) return null;
+  const isCombo = !!row.combos;
+  if (!mappedGender || !production || !availability) return null;
+  if (!isCombo && !type) return null;
   const variants = mapVariants(row);
   const decants = variants.filter((item) => item.kind === "decant");
-  if (decants.length === 0) return null;
   const bottles = variants.filter((item) => item.kind === "bottle");
+  if (!isCombo && decants.length === 0) return null;
   const mappedMedia = mapMedia(row);
   const primary = mappedMedia.find((item) => item.isPrimary) ?? mappedMedia[0] ?? null;
   const decantMedia = mappedMedia.find((item) => item.role === "set") ?? primary;
@@ -215,20 +291,27 @@ export function mapPublicProduct(row: PublicProductRow): CatalogProduct | null {
     items.map((item) => [item.sizeMl, Number(item.priceAmount)]),
   );
 
+  const comboVerification = row.combos
+    ? comboVerificationStatus(row.combos.composition_verification_status)
+    : null;
+
+  const comboContent: CatalogComboContent | null = isCombo ? buildComboContent(row) : null;
+
   return {
+    productId: row.id,
     legacyId: row.legacy_id,
     slug: row.slug,
     brand: row.brand ?? "",
     name: row.name,
     gender: mappedGender,
-    type,
-    family: family.name,
+    type: isCombo ? "combo" : type!,
+    family: family?.name ?? "",
     concentration: row.concentration ?? "",
     // Compatibility projection only. Exact source values remain in variants.priceAmount.
     decantPrices: priceRecord(decants),
     bottlePrices: bottles.length > 0 ? priceRecord(bottles) : null,
     notes: asStringArray(row.notes),
-    tag: row.tag ?? family.name,
+    tag: row.tag ?? family?.name ?? "",
     description: row.description ?? "",
     discontinued: production === "discontinued",
     bestseller: false,
@@ -244,15 +327,18 @@ export function mapPublicProduct(row: PublicProductRow): CatalogProduct | null {
     imageAlt: primary?.alt ?? [row.brand, row.name].filter(Boolean).join(" "),
     verificationStatus: verification(row.verification_status),
     bottlePricingVerificationStatus: bottles[0]?.priceVerificationStatus ?? null,
-    comboCompositionVerificationStatus: null,
-    comboContent: null,
+    comboCompositionVerificationStatus: comboVerification,
+    comboContent,
     variants,
     media,
   };
 }
 
 export class SupabasePublicCatalogRepository implements PublicCatalogRepository {
-  private constructor(private readonly products: CatalogProduct[]) {}
+  private constructor(
+    private readonly products: CatalogProduct[],
+    private readonly combos: CatalogProduct[],
+  ) {}
 
   /** One public/RLS-bound composed query. No secret client and no per-product reads. */
   static async load(supabase: SupabaseClient<Database>): Promise<SupabasePublicCatalogRepository> {
@@ -264,21 +350,26 @@ export class SupabasePublicCatalogRepository implements PublicCatalogRepository 
       .is("archived_at", null)
       .order("name", { ascending: true });
     if (error) throw new Error(`Public catalog read failed: ${error.message}`);
-    const products = ((data ?? []) as unknown as PublicProductRow[])
+    const all = ((data ?? []) as unknown as PublicProductRow[])
       .map(mapPublicProduct)
       .filter((product): product is CatalogProduct => product !== null);
-    return new SupabasePublicCatalogRepository(products);
+    const combos = all.filter((product) => product.type === "combo");
+    const products = all.filter((product) => product.type !== "combo");
+    return new SupabasePublicCatalogRepository(products, combos);
   }
 
   static fromPublicRows(rows: PublicProductRow[]): SupabasePublicCatalogRepository {
-    return new SupabasePublicCatalogRepository(
-      rows.map(mapPublicProduct).filter((item): item is CatalogProduct => item !== null),
-    );
+    const all = rows
+      .map(mapPublicProduct)
+      .filter((item): item is CatalogProduct => item !== null);
+    const combos = all.filter((product) => product.type === "combo");
+    const products = all.filter((product) => product.type !== "combo");
+    return new SupabasePublicCatalogRepository(products, combos);
   }
 
   list() { return [...this.products]; }
   listFragrances() { return this.list(); }
-  listCombos() { return []; }
+  listCombos() { return [...this.combos]; }
   listFeatured() {
     const now = Date.now();
     return this.products.filter((product) => {
@@ -288,10 +379,16 @@ export class SupabasePublicCatalogRepository implements PublicCatalogRepository 
     }).sort((a, b) => (a.featuredRank ?? Infinity) - (b.featuredRank ?? Infinity));
   }
   findByLegacyId(legacyId: string) {
-    return this.products.find((product) => product.legacyId === legacyId) ?? null;
+    return [...this.products, ...this.combos].find((product) => product.legacyId === legacyId) ?? null;
   }
   findBySlug(slug: string) {
-    return this.products.find((product) => product.slug === slug) ?? null;
+    return [...this.products, ...this.combos].find((product) => product.slug === slug) ?? null;
+  }
+  findByProductId(productId: string) {
+    return [...this.products, ...this.combos].find((product) => product.productId === productId) ?? null;
+  }
+  resolveCartIdentity(identity: string) {
+    return this.findByProductId(identity) ?? this.findByLegacyId(identity);
   }
   listRelated(product: CatalogProduct, limit = 4) {
     const candidates = this.products.filter((item) => item.legacyId !== product.legacyId);
