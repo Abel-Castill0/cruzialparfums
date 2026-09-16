@@ -90,7 +90,7 @@ function printPlan(plan) {
   console.log(`Commercial loader ${plan.mode}: applied=${plan.applied}, refused=${plan.refused}, conflicts=${plan.conflict_count}`);
   for (const entity of ["categories", "products", "variants", "relationships", "inventory", "combos", "combo_items"]) {
     const operation = plan.operations[entity];
-    console.log(`${entity}: insert=${operation.insert}, unchanged=${operation.unchanged}, conflict=${operation.conflict}`);
+    console.log(`${entity}: insert=${operation.insert}, reconcile=${operation.reconcile ?? 0}, unchanged=${operation.unchanged}, conflict=${operation.conflict}`);
   }
   for (const conflict of plan.conflicts) {
     console.log(`CONFLICT ${conflict.entity}/${conflict.code}: ${conflict.identity}`);
@@ -227,7 +227,7 @@ function assertVerification(manifest, plan, actual, admin, anonymous) {
   };
   for (const [entity, count] of Object.entries(expected)) {
     if (actual[entity] !== count) throw new Error(`Verification failed for ${entity}: expected ${count}, got ${actual[entity]}`);
-    if (plan.operations[entity].insert !== 0 || plan.operations[entity].unchanged !== count || plan.operations[entity].conflict !== 0) {
+    if (plan.operations[entity].insert !== 0 || (plan.operations[entity].reconcile ?? 0) !== 0 || plan.operations[entity].unchanged !== count || plan.operations[entity].conflict !== 0) {
       throw new Error(`Idempotency verification failed for ${entity}.`);
     }
   }

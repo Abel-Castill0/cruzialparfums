@@ -924,6 +924,49 @@ provisional_market writes.
 - No commercial manifest was imported. Production and DNS were untouched.
   R2 parent: CLOSED. 4K-C3A parent: CLOSED. 4K-C3B: NOT STARTED.
 
+### 4K-C3B.1 — CLOSED LOCALLY / HOSTED NOT APPLIED
+
+- The first hosted C3B planner correctly refused 293 direct conflicts: 6 product
+  state predecessors, 285 matched variant state predecessors, and 2 historical
+  bottle:100 identities. Relationship/inventory conflict counters were cascading.
+  No affected trusted-authority, out-of-manifest, QA, or Import rows were found.
+- New append-only migration `20260916010000` binds reconciliation to the exact
+  committed C2 JSONB fingerprint. Product reconciliation allows only the four
+  proven concentration/description predecessors (by-the-fireplace, cdn-intense-man,
+  dylan-blue, le-male-elixir), bir-intense hidden -> draft, and invictus-elixir
+  draft -> archived; every other persisted field must already equal target.
+- Normal variants allow only legacy -> official_pdf / provisional_market, with
+  price/authority as the only differences and all structural fields exact.
+  Mismatching client_confirmed, official_pdf, provisional_market, unknown, and
+  unsupported future authorities remain conflicts. No inventory/relationship
+  updater was added; unresolved-four bottle rows remain exactly legacy.
+- Cedrat Boise Intense and Red Tobacco have an explicit in-place bottle:100 ->
+  bottle:120 predecessor contract, retaining variant UUID and complete inventory.
+  Hosted READ ONLY preflight dynamically enumerated all 7 product_variants FKs:
+  each predecessor had exactly one exact status-only inventory row and zero other
+  references, one 100ml row, no 120ml sibling, and no ownership/archive anomaly.
+  The loader repeats dynamic dependency checks, including future/composite FKs.
+- Planner reports INSERT / UNCHANGED / RECONCILE / CONFLICT distinctly. Apply
+  preserves catalog locks, locks structural predecessors FOR UPDATE against new
+  FK attachments, re-plans, and conditionally updates the exact current snapshot
+  under the same predecessor predicates. Each update must affect exactly one row;
+  any failure raises and rolls back. Final planning must prove exact convergence.
+- Local reset and predecessor -> dry/apply/verify/second-apply passed: 6 product +
+  305 variant reconciliations (303 normal / 2 structural), 64 entity inserts,
+  zero conflicts; exact target is 100 products / 324 variants / 324 inventory /
+  297 official_pdf / 20 provisional_market / 7 legacy / 11 categories /
+  195 relationships / 3 combos / 9 presentations / 30 items. Second plan has
+  zero inserts/reconciliations/conflicts; pgTAP proves no second-apply mutation.
+- Validation: focused reconciliation pgTAP 110 tests; commercial/combo gate
+  4 files / 233 tests; full DB suite ONCE 29 files / 933 tests; focused commercial
+  Vitest 101 tests; commercial:check and local loader/Admin/anonymous RLS verifier
+  PASS. Prepare the exact local pgTAP artifact after reset with
+  `node scripts/prepare-commercial-reconciliation-test.mjs` before DB tests.
+- Commercial artifact remains byte-identical, SHA-256
+  `cefa808e760f8f874b93252bf5e6df7bbe3e82634c11ce3458aed0336861c364`.
+  Hosted schema/commercial writes: NO. C3A remains CLOSED; C3B parent and 4K
+  commercial closure remain NOT CLOSED. 4K2 NOT STARTED. Production/DNS untouched.
+
 ## Current evidence gaps
 
 None outstanding for 4J5F. See Deferred defects above for the categoryId
