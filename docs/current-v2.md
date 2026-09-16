@@ -886,6 +886,28 @@ provisional_market writes.
   BLOCKED/not closed until a separately authorized hosted R2 succeeds. 4K-C3B
   NOT STARTED.
 
+### 4K-C3A-R2F1 — Hosted Import QA offer reconciliation — CLOSED locally
+
+- Hosted migrations `20260913010000`, `20260913020000`, C1A
+  (`20260914010000`), and C1B (`20260915010000`) are applied; the hosted/local
+  ledger agrees with zero pending migrations. The hosted C1A backfill remains
+  valid and its focused combo
+  verifier passes (ready has one variant-aware item; pending has zero).
+- The first permanent-fixture attempt failed transactionally at
+  `Unexpected QA offer count: staging-qa-import-ready`. Root cause: the
+  base fixture used a stale all-campaign count of one, while the second ready
+  offer is legitimate layered 4J5G-A3 state, not drift.
+- The corrected base fixture always requires its exact canonical campaign-#6
+  offer and optionally accepts and byte-semantically preserves the one exact
+  campaign-9002 extension. It neither creates, mutates, nor deletes that
+  downstream row; unknown extra offers still fail closed. Local BASE -> BASE
+  and BASE -> EXTENSION -> BASE -> BASE matrices pass, preserving both rows.
+  Fresh-schema pgTAP passes 28 files / 823 tests, and the local combo verifier
+  passes after the layered fixture run.
+- No hosted write occurred in R2F1. R2 remains NOT CLOSED; the hosted fixture
+  rerun is deferred to separately authorized R2F2. 4K-C3A remains NOT CLOSED,
+  and 4K-C3B is NOT STARTED.
+
 ## Current evidence gaps
 
 None outstanding for 4J5F. See Deferred defects above for the categoryId

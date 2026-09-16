@@ -87,6 +87,36 @@ and not exists(select 1 from qa_products q where q.id=cp.product_id);
 create temp table qa_campaign_before on commit drop as select to_jsonb(c) as row from public.campaigns c
 where c.business_unit_id='22222222-2222-4222-8222-222222222222' and c.number=6;
 
+-- 4J5G-A3 optionally extends the ready product with one public-journey offer
+-- on owned QA campaign 9002. The base fixture must preserve that exact row,
+-- while rejecting every other non-canonical offer for these three products.
+create temp table qa_public_extension_before on commit drop as
+select cp.id,to_jsonb(cp) as row from public.campaign_products cp
+where cp.id=md5('4J5G-A3/offer/staging-qa-import-ready-9002')::uuid;
+do $$
+declare ready_product uuid; public_offer uuid:=md5('4J5G-A3/offer/staging-qa-import-ready-9002')::uuid;
+begin
+ select id into ready_product from qa_products where slug='staging-qa-import-ready';
+ if exists(select 1 from public.campaign_products cp join qa_products q on q.id=cp.product_id
+   where q.unit='22222222-2222-4222-8222-222222222222'
+   and q.slug in('staging-qa-import-ready','staging-qa-import-no-media','staging-qa-import-no-offer')
+   and case q.slug
+    when 'staging-qa-import-ready' then cp.id not in(md5('4J5F-A/offer/'||q.slug)::uuid,public_offer)
+    when 'staging-qa-import-no-media' then cp.id<>md5('4J5F-A/offer/'||q.slug)::uuid
+    else true end) then
+  raise exception 'Unexpected non-canonical QA offer; refusing reconciliation';
+ end if;
+ if exists(select 1 from public.campaign_products cp where cp.id=public_offer) then
+  if not exists(select 1 from public.campaign_products cp join public.campaigns c on c.id=cp.campaign_id
+    where cp.id=public_offer and cp.product_id=ready_product
+    and cp.import_presentation_id=md5('4J5F-A/presentation/staging-qa-import-ready')::uuid
+    and c.business_unit_id='22222222-2222-4222-8222-222222222222' and c.number=9002
+    and cp.price_amount=0.01 and btrim(cp.currency)='PEN' and cp.availability_status='available') then
+   raise exception '4J5G-A3 QA offer ownership collision; refusing reconciliation';
+  end if;
+ end if;
+end $$;
+
 do $$
 declare q record; pid uuid; family uuid; commercial uuid; vid uuid; cid uuid; pres uuid;
  -- Inert self-contained SVG supported by img and Next Image data sources. No host/upload.
@@ -147,7 +177,9 @@ begin
  values(md5('4J5F-A/offer/'||q.slug)::uuid,cid,pid,pres,0.01,'PEN','available')
  on conflict(id) do update set price_amount=excluded.price_amount,availability_status=excluded.availability_status
  where campaign_products.product_id=excluded.product_id and campaign_products.campaign_id=excluded.campaign_id
- and campaign_products.import_presentation_id=excluded.import_presentation_id;
+ and campaign_products.import_presentation_id=excluded.import_presentation_id
+ and (campaign_products.price_amount is distinct from excluded.price_amount
+  or campaign_products.availability_status is distinct from excluded.availability_status);
  end if;
  end if;
  end loop;
@@ -195,6 +227,9 @@ do $$ begin
  if (select row from qa_campaign_before) is distinct from(select to_jsonb(c) from public.campaigns c
  where c.business_unit_id='22222222-2222-4222-8222-222222222222' and c.number=6)
  then raise exception '#6 row changed'; end if;
+ if exists(select 1 from qa_public_extension_before b left join public.campaign_products cp on cp.id=b.id
+  where to_jsonb(cp) is distinct from b.row)
+ then raise exception '4J5G-A3 QA offer changed'; end if;
 end $$;
 -- Structural assertions run inside provisioning, BEFORE commit. These do not bypass
 -- RPC authorization. Run staging-qa-fixtures-readiness.sql with a legitimate
@@ -206,14 +241,16 @@ begin
   select count(*) into n from public.import_presentations where product_id=q.id and archived_at is null and publication_status='published';
   if n<>1 then raise exception 'Expected exactly one published QA presentation: %',q.slug; end if;
   select count(*) into n from public.campaign_products where product_id=q.id;
-  if n<>(case when q.slug='staging-qa-import-no-offer' then 0 else 1 end) then
+  if n<>(case q.slug when 'staging-qa-import-ready' then 1+(select count(*) from qa_public_extension_before)
+   when 'staging-qa-import-no-media' then 1 else 0 end) then
    raise exception 'Unexpected QA offer count: %',q.slug; end if;
-  if exists(select 1 from public.campaign_products cp join public.campaigns c on c.id=cp.campaign_id
-   where cp.product_id=q.id and (c.number<>6 or c.business_unit_id<>q.unit or cp.price_amount<>0.01
-    or cp.currency<>'PEN' or cp.availability_status<>'available'
-    or cp.id<>md5('4J5F-A/offer/'||q.slug)::uuid
-    or cp.import_presentation_id<>md5('4J5F-A/presentation/'||q.slug)::uuid)) then
-   raise exception 'QA offer contract mismatch'; end if;
+  if q.slug<>'staging-qa-import-no-offer' and not exists(
+   select 1 from public.campaign_products cp join public.campaigns c on c.id=cp.campaign_id
+   where cp.product_id=q.id and c.number=6 and c.business_unit_id=q.unit
+   and cp.price_amount=0.01 and btrim(cp.currency)='PEN' and cp.availability_status='available'
+   and cp.id=md5('4J5F-A/offer/'||q.slug)::uuid
+   and cp.import_presentation_id=md5('4J5F-A/presentation/'||q.slug)::uuid) then
+   raise exception 'Canonical #6 QA offer contract mismatch: %',q.slug; end if;
   select count(*) into n from public.product_media where product_id=q.id;
   if n<>(case when q.slug='staging-qa-import-no-media' then 0 else 1 end) then
    raise exception 'Unexpected QA media count: %',q.slug; end if;
