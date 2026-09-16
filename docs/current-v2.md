@@ -967,6 +967,32 @@ provisional_market writes.
   Hosted schema/commercial writes: NO. C3A remains CLOSED; C3B parent and 4K
   commercial closure remain NOT CLOSED. 4K2 NOT STARTED. Production/DNS untouched.
 
+### 4K-C3B.2 — CLOSED HOSTED
+
+- Single hosted commercial apply executed successfully via Node.js byte-safe
+  transport on `cruzial-v2-staging` (`iyxidhglyqkzoziyewlc`).
+- Apply result: `mode=apply, applied=true, refused=false, conflict_count=0,
+  insert_count=64, reconcile_count=311`.
+- Post-apply hosted counts: products=100, variants=324, inventory=324,
+  relationships=195, commercial categories=11 (13 Parfums total including 2 QA),
+  authority: official_pdf=297, provisional_market=20, legacy=7, combos=3,
+  combo presentations=9, combo_items=30.
+- Structural preservation confirmed: Cedrat Boise Intense variant UUID
+  `587eb27f` preserved (120ml/614/provisional_market), Red Tobacco variant UUID
+  `3c042a1d` preserved (120ml/609/provisional_market), both inventory UUIDs
+  preserved with status_only/NULL qty/available/updated_by=NULL. No 100ml
+  siblings remain.
+- Unresolved four confirmed unchanged (1-million-lucky=780, by-the-fireplace=750,
+  le-beau-le-parfum=680, bir-intense=720, all legacy). Import preserved at 847
+  products. C3A QA fixtures intact: 6 QA products, 5 QA variants, 2 QA combos.
+- Final read-only planner: exact 0/0/0 convergence (insert=0, reconcile=0,
+  conflict=0 across all 7 entity types). No second commercial apply was invoked.
+- QA verifiers passed: SQL combo verifier (ready=1 item/confirmed/published,
+  pending=0 items/pending_reconfirmation/draft), catalog QA (3 products intact),
+  campaign 9002 (1 offer, staging-qa-import-ready, c6_qa_offer_intact=1),
+  cleanup SQL (no wildcards, exact md5 selectors, p.name=q.name).
+- C3B parent: CLOSED. 4K2: NOT STARTED. Production/DNS untouched.
+
 ## Current evidence gaps
 
 None outstanding for 4J5F. See Deferred defects above for the categoryId
