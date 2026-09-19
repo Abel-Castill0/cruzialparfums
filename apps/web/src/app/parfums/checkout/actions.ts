@@ -14,10 +14,19 @@ import {
   buildPersistedOrderRequestMessage,
   buildWhatsAppUrl,
 } from "@/domains/whatsapp/parfums-message-builder";
+import { checkOrderRequestRateLimit } from "@/lib/security/order-abuse";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
 
+const RATE_LIMITED_MESSAGE =
+  "Recibimos varias solicitudes en poco tiempo. Espera unos minutos antes de intentarlo de nuevo.";
+const ORDER_SERVICE_UNAVAILABLE_MESSAGE =
+  "No pudimos procesar tu solicitud en este momento. Tu carrito se conserva.";
+
 export type CreateParfumsOrderResult =
-  | ({ status: "error" } & Pick<ParfumsOrderValidationError, "message" | "fieldErrors">)
+  | ({ status: "error" } & Pick<ParfumsOrderValidationError, "message" | "fieldErrors"> & {
+        code?: "rate_limited";
+        retryAfterSeconds?: number;
+      })
   | {
     status: "success";
     orderNumber: string;
@@ -48,6 +57,26 @@ export async function createParfumsOrderRequest(
   const client = createSupabaseAdminClient();
   if (!client) {
     return { status: "error", message: "El registro de solicitudes no está disponible en este momento. Tu carrito no fue modificado." };
+  }
+
+  const rateLimit = await checkOrderRequestRateLimit({
+    client,
+    businessUnit: "parfums",
+    requestId: validated.requestId,
+    phone: validated.customer.phone,
+  });
+
+  if (rateLimit.kind === "denied") {
+    return {
+      status: "error",
+      message: RATE_LIMITED_MESSAGE,
+      code: "rate_limited",
+      retryAfterSeconds: rateLimit.retryAfterSeconds,
+    };
+  }
+
+  if (rateLimit.kind === "unavailable") {
+    return { status: "error", message: ORDER_SERVICE_UNAVAILABLE_MESSAGE };
   }
 
   const persisted = await new ParfumsOrderRepository(client).create(validated);

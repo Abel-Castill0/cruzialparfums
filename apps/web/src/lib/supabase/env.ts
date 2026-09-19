@@ -64,3 +64,17 @@ export function readAdminBootstrapEmail(): string | null {
   }
   return process.env.ADMIN_BOOTSTRAP_EMAIL?.trim().toLowerCase() || null;
 }
+
+/**
+ * Server-only HMAC key dedicated to pseudonymizing order-request anti-abuse
+ * identity (src/lib/security/order-abuse.ts). Never reuse this for anything
+ * else, and never read it eagerly at module scope: `next build` must keep
+ * succeeding with this unset, so a missing secret is only ever a runtime
+ * "fail closed" decision at the point a real checkout needs it.
+ */
+export function readOrderAbuseHmacSecret(): string | null {
+  if (typeof window !== "undefined") {
+    throw new Error("readOrderAbuseHmacSecret() must never run in the browser.");
+  }
+  return process.env.ORDER_ABUSE_HMAC_SECRET?.trim() || null;
+}

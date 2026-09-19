@@ -1129,6 +1129,100 @@ provisional_market writes.
 - Cloudinary Admin API secret rotation, rate limiting, and CSP/security
   headers are explicitly out of scope for this gate (later gates).
 
+### 4K-GATE2B — Public order request anti-abuse / rate limiting — CLOSED locally / NOT applied hosted
+
+- Threat closed: `requestId` only protects idempotency when a caller reuses
+  the SAME uuid; a bot can mint unlimited new uuids and call the Parfums/
+  Import Server Actions unlimited times, since the service-only persistence
+  RPCs have no volume control of their own. This gate adds an authoritative,
+  concurrency-safe PostgreSQL counter — never a Node-memory limiter, which
+  would not be a shared counter across Vercel's serverless instances.
+- New append-only migration
+  `20260919201406_order_request_rate_limiting.sql`: creates a non-exposed
+  `private` schema (no Data API, no anon/authenticated grants), table
+  `private.order_request_rate_events` (id, business_unit_code, request_id,
+  ip_hash, phone_hash, created_at — only admitted requests are stored, never
+  rejected ones, so a flood of rejected uuids cannot fill the table), and
+  service-only RPC `public.check_order_request_rate_limit(business_unit,
+  request_id, ip_hash, phone_hash)`. `security invoker` with explicit
+  `service_role`-only grants (matching the 20260916020000 v2 RPC precedent),
+  not `security definer`. RLS enabled on the table as defense-in-depth (no
+  policies; only service_role, which bypasses RLS, holds table privileges).
+  **NOT applied hosted.**
+- Algorithm: an advisory transaction lock keyed on
+  `business_unit + request_id` serializes concurrent submits of the same
+  request first. A previously-admitted `request_id` is allowed again as a
+  duplicate WITHOUT consuming quota (the persistence RPC's own idempotency
+  then returns the existing order). A genuinely new `request_id` acquires
+  advisory locks in a fixed order (IP scope, then phone scope — every caller
+  uses the same order, so no lock-order deadlock is possible), counts recent
+  admitted events in sliding windows, and is admitted (inserting exactly one
+  event) only if none of its scopes are exhausted.
+- Thresholds (centralized in the one migration file, not scattered):
+  IP — 12 new requestIds / 10 min, 40 / 1 hour. Phone (normalized) — 5 new
+  requestIds / 1 hour, 12 / 24 hours. No global cross-customer cap by design
+  (a small global cap is itself a denial-of-service lever an attacker could
+  use to lock out every legitimate customer). Business units (`parfums`,
+  `import`) never share quota.
+- Retention: opportunistic bounded sweep
+  (`delete ... where created_at < now() - 48h limit 500`) runs inside the RPC
+  itself on every call — no pg_cron in this gate, per instruction.
+- Network identity: `apps/web/src/lib/security/order-abuse.ts`.
+  `readTrustedRequestIp()` trusts `x-vercel-forwarded-for` only when
+  `process.env.VERCEL` indicates a Vercel deployment (Vercel itself sets that
+  header; it cannot be spoofed by the client there), validated with
+  `net.isIP`. Outside Vercel, with no configured trusted proxy, IP signal is
+  `null` and phone-based limiting still applies — checkout is never blocked
+  for lack of a trusted IP.
+- Privacy: raw IP and raw phone never reach the database or a log line.
+  `ORDER_ABUSE_HMAC_SECRET` (new server-only env var, read lazily via
+  `src/lib/supabase/env.ts::readOrderAbuseHmacSecret`, no
+  `NEXT_PUBLIC_` variant, never reused from `SUPABASE_SECRET_KEY` or any
+  Cloudinary credential) keys an HMAC-SHA256 digest of
+  `cruzial:order-abuse:v1:{ip|phone}:{value}` — domain-separated so the same
+  raw value hashes differently as an IP vs. as a phone. Phone canonicalization
+  (9-digit Peru numbers ↔ their `51`-prefixed form) is for the anti-abuse key
+  only; it never rewrites the order's stored phone. These identifiers are
+  **pseudonymized**, not anonymized — no claim beyond that is made in code or
+  docs.
+- Failure policy: a missing secret or an unexpected RPC error both **fail
+  closed** (`{ kind: "unavailable" }`) — the order is never created, cart is
+  preserved, and the customer sees a generic unavailability message. A denied
+  (rate-limited) request also never reaches the persistence RPC. Neither path
+  logs raw IP, raw phone, or the HMAC secret.
+- App integration: `apps/web/src/app/parfums/checkout/actions.ts` and
+  `apps/web/src/app/import/checkout/actions.ts` both call
+  `checkOrderRequestRateLimit(...)` after validation and before their
+  repository's `.create(...)`, using the same admin Supabase client the
+  action already created. Neither `ParfumsOrderRepository` (protected 4K2-B0
+  WIP) nor `ImportOrderRepository` was modified.
+  `CreateParfumsOrderResult`/`CreateImportOrderResult` gained an optional
+  `code: "rate_limited"` + `retryAfterSeconds` on the existing error variant,
+  without revealing which scope (IP/phone) or exact threshold was hit.
+- Tests: `src/lib/security/order-abuse.test.ts` (trusted-vs-spoofed IP
+  header, invalid IP rejected, Peru phone canonicalization, HMAC
+  determinism + IP/phone domain separation, missing-secret fail-closed, raw
+  values never sent to the RPC), `actions.test.ts` in both checkout folders
+  (denied/unavailable never calls the repository, allowed duplicate retry
+  still calls it, correct business unit passed). New pgTAP file
+  `supabase/tests/31_order_request_rate_limiting.sql` (22 tests): privilege
+  matrix (service_role only; anon has no schema access to the table at all),
+  contract column shape, new-vs-duplicate requestId, both IP windows, both
+  phone windows, IP/phone/business-unit isolation, a denied request creates
+  no event row, and the retention sweep does not remove a row still inside
+  an active window.
+- Pre-existing, unrelated pgTAP drift found while validating (NOT
+  introduced by this gate, NOT fixed here — out of scope): `29_parfums_order_v2_authority.sql`
+  references a `products.price_verified_at` column that no longer exists,
+  and `14_commercial_existing_row_reconciliation.sql` depends on a
+  `c3b1_test_support` fixture schema that isn't created by a bare `db reset`.
+  Both predate this gate's baseline (last touched by 9fdf4c7 and 5ce0ee7
+  respectively).
+- Explicitly not done this gate, by instruction: Redis/Upstash/KV, Turnstile/
+  CAPTCHA, Vercel WAF/adaptive-challenge configuration, a global
+  cross-customer cap, `pgrst.db_pre_request`, and converting either Server
+  Action to a Route Handler.
+
 ## Current evidence gaps
 
 None outstanding for 4J5F. See Deferred defects above for the categoryId
