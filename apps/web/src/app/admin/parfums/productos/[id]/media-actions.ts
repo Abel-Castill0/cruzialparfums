@@ -7,7 +7,14 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { AdminParfumsMediaRepository } from "@/domains/admin-parfums/media-repository";
 import { isValidUuid } from "@/domains/admin-parfums/product-schema";
 import type { AdminRepositoryError } from "@/domains/admin-parfums/products-repository";
-import { createUploadAuthorization, destroyAsset, isUploadResultValid, type UploadAuthorization } from "@/lib/media/cloudinary";
+import {
+  createUploadAuthorization,
+  destroyAsset,
+  isUploadResultValid,
+  resolveAuthorizedUpload,
+  type UploadAuthorization,
+} from "@/lib/media/cloudinary";
+import { readCloudinaryEnv } from "@/lib/media/cloudinary-env";
 import type { Database } from "@/lib/supabase/database.types";
 
 /**
@@ -116,13 +123,22 @@ export type CloudinaryUploadResult = {
   format: string;
 };
 
-/** Step 2: persist the already-succeeded Cloudinary upload. */
+/**
+ * Step 2: persist the already-succeeded Cloudinary upload.
+ *
+ * `authorizationToken` is the opaque token `getUploadAuthorizationAction`
+ * handed the browser in step 1. It is the *only* source of truth for which
+ * public_id this server actually authorized — `uploadResult` is untrusted
+ * client-reported data and is never used to decide what gets destroyed on
+ * Cloudinary. See src/lib/media/cloudinary.ts for the full trust boundary.
+ */
 export async function registerMediaAction(
   productId: string,
   variantId: string | null,
   uploadResult: CloudinaryUploadResult,
   alt: string | null,
   setPrimary: boolean,
+  authorizationToken: string,
 ): Promise<ActionState<MediaRow>> {
   if (!isValidUuid(productId)) return { status: "error", message: "Identificador de producto inválido." };
   if (variantId !== null && !isValidUuid(variantId)) {
@@ -132,20 +148,36 @@ export async function registerMediaAction(
   const authCheck = await requireUnitAdmin("parfums");
   if (!authCheck.ok) return { status: "error", message: authErrorMessage(authCheck.reason) };
 
+  const expectedPublicId = resolveAuthorizedUpload(authorizationToken, productId, "parfums");
+  if (!expectedPublicId) {
+    // No valid, unexpired authorization for this exact product — we have no
+    // provenance for whatever the caller claims, so there is nothing safe to
+    // clean up. Never destroy a client-reported public_id here.
+    return {
+      status: "error",
+      message: "La autorización de subida expiró o no es válida. Intenta subir la imagen de nuevo.",
+    };
+  }
+
+  const cloudName = readCloudinaryEnv()?.cloudName;
   if (
+    !cloudName ||
     !isUploadResultValid({
       publicId: uploadResult.publicId,
+      secureUrl: uploadResult.secureUrl,
       format: uploadResult.format,
       bytes: uploadResult.bytes,
-      productId,
+      expectedPublicId,
+      cloudName,
     })
   ) {
     // The Cloudinary response doesn't match what we authorized (wrong
-    // folder/format/size) — this is untrusted client-reported data, so it
-    // is never persisted. The asset already exists on Cloudinary at this
-    // point; since we know it is genuinely invalid, clean it up rather than
-    // leaving a rejected upload behind.
-    await destroyAsset(uploadResult.publicId);
+    // public_id/url/format/size) — this is untrusted client-reported data,
+    // so it is never persisted. The one asset we know we authorized
+    // (expectedPublicId, never uploadResult.publicId) may exist as a genuine
+    // orphan at this point, so it is safe to clean that specific asset up —
+    // a no-op "not found" if nothing ever landed there.
+    await destroyAsset(expectedPublicId);
     return {
       status: "error",
       message: "El archivo subido no es válido. Usa una imagen JPG, PNG o WebP de hasta 10 MB.",

@@ -1035,6 +1035,86 @@ provisional_market writes.
   LegacyCatalogRepository. SupabasePublicCatalogRepository only in tests.
 - Production/DNS: untouched.
 
+### 4K-GATE2A — Security boundaries hardening — CLOSED locally / NOT applied hosted
+
+- Cloudinary destructive-action boundary fixed: the destroy-on-invalid-upload
+  path in src/lib/media/cloudinary.ts and both admin media-actions.ts files no
+  longer trusts a browser-reported `publicId`. `createUploadAuthorization`
+  now mints the `public_id` itself (server-generated, signed into the upload
+  params) and returns a tamper-evident HMAC `authorizationToken` binding that
+  exact public_id to the product/unit with a 15-minute expiry.
+  `registerMediaAction` recovers the authorized public_id via
+  `resolveAuthorizedUpload(authorizationToken, ...)` and only ever calls
+  `destroyAsset()` on that server-known value — never on
+  `uploadResult.publicId`. An admin can no longer trigger deletion of an
+  arbitrary existing Cloudinary asset by reporting its public_id alongside an
+  otherwise-invalid upload result.
+- Cloudinary secure_url provenance added: `isUploadResultValid` now requires
+  exact public_id match (not prefix) plus a strict secure_url check (https,
+  `res.cloudinary.com` host, expected cloud name, `image/upload` resource
+  type, path exactly `<public_id>.<format>` with an optional `v<digits>/`
+  version segment). Client upload widget switched from folder-scoped to
+  public_id-scoped signed uploads (`public_id` form field replaces `folder`).
+  24 Vitest cases in src/lib/media/cloudinary.test.ts cover token
+  tampering/expiry/cross-product/cross-unit replay and secure_url rejection
+  (external host, wrong cloud, wrong folder, http, bad format).
+- anon EXECUTE hardening: 35 public.admin_* RPCs anon could execute purely by
+  Postgres's CREATE FUNCTION default (never explicitly revoked) now have
+  `EXECUTE` revoked from anon in a new append-only migration. The four
+  intentionally-public Import storefront RPCs
+  (public_get_import_current_campaign, public_get_import_product,
+  public_list_import_catalog, public_list_import_categories) and the
+  app.*_is_public/app.*_unit RLS helpers keep anon EXECUTE. Verified against
+  live pg_proc on cruzial-v2-staging (2026-09-19) that every remaining
+  admin_* function already enforces app.assert_admin_for(...) (mutations) or
+  app.can_read_unit(...) (reads) internally — this migration removes
+  reachability, it does not add a missing authorization check.
+- authenticated authorization contract reviewed: all 54 public.admin_*
+  functions have either an admin guard or a read guard (verified via
+  pg_proc.prosrc introspection); no P0/P1 authorization gap found. No
+  functions changed under this objective.
+- search_path hardening: the five Advisor-flagged trigger functions
+  (app.set_updated_at, app.reject_audit_log_mutation,
+  app.freeze_order_line_snapshot, app.freeze_order_snapshot,
+  app.reject_order_history_delete) now have `search_path = pg_catalog,
+  pg_temp` via the same migration. All five reference only trigger-magic
+  variables and pg_catalog builtins, so this changes no behavior.
+- anon table-DML defense-in-depth: anon INSERT/UPDATE/DELETE revoked on 16
+  admin-only catalog/settings tables (products, product_variants,
+  product_media, categories, product_categories, combos, combo_items,
+  campaigns, campaign_products, business_units, settings, shipping_methods,
+  deposit_policies, variant_price_tiers, wholesale_policies,
+  admin_parfums_wholesale_catalog) after confirming via `rg` across
+  apps/web/src that no code path ever performs a direct anon `.insert()` /
+  `.update()` / `.delete()` / `.upsert()` against them — all writes go
+  through admin_* RPCs or, for orders, create_parfums_order_request(_v2) /
+  import order RPCs. RLS is unchanged and remains the primary boundary; this
+  is additive, matching the existing sensitive-table REVOKE precedent in
+  20260907154358_rls_policies.sql. Public SELECT and all four public_* RPCs
+  verified still working.
+- New migration 20260919010000_security_boundary_hardening.sql: append-only,
+  contains only REVOKE/ALTER statements, no DDL on existing tables/functions'
+  bodies. Dry-run validated against cruzial-v2-staging inside a
+  BEGIN/ROLLBACK transaction with an 18-assertion pgTAP suite (all 18 passed)
+  — then rolled back; hosted state is unchanged (verified: anon still has
+  the pre-hardening grants). **NOT applied hosted.** Requires review before
+  ever being run against iyxidhglyqkzoziyewlc.
+- New pgTAP file supabase/tests/30_security_boundary_hardening.sql (18
+  tests): anon cannot execute a representative sample of admin_* RPCs, anon
+  can still execute the four public_* RPCs, all five search_path fixes
+  present, authenticated-without-membership denied, cross-unit admin denied,
+  authorized admin still works, anon has no INSERT on products/categories,
+  anon SELECT on products still works.
+- **PRODUCTION SECURITY BLOCKER / HOSTED AUTH CONFIG** (not fixed by code,
+  not touched this Gate): Supabase Security Advisor reports "Leaked Password
+  Protection Disabled" on cruzial-v2-staging. This is a hosted Auth
+  dashboard/Management-API setting, out of scope for a code migration and out
+  of scope for Gate 2A by explicit instruction. It must be enabled before any
+  production Auth cutover — required requirement for the Auth/Production
+  gate, not resolved here.
+- Cloudinary Admin API secret rotation, rate limiting, and CSP/security
+  headers are explicitly out of scope for this gate (later gates).
+
 ## Current evidence gaps
 
 None outstanding for 4J5F. See Deferred defects above for the categoryId

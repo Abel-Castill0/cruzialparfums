@@ -1,4 +1,4 @@
-import { createHash } from "node:crypto";
+import { createHash, createHmac, randomUUID, timingSafeEqual } from "node:crypto";
 import { readCloudinaryEnv } from "./cloudinary-env";
 
 /** Same guard style as cloudinary-env.ts/src/lib/supabase/env.ts (a runtime
@@ -23,12 +23,19 @@ function assertServerOnly(fnName: string) {
  *
  * The API secret never leaves this module — every function here returns
  * only what the browser is allowed to see (cloud name, api key, timestamp,
- * signature, the already-decided folder) or performs the server-to-
+ * signature, the already-decided public_id) or performs the server-to-
  * Cloudinary call itself (destroy).
+ *
+ * Trust boundary (security-critical): the browser reports back whatever the
+ * Cloudinary upload response said (`publicId`, `secureUrl`, `format`,
+ * `bytes`) and that report is never assumed truthful. The server never lets
+ * a client-supplied public_id decide what gets destroyed — see
+ * `resolveAuthorizedUpload` / `destroyAsset` callers.
  */
 
 const ALLOWED_FORMATS = ["jpg", "jpeg", "png", "webp"] as const;
 const MAX_UPLOAD_BYTES = 10 * 1024 * 1024; // 10 MB — generous for a product photo, not unbounded.
+const AUTHORIZATION_TTL_SECONDS = 15 * 60; // upload widget round-trip window
 
 export { ALLOWED_FORMATS, MAX_UPLOAD_BYTES };
 
@@ -36,10 +43,6 @@ type UnitCode = "parfums" | "import";
 
 function unitFolder(unitCode: UnitCode, productId: string): string {
   return `cruzial/${unitCode}/products/${productId}`;
-}
-
-function unitPrefix(unitCode: UnitCode, productId: string): string {
-  return `${unitFolder(unitCode, productId)}/`;
 }
 
 function signParams(params: Record<string, string | number>, apiSecret: string): string {
@@ -50,23 +53,84 @@ function signParams(params: Record<string, string | number>, apiSecret: string):
   return createHash("sha1").update(`${toSign}${apiSecret}`).digest("hex");
 }
 
+type UploadTokenPayload = {
+  publicId: string;
+  productId: string;
+  unitCode: UnitCode;
+  expiresAt: number; // epoch seconds
+};
+
+/**
+ * Self-contained, tamper-evident authorization token: `base64url(json).hmac`.
+ * Encodes exactly which public_id/product/unit this authorization is for, so
+ * `resolveAuthorizedUpload` can recover the *server-minted* public_id later
+ * without any shared state between the two Server Action calls — and without
+ * ever trusting whatever public_id the browser claims in step 2.
+ */
+function signAuthorizationToken(payload: UploadTokenPayload, apiSecret: string): string {
+  const encoded = Buffer.from(JSON.stringify(payload), "utf8").toString("base64url");
+  const mac = createHmac("sha256", apiSecret).update(encoded).digest("base64url");
+  return `${encoded}.${mac}`;
+}
+
+function verifyAuthorizationToken(token: string, apiSecret: string): UploadTokenPayload | null {
+  const parts = token.split(".");
+  if (parts.length !== 2) return null;
+  const [encoded, mac] = parts;
+  if (!encoded || !mac) return null;
+
+  const expectedMac = createHmac("sha256", apiSecret).update(encoded).digest("base64url");
+  const macBuffer = Buffer.from(mac);
+  const expectedBuffer = Buffer.from(expectedMac);
+  if (macBuffer.length !== expectedBuffer.length || !timingSafeEqual(macBuffer, expectedBuffer)) return null;
+
+  let payload: unknown;
+  try {
+    payload = JSON.parse(Buffer.from(encoded, "base64url").toString("utf8"));
+  } catch {
+    return null;
+  }
+
+  if (
+    typeof payload !== "object" ||
+    payload === null ||
+    typeof (payload as UploadTokenPayload).publicId !== "string" ||
+    typeof (payload as UploadTokenPayload).productId !== "string" ||
+    typeof (payload as UploadTokenPayload).unitCode !== "string" ||
+    typeof (payload as UploadTokenPayload).expiresAt !== "number"
+  ) {
+    return null;
+  }
+
+  const typed = payload as UploadTokenPayload;
+  if (typed.expiresAt < Math.floor(Date.now() / 1000)) return null;
+  return typed;
+}
+
 export type UploadAuthorization = {
   cloudName: string;
   apiKey: string;
   timestamp: number;
   signature: string;
-  folder: string;
+  publicId: string;
   allowedFormats: string;
   maxBytes: number;
+  /** Opaque; pass unchanged to the matching register action. */
+  authorizationToken: string;
 };
 
 /**
- * Builds a short-lived signed upload authorization scoped to one product's
- * isolated folder (`cruzial/parfums/products/<product-id>/`). `folder` and
+ * Builds a short-lived signed upload authorization for one specific,
+ * server-minted `public_id` scoped to the product's isolated folder
+ * (`cruzial/parfums/products/<product-id>/<random>`). `public_id` and
  * `allowed_formats` are both part of the signed param set, so a browser that
- * tries to upload to a different folder or a disallowed format invalidates
- * the signature — Cloudinary itself rejects the request, this is not a
- * client-side-only restriction.
+ * tries to upload under a different public_id or a disallowed format
+ * invalidates the signature — Cloudinary itself rejects the request, this is
+ * not a client-side-only restriction.
+ *
+ * The returned `authorizationToken` binds this exact public_id to this
+ * product/unit with an expiry; `resolveAuthorizedUpload` verifies it later so
+ * the register step never has to trust a client-reported public_id.
  */
 export function createUploadAuthorization(productId: string, unitCode: UnitCode = "parfums"): UploadAuthorization | null {
   assertServerOnly("createUploadAuthorization");
@@ -74,20 +138,47 @@ export function createUploadAuthorization(productId: string, unitCode: UnitCode 
   if (!env) return null;
 
   const timestamp = Math.floor(Date.now() / 1000);
-  const folder = unitFolder(unitCode, productId);
+  const publicId = `${unitFolder(unitCode, productId)}/${randomUUID()}`;
   const allowedFormats = ALLOWED_FORMATS.join(",");
 
-  const signature = signParams({ allowed_formats: allowedFormats, folder, timestamp }, env.apiSecret);
+  const signature = signParams({ allowed_formats: allowedFormats, public_id: publicId, timestamp }, env.apiSecret);
+  const authorizationToken = signAuthorizationToken(
+    { publicId, productId, unitCode, expiresAt: timestamp + AUTHORIZATION_TTL_SECONDS },
+    env.apiSecret,
+  );
 
   return {
     cloudName: env.cloudName,
     apiKey: env.apiKey,
     timestamp,
     signature,
-    folder,
+    publicId,
     allowedFormats,
     maxBytes: MAX_UPLOAD_BYTES,
+    authorizationToken,
   };
+}
+
+/**
+ * Recovers the public_id this server actually authorized for `productId`/
+ * `unitCode`, by verifying `authorizationToken`'s signature and expiry. A
+ * forged or expired token, or one minted for a different product/unit,
+ * returns null. This is the only source of truth for "what public_id did we
+ * mean" — callers must never substitute a client-reported public_id here.
+ */
+export function resolveAuthorizedUpload(
+  authorizationToken: string,
+  productId: string,
+  unitCode: UnitCode = "parfums",
+): string | null {
+  assertServerOnly("resolveAuthorizedUpload");
+  const env = readCloudinaryEnv();
+  if (!env) return null;
+
+  const payload = verifyAuthorizationToken(authorizationToken, env.apiSecret);
+  if (!payload) return null;
+  if (payload.productId !== productId || payload.unitCode !== unitCode) return null;
+  return payload.publicId;
 }
 
 /**
@@ -96,6 +187,11 @@ export function createUploadAuthorization(productId: string, unitCode: UnitCode 
  * persist. Never throws — a cleanup failure must not mask the original
  * error, so callers get a boolean and decide how to report it (never as a
  * silent success either way).
+ *
+ * SECURITY: callers must only ever pass a `publicId` this server itself
+ * minted and can prove via `resolveAuthorizedUpload` (or a value already
+ * known-owned from a DB row this admin controls) — never a bare
+ * client-reported string. See the module-level trust boundary note.
  */
 export async function destroyAsset(publicId: string): Promise<{ ok: boolean }> {
   assertServerOnly("destroyAsset");
@@ -124,17 +220,51 @@ export async function destroyAsset(publicId: string): Promise<{ ok: boolean }> {
   }
 }
 
-/** Validates a Cloudinary upload *response* — never trust it beyond this. */
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/**
+ * Validates that a Cloudinary-reported `secure_url` actually points at the
+ * exact asset this server authorized — not merely "looks like an https URL".
+ * Checks protocol, host, cloud name, resource type, and that the path is
+ * exactly `<public_id>.<format>` (an optional Cloudinary `v<digits>/` version
+ * segment is tolerated; no transformation segments are, since this app never
+ * requests transformed delivery URLs on upload).
+ */
+function isSecureUrlValid(secureUrl: string, cloudName: string, expectedPublicId: string, format: string): boolean {
+  let url: URL;
+  try {
+    url = new URL(secureUrl);
+  } catch {
+    return false;
+  }
+  if (url.protocol !== "https:") return false;
+  if (url.host !== "res.cloudinary.com") return false;
+
+  const pattern = new RegExp(
+    `^/${escapeRegExp(cloudName)}/image/upload/(?:v\\d+/)?${escapeRegExp(expectedPublicId)}\\.${escapeRegExp(format.toLowerCase())}$`,
+  );
+  return pattern.test(url.pathname);
+}
+
+/**
+ * Validates a Cloudinary upload *response* against the exact public_id this
+ * server authorized (`expectedPublicId`, from `resolveAuthorizedUpload`) —
+ * never against the client-reported public_id alone. Never trust this
+ * response beyond what's checked here.
+ */
 export function isUploadResultValid(input: {
   publicId: string;
+  secureUrl: string;
   format: string;
   bytes: number;
-  productId: string;
-  unitCode?: UnitCode;
+  expectedPublicId: string;
+  cloudName: string;
 }): boolean {
-  const expectedPrefix = unitPrefix(input.unitCode ?? "parfums", input.productId);
-  if (!input.publicId.startsWith(expectedPrefix)) return false;
+  if (input.publicId !== input.expectedPublicId) return false;
   if (!(ALLOWED_FORMATS as readonly string[]).includes(input.format.toLowerCase())) return false;
   if (!Number.isFinite(input.bytes) || input.bytes <= 0 || input.bytes > MAX_UPLOAD_BYTES) return false;
+  if (!isSecureUrlValid(input.secureUrl, input.cloudName, input.expectedPublicId, input.format)) return false;
   return true;
 }

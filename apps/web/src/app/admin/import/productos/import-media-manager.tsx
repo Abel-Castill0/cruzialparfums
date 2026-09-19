@@ -26,14 +26,14 @@ function formatBytes(bytes: number | null): string {
 
 async function uploadToCloudinary(
   file: File,
-  auth: { cloudName: string; apiKey: string; timestamp: number; signature: string; folder: string; allowedFormats: string },
+  auth: { cloudName: string; apiKey: string; timestamp: number; signature: string; publicId: string; allowedFormats: string },
 ): Promise<CloudinaryUploadResult> {
   const form = new FormData();
   form.append("file", file);
   form.append("api_key", auth.apiKey);
   form.append("timestamp", String(auth.timestamp));
   form.append("signature", auth.signature);
-  form.append("folder", auth.folder);
+  form.append("public_id", auth.publicId);
   form.append("allowed_formats", auth.allowedFormats);
 
   const response = await fetch(`https://api.cloudinary.com/v1_1/${auth.cloudName}/image/upload`, {
@@ -115,6 +115,7 @@ export function ImportMediaManager({
           uploaded,
           null,
           active.length === 0,
+          authResult.data.authorizationToken,
         );
         if (registerResult.status === "error") {
           setError(registerResult.message);

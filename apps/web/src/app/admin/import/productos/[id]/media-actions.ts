@@ -7,7 +7,14 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { AdminParfumsMediaRepository } from "@/domains/admin-parfums/media-repository";
 import { isValidUuid } from "@/domains/admin-parfums/product-schema";
 import type { AdminRepositoryError } from "@/domains/admin-parfums/products-repository";
-import { createUploadAuthorization, destroyAsset, isUploadResultValid, type UploadAuthorization } from "@/lib/media/cloudinary";
+import {
+  createUploadAuthorization,
+  destroyAsset,
+  isUploadResultValid,
+  resolveAuthorizedUpload,
+  type UploadAuthorization,
+} from "@/lib/media/cloudinary";
+import { readCloudinaryEnv } from "@/lib/media/cloudinary-env";
 import type { Database } from "@/lib/supabase/database.types";
 
 type MediaRow = Database["public"]["Tables"]["product_media"]["Row"];
@@ -97,12 +104,20 @@ export type CloudinaryUploadResult = {
   format: string;
 };
 
+/**
+ * `authorizationToken` is the opaque token `getUploadAuthorizationAction`
+ * handed the browser in step 1 — the only source of truth for which
+ * public_id this server authorized. `uploadResult` is untrusted
+ * client-reported data and is never used to decide what gets destroyed on
+ * Cloudinary. See src/lib/media/cloudinary.ts for the full trust boundary.
+ */
 export async function registerMediaAction(
   productId: string,
   variantId: string | null,
   uploadResult: CloudinaryUploadResult,
   alt: string | null,
   setPrimary: boolean,
+  authorizationToken: string,
 ): Promise<ActionState<MediaRow>> {
   if (!isValidUuid(productId)) return { status: "error", message: "Identificador de producto inválido." };
   if (variantId !== null && !isValidUuid(variantId)) {
@@ -112,16 +127,29 @@ export async function registerMediaAction(
   const authCheck = await requireUnitAdmin("import");
   if (!authCheck.ok) return { status: "error", message: authErrorMessage(authCheck.reason) };
 
+  const expectedPublicId = resolveAuthorizedUpload(authorizationToken, productId, "import");
+  if (!expectedPublicId) {
+    return {
+      status: "error",
+      message: "La autorización de subida expiró o no es válida. Intenta subir la imagen de nuevo.",
+    };
+  }
+
+  const cloudName = readCloudinaryEnv()?.cloudName;
   if (
+    !cloudName ||
     !isUploadResultValid({
       publicId: uploadResult.publicId,
+      secureUrl: uploadResult.secureUrl,
       format: uploadResult.format,
       bytes: uploadResult.bytes,
-      productId,
-      unitCode: "import",
+      expectedPublicId,
+      cloudName,
     })
   ) {
-    await destroyAsset(uploadResult.publicId);
+    // Never destroy uploadResult.publicId (client-reported); only ever the
+    // one public_id this server itself authorized.
+    await destroyAsset(expectedPublicId);
     return {
       status: "error",
       message: "El archivo subido no es válido. Usa una imagen JPG, PNG o WebP de hasta 10 MB.",
