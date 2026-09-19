@@ -258,7 +258,7 @@ select is(
 -- An authenticated admin may only attribute an audit row to itself.
 set local role authenticated;
 set local request.jwt.claims to
-  '{"sub":"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
+  '{"aal":"aal2","sub":"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
 
 select throws_ok(
   $$insert into public.audit_log

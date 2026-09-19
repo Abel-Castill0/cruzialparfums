@@ -42,7 +42,7 @@ values
 
 -- Transition fixtures to desired states via RPC (Import admin context)
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"a1000000-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"a1000000-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
 
 -- order002: pending → confirmed
 select public.admin_import_update_order_status('a1000000-0000-4000-8000-000000000002', 'pending_whatsapp_confirmation', 'confirmed');
@@ -75,7 +75,7 @@ values
 -- EXISTENCE ORACLE: unauthorized caller + EXISTING Import order
 -- =========================================================================
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"dead0000-dddd-4ddd-8ddd-deaddeaddead","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"dead0000-dddd-4ddd-8ddd-deaddeaddead","role":"authenticated"}';
 
 -- No membership at all — must fail authorization BEFORE revealing row existence
 select throws_ok(
@@ -132,7 +132,7 @@ select throws_ok(
 -- =========================================================================
 -- 1. Viewer cannot mutate order
 -- =========================================================================
-set local request.jwt.claims to '{"sub":"b1000000-bbbb-4bbb-8bbb-bbbbbbbbbbbb","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"b1000000-bbbb-4bbb-8bbb-bbbbbbbbbbbb","role":"authenticated"}';
 
 select throws_ok(
   $$select public.admin_import_update_order_status('a1000000-0000-4000-8000-000000000001', 'pending_whatsapp_confirmation', 'confirmed')$$,
@@ -152,7 +152,7 @@ select throws_ok(
 -- =========================================================================
 -- 3. Import admin can update order status (pending → confirmed)
 -- =========================================================================
-set local request.jwt.claims to '{"sub":"a1000000-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"a1000000-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
 
 select lives_ok(
   $$select public.admin_import_update_order_status('a1000000-0000-4000-8000-000000000001', 'pending_whatsapp_confirmation', 'confirmed')$$,
@@ -271,7 +271,7 @@ select is(
 -- =========================================================================
 -- 13. Parfums admin cannot mutate Import orders
 -- =========================================================================
-set local request.jwt.claims to '{"sub":"c1000000-cccc-4ccc-8ccc-cccccccccccc","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"c1000000-cccc-4ccc-8ccc-cccccccccccc","role":"authenticated"}';
 
 select throws_ok(
   $$select public.admin_import_update_order_status('a1000000-0000-4000-8000-000000000002', 'confirmed', 'fulfilled')$$,
@@ -282,7 +282,7 @@ select throws_ok(
 -- =========================================================================
 -- 14. Customer verification status sets server actor
 -- =========================================================================
-set local request.jwt.claims to '{"sub":"a1000000-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"a1000000-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
 
 select lives_ok(
   $$select public.admin_import_verify_customer_status('da100000-0000-4000-8000-000000000001', 'returning')$$,
@@ -381,7 +381,7 @@ reset role;
 insert into public.customers (id, business_unit_id, full_name, phone, verified_customer_status, verified_by, verified_at)
 values ('dc300000-0000-4000-8000-000000000001', '22222222-2222-4222-8222-222222222222', 'Archive Test', '51999000111', 'new', null, now());
 set local role authenticated;
-set local request.jwt.claims = '{"sub":"a1000000-aaaa-4aaa-8aaa-aaaaaaaaaaaa","app_metadata":{"business_unit_id":"22222222-2222-4222-8222-222222222222","role":"admin"}}';
+set local request.jwt.claims = '{"aal":"aal2","sub":"a1000000-aaaa-4aaa-8aaa-aaaaaaaaaaaa","app_metadata":{"business_unit_id":"22222222-2222-4222-8222-222222222222","role":"admin"}}';
 
 select lives_ok(
   $$select public.admin_import_archive_customer('dc300000-0000-4000-8000-000000000001')$$,
@@ -616,7 +616,7 @@ select is(
 -- CONCURRENCY GATE: I. All auth/viewer/cross-BU tests still green
 -- =========================================================================
 -- Re-run the existence oracle and auth tests to confirm nothing regressed
-set local request.jwt.claims to '{"sub":"dead0000-dddd-4ddd-8ddd-deaddeaddead","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"dead0000-dddd-4ddd-8ddd-deaddeaddead","role":"authenticated"}';
 
 select throws_ok(
   $$select public.admin_import_create_customer('Should Fail', '51999000333')$$,
@@ -634,7 +634,7 @@ select throws_ok(
 );
 
 -- Viewer still cannot mutate
-set local request.jwt.claims to '{"sub":"b1000000-bbbb-4bbb-8bbb-bbbbbbbbbbbb","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"b1000000-bbbb-4bbb-8bbb-bbbbbbbbbbbb","role":"authenticated"}';
 
 select throws_ok(
   $$select public.admin_import_create_customer('Viewer Fail', '51999000444')$$,

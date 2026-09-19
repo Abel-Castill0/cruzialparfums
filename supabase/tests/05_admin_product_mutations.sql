@@ -52,7 +52,7 @@ reset role;
 -- ---------------------------------------------------------------------------
 
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
 
 select lives_ok(
   $$select public.admin_create_product(
@@ -342,7 +342,7 @@ select is(
 );
 
 -- A viewer can see the variant but can never confirm its price.
-set local request.jwt.claims to '{"sub":"cccccccc-cccc-4ccc-8ccc-cccccccccccc","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"cccccccc-cccc-4ccc-8ccc-cccccccccccc","role":"authenticated"}';
 
 select throws_ok(
   $$select public.admin_update_variant(
@@ -358,7 +358,7 @@ select throws_ok(
   'a Parfums viewer cannot confirm a client price'
 );
 
-set local request.jwt.claims to '{"sub":"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
 
 -- ---------------------------------------------------------------------------
 -- Categories
@@ -451,7 +451,7 @@ select is(
 -- Cross-unit and role rejection
 -- ---------------------------------------------------------------------------
 
-set local request.jwt.claims to '{"sub":"bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb","role":"authenticated"}';
 
 select throws_ok(
   $$select public.admin_create_product('parfums', 'import-admin-cannot', 'Nope')$$,
@@ -471,7 +471,7 @@ select throws_ok(
   'an Import admin cannot update a Parfums product it cannot even see'
 );
 
-set local request.jwt.claims to '{"sub":"cccccccc-cccc-4ccc-8ccc-cccccccccccc","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"cccccccc-cccc-4ccc-8ccc-cccccccccccc","role":"authenticated"}';
 
 select throws_ok(
   $$select public.admin_update_product(

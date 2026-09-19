@@ -145,7 +145,7 @@ insert into public.admin_memberships (user_id, business_unit_id, role)
 select '4b1b0000-0000-4000-8000-000000000012', id, 'admin'
 from public.business_units where code = 'parfums';
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"4b1b0000-0000-4000-8000-000000000012","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"4b1b0000-0000-4000-8000-000000000012","role":"authenticated"}';
 select is((select count(*)::integer from public.products where legacy_id = 'phase-4h1b1-product'), 1, 'Parfums Admin can list imported draft product');
 reset role;
 

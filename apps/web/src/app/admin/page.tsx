@@ -27,17 +27,22 @@ export default async function AdminGatewayPage() {
   const result = await getAdminSession();
 
   if (result.status === "signed_out") redirect("/admin/login");
+  if (result.status === "mfa_challenge_required") redirect("/admin/mfa/challenge");
+  if (result.status === "mfa_enrollment_required") redirect("/admin/mfa/enroll");
 
   return (
     <div className={styles.page}>
       <header className={styles.header}>
         <strong>Cruzial Admin</strong>
         {result.status === "ok" || result.status === "no_membership" ? (
-          <form action={signOutAdmin}>
-            <button type="submit" className={styles.signOut}>
-              Cerrar sesión
-            </button>
-          </form>
+          <div className={styles.headerActions}>
+            {result.status === "ok" ? <Link href="/admin/security">Seguridad</Link> : null}
+            <form action={signOutAdmin}>
+              <button type="submit" className={styles.signOut}>
+                Cerrar sesión
+              </button>
+            </form>
+          </div>
         ) : (
           <Link href="/">Volver al sitio público</Link>
         )}

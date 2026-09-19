@@ -29,7 +29,7 @@ insert into public.campaigns (id, business_unit_id, number, name, status) values
 -- ---------------------------------------------------------------------------
 
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"23230000-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"23230000-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
 select throws_ok(
   $$select public.admin_set_campaign_products(
       '23233000-0000-4000-8000-000000000001', '2000-01-01T00:00:00Z'::timestamptz,
@@ -51,7 +51,7 @@ select is(
 -- ---------------------------------------------------------------------------
 
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"23230000-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"23230000-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
 select throws_ok(
   $$select public.admin_update_campaign(
       '23233000-0000-4000-8000-000000000001', '2000-01-01T00:00:00Z'::timestamptz,
@@ -73,7 +73,7 @@ select is(
 -- ---------------------------------------------------------------------------
 
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"23230000-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"23230000-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
 select throws_ok(
   $$select public.admin_set_campaign_status(
       '23233000-0000-4000-8000-000000000001', '2000-01-01T00:00:00Z'::timestamptz, 'open')$$,
@@ -94,7 +94,7 @@ select is(
 -- ---------------------------------------------------------------------------
 
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"23230000-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"23230000-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
 select throws_ok(
   $$select public.admin_archive_campaign(
       '23233000-0000-4000-8000-000000000001', '2000-01-01T00:00:00Z'::timestamptz)$$,
@@ -115,7 +115,7 @@ select is(
 -- ---------------------------------------------------------------------------
 
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"23230000-bbbb-4bbb-8bbb-bbbbbbbbbbbb","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"23230000-bbbb-4bbb-8bbb-bbbbbbbbbbbb","role":"authenticated"}';
 select throws_ok(
   $$select public.admin_set_campaign_products('23233000-0000-4000-8000-000000000001',(select updated_at from public.campaigns where id='23233000-0000-4000-8000-000000000001'),'[]'::jsonb)$$,
   '42501', null, 'viewer cannot call admin_set_campaign_products'
@@ -137,7 +137,7 @@ reset role;
 -- A correctly-versioned call from the real admin still succeeds normally
 -- (proves P2011 is specific to the stale branch, not a blanket regression).
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"23230000-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"23230000-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
 select lives_ok(
   $$select public.admin_update_campaign('23233000-0000-4000-8000-000000000001',(select updated_at from public.campaigns where id='23233000-0000-4000-8000-000000000001'),'CC Source Campaign Renamed',null,null,null)$$,
   'a correctly-versioned admin_update_campaign call still succeeds'

@@ -37,7 +37,7 @@ insert into public.campaigns (id, business_unit_id, number, name, status) values
 -- ---------------------------------------------------------------------------
 
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"88890000-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"88890000-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
 select throws_ok(
   $$select public.admin_set_campaign_products(
       '88893000-0000-4000-8000-000000000001',
@@ -64,7 +64,7 @@ reset role;
 -- ---------------------------------------------------------------------------
 
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"88890000-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"88890000-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
 select throws_ok(
   $$select public.admin_set_campaign_products(
       '88893000-0000-4000-8000-000000000001',
@@ -116,7 +116,7 @@ select is(
 -- contract). Existing product_b keeps quantity_limit = 7; existing
 -- product_a (which had no quantity_limit) stays null.
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"88890000-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"88890000-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
 select lives_ok(
   $$select public.admin_set_campaign_products(
       '88893000-0000-4000-8000-000000000001',
@@ -153,7 +153,7 @@ set opens_at = now(), closes_at = now() + interval '7 days', public_message = 'S
 where id = '88893000-0000-4000-8000-000000000001';
 
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"88890000-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"88890000-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
 select lives_ok(
   $$select public.admin_duplicate_campaign('88893000-0000-4000-8000-000000000001', 911, 'CPC Duplicate')$$,
   'Import admin duplicates their own campaign'
@@ -211,7 +211,7 @@ select ok(
 
 -- Input validation: bad number / blank name never create a partial campaign.
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"88890000-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"88890000-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
 select throws_ok(
   $$select public.admin_duplicate_campaign('88893000-0000-4000-8000-000000000001', 0, 'Bad Number')$$,
   'P2010', null, 'new_number must be greater than 0'
@@ -239,7 +239,7 @@ select is(
 
 -- Authorization / unit scope
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"88890000-cccc-4ccc-8ccc-cccccccccccc","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"88890000-cccc-4ccc-8ccc-cccccccccccc","role":"authenticated"}';
 select throws_ok(
   $$select public.admin_duplicate_campaign('88893000-0000-4000-8000-000000000001', 920, 'Parfums admin attempt')$$,
   '42501', null, 'a Parfums admin cannot duplicate an Import campaign'
@@ -247,7 +247,7 @@ select throws_ok(
 reset role;
 
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"88890000-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"88890000-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
 select throws_ok(
   $$select public.admin_duplicate_campaign('88893000-0000-4000-8000-000000000002', 921, 'Wrong unit source')$$,
   'P0002', null, 'an Import admin cannot duplicate a Parfums-owned campaign — wrong-unit source looks not-found'
@@ -255,7 +255,7 @@ select throws_ok(
 reset role;
 
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"88890000-bbbb-4bbb-8bbb-bbbbbbbbbbbb","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"88890000-bbbb-4bbb-8bbb-bbbbbbbbbbbb","role":"authenticated"}';
 select throws_ok(
   $$select public.admin_duplicate_campaign('88893000-0000-4000-8000-000000000001', 922, 'Viewer attempt')$$,
   '42501', null, 'Import viewer cannot duplicate a campaign'

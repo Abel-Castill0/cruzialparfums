@@ -40,7 +40,7 @@ insert into public.campaign_products (
   ('88904000-0000-4000-8000-000000000006', '88903000-0000-4000-8000-000000000001', '88901000-0000-4000-8000-000000000002', null, 50.00, 'available', 5);
 
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"88900000-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"88900000-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
 select is(
   (select array_agg(price_amount order by sort_order) from public.admin_get_import_campaign_products('88903000-0000-4000-8000-000000000001') where sort_order < 5),
   array['0.01','16.00','16.50','129.90','9999999999.99']::text[],
@@ -53,7 +53,7 @@ select is(
 reset role;
 
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"88900000-bbbb-4bbb-8bbb-bbbbbbbbbbbb","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"88900000-bbbb-4bbb-8bbb-bbbbbbbbbbbb","role":"authenticated"}';
 select is(
   (select count(*)::integer from public.admin_get_import_campaign_products('88903000-0000-4000-8000-000000000001')),
   6, 'Import viewer can use the read-only exact-decimal RPC'
@@ -61,7 +61,7 @@ select is(
 reset role;
 
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"88900000-cccc-4ccc-8ccc-cccccccccccc","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"88900000-cccc-4ccc-8ccc-cccccccccccc","role":"authenticated"}';
 select is(
   (select count(*)::integer from public.admin_get_import_campaign_products('88903000-0000-4000-8000-000000000001')),
   0, 'Parfums-only admin cannot read Import offers through the RPC'

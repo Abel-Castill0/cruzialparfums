@@ -49,6 +49,12 @@ export default async function AdminLoginPage() {
         )}
 
         <AdminLoginForm configured={loginEnabled} />
+
+        {loginEnabled ? (
+          <p className={styles.note}>
+            <Link href="/admin/forgot-password">¿Olvidaste tu contraseña?</Link>
+          </p>
+        ) : null}
       </main>
     </div>
   );

@@ -132,7 +132,7 @@ select throws_ok(
 -- And the RLS layer independently gives an admin no UPDATE policy at all, so
 -- the statement matches nothing and the entry survives untouched.
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
 
 update public.audit_log set action = 'create'
 where id = '11111111-0000-4000-8000-0000000000f1';

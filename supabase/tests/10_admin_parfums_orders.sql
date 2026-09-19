@@ -40,7 +40,7 @@ insert into public.order_lines (order_id, product_name_snapshot, variant_label_s
 -- Parfums admin: reads both Parfums orders, never the Import one.
 -- ---------------------------------------------------------------------------
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"44444444-dddd-4ddd-8ddd-dddddddddddd","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"44444444-dddd-4ddd-8ddd-dddddddddddd","role":"authenticated"}';
 
 select is(
   (select count(*)::integer from public.orders where business_unit_id = '11111111-1111-4111-8111-111111111111'),
@@ -74,7 +74,7 @@ select is(
 -- ---------------------------------------------------------------------------
 -- Parfums viewer: read allowed, same visibility as admin.
 -- ---------------------------------------------------------------------------
-set local request.jwt.claims to '{"sub":"55555555-eeee-4eee-8eee-eeeeeeeeeeee","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"55555555-eeee-4eee-8eee-eeeeeeeeeeee","role":"authenticated"}';
 select is(
   (select count(*)::integer from public.orders where business_unit_id = '11111111-1111-4111-8111-111111111111'),
   2, 'Parfums viewer can read Parfums orders'
@@ -87,7 +87,7 @@ select is(
 -- ---------------------------------------------------------------------------
 -- Import-only admin/viewer: denied for Parfums orders (cross-unit denial).
 -- ---------------------------------------------------------------------------
-set local request.jwt.claims to '{"sub":"66666666-ffff-4fff-8fff-ffffffffffff","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"66666666-ffff-4fff-8fff-ffffffffffff","role":"authenticated"}';
 select is(
   (select count(*)::integer from public.orders where business_unit_id = '11111111-1111-4111-8111-111111111111'),
   0, 'Import-only admin sees zero Parfums orders'

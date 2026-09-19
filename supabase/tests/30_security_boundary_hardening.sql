@@ -170,7 +170,7 @@ select ok(
 --    (1 test)
 -- =========================================================================
 set local role authenticated;
-set local request.jwt.claims = '{"sub":"fe000000-ffff-4fff-8fff-fffffffffff2","app_metadata":{}}';
+set local request.jwt.claims = '{"aal":"aal2","sub":"fe000000-ffff-4fff-8fff-fffffffffff2","app_metadata":{}}';
 
 select throws_ok(
   $$SELECT public.admin_list_audit_log('parfums', 1, 10, null, null)$$,
@@ -184,7 +184,7 @@ reset role;
 -- E. cross-unit: Parfums admin cannot read Import's audit log (1 test)
 -- =========================================================================
 set local role authenticated;
-set local request.jwt.claims = '{"sub":"fe000000-ffff-4fff-8fff-fffffffffff1","app_metadata":{"role":"admin"}}';
+set local request.jwt.claims = '{"aal":"aal2","sub":"fe000000-ffff-4fff-8fff-fffffffffff1","app_metadata":{"role":"admin"}}';
 
 select throws_ok(
   $$SELECT public.admin_list_audit_log('import', 1, 10, null, null)$$,
@@ -198,7 +198,7 @@ reset role;
 -- F. authorized Import admin can still read Import's audit log (1 test)
 -- =========================================================================
 set local role authenticated;
-set local request.jwt.claims = '{"sub":"fe000000-ffff-4fff-8fff-ffffffffffff","app_metadata":{"role":"admin"}}';
+set local request.jwt.claims = '{"aal":"aal2","sub":"fe000000-ffff-4fff-8fff-ffffffffffff","app_metadata":{"role":"admin"}}';
 
 select lives_ok(
   $$SELECT public.admin_list_audit_log('import', 1, 10, null, null)$$,

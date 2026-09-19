@@ -64,7 +64,7 @@ select ok(
 );
 
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"89000000-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"89000000-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
 select lives_ok(
   $$select public.admin_set_campaign_products(
     '89003000-0000-4000-8000-000000000001',
@@ -82,7 +82,7 @@ reset role;
 select is((select count(*)::integer from public.campaign_products where campaign_id = '89003000-0000-4000-8000-000000000001'), 4, 'same product with four distinct presentations coexists');
 
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"89000000-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"89000000-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
 select throws_ok(
   $$select public.admin_set_campaign_products(
     '89003000-0000-4000-8000-000000000001',
@@ -143,7 +143,7 @@ reset role;
 update public.campaign_products set quantity_limit = 5 where import_presentation_id = '89002000-0000-4000-8000-000000000001';
 update public.campaign_products set quantity_limit = 9 where import_presentation_id = '89002000-0000-4000-8000-000000000002';
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"89000000-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"89000000-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
 select lives_ok(
   $$select public.admin_set_campaign_products(
     '89003000-0000-4000-8000-000000000001',
@@ -159,7 +159,7 @@ select is((select quantity_limit from public.campaign_products where import_pres
 select is((select quantity_limit from public.campaign_products where import_presentation_id = '89002000-0000-4000-8000-000000000002'), 9, 'presentation B keeps its own quantity_limit');
 
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"89000000-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"89000000-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
 select is((select price_amount from public.admin_get_import_campaign_products('89003000-0000-4000-8000-000000000001') where import_presentation_id = '89002000-0000-4000-8000-000000000001'), '129.90', 'admin read RPC preserves exact decimal text');
 select is((select presentation_label from public.admin_get_import_campaign_products('89003000-0000-4000-8000-000000000001') where import_presentation_id = '89002000-0000-4000-8000-000000000001'), '50 ml', 'admin read RPC returns presentation information');
 select throws_ok($$update public.import_presentations set label = label where id = '89002000-0000-4000-8000-000000000001'$$, '42501', null, 'direct authenticated presentation writes remain denied');
@@ -167,12 +167,12 @@ select throws_ok($$update public.campaign_products set price_amount = price_amou
 reset role;
 
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"89000000-bbbb-4bbb-8bbb-bbbbbbbbbbbb","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"89000000-bbbb-4bbb-8bbb-bbbbbbbbbbbb","role":"authenticated"}';
 select throws_ok($$select public.admin_set_campaign_products('89003000-0000-4000-8000-000000000001', now(), '[]'::jsonb)$$, '42501', null, 'Import viewer cannot mutate offers');
 reset role;
 
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"89000000-cccc-4ccc-8ccc-cccccccccccc","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"89000000-cccc-4ccc-8ccc-cccccccccccc","role":"authenticated"}';
 select throws_ok($$select public.admin_set_campaign_products('89003000-0000-4000-8000-000000000001', now(), '[]'::jsonb)$$, '42501', null, 'Parfums admin cannot mutate Import offers');
 reset role;
 
@@ -181,7 +181,7 @@ insert into public.import_presentations
   (id, product_id, stable_key, label, presentation_class, capacity_ml, publication_status) values
   ('89002000-0000-4000-8000-000000000010', '89001000-0000-4000-8000-000000000001', 'archived-status-only', 'Archived Status Only', 'single_fixed', 30, 'archived');
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"89000000-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"89000000-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
 select throws_ok(
   $$select public.admin_set_campaign_products(
     '89003000-0000-4000-8000-000000000001',
@@ -193,7 +193,7 @@ reset role;
 
 -- RPC hard cap: non-array rejected
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"89000000-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"89000000-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
 select throws_ok(
   $$select public.admin_set_campaign_products(
     '89003000-0000-4000-8000-000000000001',
@@ -205,7 +205,7 @@ reset role;
 
 -- RPC hard cap: oversized payload rejected
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"89000000-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"89000000-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
 select throws_ok(
   $$select public.admin_set_campaign_products(
     '89003000-0000-4000-8000-000000000001',

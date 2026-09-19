@@ -32,7 +32,7 @@ from public.business_units where code = 'parfums';
 
 -- Switch to Import admin
 set local role authenticated;
-set local request.jwt.claims = '{"sub":"ff000000-ffff-4fff-8fff-ffffffffffff","app_metadata":{"business_unit_id":"22222222-2222-4222-8222-222222222222","role":"admin"}}';
+set local request.jwt.claims = '{"aal":"aal2","sub":"ff000000-ffff-4fff-8fff-ffffffffffff","app_metadata":{"business_unit_id":"22222222-2222-4222-8222-222222222222","role":"admin"}}';
 
 -- =========================================================================
 -- A. CUSTOMERS — direct writes denied (3 tests)
@@ -149,7 +149,7 @@ select lives_ok(
 -- =========================================================================
 reset role;
 set local role authenticated;
-set local request.jwt.claims = '{"sub":"ff000000-ffff-4fff-8fff-fffffffffff1","app_metadata":{"business_unit_id":"11111111-1111-4111-8111-111111111111","role":"admin"}}';
+set local request.jwt.claims = '{"aal":"aal2","sub":"ff000000-ffff-4fff-8fff-fffffffffff1","app_metadata":{"business_unit_id":"11111111-1111-4111-8111-111111111111","role":"admin"}}';
 
 select is(
   (SELECT count(*)::integer FROM public.customers

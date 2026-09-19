@@ -62,7 +62,7 @@ select is((select discount_amount from public.wholesale_policies where commercia
 select is((select discount_amount from public.wholesale_policies where commercial_type = 'niche'), 10.00::numeric, 'Niche discount is S/10');
 
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"11111111-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"11111111-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
 
 select is(
   (select final_unit_price from public.calculate_parfums_wholesale_quote('[{"variant_id":"c1000000-0000-4000-8000-000000000001","quantity":39}]') where product_variant_id = 'c1000000-0000-4000-8000-000000000001'),
@@ -158,7 +158,7 @@ select throws_ok(
   'P2011', null, 'a stale policy update is rejected without silent overwrite (4J5E: was 40001)'
 );
 
-set local request.jwt.claims to '{"sub":"33333333-cccc-4ccc-8ccc-cccccccccccc","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"33333333-cccc-4ccc-8ccc-cccccccccccc","role":"authenticated"}';
 select throws_ok(
   $$select public.admin_update_wholesale_policy(
       (select id from public.wholesale_policies where commercial_type = 'arabic'),
@@ -166,7 +166,7 @@ select throws_ok(
   '42501', null, 'Parfums viewer cannot mutate Wholesale policies'
 );
 
-set local request.jwt.claims to '{"sub":"22222222-bbbb-4bbb-8bbb-bbbbbbbbbbbb","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"22222222-bbbb-4bbb-8bbb-bbbbbbbbbbbb","role":"authenticated"}';
 select throws_ok(
   $$select public.admin_update_wholesale_policy(
       (select id from public.wholesale_policies where commercial_type = 'arabic'),

@@ -66,7 +66,7 @@ reset role;
 -- ---------------------------------------------------------------------------
 
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"11110000-0000-4000-8000-000000000001","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"11110000-0000-4000-8000-000000000001","role":"authenticated"}';
 
 select lives_ok(
   $$select public.admin_register_media(
@@ -292,7 +292,7 @@ select throws_ok(
 -- Cross-unit and role rejection
 -- ---------------------------------------------------------------------------
 
-set local request.jwt.claims to '{"sub":"11110000-0000-4000-8000-000000000002","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"11110000-0000-4000-8000-000000000002","role":"authenticated"}';
 
 select throws_ok(
   $$select public.admin_register_media('a2000000-0000-4000-8000-00000000000a', 'https://res.cloudinary.test/bad2.jpg')$$,
@@ -301,7 +301,7 @@ select throws_ok(
   'an Import admin cannot register media on a Parfums product'
 );
 
-set local request.jwt.claims to '{"sub":"11110000-0000-4000-8000-000000000003","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"11110000-0000-4000-8000-000000000003","role":"authenticated"}';
 
 select throws_ok(
   $$select public.admin_register_media('a2000000-0000-4000-8000-00000000000a', 'https://res.cloudinary.test/bad3.jpg')$$,

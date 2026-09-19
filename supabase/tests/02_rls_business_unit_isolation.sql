@@ -45,7 +45,7 @@ insert into public.customers (id, business_unit_id, full_name) values
 -- ---------------------------------------------------------------------------
 
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
 
 select is(
   (select count(*)::int from public.products where slug = 'draft-parfum'),
@@ -134,7 +134,7 @@ select throws_ok(
 -- Import admin — the mirror image
 -- ---------------------------------------------------------------------------
 
-set local request.jwt.claims to '{"sub":"bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb","role":"authenticated"}';
 
 select is(
   (select count(*)::int from public.products where slug = 'draft-import'),
@@ -169,7 +169,7 @@ select throws_ok(
 -- Admin of both units
 -- ---------------------------------------------------------------------------
 
-set local request.jwt.claims to '{"sub":"cccccccc-cccc-4ccc-8ccc-cccccccccccc","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"cccccccc-cccc-4ccc-8ccc-cccccccccccc","role":"authenticated"}';
 
 select is(
   (select count(*)::int from public.products where slug in ('draft-parfum', 'draft-import')),
@@ -186,7 +186,7 @@ select lives_ok(
 -- Authenticated user with no membership — same surface as anonymous
 -- ---------------------------------------------------------------------------
 
-set local request.jwt.claims to '{"sub":"dddddddd-dddd-4ddd-8ddd-dddddddddddd","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"dddddddd-dddd-4ddd-8ddd-dddddddddddd","role":"authenticated"}';
 
 select is(
   (select count(*)::int from public.products where slug in ('draft-parfum', 'draft-import')),

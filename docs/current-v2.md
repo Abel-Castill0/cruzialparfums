@@ -1223,6 +1223,223 @@ provisional_market writes.
   cross-customer cap, `pgrst.db_pre_request`, and converting either Server
   Action to a Route Handler.
 
+### 4K-GATE2C1 — Admin MFA hardening: TOTP + recovery + AAL2 enforcement — CLOSED locally / NOT applied hosted
+
+Code/local contract only. Does **not** enable hosted TOTP, hosted password
+hardening, hosted Leaked Password Protection, or apply the new migration
+hosted. Does not touch Gate 2A or Gate 2B hosted state.
+
+- Decision: every admin/viewer surface — role `admin` or `viewer` — must
+  reach `aal2` (TOTP) before it can read or mutate business/admin data.
+  Enforced **twice**, independently:
+  - **Next.js**: `getAdminSession()` (`src/lib/auth/admin-session.ts`) now
+    calls `supabase.auth.mfa.getAuthenticatorAssuranceLevel()` after
+    resolving membership. `status: "ok"` is only ever returned at `aal2`.
+    New statuses `mfa_enrollment_required` (`nextLevel === "aal1"`, no
+    factor yet) and `mfa_challenge_required` (`nextLevel === "aal2"`,
+    verified factor exists) sit between `no_membership` and `ok`. Any
+    Auth/backend error is `unavailable` — fail closed, never `ok`.
+  - **PostgreSQL**: migration `20260919205854_admin_mfa_aal2_enforcement.sql`
+    adds `and coalesce((select auth.jwt())->>'aal','aal1') = 'aal2'` to both
+    `app.is_admin_for(target_unit)` and `app.can_read_unit(target_unit)`. A
+    targeted audit (`rg 'auth\.uid\(\)'` across every migration) found these
+    two functions are the only membership-check path every admin-readable/
+    admin-writable RLS policy and every `admin_*` RPC uses (`app.assert_admin_for`
+    is a thin wrapper over `is_admin_for`); the AAL claim comes from
+    Supabase's own JWT (`auth.jwt()->>'aal'`), never a custom table/column,
+    so there is nothing for application code to desync from. The one
+    intentional exception: `admin_memberships_read_own` still reads
+    `auth.uid()` directly and stays reachable at `aal1`, so a freshly
+    authenticated admin can discover their own membership and reach
+    enrollment/challenge before `aal2` exists — it grants no business data.
+    A stolen/replayed `aal1` token therefore cannot reach protected data by
+    calling PostgREST directly, bypassing the Next.js session model
+    entirely.
+- New helper `getAdminPreMfaSession()` alongside `getAdminSession()`:
+  requires `getUser()` + an active own membership, but explicitly not
+  `aal2`. Powers exactly three pages — `/admin/mfa/enroll`,
+  `/admin/mfa/challenge`, `/admin/reset-password` — and grants no
+  business-data access on its own. `getAdminSession()` itself was not
+  weakened to make these pages work.
+- Login flow (`src/app/admin/login/actions.ts`): `signInWithPassword`
+  success no longer redirects straight to `/admin`. It resolves
+  `getAdminSession()` and routes to `/admin` (`ok`), `/admin/mfa/challenge`,
+  or `/admin/mfa/enroll`. `no_membership` signs the new session back out
+  (`scope: "local"`) and returns the same generic "Credenciales inválidas."
+  used for a wrong password — no email-existence or membership-existence
+  oracle.
+- MFA enrollment (`/admin/mfa/enroll`): `startTotpEnrollment()`
+  (`enroll/enrollment.ts`) calls `mfa.enroll({ factorType: "totp" })` —
+  called directly from the Server Component render, not a Server Action,
+  because the QR/secret are only ever returned once, at creation. V1
+  corrective: it no longer unenrolls stale unverified factors first — an
+  abandoned unverified factor is inert (never satisfies AAL2, never listed
+  by the challenge UI) and application code never calls `mfa.unenroll()`.
+  The client form (`enroll-form.tsx`) renders the returned SVG QR via a
+  plain `<img src>` (no `dangerouslySetInnerHTML`) plus the secret as a
+  fallback, and posts a 6-digit code. `verifyEnrollment` (`enroll/actions.ts`)
+  re-validates the browser-supplied `factorId` against this user's own
+  *unverified* TOTP factors before calling `challengeAndVerify`, then
+  re-checks `getAdminSession()` is `ok` before redirecting to `/admin`.
+  Already `aal2`, or already has a verified factor pending challenge? The
+  page redirects instead of re-enrolling.
+- MFA challenge (`/admin/mfa/challenge`): lists only this user's *verified*
+  TOTP factors; a form lets the user pick when there is more than one.
+  `verifyChallenge` re-validates the submitted `factorId` against the
+  user's own verified factors — an arbitrary client-supplied id is rejected
+  before `challengeAndVerify` is ever called.
+- MFA management (`/admin/security`, requires `getAdminSession()` `ok` —
+  which already implies `aal2`): lists verified TOTP factors (read-only)
+  and can add a second factor (`beginAddFactor` → QR/secret,
+  `verifyAddFactor` → `challengeAndVerify`, both re-validating factor
+  ownership the same way). Supabase does not offer recovery codes, so a
+  second verified TOTP factor on a separate device is this app's backup
+  path.
+  **V1 corrective (master task): NO self-service factor removal exists
+  anywhere** — no delete buttons, no factor-removal Server Action, no
+  `auth.mfa.unenroll()` call in application code, no removal locks, no
+  self-service-deletion tests. A regression contract test scans all of
+  `src/` and fails if any of those reappear. Factor recovery/removal is
+  strictly operator-only via Supabase (dashboard / Management API) — see
+  the operator recovery runbook below. This also eliminates, by
+  construction, the read-then-write "last factor" race that an
+  application-level lock could only partially close, and the possibility
+  of an account downgrading itself out of aal2 via the UI.
+- Password recovery: `/admin/forgot-password` (public) always returns the
+  same sentence ("Si existe una cuenta autorizada asociada a ese correo…"),
+  regardless of whether the account exists, Supabase is configured, or the
+  call errors — preserving `resetPasswordForEmail()`'s own
+  non-enumeration property across this app's error paths too. The redirect
+  is built from a new server-only `SITE_URL` env var
+  (`src/lib/supabase/env.ts::readSiteUrl`, no `NEXT_PUBLIC_` form) run
+  through the existing `resolveCanonicalUrl` guard — never from a request's
+  `Host`/`Origin` header, closing the host-header-poisoning path into a
+  password-reset link. The request is issued on the **cookie-bound**
+  client, not the stateless public one: this starts a PKCE exchange whose
+  `code_verifier` `/auth/callback` must present later. The stateless client
+  defaults to the *implicit* flow, which returns tokens in the URL fragment
+  — never sent to a server — so the callback would see no `code` and
+  recovery would dead-end at `/admin/login?error=missing_code`.
+- Recovery proof (`src/lib/auth/recovery-session.ts`): `/admin/reset-password`
+  and its Server Action both require evidence that the session came from a
+  recovery link — **not** merely that someone is signed in. "Signed in" is
+  exactly what an ordinary password login produces, so gating on
+  `getUser()` alone would let anyone holding a stolen password change the
+  account password without ever passing MFA. The discriminator is the `amr`
+  claim, read via `getClaims()` (signature-verified; never an unverified
+  decode, query param, hidden field, or pathname). Verified locally against
+  this project's Auth on the PKCE flow the app uses: normal login →
+  `amr: [{method:"password"}]`; recovery link → `amr: [{method:"recovery"}]`.
+  `getUser()` is still called alongside it, because a signature-valid token
+  can belong to an already-revoked session, and the two must agree on the
+  subject. Both `AMREntry[]` and the RFC-8176 `string[]` shapes are handled.
+  Every other outcome fails closed. The Server Action re-derives this
+  independently of the page, because a POST can reach it without the page
+  ever rendering.
+- Reset completion: enforces a 12+ character password server-side, then
+  calls `signOut({ scope: "global" })` before redirecting to
+  `/admin/login`. Verified locally: the local auth cookies are cleared and
+  another open session's refresh token is rejected afterwards
+  (`refresh_token_not_found`). Access tokens already issued stay valid
+  until they expire — Supabase does not revoke those synchronously, and
+  this is stated rather than glossed over. Not gated on active membership,
+  deliberately: a valid recovery link already implies a provisioned
+  account, and a password change grants no access on its own — reaching
+  `/admin` still requires signing in again and clearing MFA to aal2.
+- Local Auth config target (`supabase/config.toml`, code/local only):
+  `[auth.mfa.totp] enroll_enabled = true`, `verify_enabled = true`
+  (`[auth.mfa.phone]` stays `false` — TOTP only, no SMS/WhatsApp/passkeys
+  this gate). `[auth.email] password_requirements =
+  "lower_upper_letters_digits_symbols"` — the strongest value the CLI
+  supports. Verified locally that this binds only when a password is *set*
+  (signup / `updateUser`), not at sign-in: an account whose existing
+  password does not satisfy it still logs in, and the rule only applies
+  when that password is rotated. There is therefore no reason to ship the
+  weaker option on an admin-only surface. `[auth.email]
+  secure_password_change = true` — compatible with the one password-change
+  path this app has (recovery, which always runs on a session the recovery
+  link just created). `enable_signup = false` at both `[auth]` and
+  `[auth.email]` unchanged; `minimum_password_length = 12` unchanged.
+- Operator recovery (runbook, total MFA loss — also the ONLY factor-removal
+  path in V1, since the app UI offers none):
+  1. Verify the admin's identity out-of-band (known contact channel).
+  2. In the Supabase dashboard (or Management API) for the project, delete
+     the lost/stuck TOTP factor(s) for that user
+     (Authentication → Users → user → Factors).
+  3. The user signs in with their password (aal1) and is routed to
+     `/admin/mfa/enroll` automatically (`mfa_enrollment_required`), enrolls
+     and verifies a fresh primary TOTP, then adds a backup factor at
+     `/admin/security`.
+  Membership itself is still never grantable from the browser
+  (`admin_memberships` has no INSERT/UPDATE/DELETE policy — unchanged);
+  provisioning stays `supabase/provisioning/grant-admin-membership.sql`,
+  run out-of-band. There is no secret bypass flag, no in-app factor
+  deletion, and no home-grown recovery-code feature anywhere in the code.
+- Tests: pgTAP `supabase/tests/32_admin_mfa_aal2_enforcement.sql` (14
+  tests) — aal1 admin can read own membership but `is_admin_for`/
+  `can_read_unit` are both false and a representative protected read
+  (draft category) and admin mutation (`admin_update_public_contact_setting`)
+  are both denied; aal2 viewer can read but not mutate; aal2 admin retains
+  full capability; aal2 Parfums admin is still denied against Import (no
+  membership there — aal2 never substitutes for membership); anon
+  storefront read unaffected. Every pre-existing pgTAP fixture that sets
+  `request.jwt.claims` for an authenticated admin/viewer session
+  (~119 occurrences across ~23 files) had `"aal":"aal2"` added — required
+  by this same migration, or every prior "authorized admin/viewer" success
+  assertion in the whole suite would start failing, since none of them
+  predate AAL existing at all. Denial-path fixtures (no membership, wrong
+  unit) are unaffected by the addition, since the failure reason is
+  unrelated to `aal` — and the addition actually strengthens them, since
+  they now prove denial *even at* aal2. Executed against the local stack:
+  `supabase test db` → 33 files / 885 tests, test 32 green, with only the
+  two documented pre-existing failures
+  (`14_commercial_existing_row_reconciliation.sql`,
+  `29_parfums_order_v2_authority.sql`) still red. Neither file is touched
+  by this gate; both were last modified before the Gate 2C1 baseline.
+- Live schema audit (against the local database, not just the migration
+  text): all 54 `public.admin_*` functions route through
+  `assert_admin_for`/`is_admin_for`/`can_read_unit` — none check membership
+  directly. Exactly one RLS policy reads identity without those helpers,
+  `admin_memberships_read_own`, which is the intended aal1 exception.
+  `app.current_unit_ids` and `app.has_any_membership` carry no aal check
+  but have zero live consumers (no policy, no function), so they grant
+  nothing. Fail-closed confirmed for an absent, `null`, and unrecognized
+  `aal` claim: `is_admin_for` returns `false`, never `null`.
+- Application tests: contract-style additions alongside the existing
+  `admin-auth-contract.test.ts` pattern covering the login-flow redirect
+  matrix, `getAdminSession`/`getAdminPreMfaSession` status resolution,
+  factor-ownership validation (`findOwnFactor`), the last-factor-cannot-be-
+  removed rule, and the non-enumerating forgot-password response, plus
+  `recovery-session.test.ts` (amr shapes, subject mismatch, fail-closed)
+  and `reset-password/actions.test.ts`, whose central case is the negative
+  one: a normal aal1 admin session is denied and `updateUser` is never
+  called. No real credentials or TOTP secrets in any test.
+- Explicitly not done this gate, by instruction: enabling anything hosted
+  (TOTP, password hardening, Leaked Password Protection, CAPTCHA, session
+  timeout, custom SMTP, security notification emails), CAPTCHA on login/
+  reset, recovery codes, passkeys/WebAuthn, SMS/WhatsApp MFA, OAuth,
+  rotating the current admin's password, and applying Gate 2A or Gate 2B
+  hosted.
+- Hosted state (unchanged by this gate):
+  `HOSTED MFA ENABLED: NO`
+  `HOSTED LEAKED PASSWORD PROTECTION ENABLED: NO`
+  `GATE 2A MIGRATION HOSTED: NO`
+  `GATE 2B MIGRATION HOSTED: NO`
+  `GATE 2C1 AAL2 MIGRATION HOSTED: NO`
+  `CUSTOM SMTP: UNKNOWN / REQUIRES VERIFICATION`
+  `VERIFIED MFA FACTORS ON CURRENT STAGING BEFORE ACTIVATION: 0`
+- Gate 2C2 rollout order (documented, not executed): verify staging Auth
+  URL allow-list + recovery redirect → verify production-capable SMTP →
+  deploy this reviewed code → enable hosted TOTP enroll+verify → current
+  admin logs in at aal1 → enrolls + verifies primary TOTP → enrolls +
+  verifies a backup TOTP → verify aal2 normal admin use → verify password
+  recovery end-to-end → rotate the current password to a strong unique one
+  if needed → enable hosted password requirements/secure password change →
+  enable Leaked Password Protection (plan permitting) → enable relevant
+  security notification emails → **only then** apply this migration hosted
+  → verify aal1 direct RPC denial → verify aal2 admin works → verify backup
+  factor recovery. Never reorder this into a lockout-prone sequence.
+
 ## Current evidence gaps
 
 None outstanding for 4J5F. See Deferred defects above for the categoryId

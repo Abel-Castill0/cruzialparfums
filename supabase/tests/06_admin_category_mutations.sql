@@ -54,7 +54,7 @@ select throws_ok(
 
 reset role;
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"dddddddd-dddd-4ddd-8ddd-dddddddddddd","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"dddddddd-dddd-4ddd-8ddd-dddddddddddd","role":"authenticated"}';
 
 select lives_ok(
   $$select public.admin_create_category(
@@ -408,7 +408,7 @@ select is(
 -- Role and cross-unit rejection
 -- ---------------------------------------------------------------------------
 
-set local request.jwt.claims to '{"sub":"ffffffff-ffff-4fff-8fff-ffffffffffff","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"ffffffff-ffff-4fff-8fff-ffffffffffff","role":"authenticated"}';
 
 select throws_ok(
   $$select public.admin_update_category(
@@ -422,7 +422,7 @@ select throws_ok(
   'a Parfums viewer cannot mutate categories'
 );
 
-set local request.jwt.claims to '{"sub":"eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee","role":"authenticated"}';
 
 select throws_ok(
   $$select public.admin_create_category(

@@ -32,6 +32,8 @@ export default async function AdminParfumsAuditLogPage({
   if (result.status === "unavailable") redirect("/admin");
   if (result.status === "signed_out") redirect("/admin/login");
   if (result.status === "no_membership") redirect("/admin");
+  if (result.status === "mfa_challenge_required") redirect("/admin/mfa/challenge");
+  if (result.status === "mfa_enrollment_required") redirect("/admin/mfa/enroll");
 
   const membership = result.session.memberships.find(
     (candidate) => candidate.businessUnitCode === "parfums",

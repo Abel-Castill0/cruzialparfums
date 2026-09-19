@@ -21,7 +21,7 @@ insert into public.admin_memberships (user_id, business_unit_id, role) values
 -- ---------------------------------------------------------------------------
 
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"44444444-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"44444444-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
 select lives_ok(
   $$select public.admin_create_campaign(6006, 'Sexto Consolidado', null, null, 'Mensaje público')$$,
   'Import admin creates a draft campaign'
@@ -43,7 +43,7 @@ select is(
 
 -- Duplicate number inside Import rejected
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"44444444-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"44444444-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
 select throws_ok(
   $$select public.admin_create_campaign(6006, 'Otro Sexto', null, null, null)$$,
   '23505', null, 'duplicate campaign number inside Import is rejected'
@@ -57,7 +57,7 @@ reset role;
 
 -- Viewer cannot create
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"55555555-bbbb-4bbb-8bbb-bbbbbbbbbbbb","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"55555555-bbbb-4bbb-8bbb-bbbbbbbbbbbb","role":"authenticated"}';
 select throws_ok(
   $$select public.admin_create_campaign(8, 'Octavo', null, null, null)$$,
   '42501', null, 'Import viewer cannot create a campaign'
@@ -66,7 +66,7 @@ reset role;
 
 -- Parfums-only admin cannot create/mutate Import campaigns
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"66666666-cccc-4ccc-8ccc-cccccccccccc","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"66666666-cccc-4ccc-8ccc-cccccccccccc","role":"authenticated"}';
 select throws_ok(
   $$select public.admin_create_campaign(9, 'Noveno', null, null, null)$$,
   '42501', null, 'a Parfums-only admin cannot create an Import campaign'
@@ -78,7 +78,7 @@ reset role;
 -- ---------------------------------------------------------------------------
 
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"44444444-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"44444444-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
 select throws_ok(
   $$update public.campaigns set name = name where number = 6006 and business_unit_id = '22222222-2222-4222-8222-222222222222'$$,
   '42501', null, 'an Import admin cannot write campaigns directly through the table (audited RPC is the only path)'
@@ -103,7 +103,7 @@ reset role;
 -- ---------------------------------------------------------------------------
 
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"44444444-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"44444444-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
 select lives_ok(
   $$select public.admin_update_campaign(
       (select id from public.campaigns where number = 6006 and business_unit_id = '22222222-2222-4222-8222-222222222222'),
@@ -124,7 +124,7 @@ reset role;
 -- ---------------------------------------------------------------------------
 
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"44444444-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"44444444-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
 select lives_ok(
   $$select public.admin_set_campaign_status(
       (select id from public.campaigns where number = 6006 and business_unit_id = '22222222-2222-4222-8222-222222222222'),
@@ -143,7 +143,7 @@ select is(
 );
 
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"55555555-bbbb-4bbb-8bbb-bbbbbbbbbbbb","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"55555555-bbbb-4bbb-8bbb-bbbbbbbbbbbb","role":"authenticated"}';
 select throws_ok(
   $$select public.admin_set_campaign_status(
       (select id from public.campaigns where number = 6006 and business_unit_id = '22222222-2222-4222-8222-222222222222'),
@@ -158,7 +158,7 @@ reset role;
 -- ---------------------------------------------------------------------------
 
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"44444444-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"44444444-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
 select public.admin_create_campaign(10, 'Draft Test', null, null, null);
 
 select public.admin_create_campaign(11, 'Scheduled Test', null, null, null);
@@ -246,7 +246,7 @@ select is(
 );
 
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"44444444-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"44444444-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
 select throws_ok(
   $$select public.admin_update_campaign(
       (select id from public.campaigns where number = 15 and business_unit_id = '22222222-2222-4222-8222-222222222222'),
@@ -261,7 +261,7 @@ reset role;
 -- ---------------------------------------------------------------------------
 
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"44444444-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"44444444-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
 select public.admin_create_campaign(16, 'Actor Check', null, null, null);
 reset role;
 select is(
@@ -302,7 +302,7 @@ values (
 );
 
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"66666666-cccc-4ccc-8ccc-cccccccccccc","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"66666666-cccc-4ccc-8ccc-cccccccccccc","role":"authenticated"}';
 select throws_ok(
   $$select public.admin_update_campaign(
       '77777777-0000-4000-8000-000000000001',
@@ -329,7 +329,7 @@ reset role;
 -- administer Import — the row genuinely belongs to Parfums, not Import, so
 -- "resolve Import, require the row match it" correctly excludes it too.
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"44444444-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"44444444-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
 select throws_ok(
   $$select public.admin_update_campaign(
       '77777777-0000-4000-8000-000000000001',
@@ -356,7 +356,7 @@ select is(
 -- the denials above — proving the fix scopes correctly rather than breaking
 -- legitimate same-unit access.
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"44444444-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"44444444-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
 select lives_ok(
   $$select public.admin_update_campaign(
       (select id from public.campaigns where number = 6006 and business_unit_id = '22222222-2222-4222-8222-222222222222'),

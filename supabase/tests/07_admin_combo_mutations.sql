@@ -85,7 +85,7 @@ reset role;
 -- ---------------------------------------------------------------------------
 
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"dddddddd-dddd-4ddd-8ddd-dddddddddddd","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"dddddddd-dddd-4ddd-8ddd-dddddddddddd","role":"authenticated"}';
 
 select lives_ok(
   $$select public.admin_create_combo('a0000000-0000-4000-8000-00000000000a')$$,
@@ -320,7 +320,7 @@ update public.combos
 set composition_verification_status = 'official_pdf'
 where product_id = 'a0000000-0000-4000-8000-00000000000a';
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"dddddddd-dddd-4ddd-8ddd-dddddddddddd","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"dddddddd-dddd-4ddd-8ddd-dddddddddddd","role":"authenticated"}';
 
 select lives_ok(
   $$select public.admin_set_combo_composition(
@@ -354,7 +354,7 @@ reset role;
 update public.combos set composition_verification_status = 'official_pdf'
 where product_id = 'a0000000-0000-4000-8000-00000000000a';
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"dddddddd-dddd-4ddd-8ddd-dddddddddddd","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"dddddddd-dddd-4ddd-8ddd-dddddddddddd","role":"authenticated"}';
 
 select lives_ok(
   $$select public.admin_set_combo_composition(
@@ -645,7 +645,7 @@ select is(
 reset role;
 update public.products set publication_status = 'published' where id = 'a0000000-0000-4000-8000-00000000000a';
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee","role":"authenticated"}';
 
 -- The RPC is unit-agnostic by design (it resolves the unit from the product,
 -- not from a hardcoded 'parfums'): an Import admin can create a combo on
@@ -678,7 +678,7 @@ select throws_ok(
   'an Import admin cannot update a Parfums combo even when they can see it'
 );
 
-set local request.jwt.claims to '{"sub":"ffffffff-ffff-4fff-8fff-ffffffffffff","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"ffffffff-ffff-4fff-8fff-ffffffffffff","role":"authenticated"}';
 
 select throws_ok(
   $$select public.admin_update_combo_verification(

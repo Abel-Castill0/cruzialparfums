@@ -47,7 +47,7 @@ insert into public.campaigns (id, business_unit_id, number, name, status, archiv
 -- ---------------------------------------------------------------------------
 
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"88880000-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"88880000-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
 select lives_ok(
   $$select public.admin_set_campaign_products(
       '88883000-0000-4000-8000-000000000001',
@@ -87,7 +87,7 @@ select is(
 -- time), so the RPC must set quantity_limit = NULL regardless of what the
 -- browser sent, proving the browser cannot set or overwrite it.
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"88880000-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"88880000-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
 select lives_ok(
   $$select public.admin_set_campaign_products(
       '88883000-0000-4000-8000-000000000001',
@@ -119,7 +119,7 @@ select is(
 -- ---------------------------------------------------------------------------
 
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"88880000-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"88880000-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
 select throws_ok(
   $$select public.admin_set_campaign_products(
       '88883000-0000-4000-8000-000000000001',
@@ -161,7 +161,7 @@ select is(
 -- ---------------------------------------------------------------------------
 
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"88880000-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"88880000-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
 select throws_ok(
   $$select public.admin_set_campaign_products(
       '88883000-0000-4000-8000-000000000001',
@@ -176,7 +176,7 @@ reset role;
 -- ---------------------------------------------------------------------------
 
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"88880000-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"88880000-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
 select throws_ok(
   $$select public.admin_set_campaign_products(
       '88883000-0000-4000-8000-000000000002',
@@ -200,7 +200,7 @@ values ('88883000-0000-4000-8000-000000000003', '11111111-1111-4111-8111-1111111
 -- the caller administers Import at all, because the campaign itself is
 -- already rejected as not-Import.
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"88880000-cccc-4ccc-8ccc-cccccccccccc","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"88880000-cccc-4ccc-8ccc-cccccccccccc","role":"authenticated"}';
 select throws_ok(
   $$select public.admin_set_campaign_products(
       '88883000-0000-4000-8000-000000000003',
@@ -215,7 +215,7 @@ reset role;
 -- app.assert_admin_for (42501) — proving that branch is still reachable and
 -- still enforced, not just shadowed by the P0002 check above.
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"88880000-cccc-4ccc-8ccc-cccccccccccc","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"88880000-cccc-4ccc-8ccc-cccccccccccc","role":"authenticated"}';
 select throws_ok(
   $$select public.admin_set_campaign_products(
       '88883000-0000-4000-8000-000000000001',
@@ -226,7 +226,7 @@ select throws_ok(
 reset role;
 
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"88880000-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"88880000-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
 select throws_ok(
   $$select public.admin_set_campaign_products(
       '88883000-0000-4000-8000-000000000003',
@@ -241,7 +241,7 @@ reset role;
 -- ---------------------------------------------------------------------------
 
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"88880000-bbbb-4bbb-8bbb-bbbbbbbbbbbb","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"88880000-bbbb-4bbb-8bbb-bbbbbbbbbbbb","role":"authenticated"}';
 select throws_ok(
   $$select public.admin_set_campaign_products(
       '88883000-0000-4000-8000-000000000001',
@@ -267,7 +267,7 @@ reset role;
 -- ---------------------------------------------------------------------------
 
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"88880000-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"88880000-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
 select throws_ok(
   $$update public.campaign_products set price_amount = price_amount where campaign_id = '88883000-0000-4000-8000-000000000001'$$,
   '42501', null, 'direct UPDATE on campaign_products is still denied — 4J2 only added the audited RPC'
@@ -279,7 +279,7 @@ reset role;
 -- ---------------------------------------------------------------------------
 
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"88880000-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"88880000-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
 select lives_ok(
   $$select public.admin_set_campaign_products(
       '88883000-0000-4000-8000-000000000001',

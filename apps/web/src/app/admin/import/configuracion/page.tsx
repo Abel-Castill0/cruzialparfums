@@ -14,6 +14,8 @@ export const metadata: Metadata = { title: "Configuración" };
 export default async function AdminImportSettingsPage() {
   const session = await getAdminSession();
   if (session.status === "not_configured" || session.status === "unavailable" || session.status === "no_membership") redirect("/admin");
+  if (session.status === "mfa_challenge_required") redirect("/admin/mfa/challenge");
+  if (session.status === "mfa_enrollment_required") redirect("/admin/mfa/enroll");
   if (session.status === "signed_out") redirect("/admin/login");
   const membership = session.session.memberships.find((candidate) => candidate.businessUnitCode === "import");
   if (!membership) redirect("/admin");

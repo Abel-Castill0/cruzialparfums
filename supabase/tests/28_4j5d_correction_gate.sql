@@ -94,7 +94,7 @@ insert into public.campaign_products(id,campaign_id,product_id,import_presentati
 -- A. Readiness does NOT require campaign already open
 -- =========================================================================
 
-select set_config('request.jwt.claims', '{"sub":"4c4c0000-0000-4000-8000-000000000001","role":"authenticated"}', true);
+select set_config('request.jwt.claims', '{"aal":"aal2","sub":"4c4c0000-0000-4000-8000-000000000001","role":"authenticated"}', true);
 set role authenticated;
 
 -- Campaign #6 is draft, not open. But product 0012 should still be "ready" commercially.
@@ -237,7 +237,7 @@ select throws_ok(
 -- =========================================================================
 
 reset role;
-select set_config('request.jwt.claims', '{"sub":"4c4c0000-0000-4000-8000-000000000002","role":"authenticated"}', true);
+select set_config('request.jwt.claims', '{"aal":"aal2","sub":"4c4c0000-0000-4000-8000-000000000002","role":"authenticated"}', true);
 set role authenticated;
 
 select lives_ok(
@@ -266,7 +266,7 @@ select throws_ok(
 -- =========================================================================
 
 reset role;
-select set_config('request.jwt.claims', '{"sub":"4c4c0000-0000-4000-8000-000000000001","role":"authenticated"}', true);
+select set_config('request.jwt.claims', '{"aal":"aal2","sub":"4c4c0000-0000-4000-8000-000000000001","role":"authenticated"}', true);
 set role authenticated;
 
 -- Register media
@@ -317,7 +317,7 @@ select lives_ok(
 -- =========================================================================
 
 reset role;
-select set_config('request.jwt.claims', '{"sub":"4c4c0000-0000-4000-8000-000000000003","role":"authenticated"}', true);
+select set_config('request.jwt.claims', '{"aal":"aal2","sub":"4c4c0000-0000-4000-8000-000000000003","role":"authenticated"}', true);
 set role authenticated;
 
 select throws_ok(
@@ -336,7 +336,7 @@ select throws_ok(
 -- =========================================================================
 
 reset role;
-select set_config('request.jwt.claims', '{"sub":"4c4c0000-0000-4000-8000-000000000001","role":"authenticated"}', true);
+select set_config('request.jwt.claims', '{"aal":"aal2","sub":"4c4c0000-0000-4000-8000-000000000001","role":"authenticated"}', true);
 set role authenticated;
 
 -- Product 0020 is parfums — import admin should not be able to register media for it

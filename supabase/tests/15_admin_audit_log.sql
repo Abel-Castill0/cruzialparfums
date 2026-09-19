@@ -20,7 +20,7 @@ insert into public.admin_memberships (user_id, business_unit_id, role) values
 -- ---------------------------------------------------------------------------
 
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"11111111-aaaa-4aaa-8aaa-aaaaaaaaaaaf","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"11111111-aaaa-4aaa-8aaa-aaaaaaaaaaaf","role":"authenticated"}';
 select throws_ok(
   $$insert into public.audit_log (business_unit_id, actor_user_id, action, entity_type, entity_id, before, after)
     values ('11111111-1111-4111-8111-111111111111', '11111111-aaaa-4aaa-8aaa-aaaaaaaaaaaf', 'update', 'product', gen_random_uuid(), null, '{}'::jsonb)$$,
@@ -33,7 +33,7 @@ reset role;
 -- ---------------------------------------------------------------------------
 
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"11111111-aaaa-4aaa-8aaa-aaaaaaaaaaaf","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"11111111-aaaa-4aaa-8aaa-aaaaaaaaaaaf","role":"authenticated"}';
 select lives_ok(
   $$select public.admin_create_product(
       'parfums', 'audit-4g2-test', 'Producto Auditoría 4G2', null, null, null, null, null,
@@ -66,7 +66,7 @@ select is(
 -- ---------------------------------------------------------------------------
 
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"22222222-bbbb-4bbb-8bbb-bbbbbbbbbbbf","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"22222222-bbbb-4bbb-8bbb-bbbbbbbbbbbf","role":"authenticated"}';
 select throws_ok(
   $$insert into public.audit_log (business_unit_id, actor_user_id, action, entity_type, entity_id, before, after)
     values ('11111111-1111-4111-8111-111111111111', '22222222-bbbb-4bbb-8bbb-bbbbbbbbbbbf', 'update', 'product', gen_random_uuid(), null, '{}'::jsonb)$$,
@@ -92,7 +92,7 @@ select throws_ok(
 -- ---------------------------------------------------------------------------
 
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"11111111-aaaa-4aaa-8aaa-aaaaaaaaaaaf","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"11111111-aaaa-4aaa-8aaa-aaaaaaaaaaaf","role":"authenticated"}';
 select isnt(
   (select count(*)::integer from public.admin_list_audit_log('parfums', 1, 20, null, null)),
   0, 'Parfums admin can list the Parfums audit log'
@@ -104,7 +104,7 @@ select is(
 reset role;
 
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"33333333-cccc-4ccc-8ccc-ccccccccccdf","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"33333333-cccc-4ccc-8ccc-ccccccccccdf","role":"authenticated"}';
 select isnt(
   (select count(*)::integer from public.admin_list_audit_log('parfums', 1, 20, null, null)),
   0, 'Parfums viewer can also read the Parfums audit log'
@@ -112,7 +112,7 @@ select isnt(
 reset role;
 
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"22222222-bbbb-4bbb-8bbb-bbbbbbbbbbbf","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"22222222-bbbb-4bbb-8bbb-bbbbbbbbbbbf","role":"authenticated"}';
 select throws_ok(
   $$select * from public.admin_list_audit_log('parfums', 1, 20, null, null)$$,
   '42501', null, 'an Import-only admin cannot read the Parfums audit log'
@@ -132,7 +132,7 @@ reset role;
 -- ---------------------------------------------------------------------------
 
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"11111111-aaaa-4aaa-8aaa-aaaaaaaaaaaf","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"11111111-aaaa-4aaa-8aaa-aaaaaaaaaaaf","role":"authenticated"}';
 select is(
   (select count(*)::integer from public.admin_list_audit_log('parfums', 1, 1, null, null)),
   1, 'page_size is respected (capped small page returns exactly one row)'
@@ -152,7 +152,7 @@ reset role;
 -- ---------------------------------------------------------------------------
 
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"11111111-aaaa-4aaa-8aaa-aaaaaaaaaaaf","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"11111111-aaaa-4aaa-8aaa-aaaaaaaaaaaf","role":"authenticated"}';
 select isnt(
   (select id from public.admin_get_audit_log_entry(
     'parfums',
@@ -163,7 +163,7 @@ select isnt(
 reset role;
 
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"22222222-bbbb-4bbb-8bbb-bbbbbbbbbbbf","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"22222222-bbbb-4bbb-8bbb-bbbbbbbbbbbf","role":"authenticated"}';
 select throws_ok(
   $$select * from public.admin_get_audit_log_entry(
     'parfums',

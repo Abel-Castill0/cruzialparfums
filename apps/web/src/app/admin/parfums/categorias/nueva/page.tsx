@@ -13,6 +13,8 @@ export const metadata: Metadata = { title: "Nueva categoría" };
 export default async function NewCategoryPage() {
   const result = await getAdminSession();
   if (result.status === "not_configured" || result.status === "unavailable" || result.status === "no_membership") redirect("/admin");
+  if (result.status === "mfa_challenge_required") redirect("/admin/mfa/challenge");
+  if (result.status === "mfa_enrollment_required") redirect("/admin/mfa/enroll");
   if (result.status === "signed_out") redirect("/admin/login");
   const membership = result.session.memberships.find((candidate) => candidate.businessUnitCode === "parfums");
   if (!membership) redirect("/admin");

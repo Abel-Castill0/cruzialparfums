@@ -38,7 +38,7 @@ select is(
 -- ---------------------------------------------------------------------------
 
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"11111111-aaaa-4aaa-8aaa-aaaaaaaaaaab","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"11111111-aaaa-4aaa-8aaa-aaaaaaaaaaab","role":"authenticated"}';
 select throws_ok(
   $$update public.settings set value = value where key = 'public_contact' and business_unit_id = '11111111-1111-4111-8111-111111111111'$$,
   '42501', null, 'a Parfums admin cannot write settings directly through the table (audited RPC is the only path)'
@@ -50,7 +50,7 @@ reset role;
 -- ---------------------------------------------------------------------------
 
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"11111111-aaaa-4aaa-8aaa-aaaaaaaaaaab","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"11111111-aaaa-4aaa-8aaa-aaaaaaaaaaab","role":"authenticated"}';
 select lives_ok(
   $$select public.admin_update_public_contact_setting(
       'parfums',
@@ -83,7 +83,7 @@ select is(
 -- ---------------------------------------------------------------------------
 
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"11111111-aaaa-4aaa-8aaa-aaaaaaaaaaab","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"11111111-aaaa-4aaa-8aaa-aaaaaaaaaaab","role":"authenticated"}';
 select throws_ok(
   $$select public.admin_update_public_contact_setting(
       'parfums',
@@ -115,7 +115,7 @@ reset role;
 -- ---------------------------------------------------------------------------
 
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"33333333-cccc-4ccc-8ccc-cccccccccccd","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"33333333-cccc-4ccc-8ccc-cccccccccccd","role":"authenticated"}';
 select throws_ok(
   $$select public.admin_update_public_contact_setting(
       'parfums',
@@ -126,7 +126,7 @@ select throws_ok(
 reset role;
 
 set local role authenticated;
-set local request.jwt.claims to '{"sub":"22222222-bbbb-4bbb-8bbb-bbbbbbbbbbbc","role":"authenticated"}';
+set local request.jwt.claims to '{"aal":"aal2","sub":"22222222-bbbb-4bbb-8bbb-bbbbbbbbbbbc","role":"authenticated"}';
 select throws_ok(
   $$select public.admin_update_public_contact_setting(
       'parfums',

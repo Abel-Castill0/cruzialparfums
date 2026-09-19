@@ -78,3 +78,19 @@ export function readOrderAbuseHmacSecret(): string | null {
   }
   return process.env.ORDER_ABUSE_HMAC_SECRET?.trim() || null;
 }
+
+/**
+ * Trusted origin used to build the one security-sensitive redirect this app
+ * constructs outside of a request: the `resetPasswordForEmail` recovery
+ * link. Deliberately its own explicit configuration value, never derived
+ * from an inbound `Host`/`Origin` header — a request header is attacker
+ * input, and building an auth redirect from it is the textbook host-header
+ * poisoning path into a password-reset link. Server-only: this never needs
+ * to reach the browser bundle.
+ */
+export function readSiteUrl(): string | null {
+  if (typeof window !== "undefined") {
+    throw new Error("readSiteUrl() must never run in the browser.");
+  }
+  return process.env.SITE_URL?.trim() || null;
+}
