@@ -7,9 +7,16 @@
 -- Scope (three independent, additive hardenings — none change RLS policies
 -- or any function's business logic):
 --
--- A. anon EXECUTE hardening — every public.admin_* RPC currently reachable by
---    `anon` (Postgres grants EXECUTE to PUBLIC by default on CREATE FUNCTION,
---    and none of these were ever explicitly revoked) loses that reachability.
+-- A. anon EXECUTE hardening — every public.admin_* RPC below currently has an
+--    effective, explicit EXECUTE grant for `anon` on cruzial-v2-staging (its
+--    pg_proc.proacl there shows `anon=X/postgres` alongside
+--    `authenticated=X/postgres`, `service_role=X/postgres`, and
+--    `postgres=X/postgres` — a Supabase/default-role grant applied at
+--    function creation, not something this project revoked afterward). This
+--    migration removes only the `anon` privilege from that ACL, i.e. it
+--    revokes an unnecessary reachability surface that anon should never have
+--    had; it does not depend on assuming the grant originated solely from
+--    PUBLIC, and it does not touch `authenticated`/`service_role`/`postgres`.
 --    The four intentionally-public Import storefront RPCs
 --    (public_get_import_current_campaign, public_get_import_product,
 --    public_list_import_catalog, public_list_import_categories) are

@@ -30,7 +30,21 @@ function assertServerOnly(fnName: string) {
  * Cloudinary upload response said (`publicId`, `secureUrl`, `format`,
  * `bytes`) and that report is never assumed truthful. The server never lets
  * a client-supplied public_id decide what gets destroyed — see
- * `resolveAuthorizedUpload` / `destroyAsset` callers.
+ * `resolveAuthorizedUpload`.
+ *
+ * `authorizationToken` (see `signAuthorizationToken`/`resolveAuthorizedUpload`)
+ * is tamper-evident (HMAC-signed) and short-lived (`AUTHORIZATION_TTL_SECONDS`),
+ * and it is bound to one product/unit/public_id. It is NOT single-use: it
+ * stays valid and resolvable for its full TTL, so a caller can present the
+ * same token more than once (e.g. after an upload already registered, or on
+ * a retried request). That makes it suitable for provenance validation
+ * ("this is the public_id we minted for this product") but NOT, by itself,
+ * sufficient authority for a destructive Cloudinary operation — proving
+ * provenance is not the same as proving the asset is still an orphan. No
+ * caller in this codebase destroys a Cloudinary asset off the back of a
+ * validation failure; see the callers of `resolveAuthorizedUpload` in
+ * `apps/web/src/app/admin/*\/productos/[id]/media-actions.ts` for the actual
+ * policy (invalid token/upload → error, no delete).
  */
 
 const ALLOWED_FORMATS = ["jpg", "jpeg", "png", "webp"] as const;
@@ -182,16 +196,22 @@ export function resolveAuthorizedUpload(
 }
 
 /**
- * Best-effort cleanup for an orphan risk: a Cloudinary upload that succeeded
- * but whose result this app then rejected (bad metadata) or failed to
- * persist. Never throws — a cleanup failure must not mask the original
- * error, so callers get a boolean and decide how to report it (never as a
- * silent success either way).
+ * Destroys a Cloudinary asset by public_id. Never throws — a cleanup failure
+ * must not mask a caller's own error, so this returns a boolean and lets the
+ * caller decide how to report it (never as a silent success either way).
  *
- * SECURITY: callers must only ever pass a `publicId` this server itself
- * minted and can prove via `resolveAuthorizedUpload` (or a value already
- * known-owned from a DB row this admin controls) — never a bare
- * client-reported string. See the module-level trust boundary note.
+ * SECURITY: this function has no callers in this codebase today. The upload
+ * flow deliberately does NOT call this on an invalid/replayed
+ * authorizationToken or a rejected uploadResult — see the module-level trust
+ * boundary note above for why `authorizationToken` provenance is not proof
+ * of orphan status. It is kept as a primitive for a future, explicitly
+ * single-use/ledgered orphan-reconciliation mechanism. Do not wire it back
+ * into a validation-failure path without that safeguard: doing so
+ * reintroduces a token-replay bug where a legitimate, already-registered
+ * asset can be destroyed by replaying a still-valid token with a
+ * mismatched/invalid upload result. If you do add a caller, it must only
+ * ever pass a `publicId` proven via a single-use consumption record — never
+ * a bare client-reported string, and never a token resolution alone.
  */
 export async function destroyAsset(publicId: string): Promise<{ ok: boolean }> {
   assertServerOnly("destroyAsset");

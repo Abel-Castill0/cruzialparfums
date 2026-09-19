@@ -9,7 +9,6 @@ import { isValidUuid } from "@/domains/admin-parfums/product-schema";
 import type { AdminRepositoryError } from "@/domains/admin-parfums/products-repository";
 import {
   createUploadAuthorization,
-  destroyAsset,
   isUploadResultValid,
   resolveAuthorizedUpload,
   type UploadAuthorization,
@@ -128,9 +127,13 @@ export type CloudinaryUploadResult = {
  *
  * `authorizationToken` is the opaque token `getUploadAuthorizationAction`
  * handed the browser in step 1. It is the *only* source of truth for which
- * public_id this server actually authorized — `uploadResult` is untrusted
- * client-reported data and is never used to decide what gets destroyed on
- * Cloudinary. See src/lib/media/cloudinary.ts for the full trust boundary.
+ * public_id this server actually authorized. It proves provenance, not
+ * single use — it stays valid and replayable for its whole TTL, so it must
+ * never be treated as authority to destroy anything on Cloudinary.
+ * `uploadResult` is untrusted client-reported data too. Neither is ever used
+ * to decide what gets destroyed on Cloudinary: this action never destroys a
+ * Cloudinary asset. See src/lib/media/cloudinary.ts for the full trust
+ * boundary.
  */
 export async function registerMediaAction(
   productId: string,
@@ -173,11 +176,14 @@ export async function registerMediaAction(
   ) {
     // The Cloudinary response doesn't match what we authorized (wrong
     // public_id/url/format/size) — this is untrusted client-reported data,
-    // so it is never persisted. The one asset we know we authorized
-    // (expectedPublicId, never uploadResult.publicId) may exist as a genuine
-    // orphan at this point, so it is safe to clean that specific asset up —
-    // a no-op "not found" if nothing ever landed there.
-    await destroyAsset(expectedPublicId);
+    // so it is never persisted. We deliberately do NOT destroy
+    // expectedPublicId here: authorizationToken is replayable during its
+    // TTL, so this branch can also be reached by replaying a token whose
+    // asset was already validly uploaded and registered on a prior call —
+    // destroying it here would delete a legitimate asset. An orphan
+    // Cloudinary upload is recoverable; a wrongly-deleted legitimate asset
+    // is not. Orphan reconciliation is deferred to a future, explicitly
+    // single-use mechanism (see src/lib/media/cloudinary.ts).
     return {
       status: "error",
       message: "El archivo subido no es válido. Usa una imagen JPG, PNG o WebP de hasta 10 MB.",

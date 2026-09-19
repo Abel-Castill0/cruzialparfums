@@ -1037,18 +1037,32 @@ provisional_market writes.
 
 ### 4K-GATE2A — Security boundaries hardening — CLOSED locally / NOT applied hosted
 
-- Cloudinary destructive-action boundary fixed: the destroy-on-invalid-upload
-  path in src/lib/media/cloudinary.ts and both admin media-actions.ts files no
-  longer trusts a browser-reported `publicId`. `createUploadAuthorization`
-  now mints the `public_id` itself (server-generated, signed into the upload
-  params) and returns a tamper-evident HMAC `authorizationToken` binding that
-  exact public_id to the product/unit with a 15-minute expiry.
-  `registerMediaAction` recovers the authorized public_id via
-  `resolveAuthorizedUpload(authorizationToken, ...)` and only ever calls
-  `destroyAsset()` on that server-known value — never on
-  `uploadResult.publicId`. An admin can no longer trigger deletion of an
-  arbitrary existing Cloudinary asset by reporting its public_id alongside an
-  otherwise-invalid upload result.
+- Cloudinary destructive-action boundary fixed, then corrected again after an
+  independent review (ChatGPT) flagged a residual replay risk: the original
+  fix in src/lib/media/cloudinary.ts and both admin media-actions.ts files
+  stopped trusting a browser-reported `publicId` (`createUploadAuthorization`
+  mints the `public_id` server-side and returns a tamper-evident HMAC
+  `authorizationToken` binding it to the product/unit with a 15-minute
+  expiry), but `registerMediaAction` still called `destroyAsset()` on the
+  server-known `expectedPublicId` whenever `isUploadResultValid` failed.
+  `authorizationToken` is verified (HMAC, expiry, product/unit binding) but
+  is NOT single-use — it stays valid and replayable for its whole TTL. That
+  meant a still-valid token could be replayed with a mismatched/invalid
+  `uploadResult` *after* its asset was already validly uploaded and
+  registered once, and that replay would delete the now-legitimate asset.
+  CORRECTIVE (this pass): both media-actions.ts files no longer call
+  `destroyAsset()` on any validation-failure path — invalid token and
+  invalid/replayed upload result now only return an error; nothing is
+  persisted and nothing is destroyed. **Invalid/untrusted upload results are
+  preserved as recoverable orphans, not automatically destroyed; orphan
+  reconciliation is deferred to a future, explicitly single-use/ledgered
+  mechanism (possible P2) — not implemented here.** `destroyAsset()` itself
+  is kept in cloudinary.ts as a primitive for that future mechanism but has
+  no caller today; do not wire it back to a validation-failure path without
+  single-use consumption tracking. A replay regression test
+  (media-actions.test.ts, both units) proves: invalid token → no delete;
+  valid token + invalid/replayed upload → no delete, no persist; valid
+  upload → still registers normally.
 - Cloudinary secure_url provenance added: `isUploadResultValid` now requires
   exact public_id match (not prefix) plus a strict secure_url check (https,
   `res.cloudinary.com` host, expected cloud name, `image/upload` resource

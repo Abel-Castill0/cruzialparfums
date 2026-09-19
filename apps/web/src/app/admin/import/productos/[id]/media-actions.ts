@@ -9,7 +9,6 @@ import { isValidUuid } from "@/domains/admin-parfums/product-schema";
 import type { AdminRepositoryError } from "@/domains/admin-parfums/products-repository";
 import {
   createUploadAuthorization,
-  destroyAsset,
   isUploadResultValid,
   resolveAuthorizedUpload,
   type UploadAuthorization,
@@ -107,9 +106,12 @@ export type CloudinaryUploadResult = {
 /**
  * `authorizationToken` is the opaque token `getUploadAuthorizationAction`
  * handed the browser in step 1 — the only source of truth for which
- * public_id this server authorized. `uploadResult` is untrusted
- * client-reported data and is never used to decide what gets destroyed on
- * Cloudinary. See src/lib/media/cloudinary.ts for the full trust boundary.
+ * public_id this server authorized. It proves provenance, not single use —
+ * it stays valid and replayable for its whole TTL, so it must never be
+ * treated as authority to destroy anything on Cloudinary. `uploadResult` is
+ * untrusted client-reported data too. Neither is ever used to decide what
+ * gets destroyed on Cloudinary: this action never destroys a Cloudinary
+ * asset. See src/lib/media/cloudinary.ts for the full trust boundary.
  */
 export async function registerMediaAction(
   productId: string,
@@ -147,9 +149,13 @@ export async function registerMediaAction(
       cloudName,
     })
   ) {
-    // Never destroy uploadResult.publicId (client-reported); only ever the
-    // one public_id this server itself authorized.
-    await destroyAsset(expectedPublicId);
+    // Never destroy on this path. authorizationToken is replayable during
+    // its TTL, so this branch can also be reached by replaying a token whose
+    // asset was already validly uploaded and registered on a prior call —
+    // destroying expectedPublicId here would delete a legitimate asset. An
+    // orphan Cloudinary upload is recoverable; a wrongly-deleted legitimate
+    // asset is not. Orphan reconciliation is deferred to a future,
+    // explicitly single-use mechanism (see src/lib/media/cloudinary.ts).
     return {
       status: "error",
       message: "El archivo subido no es válido. Usa una imagen JPG, PNG o WebP de hasta 10 MB.",

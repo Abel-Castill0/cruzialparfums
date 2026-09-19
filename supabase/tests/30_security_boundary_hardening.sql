@@ -2,9 +2,11 @@
 -- Phase 4K-GATE2A — anon EXECUTE hardening + search_path + anon table-DML
 --
 -- Proves that after migration 20260919010000:
---   - anon can no longer execute any admin_* RPC (a representative sample
---     across create/update/archive/media/audit shapes)
---   - anon can still execute the four public_* Import storefront RPCs
+--   - anon can no longer execute ANY public.admin_* RPC — a catalog-wide
+--     assertion over pg_proc/has_function_privilege, not just a sample
+--     (a representative sample across create/update/archive/media/audit
+--     shapes is also kept for readable failure output)
+--   - anon can still execute all four public_* Import storefront RPCs
 --   - the five search_path-mutable trigger functions now have a fixed,
 --     non-null proconfig
 --   - an authenticated user with no admin_memberships row still cannot
@@ -12,12 +14,13 @@
 --     just the grant)
 --   - a Parfums admin cannot read Import's audit log (cross-unit isolation)
 --   - an authorized Import admin can still read Import's audit log
---   - anon has no direct INSERT on admin-only catalog tables, and public
---     SELECT on those tables is unaffected
+--   - anon has no direct INSERT/UPDATE/DELETE on any of the 16 hardened
+--     admin-only catalog/settings tables (one aggregate catalog assertion),
+--     and public SELECT on those tables is unaffected
 
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(18);
+select plan(22);
 
 -- Fixtures: Import admin + membership, Parfums admin + membership.
 insert into auth.users (id, instance_id, aud, role, email, encrypted_password, created_at, updated_at)
@@ -38,8 +41,22 @@ insert into auth.users (id, instance_id, aud, role, email, encrypted_password, c
 values ('fe000000-ffff-4fff-8fff-fffffffffff2', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'gate2a-no-membership@example.test', '', now(), now());
 
 -- =========================================================================
--- A. anon cannot execute admin_* RPCs (5 tests, representative sample)
+-- A. anon cannot execute any admin_* RPC (1 catalog-wide assertion + 5
+--    representative-sample tests for readable failure output)
 -- =========================================================================
+select is(
+  (
+    select count(*)::integer
+    from pg_proc p
+    join pg_namespace n on n.oid = p.pronamespace
+    where n.nspname = 'public'
+      and p.proname like 'admin\_%' escape '\'
+      and has_function_privilege('anon', p.oid, 'EXECUTE')
+  ),
+  0,
+  'anon cannot execute any public.admin_* function'
+);
+
 set local role anon;
 
 select throws_ok(
@@ -73,7 +90,9 @@ select throws_ok(
 );
 
 -- =========================================================================
--- B. anon can still execute the public_* Import storefront RPCs (2 tests)
+-- B. anon can still execute all four public_* Import storefront RPCs
+--    (4 tests) — innocuous args, no product/category fixture required; the
+--    goal is proving the call reaches execution, not a specific result.
 -- =========================================================================
 select lives_ok(
   $$SELECT * FROM public.public_list_import_categories()$$,
@@ -83,6 +102,16 @@ select lives_ok(
 select lives_ok(
   $$SELECT public.public_get_import_current_campaign()$$,
   'anon can still execute public_get_import_current_campaign'
+);
+
+select lives_ok(
+  $$SELECT public.public_get_import_product('gate2a-nonexistent-slug')$$,
+  'anon can still execute public_get_import_product'
+);
+
+select lives_ok(
+  $$SELECT * FROM public.public_list_import_catalog(null, null, 1, 24)$$,
+  'anon can still execute public_list_import_catalog'
 );
 
 reset role;
@@ -180,8 +209,30 @@ reset role;
 
 -- =========================================================================
 -- G. anon has no direct DML on admin-only catalog tables; public SELECT on
---    those tables is unaffected (3 tests)
+--    those tables is unaffected (1 aggregate catalog assertion covering all
+--    16 hardened tables + 3 representative tests)
 -- =========================================================================
+select is(
+  (
+    select count(*)::integer
+    from pg_tables t
+    where t.schemaname = 'public'
+      and t.tablename in (
+        'admin_parfums_wholesale_catalog', 'business_units', 'campaign_products',
+        'campaigns', 'categories', 'combo_items', 'combos', 'deposit_policies',
+        'product_categories', 'product_media', 'product_variants', 'products',
+        'settings', 'shipping_methods', 'variant_price_tiers', 'wholesale_policies'
+      )
+      and (
+        has_table_privilege('anon', format('public.%I', t.tablename), 'INSERT')
+        or has_table_privilege('anon', format('public.%I', t.tablename), 'UPDATE')
+        or has_table_privilege('anon', format('public.%I', t.tablename), 'DELETE')
+      )
+  ),
+  0,
+  'anon has no INSERT/UPDATE/DELETE on any of the 16 hardened admin-only tables'
+);
+
 set local role anon;
 
 select throws_ok(
