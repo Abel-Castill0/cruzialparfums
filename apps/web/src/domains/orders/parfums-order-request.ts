@@ -6,11 +6,13 @@ import type { ParfumsCheckoutCustomer } from "../whatsapp/parfums-message-builde
 export const PARFUMS_ORDER_MAX_LINES = 40;
 export const PARFUMS_ORDER_MAX_QUANTITY = 99;
 
+/**
+ * Client-confirmed business rule (see docs/client-decisions.md — Parfums
+ * Shipping): Cruzial Parfums ships via Shalom only. No other delivery
+ * method (Línea 1, motorizado, contraentrega) is confirmed for Parfums.
+ */
 export const PARFUMS_DELIVERY_OPTIONS = [
-  "Lima Metropolitana — Línea 1 (delivery gratis)",
-  "Lima Metropolitana — Motorizado",
-  "Lima Metropolitana — Contraentrega",
-  "Provincias — Agencia Shalom",
+  "Agencia Shalom (Lima y todo el Perú)",
 ] as const;
 
 export type ParfumsOrderRequestInput = {
@@ -160,7 +162,7 @@ export function validateAndResolveParfumsOrder(
     requestId: candidate.requestId,
     customerSnapshot: { name, phone },
     deliverySnapshot: { district, delivery, note },
-    shippingMethodCode: delivery === "Provincias — Agencia Shalom" ? "shalom" : null,
+    shippingMethodCode: "shalom",
     lines: snapshots,
     subtotal,
     customer: { name, phone, district, delivery, note },

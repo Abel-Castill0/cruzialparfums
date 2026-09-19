@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { LegacyCatalogRepository } from "../catalog/legacy-catalog-repository";
 import { listProductPurchaseVariants } from "../catalog/product-purchase";
-import { validateAndResolveParfumsOrder } from "./parfums-order-request";
+import { PARFUMS_DELIVERY_OPTIONS, validateAndResolveParfumsOrder } from "./parfums-order-request";
 
 const repository = new LegacyCatalogRepository();
 const product = repository.list().find((item) => item.availabilityStatus === "available" && listProductPurchaseVariants(item).length > 0)!;
@@ -11,7 +11,7 @@ const customer = {
   name: "Ana Pérez",
   phone: "999 111 222",
   district: "Miraflores, Lima",
-  delivery: "Lima Metropolitana — Motorizado",
+  delivery: "Agencia Shalom (Lima y todo el Perú)",
   note: "Tarde",
 };
 
@@ -54,5 +54,30 @@ describe("Parfums public order revalidation", () => {
 
   it("rejects a hidden product through the public repository contract", () => {
     expect(validateAndResolveParfumsOrder({ ...validInput(), lines: [{ productId: "bir-intense", variantId: "decant-3ml", quantity: 1 }] }, repository)).toMatchObject({ ok: false });
+  });
+});
+
+describe("Parfums shipping business truth (Shalom only, client-confirmed)", () => {
+  it("offers exactly one confirmed delivery method: Shalom", () => {
+    expect(PARFUMS_DELIVERY_OPTIONS).toHaveLength(1);
+    expect(PARFUMS_DELIVERY_OPTIONS[0]).toMatch(/shalom/i);
+  });
+
+  it("never re-introduces an unconfirmed delivery method", () => {
+    for (const option of PARFUMS_DELIVERY_OPTIONS) {
+      expect(option.toLowerCase()).not.toMatch(/línea 1|linea 1|motoriz|contraentrega|contra entrega/);
+    }
+  });
+
+  it("resolves shippingMethodCode to shalom for the only confirmed option", () => {
+    const result = validateAndResolveParfumsOrder(validInput(), repository);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.shippingMethodCode).toBe("shalom");
+  });
+
+  it("rejects an unconfirmed delivery method even if forged by the client", () => {
+    const input = { ...validInput(), customer: { ...customer, delivery: "Lima Metropolitana — Motorizado" } };
+    expect(validateAndResolveParfumsOrder(input, repository)).toMatchObject({ ok: false, fieldErrors: { delivery: expect.any(String) } });
   });
 });

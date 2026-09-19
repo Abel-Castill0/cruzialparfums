@@ -24,7 +24,7 @@ export const BUSINESS_UNITS = [
     code: "parfums",
     label: "CRUZIAL PARFUMS",
     shortName: "Parfums",
-    promise: "Entrega inmediata",
+    promise: "Perfumería original",
     scope: ["Decants", "Perfumes sellados"],
     href: "/parfums",
   },

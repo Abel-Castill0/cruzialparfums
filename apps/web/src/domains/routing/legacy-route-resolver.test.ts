@@ -11,6 +11,7 @@ describe("legacy route compatibility contract", () => {
     ["/combos.html#combo-vainilla", "/parfums/combos#combo-vainilla"],
     ["/checkout.html", "/parfums/checkout"],
     ["/mayorista.html", "/parfums/mayorista"],
+    ["/perfumes-enteros.html", "/parfums/mayorista"],
     ["/nosotros.html", "/parfums/nosotros"],
     ["/contacto.html", "/parfums/contacto"],
     ["/privacidad.html", "/parfums/privacidad"],

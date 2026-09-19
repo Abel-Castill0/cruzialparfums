@@ -61,14 +61,14 @@ export default function TerminosPage() {
           <ul>
             <li>Transferencia bancaria</li>
             <li>Yape / Plin</li>
-            <li>Efectivo contra entrega (solo Lima y Callao)</li>
           </ul>
+          <p>Cruzial Parfums no procesa pagos dentro del sitio web. La forma de pago se coordina y confirma directamente por WhatsApp.</p>
 
           <h2>6. Envíos y Entregas</h2>
           <ul>
-            <li><b>Lima y Callao:</b> Entrega el mismo día o al siguiente día hábil.</li>
-            <li><b>Provincias:</b> Envío por agencias de transporte. El tiempo de entrega varía según la región.</li>
-            <li>El costo de envío a provincias corre por cuenta del cliente.</li>
+            <li>El envío se realiza mediante agencia Shalom, con cobertura en Lima y en todo el Perú.</li>
+            <li>El tiempo de entrega depende de la agencia de transporte y se confirma al coordinar el pedido por WhatsApp.</li>
+            <li>El costo de envío corre por cuenta del cliente y se confirma por WhatsApp.</li>
             <li>Cruzial Parfums no se hace responsable por demoras de servicios de transporte.</li>
           </ul>
 
@@ -81,8 +81,9 @@ export default function TerminosPage() {
           <p>Para solicitar un reemplazo, contáctanos al recibir tu pedido.</p>
 
           <h2>8. Regalo: Decant 2 ml</h2>
-          <p>Por cada compra retail, el cliente puede solicitar un decant de 2 ml de cualquier perfume árabe de nuestro catálogo, sujeto a disponibilidad. Esta promoción:</p>
+          <p>Con la compra de un frasco completo, el cliente puede solicitar un decant de 2 ml de cualquier perfume árabe de nuestro catálogo, sujeto a disponibilidad. Esta promoción:</p>
           <ul>
+            <li>Solo aplica con la compra de un frasco completo; no aplica a decants (3, 5 o 10 ml) por sí solos.</li>
             <li>No es acumulable con otros descuentos especiales.</li>
             <li>No aplica en pedidos mayoristas.</li>
             <li>Debe solicitarse al momento del pedido.</li>

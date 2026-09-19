@@ -1,5 +1,11 @@
 # Cruzial V2 — Roadmap
 
+HISTORICAL / EARLY-PLANNING SNAPSHOT. This roadmap predates most of the
+work it lists as "Next" (Import Admin, Consolidados and the Import public
+flow are already implemented — see docs/current-v2.md 4J5G-A3/4J5G-B).
+docs/current-v2.md is the operative source for current gate status; do not
+treat the "Next" list below as an up-to-date plan.
+
 ## Closed
 
 - Foundation / Auth / Supabase

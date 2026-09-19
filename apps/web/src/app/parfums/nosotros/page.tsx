@@ -62,11 +62,11 @@ const faqs = [
   },
   {
     q: "¿Cómo hago mi pedido?",
-    a: "Añade tus fragancias al carrito, completa tus datos y envía tu pedido por WhatsApp. El pedido se confirma con el 50% de adelanto; coordinamos stock, envío y total antes de cerrar la venta.",
+    a: "Añade tus fragancias al carrito, completa tus datos y envía tu pedido por WhatsApp. Coordinamos stock, envío, forma de pago y total antes de cerrar la venta.",
   },
   {
     q: "¿Cómo son los envíos?",
-    a: "Delivery por la Línea 1 del tren eléctrico en Lima, motorizado para otras zonas y envío a provincias por agencia Shalom.",
+    a: "Envío por agencia Shalom, con cobertura en Lima y en todo el Perú.",
   },
   {
     q: "¿Qué presentación tienen los decants?",

@@ -80,7 +80,7 @@ export default function PrivacidadPage() {
           </ul>
 
           <h2>7. Retención de Datos</h2>
-          <p>Conservamos tus datos personales solo durante el tiempo necesario para cumplir con los fines para los que fueron recopilados, o según lo exija la ley. Los datos de pedidos se conservan por un máximo de 5 años para fines fiscales y contables.</p>
+          <p>Conservamos tus datos personales solo durante el tiempo necesario para cumplir con los fines para los que fueron recopilados, o durante el plazo que exija la normativa peruana aplicable en materia fiscal, contable y de protección de datos.</p>
 
           <h2>8. Cambios en esta Política</h2>
           <p>Podemos actualizar esta política en cualquier momento. Los cambios se publicarán en esta página con la fecha de última actualización.</p>

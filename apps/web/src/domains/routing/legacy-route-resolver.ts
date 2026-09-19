@@ -14,6 +14,7 @@ const staticLegacyRoutes = new Map<string, string>([
   ["/combos.html", "/parfums/combos"],
   ["/checkout.html", "/parfums/checkout"],
   ["/mayorista.html", "/parfums/mayorista"],
+  ["/perfumes-enteros.html", "/parfums/mayorista"],
   ["/nosotros.html", "/parfums/nosotros"],
   ["/contacto.html", "/parfums/contacto"],
   ["/privacidad.html", "/parfums/privacidad"],

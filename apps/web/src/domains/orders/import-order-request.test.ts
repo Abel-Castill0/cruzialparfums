@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   validateAndResolveImportOrder,
+  IMPORT_DELIVERY_METHOD,
   IMPORT_ORDER_MAX_LINES,
   IMPORT_ORDER_MAX_QUANTITY,
 } from "./import-order-request";
@@ -24,6 +25,12 @@ const VALID_REQUEST = {
     },
   ],
 };
+
+describe("Import shipping business truth (private_delivery, client-confirmed)", () => {
+  it("locks the Import delivery method to private_delivery", () => {
+    expect(IMPORT_DELIVERY_METHOD).toBe("private_delivery");
+  });
+});
 
 describe("import order validation", () => {
   it("accepts valid input", () => {

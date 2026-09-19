@@ -9,7 +9,7 @@ import styles from "./page.module.css";
 
 export const metadata: Metadata = {
   title: "Cruzial Parfums",
-  description: "Decants, frascos, combos y fragancias de entrega inmediata en Lima, Perú.",
+  description: "Decants, frascos y combos de perfumería árabe, designer y de nicho en Perú.",
 };
 
 const discoveryCategories = [
@@ -49,7 +49,7 @@ const homeFaqs = [
   },
   {
     q: "¿Cómo hago mi pedido?",
-    a: "Añade tus fragancias al carrito, completa tus datos y envía tu pedido por WhatsApp. El pedido se confirma con el 50% de adelanto.",
+    a: "Añade tus fragancias al carrito, completa tus datos y envía tu pedido por WhatsApp. Un asesor confirma stock, envío y forma de pago contigo antes de cerrar la venta.",
   },
   {
     q: "¿Compran al por mayor?",
@@ -82,7 +82,7 @@ export default function ParfumsHomePage() {
           <p className={styles.eyebrow}>Cruzial Parfums</p>
           <h1 id="home-hero-title">Perfumería de descubrimiento.</h1>
           <p className={styles.heroSummary}>
-            Decants desde 3 ml y frascos completos, entrega inmediata en Lima.
+            Decants desde 3 ml y frascos completos, con envío por Shalom a todo el Perú.
           </p>
           <Link href="/parfums/catalogo" className={styles.heroCta}>
             Explorar catálogo <span aria-hidden="true">→</span>
@@ -104,7 +104,7 @@ export default function ParfumsHomePage() {
         <div>
           <strong>Shalom</strong>
           <span>Envío nacional</span>
-          <p>Línea 1, motorizado y contraentrega en Lima; agencia a todo el Perú.</p>
+          <p>Agencia Shalom, con cobertura en Lima y todo el Perú.</p>
         </div>
         <div>
           <strong>3 · 5 · 10</strong>
