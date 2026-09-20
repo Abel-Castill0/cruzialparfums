@@ -85,9 +85,6 @@ export default async function AdminImportCustomersPage({
     <div className={styles.page}>
       <header className={styles.header}>
         <div>
-          <Link href="/admin/import" className={styles.back}>
-            ← Cruzial Import
-          </Link>
           <h1>Clientes</h1>
           <p>{total} cliente{total === 1 ? "" : "s"} registrado{total === 1 ? "" : "s"}.</p>
         </div>

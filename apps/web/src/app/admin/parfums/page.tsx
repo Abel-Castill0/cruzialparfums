@@ -133,8 +133,6 @@ export default async function AdminParfumsPage() {
         },
       ]}
       placeholderAreas={placeholderAreas}
-      role={membership.role}
-      email={result.session.email}
     />
   );
 }

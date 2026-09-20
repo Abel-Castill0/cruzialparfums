@@ -58,7 +58,6 @@ export default async function ConsolidadosPage({
     <div className={styles.page}>
       <header className={styles.header}>
         <div>
-          <Link href="/admin/import" className={styles.back}>← Cruzial Import</Link>
           <h1>Consolidado / Campañas</h1>
           <p>{total} consolidado{total === 1 ? "" : "s"} en esta vista.</p>
         </div>

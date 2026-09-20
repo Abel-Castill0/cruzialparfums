@@ -44,7 +44,7 @@ export default async function AdminImportPage() {
 
   return (
     <div className={styles.page}>
-      <header className={styles.header}><div><Link className={styles.back} href="/admin">← Administración</Link><h1>Cruzial Import</h1><p>Catálogo, preparación de publicación, consolidados, pedidos, clientes y configuración.</p></div></header>
+      <header className={styles.header}><div><h1>Cruzial Import</h1><p>Catálogo, preparación de publicación, consolidados, pedidos, clientes y configuración.</p></div></header>
       <main>
         <nav className={styles.links}>
           <Link className={styles.linkCard} href={"/admin/import/productos" as Route}><strong>Productos</strong><span>Buscar, filtrar y mantener productos y presentaciones estructurales.</span></Link>

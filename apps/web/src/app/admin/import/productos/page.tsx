@@ -15,7 +15,7 @@ const totalPages=Math.max(1,Math.ceil(result.data.total/filters.pageSize));
 const campaignQuery=selectedCampaign?`&campaign=${selectedCampaign.id}`:"";
 const href=(page:number)=>{const p=new URLSearchParams();for(const[k,v]of Object.entries(raw))if(typeof v==="string")p.set(k,v);if(selectedCampaign)p.set("campaign",selectedCampaign.id);p.set("page",String(page));return`?${p}` as Route};
 const productHref=(id:string)=>`/admin/import/productos/${id}${campaignQuery?`?${campaignQuery.slice(1)}`:""}` as Route;
-return <div className={styles.page}><header className={styles.header}><div><Link className={styles.back} href="/admin/import">← Cruzial Import</Link><h1>Productos</h1><p>{result.data.total} resultados · páginas acotadas de {filters.pageSize}</p></div></header><main>
+return <div className={styles.page}><header className={styles.header}><div><h1>Productos</h1><p>{result.data.total} resultados · páginas acotadas de {filters.pageSize}</p></div></header><main>
 <section className={styles.panel} aria-label="Consolidado evaluado">
   {campaigns.length>0?<form method="get" className={styles.filters}>
     {Object.entries(raw).filter(([k,v])=>k!=="campaign"&&k!=="page"&&typeof v==="string").map(([k,v])=><input key={k} type="hidden" name={k} value={v as string}/>)}

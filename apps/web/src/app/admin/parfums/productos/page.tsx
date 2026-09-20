@@ -100,9 +100,6 @@ export default async function AdminParfumsProductsPage({
     <div className={styles.page}>
       <header className={styles.header}>
         <div>
-          <Link href="/admin/parfums" className={styles.back}>
-            ← Cruzial Parfums
-          </Link>
           <h1>Productos</h1>
           <p>{total} producto{total === 1 ? "" : "s"} en total.</p>
         </div>

@@ -77,7 +77,6 @@ export default async function CategoriesPage({
     <div className={styles.page}>
       <header className={styles.header}>
         <div>
-          <Link href="/admin/parfums" className={styles.back}>← Cruzial Parfums</Link>
           <h1>Categorías</h1>
           <p>{total} categoría{total === 1 ? "" : "s"} en esta vista.</p>
         </div>

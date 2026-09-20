@@ -106,7 +106,6 @@ export default async function AdminWholesalePage({
     <div className={baseStyles.page}>
       <header className={baseStyles.header}>
         <div>
-          <Link href="/admin/parfums" className={baseStyles.back}>← Cruzial Parfums</Link>
           <h1>Mayorista</h1>
           <p>Reglas por tipo comercial y frascos elegibles.</p>
         </div>

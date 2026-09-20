@@ -82,9 +82,6 @@ export default async function AdminParfumsOrdersPage({
     <div className={styles.page}>
       <header className={styles.header}>
         <div>
-          <Link href="/admin/parfums" className={styles.back}>
-            ← Cruzial Parfums
-          </Link>
           <h1>Pedidos</h1>
           <p>{total} solicitud{total === 1 ? "" : "es"} registrada{total === 1 ? "" : "s"}.</p>
         </div>

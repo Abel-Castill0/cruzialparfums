@@ -12,31 +12,18 @@ export function AdminUnitPage({
   unitLabel,
   implementedAreas = [],
   placeholderAreas,
-  role,
-  email,
 }: {
   unitLabel: string;
   implementedAreas?: readonly AdminImplementedArea[];
   placeholderAreas: readonly string[];
-  role: "admin" | "viewer";
-  email: string | null;
 }) {
   return (
     <div className={styles.page}>
-      <header className={styles.header}>
-        <strong>Cruzial Admin</strong>
-        <Link href="/admin">← Elegir otra unidad</Link>
-      </header>
-      <p className={styles.notice}>
-        Sesión verificada en el servidor{email ? ` como ${email}` : ""} ·{" "}
-        {role === "admin" ? "Administrador" : "Solo lectura"}.
-      </p>
       <main className={styles.main}>
         <h1>Administrar {unitLabel}</h1>
         <p>
-          La sesión y esta membresía fueron verificadas contra el backend. El
-          schema y las políticas RLS están versionados; cada área se implementa
-          por separado sobre esa base, sin datos de prueba.
+          Tu sesión y tu acceso a esta unidad fueron verificados. Cada área se
+          muestra con datos reales, nunca de prueba.
         </p>
 
         {implementedAreas.length > 0 ? (

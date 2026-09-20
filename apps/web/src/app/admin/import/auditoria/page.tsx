@@ -77,7 +77,6 @@ export default async function AdminImportAuditLogPage({
     <div className={styles.page}>
       <header className={styles.header}>
         <div>
-          <Link href="/admin/import" className={styles.back}>← Cruzial Import</Link>
           <h1>Auditoría</h1>
           <p>{total} evento{total === 1 ? "" : "s"} registrado{total === 1 ? "" : "s"} · solo lectura.</p>
         </div>

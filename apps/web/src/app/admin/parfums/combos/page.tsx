@@ -80,7 +80,6 @@ export default async function CombosPage({
     <div className={styles.page}>
       <header className={styles.header}>
         <div>
-          <Link href="/admin/parfums" className={styles.back}>← Cruzial Parfums</Link>
           <h1>Combos</h1>
           <p>{total} combo{total === 1 ? "" : "s"} en esta vista.</p>
         </div>

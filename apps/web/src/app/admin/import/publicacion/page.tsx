@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Route } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getAdminSession } from "@/lib/auth/admin-session";
@@ -117,9 +117,6 @@ export default async function Page({
     <div className={styles.page}>
       <header className={styles.header}>
         <div>
-          <Link className={styles.back} href="/admin/import">
-            &larr; Cruzial Import
-          </Link>
           <h1>Publicacion</h1>
           <p>Preparacion de lanzamiento</p>
         </div>
@@ -394,7 +391,7 @@ export default async function Page({
                 Esta pantalla muestra el estado de preparacion. No ejecuta
                 publicaciones automaticas. Para publicar productos, editalos
                 individualmente desde{" "}
-                <Link href="/admin/import/productos">Productos</Link>. Para
+                <Link href={`/admin/import/productos?campaign=${selectedCampaign.id}` as Route}>Productos</Link>. Para
                 abrir el consolidado, ve a{" "}
                 <Link href="/admin/import/consolidados">Consolidados</Link>.
               </p>

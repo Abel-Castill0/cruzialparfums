@@ -1,5 +1,6 @@
 import "server-only";
 
+import { cache } from "react";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { BUSINESS_UNITS, type BusinessUnitCode } from "@/domains/platform/contracts";
 
@@ -94,7 +95,11 @@ function normalizeUnit(row: MembershipRow): AdminMembership | null {
  * PostgREST directly. `getAuthenticatorAssuranceLevel()` failing is treated
  * as "unavailable", never as "ok": this function fails closed.
  */
-export async function getAdminSession(): Promise<AdminSessionResult> {
+// Wrapped in React's per-request cache: an admin route's layout resolves the
+// session for the shared shell (nav/unit-switcher) and the page resolves it
+// again for its own authorization/data queries — cache() collapses those
+// into one actual auth+DB round trip per request instead of two.
+export const getAdminSession = cache(async (): Promise<AdminSessionResult> => {
   const supabase = await createSupabaseServerClient();
   if (!supabase) return { status: "not_configured" };
 
@@ -152,7 +157,7 @@ export async function getAdminSession(): Promise<AdminSessionResult> {
   // meaning a factor was just disabled and the JWT is stale) is not a case
   // this application grants access for. Fail closed.
   return { status: "unavailable" };
-}
+});
 
 /**
  * Resolve a session for the narrow set of pages a partially-authenticated

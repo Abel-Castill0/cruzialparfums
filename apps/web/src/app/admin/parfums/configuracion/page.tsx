@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getAdminSession } from "@/lib/auth/admin-session";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -36,7 +35,6 @@ export default async function AdminParfumsSettingsPage() {
     <div className={baseStyles.page}>
       <header className={baseStyles.header}>
         <div>
-          <Link href="/admin/parfums" className={baseStyles.back}>← Cruzial Parfums</Link>
           <h1>Configuración</h1>
           <p>Contacto público confirmado — WhatsApp y correo que ve el cliente.</p>
         </div>
