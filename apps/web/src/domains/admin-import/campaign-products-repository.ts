@@ -87,6 +87,7 @@ export type CampaignProductItem = {
   currency: string;
   availabilityStatus: CampaignProductAvailability;
   sortOrder: number;
+  updatedAt: string;
 };
 
 function mapCampaignProductError(error: PostgrestError): CampaignProductMutationError {
@@ -231,6 +232,7 @@ export class AdminImportCampaignProductsRepository {
         currency: row.currency,
         availabilityStatus: row.availability_status,
         sortOrder: row.sort_order,
+        updatedAt: row.updated_at,
       });
     }
 

@@ -6,6 +6,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { AdminImportCampaignsRepository } from "@/domains/admin-import/campaigns-repository";
 import { AdminImportCampaignProductsRepository } from "@/domains/admin-import/campaign-products-repository";
 import { isValidUuid } from "@/domains/admin-import/campaign-schema";
+import { resolveNextPreparationStep } from "@/domains/admin-import/campaign-preparation";
 import { CampaignEditor } from "./campaign-editor";
 import styles from "@/app/admin/parfums/productos/page.module.css";
 
@@ -41,9 +42,10 @@ export default async function ConsolidadoDetailPage({
   // Bounded initial page only (4J2 correction) — the picker's own search
   // action (searchEligibleImportProductsAction) refines this client-side;
   // this SSR call never loads the whole Import catalog.
-  const [campaignProducts, eligibleProducts] = await Promise.all([
+  const [campaignProducts, eligibleProducts, nextStep] = await Promise.all([
     productsRepository.getCampaignProducts(id),
     productsRepository.searchEligibleProducts({ query: "", limit: 20 }),
+    result.data.archived_at === null ? resolveNextPreparationStep(supabase, id) : Promise.resolve(null),
   ]);
 
   if (!campaignProducts.ok || !eligibleProducts.ok) {
@@ -59,6 +61,30 @@ export default async function ConsolidadoDetailPage({
         </div>
       </header>
       <main>
+        {nextStep ? (
+          <section className={styles.section} aria-labelledby="preparation-assistant-title">
+            <div className={styles.sectionTitle}>
+              <h2 id="preparation-assistant-title">Asistente de preparación</h2>
+            </div>
+            <p className={styles.notice}>Siguiente problema a resolver: {nextStep.label}.</p>
+            <Link
+              href={`/admin/import/publicacion?blocker=${nextStep.blocker}&campaign=${id}`}
+              className={styles.primaryButton}
+            >
+              Continuar preparación →
+            </Link>
+          </section>
+        ) : result.data.archived_at === null ? (
+          <section className={styles.section} aria-labelledby="preparation-assistant-title">
+            <div className={styles.sectionTitle}>
+              <h2 id="preparation-assistant-title">Asistente de preparación</h2>
+            </div>
+            <p className={styles.savedNote} role="status">
+              No hay bloqueadores de publicación conocidos pendientes en este consolidado.
+            </p>
+          </section>
+        ) : null}
+
         <CampaignEditor
           campaign={result.data}
           campaignProducts={campaignProducts.data}

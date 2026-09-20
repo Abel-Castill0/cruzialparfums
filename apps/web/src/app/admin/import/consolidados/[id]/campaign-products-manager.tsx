@@ -29,9 +29,17 @@ import {
   serializeCampaignRows,
   updateCampaignRow,
 } from "@/domains/admin-import/campaign-table-model";
+import {
+  diffCampaignCsvRows,
+  exportCampaignRowsToCsv,
+  parseCampaignCsv,
+  type CampaignCsvDiffRow,
+  type CampaignCsvSourceRow,
+} from "@/domains/admin-import/campaign-csv";
 import { searchEligibleImportProductsAction, setCampaignProductsAction } from "../actions";
 import formStyles from "@/components/admin/product-form-fields.module.css";
 import styles from "@/app/admin/parfums/productos/page.module.css";
+import bulkStyles from "./campaign-bulk.module.css";
 
 const PICKER_PRODUCT_PUBLICATION_LABELS: Record<Exclude<ProductPublicationStatus, "archived">, string> = {
   published: "Publicado",
@@ -57,7 +65,19 @@ const PICKER_PRESENTATION_PUBLICATION_LABELS: Record<Exclude<ImportPresentationP
   draft: "Borrador — no lista públicamente",
 };
 
+const CSV_CLASSIFICATION_LABELS: Record<CampaignCsvDiffRow["classification"], string> = {
+  unchanged: "Sin cambios",
+  price_changed: "Precio cambia",
+  availability_changed: "Disponibilidad cambia",
+  both_changed: "Precio y disponibilidad cambian",
+  stale: "Desactualizado (recargar)",
+  invalid: "Inválido",
+  not_found: "Oferta no encontrada",
+};
+
 type Row = {
+  offerId: string;
+  updatedAt: string;
   productId: string;
   productVariantId: string | null;
   importPresentationId: string | null;
@@ -87,6 +107,8 @@ type Row = {
 
 function toRow(item: CampaignProductItem): Row {
   return {
+    offerId: item.id,
+    updatedAt: item.updatedAt,
     productId: item.productId,
     productVariantId: item.productVariantId,
     importPresentationId: item.importPresentationId,
@@ -170,10 +192,152 @@ export function CampaignProductsManager({
   const [tablePage, setTablePage] = useState(1);
   const searchDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Bulk selection — keyed by campaignRowKey, same identity the rest of the
+  // manager already uses. Selection is purely a client-side UI concern: the
+  // authoritative apply still goes through the exact same "Guardar
+  // productos" full-replace save as any other manual edit.
+  const [selectedKeys, setSelectedKeys] = useState<Set<string>>(new Set());
+  const [bulkAvailability, setBulkAvailability] = useState<CampaignProductAvailability>("available");
+  const csvFileInputRef = useRef<HTMLInputElement>(null);
+  const [csvDiff, setCsvDiff] = useState<CampaignCsvDiffRow[] | null>(null);
+  const [csvApprovedLines, setCsvApprovedLines] = useState<Set<number>>(new Set());
+  const [csvError, setCsvError] = useState<string | null>(null);
+
   const dirty = useMemo(() => campaignRowsDirty(rows, baseline), [rows, baseline]);
   const filteredRows = useMemo(() => filterCampaignRows(rows, tableQuery, availabilityFilter), [rows, tableQuery, availabilityFilter]);
   const pageWindow = useMemo(() => paginateCampaignRows(filteredRows, tablePage, 40), [filteredRows, tablePage]);
   const filtersActive = tableQuery.trim().length > 0 || availabilityFilter !== "all";
+
+  function selectPage() {
+    setSelectedKeys((previous) => {
+      const next = new Set(previous);
+      for (const row of pageWindow.items) next.add(campaignRowKey(row));
+      return next;
+    });
+  }
+
+  function selectAllFiltered() {
+    setSelectedKeys(new Set(filteredRows.map((row) => campaignRowKey(row))));
+  }
+
+  function clearSelection() {
+    setSelectedKeys(new Set());
+  }
+
+  function toggleRowSelection(key: string) {
+    setSelectedKeys((previous) => {
+      const next = new Set(previous);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }
+
+  function applyBulkAvailability() {
+    if (selectedKeys.size === 0) return;
+    setRows((previous) =>
+      previous.map((row) =>
+        selectedKeys.has(campaignRowKey(row)) ? { ...row, availabilityStatus: bulkAvailability } : row,
+      ),
+    );
+    setSaved(false);
+  }
+
+  function handleExportCsv() {
+    const csv = exportCampaignRowsToCsv(
+      rows
+        .filter((row) => row.offerId)
+        .map(
+          (row): CampaignCsvSourceRow => ({
+            offerId: row.offerId,
+            productName: row.productName,
+            presentationLabel: row.presentationLabel ?? row.variantLabel,
+            priceAmount: row.priceAmount,
+            currency: "PEN",
+            availabilityStatus: row.availabilityStatus,
+            updatedAt: row.updatedAt,
+          }),
+        ),
+    );
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `consolidado-${campaignId}-ofertas.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }
+
+  function handleCsvFileSelected(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    setCsvError(null);
+    setCsvDiff(null);
+    file.text().then((text) => {
+      const parsed = parseCampaignCsv(text);
+      if (!parsed.ok) {
+        setCsvError(parsed.error);
+        return;
+      }
+      const currentByOfferId = new Map<string, CampaignCsvSourceRow>(
+        rows
+          .filter((row) => row.offerId)
+          .map((row) => [
+            row.offerId,
+            {
+              offerId: row.offerId,
+              productName: row.productName,
+              presentationLabel: row.presentationLabel ?? row.variantLabel,
+              priceAmount: row.priceAmount,
+              currency: "PEN",
+              availabilityStatus: row.availabilityStatus,
+              updatedAt: row.updatedAt,
+            },
+          ]),
+      );
+      const diff = diffCampaignCsvRows(currentByOfferId, parsed.rows);
+      setCsvDiff(diff);
+      setCsvApprovedLines(
+        new Set(
+          diff
+            .filter((entry) => entry.classification === "price_changed" || entry.classification === "availability_changed" || entry.classification === "both_changed")
+            .map((entry) => entry.lineNumber),
+        ),
+      );
+    });
+  }
+
+  function toggleCsvLineApproval(lineNumber: number) {
+    setCsvApprovedLines((previous) => {
+      const next = new Set(previous);
+      if (next.has(lineNumber)) next.delete(lineNumber);
+      else next.add(lineNumber);
+      return next;
+    });
+  }
+
+  function applyCsvChanges() {
+    if (!csvDiff) return;
+    const approved = new Map(
+      csvDiff
+        .filter((entry) => csvApprovedLines.has(entry.lineNumber) && entry.newPrice !== undefined && entry.newAvailability !== undefined)
+        .map((entry) => [entry.offerId, entry]),
+    );
+    if (approved.size === 0) return;
+    setRows((previous) =>
+      previous.map((row) => {
+        const change = row.offerId ? approved.get(row.offerId) : undefined;
+        if (!change) return row;
+        return { ...row, priceAmount: change.newPrice!, availabilityStatus: change.newAvailability! };
+      }),
+    );
+    setSaved(false);
+    setCsvDiff(null);
+    setCsvApprovedLines(new Set());
+  }
 
   useEffect(() => {
     if (!dirty) return;
@@ -268,6 +432,8 @@ export function CampaignProductsManager({
     setRows((previous) => [
       ...previous,
       {
+        offerId: "",
+        updatedAt: "",
         productId: selectedProduct.id,
         productVariantId: null,
         importPresentationId: presentationId,
@@ -394,12 +560,142 @@ export function CampaignProductsManager({
         </div>
       ) : null}
 
+      {rows.length > 0 && !disabled ? (
+        <div className={bulkStyles.bulkBar}>
+          <div className={bulkStyles.selectionControls}>
+            <button type="button" className={styles.secondaryButton} onClick={selectPage}>Seleccionar página</button>
+            <button type="button" className={styles.secondaryButton} onClick={selectAllFiltered}>
+              Seleccionar {filteredRows.length} filtrado{filteredRows.length === 1 ? "" : "s"}
+            </button>
+            <button type="button" className={styles.secondaryButton} onClick={clearSelection} disabled={selectedKeys.size === 0}>
+              Limpiar selección
+            </button>
+            <span className={bulkStyles.selectionCount}>{selectedKeys.size} seleccionado{selectedKeys.size === 1 ? "" : "s"}</span>
+          </div>
+          <div className={bulkStyles.bulkAction}>
+            <label className={styles.srOnly} htmlFor="bulk-availability">Cambiar disponibilidad a</label>
+            <select id="bulk-availability" value={bulkAvailability} onChange={(event) => setBulkAvailability(event.target.value as CampaignProductAvailability)}>
+              <option value="unconfirmed">{AVAILABILITY_LABELS.unconfirmed}</option>
+              <option value="available">{AVAILABILITY_LABELS.available}</option>
+              <option value="out_of_stock">{AVAILABILITY_LABELS.out_of_stock}</option>
+            </select>
+            <button type="button" className={styles.secondaryButton} onClick={applyBulkAvailability} disabled={selectedKeys.size === 0}>
+              Aplicar a seleccionados
+            </button>
+          </div>
+        </div>
+      ) : null}
+
+      {rows.length > 0 ? (
+        <div className={bulkStyles.csvBar}>
+          <button type="button" className={styles.secondaryButton} onClick={handleExportCsv}>
+            Exportar CSV
+          </button>
+          {!disabled ? (
+            <>
+              <button type="button" className={styles.secondaryButton} onClick={() => csvFileInputRef.current?.click()}>
+                Importar CSV
+              </button>
+              <input
+                ref={csvFileInputRef}
+                type="file"
+                accept=".csv,text/csv"
+                className={styles.srOnly}
+                onChange={handleCsvFileSelected}
+              />
+            </>
+          ) : null}
+          <span className={bulkStyles.csvHelp}>
+            El CSV exportado es la plantilla para editar precio/disponibilidad de muchas ofertas a la vez.
+          </span>
+        </div>
+      ) : null}
+
+      {csvError ? <p className={formStyles.error} role="alert">{csvError}</p> : null}
+
+      {csvDiff ? (
+        <div className={bulkStyles.csvDiff} aria-live="polite">
+          <div className={bulkStyles.csvDiffHeader}>
+            <h3>Vista previa del CSV ({csvDiff.length} fila{csvDiff.length === 1 ? "" : "s"})</h3>
+            <button type="button" className={styles.secondaryButton} onClick={() => { setCsvDiff(null); setCsvApprovedLines(new Set()); }}>
+              Cancelar
+            </button>
+          </div>
+          <ul className={bulkStyles.csvSummary}>
+            {(["unchanged", "price_changed", "availability_changed", "both_changed", "stale", "invalid", "not_found"] as const).map((kind) => {
+              const count = csvDiff.filter((entry) => entry.classification === kind).length;
+              if (count === 0) return null;
+              return <li key={kind}>{CSV_CLASSIFICATION_LABELS[kind]}: {count}</li>;
+            })}
+          </ul>
+          <div className={bulkStyles.csvTableWrap}>
+            <table className={styles.variantTable}>
+              <thead>
+                <tr>
+                  <th>Aplicar</th>
+                  <th>Fila</th>
+                  <th>Producto</th>
+                  <th>Estado</th>
+                  <th>Precio</th>
+                  <th>Disponibilidad</th>
+                </tr>
+              </thead>
+              <tbody>
+                {csvDiff.map((entry) => {
+                  const applicable = entry.classification === "price_changed" || entry.classification === "availability_changed" || entry.classification === "both_changed";
+                  return (
+                    <tr key={entry.lineNumber}>
+                      <td data-label="Aplicar">
+                        {applicable ? (
+                          <input
+                            type="checkbox"
+                            checked={csvApprovedLines.has(entry.lineNumber)}
+                            onChange={() => toggleCsvLineApproval(entry.lineNumber)}
+                            aria-label={`Aplicar cambios de la fila ${entry.lineNumber}`}
+                          />
+                        ) : null}
+                      </td>
+                      <td data-label="Fila">{entry.lineNumber}</td>
+                      <td data-label="Producto">{entry.productName ?? entry.offerId}{entry.presentationLabel ? ` · ${entry.presentationLabel}` : ""}</td>
+                      <td data-label="Estado">
+                        <span className={bulkStyles.csvBadge} data-kind={entry.classification}>{CSV_CLASSIFICATION_LABELS[entry.classification]}</span>
+                        {entry.reason ? <span className={bulkStyles.csvReason}>{entry.reason}</span> : null}
+                      </td>
+                      <td data-label="Precio">
+                        {entry.newPrice !== undefined && entry.newPrice !== entry.currentPrice
+                          ? <>{entry.currentPrice} → <strong>{entry.newPrice}</strong></>
+                          : (entry.currentPrice ?? "—")}
+                      </td>
+                      <td data-label="Disponibilidad">
+                        {entry.newAvailability !== undefined && entry.newAvailability !== entry.currentAvailability
+                          ? <>{entry.currentAvailability ? AVAILABILITY_LABELS[entry.currentAvailability] : "—"} → <strong>{AVAILABILITY_LABELS[entry.newAvailability]}</strong></>
+                          : (entry.currentAvailability ? AVAILABILITY_LABELS[entry.currentAvailability] : "—")}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+          <div className={styles.formActions}>
+            <button type="button" className={styles.primaryButton} onClick={applyCsvChanges} disabled={csvApprovedLines.size === 0}>
+              Aplicar {csvApprovedLines.size} cambio{csvApprovedLines.size === 1 ? "" : "s"} validado{csvApprovedLines.size === 1 ? "" : "s"}
+            </button>
+          </div>
+          <p className={styles.notice}>
+            Aplicar solo actualiza esta tabla en el navegador — nada se guarda hasta que presiones &quot;Guardar productos&quot;
+            más abajo, que vuelve a validar todo en el servidor.
+          </p>
+        </div>
+      ) : null}
+
       {rows.length === 0 ? (
         <p className={styles.notice}>Este consolidado aún no tiene productos.</p>
       ) : (
         <table className={styles.variantTable}>
           <thead>
             <tr>
+              {!disabled ? <th aria-label="Seleccionar" /> : null}
               <th>Producto</th>
               <th>Precio (PEN)</th>
               <th>Disponibilidad</th>
@@ -417,6 +713,16 @@ export function CampaignProductsManager({
               const rowReadiness = readiness[index];
               return (
                 <tr key={key}>
+                  {!disabled ? (
+                    <td data-label="Seleccionar">
+                      <input
+                        type="checkbox"
+                        checked={selectedKeys.has(key)}
+                        onChange={() => toggleRowSelection(key)}
+                        aria-label={`Seleccionar ${rowLabel}`}
+                      />
+                    </td>
+                  ) : null}
                   <td data-label="Producto">
                     {row.productName}
                     {structureLabel ? ` · ${structureLabel}` : ""}
