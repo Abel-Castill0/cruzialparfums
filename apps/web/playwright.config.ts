@@ -18,7 +18,7 @@ import { defineConfig, devices } from "@playwright/test";
 
 const baseURL = process.env.E2E_BASE_URL || "http://localhost:3000";
 const isLocalTarget = !process.env.E2E_BASE_URL;
-const PUBLIC_SPECS = /(public-hub|parfums-public-journey|parfums-storefront|import-public-journey|admin-protection)\.spec\.ts/;
+const PUBLIC_SPECS = /(public-hub|parfums-public-journey|parfums-storefront|import-public-journey|admin-protection|accessibility)\.spec\.ts/;
 
 export default defineConfig({
   testDir: "./e2e",
@@ -34,6 +34,7 @@ export default defineConfig({
   projects: [
     { name: "setup", testMatch: /auth\.setup\.ts/ },
     { name: "chromium", testMatch: PUBLIC_SPECS, use: { ...devices["Desktop Chrome"] } },
+    { name: "responsive", testMatch: /responsive\.spec\.ts/, use: { ...devices["Desktop Chrome"] } },
     { name: "mobile", testMatch: PUBLIC_SPECS, use: { ...devices["Pixel 7"] } },
     {
       name: "admin",

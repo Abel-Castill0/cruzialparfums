@@ -20,7 +20,7 @@ export function SiteFooter({ logoUrl, whatsappNumber, instagramUrl }: { logoUrl:
             <p>Perfumería de descubrimiento. Menos volumen, más criterio. Del frasco original a tu piel.</p>
             <div className={styles.footerSocial}>
               <a href={`https://wa.me/${whatsappNumber}`} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp"><WhatsAppIcon size={16} /></a>
-              <a href={instagramUrl} target="_blank" rel="noopener noreferrer" aria-label="Instagram">IG</a>
+              <a href={instagramUrl} target="_blank" rel="noopener noreferrer" aria-label="IG — Instagram">IG</a>
             </div>
           </div>
           {columns.map((column) => (

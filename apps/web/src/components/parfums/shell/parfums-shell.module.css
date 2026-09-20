@@ -506,6 +506,11 @@
   color: #fff;
 }
 
+.footer .brandWord small {
+  /* 4.6:1 on #0a0806 — the header value (#756f66) is for the ivory background */
+  color: #b3ab9f;
+}
+
 .footerGrid {
   display: grid;
   grid-template-columns: minmax(280px, 2fr) repeat(3, 1fr);
@@ -569,8 +574,9 @@
   display: flex;
   justify-content: space-between;
   border-top: 1px solid rgba(238, 232, 221, 0.14);
-  color: rgba(238, 232, 221, 0.42);
-  font-size: 9px;
+  /* ≥ 4.5:1 on the footer background (WCAG AA for small text) */
+  color: rgba(238, 232, 221, 0.72);
+  font-size: 10px;
   letter-spacing: 0.13em;
   text-transform: uppercase;
 }
