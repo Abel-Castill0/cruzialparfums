@@ -84,9 +84,11 @@ function ClosedState({ contact, unavailable = false }: { contact: { whatsappNumb
 
 function ProductCard({
   product,
+  campaign,
   priority = false,
 }: {
   product: PublicImportProduct;
+  campaign: { id: string; number: number };
   priority?: boolean;
 }) {
   const href = `/import/producto/${product.slug}` as Route;
@@ -141,6 +143,7 @@ function ProductCard({
               currency: singleAvailable.currency,
               quantity: 1,
             }}
+            campaign={campaign}
           />
         ) : hasAvailable ? (
           <Link href={href} className={styles.choosePresentation}>
@@ -247,7 +250,12 @@ export default async function ImportHomePage({ searchParams }: PageProps) {
         {result.products.length > 0 && !invalidPage ? (
           <div className={styles.productGrid}>
             {result.products.map((product, index) => (
-              <ProductCard key={product.id} product={product} priority={index === 0} />
+              <ProductCard
+                key={product.id}
+                product={product}
+                campaign={result.campaign}
+                priority={index === 0}
+              />
             ))}
           </div>
         ) : (

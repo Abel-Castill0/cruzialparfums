@@ -22,6 +22,7 @@ type CatalogRow = Parameters<typeof mapPublicImportProduct>[0] & {
 };
 
 type ProductRow = Parameters<typeof mapPublicImportProduct>[0] & {
+  campaign_id: string;
   campaign_number: number;
   campaign_name: string;
   campaign_closes_at: string | null;
@@ -87,7 +88,7 @@ export class PublicImportRepository {
 
   async readProduct(slug: string): Promise<{
     product: PublicImportProduct;
-    campaign: Pick<PublicImportCampaign, "number" | "name" | "closesAt">;
+    campaign: Pick<PublicImportCampaign, "id" | "number" | "name" | "closesAt">;
   } | null> {
     const result = await this.rpc("public_get_import_product", { p_slug: slug.slice(0, 180) });
     if (result.error) throw new Error(`Public Import product read failed: ${result.error.message}`);
@@ -98,6 +99,7 @@ export class PublicImportRepository {
     return {
       product,
       campaign: {
+        id: row.campaign_id,
         number: row.campaign_number,
         name: row.campaign_name,
         closesAt: row.campaign_closes_at,

@@ -1,11 +1,14 @@
 import { describe, expect, it, vi } from "vitest";
 import {
+  type ImportCartCampaign,
   type ImportCartLine,
   addImportCartLine,
   clearImportCart,
   countImportCart,
   importCartLineKey,
+  reconcileImportCartForCampaign,
   readImportCart,
+  readImportCartCampaign,
   removeImportCartLine,
   setImportCartLineQuantity,
   writeImportCart,
@@ -176,5 +179,115 @@ describe("import cart helpers", () => {
 
   it("line key is offerId", () => {
     expect(importCartLineKey(validLine)).toBe(validLine.offerId);
+  });
+});
+
+describe("import cart campaign scoping (Task 2)", () => {
+  const campaignA: ImportCartCampaign = { id: "aaaaaaaa-0000-4000-8000-000000000001", number: 6 };
+  const campaignB: ImportCartCampaign = { id: "bbbbbbbb-0000-4000-8000-000000000002", number: 7 };
+
+  it("stamps a fresh cart with the campaign it was added under", () => {
+    const { storage } = mockStorage();
+    addImportCartLine(storage, validLine, campaignA);
+    expect(readImportCartCampaign(storage)).toEqual(campaignA);
+  });
+
+  it("legacy cart (pre-Task-2 bare array): lines are kept for raw reads, but campaign identity is unknown", () => {
+    const { store, storage } = mockStorage();
+    store["cruzial:v2:cart:import"] = JSON.stringify([validLine]);
+    expect(readImportCart(storage)).toHaveLength(1);
+    expect(readImportCartCampaign(storage)).toBeNull();
+  });
+
+  it("legacy cart is discarded on reconciliation — identity cannot be verified", () => {
+    const { store, storage } = mockStorage();
+    store["cruzial:v2:cart:import"] = JSON.stringify([validLine]);
+    const result = reconcileImportCartForCampaign(storage, campaignA);
+    expect(result).toEqual({ status: "discarded", reason: "legacy", discardedLineCount: 1 });
+    expect(readImportCart(storage)).toEqual([]);
+    expect(readImportCartCampaign(storage)).toEqual(campaignA);
+  });
+
+  it("same campaign: reconciliation keeps lines untouched", () => {
+    const { storage } = mockStorage();
+    addImportCartLine(storage, validLine, campaignA);
+    const result = reconcileImportCartForCampaign(storage, campaignA);
+    expect(result.status).toBe("same_campaign");
+    expect(readImportCart(storage)).toHaveLength(1);
+  });
+
+  it("campaign change: reconciliation discards the previous campaign's lines", () => {
+    const { storage } = mockStorage();
+    addImportCartLine(storage, validLine, campaignA);
+    const result = reconcileImportCartForCampaign(storage, campaignB);
+    expect(result).toEqual({ status: "discarded", reason: "campaign_changed", discardedLineCount: 1 });
+    expect(readImportCart(storage)).toEqual([]);
+    expect(readImportCartCampaign(storage)).toEqual(campaignB);
+  });
+
+  it("adding a line under a new campaign discards the previous campaign's lines instead of mixing them", () => {
+    const { storage } = mockStorage();
+    addImportCartLine(storage, validLine, campaignA);
+    const result = addImportCartLine(storage, secondLine, campaignB);
+    expect(result.lines).toHaveLength(1);
+    expect(result.lines[0]!.offerId).toBe(secondLine.offerId);
+    expect(readImportCartCampaign(storage)).toEqual(campaignB);
+  });
+
+  it("adding without a known campaign preserves whatever campaign was already stamped", () => {
+    const { storage } = mockStorage();
+    addImportCartLine(storage, validLine, campaignA);
+    addImportCartLine(storage, secondLine); // no campaign supplied
+    expect(readImportCartCampaign(storage)).toEqual(campaignA);
+    expect(readImportCart(storage)).toHaveLength(2);
+  });
+
+  it("malformed storage (corrupted JSON) degrades to an empty, unknown-campaign cart", () => {
+    const { store, storage } = mockStorage();
+    store["cruzial:v2:cart:import"] = "{not json";
+    expect(readImportCart(storage)).toEqual([]);
+    expect(readImportCartCampaign(storage)).toBeNull();
+  });
+
+  it("malformed storage (unexpected object shape) degrades to an empty, unknown-campaign cart", () => {
+    const { store, storage } = mockStorage();
+    store["cruzial:v2:cart:import"] = JSON.stringify({ unexpected: true });
+    expect(readImportCart(storage)).toEqual([]);
+    expect(readImportCartCampaign(storage)).toBeNull();
+  });
+
+  it("falls back to comparing campaign number when either side lacks an id", () => {
+    const { storage } = mockStorage();
+    addImportCartLine(storage, validLine, { id: null, number: 6 });
+    const result = reconcileImportCartForCampaign(storage, { id: "cccccccc-0000-4000-8000-000000000003", number: 6 });
+    expect(result.status).toBe("same_campaign");
+  });
+
+  it("stale offer within the same campaign: reconciliation does not itself revalidate offer freshness (server does, at order creation)", () => {
+    const { storage } = mockStorage();
+    addImportCartLine(storage, validLine, campaignA);
+    const result = reconcileImportCartForCampaign(storage, campaignA);
+    expect(result.status).toBe("same_campaign");
+    expect(readImportCart(storage)[0]!.offerUpdatedAt).toBe(validLine.offerUpdatedAt);
+  });
+
+  it("reconciling an empty cart stamps the current campaign without discarding anything", () => {
+    const { storage } = mockStorage();
+    const result = reconcileImportCartForCampaign(storage, campaignA);
+    expect(result).toEqual({ status: "empty" });
+    expect(readImportCartCampaign(storage)).toEqual(campaignA);
+  });
+
+  it("clear/remove/update preserve the stamped campaign identity", () => {
+    const { storage } = mockStorage();
+    addImportCartLine(storage, validLine, campaignA);
+    addImportCartLine(storage, secondLine, campaignA);
+    setImportCartLineQuantity(storage, validLine.offerId, 3);
+    expect(readImportCartCampaign(storage)).toEqual(campaignA);
+    removeImportCartLine(storage, secondLine.offerId);
+    expect(readImportCartCampaign(storage)).toEqual(campaignA);
+    clearImportCart(storage);
+    expect(readImportCartCampaign(storage)).toEqual(campaignA);
+    expect(readImportCart(storage)).toEqual([]);
   });
 });

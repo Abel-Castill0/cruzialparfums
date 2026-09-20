@@ -69,6 +69,18 @@
   line-height: 1.55;
 }
 
+.noticeBanner {
+  margin-top: 16px;
+  padding: 14px 18px;
+  border: 1px solid #a6761f;
+  border-radius: 12px;
+  background: #fdf6e8;
+  color: #5c4108;
+  font-size: 0.85rem;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
 .actions {
   margin-top: 24px;
   display: flex;

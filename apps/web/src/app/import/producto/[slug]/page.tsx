@@ -120,6 +120,7 @@ export default async function ImportProductPage({ params }: ProductPageProps) {
                         currency: presentation.currency,
                         quantity: 1,
                       }}
+                      campaign={campaign}
                       disabled={presentation.availability !== "available"}
                     />
                   </div>

@@ -2,8 +2,10 @@
 
 import type { Route } from "next";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { useImportCart } from "@/components/import/cart/use-import-cart";
 import { ImportCartLineItem } from "@/components/import/cart/import-cart-line";
+import { getCurrentImportCampaign, type CurrentImportCampaign } from "./actions";
 import styles from "./page.module.css";
 
 function formatPrice(total: number): string {
@@ -15,7 +17,18 @@ function formatPrice(total: number): string {
 }
 
 export default function ImportCartPage() {
-  const { lines } = useImportCart();
+  const [campaign, setCampaign] = useState<CurrentImportCampaign>(null);
+  useEffect(() => {
+    let active = true;
+    getCurrentImportCampaign().then((result) => {
+      if (active) setCampaign(result);
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const { lines, reconciliation } = useImportCart(campaign);
 
   const displaySubtotal = lines.reduce((sum, line) => {
     return sum + parseFloat(line.price) * line.quantity;
@@ -25,6 +38,20 @@ export default function ImportCartPage() {
     <main className={styles.page}>
       <div className={styles.container}>
         <h1 className={styles.heading}>Carrito de Import</h1>
+        {campaign && (
+          <p className={styles.summaryNote} aria-live="polite">
+            Consolidado vigente: #{campaign.number}
+          </p>
+        )}
+        {reconciliation?.status === "discarded" && (
+          <div className={styles.noticeBanner} role="status" aria-live="polite">
+            <p>
+              {reconciliation.reason === "campaign_changed"
+                ? "El consolidado cambió desde tu última visita. Vaciamos tu carrito anterior para evitar precios u ofertas de un consolidado distinto."
+                : "No pudimos confirmar a qué consolidado pertenecía tu carrito guardado, así que lo vaciamos por seguridad."}
+            </p>
+          </div>
+        )}
 
         {lines.length === 0 ? (
           <div className={styles.empty}>

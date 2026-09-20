@@ -2,10 +2,11 @@
 
 import type { Route } from "next";
 import Link from "next/link";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useImportCart } from "@/components/import/cart/use-import-cart";
 import { createImportOrderRequest } from "@/app/import/checkout/actions";
 import type { CreateImportOrderResult } from "@/app/import/checkout/actions";
+import { getCurrentImportCampaign, type CurrentImportCampaign } from "@/app/import/carrito/actions";
 import styles from "./page.module.css";
 
 type CheckoutFormState =
@@ -70,7 +71,18 @@ function formatPrice(value: number): string {
 }
 
 export default function ImportCheckoutPage() {
-  const { lines, clear } = useImportCart();
+  const [campaign, setCampaign] = useState<CurrentImportCampaign>(null);
+  useEffect(() => {
+    let active = true;
+    getCurrentImportCampaign().then((result) => {
+      if (active) setCampaign(result);
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const { lines, clear, reconciliation } = useImportCart(campaign);
   const [formState, setFormState] = useState<CheckoutFormState>(() => {
     const saved = getStoredSuccess();
     if (saved) return { phase: "success", data: saved };
@@ -216,6 +228,15 @@ export default function ImportCheckoutPage() {
     return (
       <main className={styles.page}>
         <div className={styles.container}>
+          {reconciliation?.status === "discarded" && (
+            <div className={styles.noticeBanner} role="status" aria-live="polite">
+              <p>
+                {reconciliation.reason === "campaign_changed"
+                  ? "El consolidado cambió desde tu última visita. Vaciamos tu carrito anterior para evitar precios u ofertas de un consolidado distinto."
+                  : "No pudimos confirmar a qué consolidado pertenecía tu carrito guardado, así que lo vaciamos por seguridad."}
+              </p>
+            </div>
+          )}
           <div className={styles.empty}>
             <p>Tu carrito de Import está vacío.</p>
             <Link href={"/import#catalogo" as Route} className={styles.primaryAction}>
@@ -232,6 +253,16 @@ export default function ImportCheckoutPage() {
       <div className={styles.container}>
         <h1 className={styles.heading}>Checkout de Import</h1>
 
+        {reconciliation?.status === "discarded" && (
+          <div className={styles.noticeBanner} role="status" aria-live="polite">
+            <p>
+              {reconciliation.reason === "campaign_changed"
+                ? "El consolidado cambió desde tu última visita. Vaciamos tu carrito anterior para evitar precios u ofertas de un consolidado distinto."
+                : "No pudimos confirmar a qué consolidado pertenecía tu carrito guardado, así que lo vaciamos por seguridad."}
+            </p>
+          </div>
+        )}
+
         {formState.phase === "error" && (
           <div className={styles.errorBanner} role="alert" aria-live="assertive">
             <p>{formState.message}</p>
@@ -241,6 +272,11 @@ export default function ImportCheckoutPage() {
         <form ref={formRef} onSubmit={handleSubmit} noValidate className={styles.form}>
           <fieldset className={styles.fieldset}>
             <legend className={styles.legend}>Resumen</legend>
+            {campaign && (
+              <p className={styles.summaryNote}>
+                Consolidado vigente: #{campaign.number}
+              </p>
+            )}
             <div className={styles.cartSummary}>
               {lines.map((line) => (
                 <div key={line.offerId} className={styles.summaryLine}>

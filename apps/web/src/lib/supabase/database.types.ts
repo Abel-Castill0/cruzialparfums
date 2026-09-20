@@ -3001,6 +3001,7 @@ export type Database = {
         Args: never
         Returns: {
           closes_at: string
+          id: string
           name: string
           number: number
           opens_at: string
@@ -3012,6 +3013,7 @@ export type Database = {
         Returns: {
           brand: string
           campaign_closes_at: string
+          campaign_id: string
           campaign_name: string
           campaign_number: number
           category_name: string

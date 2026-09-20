@@ -12,6 +12,7 @@ export type PublicImportPresentationClass =
   | "ambiguous";
 
 export type PublicImportCampaign = {
+  id: string;
   number: number;
   name: string;
   opensAt: string | null;
@@ -57,6 +58,7 @@ export type PublicImportFilters = {
 };
 
 export type PublicImportCampaignRow = {
+  id: string;
   number: number;
   name: string;
   opens_at: string | null;
@@ -69,8 +71,16 @@ export function selectPublicImportCampaign(
 ): PublicImportCampaign | null {
   if (rows.length !== 1) return null;
   const row = rows[0]!;
-  if (!Number.isInteger(row.number) || row.number <= 0 || !row.name.trim()) return null;
+  if (
+    typeof row.id !== "string" ||
+    row.id.trim() === "" ||
+    !Number.isInteger(row.number) ||
+    row.number <= 0 ||
+    !row.name.trim()
+  )
+    return null;
   return {
+    id: row.id,
     number: row.number,
     name: row.name,
     opensAt: row.opens_at,
