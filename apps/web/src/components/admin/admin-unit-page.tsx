@@ -51,14 +51,16 @@ export function AdminUnitPage({
           </div>
         ) : null}
 
-        <div className={styles.areaGrid}>
-          {placeholderAreas.map((area) => (
-            <div key={area} className={styles.areaCard}>
-              <strong>{area}</strong>
-              <span>Sin implementar</span>
-            </div>
-          ))}
-        </div>
+        {placeholderAreas.length > 0 ? (
+          <div className={styles.areaGrid}>
+            {placeholderAreas.map((area) => (
+              <div key={area} className={styles.areaCard}>
+                <strong>{area}</strong>
+                <span>Sin implementar</span>
+              </div>
+            ))}
+          </div>
+        ) : null}
       </main>
     </div>
   );

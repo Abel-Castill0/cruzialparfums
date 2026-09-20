@@ -10,16 +10,14 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = { title: "Parfums" };
 
-// Variantes/decants/frascos/disponibilidad/destacado live inside Productos.
-// Categorías has its own CRUD and remains assignable from the product editor.
-// Combos also has its own CRUD now — composición, verificación y archive/
-// restore sobre un producto Parfums existente. Pedidos (Phase 4E2) is now
-// Inbox/Detail only — read-only, no status workflow yet. Auditoría (4G2) is
-// also read-only — admin and viewer both see it, moved out of placeholders.
-const placeholderAreas = [
-  "Promociones",
-  "Media",
-] as const;
+// Variantes/decants/frascos/disponibilidad/destacado y media viven dentro de
+// Productos. Categorías has its own CRUD and remains assignable from the
+// product editor. Combos also has its own CRUD now — composición,
+// verificación y archive/restore sobre un producto Parfums existente
+// (cubre la funcionalidad promocional confirmada). Pedidos has a status
+// workflow (pending_whatsapp_confirmation → confirmed → fulfilled, or
+// → cancelled). Auditoría is read-only — admin and viewer both see it.
+const placeholderAreas: readonly string[] = [];
 
 export default async function AdminParfumsPage() {
   // Authorization happens here, on the server, for every request — not in the

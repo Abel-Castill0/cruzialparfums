@@ -44,7 +44,7 @@ export default async function AdminImportPage() {
 
   return (
     <div className={styles.page}>
-      <header className={styles.header}><div><Link className={styles.back} href="/admin">← Administración</Link><h1>Cruzial Import</h1><p>Catálogo, QA de publicación, consolidados, pedidos, clientes y configuración.</p></div></header>
+      <header className={styles.header}><div><Link className={styles.back} href="/admin">← Administración</Link><h1>Cruzial Import</h1><p>Catálogo, preparación de publicación, consolidados, pedidos, clientes y configuración.</p></div></header>
       <main>
         <nav className={styles.links}>
           <Link className={styles.linkCard} href={"/admin/import/productos" as Route}><strong>Productos</strong><span>Buscar, filtrar y mantener productos y presentaciones estructurales.</span></Link>
@@ -79,7 +79,7 @@ export default async function AdminImportPage() {
             <Card n={qa.data.total_active_media} label="media activa total"/>
           </section>
           <section className={styles.panel}><h2>Visibilidad pública</h2><p className={styles.help}>El consolidado #{qa.data.campaign_number ?? 6} está en estado <strong>{qa.data.campaign_status ?? "sin configurar"}</strong>. La preparación estructural, la preparación comercial y la visibilidad pública son controles distintos; este panel no publica ni abre campañas automáticamente.</p></section>
-        </> : <p className={styles.error}>No se pudieron cargar los contadores de QA.</p>}
+        </> : <p className={styles.error}>No se pudo cargar el estado del catálogo.</p>}
         <p className={styles.session}>Sesión: {result.session.email ?? "sin correo"} · {membership.role === "admin" ? "Administrador" : "Solo lectura"}</p>
       </main>
     </div>
