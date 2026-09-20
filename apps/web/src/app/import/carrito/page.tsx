@@ -102,7 +102,7 @@ export default function ImportCartPage() {
                 Los precios y disponibilidad se verifican nuevamente al registrar tu solicitud.
               </p>
               <p className={styles.summaryNote}>
-                El anticipo se calcula al registrar (50% clientes nuevos, 70% clientes verificados).
+                El porcentaje de anticipo se confirma al registrar tu pedido, según tu historial como cliente.
               </p>
               <div className={styles.actions}>
               <Link href={"/import/checkout" as Route} className={styles.primaryAction}>

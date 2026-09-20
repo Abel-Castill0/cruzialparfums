@@ -50,6 +50,47 @@ export const ADMIN_EDITABLE_VERIFICATION_STATUS_LABELS: Record<AdminEditableComp
   unknown: VERIFICATION_STATUS_LABELS.unknown,
 };
 
+export type ComboReadinessBlocker =
+  | "product_unpublished"
+  | "product_archived"
+  | "combo_archived"
+  | "composition_unconfirmed"
+  | "no_items"
+  | "item_archived";
+
+export const COMBO_READINESS_BLOCKER_LABELS: Record<ComboReadinessBlocker, string> = {
+  product_unpublished: "El producto del combo no está publicado.",
+  product_archived: "El producto del combo está archivado.",
+  combo_archived: "El combo está archivado.",
+  composition_unconfirmed: "La composición aún no está confirmada (por cliente o PDF oficial).",
+  no_items: "El combo no tiene productos en su composición.",
+  item_archived: "Uno o más productos/variantes de la composición están archivados.",
+};
+
+/** Mirrors app.combo_is_public() exactly (20260920005849_combo_public_read_confirmed_authority.sql)
+ * plus item-level archive checks — so the admin explanation of "why this
+ * can't publish" can never disagree with what the storefront actually gates
+ * on. Never invents a rule the database doesn't already enforce. */
+export function computeComboReadiness(input: {
+  productPublicationStatus: string;
+  productArchived: boolean;
+  comboArchived: boolean;
+  compositionVerificationStatus: string;
+  itemCount: number;
+  hasArchivedItem: boolean;
+}): ComboReadinessBlocker[] {
+  const blockers: ComboReadinessBlocker[] = [];
+  if (input.comboArchived) blockers.push("combo_archived");
+  if (input.productArchived) blockers.push("product_archived");
+  if (input.productPublicationStatus !== "published") blockers.push("product_unpublished");
+  if (!["client_confirmed", "official_pdf"].includes(input.compositionVerificationStatus)) {
+    blockers.push("composition_unconfirmed");
+  }
+  if (input.itemCount === 0) blockers.push("no_items");
+  else if (input.hasArchivedItem) blockers.push("item_archived");
+  return blockers;
+}
+
 export type ComboCreateInput = {
   productId: string;
   compositionVerificationStatus: AdminEditableCompositionVerificationStatus;

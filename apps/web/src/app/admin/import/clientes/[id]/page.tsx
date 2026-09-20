@@ -61,7 +61,10 @@ export default async function AdminImportCustomerDetailPage({
   }
 
   const repository = new AdminImportCustomersRepository(supabase, membership.businessUnitId);
-  const detailResult = await repository.getById(id);
+  const [detailResult, depositPercentages] = await Promise.all([
+    repository.getById(id),
+    repository.getActiveDepositPercentages(),
+  ]);
 
   if (!detailResult.ok) {
     if (detailResult.error.type === "not_found") notFound();
@@ -124,6 +127,7 @@ export default async function AdminImportCustomerDetailPage({
           <CustomerStatusControls
             customerId={customer.id}
             currentStatus={customer.verifiedCustomerStatus}
+            depositPercentages={depositPercentages}
           />
         ) : null}
 
@@ -137,11 +141,18 @@ export default async function AdminImportCustomerDetailPage({
           </div>
           <p style={{ fontSize: 13, color: "#5c574f" }}>
             El estado verificado del cliente determina la política de depósito en futuras compras.
-            {customer.verifiedCustomerStatus === "returning" ? (
-              <> Actualmente: <strong>70% de depósito</strong> (cliente recurrente verificado).</>
-            ) : (
-              <> Actualmente: <strong>50% de depósito</strong> (cliente nuevo o pendiente).</>
-            )}
+            {(() => {
+              const activeStatus = customer.verifiedCustomerStatus === "returning" ? "returning" : "new";
+              const pct = activeStatus === "returning" ? depositPercentages.returning : depositPercentages.new;
+              if (pct === null) {
+                return <> No hay una política de depósito activa configurada para este estado — configúrala antes de generar nuevos pedidos.</>;
+              }
+              return (
+                <>
+                  {" "}Actualmente: <strong>{pct}% de depósito</strong> ({activeStatus === "returning" ? "cliente recurrente verificado" : "cliente nuevo o pendiente"}).
+                </>
+              );
+            })()}
           </p>
         </section>
       </main>

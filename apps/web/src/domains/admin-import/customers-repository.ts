@@ -131,6 +131,31 @@ export class AdminImportCustomersRepository {
     };
   }
 
+  /** Mirrors the exact window/is_active resolution create_import_order_request
+   * itself uses (20260911020000_import_order_foundation_correction.sql) so the
+   * admin UI can never state a percentage the server wouldn't also apply.
+   * Returns null for a status with zero or more than one applicable row —
+   * both are configuration problems, not a percentage to guess at. */
+  async getActiveDepositPercentages(): Promise<{ new: number | null; returning: number | null }> {
+    const nowIso = new Date().toISOString();
+    const { data, error } = await this.supabase
+      .from("deposit_policies")
+      .select("customer_status, deposit_percentage, effective_from, effective_until")
+      .eq("business_unit_id", this.businessUnitId)
+      .eq("is_active", true)
+      .lte("effective_from", nowIso)
+      .or(`effective_until.is.null,effective_until.gt.${nowIso}`);
+
+    if (error || !data) return { new: null, returning: null };
+
+    const byStatus = (status: string): number | null => {
+      const matches = data.filter((row) => row.customer_status === status);
+      return matches.length === 1 ? matches[0]!.deposit_percentage : null;
+    };
+
+    return { new: byStatus("new"), returning: byStatus("returning") };
+  }
+
   async countPendingVerification(): Promise<number | null> {
     const { count, error } = await this.supabase
       .from("customers")

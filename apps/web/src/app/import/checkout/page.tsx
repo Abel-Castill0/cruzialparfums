@@ -311,7 +311,7 @@ export default function ImportCheckoutPage() {
               </div>
             </div>
             <p className={styles.summaryNote}>
-              Los precios y disponibilidad se verifican al registrar. El anticipo se calcula server-side (50% o 70%).
+              Los precios y disponibilidad se verifican al registrar tu pedido. El porcentaje de anticipo depende de tu historial como cliente y se confirmará antes de coordinar el pago.
             </p>
           </fieldset>
 
