@@ -1,3 +1,4 @@
+import { existsSync } from "node:fs";
 import { expect, test } from "@playwright/test";
 
 // 4J5G-B — Authenticated Admin critical E2E.
@@ -6,9 +7,15 @@ import { expect, test } from "@playwright/test";
 // never handles the password. Covers dual-admin (parfums + import) runtime
 // regression only; membership-boundary behavior was proven manually in 4J5F.
 
-test.use({ storageState: "e2e/.auth/staging-admin.json" });
+const STAGING_STATE = "e2e/.auth/staging-admin.json";
 
 test.describe("authenticated admin", () => {
+  // Hosted-staging-only: relies on the [STAGING QA] fixtures and a manually
+  // captured storageState. Skips everywhere else (see admin-critical.spec.ts
+  // for the environment-agnostic authenticated journeys).
+  test.skip(!existsSync(STAGING_STATE), "no staging storageState captured");
+  test.use({ storageState: STAGING_STATE });
+
   test("admin shell shows both business units for a dual-admin member", async ({ page }) => {
     const response = await page.goto("/admin");
     expect(response?.ok()).toBeTruthy();

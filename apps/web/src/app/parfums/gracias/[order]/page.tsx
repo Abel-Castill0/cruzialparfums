@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { OrderHandoff } from "@/components/parfums/checkout/order-handoff";
-import { PARFUMS_SETTINGS } from "@/domains/platform/settings";
+import { loadParfumsStorefront } from "@/lib/catalog/parfums-storefront";
 
 export const metadata: Metadata = {
   title: "Solicitud registrada",
@@ -18,10 +18,11 @@ export default async function ParfumsOrderThankYouPage({
 }) {
   const { order } = await params;
   if (!ORDER_NUMBER_PATTERN.test(order)) notFound();
+  const { contact } = await loadParfumsStorefront();
 
   return (
     <main>
-      <OrderHandoff orderNumber={order} whatsappNumber={PARFUMS_SETTINGS.whatsappNumber} />
+      <OrderHandoff orderNumber={order} whatsappNumber={contact.whatsappNumber} />
     </main>
   );
 }

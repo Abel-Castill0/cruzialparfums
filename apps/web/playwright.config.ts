@@ -1,10 +1,24 @@
 import { defineConfig, devices } from "@playwright/test";
 
-// baseURL is env-driven: default to local dev, override with E2E_BASE_URL for
-// hosted Preview/staging runs, e.g.
-//   E2E_BASE_URL=https://<preview>.vercel.app npx playwright test
+/**
+ * Cruzial V2 end-to-end suite.
+ *
+ * Targets:
+ *   - local (default): E2E_BASE_URL unset. Starts `npm run start` (a fresh
+ *     `npm run build` is expected first) so the suite exercises the
+ *     production bundle, headers and CSP — not the dev server.
+ *   - hosted: E2E_BASE_URL=https://… (Vercel preview/staging/production).
+ *
+ * Projects:
+ *   - setup: builds admin storageState from E2E_ADMIN_* / E2E_PARFUMS_ADMIN_*
+ *     (skips when unset; authenticated specs then skip themselves).
+ *   - chromium / mobile: public journeys on Desktop Chrome and Pixel 7.
+ *   - admin: authenticated journeys, desktop only.
+ */
+
 const baseURL = process.env.E2E_BASE_URL || "http://localhost:3000";
 const isLocalTarget = !process.env.E2E_BASE_URL;
+const PUBLIC_SPECS = /(public-hub|parfums-public-journey|parfums-storefront|import-public-journey|admin-protection)\.spec\.ts/;
 
 export default defineConfig({
   testDir: "./e2e",
@@ -17,15 +31,21 @@ export default defineConfig({
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
   },
-  projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
-  // Only auto-start a local dev server when targeting the local default —
-  // hosted/staging runs (E2E_BASE_URL set) never spawn a local server.
-  // The property is omitted entirely (not set to undefined) when not needed,
-  // since exactOptionalPropertyTypes forbids an explicit undefined here.
+  projects: [
+    { name: "setup", testMatch: /auth\.setup\.ts/ },
+    { name: "chromium", testMatch: PUBLIC_SPECS, use: { ...devices["Desktop Chrome"] } },
+    { name: "mobile", testMatch: PUBLIC_SPECS, use: { ...devices["Pixel 7"] } },
+    {
+      name: "admin",
+      testMatch: /(admin-critical|admin-authenticated)\.spec\.ts/,
+      dependencies: ["setup"],
+      use: { ...devices["Desktop Chrome"] },
+    },
+  ],
   ...(isLocalTarget
     ? {
         webServer: {
-          command: "npm run dev",
+          command: process.env.E2E_SERVER === "dev" ? "npm run dev" : "npm run start",
           url: baseURL,
           reuseExistingServer: true,
           timeout: 60_000,
