@@ -45,6 +45,11 @@ export async function signInAdmin(
   const { error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error) {
+    // Categorized, identity-free: invalid credentials vs. auth backend trouble.
+    console.warn("[admin-auth] login denied", {
+      category: error.status === 400 || error.status === 401 ? "invalid_credentials" : "auth_unavailable",
+      status: error.status ?? null,
+    });
     return { error: "Credenciales inválidas." };
   }
 

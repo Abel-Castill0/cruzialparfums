@@ -56,6 +56,13 @@ export class ParfumsOrderRepository {
         },
       );
       if (error || !data?.[0]) {
+        // Operational signal: request id (a client UUID, not PII) + the
+        // Postgres code so a failed persistence is findable in the logs.
+        console.error("[parfums-order] v2 persistence failed", {
+          requestId: request.requestId,
+          code: error?.code ?? "no_row",
+          message: error?.message ?? "RPC returned no row",
+        });
         return { ok: false, message: "No pudimos registrar tu solicitud. Tu carrito se conserva para que puedas intentarlo nuevamente." };
       }
       return {

@@ -75,6 +75,10 @@ export class ImportOrderRepository {
     );
 
     if (error || !data?.[0]) {
+      console.error("[import-order] persistence failed", {
+        code: error?.code ?? "no_row",
+        message: error?.message ?? "RPC returned no row",
+      });
       return {
         ok: false,
         error: error
