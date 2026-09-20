@@ -1875,9 +1875,9 @@ export type Database = {
         Returns: {
           active_campaigns: number
           available_offers: number
-          campaign_number: number
+          campaign_number: number | null
           campaign_offers: number
-          campaign_status: string
+          campaign_status: string | null
           draft_presentations: number
           draft_products: number
           hidden_products: number
@@ -1894,7 +1894,10 @@ export type Database = {
           unconfirmed_offers: number
         }[]
       }
-      admin_get_import_publication_readiness: { Args: never; Returns: Json }
+      admin_get_import_publication_readiness: {
+        Args: { p_campaign_id: string }
+        Returns: Json
+      }
       admin_import_archive_customer: {
         Args: { p_customer_id: string }
         Returns: {
@@ -2126,6 +2129,7 @@ export type Database = {
       }
       admin_list_import_publication_blockers: {
         Args: {
+          p_campaign_id: string
           p_blocker?: string
           p_page?: number
           p_page_size?: number

@@ -100,14 +100,14 @@ set role authenticated;
 -- Campaign #6 is draft, not open. But product 0012 should still be "ready" commercially.
 -- (it has: published product, published presentation, valid offer with price > 0, primary media)
 select is(
-  (select (admin_get_import_publication_readiness() ->> 'campaign_status')::text),
+  (select (admin_get_import_publication_readiness('4c4c2000-0000-4000-8000-000000000001') ->> 'campaign_status')::text),
   'draft',
   'A1: campaign #6 status is draft'
 );
 
 -- The campaign not being open should NOT make ready_products = 0
 select ok(
-  (select (admin_get_import_publication_readiness() ->> 'ready_products')::bigint > 0),
+  (select (admin_get_import_publication_readiness('4c4c2000-0000-4000-8000-000000000001') ->> 'ready_products')::bigint > 0),
   'A2: ready_products > 0 even though campaign is draft'
 );
 
@@ -118,14 +118,14 @@ select ok(
 -- ready_for_manual_open should be FALSE when any blocker exists
 -- (3 of 4 products have blockers: draft, missing_offer, unconfirmed)
 select is(
-  (select (admin_get_import_publication_readiness() ->> 'ready_for_manual_open')::text),
+  (select (admin_get_import_publication_readiness('4c4c2000-0000-4000-8000-000000000001') ->> 'ready_for_manual_open')::text),
   'false',
   'B1: ready_for_manual_open is false when blockers exist'
 );
 
 -- ready_products should be 1 (only product 0012 meets all gates)
 select is(
-  (select (admin_get_import_publication_readiness() ->> 'ready_products')::bigint),
+  (select (admin_get_import_publication_readiness('4c4c2000-0000-4000-8000-000000000001') ->> 'ready_products')::bigint),
   1::bigint,
   'B2: ready_products is 1 (only product with all gates met)'
 );
@@ -136,7 +136,7 @@ select is(
 
 -- There is 1 unconfirmed offer ROW (the campaign_products row for product 0013)
 select is(
-  (select (admin_get_import_publication_readiness() ->> 'unconfirmed_offer_count')::bigint),
+  (select (admin_get_import_publication_readiness('4c4c2000-0000-4000-8000-000000000001') ->> 'unconfirmed_offer_count')::bigint),
   1::bigint,
   'C1: unconfirmed_offer_count is 1 (the offer ROW, not the product)'
 );
@@ -147,7 +147,7 @@ select is(
 
 -- Product 0010 is draft — should appear in blockers
 select ok(
-  exists(select 1 from admin_list_import_publication_blockers(null,null,1,50)
+  exists(select 1 from admin_list_import_publication_blockers('4c4c2000-0000-4000-8000-000000000001',null,null,1,50)
     where product_id = '4c4c1000-0000-4000-8000-000000000010' and blocker_code = 'product_unpublished'),
   'D1: draft product has product_unpublished blocker'
 );
@@ -160,7 +160,7 @@ select ok(
 -- But published_presentations > 0, so it should NOT have presentation_unpublished
 -- However, it has no campaign offer — so it gets 'missing_offer'
 select ok(
-  exists(select 1 from admin_list_import_publication_blockers(null,null,1,50)
+  exists(select 1 from admin_list_import_publication_blockers('4c4c2000-0000-4000-8000-000000000001',null,null,1,50)
     where product_id = '4c4c1000-0000-4000-8000-000000000011' and blocker_code = 'missing_offer'),
   'E1: product with presentations but no offer gets missing_offer'
 );
@@ -171,7 +171,7 @@ select ok(
 
 -- Product 0011 has media (id 0012) but no primary — should get missing_primary_media
 select ok(
-  exists(select 1 from admin_list_import_publication_blockers(null,null,1,50)
+  exists(select 1 from admin_list_import_publication_blockers('4c4c2000-0000-4000-8000-000000000001',null,null,1,50)
     where product_id = '4c4c1000-0000-4000-8000-000000000011' and blocker_code = 'missing_primary_media'),
   'F1: product with media but no primary gets missing_primary_media'
 );
@@ -182,7 +182,7 @@ select ok(
 
 -- Product 0013 has an unconfirmed offer — should appear in offer_blockers
 select ok(
-  exists(select 1 from admin_list_import_publication_blockers(null,null,1,50)
+  exists(select 1 from admin_list_import_publication_blockers('4c4c2000-0000-4000-8000-000000000001',null,null,1,50)
     where product_id = '4c4c1000-0000-4000-8000-000000000013' and blocker_code = 'offer_unconfirmed'),
   'G1: product with unconfirmed offer gets offer_unconfirmed blocker'
 );
@@ -193,14 +193,14 @@ select ok(
 
 -- Page size capped at 50: requesting 100 should return same count as 50
 select ok(
-  (select count(*) from admin_list_import_publication_blockers(null,null,1,100))
-  = (select count(*) from admin_list_import_publication_blockers(null,null,1,50)),
+  (select count(*) from admin_list_import_publication_blockers('4c4c2000-0000-4000-8000-000000000001',null,null,1,100))
+  = (select count(*) from admin_list_import_publication_blockers('4c4c2000-0000-4000-8000-000000000001',null,null,1,50)),
   'H1: page size capped at 50'
 );
 
 -- Page 1 returns results
 select ok(
-  (select count(*) from admin_list_import_publication_blockers(null,null,1,20)) > 0,
+  (select count(*) from admin_list_import_publication_blockers('4c4c2000-0000-4000-8000-000000000001',null,null,1,20)) > 0,
   'H2: page 1 returns results'
 );
 
@@ -210,14 +210,14 @@ select ok(
 
 -- Filter by offer_unconfirmed
 select is(
-  (select count(*) from admin_list_import_publication_blockers(null,'offer_unconfirmed',1,50)),
+  (select count(*) from admin_list_import_publication_blockers('4c4c2000-0000-4000-8000-000000000001',null,'offer_unconfirmed',1,50)),
   1::bigint,
   'I1: filter by offer_unconfirmed returns exactly 1 row'
 );
 
 -- Filter by product_unpublished
 select ok(
-  (select count(*) from admin_list_import_publication_blockers(null,'product_unpublished',1,50)) > 0,
+  (select count(*) from admin_list_import_publication_blockers('4c4c2000-0000-4000-8000-000000000001',null,'product_unpublished',1,50)) > 0,
   'I2: filter by product_unpublished returns results'
 );
 
@@ -226,7 +226,7 @@ select ok(
 -- =========================================================================
 
 select throws_ok(
-  $$select * from admin_list_import_publication_blockers(null,'invalid_code',1,20)$$,
+  $$select * from admin_list_import_publication_blockers('4c4c2000-0000-4000-8000-000000000001',null,'invalid_code',1,20)$$,
   '22023',
   null,
   'J1: invalid blocker filter is rejected'
@@ -241,12 +241,12 @@ select set_config('request.jwt.claims', '{"aal":"aal2","sub":"4c4c0000-0000-4000
 set role authenticated;
 
 select lives_ok(
-  $$select admin_get_import_publication_readiness()$$,
+  $$select admin_get_import_publication_readiness('4c4c2000-0000-4000-8000-000000000001')$$,
   'K1: viewer can read readiness'
 );
 
 select lives_ok(
-  $$select * from admin_list_import_publication_blockers(null,null,1,20)$$,
+  $$select * from admin_list_import_publication_blockers('4c4c2000-0000-4000-8000-000000000001',null,null,1,20)$$,
   'K2: viewer can read blockers'
 );
 

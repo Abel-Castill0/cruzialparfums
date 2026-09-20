@@ -15,6 +15,7 @@ export type ImportProductDetail={
  product:ProductRow; categories:CategoryRow[]; category:CategoryRow|null;
  presentations:(PresentationRow&{offer:{price_amount:number;currency:string;availability_status:string}|null})[];
  offerCount:number;
+ activeCampaignNumber:number|null;
 };
 
 export class AdminImportCatalogRepository {
@@ -33,17 +34,25 @@ export class AdminImportCatalogRepository {
   async get(productId:string):Promise<AdminRepositoryResult<ImportProductDetail>>{
     const productResult=await this.supabase.from("products").select("*").eq("id",productId).eq("business_unit_id",this.businessUnitId).maybeSingle();
     if(productResult.error)return{ok:false,error:mapPostgrestError(productResult.error)}; if(!productResult.data)return{ok:false,error:{type:"not_found"}};
+    // The "active" consolidado is the latest non-archived campaign for this unit,
+    // never a hardcoded campaign number — that broke the moment #6 archived.
+    const campaignResult=await this.supabase.from("campaigns").select("id,number").eq("business_unit_id",this.businessUnitId).is("archived_at",null).order("number",{ascending:false}).limit(1).maybeSingle();
+    if(campaignResult.error)return{ok:false,error:mapPostgrestError(campaignResult.error)};
+    const activeCampaignId=campaignResult.data?.id??null;
+    const activeCampaignNumber=campaignResult.data?.number??null;
     const [categoriesResult,linksResult,presentationsResult,offersResult]=await Promise.all([
       this.supabase.from("categories").select("*").eq("business_unit_id",this.businessUnitId).eq("kind","import_category").is("archived_at",null).order("name"),
       this.supabase.from("product_categories").select("category_id").eq("product_id",productId).limit(1),
       this.supabase.from("import_presentations").select("*").eq("product_id",productId).order("created_at"),
-      this.supabase.from("campaign_products").select("import_presentation_id,price_amount,currency,availability_status,campaigns!inner(number,business_unit_id,archived_at)").eq("product_id",productId).eq("campaigns.number",6).eq("campaigns.business_unit_id",this.businessUnitId).is("campaigns.archived_at",null),
+      activeCampaignId
+        ?this.supabase.from("campaign_products").select("import_presentation_id,price_amount,currency,availability_status").eq("product_id",productId).eq("campaign_id",activeCampaignId)
+        :Promise.resolve({data:[],error:null}),
     ]);
     const error=categoriesResult.error||linksResult.error||presentationsResult.error||offersResult.error; if(error)return{ok:false,error:mapPostgrestError(error)};
     const offers=(offersResult.data??[]) as unknown as {import_presentation_id:string|null;price_amount:number;currency:string;availability_status:string}[];
     const presentations=(presentationsResult.data??[]).map(p=>({...p,offer:(()=>{const o=offers.find(x=>x.import_presentation_id===p.id);return o?{price_amount:o.price_amount,currency:o.currency,availability_status:o.availability_status}:null;})()}));
     const categoryId=linksResult.data?.[0]?.category_id??null; const categories=categoriesResult.data??[];
-    return{ok:true,data:{product:productResult.data,categories,category:categories.find(c=>c.id===categoryId)??null,presentations,offerCount:offers.length}};
+    return{ok:true,data:{product:productResult.data,categories,category:categories.find(c=>c.id===categoryId)??null,presentations,offerCount:offers.length,activeCampaignNumber}};
   }
   async updateProduct(id:string,expected:string,input:{name:string;brand:string|null;categoryId:string;publicationStatus:string}){const {data,error}=await this.rpc("admin_update_import_product",{p_product_id:id,p_expected_updated_at:expected,p_name:input.name,p_brand:input.brand,p_category_id:input.categoryId,p_publication_status:input.publicationStatus});return error?{ok:false as const,error:mapPostgrestError(error)}:{ok:true as const,data:data as ProductRow};}
   async archiveProduct(id:string,expected:string,restore=false){const {data,error}=await this.rpc(restore?"admin_restore_import_product":"admin_archive_import_product",{p_product_id:id,p_expected_updated_at:expected});return error?{ok:false as const,error:mapPostgrestError(error)}:{ok:true as const,data:data as ProductRow};}

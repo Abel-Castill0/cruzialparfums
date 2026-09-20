@@ -70,7 +70,7 @@ export default async function AdminImportPage() {
         ) : null}
         {qa.ok ? <>
           <section className={styles.qaGrid} aria-label="Estado del catálogo">
-            <Card n={qa.data.products} label="productos activos"/><Card n={qa.data.presentations} label="presentaciones activas"/><Card n={qa.data.active_campaigns} label="campañas no archivadas"/><Card n={qa.data.campaign_offers} label={`ofertas en #${qa.data.campaign_number ?? 6}`}/><Card n={qa.data.draft_products} label="productos en borrador"/><Card n={qa.data.published_products} label="productos publicados"/><Card n={qa.data.unconfirmed_offers} label="ofertas por confirmar"/><Card n={qa.data.out_of_stock_offers} label="ofertas agotadas"/><Card n={qa.data.structures_without_offer} label="estructuras sin oferta"/>
+            <Card n={qa.data.products} label="productos activos"/><Card n={qa.data.presentations} label="presentaciones activas"/><Card n={qa.data.active_campaigns} label="campañas no archivadas"/><Card n={qa.data.campaign_offers} label={qa.data.campaign_number!==null?`ofertas en #${qa.data.campaign_number}`:"ofertas (sin consolidado activo)"}/><Card n={qa.data.draft_products} label="productos en borrador"/><Card n={qa.data.published_products} label="productos publicados"/><Card n={qa.data.unconfirmed_offers} label="ofertas por confirmar"/><Card n={qa.data.out_of_stock_offers} label="ofertas agotadas"/><Card n={qa.data.structures_without_offer} label="estructuras sin oferta"/>
           </section>
           <section className={styles.qaGrid} aria-label="Cobertura de media">
             <Card n={qa.data.products_with_primary_media} label="con imagen principal"/>
@@ -78,7 +78,7 @@ export default async function AdminImportPage() {
             <Card n={qa.data.products_without_media} label="sin media alguna"/>
             <Card n={qa.data.total_active_media} label="media activa total"/>
           </section>
-          <section className={styles.panel}><h2>Visibilidad pública</h2><p className={styles.help}>El consolidado #{qa.data.campaign_number ?? 6} está en estado <strong>{qa.data.campaign_status ?? "sin configurar"}</strong>. La preparación estructural, la preparación comercial y la visibilidad pública son controles distintos; este panel no publica ni abre campañas automáticamente.</p></section>
+          <section className={styles.panel}><h2>Visibilidad pública</h2><p className={styles.help}>{qa.data.campaign_number!==null?<>El consolidado #{qa.data.campaign_number} está en estado <strong>{qa.data.campaign_status ?? "sin configurar"}</strong>.</>:"No hay un consolidado activo para Cruzial Import."} La preparación estructural, la preparación comercial y la visibilidad pública son controles distintos; este panel no publica ni abre campañas automáticamente.</p></section>
         </> : <p className={styles.error}>No se pudo cargar el estado del catálogo.</p>}
         <p className={styles.session}>Sesión: {result.session.email ?? "sin correo"} · {membership.role === "admin" ? "Administrador" : "Solo lectura"}</p>
       </main>
