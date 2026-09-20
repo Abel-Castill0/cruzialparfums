@@ -8,9 +8,11 @@
 --   odyssey-aqua  Lattafa        "ARMAF - ODYSSEY AQUA.png"        Armaf
 --   mandarin-sky  Afnan          "ARMAF - MANDARIN SKY.png"        Armaf
 --
--- Provenance: CLIENT_ASSET + DERIVED_VALIDATED (docs/client-decisions.md,
--- "Product corrections"). Names, prices, presentations and media are not
--- touched. Re-running is a no-op.
+-- Provenance: CLIENT_ASSET + DERIVED_VALIDATED, recorded in docs/current-v2.md
+-- (release section). docs/client-decisions.md is deliberately NOT edited: it
+-- is a fingerprinted input of the committed C2 reconciliation artifact, so
+-- touching it would invalidate the loader authorization. Names, prices,
+-- presentations and media are not touched. Re-running is a no-op.
 --
 -- Run:  psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/provisioning/parfums-brand-corrections.sql
 
