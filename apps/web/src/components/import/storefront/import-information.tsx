@@ -15,7 +15,7 @@ const faqs = [
   },
   {
     question: "¿Puedo comprar fuera de un consolidado?",
-    answer: "Depende de la categoría y la campaña. Confirma la disponibilidad y las condiciones vigentes por WhatsApp.",
+    answer: "No. Todas las compras de Cruzial Import se realizan dentro del consolidado vigente, con sus precios y su fecha de cierre.",
   },
 ] as const;
 
