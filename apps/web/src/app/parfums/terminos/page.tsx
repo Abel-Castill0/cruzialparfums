@@ -29,7 +29,7 @@ export default async function TerminosPage() {
         <div className={styles.legalTop}>
           <p className={styles.eyebrow}>Legal</p>
           <h1>Términos y Condiciones</h1>
-          <p className={styles.legalUpdated}>Última actualización: 27 de agosto de 2026</p>
+          <p className={styles.legalUpdated}>Última actualización: 20 de septiembre de 2026</p>
         </div>
 
         <div className={styles.legalBody}>
@@ -49,8 +49,8 @@ export default async function TerminosPage() {
 
           <h2>4. Proceso de Compra</h2>
           <ol>
-            <li>El cliente selecciona los productos en el catálogo.</li>
-            <li>El pedido se confirma por WhatsApp con un asesor.</li>
+            <li>El cliente selecciona los productos en el catálogo y registra su solicitud con sus datos de contacto; la web asigna un número de referencia.</li>
+            <li>El pedido se confirma por WhatsApp con un asesor: disponibilidad, envío y total final. Registrar la solicitud no constituye una venta ni un pago.</li>
             <li>Se acuerda la forma de pago.</li>
             <li>Se coordina la entrega según la zona y método seleccionado.</li>
           </ol>
@@ -102,7 +102,7 @@ export default async function TerminosPage() {
           <p>Estos términos se rigen por las leyes de la República del Perú. Cualquier controversia, diferencia o reclamación derivada de estos términos será resuelta definitivamente mediante arbitraje administrado por la Cámara de Comercio de Lima, de conformidad con su Reglamento de Arbitraje. El tribunal arbitral estará compuesto por un (1) árbitro único. El lugar del arbitraje será la ciudad de Lima, Perú. El idioma del arbitraje será el español.</p>
 
           <h2>12. Política de Cookies</h2>
-          <p>Nuestro sitio web utiliza cookies técnicas necesarias para su funcionamiento (carrito de compras, sesiones). Puedes gestionar o desactivar las cookies desde la configuración de tu navegador. La desactivación de cookies técnicas puede afectar el funcionamiento del sitio.</p>
+          <p>El carrito se guarda en el almacenamiento local de tu navegador, no en cookies. Las únicas cookies del sitio son técnicas y se usan en el área administrativa para mantener la sesión del personal autorizado. Puedes gestionarlas desde la configuración de tu navegador; consulta la Política de Privacidad para el detalle de proveedores y datos.</p>
 
           <h2>13. Contacto</h2>
           <p>Para consultas sobre estos términos:</p>
