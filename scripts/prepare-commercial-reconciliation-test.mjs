@@ -11,7 +11,7 @@ import { spawnSync } from "node:child_process";
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const raw = readFileSync(resolve(root, "supabase/staging/commercial-reconciliation.json"));
 const sha = createHash("sha256").update(raw).digest("hex");
-if (sha !== "cefa808e760f8f874b93252bf5e6df7bbe3e82634c11ce3458aed0336861c364") {
+if (sha !== "90c6bd433b054b375a657c635e58587f9f5fe61d3b125075a9dca7a1c5ba79ee") {
   throw new Error("C2 fixture artifact changed; refuse test preparation.");
 }
 const config = readFileSync(resolve(root, "supabase/config.toml"), "utf8");
