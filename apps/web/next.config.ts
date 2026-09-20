@@ -54,6 +54,15 @@ const nextConfig: NextConfig = {
         source: "/admin",
         headers: [{ key: "Cache-Control", value: "private, no-store" }],
       },
+      // Legacy service-worker kill switch (public/sw.js): browsers must
+      // re-check it on every visit so the unregistering version wins fast.
+      {
+        source: "/sw.js",
+        headers: [
+          { key: "Cache-Control", value: "no-cache, no-store, must-revalidate" },
+          { key: "Service-Worker-Allowed", value: "/" },
+        ],
+      },
     ];
   },
 };
