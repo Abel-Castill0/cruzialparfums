@@ -34,7 +34,7 @@ describe("classifyProductReadiness", () => {
   it("no offers is blocked commercially", () => {
     const r = classifyProductReadiness({ ...baseInput, offerCount: 0 });
     expect(r.commercial).toBe("blocked");
-    expect(r.blockers).toContain("Sin oferta en #6");
+    expect(r.blockers).toContain("Sin oferta en consolidado");
   });
 
   it("unconfirmed offers makes commercial pending", () => {
