@@ -31,7 +31,13 @@ export async function beginAddFactor(_previous: AddFactorState, _formData: FormD
   // removal — not even stale unverified ones). An abandoned unverified
   // factor blocks nothing: it cannot satisfy AAL2, is never listed in the
   // challenge UI, and can only be removed operator-side via Supabase.
-  const { data, error } = await supabase.auth.mfa.enroll({ factorType: "totp" });
+  // A friendly_name is required: GoTrue defaults it to "" when omitted, and
+  // rejects a second factor for the same user with mfa_factor_name_conflict
+  // once one factor already holds that default name.
+  const { data, error } = await supabase.auth.mfa.enroll({
+    factorType: "totp",
+    friendlyName: `totp-${crypto.randomUUID()}`,
+  });
   if (error || !data || data.type !== "totp") {
     return { status: "error", error: GENERIC_MFA_ERROR };
   }

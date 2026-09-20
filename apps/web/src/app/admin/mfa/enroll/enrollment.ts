@@ -24,7 +24,12 @@ import type { Database } from "@/lib/supabase/database.types";
 export async function startTotpEnrollment(
   supabase: SupabaseClient<Database>,
 ): Promise<{ factorId: string; qrCode: string; secret: string } | null> {
-  const { data, error } = await supabase.auth.mfa.enroll({ factorType: "totp" });
+  // See src/app/admin/security/actions.ts: friendly_name must be explicit
+  // and unique, or GoTrue's default "" collides on a second factor.
+  const { data, error } = await supabase.auth.mfa.enroll({
+    factorType: "totp",
+    friendlyName: `totp-${crypto.randomUUID()}`,
+  });
   if (error || !data || data.type !== "totp") return null;
 
   return { factorId: data.id, qrCode: data.totp.qr_code, secret: data.totp.secret };
