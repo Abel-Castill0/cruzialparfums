@@ -5,6 +5,7 @@ import { ProductDetailExperience } from "@/components/parfums/product/product-de
 import { PARFUMS_ATOMIZATIONS, PARFUMS_STORE_NAME } from "@/domains/platform/parfums-storefront";
 import { loadParfumsStorefront } from "@/lib/catalog/parfums-storefront";
 import { resolveCanonicalUrl } from "@/lib/seo/canonical-url";
+import { readSiteUrl } from "@/lib/supabase/env";
 import {
   buildSafeProductPageStructuredData,
   serializeJsonLd,
@@ -30,7 +31,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
 
   const canonical = resolveCanonicalUrl(
     `/parfums/productos/${product.slug}`,
-    process.env.NEXT_PUBLIC_SITE_URL,
+    readSiteUrl() ?? undefined,
   );
   const description = productDescription(product.name, product.brand);
   const image = product.bottleImageUrl ?? product.decantImageUrl;
@@ -59,7 +60,7 @@ export default async function ProductPage({ params, searchParams }: ProductPageP
 
   const canonical = resolveCanonicalUrl(
     `/parfums/productos/${product.slug}`,
-    process.env.NEXT_PUBLIC_SITE_URL,
+    readSiteUrl() ?? undefined,
   );
   const initialVariant = typeof query.variant === "string" ? query.variant : undefined;
   const safeStructuredData = buildSafeProductPageStructuredData(product, canonical);

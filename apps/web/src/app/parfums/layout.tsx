@@ -10,6 +10,12 @@ import { loadParfumsStorefront } from "@/lib/catalog/parfums-storefront";
 export const metadata: Metadata = {
   title: { default: "Cruzial Parfums", template: "%s — Cruzial Parfums" },
   description: "Decants premium y perfumes originales en Lima, Perú.",
+  openGraph: {
+    type: "website",
+    locale: "es_PE",
+    siteName: "Cruzial Parfums",
+    images: [{ url: PARFUMS_BRAND_MEDIA.heroUrl, width: 1672, height: 792, alt: "Cruzial Parfums" }],
+  },
 };
 
 // Prices, publication state and contact are admin-managed database truth:

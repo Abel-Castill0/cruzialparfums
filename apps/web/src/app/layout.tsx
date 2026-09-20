@@ -1,9 +1,6 @@
 import type { Metadata } from "next";
 import { Cormorant_Garamond, Jost } from "next/font/google";
-import {
-  resolveIndexingPolicy,
-  type DeploymentEnvironment,
-} from "@/lib/seo/indexing-policy";
+import { getIndexingPolicy, getSiteUrl } from "@/lib/seo/site";
 import "./globals.css";
 
 const display = Cormorant_Garamond({
@@ -18,18 +15,21 @@ const body = Jost({
   display: "swap",
 });
 
+const siteUrl = getSiteUrl();
+
 export const metadata: Metadata = {
+  ...(siteUrl ? { metadataBase: siteUrl } : {}),
   title: {
     default: "Cruzial",
     template: "%s — Cruzial",
   },
   description: "Cruzial Parfums y Cruzial Import en una sola plataforma.",
-  robots: resolveIndexingPolicy({
-    deploymentEnvironment: (process.env.VERCEL_ENV ??
-      "development") as DeploymentEnvironment,
-    cutoverApproved:
-      process.env.CRUZIAL_PRODUCTION_CUTOVER_APPROVED === "true",
-  }),
+  robots: getIndexingPolicy(),
+  openGraph: {
+    type: "website",
+    locale: "es_PE",
+    siteName: "Cruzial",
+  },
 };
 
 export default function RootLayout({
