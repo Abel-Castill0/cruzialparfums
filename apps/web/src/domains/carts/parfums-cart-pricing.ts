@@ -1,3 +1,4 @@
+import { isProductPurchasable } from "../catalog/availability";
 import { listProductPurchaseVariants } from "../catalog/product-purchase";
 import type { CatalogProduct } from "../catalog/types";
 import type { ParfumsCartLine } from "./parfums-cart";
@@ -24,7 +25,9 @@ export function resolveParfumsCart(
   const byProductId = new Map(products.filter((p) => p.productId !== null).map((product) => [product.productId!, product]));
   return lines.flatMap((line) => {
     const product = byProductId.get(line.productId) ?? byLegacyId.get(line.productId);
-    if (!product || product.discontinued) return [];
+    // Same rule as the server: only out_of_stock blocks a purchase.
+    // Discontinued (production stopped) stays purchasable.
+    if (!product || !isProductPurchasable(product)) return [];
     const variant = listProductPurchaseVariants(product).find(
       (candidate) => candidate.variantId === line.variantId,
     );
@@ -54,4 +57,24 @@ export function formatParfumsVariant(
   return line.variant.group === "bottle"
     ? `Frasco ${line.variant.size} ml`
     : `Decant ${line.variant.size} ml`;
+}
+
+/**
+ * Projection shipped to the client for cart resolution (header drawer and
+ * checkout). Keeps the identity, purchasability, prices and images the cart
+ * needs; drops editorial payload (description, notes, media lists, combo
+ * presentations) that would otherwise be serialized into every page.
+ */
+export function toCartCatalogProduct(product: CatalogProduct): CatalogProduct {
+  return {
+    ...product,
+    description: "",
+    notes: [],
+    tag: "",
+    media: [],
+    comboPresentations: [],
+    comboContent: product.comboContent
+      ? { ...product.comboContent, desc: "", heroImageUrl: null }
+      : null,
+  };
 }

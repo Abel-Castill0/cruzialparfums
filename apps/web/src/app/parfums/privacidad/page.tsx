@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Breadcrumbs, type BreadcrumbItem } from "@/components/parfums/navigation/breadcrumbs";
-import { LegacyCatalogRepository } from "@/domains/catalog/legacy-catalog-repository";
-import { PARFUMS_SETTINGS } from "@/domains/platform/settings";
+import { loadParfumsStorefront } from "@/lib/catalog/parfums-storefront";
 import styles from "@/components/parfums/institutional/institutional.module.css";
 
 export const metadata: Metadata = {
@@ -14,12 +13,11 @@ const crumbs: BreadcrumbItem[] = [
   { label: "Privacidad" },
 ];
 
-export default function PrivacidadPage() {
-  const catalog = new LegacyCatalogRepository();
-  const config = catalog.getStorefrontConfig();
-  const whatsappNumber = config.WA_NUMBER ?? PARFUMS_SETTINGS.whatsappNumber;
-  const whatsappDisplay = config.PHONE_DISPLAY ?? PARFUMS_SETTINGS.whatsappDisplay;
-  const contactEmail = config.CONTACT_EMAIL ?? PARFUMS_SETTINGS.contactEmail;
+export default async function PrivacidadPage() {
+  const { contact } = await loadParfumsStorefront();
+  const whatsappNumber = contact.whatsappNumber;
+  const whatsappDisplay = contact.whatsappDisplay;
+  const contactEmail = contact.contactEmail;
 
   return (
     <main>

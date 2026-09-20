@@ -4,7 +4,7 @@
 
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(28);
+select plan(26);
 
 -- 1. v2 RPC exists and is service-role only
 select has_function('public', 'create_parfums_order_request_v2',
@@ -24,13 +24,12 @@ set local role service_role;
 
 insert into public.products (id, business_unit_id, legacy_id, slug, brand, name,
   description, gender, concentration, production_status, availability_status,
-  publication_status, verification_status, price_verified_at, specs)
+  publication_status, verification_status, specs)
 values (
   'a1000000-0000-4000-8000-000000000001',
   '11111111-1111-4111-8111-111111111111',
   'b0-test-v2', 'b0-test-v2', 'B0 Test', 'B0 Test Parfum',
   'Test', 'unisex', 'EDP', 'active', 'available', 'published', 'legacy',
-  now(),
   '{"notes":["test"],"tag":"test"}'::jsonb
 );
 
@@ -45,13 +44,12 @@ values (
 -- Also insert a second product + variant for cross-product ownership test
 insert into public.products (id, business_unit_id, legacy_id, slug, brand, name,
   description, gender, concentration, production_status, availability_status,
-  publication_status, verification_status, price_verified_at, specs)
+  publication_status, verification_status, specs)
 values (
   'a1000000-0000-4000-8000-000000000002',
   '11111111-1111-4111-8111-111111111111',
   'b0-test-v2-other', 'b0-test-v2-other', 'B0 Other', 'B0 Other Parfum',
   'Test', 'unisex', 'EDP', 'active', 'available', 'published', 'legacy',
-  now(),
   '{"notes":["test"],"tag":"test"}'::jsonb
 );
 
@@ -123,7 +121,7 @@ select throws_ok(
     '[{"product_id":"a1000000-0000-4000-8000-000000000001","product_variant_id":"b1000000-0000-4000-8000-000000000002","product_name":"Mismatched","variant_label":"5 ml","quantity":1,"variant_snapshot":{"group":"decant","size_ml":5,"brand":"Test"}}]'
   )$$,
   '22023',
-  'product/variant pair not found',
+  'product/variant pair not found or not orderable',
   'variant from product B with product_id of product A is rejected'
 );
 reset role;
@@ -145,7 +143,7 @@ select throws_ok(
     '[{"product_id":"a1000000-0000-4000-8000-000000000001","product_variant_id":"b1000000-0000-4000-8000-000000000001","product_name":"DB Product","variant_label":"3 ml","quantity":1,"variant_snapshot":{"group":"decant","size_ml":3,"brand":"Test"}},{"product_id":"","product_variant_id":"","product_name":"Legacy","variant_label":"5 ml","quantity":1,"variant_snapshot":{"group":"decant","size_ml":5,"brand":"Test"}}]'
   )$$,
   '22023',
-  'v2 requires product_id',
+  'v2 requires product_id and product_variant_id on every line',
   'mixed authority with empty product_id is rejected'
 );
 reset role;
@@ -167,7 +165,7 @@ select throws_ok(
     '[{"product_id":null,"product_variant_id":null,"product_name":"Null","variant_label":"3 ml","quantity":1,"variant_snapshot":{"group":"decant","size_ml":3,"brand":"Test"}}]'
   )$$,
   '22023',
-  'v2 requires product_id and product_variant_id',
+  'v2 requires product_id and product_variant_id on every line',
   'null product_id is rejected by v2'
 );
 reset role;
@@ -191,7 +189,7 @@ select throws_ok(
     '[{"product_id":"a1000000-0000-4000-8000-000000000002","product_variant_id":"b1000000-0000-4000-8000-000000000002","product_name":"Archived","variant_label":"5 ml","quantity":1,"variant_snapshot":{"group":"decant","size_ml":5,"brand":"Test"}}]'
   )$$,
   '22023',
-  'product/variant pair not found',
+  'product/variant pair not found or not orderable',
   'archived product is rejected'
 );
 reset role;
@@ -212,7 +210,7 @@ select throws_ok(
     '[{"product_id":"a1000000-0000-4000-8000-000000000002","product_variant_id":"b1000000-0000-4000-8000-000000000002","product_name":"Archived Variant","variant_label":"5 ml","quantity":1,"variant_snapshot":{"group":"decant","size_ml":5,"brand":"Test"}}]'
   )$$,
   '22023',
-  'product/variant pair not found',
+  'product/variant pair not found or not orderable',
   'archived variant is rejected'
 );
 reset role;
@@ -252,7 +250,7 @@ select throws_ok(
     '[{"product_id":"a1000000-0000-4000-8000-000000000001","product_variant_id":"b1000000-0000-4000-8000-000000000001","product_name":"Valid","variant_label":"3 ml","quantity":1,"variant_snapshot":{"group":"decant","size_ml":3,"brand":"Test"}},{"product_id":"a1000000-0000-4000-8000-000000000001","product_variant_id":"b1000000-0000-4000-8000-000000000002","product_name":"Invalid","variant_label":"5 ml","quantity":1,"variant_snapshot":{"group":"decant","size_ml":5,"brand":"Test"}}]'
   )$$,
   '22023',
-  'product/variant pair not found',
+  'product/variant pair not found or not orderable',
   'invalid second line aborts transaction'
 );
 reset role;
@@ -270,27 +268,68 @@ select is(
   'failed v2 transaction leaves no order_lines'
 );
 
--- 11. Variant from another BU rejected
--- (all test products are in parfums BU, so we use the same BU)
--- This is implicitly tested by the product/variant pair lookup
+-- 11. Storefront eligibility is enforced from database truth, never from the
+-- client snapshot: a draft variant, a variant whose price authority is not
+-- yet client_confirmed/official_pdf, and an out_of_stock product are all
+-- rejected even though the payload looks valid.
+update public.product_variants set publication_status = 'draft'
+where id = 'b1000000-0000-4000-8000-000000000002';
+set local role service_role;
+select throws_ok(
+  $$select * from public.create_parfums_order_request_v2(
+    '58000000-0000-4000-8000-000000000008',
+    '{"name":"Test User","phone":"999111222"}',
+    '{"district":"Lima","delivery":"Agencia Shalom (Lima y todo el Perú)","note":""}',
+    'shalom',
+    '[{"product_id":"a1000000-0000-4000-8000-000000000002","product_variant_id":"b1000000-0000-4000-8000-000000000002","product_name":"Draft Variant","variant_label":"5 ml","quantity":1,"variant_snapshot":{"group":"decant","size_ml":5,"brand":"Test"}}]'
+  )$$,
+  '22023',
+  'product/variant pair not found or not orderable',
+  'draft variant is not orderable'
+);
+reset role;
+update public.product_variants
+set publication_status = 'published', price_verification_status = 'provisional_market'
+where id = 'b1000000-0000-4000-8000-000000000002';
+set local role service_role;
+select throws_ok(
+  $$select * from public.create_parfums_order_request_v2(
+    '59000000-0000-4000-8000-000000000009',
+    '{"name":"Test User","phone":"999111222"}',
+    '{"district":"Lima","delivery":"Agencia Shalom (Lima y todo el Perú)","note":""}',
+    'shalom',
+    '[{"product_id":"a1000000-0000-4000-8000-000000000002","product_variant_id":"b1000000-0000-4000-8000-000000000002","product_name":"Provisional","variant_label":"5 ml","quantity":1,"variant_snapshot":{"group":"decant","size_ml":5,"brand":"Test"}}]'
+  )$$,
+  '22023',
+  'product/variant pair not found or not orderable',
+  'provisional_market price authority is not orderable'
+);
+reset role;
+update public.product_variants set price_verification_status = 'official_pdf'
+where id = 'b1000000-0000-4000-8000-000000000002';
+update public.products set availability_status = 'out_of_stock'
+where id = 'a1000000-0000-4000-8000-000000000002';
+set local role service_role;
+select throws_ok(
+  $$select * from public.create_parfums_order_request_v2(
+    '5a000000-0000-4000-8000-00000000000a',
+    '{"name":"Test User","phone":"999111222"}',
+    '{"district":"Lima","delivery":"Agencia Shalom (Lima y todo el Perú)","note":""}',
+    'shalom',
+    '[{"product_id":"a1000000-0000-4000-8000-000000000002","product_variant_id":"b1000000-0000-4000-8000-000000000002","product_name":"Out of stock","variant_label":"5 ml","quantity":1,"variant_snapshot":{"group":"decant","size_ml":5,"brand":"Test"}}]'
+  )$$,
+  '22023',
+  'product/variant pair not found or not orderable',
+  'out_of_stock product is not orderable'
+);
+reset role;
+update public.products set availability_status = 'available'
+where id = 'a1000000-0000-4000-8000-000000000002';
 
--- Cleanup
-delete from public.order_lines where order_id in (
-  select id from public.orders where request_id in (
-    '51000000-0000-4000-8000-000000000001'
-  )
-);
-delete from public.orders where request_id in (
-  '51000000-0000-4000-8000-000000000001'
-);
-delete from public.product_variants where product_id in (
-  'a1000000-0000-4000-8000-000000000001',
-  'a1000000-0000-4000-8000-000000000002'
-);
-delete from public.products where id in (
-  'a1000000-0000-4000-8000-000000000001',
-  'a1000000-0000-4000-8000-000000000002'
-);
+-- Variant from another BU is implicitly covered by the product/variant pair lookup.
+
+-- No explicit cleanup: order history is delete-protected (Gate 2A) and the
+-- whole file runs inside a transaction that is rolled back below.
 
 select * from finish();
 rollback;

@@ -1,7 +1,5 @@
 "use server";
 
-import { LegacyCatalogRepository } from "@/domains/catalog/legacy-catalog-repository";
-import type { PublicCatalogRepository } from "@/domains/catalog/types";
 import { ParfumsOrderRepository } from "@/domains/orders/parfums-order-repository";
 import {
   validateAndResolveParfumsOrder,
@@ -9,11 +7,12 @@ import {
   type ParfumsOrderValidationError,
   type ValidatedParfumsOrderRequest,
 } from "@/domains/orders/parfums-order-request";
-import { PARFUMS_SETTINGS } from "@/domains/platform/settings";
+import { PARFUMS_STORE_NAME } from "@/domains/platform/parfums-storefront";
 import {
   buildPersistedOrderRequestMessage,
   buildWhatsAppUrl,
 } from "@/domains/whatsapp/parfums-message-builder";
+import { loadParfumsStorefront } from "@/lib/catalog/parfums-storefront";
 import { checkOrderRequestRateLimit } from "@/lib/security/order-abuse";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
 
@@ -34,10 +33,6 @@ export type CreateParfumsOrderResult =
     created: boolean;
   };
 
-function getCatalogRepository(): PublicCatalogRepository {
-  return new LegacyCatalogRepository();
-}
-
 function isOrderError(
   result: ValidatedParfumsOrderRequest | ParfumsOrderValidationError,
 ): result is ParfumsOrderValidationError {
@@ -47,7 +42,13 @@ function isOrderError(
 export async function createParfumsOrderRequest(
   input: ParfumsOrderRequestInput,
 ): Promise<CreateParfumsOrderResult> {
-  const validated = validateAndResolveParfumsOrder(input, getCatalogRepository());
+  // Server revalidation against the same published, price-confirmed catalog
+  // the storefront rendered — never against client-supplied names or prices.
+  const storefront = await loadParfumsStorefront();
+  if (storefront.source === "unavailable") {
+    return { status: "error", message: ORDER_SERVICE_UNAVAILABLE_MESSAGE };
+  }
+  const validated = validateAndResolveParfumsOrder(input, storefront.catalog);
   if (isOrderError(validated)) return {
     status: "error",
     message: validated.message,
@@ -83,7 +84,7 @@ export async function createParfumsOrderRequest(
   if (!persisted.ok) return { status: "error", message: persisted.message };
 
   const message = buildPersistedOrderRequestMessage({
-    storeName: "Cruzial Parfums",
+    storeName: PARFUMS_STORE_NAME,
     orderNumber: persisted.data.orderNumber,
     lines: validated.lines.map((line) => ({
       productName: line.product_name,
@@ -100,7 +101,7 @@ export async function createParfumsOrderRequest(
   return {
     status: "success",
     orderNumber: persisted.data.orderNumber,
-    whatsappUrl: buildWhatsAppUrl(PARFUMS_SETTINGS.whatsappNumber, message),
+    whatsappUrl: buildWhatsAppUrl(storefront.contact.whatsappNumber, message),
     created: persisted.data.created,
   };
 }

@@ -24,7 +24,6 @@ export type VariantReadinessBlocker =
  * decisions. These operate on raw database state before rows become public.
  */
 export type PrePublicationBlocker =
-  | "product_not_published"
   | "product_archived"
   | "product_hidden"
   | "variant_not_published"
@@ -50,7 +49,6 @@ export type PrePublicationReadiness = {
 const READY_VERIFICATION_STATUSES: ReadonlySet<CatalogVerificationStatus> = new Set([
   "official_pdf",
   "client_confirmed",
-  "derived_validated",
 ]);
 
 /**
@@ -107,16 +105,21 @@ export function filterStorefrontReady(products: readonly CatalogProduct[]): Cata
  * Pre-publication readiness classifier for admin planning / C1 publication
  * decisions. Operates on raw database state before rows become public.
  *
+ * Answers: "Can this current draft row safely transition to published?"
+ *
  * This is used by admin publication tooling to decide which products
  * should be published. It checks:
- * - Product publication_status (not 'draft', not 'archived', not 'hidden')
- * - Variant publication_status, price_verification_status
+ * - Product archived/hidden blocks publication
+ * - Product draft or published may be eligible
+ * - Variant archived blocks publication
+ * - Variant draft or published may be eligible
+ * - Variant price authority must be client_confirmed or official_pdf
  *
  * Discontinued products are NOT blocked — they can still be published
  * and remain purchasable.
  *
- * A draft product may still be ELIGIBLE for publication if its metadata
- * is correct — this classifier reports current state, not eligibility.
+ * A product in draft is NOT automatically blocked. Draft is eligible
+ * for publication if metadata and variant conditions are met.
  */
 export function classifyPrePublicationReadiness(row: {
   publication_status: string;
@@ -130,29 +133,28 @@ export function classifyPrePublicationReadiness(row: {
 
   if (row.archived_at !== null) blockers.push("product_archived");
   if (row.publication_status === "hidden") blockers.push("product_hidden");
-  if (row.publication_status !== "published") blockers.push("product_not_published");
 
   let readyVariantCount = 0;
   for (const variant of row.variants) {
-    if (variant.publication_status !== "published") {
+    if (variant.publication_status !== "published" && variant.publication_status !== "draft") {
       blockers.push("variant_not_published");
     }
     if (!READY_VERIFICATION_STATUSES.has(variant.price_verification_status as CatalogVerificationStatus)) {
       blockers.push("variant_price_not_ready");
     }
     if (
-      variant.publication_status === "published"
+      (variant.publication_status === "published" || variant.publication_status === "draft")
       && READY_VERIFICATION_STATUSES.has(variant.price_verification_status as CatalogVerificationStatus)
     ) {
       readyVariantCount++;
     }
   }
 
+  const isArchived = row.archived_at !== null;
+  const isHidden = row.publication_status === "hidden";
+
   return {
-    ready: readyVariantCount > 0
-      && row.publication_status !== "hidden"
-      && row.archived_at === null
-      && row.publication_status === "published",
+    ready: readyVariantCount > 0 && !isArchived && !isHidden,
     readyVariantCount,
     blockers,
   };

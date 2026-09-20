@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Breadcrumbs, type BreadcrumbItem } from "@/components/parfums/navigation/breadcrumbs";
 import { InstitutionalContactForm } from "@/components/parfums/institutional/institutional-contact-form";
-import { LegacyCatalogRepository } from "@/domains/catalog/legacy-catalog-repository";
-import { PARFUMS_SETTINGS } from "@/domains/platform/settings";
+import { PARFUMS_INSTAGRAM_URL } from "@/domains/platform/parfums-storefront";
+import { loadParfumsStorefront } from "@/lib/catalog/parfums-storefront";
 import styles from "@/components/parfums/institutional/institutional.module.css";
 
 export const metadata: Metadata = {
@@ -16,14 +16,13 @@ const crumbs: BreadcrumbItem[] = [
   { label: "Contacto" },
 ];
 
-export default function ContactoPage() {
-  const catalog = new LegacyCatalogRepository();
-  const config = catalog.getStorefrontConfig();
-  const whatsappNumber = config.WA_NUMBER ?? PARFUMS_SETTINGS.whatsappNumber;
-  const phoneDisplay = config.PHONE_DISPLAY ?? PARFUMS_SETTINGS.whatsappDisplay;
-  const contactEmail = config.CONTACT_EMAIL ?? PARFUMS_SETTINGS.contactEmail;
-  const instagramUrl = config.INSTAGRAM_URL ?? "https://www.instagram.com/Cruzial_parfum/";
-  const instagramHandle = config.INSTAGRAM_HANDLE ?? "@Cruzial_parfum";
+export default async function ContactoPage() {
+  const { contact } = await loadParfumsStorefront();
+  const whatsappNumber = contact.whatsappNumber;
+  const phoneDisplay = contact.whatsappDisplay;
+  const contactEmail = contact.contactEmail;
+  const instagramUrl = PARFUMS_INSTAGRAM_URL;
+  const instagramHandle = "@Cruzial_parfum";
 
   const storeName = "Cruzial Parfums";
 

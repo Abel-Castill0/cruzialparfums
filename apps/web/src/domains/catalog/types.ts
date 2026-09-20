@@ -91,6 +91,30 @@ export type CatalogComboContent = {
   atomizaciones?: string;
 };
 
+/**
+ * Presentation-aware combo composition model.
+ * Groups combo_items by combo_product_variant_id to represent the
+ * actual DB truth: each combo product variant (e.g. 3ml, 5ml, 10ml)
+ * has its own isolated set of ingredient items.
+ */
+export type CatalogComboPresentationItem = {
+  ingredientProductId: string;
+  ingredientVariantId: string;
+  brand: string;
+  name: string;
+  sizeMl: string;
+  quantity: number;
+  sortOrder: number;
+};
+
+export type CatalogComboPresentation = {
+  comboVariantId: string;
+  sizeMl: string;
+  priceAmount: string;
+  currency: "PEN";
+  items: CatalogComboPresentationItem[];
+};
+
 export type CatalogProductVariant = {
   /**
    * Canonical database identity. UUID from product_variants.id.
@@ -162,6 +186,7 @@ export type CatalogProduct = {
   bottlePricingVerificationStatus: CatalogVerificationStatus | null;
   comboCompositionVerificationStatus: ComboCompositionVerificationStatus;
   comboContent: CatalogComboContent | null;
+  comboPresentations: CatalogComboPresentation[];
   variants: CatalogProductVariant[];
   media: CatalogProductMedia[];
 };

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { CheckoutExperience } from "@/components/parfums/checkout/checkout-experience";
-import { LegacyCatalogRepository } from "@/domains/catalog/legacy-catalog-repository";
+import { toCartCatalogProduct } from "@/domains/carts/parfums-cart-pricing";
+import { loadParfumsStorefront } from "@/lib/catalog/parfums-storefront";
 
 export const metadata: Metadata = {
   title: "Revisa tu selección",
@@ -8,12 +9,12 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default function CheckoutPage() {
-  const catalog = new LegacyCatalogRepository();
+export default async function CheckoutPage() {
+  const { catalog } = await loadParfumsStorefront();
 
   return (
     <main>
-      <CheckoutExperience products={catalog.list()} />
+      <CheckoutExperience products={catalog.list().map(toCartCatalogProduct)} />
     </main>
   );
 }

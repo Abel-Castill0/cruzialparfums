@@ -5,7 +5,8 @@ import {
   type CatalogFilters,
   type CatalogSort,
 } from "@/domains/catalog/catalog-query";
-import { LegacyCatalogRepository } from "@/domains/catalog/legacy-catalog-repository";
+import { CatalogUnavailableNotice } from "@/components/parfums/catalog/catalog-unavailable-notice";
+import { loadParfumsStorefront } from "@/lib/catalog/parfums-storefront";
 
 export const metadata: Metadata = {
   title: "Catálogo",
@@ -30,10 +31,12 @@ export default async function CatalogPage({ searchParams }: { searchParams: Sear
     sort: (scalar(params.sort) ?? "featured") as CatalogSort,
     search: scalar(params.search) ?? "",
   };
-  const products = new LegacyCatalogRepository().listFragrances();
+  const { catalog, source } = await loadParfumsStorefront();
+  const products = catalog.listFragrances();
 
   return (
     <main>
+      {source === "unavailable" ? <CatalogUnavailableNotice /> : null}
       <CatalogExperience products={products} initialFilters={initialFilters} />
     </main>
   );

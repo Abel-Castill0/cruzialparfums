@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Breadcrumbs, type BreadcrumbItem } from "@/components/parfums/navigation/breadcrumbs";
-import { LegacyCatalogRepository } from "@/domains/catalog/legacy-catalog-repository";
-import { PARFUMS_SETTINGS } from "@/domains/platform/settings";
+import { loadParfumsStorefront } from "@/lib/catalog/parfums-storefront";
 import styles from "@/components/parfums/institutional/institutional.module.css";
 
 export const metadata: Metadata = {
@@ -78,10 +77,9 @@ const faqs = [
   },
 ];
 
-export default function NosotrosPage() {
-  const catalog = new LegacyCatalogRepository();
-  const config = catalog.getStorefrontConfig();
-  const whatsappNumber = config.WA_NUMBER ?? PARFUMS_SETTINGS.whatsappNumber;
+export default async function NosotrosPage() {
+  const { contact } = await loadParfumsStorefront();
+  const whatsappNumber = contact.whatsappNumber;
 
   return (
     <main>

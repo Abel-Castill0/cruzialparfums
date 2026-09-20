@@ -1,6 +1,4 @@
 import { describe, expect, it } from "vitest";
-import type { SupabaseClient } from "@supabase/supabase-js";
-import type { Database } from "@/lib/supabase/database.types";
 import {
   mapPublicProduct,
   PARFUMS_BUSINESS_UNIT_ID,
@@ -497,6 +495,203 @@ describe("4K2-B0.1: combo composition read model", () => {
 });
 
 /* ------------------------------------------------------------------ */
+/*  7c. Combo presentation-aware model                                  */
+/* ------------------------------------------------------------------ */
+
+describe("4K2-B0.2: combo presentation-aware model", () => {
+  it("comboPresentations populated from combo_items grouped by combo_product_variant_id", () => {
+    // The default fixture has items for the 5 ml combo variant only; the
+    // 10 ml variant has no items and must NOT produce an empty presentation
+    // (see the "excluded" case below).
+    const product = mapPublicProduct(comboRow());
+    expect(product).not.toBeNull();
+    expect(product!.comboPresentations).toHaveLength(1);
+    const sizes = product!.comboPresentations.map((p) => p.sizeMl);
+    expect(sizes).toContain("5");
+    expect(sizes).not.toContain("10");
+  });
+
+  it("5ml presentation has 4 ingredient items", () => {
+    const product = mapPublicProduct(comboRow());
+    const p5ml = product!.comboPresentations.find((p) => p.sizeMl === "5");
+    expect(p5ml).toBeDefined();
+    expect(p5ml!.items).toHaveLength(4);
+    expect(p5ml!.comboVariantId).toBe("combo-5ml-uuid");
+    expect(p5ml!.priceAmount).toBe("55.00");
+  });
+
+  it("10ml presentation with no combo_items is excluded", () => {
+    const product = mapPublicProduct(comboRow());
+    const p10ml = product!.comboPresentations.find((p) => p.sizeMl === "10");
+    expect(p10ml).toBeUndefined();
+  });
+
+  it("ingredient UUIDs preserved in comboPresentations", () => {
+    const product = mapPublicProduct(comboRow());
+    const p5ml = product!.comboPresentations.find((p) => p.sizeMl === "5");
+    const ingIds = p5ml!.items.map((i) => i.ingredientVariantId);
+    expect(ingIds).toContain("ing-1a");
+    expect(ingIds).toContain("ing-2a");
+    expect(ingIds).toContain("ing-3a");
+    expect(ingIds).toContain("ing-4a");
+  });
+
+  it("combo presentation UUID preserved", () => {
+    const product = mapPublicProduct(comboRow());
+    const p5ml = product!.comboPresentations.find((p) => p.sizeMl === "5");
+    expect(p5ml!.comboVariantId).toBe("combo-5ml-uuid");
+  });
+
+  it("ingredient prices never derive combo price", () => {
+    const product = mapPublicProduct(comboRow());
+    const p5ml = product!.comboPresentations.find((p) => p.sizeMl === "5");
+    expect(p5ml!.priceAmount).toBe("55.00");
+  });
+
+  it("3-presentation/9-item structure for Cuarteto-like combo", () => {
+    const product = mapPublicProduct(comboRow({
+      combos: {
+        composition_verification_status: "official_pdf",
+        combo_items: [
+          { product_variant_id: "ing-1a", combo_product_variant_id: "combo-3ml-uuid", quantity: 1, sort_order: 0,
+            product_variants: { id: "ing-1a", product_id: "p1", label: "3 ml", size_ml: 3, products: { brand: "A", name: "Rose" } },
+            combo_product_variants: { id: "combo-3ml-uuid", product_id: "prod", label: "3 ml", size_ml: 3, products: { brand: null, name: "C" } } },
+          { product_variant_id: "ing-1b", combo_product_variant_id: "combo-3ml-uuid", quantity: 1, sort_order: 1,
+            product_variants: { id: "ing-1b", product_id: "p2", label: "3 ml", size_ml: 3, products: { brand: "B", name: "Oud" } },
+            combo_product_variants: { id: "combo-3ml-uuid", product_id: "prod", label: "3 ml", size_ml: 3, products: { brand: null, name: "C" } } },
+          { product_variant_id: "ing-1c", combo_product_variant_id: "combo-3ml-uuid", quantity: 1, sort_order: 2,
+            product_variants: { id: "ing-1c", product_id: "p3", label: "3 ml", size_ml: 3, products: { brand: "C", name: "Sandal" } },
+            combo_product_variants: { id: "combo-3ml-uuid", product_id: "prod", label: "3 ml", size_ml: 3, products: { brand: null, name: "C" } } },
+          { product_variant_id: "ing-1d", combo_product_variant_id: "combo-3ml-uuid", quantity: 1, sort_order: 3,
+            product_variants: { id: "ing-1d", product_id: "p4", label: "3 ml", size_ml: 3, products: { brand: "D", name: "Amber" } },
+            combo_product_variants: { id: "combo-3ml-uuid", product_id: "prod", label: "3 ml", size_ml: 3, products: { brand: null, name: "C" } } },
+          { product_variant_id: "ing-2a", combo_product_variant_id: "combo-5ml-uuid", quantity: 1, sort_order: 0,
+            product_variants: { id: "ing-2a", product_id: "p1", label: "3 ml", size_ml: 3, products: { brand: "A", name: "Rose" } },
+            combo_product_variants: { id: "combo-5ml-uuid", product_id: "prod", label: "5 ml", size_ml: 5, products: { brand: null, name: "C" } } },
+          { product_variant_id: "ing-2b", combo_product_variant_id: "combo-5ml-uuid", quantity: 1, sort_order: 1,
+            product_variants: { id: "ing-2b", product_id: "p2", label: "3 ml", size_ml: 3, products: { brand: "B", name: "Oud" } },
+            combo_product_variants: { id: "combo-5ml-uuid", product_id: "prod", label: "5 ml", size_ml: 5, products: { brand: null, name: "C" } } },
+          { product_variant_id: "ing-2c", combo_product_variant_id: "combo-5ml-uuid", quantity: 1, sort_order: 2,
+            product_variants: { id: "ing-2c", product_id: "p3", label: "3 ml", size_ml: 3, products: { brand: "C", name: "Sandal" } },
+            combo_product_variants: { id: "combo-5ml-uuid", product_id: "prod", label: "5 ml", size_ml: 5, products: { brand: null, name: "C" } } },
+          { product_variant_id: "ing-2d", combo_product_variant_id: "combo-5ml-uuid", quantity: 1, sort_order: 3,
+            product_variants: { id: "ing-2d", product_id: "p4", label: "3 ml", size_ml: 3, products: { brand: "D", name: "Amber" } },
+            combo_product_variants: { id: "combo-5ml-uuid", product_id: "prod", label: "5 ml", size_ml: 5, products: { brand: null, name: "C" } } },
+          { product_variant_id: "ing-3a", combo_product_variant_id: "combo-10ml-uuid", quantity: 1, sort_order: 0,
+            product_variants: { id: "ing-3a", product_id: "p1", label: "3 ml", size_ml: 3, products: { brand: "A", name: "Rose" } },
+            combo_product_variants: { id: "combo-10ml-uuid", product_id: "prod", label: "10 ml", size_ml: 10, products: { brand: null, name: "C" } } },
+          { product_variant_id: "ing-3b", combo_product_variant_id: "combo-10ml-uuid", quantity: 1, sort_order: 1,
+            product_variants: { id: "ing-3b", product_id: "p2", label: "3 ml", size_ml: 3, products: { brand: "B", name: "Oud" } },
+            combo_product_variants: { id: "combo-10ml-uuid", product_id: "prod", label: "10 ml", size_ml: 10, products: { brand: null, name: "C" } } },
+          { product_variant_id: "ing-3c", combo_product_variant_id: "combo-10ml-uuid", quantity: 1, sort_order: 2,
+            product_variants: { id: "ing-3c", product_id: "p3", label: "3 ml", size_ml: 3, products: { brand: "C", name: "Sandal" } },
+            combo_product_variants: { id: "combo-10ml-uuid", product_id: "prod", label: "10 ml", size_ml: 10, products: { brand: null, name: "C" } } },
+          { product_variant_id: "ing-3d", combo_product_variant_id: "combo-10ml-uuid", quantity: 1, sort_order: 3,
+            product_variants: { id: "ing-3d", product_id: "p4", label: "3 ml", size_ml: 3, products: { brand: "D", name: "Amber" } },
+            combo_product_variants: { id: "combo-10ml-uuid", product_id: "prod", label: "10 ml", size_ml: 10, products: { brand: null, name: "C" } } },
+        ],
+      },
+      product_variants: [
+        { id: "combo-3ml-uuid", label: "Set 3 ml c/u", variant_kind: "decant", size_ml: 3, price_amount: "40.00", currency: "PEN", publication_status: "published", archived_at: null, sort_order: 0, price_verification_status: "official_pdf" },
+        { id: "combo-5ml-uuid", label: "Set 5 ml c/u", variant_kind: "decant", size_ml: 5, price_amount: "55.00", currency: "PEN", publication_status: "published", archived_at: null, sort_order: 1, price_verification_status: "official_pdf" },
+        { id: "combo-10ml-uuid", label: "Set 10 ml c/u", variant_kind: "decant", size_ml: 10, price_amount: "89.00", currency: "PEN", publication_status: "published", archived_at: null, sort_order: 2, price_verification_status: "official_pdf" },
+      ],
+    }));
+    expect(product).not.toBeNull();
+    expect(product!.comboPresentations).toHaveLength(3);
+    const sizes = product!.comboPresentations.map((p) => p.sizeMl).sort();
+    expect(sizes).toEqual(["10", "3", "5"]);
+    for (const pres of product!.comboPresentations) {
+      expect(pres.items).toHaveLength(4);
+      expect(pres.currency).toBe("PEN");
+    }
+    const prices = product!.comboPresentations.map((p) => p.priceAmount).sort();
+    expect(prices).toEqual(["40.00", "55.00", "89.00"]);
+  });
+
+  it("3-presentation/9-item structure for Tulum-like 3-member combo", () => {
+    const product = mapPublicProduct(comboRow({
+      name: "Tulum Vibes",
+      combos: {
+        composition_verification_status: "official_pdf",
+        combo_items: [
+          { product_variant_id: "tul-1a", combo_product_variant_id: "combo-5ml-uuid", quantity: 1, sort_order: 0,
+            product_variants: { id: "tul-1a", product_id: "pt1", label: "3 ml", size_ml: 3, products: { brand: "X", name: "Sand" } },
+            combo_product_variants: { id: "combo-5ml-uuid", product_id: "prod", label: "5 ml", size_ml: 5, products: { brand: null, name: "Tulum" } } },
+          { product_variant_id: "tul-2a", combo_product_variant_id: "combo-5ml-uuid", quantity: 1, sort_order: 1,
+            product_variants: { id: "tul-2a", product_id: "pt2", label: "3 ml", size_ml: 3, products: { brand: "Y", name: "Sea" } },
+            combo_product_variants: { id: "combo-5ml-uuid", product_id: "prod", label: "5 ml", size_ml: 5, products: { brand: null, name: "Tulum" } } },
+          { product_variant_id: "tul-3a", combo_product_variant_id: "combo-5ml-uuid", quantity: 1, sort_order: 2,
+            product_variants: { id: "tul-3a", product_id: "pt3", label: "3 ml", size_ml: 3, products: { brand: "Z", name: "Sun" } },
+            combo_product_variants: { id: "combo-5ml-uuid", product_id: "prod", label: "5 ml", size_ml: 5, products: { brand: null, name: "Tulum" } } },
+          { product_variant_id: "tul-1b", combo_product_variant_id: "combo-10ml-uuid", quantity: 1, sort_order: 0,
+            product_variants: { id: "tul-1b", product_id: "pt1", label: "3 ml", size_ml: 3, products: { brand: "X", name: "Sand" } },
+            combo_product_variants: { id: "combo-10ml-uuid", product_id: "prod", label: "10 ml", size_ml: 10, products: { brand: null, name: "Tulum" } } },
+          { product_variant_id: "tul-2b", combo_product_variant_id: "combo-10ml-uuid", quantity: 1, sort_order: 1,
+            product_variants: { id: "tul-2b", product_id: "pt2", label: "3 ml", size_ml: 3, products: { brand: "Y", name: "Sea" } },
+            combo_product_variants: { id: "combo-10ml-uuid", product_id: "prod", label: "10 ml", size_ml: 10, products: { brand: null, name: "Tulum" } } },
+          { product_variant_id: "tul-3b", combo_product_variant_id: "combo-10ml-uuid", quantity: 1, sort_order: 2,
+            product_variants: { id: "tul-3b", product_id: "pt3", label: "3 ml", size_ml: 3, products: { brand: "Z", name: "Sun" } },
+            combo_product_variants: { id: "combo-10ml-uuid", product_id: "prod", label: "10 ml", size_ml: 10, products: { brand: null, name: "Tulum" } } },
+        ],
+      },
+      product_variants: [
+        { id: "combo-5ml-uuid", label: "Set 5 ml c/u", variant_kind: "decant", size_ml: 5, price_amount: "55.00", currency: "PEN", publication_status: "published", archived_at: null, sort_order: 0, price_verification_status: "official_pdf" },
+        { id: "combo-10ml-uuid", label: "Set 10 ml c/u", variant_kind: "decant", size_ml: 10, price_amount: "89.00", currency: "PEN", publication_status: "published", archived_at: null, sort_order: 1, price_verification_status: "official_pdf" },
+      ],
+    }));
+    expect(product).not.toBeNull();
+    expect(product!.comboPresentations).toHaveLength(2);
+    for (const pres of product!.comboPresentations) {
+      expect(pres.items).toHaveLength(3);
+    }
+  });
+
+  it("ingredient product UUIDs preserved in comboPresentations", () => {
+    const product = mapPublicProduct(comboRow());
+    const p5ml = product!.comboPresentations.find((p) => p.sizeMl === "5");
+    const productIds = p5ml!.items.map((i) => i.ingredientProductId);
+    expect(productIds).toContain("prod-ing-1");
+    expect(productIds).toContain("prod-ing-2");
+    expect(productIds).toContain("prod-ing-3");
+    expect(productIds).toContain("prod-ing-4");
+  });
+
+  it("missing combo_items produces empty comboPresentations", () => {
+    const product = mapPublicProduct(comboRow({
+      combos: { composition_verification_status: "official_pdf", combo_items: [] },
+    }));
+    expect(product!.comboPresentations).toHaveLength(0);
+  });
+
+  it("no combo (non-combo product) has empty comboPresentations", () => {
+    const product = mapPublicProduct(row());
+    expect(product!.comboPresentations).toHaveLength(0);
+  });
+
+  it("sort_order preserved in combo presentation items", () => {
+    const product = mapPublicProduct(comboRow());
+    const p5ml = product!.comboPresentations.find((p) => p.sizeMl === "5");
+    const sortOrders = p5ml!.items.map((i) => i.sortOrder);
+    expect(sortOrders).toEqual([0, 1, 2, 3]);
+  });
+
+  it("incomplete composition (missing presentation variant) fails closed", () => {
+    const product = mapPublicProduct(comboRow({
+      combos: {
+        composition_verification_status: "official_pdf",
+        combo_items: [
+          { product_variant_id: "ing-1a", combo_product_variant_id: "combo-nonexistent-uuid", quantity: 1, sort_order: 0,
+            product_variants: { id: "ing-1a", product_id: "p1", label: "3 ml", size_ml: 3, products: { brand: "A", name: "Rose" } },
+            combo_product_variants: { id: "combo-nonexistent-uuid", product_id: "prod", label: "5 ml", size_ml: 5, products: { brand: null, name: "C" } } },
+        ],
+      },
+    }));
+    expect(product!.comboPresentations).toHaveLength(0);
+  });
+});
+
+/* ------------------------------------------------------------------ */
 /*  7. Media transition contract                                       */
 /* ------------------------------------------------------------------ */
 
@@ -521,14 +716,42 @@ describe("4K2-B0: media transition contract", () => {
     expect(product!.media[0].url).toContain("github.io");
   });
 
-  it("rejects legacy_static media with non-https URL", () => {
+  it.each([
+    ["http://", "http://legacy.example/img/local.webp"],
+    ["protocol-relative", "//legacy.example/img/local.webp"],
+    ["data:", "data:image/webp;base64,AAAA"],
+    ["relative without leading slash", "img/local.webp"],
+  ])("rejects legacy_static media with a %s URL", (_label, url) => {
     const product = mapPublicProduct(row({
       product_media: [
-        { provider: "legacy_static", secure_url: "/img/local.webp", alt: null, is_primary: true, sort_order: 0, archived_at: null, product_variant_id: null, media_role: null },
+        { provider: "legacy_static", secure_url: url, alt: null, is_primary: true, sort_order: 0, archived_at: null, product_variant_id: null, media_role: null },
       ],
     }));
     expect(product!.media).toHaveLength(0);
     expect(product!.imageUrl).toBeNull();
+  });
+
+  it("accepts legacy_static media only as a root-relative path this app serves itself", () => {
+    const product = mapPublicProduct(row({
+      product_media: [
+        { provider: "legacy_static", secure_url: "/parfums/combos/set-cuarteto.webp", alt: null, is_primary: true, sort_order: 0, archived_at: null, product_variant_id: null, media_role: "set" },
+        { provider: "cloudinary", secure_url: "/parfums/combos/not-cloudinary.webp", alt: null, is_primary: false, sort_order: 1, archived_at: null, product_variant_id: null, media_role: null },
+      ],
+    }));
+    expect(product!.media.map((item) => item.url)).toEqual(["/parfums/combos/set-cuarteto.webp"]);
+    expect(product!.imageUrl).toBe("/parfums/combos/set-cuarteto.webp");
+  });
+
+  it("maps a hero-role media to comboContent.heroImageUrl without treating it as the product image", () => {
+    const product = mapPublicProduct(comboRow({
+      product_media: [
+        { provider: "legacy_static", secure_url: "/parfums/combos/set-cuarteto.webp", alt: null, is_primary: true, sort_order: 0, archived_at: null, product_variant_id: null, media_role: "set" },
+        { provider: "legacy_static", secure_url: "/parfums/hero/promo-cuarteto.webp", alt: null, is_primary: false, sort_order: 1, archived_at: null, product_variant_id: null, media_role: "hero" },
+      ],
+    }));
+    expect(product!.imageUrl).toBe("/parfums/combos/set-cuarteto.webp");
+    expect(product!.media.map((item) => item.url)).toEqual(["/parfums/combos/set-cuarteto.webp"]);
+    expect(product!.comboContent?.heroImageUrl).toBe("/parfums/hero/promo-cuarteto.webp");
   });
 
   it("missing media produces null imageUrl", () => {
@@ -572,7 +795,7 @@ describe("4K2-B0: order snapshot contract", () => {
     const result = validateAndResolveParfumsOrder({
       requestId: "12345678-1234-4123-8123-123456789abc",
       lines: [{ productId: product.legacyId!, variantId: variant.variantId, quantity: 1 }],
-      customer: { name: "Test User", phone: "999111222", district: "Lima", delivery: "Lima Metropolitana — Motorizado", note: "" },
+      customer: { name: "Test User", phone: "999111222", district: "Lima", delivery: "Agencia Shalom (Lima y todo el Perú)", note: "" },
     }, repo);
     expect(result.ok).toBe(true);
     if (!result.ok) return;
@@ -622,7 +845,7 @@ describe("4K2-B0.1: pre-publication readiness", () => {
     expect(result.blockers).toHaveLength(0);
   });
 
-  it("draft product is NOT ready", () => {
+  it("draft product with ready variants IS eligible for publication", () => {
     const result = classifyPrePublicationReadiness({
       publication_status: "draft",
       archived_at: null,
@@ -630,8 +853,9 @@ describe("4K2-B0.1: pre-publication readiness", () => {
         { publication_status: "published", price_verification_status: "official_pdf" },
       ],
     });
-    expect(result.ready).toBe(false);
-    expect(result.blockers).toContain("product_not_published");
+    expect(result.ready).toBe(true);
+    expect(result.readyVariantCount).toBe(1);
+    expect(result.blockers).toHaveLength(0);
   });
 
   it("hidden product is NOT ready", () => {
@@ -644,7 +868,6 @@ describe("4K2-B0.1: pre-publication readiness", () => {
     });
     expect(result.ready).toBe(false);
     expect(result.blockers).toContain("product_hidden");
-    expect(result.blockers).toContain("product_not_published");
   });
 
   it("archived product is NOT ready", () => {
@@ -670,7 +893,7 @@ describe("4K2-B0.1: pre-publication readiness", () => {
     expect(result.ready).toBe(true);
   });
 
-  it("draft variant is NOT ready", () => {
+  it("draft variant with official_pdf IS eligible for publication", () => {
     const result = classifyPrePublicationReadiness({
       publication_status: "published",
       archived_at: null,
@@ -678,8 +901,8 @@ describe("4K2-B0.1: pre-publication readiness", () => {
         { publication_status: "draft", price_verification_status: "official_pdf" },
       ],
     });
-    expect(result.ready).toBe(false);
-    expect(result.blockers).toContain("variant_not_published");
+    expect(result.ready).toBe(true);
+    expect(result.readyVariantCount).toBe(1);
   });
 
   it("provisional_market variant is NOT ready", () => {

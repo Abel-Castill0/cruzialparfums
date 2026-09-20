@@ -178,19 +178,26 @@ export function buildWholesaleProductMessage({
   storeName,
   brand,
   productName,
-  prices,
+  variantLabel,
+  basePriceAmount,
+  policy,
 }: {
   storeName: string;
   brand: string;
   productName: string;
-  prices: { unit: number; m4: number; m12: number };
+  variantLabel: string;
+  /** Retail bottle price, canonical decimal text (PEN). */
+  basePriceAmount: string;
+  /** Active per-category policy; omitted when none covers the product. */
+  policy?: { minQuantity: number; discountAmount: string; wholesaleUnitPriceAmount: string } | null;
 }) {
+  const priceLine = policy
+    ? `Precio frasco: S/ ${basePriceAmount}. Mayorista desde ${policy.minQuantity} unidades: S/ ${policy.wholesaleUnitPriceAmount} por unidad (−S/ ${policy.discountAmount}).`
+    : `Precio frasco: S/ ${basePriceAmount}. Tarifa mayorista a confirmar.`;
   return [
-    `Hola ${storeName}. Quiero cotizar ${brand} ${productName}.`,
+    `Hola ${storeName}. Quiero cotizar por MAYOR ${brand} ${productName} (${variantLabel}).`,
     "Cantidad: ___ unidades.",
-    `Precios referenciales legacy: ${money(prices.unit)} (unidad) / ${money(prices.m4)} (4+ uds) / ${money(prices.m12)} (12+ uds).`,
-    "Tipo de compra: Mayorista.",
-    "¿Tiene decants de cortesía?",
+    priceLine,
     "",
     "Continúo en WhatsApp para confirmar disponibilidad y tarifa exacta.",
   ].join("\n");

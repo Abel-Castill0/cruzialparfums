@@ -1,23 +1,23 @@
 import type { Metadata } from "next";
 import { WholesaleExperience } from "@/components/parfums/wholesale/wholesale-experience";
-import { LegacyCatalogRepository } from "@/domains/catalog/legacy-catalog-repository";
-import { PARFUMS_SETTINGS } from "@/domains/platform/settings";
+import { PARFUMS_STORE_NAME } from "@/domains/platform/parfums-storefront";
+import { loadParfumsStorefront } from "@/lib/catalog/parfums-storefront";
 
 export const metadata: Metadata = {
   title: "Venta por mayor",
-  description: "Tarifas referenciales por volumen para frascos completos y cotización directa por WhatsApp.",
+  description: "Frascos completos con descuento mayorista por categoría desde 40 unidades y cotización directa por WhatsApp.",
 };
 
-export default function WholesalePage() {
-  const catalog = new LegacyCatalogRepository();
-  const config = catalog.getStorefrontConfig();
+export default async function WholesalePage() {
+  const { wholesale, contact } = await loadParfumsStorefront();
 
   return (
     <main>
       <WholesaleExperience
-        entries={catalog.listWholesale()}
-        storeName={config.STORE ?? "Cruzial Parfums"}
-        whatsappNumber={config.WA_NUMBER ?? PARFUMS_SETTINGS.whatsappNumber}
+        offers={wholesale.offers}
+        policies={wholesale.policies}
+        storeName={PARFUMS_STORE_NAME}
+        whatsappNumber={contact.whatsappNumber}
       />
     </main>
   );

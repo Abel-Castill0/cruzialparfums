@@ -91,17 +91,30 @@ describe("Parfums WhatsApp message builder", () => {
     expect(decodeURIComponent(buildWhatsAppUrl(PARFUMS_SETTINGS.whatsappNumber, message))).toContain("Khamrah Clásico");
   });
 
-  it("labels wholesale row pricing as referential legacy data", () => {
+  it("quotes wholesale from the confirmed per-category policy, never legacy tiers", () => {
     const message = buildWholesaleProductMessage({
       storeName: "Cruzial Parfums",
       brand: "Lattafa",
       productName: "Khamrah Clásico",
-      prices: { unit: 130, m4: 122, m12: 114 },
+      variantLabel: "Frasco 100 ml",
+      basePriceAmount: "130.00",
+      policy: { minQuantity: 40, discountAmount: "5.00", wholesaleUnitPriceAmount: "125.00" },
     });
 
-    expect(message).toContain("Precios referenciales legacy");
-    expect(message).toContain("S/ 122.00 (4+ uds)");
+    expect(message).toContain("cotizar por MAYOR Lattafa Khamrah Clásico (Frasco 100 ml)");
+    expect(message).toContain("Precio frasco: S/ 130.00");
+    expect(message).toContain("desde 40 unidades: S/ 125.00 por unidad (−S/ 5.00)");
+    expect(message).not.toMatch(/legacy|4\+ uds|12\+ uds/);
     expect(message).toContain("confirmar disponibilidad y tarifa exacta");
+
+    const withoutPolicy = buildWholesaleProductMessage({
+      storeName: "Cruzial Parfums",
+      brand: "Lattafa",
+      productName: "Khamrah Clásico",
+      variantLabel: "Frasco 100 ml",
+      basePriceAmount: "130.00",
+    });
+    expect(withoutPolicy).toContain("Tarifa mayorista a confirmar");
   });
 
   it("builds a wholesale inquiry without an unverified response-time promise", () => {

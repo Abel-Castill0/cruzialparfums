@@ -2,8 +2,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
 
-vi.mock("@/domains/catalog/legacy-catalog-repository", () => ({
-  LegacyCatalogRepository: class {},
+const loadParfumsStorefront = vi.fn();
+vi.mock("@/lib/catalog/parfums-storefront", () => ({
+  loadParfumsStorefront: (...args: unknown[]) => loadParfumsStorefront(...args),
 }));
 
 const validateAndResolveParfumsOrder = vi.fn();
@@ -52,8 +53,32 @@ const VALIDATED = {
 describe("createParfumsOrderRequest — Gate 2B rate limit integration", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
+    loadParfumsStorefront.mockResolvedValue({
+      source: "supabase",
+      catalog: { marker: "catalog" },
+      contact: { whatsappNumber: "51999000000" },
+    });
     validateAndResolveParfumsOrder.mockReturnValue(VALIDATED);
     createSupabaseAdminClient.mockReturnValue({ marker: "fake-client" });
+  });
+
+  it("fails closed without touching the limiter or repository when the catalog is unavailable", async () => {
+    loadParfumsStorefront.mockResolvedValue({ source: "unavailable", catalog: {}, contact: { whatsappNumber: "1" } });
+
+    const result = await createParfumsOrderRequest({} as never);
+
+    expect(result.status).toBe("error");
+    expect(checkOrderRequestRateLimit).not.toHaveBeenCalled();
+    expect(repositoryCreate).not.toHaveBeenCalled();
+  });
+
+  it("revalidates the cart against the storefront catalog, not a client-supplied one", async () => {
+    checkOrderRequestRateLimit.mockResolvedValue({ kind: "allowed" });
+    repositoryCreate.mockResolvedValue({ ok: true, data: { orderNumber: "CRP-1", created: true } });
+
+    await createParfumsOrderRequest({} as never);
+
+    expect(validateAndResolveParfumsOrder).toHaveBeenCalledWith({}, { marker: "catalog" });
   });
 
   it("denies and never calls the repository when the limiter denies", async () => {

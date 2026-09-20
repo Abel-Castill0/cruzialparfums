@@ -38,7 +38,7 @@ function row(overrides: Partial<PublicProductRow> = {}): PublicProductRow {
       { provider: "cloudinary", secure_url: "https://res.cloudinary.com/demo/bottle.webp", alt: "Vista lateral", is_primary: false, sort_order: 1, archived_at: null, product_variant_id: null, media_role: "bottle" },
       { provider: "cloudinary", secure_url: "https://res.cloudinary.com/demo/set.webp", alt: null, is_primary: true, sort_order: 9, archived_at: null, product_variant_id: "decant-public", media_role: "set" },
       { provider: "cloudinary", secure_url: "https://res.cloudinary.com/demo/draft.webp", alt: null, is_primary: false, sort_order: 0, archived_at: null, product_variant_id: "decant-draft", media_role: "additional" },
-      { provider: "legacy_static", secure_url: "/img/local.webp", alt: null, is_primary: false, sort_order: 0, archived_at: null, product_variant_id: null, media_role: null },
+      { provider: "legacy_static", secure_url: "http://legacy.example/img/local.webp", alt: null, is_primary: false, sort_order: 0, archived_at: null, product_variant_id: null, media_role: null },
     ],
     product_categories: [
       { sort_order: 0, category: { business_unit_id: PARFUMS_BUSINESS_UNIT_ID, kind: "commercial_type", slug: "arabic", name: "Árabe", publication_status: "published", archived_at: null } },

@@ -70,6 +70,7 @@ function toCatalogProduct(
     comboCompositionVerificationStatus:
       product.comboCompositionVerificationStatus,
     comboContent,
+    comboPresentations: [],
     variants: [
       ...Object.entries(product.price).map(([size, price], sortOrder) => ({
         dbVariantId: null,
@@ -178,7 +179,7 @@ export class LegacyCatalogRepository implements PublicCatalogRepository {
     return product ? toCatalogProduct(product, this.mediaSource) : null;
   }
 
-  findByProductId(_productId: string): CatalogProduct | null {
+  findByProductId(): CatalogProduct | null {
     return null;
   }
 

@@ -4,7 +4,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { ComboCarousel } from "@/components/parfums/home/combo-carousel";
 import { FeaturedPerfumeRail } from "@/components/parfums/home/featured-perfume-rail";
-import { LegacyCatalogRepository } from "@/domains/catalog/legacy-catalog-repository";
+import { CatalogUnavailableNotice } from "@/components/parfums/catalog/catalog-unavailable-notice";
+import { PARFUMS_ATOMIZATIONS, PARFUMS_BRAND_MEDIA } from "@/domains/platform/parfums-storefront";
+import { loadParfumsStorefront } from "@/lib/catalog/parfums-storefront";
 import styles from "./page.module.css";
 
 export const metadata: Metadata = {
@@ -57,12 +59,12 @@ const homeFaqs = [
   },
 ];
 
-export default function ParfumsHomePage() {
-  const catalog = new LegacyCatalogRepository();
+export default async function ParfumsHomePage() {
+  const { catalog, source } = await loadParfumsStorefront();
   const combos = catalog.listCombos();
   const featured = catalog.listFeatured();
-  const { heroUrl } = catalog.getHeroMedia();
-  const { ATOMIZACIONES } = catalog.getStorefrontConfig();
+  const { heroUrl } = PARFUMS_BRAND_MEDIA;
+  const ATOMIZACIONES = PARFUMS_ATOMIZATIONS;
 
   return (
     <main className={styles.home}>
@@ -112,6 +114,8 @@ export default function ParfumsHomePage() {
           <p>Empieza pequeño y escala cuando la fragancia te convenza.</p>
         </div>
       </section>
+
+      {source === "unavailable" ? <CatalogUnavailableNotice /> : null}
 
       <FeaturedPerfumeRail products={featured} />
 

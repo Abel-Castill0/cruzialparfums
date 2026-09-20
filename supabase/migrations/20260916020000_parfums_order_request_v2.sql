@@ -14,8 +14,8 @@
 --
 -- 4K2-B0.2: currency/unit_price_amount stripped from client before RPC.
 -- Storefront eligibility enforced server-side: published, non-archived,
--- available, and price_verified within 24 hours. Discontinued products
--- remain eligible (no business rule blocks discontinued orders).
+-- available, and price authority client_confirmed or official_pdf.
+-- Discontinued products remain eligible (no business rule blocks discontinued orders).
 
 create or replace function public.create_parfums_order_request_v2(
   p_request_id uuid,
@@ -178,7 +178,8 @@ begin
     line_quantity := (line ->> 'quantity')::integer;
 
     -- Single atomic lookup: resolve product + variant, enforce ownership,
-    -- enforce storefront eligibility (published, purchasable, fresh price),
+    -- enforce storefront eligibility (published, available, archived_at null),
+    -- enforce price authority (client_confirmed or official_pdf),
     -- obtain canonical price from database truth. Never trust client price.
     -- Discontinued products remain eligible (no business rule blocks them).
     select
@@ -194,12 +195,12 @@ begin
       and p.archived_at is null
       and v.archived_at is null
       and p.publication_status = 'published'
-      and p.purchasable = true
-      and p.price_verified_at is not null
-      and p.price_verified_at >= now() - interval '24 hours';
+      and p.availability_status = 'available'
+      and v.publication_status = 'published'
+      and v.price_verification_status in ('client_confirmed', 'official_pdf');
 
     if v_variant.id is null then
-      raise exception 'product/variant not found, not published, not purchasable, or price unverified'
+      raise exception 'product/variant pair not found or not orderable'
         using errcode = '22023';
     end if;
 
@@ -273,4 +274,4 @@ grant execute on function public.create_parfums_order_request_v2(uuid, jsonb, js
   to service_role;
 
 comment on function public.create_parfums_order_request_v2(uuid, jsonb, jsonb, text, jsonb) is
-  '4K2-B0.2: Service-only atomic persistence for a Supabase-aware Parfums order request. All lines must carry product_id + product_variant_id. Storefront eligibility enforced server-side. Canonical price from DB, never client-supplied.';
+  '4K2-B0.2: Service-only atomic persistence for a Supabase-aware Parfums order request. All lines must carry product_id + product_variant_id. Storefront eligibility enforced server-side (published, available, price authority client_confirmed/official_pdf). Canonical price from DB, never client-supplied.';

@@ -21,11 +21,24 @@ describe("Parfums cart pricing", () => {
     expect(formatParfumsVariant(resolved[1]!)).toBe("Frasco 100 ml");
   });
 
-  it("fails closed for stale products, variants and discontinued items", () => {
+  it("fails closed for stale products, stale variants and out_of_stock items", () => {
+    const soldOut = products.map((product) => (
+      product.legacyId === "khamrah-clasico" ? { ...product, availabilityStatus: "out_of_stock" as const } : product
+    ));
     expect(resolveParfumsCart([
       { productId: "missing", variantId: "decant-3ml", quantity: 1 },
       { productId: "khamrah-clasico", variantId: "missing", quantity: 1 },
-      { productId: "lovely-cherry", variantId: "decant-3ml", quantity: 1 },
-    ], products)).toEqual([]);
+      { productId: "khamrah-clasico", variantId: "decant-3ml", quantity: 1 },
+    ], soldOut)).toEqual([]);
+  });
+
+  it("keeps discontinued products purchasable (client rule: discontinued != unavailable)", () => {
+    const discontinued = products.find((product) => product.discontinued && product.availabilityStatus === "available");
+    expect(discontinued).toBeDefined();
+    const resolved = resolveParfumsCart([
+      { productId: discontinued!.legacyId!, variantId: "decant-3ml", quantity: 2 },
+    ], products);
+    expect(resolved).toHaveLength(1);
+    expect(resolved[0]!.quantity).toBe(2);
   });
 });

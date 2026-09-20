@@ -8,6 +8,8 @@ import type {
   CatalogProductVariant,
   CatalogVerificationStatus,
   CatalogComboContent,
+  CatalogComboPresentation,
+  CatalogComboPresentationItem,
   ComboCompositionVerificationStatus,
   PublicCatalogRepository,
 } from "./types";
@@ -114,9 +116,9 @@ const PUBLIC_PRODUCT_SELECT = `
     slug, name, publication_status, archived_at)),
   combos:combos(composition_verification_status, combo_items(
     product_variant_id, combo_product_variant_id, quantity, sort_order,
-    product_variants:product_variants(id, product_id, label, size_ml,
+    product_variants:product_variants!combo_items_product_variant_id_fkey(id, product_id, label, size_ml,
       products:products(brand, name)),
-    combo_product_variants:combo_product_variants(id, product_id, label, size_ml,
+    combo_product_variants:product_variants!combo_items_combo_product_variant_id_fkey(id, product_id, label, size_ml,
       products:products(brand, name))))
 `;
 
@@ -204,11 +206,23 @@ function mapVariants(row: PublicProductRow): CatalogProductVariant[] {
     .sort((a, b) => a.sortOrder - b.sortOrder || a.variantId.localeCompare(b.variantId));
 }
 
-type PublicMediaRole = "set" | "bottle" | "additional";
+type PublicMediaRole = "set" | "bottle" | "additional" | "hero";
 type MappedPublicMedia = CatalogProductMedia & { role: PublicMediaRole | null };
 
 function mediaRole(value: string | null): PublicMediaRole | null {
-  return value === "set" || value === "bottle" || value === "additional" ? value : null;
+  return value === "set" || value === "bottle" || value === "additional" || value === "hero"
+    ? value : null;
+}
+
+/**
+ * Public media must be served over HTTPS (Cloudinary) or be a root-relative
+ * path to a client asset this app hosts itself under /public (provider
+ * `legacy_static`). Anything else — http://, protocol-relative, data: —
+ * is dropped before it can reach an <img>.
+ */
+function publicMediaUrl(provider: string, secureUrl: string): boolean {
+  if (/^https:\/\//.test(secureUrl)) return true;
+  return provider === "legacy_static" && /^\/(?!\/)[^\s]+$/.test(secureUrl);
 }
 
 function mapMedia(row: PublicProductRow): MappedPublicMedia[] {
@@ -220,7 +234,7 @@ function mapMedia(row: PublicProductRow): MappedPublicMedia[] {
     .filter((item) => (item.provider === "cloudinary" || item.provider === "legacy_static")
       && item.archived_at === null
       && (item.product_variant_id === null || publicVariantIds.has(item.product_variant_id))
-      && /^https:\/\//.test(item.secure_url))
+      && publicMediaUrl(item.provider, item.secure_url))
     .map((item) => ({
       url: item.secure_url,
       alt: item.alt?.trim() || fallbackAlt,
@@ -232,17 +246,24 @@ function mapMedia(row: PublicProductRow): MappedPublicMedia[] {
       || a.sortOrder - b.sortOrder || a.url.localeCompare(b.url));
 }
 
-function buildComboContent(row: PublicProductRow): CatalogComboContent | null {
+type ComboReadModel = {
+  comboContent: CatalogComboContent | null;
+  comboPresentations: CatalogComboPresentation[];
+};
+
+function buildComboContent(row: PublicProductRow, heroImageUrl: string | null): ComboReadModel {
   const comboItems = row.combos?.combo_items ?? [];
-  if (comboItems.length === 0) return null;
+  if (comboItems.length === 0) return { comboContent: null, comboPresentations: [] };
 
   const perfumes: string[] = [];
   for (const item of comboItems) {
     const ingredient = item.product_variants?.products;
-    if (!ingredient) return null;
+    if (!ingredient) return { comboContent: null, comboPresentations: [] };
     const name = [ingredient.brand, ingredient.name].filter(Boolean).join(" ");
-    if (!name) return null;
-    perfumes.push(name);
+    if (!name) return { comboContent: null, comboPresentations: [] };
+    // combo_items repeat every ingredient once per presentation (3/5/10 ml);
+    // the public composition lists each fragrance once, in item order.
+    if (!perfumes.includes(name)) perfumes.push(name);
   }
 
   const firstItem = comboItems[0];
@@ -251,14 +272,61 @@ function buildComboContent(row: PublicProductRow): CatalogComboContent | null {
     ? Number(presentationVariant.size_ml)
     : 0;
 
-  return {
+  const comboContent: CatalogComboContent = {
     name: row.name,
     desc: row.description ?? "",
     perfumes,
     ml,
-    heroImageUrl: null,
+    heroImageUrl,
     verificationStatus: comboVerificationStatus(row.combos?.composition_verification_status ?? "unknown"),
   };
+
+  // Build presentation-aware model grouped by combo_product_variant_id
+  const presentationMap = new Map<string, CatalogComboPresentationItem[]>();
+  for (const item of comboItems) {
+    const pvId = item.combo_product_variant_id;
+    if (!presentationMap.has(pvId)) presentationMap.set(pvId, []);
+    const ingredient = item.product_variants;
+    if (!ingredient?.products) continue;
+    const ingredientSizeMl = size(ingredient.size_ml);
+    if (!ingredientSizeMl) continue;
+    presentationMap.get(pvId)!.push({
+      ingredientProductId: ingredient.product_id,
+      ingredientVariantId: ingredient.id,
+      brand: ingredient.products.brand ?? "",
+      name: ingredient.products.name,
+      sizeMl: ingredientSizeMl,
+      quantity: item.quantity,
+      sortOrder: item.sort_order,
+    });
+  }
+
+  // Find variant prices from the row's product_variants
+  const variantPriceMap = new Map<string, { priceAmount: string; sizeMl: string }>();
+  for (const pv of row.product_variants) {
+    const pvSize = size(pv.size_ml);
+    const pvPrice = decimal(pv.price_amount);
+    if (pvSize && pvPrice) {
+      variantPriceMap.set(pv.id, { priceAmount: pvPrice, sizeMl: pvSize });
+    }
+  }
+
+  const comboPresentations: CatalogComboPresentation[] = [];
+  for (const [pvId, items] of presentationMap) {
+    const pvInfo = variantPriceMap.get(pvId);
+    if (!pvInfo) continue;
+    items.sort((a, b) => a.sortOrder - b.sortOrder);
+    comboPresentations.push({
+      comboVariantId: pvId,
+      sizeMl: pvInfo.sizeMl,
+      priceAmount: pvInfo.priceAmount,
+      currency: "PEN",
+      items,
+    });
+  }
+  comboPresentations.sort((a, b) => Number(a.sizeMl) - Number(b.sizeMl));
+
+  return { comboContent, comboPresentations };
 }
 
 /** Pure mapping seam used by local publication fixtures and the parity oracle. */
@@ -278,10 +346,13 @@ export function mapPublicProduct(row: PublicProductRow): CatalogProduct | null {
   const bottles = variants.filter((item) => item.kind === "bottle");
   if (!isCombo && decants.length === 0) return null;
   const mappedMedia = mapMedia(row);
-  const primary = mappedMedia.find((item) => item.isPrimary) ?? mappedMedia[0] ?? null;
+  // A wide promotional hero (combos) is never the product image itself.
+  const heroMedia = mappedMedia.find((item) => item.role === "hero") ?? null;
+  const productMedia = mappedMedia.filter((item) => item.role !== "hero");
+  const primary = productMedia.find((item) => item.isPrimary) ?? productMedia[0] ?? null;
   const decantMedia = mappedMedia.find((item) => item.role === "set") ?? primary;
   const bottleMedia = mappedMedia.find((item) => item.role === "bottle") ?? primary;
-  const media: CatalogProductMedia[] = mappedMedia.map((item) => ({
+  const media: CatalogProductMedia[] = productMedia.map((item) => ({
     url: item.url,
     alt: item.alt,
     isPrimary: item.isPrimary,
@@ -295,7 +366,9 @@ export function mapPublicProduct(row: PublicProductRow): CatalogProduct | null {
     ? comboVerificationStatus(row.combos.composition_verification_status)
     : null;
 
-  const comboContent: CatalogComboContent | null = isCombo ? buildComboContent(row) : null;
+  const { comboContent, comboPresentations } = isCombo
+    ? buildComboContent(row, heroMedia?.url ?? null)
+    : { comboContent: null, comboPresentations: [] };
 
   return {
     productId: row.id,
@@ -329,6 +402,7 @@ export function mapPublicProduct(row: PublicProductRow): CatalogProduct | null {
     bottlePricingVerificationStatus: bottles[0]?.priceVerificationStatus ?? null,
     comboCompositionVerificationStatus: comboVerification,
     comboContent,
+    comboPresentations,
     variants,
     media,
   };
@@ -367,8 +441,9 @@ export class SupabasePublicCatalogRepository implements PublicCatalogRepository 
     return new SupabasePublicCatalogRepository(products, combos);
   }
 
-  list() { return [...this.products]; }
-  listFragrances() { return this.list(); }
+  /** Every public product including combos — the cart/checkout read model. */
+  list() { return [...this.products, ...this.combos]; }
+  listFragrances() { return [...this.products]; }
   listCombos() { return [...this.combos]; }
   listFeatured() {
     const now = Date.now();

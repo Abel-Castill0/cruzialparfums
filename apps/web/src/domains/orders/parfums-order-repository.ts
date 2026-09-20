@@ -11,7 +11,17 @@ export type PersistedParfumsOrder = {
 };
 
 function stripV2ClientFields(lines: ParfumsOrderLineSnapshot[]) {
-  return lines.map(({ currency: _c, unit_price_amount: _u, ...rest }) => rest);
+  return lines.map((line) => ({
+    product_id: line.product_id,
+    product_variant_id: line.product_variant_id,
+    source: line.source,
+    legacy_product_id: line.legacy_product_id,
+    legacy_variant_id: line.legacy_variant_id,
+    product_name: line.product_name,
+    variant_label: line.variant_label,
+    quantity: line.quantity,
+    variant_snapshot: line.variant_snapshot,
+  }));
 }
 
 export class ParfumsOrderRepository {

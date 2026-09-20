@@ -11,10 +11,11 @@
  * it would inline the value into the client bundle. A test in
  * `env-contract.test.ts` fails the build if that ever happens.
  *
- * Everything here is read lazily. The Parfums storefront still serves its
- * catalogue from the legacy fixture and must keep building and running with no
- * Supabase environment at all, so a missing variable is a "backend not
- * configured" state to render honestly — never a crash at import time.
+ * Everything here is read lazily. Without a Supabase environment the app
+ * must still build and run (unit tests, cold local checkouts), so a missing
+ * variable is a "backend not configured" state to render honestly — never a
+ * crash at import time. Every deployed environment is expected to set it:
+ * the Parfums and Import storefronts read their catalogs from Supabase.
  */
 
 export type SupabasePublicEnv = {
