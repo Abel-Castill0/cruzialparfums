@@ -322,8 +322,8 @@ export default function ImportCheckoutPage() {
             </div>
             <p className={styles.summaryNote}>
               Usaremos estos datos para registrar y atender tu solicitud y coordinarla por WhatsApp. Consulta la{" "}
-              <Link href={"/parfums/privacidad" as Route}>Política de Privacidad</Link> y los{" "}
-              <Link href={"/parfums/terminos" as Route}>Términos y Condiciones</Link>.
+              <Link href={"/import/privacidad" as Route}>Política de Privacidad</Link> y los{" "}
+              <Link href={"/import/terminos" as Route}>Términos y Condiciones</Link>.
             </p>
           </fieldset>
 

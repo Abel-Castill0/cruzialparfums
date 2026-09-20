@@ -1,5 +1,6 @@
 "use client";
 
+import type { Route } from "next";
 import Link from "next/link";
 import { useImportContact } from "@/components/import/import-contact-context";
 import styles from "./import-shell.module.css";
@@ -22,6 +23,8 @@ export function ImportFooter() {
           {contactEmail ? (
             <a href={`mailto:${contactEmail}`}>Correo</a>
           ) : null}
+          <Link href={"/import/privacidad" as Route}>Privacidad</Link>
+          <Link href={"/import/terminos" as Route}>Términos</Link>
           <Link href="/">Volver a Cruzial</Link>
         </div>
       </div>
