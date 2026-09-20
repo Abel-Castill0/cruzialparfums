@@ -1,18 +1,27 @@
 import type { Metadata, Route } from "next";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getAdminSession } from "@/lib/auth/admin-session";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { AdminActionCenter, type AdminActionItem } from "@/components/admin/admin-action-center";
 import { AdminParfumsSettingsRepository } from "@/domains/admin-parfums/settings-repository";
-import { AdminImportCatalogRepository } from "@/domains/admin-import/catalog-repository";
 import { AdminImportOrdersRepository } from "@/domains/admin-import/orders-repository";
 import { AdminImportCustomersRepository } from "@/domains/admin-import/customers-repository";
-import styles from "./productos/page.module.css";
+import { campaignStatusLabel } from "@/domains/admin-import/campaign-schema";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = { title: "Cruzial Import Admin" };
 
+type ReadinessJson = {
+  unconfirmed_offer_count?: number;
+  media_blockers?: number;
+  publication_blockers?: number;
+};
+
+// "Hoy": what actually needs a decision right now, not a directory of
+// modules or a raw counter dump. Every item is a real query, deep-linked to
+// the filtered screen that acts on it; a zero/undetermined count is left
+// out rather than shown.
 export default async function AdminImportPage() {
   const result = await getAdminSession();
 
@@ -28,75 +37,104 @@ export default async function AdminImportPage() {
   );
   if (!membership) redirect("/admin");
 
+  const items: AdminActionItem[] = [];
+  let campaignSubtitle = "";
+
   const supabase = await createSupabaseServerClient();
-  if (!supabase) redirect("/admin");
+  if (supabase) {
+    const rpc = supabase.rpc.bind(supabase) as unknown as (
+      name: string,
+      args?: Record<string, unknown>,
+    ) => Promise<{ data: unknown; error: unknown }>;
 
-  const [qa, orderCounts, pendingCustomers, contactSetting] = await Promise.all([
-    new AdminImportCatalogRepository(supabase, membership.businessUnitId).qa(),
-    new AdminImportOrdersRepository(supabase, membership.businessUnitId).countByStatus(),
-    new AdminImportCustomersRepository(supabase, membership.businessUnitId).countPendingVerification(),
-    new AdminParfumsSettingsRepository(supabase, membership.businessUnitId, "import").getPublicContact(),
-  ]);
+    const [campaignResult, orderCounts, pendingCustomers, contactSetting] = await Promise.all([
+      supabase
+        .from("campaigns")
+        .select("id,number,status")
+        .eq("business_unit_id", membership.businessUnitId)
+        .is("archived_at", null)
+        .order("number", { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+      new AdminImportOrdersRepository(supabase, membership.businessUnitId).countByStatus(),
+      new AdminImportCustomersRepository(supabase, membership.businessUnitId).countPendingVerification(),
+      new AdminParfumsSettingsRepository(supabase, membership.businessUnitId, "import").getPublicContact(),
+    ]);
 
-  const pendingOrders = orderCounts?.pending_whatsapp_confirmation ?? 0;
-  const confirmedOrders = orderCounts?.confirmed ?? 0;
-  const contactConfigured = contactSetting.ok && contactSetting.data !== null;
+    const campaign = campaignResult.data;
+    const pendingOrders = orderCounts?.pending_whatsapp_confirmation ?? 0;
+    const confirmedOrders = orderCounts?.confirmed ?? 0;
+    const contactConfigured = contactSetting.ok && contactSetting.data !== null;
+
+    if (campaign) {
+      campaignSubtitle = `Consolidado #${campaign.number} · ${campaignStatusLabel(campaign.status)}.`;
+
+      const readinessResult = await rpc("admin_get_import_publication_readiness", {
+        p_campaign_id: campaign.id,
+      });
+      const readiness = (readinessResult.data ?? {}) as ReadinessJson;
+      const campaignParam = `campaign=${campaign.id}`;
+
+      if ((readiness.unconfirmed_offer_count ?? 0) > 0) {
+        const n = readiness.unconfirmed_offer_count!;
+        items.push({
+          label: `${n} oferta${n === 1 ? "" : "s"} del consolidado por confirmar`,
+          href: `/admin/import/publicacion?blocker=offer_unconfirmed&${campaignParam}` as Route,
+          tone: "attention",
+        });
+      }
+      if ((readiness.media_blockers ?? 0) > 0) {
+        const n = readiness.media_blockers!;
+        items.push({
+          label: `${n} producto${n === 1 ? "" : "s"} sin imagen principal`,
+          href: `/admin/import/publicacion?blocker=missing_primary_media&${campaignParam}` as Route,
+        });
+      }
+      if ((readiness.publication_blockers ?? 0) > 0) {
+        const n = readiness.publication_blockers!;
+        items.push({
+          label: `${n} producto${n === 1 ? "" : "s"} no publicado${n === 1 ? "" : "s"}`,
+          href: `/admin/import/publicacion?blocker=product_unpublished&${campaignParam}` as Route,
+        });
+      }
+    } else {
+      campaignSubtitle = "No hay un consolidado activo (no archivado).";
+    }
+
+    if (pendingOrders > 0) {
+      items.push({
+        label: `${pendingOrders} solicitud${pendingOrders === 1 ? "" : "es"} pendiente${pendingOrders === 1 ? "" : "s"} por WhatsApp`,
+        href: "/admin/import/pedidos?status=pending_whatsapp_confirmation" as Route,
+        tone: "attention",
+      });
+    }
+    if (confirmedOrders > 0) {
+      items.push({
+        label: `${confirmedOrders} pedido${confirmedOrders === 1 ? "" : "s"} confirmado${confirmedOrders === 1 ? "" : "s"} por completar`,
+        href: "/admin/import/pedidos?status=confirmed" as Route,
+      });
+    }
+    if ((pendingCustomers ?? 0) > 0) {
+      items.push({
+        label: `${pendingCustomers} cliente${pendingCustomers === 1 ? "" : "s"} sin verificar`,
+        href: "/admin/import/clientes?status=pending_verification" as Route,
+      });
+    }
+    if (!contactConfigured) {
+      items.push({
+        label: "Contacto público de WhatsApp sin configurar",
+        href: "/admin/import/configuracion" as Route,
+        tone: "attention",
+      });
+    }
+  }
 
   return (
-    <div className={styles.page}>
-      <header className={styles.header}><div><h1>Cruzial Import</h1><p>Catálogo, preparación de publicación, consolidados, pedidos, clientes y configuración.</p></div></header>
-      <main>
-        <nav className={styles.links}>
-          <Link className={styles.linkCard} href={"/admin/import/productos" as Route}><strong>Productos</strong><span>Buscar, filtrar y mantener productos y presentaciones estructurales.</span></Link>
-          <Link className={styles.linkCard} href="/admin/import/consolidados"><strong>Consolidado / Campañas</strong><span>Precios, disponibilidad y ciclo de vida por campaña.</span></Link>
-          <Link className={styles.linkCard} href={"/admin/import/pedidos" as Route}><strong>Pedidos</strong><span>Bandeja de solicitudes, ciclo de vida y coordinación WhatsApp.</span></Link>
-          <Link className={styles.linkCard} href={"/admin/import/clientes" as Route}><strong>Clientes</strong><span>Registro, verificación y gestión de clientes Import.</span></Link>
-          <Link className={styles.linkCard} href={"/admin/import/publicacion" as Route}><strong>Publicación</strong><span>Preparación de lanzamiento, cobertura de media y bloqueadores.</span></Link>
-          <Link className={styles.linkCard} href={"/admin/import/configuracion" as Route}><strong>Configuración</strong><span>Contacto público: WhatsApp y correo visible para el cliente.</span></Link>
-          <Link className={styles.linkCard} href={"/admin/import/auditoria" as Route}><strong>Auditoría</strong><span>Historial de cambios — solo lectura.</span></Link>
-        </nav>
-        <section className={styles.qaGrid} aria-label="Preparación operativa">
-          <StatusCard label="Contacto público" status={contactConfigured ? "ok" : "missing"} />
-          {qa.ok ? (
-            <StatusCard label="Consolidado" status={qa.data.campaign_status === "draft" ? "draft" : qa.data.campaign_status === "open" ? "ok" : "missing"} />
-          ) : null}
-        </section>
-        {(pendingOrders > 0 || confirmedOrders > 0 || (pendingCustomers ?? 0) > 0) ? (
-          <section className={styles.qaGrid} aria-label="Operaciones pendientes">
-            {pendingOrders > 0 ? <Card n={pendingOrders} label="solicitudes pendientes" /> : null}
-            {confirmedOrders > 0 ? <Card n={confirmedOrders} label="pedidos confirmados" /> : null}
-            {(pendingCustomers ?? 0) > 0 ? <Card n={pendingCustomers!} label="clientes sin verificar" /> : null}
-          </section>
-        ) : null}
-        {qa.ok ? <>
-          <section className={styles.qaGrid} aria-label="Estado del catálogo">
-            <Card n={qa.data.products} label="productos activos"/><Card n={qa.data.presentations} label="presentaciones activas"/><Card n={qa.data.active_campaigns} label="campañas no archivadas"/><Card n={qa.data.campaign_offers} label={qa.data.campaign_number!==null?`ofertas en #${qa.data.campaign_number}`:"ofertas (sin consolidado activo)"}/><Card n={qa.data.draft_products} label="productos en borrador"/><Card n={qa.data.published_products} label="productos publicados"/><Card n={qa.data.unconfirmed_offers} label="ofertas por confirmar"/><Card n={qa.data.out_of_stock_offers} label="ofertas agotadas"/><Card n={qa.data.structures_without_offer} label="estructuras sin oferta"/>
-          </section>
-          <section className={styles.qaGrid} aria-label="Cobertura de media">
-            <Card n={qa.data.products_with_primary_media} label="con imagen principal"/>
-            <Card n={qa.data.products_without_primary_media} label="sin imagen principal"/>
-            <Card n={qa.data.products_without_media} label="sin media alguna"/>
-            <Card n={qa.data.total_active_media} label="media activa total"/>
-          </section>
-          <section className={styles.panel}><h2>Visibilidad pública</h2><p className={styles.help}>{qa.data.campaign_number!==null?<>El consolidado #{qa.data.campaign_number} está en estado <strong>{qa.data.campaign_status ?? "sin configurar"}</strong>.</>:"No hay un consolidado activo para Cruzial Import."} La preparación estructural, la preparación comercial y la visibilidad pública son controles distintos; este panel no publica ni abre campañas automáticamente.</p></section>
-        </> : <p className={styles.error}>No se pudo cargar el estado del catálogo.</p>}
-        <p className={styles.session}>Sesión: {result.session.email ?? "sin correo"} · {membership.role === "admin" ? "Administrador" : "Solo lectura"}</p>
-      </main>
-    </div>
-  );
-}
-
-function Card({ n, label }: { n: number; label: string }) {
-  return <div className={styles.qaCard}><strong>{n}</strong><span>{label}</span></div>;
-}
-
-function StatusCard({ label, status }: { label: string; status: "ok" | "draft" | "missing" }) {
-  const badge = status === "ok" ? styles.good : status === "draft" ? styles.warning : styles.badge;
-  const text = status === "ok" ? "Configurado" : status === "draft" ? "Borrador" : "Falta configurar";
-  return (
-    <div className={styles.qaCard}>
-      <span className={badge}>{text}</span>
-      <span>{label}</span>
-    </div>
+    <AdminActionCenter
+      title="Hoy en Cruzial Import"
+      subtitle={campaignSubtitle}
+      items={items}
+      emptyMessage="No hay acciones pendientes en este momento. Todo lo operativo está al día."
+    />
   );
 }

@@ -216,4 +216,36 @@ export class AdminParfumsOrdersRepository {
     if (error) return null;
     return count ?? 0;
   }
+
+  /** Per-status counts for the Action Center — same shape as
+   * AdminImportOrdersRepository.countByStatus, real counts only. */
+  async countByStatus(): Promise<Record<string, number> | null> {
+    const statuses = ["pending_whatsapp_confirmation", "confirmed", "fulfilled", "cancelled"];
+    const counts: Record<string, number> = {};
+    for (const status of statuses) {
+      const { count, error } = await this.supabase
+        .from("orders")
+        .select("*", { count: "exact", head: true })
+        .eq("business_unit_id", this.businessUnitId)
+        .eq("status", status);
+      if (error) return null;
+      counts[status] = count ?? 0;
+    }
+    return counts;
+  }
+
+  /** Count of pending requests that have sat unconfirmed for at least
+   * `days` — a factual age grouping (see Task 5's age buckets), never an
+   * invented SLA/"late" label. */
+  async countPendingOlderThanDays(days: number): Promise<number | null> {
+    const cutoff = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+    const { count, error } = await this.supabase
+      .from("orders")
+      .select("*", { count: "exact", head: true })
+      .eq("business_unit_id", this.businessUnitId)
+      .eq("status", "pending_whatsapp_confirmation")
+      .lt("created_at", cutoff);
+    if (error) return null;
+    return count ?? 0;
+  }
 }

@@ -5,6 +5,7 @@ import { getAdminSession } from "@/lib/auth/admin-session";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { AdminParfumsProductsRepository } from "@/domains/admin-parfums/products-repository";
 import type {
+  AvailabilityStatus,
   ProductionStatus,
   PublicationStatus,
 } from "@/domains/admin-parfums/product-schema";
@@ -23,6 +24,10 @@ function isPublicationStatus(value: string | undefined): value is PublicationSta
 
 function isProductionStatus(value: string | undefined): value is ProductionStatus {
   return value === "active" || value === "discontinued";
+}
+
+function isAvailabilityStatus(value: string | undefined): value is AvailabilityStatus {
+  return value === "available" || value === "out_of_stock";
 }
 
 export default async function AdminParfumsProductsPage({
@@ -64,6 +69,9 @@ export default async function AdminParfumsProductsPage({
   const productionStatus = isProductionStatus(params.production as string | undefined)
     ? (params.production as ProductionStatus)
     : undefined;
+  const availabilityStatus = isAvailabilityStatus(params.availability as string | undefined)
+    ? (params.availability as AvailabilityStatus)
+    : undefined;
   const featuredOnly = params.featured === "1";
   const includeArchived = params.archived === "1";
   const page = Math.max(1, Number(params.page) || 1);
@@ -76,6 +84,7 @@ export default async function AdminParfumsProductsPage({
       includeArchived,
       ...(publicationStatus ? { publicationStatus } : {}),
       ...(productionStatus ? { productionStatus } : {}),
+      ...(availabilityStatus ? { availabilityStatus } : {}),
     },
     { page, pageSize: PAGE_SIZE },
   );
