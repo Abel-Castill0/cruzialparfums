@@ -4,13 +4,33 @@
     {
       "name": "cruzial-static",
       "runtimeExecutable": "python",
-      "runtimeArgs": ["-m", "http.server", "8420"],
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "8420"
+      ],
       "port": 8420
     },
     {
       "name": "cruzial-v2",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["--prefix", "apps/web", "run", "dev"],
+      "runtimeArgs": [
+        "--prefix",
+        "apps/web",
+        "run",
+        "dev"
+      ],
+      "port": 3000
+    },
+    {
+      "name": "cruzial-v2-prod",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "--prefix",
+        "apps/web",
+        "run",
+        "start"
+      ],
       "port": 3000
     }
   ]

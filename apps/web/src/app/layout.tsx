@@ -15,6 +15,11 @@ const body = Jost({
   display: "swap",
 });
 
+// Every response carries a per-request CSP nonce (src/proxy.ts); a
+// prerendered page could not receive one and its hydration script would be
+// blocked. Nothing here is worth a build-time snapshot anyway.
+export const dynamic = "force-dynamic";
+
 const siteUrl = getSiteUrl();
 
 export const metadata: Metadata = {
