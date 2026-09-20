@@ -52,6 +52,12 @@ values stay encrypted and were never read) show:
 | `ADMIN_BOOTSTRAP_EMAIL` | one row, targets `Production, Preview` | **Yes** |
 | `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | separate rows per environment (different creation timestamps) | Not verifiable without reading values (never done) — *could* differ |
 
+**Update (see §3 below):** `SUPABASE_SECRET_KEY` and `CLOUDINARY_API_SECRET`
+are no longer shared rows — both are now `Production`-only. This table
+reflects the state as first found; `CLOUDINARY_API_KEY`,
+`CLOUDINARY_CLOUD_NAME` and `ADMIN_BOOTSTRAP_EMAIL` remain shared as
+described below and are unaffected by that fix.
+
 A single row targeting both `Production` and `Preview` is one encrypted
 value shared by both — Vercel has no per-environment override on that row.
 Since `SUPABASE_SECRET_KEY` is a Supabase **service_role** key (bypasses
@@ -87,35 +93,35 @@ No code change was made for this section: creating a second Supabase
 project is an infrastructure decision for the operator, not something to
 apply unilaterally from here.
 
-## 3. Attempted mitigation (2026-09-20) — incident, not a fix
+## 3. Incident (2026-09-20) and resolution
 
 An attempt was made to narrow `SUPABASE_SECRET_KEY` to `Production` only via
 `vercel env rm SUPABASE_SECRET_KEY preview`, following the Vercel CLI's own
 `--help` text ("Remove a variable from a specific Environment"). In
-practice this command **deleted the row entirely** — `SUPABASE_SECRET_KEY`
-is currently **absent from both Production and Preview** on
-`cruzial-platform-v2`. The plaintext value was never read or held by this
-session and cannot be recreated from here.
+practice this command **deleted the row entirely** instead of narrowing it,
+leaving `SUPABASE_SECRET_KEY` absent from both Production and Preview for
+several hours. The plaintext value was never read or held by this session.
+`CLOUDINARY_API_SECRET` was deliberately left untouched at the time (still
+shared `Production, Preview`) to avoid repeating the same mistake.
 
-`CLOUDINARY_API_SECRET` was deliberately left untouched (still `Production,
-Preview`, unchanged) once this behavior was discovered, to avoid repeating
-the same mistake. `ORDER_ABUSE_HMAC_SECRET` needed no action — it was
-already two separate rows (`Production`-only and `Preview`-only, different
-creation timestamps), not a shared row.
+**Resolved by the operator, verified by name/target only (values never
+read):**
 
-**Operator action required (this session cannot do this):**
-1. Supabase Dashboard → project `iyxidhglyqkzoziyewlc` → Settings → API
-   Keys → copy the secret key.
-2. Vercel Dashboard → `cruzial-platform-v2` → Settings → Environment
-   Variables → Add New → `SUPABASE_SECRET_KEY`, paste the value, target
-   **Production only**.
-3. Confirm the currently-live Production deployment still functions (it may
-   be running on an env snapshot taken before the deletion); redeploy once
-   the variable is restored to be safe.
+| Variable | Production | Preview |
+|---|---|---|
+| `SUPABASE_SECRET_KEY` | present | absent |
+| `CLOUDINARY_API_SECRET` | present | absent |
+| `ORDER_ABUSE_HMAC_SECRET` | present (own row) | present (separate row) |
 
-**Lesson for any future attempt at this same mitigation:** do not assume
+`SUPABASE_SECRET_KEY` and `CLOUDINARY_API_SECRET` are now each
+Production-only rows — Preview no longer holds either. `ORDER_ABUSE_HMAC_SECRET`
+remains two independent rows as before, unaffected by this incident.
+`CLOUDINARY_API_KEY` / `CLOUDINARY_CLOUD_NAME` / `ADMIN_BOOTSTRAP_EMAIL`
+are still shared `Production, Preview` rows — out of scope for this fix,
+unchanged.
+
+**Lesson for any future attempt at this kind of mitigation:** do not assume
 `vercel env rm <name> <environment>` narrows a multi-target row on this
 CLI version (54.15.1) — test the exact behavior on a disposable/non-secret
 variable first, or do the narrowing directly in the Vercel dashboard UI
-(which does support editing a variable's environment targets in place,
-as already used earlier in this release for the reverse operation).
+(which does support editing a variable's environment targets in place).
