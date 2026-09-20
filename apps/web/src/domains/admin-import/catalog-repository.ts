@@ -26,17 +26,26 @@ export class AdminImportCatalogRepository {
     const row=Array.isArray(data)?data[0]:data; if(!row)return{ok:false,error:{type:"not_found"}};
     return{ok:true,data:row as ImportCatalogQa};
   }
-  async list(filters:ImportCatalogFilters):Promise<AdminRepositoryResult<{items:ImportCatalogItem[];total:number}>>{
-    const {data,error}=await this.rpc("admin_list_import_products",{p_query:filters.query||null,p_publication_status:filters.publicationStatus??null,p_category_slug:filters.categorySlug??null,p_archived:filters.archived,p_presentation_state:filters.presentationState??null,p_offer_state:filters.offerState??null,p_media_state:filters.mediaState??null,p_page:filters.page,p_page_size:filters.pageSize});
+  async list(filters:ImportCatalogFilters,campaignId:string):Promise<AdminRepositoryResult<{items:ImportCatalogItem[];total:number}>>{
+    const {data,error}=await this.rpc("admin_list_import_products",{p_campaign_id:campaignId,p_query:filters.query||null,p_publication_status:filters.publicationStatus??null,p_category_slug:filters.categorySlug??null,p_archived:filters.archived,p_presentation_state:filters.presentationState??null,p_offer_state:filters.offerState??null,p_media_state:filters.mediaState??null,p_page:filters.page,p_page_size:filters.pageSize});
     if(error)return{ok:false,error:mapPostgrestError(error)}; const items=(data??[]) as ImportCatalogItem[];
     return{ok:true,data:{items,total:Number(items[0]?.total_count??0)}};
   }
-  async get(productId:string):Promise<AdminRepositoryResult<ImportProductDetail>>{
+  /** campaignId is the id the CALLER selected (e.g. from ?campaign= on the
+   * Productos/Publicacion screens) — this never re-infers a different
+   * "current" campaign, so a deep link never silently switches consolidado.
+   * Pass null when no campaign is available; offerCount/activeCampaignNumber
+   * degrade to 0/null rather than guessing. A campaignId that does not
+   * belong to this business unit is treated the same as null (safe, no data
+   * leak across units) rather than as an authorization error, since it only
+   * affects informational offer context — the product row itself is already
+   * unit-scoped by the query above. */
+  async get(productId:string,campaignId:string|null):Promise<AdminRepositoryResult<ImportProductDetail>>{
     const productResult=await this.supabase.from("products").select("*").eq("id",productId).eq("business_unit_id",this.businessUnitId).maybeSingle();
     if(productResult.error)return{ok:false,error:mapPostgrestError(productResult.error)}; if(!productResult.data)return{ok:false,error:{type:"not_found"}};
-    // The "active" consolidado is the latest non-archived campaign for this unit,
-    // never a hardcoded campaign number — that broke the moment #6 archived.
-    const campaignResult=await this.supabase.from("campaigns").select("id,number").eq("business_unit_id",this.businessUnitId).is("archived_at",null).order("number",{ascending:false}).limit(1).maybeSingle();
+    const campaignResult=campaignId
+      ?await this.supabase.from("campaigns").select("id,number").eq("id",campaignId).eq("business_unit_id",this.businessUnitId).maybeSingle()
+      :{data:null,error:null};
     if(campaignResult.error)return{ok:false,error:mapPostgrestError(campaignResult.error)};
     const activeCampaignId=campaignResult.data?.id??null;
     const activeCampaignNumber=campaignResult.data?.number??null;

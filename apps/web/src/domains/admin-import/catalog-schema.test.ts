@@ -7,6 +7,6 @@ describe("Import catalog filters",()=>{
 });
 describe("Import readiness",()=>{
  it("keeps structural, commercial and public states distinct",()=>{const r=classifyProductReadiness({productStatus:"published",archived:false,activePresentations:1,publishedPresentations:1,offerCount:1,unconfirmedOfferCount:1,campaignStatus:"draft"});expect(r.structural).toBe("published");expect(r.commercial).toBe("pending");expect(r.publicVisibility).toBe("not_public");expect(r.blockers).toEqual(["Disponibilidad por confirmar","Consolidado no abierto"]);});
- it("reports unresolved structures generically",()=>{expect(classifyProductReadiness({productStatus:"draft",archived:false,activePresentations:1,publishedPresentations:0,offerCount:0,unconfirmedOfferCount:0,campaignStatus:"draft"}).blockers).toContain("Sin oferta en #6");});
+ it("reports unresolved structures generically",()=>{expect(classifyProductReadiness({productStatus:"draft",archived:false,activePresentations:1,publishedPresentations:0,offerCount:0,unconfirmedOfferCount:0,campaignStatus:"draft"}).blockers).toContain("Sin oferta en consolidado");});
  it("has the real database status labels",()=>{expect(PRODUCT_STATUS_LABELS.hidden).toBe("Oculto");expect(PRESENTATION_STATUS_LABELS.published).toBe("Publicada");});
 });

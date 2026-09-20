@@ -2096,6 +2096,7 @@ export type Database = {
       }
       admin_list_import_products: {
         Args: {
+          p_campaign_id: string
           p_archived?: string
           p_category_slug?: string
           p_media_state?: string

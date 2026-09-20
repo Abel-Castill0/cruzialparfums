@@ -1,18 +1,20 @@
--- Cruzial Platform V2 — Operations Foundation V1 (Task 1)
+-- Cruzial Platform V2 — Operations Foundation V1 (Task 1, + lead review correction)
 --
--- Removes the campaign #6 hardcode from Import publication readiness.
+-- Removes the campaign #6 hardcode from Import publication readiness AND
+-- from the Import product list/offer counts (admin_list_import_products —
+-- flagged in lead review as still hardcoded after the first pass).
 --
--- Problem: admin_get_import_publication_readiness() and
--- admin_list_import_publication_blockers() both resolved "the" campaign by
--- `c.number = 6`. That only worked because campaign #6 happened to be the
--- current one. It silently breaks (reports stale/wrong readiness) the
--- moment campaign #7 opens.
+-- Problem: admin_get_import_publication_readiness(), admin_list_import_-
+-- publication_blockers(), and admin_list_import_products() all resolved
+-- "the" campaign by `c.number = 6`. That only worked because campaign #6
+-- happened to be the current one. It silently breaks (reports stale/wrong
+-- data) the moment campaign #7 opens.
 --
--- Fix: both RPCs now take an explicit p_campaign_id uuid. The caller (the
--- Admin Publication screen) resolves which campaign to inspect — defaulting
--- to the latest non-archived campaign for convenience — and always passes
--- its id explicitly. No implicit "current campaign" guess happens inside
--- these RPCs any more.
+-- Fix: all three RPCs now take an explicit p_campaign_id uuid. The caller
+-- (the Admin Publication and Productos screens) resolves which campaign to
+-- inspect — defaulting to the latest non-archived campaign for convenience
+-- — and always passes its id explicitly. No implicit "current campaign"
+-- guess happens inside these RPCs any more.
 --
 -- admin_get_import_catalog_qa() keeps its existing zero-arg signature (it
 -- backs dashboard convenience cards, not a decision-making screen) but its
@@ -378,3 +380,96 @@ end $$;
 
 revoke all on function public.admin_list_import_publication_blockers(uuid,text,text,integer,integer) from public,anon;
 grant execute on function public.admin_list_import_publication_blockers(uuid,text,text,integer,integer) to authenticated;
+
+-- =========================================================================
+-- SECTION 4: admin_list_import_products(p_campaign_id uuid, ...) — lead
+-- review correction.
+--
+-- The first pass of this migration fixed readiness/blockers but missed
+-- admin_list_import_products, which still resolved campaign_offer_count,
+-- unconfirmed_offer_count, and the with_offer/without_offer filter from a
+-- `campaign6` CTE hardcoded to `c.number = 6`. That defeated Task 1: the
+-- Productos screen kept showing campaign #6 data even while Publicacion
+-- correctly showed #7.
+--
+-- p_campaign_id is required and positioned first (Postgres requires
+-- parameters without a default before parameters with one). No campaign
+-- number authority inside this RPC — structural product/media/presentation
+-- filters are unaffected; only the campaign-specific offer fields/filter
+-- are scoped by the explicit id.
+-- =========================================================================
+
+drop function if exists public.admin_list_import_products(text,text,text,text,text,text,text,integer,integer);
+
+create function public.admin_list_import_products(
+  p_campaign_id uuid,
+  p_query text default null, p_publication_status text default null,
+  p_category_slug text default null, p_archived text default 'active',
+  p_presentation_state text default null, p_offer_state text default null,
+  p_media_state text default null,
+  p_page integer default 1, p_page_size integer default 40
+)
+returns table (
+  id uuid, name text, brand text, slug text, legacy_id text,
+  publication_status text, archived_at timestamptz, verification_status text,
+  updated_at timestamptz, category_name text, category_slug text,
+  active_presentations bigint, published_presentations bigint,
+  campaign_offer_count bigint, unconfirmed_offer_count bigint,
+  has_active_primary boolean,
+  active_media_count bigint,
+  total_count bigint
+)
+language plpgsql stable security definer set search_path = ''
+as $$
+declare
+  v_unit uuid; v_page integer:=greatest(1,coalesce(p_page,1));
+  v_size integer:=least(50,greatest(1,coalesce(p_page_size,40)));
+  v_query text:=left(btrim(coalesce(p_query,'')),120);
+  v_campaign_id uuid;
+begin
+  select bu.id into v_unit from public.business_units bu where bu.code='import';
+  if v_unit is null or not app.can_read_unit(v_unit) then raise exception 'cannot read Cruzial Import catalog' using errcode='42501'; end if;
+  if p_campaign_id is null then raise exception 'campaign id is required' using errcode='22023'; end if;
+  select c.id into v_campaign_id from public.campaigns c where c.id=p_campaign_id and c.business_unit_id=v_unit;
+  if v_campaign_id is null then raise exception 'campaign not found for Import' using errcode='P0002'; end if;
+  if p_publication_status is not null and p_publication_status not in ('draft','published','hidden','archived') then raise exception 'invalid publication filter' using errcode='22023'; end if;
+  if coalesce(p_archived,'active') not in ('active','archived','all') then raise exception 'invalid archive filter' using errcode='22023'; end if;
+  if p_presentation_state is not null and p_presentation_state not in ('with_active','without_active','without_published') then raise exception 'invalid presentation filter' using errcode='22023'; end if;
+  if p_offer_state is not null and p_offer_state not in ('with_offer','without_offer') then raise exception 'invalid offer filter' using errcode='22023'; end if;
+  if p_media_state is not null and p_media_state not in ('with_primary','without_media','without_primary') then raise exception 'invalid media filter' using errcode='22023'; end if;
+  return query
+  with catalog as (
+    select p.id,p.name,p.brand,p.slug,p.legacy_id,p.publication_status,p.archived_at,p.verification_status,p.updated_at,
+      cat.name category_name,cat.slug category_slug,
+      count(distinct ip.id) filter(where ip.archived_at is null) active_presentations,
+      count(distinct ip.id) filter(where ip.archived_at is null and ip.publication_status='published') published_presentations,
+      count(distinct cp.id) campaign_offer_count,
+      count(distinct cp.id) filter(where cp.availability_status='unconfirmed') unconfirmed_offer_count,
+      bool_or(pm.is_primary and pm.archived_at is null) filter(where pm.archived_at is null) has_active_primary,
+      count(distinct pm.id) filter(where pm.archived_at is null) active_media_count
+    from public.products p
+    left join public.product_categories pc on pc.product_id=p.id
+    left join public.categories cat on cat.id=pc.category_id and cat.kind='import_category'
+    left join public.import_presentations ip on ip.product_id=p.id
+    left join public.campaign_products cp on cp.campaign_id=v_campaign_id and cp.product_id=p.id
+    left join public.product_media pm on pm.product_id=p.id
+    where p.business_unit_id=v_unit
+    group by p.id,cat.name,cat.slug
+  ), filtered as (
+    select * from catalog c where
+      (v_query='' or c.name ilike '%'||v_query||'%' or coalesce(c.brand,'') ilike '%'||v_query||'%' or c.slug ilike '%'||v_query||'%' or coalesce(c.legacy_id,'') ilike '%'||v_query||'%')
+      and (p_publication_status is null or c.publication_status=p_publication_status)
+      and (p_category_slug is null or c.category_slug=p_category_slug)
+      and (p_archived='all' or (p_archived='active' and c.archived_at is null) or (p_archived='archived' and c.archived_at is not null))
+      and (p_presentation_state is null or (p_presentation_state='with_active' and c.active_presentations>0) or (p_presentation_state='without_active' and c.active_presentations=0) or (p_presentation_state='without_published' and c.published_presentations=0))
+      and (p_offer_state is null or (p_offer_state='with_offer' and c.campaign_offer_count>0) or (p_offer_state='without_offer' and c.campaign_offer_count=0))
+      and (p_media_state is null or (p_media_state='with_primary' and c.has_active_primary) or (p_media_state='without_media' and c.active_media_count=0) or (p_media_state='without_primary' and c.active_media_count>0 and not c.has_active_primary))
+  )
+  select f.id,f.name,f.brand,f.slug,f.legacy_id,f.publication_status,f.archived_at,f.verification_status,f.updated_at,
+    f.category_name,f.category_slug,f.active_presentations,f.published_presentations,
+    f.campaign_offer_count,f.unconfirmed_offer_count,f.has_active_primary,f.active_media_count,
+    count(*) over() from filtered f order by lower(f.name),f.id limit v_size offset (v_page-1)*v_size;
+end $$;
+
+revoke all on function public.admin_list_import_products(uuid,text,text,text,text,text,text,text,integer,integer) from public,anon;
+grant execute on function public.admin_list_import_products(uuid,text,text,text,text,text,text,text,integer,integer) to authenticated;

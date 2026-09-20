@@ -17,10 +17,11 @@ insert into public.products(id,business_unit_id,legacy_id,slug,name,brand,sales_
  ('4c4c2000-0000-4000-8000-000000000001','22222222-2222-4222-8222-222222222222','source-immutable','import-immutable','Original','Marca','campaign','draft','official_pdf'),
  ('4c4c2000-0000-4000-8000-000000000002','11111111-1111-4111-8111-111111111111','parfums-safe','parfums-safe','Parfums Safe','Marca','always_available','draft','legacy');
 insert into public.product_categories(product_id,category_id) values('4c4c2000-0000-4000-8000-000000000001','4c4c1000-0000-4000-8000-000000000001');
+insert into public.campaigns(id,business_unit_id,number,name,status) values('4c4c3000-0000-4000-8000-000000000001','22222222-2222-4222-8222-222222222222',6,'Sexto','draft');
 
 set local role authenticated;
 set local request.jwt.claims='{"aal":"aal2","sub":"4c4c0000-0000-4000-8000-000000000001","role":"authenticated"}';
-select lives_ok($$select * from public.admin_list_import_products(null,null,null,'active',null,null,null,1,500)$$,'Import admin can list catalog; server caps page size');
+select lives_ok($$select * from public.admin_list_import_products('4c4c3000-0000-4000-8000-000000000001',null,null,null,'active',null,null,null,1,500)$$,'Import admin can list catalog; server caps page size');
 select lives_ok($$select * from public.admin_get_import_catalog_qa()$$,'Import admin can read bounded QA counters');
 select lives_ok($$select public.admin_update_import_product('4c4c2000-0000-4000-8000-000000000001',(select updated_at from public.products where id='4c4c2000-0000-4000-8000-000000000001'),'Display edit','Nueva marca','4c4c1000-0000-4000-8000-000000000001','hidden')$$,'Import admin updates safe display/category/publication fields');
 reset role;
@@ -42,7 +43,6 @@ select hasnt_column('public','import_presentations','price_amount','presentation
 select hasnt_column('public','import_presentations','availability_status','presentation has no availability field');
 select hasnt_column('public','import_presentations','quantity_limit','presentation has no quantity limit field');
 
-insert into public.campaigns(id,business_unit_id,number,name,status) values('4c4c3000-0000-4000-8000-000000000001','22222222-2222-4222-8222-222222222222',6,'Sexto','draft');
 insert into public.campaign_products(campaign_id,product_id,import_presentation_id,price_amount,availability_status)
 select '4c4c3000-0000-4000-8000-000000000001','4c4c2000-0000-4000-8000-000000000001',id,25,'unconfirmed' from public.import_presentations where product_id='4c4c2000-0000-4000-8000-000000000001';
 set local role authenticated;
@@ -55,7 +55,7 @@ select is((select publication_status from public.import_presentations where prod
 
 set local role authenticated;
 set local request.jwt.claims='{"aal":"aal2","sub":"4c4c0000-0000-4000-8000-000000000002","role":"authenticated"}';
-select lives_ok($$select * from public.admin_list_import_products(null,null,null,'active',null,null,null)$$,'Import viewer can read catalog');
+select lives_ok($$select * from public.admin_list_import_products('4c4c3000-0000-4000-8000-000000000001',null,null,null,'active',null,null,null)$$,'Import viewer can read catalog');
 select throws_ok($$select public.admin_archive_import_product('4c4c2000-0000-4000-8000-000000000001',(select updated_at from public.products where id='4c4c2000-0000-4000-8000-000000000001'))$$,'42501',null,'Import viewer cannot mutate');
 reset role;
 set local role authenticated;
@@ -64,7 +64,7 @@ select throws_ok($$select * from public.admin_get_import_catalog_qa()$$,'42501',
 select throws_ok($$select public.admin_create_import_presentation('4c4c2000-0000-4000-8000-000000000001','Bad','single_fixed',null)$$,'42501',null,'Parfums-only admin cannot mutate Import');
 reset role;
 set local role anon;set local request.jwt.claims='{"role":"anon"}';
-select throws_ok($$select * from public.admin_list_import_products()$$,'42501',null,'anon cannot execute catalog read RPC');
+select throws_ok($$select * from public.admin_list_import_products(null)$$,'42501',null,'anon cannot execute catalog read RPC');
 reset role;
 set local role authenticated;set local request.jwt.claims='{"aal":"aal2","sub":"4c4c0000-0000-4000-8000-000000000001","role":"authenticated"}';
 select throws_ok($$update public.import_presentations set label=label$$,'42501',null,'direct authenticated presentation writes remain revoked');

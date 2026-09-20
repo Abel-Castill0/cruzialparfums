@@ -79,7 +79,7 @@ export function classifyProductReadiness(input: ProductReadinessInput): ProductR
   else if (input.productStatus === "hidden") blockers.push("Producto oculto");
   if (input.activePresentations === 0) blockers.push("Sin presentación activa");
   else if (input.publishedPresentations === 0) blockers.push("Sin presentación publicada");
-  if (input.offerCount === 0) blockers.push("Sin oferta en #6");
+  if (input.offerCount === 0) blockers.push("Sin oferta en consolidado");
   else if (input.unconfirmedOfferCount > 0) blockers.push("Disponibilidad por confirmar");
   if (input.campaignStatus !== "open") blockers.push("Consolidado no abierto");
   const structural = input.archived || input.activePresentations === 0 ? "blocked"

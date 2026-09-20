@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { getAdminSession } from "@/lib/auth/admin-session";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { AdminImportCatalogRepository } from "@/domains/admin-import/catalog-repository";
+import { campaignStatusLabel } from "@/domains/admin-import/campaign-schema";
 import styles from "../productos/page.module.css";
 
 export const dynamic = "force-dynamic";
@@ -112,16 +113,6 @@ export default async function Page({
   const totalPages = Math.max(1, Math.ceil(blockerTotal / 20));
   const campaignParam = selectedCampaign ? `&campaign=${selectedCampaign.id}` : "";
 
-  const campaignStatusLabels: Record<string, string> = {
-    draft: "Borrador",
-    scheduled: "Programado",
-    open: "Abierto",
-    paused: "Pausado",
-    closed: "Cerrado",
-    completed: "Completado",
-    archived: "Archivado",
-  };
-
   return (
     <div className={styles.page}>
       <header className={styles.header}>
@@ -146,7 +137,7 @@ export default async function Page({
               >
                 {campaigns.map((c) => (
                   <option key={c.id} value={c.id}>
-                    #{c.number} — {c.name} ({campaignStatusLabels[c.status] ?? c.status})
+                    #{c.number} — {c.name} ({campaignStatusLabel(c.status)})
                   </option>
                 ))}
               </select>
@@ -179,7 +170,7 @@ export default async function Page({
               <dl className={styles.facts}>
                 <div>
                   <dt>Estado</dt>
-                  <dd>{campaignStatusLabels[campaignStatus] ?? campaignStatus}</dd>
+                  <dd>{campaignStatusLabel(campaignStatus)}</dd>
                 </div>
                 <div>
                   <dt>Existe</dt>
@@ -350,7 +341,7 @@ export default async function Page({
                         <tr key={`${b.product_id}-${b.blocker_code}-${b.offer_id ?? "null"}-${i}`}>
                           <td>
                             <Link
-                              href={`/admin/import/productos/${b.product_id}`}
+                              href={`/admin/import/productos/${b.product_id}?campaign=${selectedCampaign.id}`}
                             >
                               {b.product_name}
                             </Link>
@@ -362,7 +353,7 @@ export default async function Page({
                           <td>{b.blocker_label}</td>
                           <td>
                             <Link
-                              href={`/admin/import/productos/${b.product_id}`}
+                              href={`/admin/import/productos/${b.product_id}?campaign=${selectedCampaign.id}`}
                             >
                               Editar
                             </Link>

@@ -1,18 +1,25 @@
--- Cruzial Platform V2 — Operations Foundation V1 (Task 1)
+-- Cruzial Platform V2 — Operations Foundation V1 (Task 1 + lead review correction)
 --
 -- Proves admin_get_import_publication_readiness / admin_list_import_publication_blockers
--- are campaign-scoped by an explicit id, not a hardcoded campaign #6:
+-- / admin_list_import_products are campaign-scoped by an explicit id, not a
+-- hardcoded campaign #6:
 --
 -- A. Campaign #6 and #7 produce INDEPENDENT readiness results
 -- B. Campaign #6 and #7 produce INDEPENDENT blocker lists
 -- C. p_campaign_id is required (null rejected)
--- D. A campaign id from another business unit is rejected (not silently substituted)
+-- D. A campaign id from another business unit is rejected (real fixture:
+--    campaigns has no CHECK restricting business_unit_id to Import, so a
+--    Parfums-owned campaign row is a genuine cross-unit id, not a stand-in)
 -- E. A non-existent campaign id is rejected
 -- F. An archived campaign still returns valid (non-throwing) readiness, flagged archived
 -- G. admin_get_import_catalog_qa follows the LATEST non-archived campaign, not #6
+-- H. admin_list_import_products: campaign #6 and #7 produce INDEPENDENT offer
+--    counts and with_offer/without_offer filter results (the P1 the first
+--    pass of this migration missed — Products screen kept showing #6 data)
+-- I. admin_list_import_products rejects null/wrong-unit campaign ids
 
 begin;
-select plan(11);
+select plan(19);
 
 -- =========================================================================
 -- Fixtures
@@ -32,11 +39,11 @@ insert into public.campaigns(id,business_unit_id,number,name,status) values
  ('5c5c2000-0000-4000-8000-000000000006',(select id from public.business_units where code='import'),6,'Campaign 6 Scoped','open'),
  ('5c5c2000-0000-4000-8000-000000000007',(select id from public.business_units where code='import'),7,'Campaign 7 Scoped','draft');
 
--- Foreign business unit campaign (Parfums has no campaigns table use, so use a
--- fabricated Import-shaped id from a different unit is impossible since
--- campaigns.business_unit_id references business_units; instead prove
--- cross-unit rejection using a campaign id that belongs to Parfums directly
--- if one exists is unnecessary — proven instead via a random non-existent id).
+-- Foreign business unit campaign: campaigns.business_unit_id has no CHECK
+-- restricting it to Import, so this is a genuine Parfums-owned campaign row,
+-- not a stand-in for one.
+insert into public.campaigns(id,business_unit_id,number,name,status) values
+ ('5c5c2000-0000-4000-8000-0000000000f1',(select id from public.business_units where code='parfums'),1,'Parfums Foreign Campaign','draft');
 
 -- Product A: fully ready under #7 (published, published presentation, primary
 -- media, valid offer in #7), but has NO offer in #6 -> independent results.
@@ -124,6 +131,24 @@ select throws_ok(
 );
 
 -- =========================================================================
+-- D. A campaign id from another business unit is rejected
+-- =========================================================================
+
+select throws_ok(
+  $$select admin_get_import_publication_readiness('5c5c2000-0000-4000-8000-0000000000f1')$$,
+  'P0002',
+  null,
+  'D1: a Parfums-owned campaign id is rejected for Import readiness'
+);
+
+select throws_ok(
+  $$select * from admin_list_import_publication_blockers('5c5c2000-0000-4000-8000-0000000000f1',null,null,1,20)$$,
+  'P0002',
+  null,
+  'D2: a Parfums-owned campaign id is rejected for Import blockers'
+);
+
+-- =========================================================================
 -- E. A non-existent campaign id is rejected
 -- =========================================================================
 
@@ -159,6 +184,60 @@ select is(
   (select campaign_number from admin_get_import_catalog_qa()),
   7::bigint,
   'G1: catalog QA snapshot follows latest non-archived campaign (#7), not a hardcoded #6'
+);
+
+-- =========================================================================
+-- H. admin_list_import_products: #6 and #7 produce INDEPENDENT offer data
+--
+-- Product A has its only offer in #7 (inserted above). Under #6 it must
+-- show zero campaign offers and be excluded by with_offer; under #7 it must
+-- show one campaign offer and be included by with_offer. If this RPC were
+-- still hardcoded to campaign #6, both counts would be identical (or the #7
+-- id would incorrectly show #6's data), so this cannot pass accidentally.
+-- =========================================================================
+
+select is(
+  (select campaign_offer_count from admin_list_import_products('5c5c2000-0000-4000-8000-000000000006',null,null,null,'all',null,null,null,1,50)
+    where id = '5c5c1000-0000-4000-8000-000000000001'),
+  0::bigint,
+  'H1: product A has 0 campaign_offer_count under campaign #6 (offer only exists in #7)'
+);
+
+select is(
+  (select campaign_offer_count from admin_list_import_products('5c5c2000-0000-4000-8000-000000000007',null,null,null,'all',null,null,null,1,50)
+    where id = '5c5c1000-0000-4000-8000-000000000001'),
+  1::bigint,
+  'H2: product A has 1 campaign_offer_count under campaign #7 — independent from #6'
+);
+
+select ok(
+  not exists(select 1 from admin_list_import_products('5c5c2000-0000-4000-8000-000000000006',null,null,null,'all',null,'with_offer',null,1,50)
+    where id = '5c5c1000-0000-4000-8000-000000000001'),
+  'H3: with_offer filter excludes product A under campaign #6 (no offer there)'
+);
+
+select ok(
+  exists(select 1 from admin_list_import_products('5c5c2000-0000-4000-8000-000000000007',null,null,null,'all',null,'with_offer',null,1,50)
+    where id = '5c5c1000-0000-4000-8000-000000000001'),
+  'H4: with_offer filter includes product A under campaign #7 (has offer there)'
+);
+
+-- =========================================================================
+-- I. admin_list_import_products rejects null/wrong-unit campaign ids
+-- =========================================================================
+
+select throws_ok(
+  $$select * from admin_list_import_products(null,null,null,null,'all',null,null,null,1,50)$$,
+  '22023',
+  null,
+  'I1: null campaign id is rejected for admin_list_import_products'
+);
+
+select throws_ok(
+  $$select * from admin_list_import_products('5c5c2000-0000-4000-8000-0000000000f1',null,null,null,'all',null,null,null,1,50)$$,
+  'P0002',
+  null,
+  'I2: a Parfums-owned campaign id is rejected for admin_list_import_products'
 );
 
 select * from finish();
