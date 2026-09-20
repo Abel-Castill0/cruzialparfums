@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { requireUnitAdmin } from "@/lib/auth/admin-session";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { isValidUuid } from "@/domains/admin-parfums/product-schema";
 
 export type ParfumsOrderActionState =
   | { status: "idle" }
@@ -24,6 +25,13 @@ export async function updateParfumsOrderStatusAction(
           ? "No tienes permiso de administrador para Cruzial Parfums."
           : "Tu sesión expiró. Vuelve a iniciar sesión.",
     };
+  }
+
+  // Reject a malformed id here rather than letting it reach the RPC as a
+  // raw Postgres uuid-cast error — the RPC remains the final authority on
+  // everything else (existence, ownership, transition validity).
+  if (!isValidUuid(orderId)) {
+    return { status: "error", message: "El pedido no existe o no pertenece a Cruzial Parfums." };
   }
 
   const supabase = await createSupabaseServerClient();

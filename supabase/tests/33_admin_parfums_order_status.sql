@@ -11,7 +11,7 @@
 
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(16);
+select plan(21);
 
 -- Fixtures: users + memberships
 insert into auth.users (id, instance_id, aud, role, email, encrypted_password, created_at, updated_at)
@@ -135,11 +135,35 @@ select lives_ok(
 );
 
 -- =========================================================================
--- NOT FOUND: admin caller, nonexistent order id
+-- VALID TRANSITION: confirmed -> cancelled
+-- =========================================================================
+select lives_ok(
+  $$select public.admin_parfums_update_order_status('f2000000-0000-4000-8000-000000000003', 'pending_whatsapp_confirmation', 'confirmed')$$,
+  'Parfums admin can transition pending -> confirmed (order C, setup for confirmed -> cancelled)'
+);
+select lives_ok(
+  $$select public.admin_parfums_update_order_status('f2000000-0000-4000-8000-000000000003', 'confirmed', 'cancelled', 'Cliente cambio de decision')$$,
+  'Parfums admin can transition confirmed -> cancelled'
+);
+select is(
+  (select status from public.orders where id = 'f2000000-0000-4000-8000-000000000003'),
+  'cancelled', 'order C is now cancelled'
+);
+
+-- =========================================================================
+-- NOT FOUND: admin caller, nonexistent (but well-formed) order id
 -- =========================================================================
 select throws_ok(
   $$select public.admin_parfums_update_order_status('aaaaaaaa-bbbb-cccc-dddd-ffffffffffff', 'pending_whatsapp_confirmation', 'confirmed')$$,
   'P0002', null, 'admin caller gets not-found for a nonexistent order id'
+);
+
+-- =========================================================================
+-- MALFORMED UUID: RPC boundary never leaks a raw Postgres cast error
+-- =========================================================================
+select throws_ok(
+  $$select public.admin_parfums_update_order_status('not-a-uuid', 'pending_whatsapp_confirmation', 'confirmed')$$,
+  '22P02', null, 'a malformed order id is rejected as an invalid uuid cast, not silently accepted'
 );
 
 -- =========================================================================
@@ -149,6 +173,11 @@ select is(
   (select count(*)::integer from public.audit_log where entity_type = 'order' and entity_id = 'f2000000-0000-4000-8000-000000000001' and action = 'order_state_change'),
   2,
   'both order A transitions appended an order_state_change audit entry'
+);
+select is(
+  (select count(*)::integer from public.audit_log where entity_type = 'order' and entity_id = 'f2000000-0000-4000-8000-000000000003' and action = 'order_state_change' and after ->> 'reason' = 'Cliente cambio de decision'),
+  1,
+  'the cancellation reason is represented in the audit entry'
 );
 
 reset role;
