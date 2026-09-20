@@ -7,30 +7,10 @@ export type Json =
   | Json[]
 
 export type Database = {
-  graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json
-          operationName?: string
-          query?: string
-          variables?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "14.5"
   }
   public: {
     Tables: {
@@ -2164,6 +2144,44 @@ export type Database = {
           total_count: number
         }[]
       }
+      admin_parfums_update_order_status: {
+        Args: {
+          p_expected_status: string
+          p_new_status: string
+          p_order_id: string
+          p_reason?: string
+        }
+        Returns: {
+          archived_at: string | null
+          business_unit_id: string
+          campaign_id: string | null
+          channel: string
+          claimed_customer_status: string | null
+          created_at: string
+          currency: string
+          customer_id: string | null
+          customer_snapshot: Json
+          delivery_snapshot: Json
+          deposit_amount_snapshot: number | null
+          deposit_percentage_snapshot: number | null
+          deposit_policy_snapshot: Json | null
+          id: string
+          notes: string | null
+          order_number: string
+          request_id: string | null
+          shipping_method_id: string | null
+          status: string
+          subtotal_amount: number
+          updated_at: string
+          verified_customer_status_snapshot: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "orders"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       admin_register_media: {
         Args: {
           p_alt?: string
@@ -3157,11 +3175,7 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {},
   },
 } as const
-

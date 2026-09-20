@@ -4,11 +4,12 @@ import { notFound, redirect } from "next/navigation";
 import { getAdminSession } from "@/lib/auth/admin-session";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { AdminParfumsOrdersRepository } from "@/domains/admin-parfums/orders-repository";
-import { orderStatusLabel } from "@/domains/admin-parfums/order-status";
+import { orderStatusLabel, allowedParfumsOrderTransitions } from "@/domains/admin-parfums/order-status";
 import { isValidUuid } from "@/domains/admin-parfums/product-schema";
 import { normalizeParfumsCustomerPhoneForWhatsApp } from "@/domains/orders/customer-whatsapp-link";
 import { buildAdminOrderFollowUpMessage, buildWhatsAppUrl } from "@/domains/whatsapp/parfums-message-builder";
 import { CopyButton } from "../order-actions";
+import { OrderStatusControls } from "./order-status-controls";
 import styles from "../../productos/page.module.css";
 
 export const dynamic = "force-dynamic";
@@ -79,6 +80,8 @@ export default async function AdminParfumsOrderDetailPage({
   }
 
   const { order, lines } = detailResult.data;
+  const transitions = allowedParfumsOrderTransitions(order.status);
+  const isAdmin = membership.role === "admin";
   const normalizedPhone = order.customer.phone
     ? normalizeParfumsCustomerPhoneForWhatsApp(order.customer.phone)
     : null;
@@ -195,6 +198,14 @@ export default async function AdminParfumsOrderDetailPage({
           </div>
           <p><strong>Subtotal: {money(order.subtotalAmount, order.currency)}</strong></p>
         </section>
+
+        {isAdmin && transitions.length > 0 ? (
+          <OrderStatusControls
+            orderId={order.id}
+            currentStatus={order.status}
+            allowedTransitions={transitions}
+          />
+        ) : null}
       </main>
     </div>
   );
