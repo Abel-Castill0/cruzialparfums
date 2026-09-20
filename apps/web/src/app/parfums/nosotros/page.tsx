@@ -18,12 +18,12 @@ const principios = [
   {
     num: "01",
     title: "Originalidad absoluta",
-    text: "Solo trabajamos con frascos auténticos de las casas oficiales. Cada decant se prepara con material nuevo: jeringa, envase y guantes limpios por cliente.",
+    text: "Solo trabajamos con frascos auténticos de las casas oficiales. Cada decant se prepara a partir de ese frasco original, sin mezclas ni reformulaciones.",
   },
   {
     num: "02",
     title: "Selección curada",
-    text: "No vendemos ruido. Cada fragancia del catálogo pasó una prueba de carácter: proyección, duración y versatilidad. Si no merece tu piel, no está aquí.",
+    text: "No vendemos ruido. Curamos el catálogo con criterio: menos volumen, más carácter.",
   },
   {
     num: "03",
@@ -53,11 +53,11 @@ const pasos = [
 const faqs = [
   {
     q: "¿Qué es un decant?",
-    a: "Es la misma fragancia original, trasvasada desde el frasco auténtico a envases de 3, 5 y 10 ml. Conserva exactamente el mismo aroma, proyección y duración, sin alteraciones.",
+    a: "Es la misma fragancia original, trasvasada desde el frasco auténtico a envases de 3, 5 y 10 ml, para que la pruebes antes de decidir un frasco completo.",
   },
   {
     q: "¿Son perfumes originales o réplicas?",
-    a: "100% originales. Trabajamos con frascos auténticos de las casas oficiales y preparamos los decants con jeringas nuevas por cada cliente y producto.",
+    a: "100% originales. Trabajamos con frascos auténticos de las casas oficiales.",
   },
   {
     q: "¿Cómo hago mi pedido?",
@@ -65,7 +65,7 @@ const faqs = [
   },
   {
     q: "¿Cómo son los envíos?",
-    a: "Envío por agencia Shalom, con cobertura en Lima y en todo el Perú.",
+    a: "Envíos por agencia Shalom. Cobertura, costo y destino se confirman por WhatsApp.",
   },
   {
     q: "¿Qué presentación tienen los decants?",

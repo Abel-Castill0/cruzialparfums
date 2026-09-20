@@ -56,39 +56,27 @@ export default async function TerminosPage() {
           </ol>
 
           <h2>5. Formas de Pago</h2>
-          <ul>
-            <li>Transferencia bancaria</li>
-            <li>Yape / Plin</li>
-          </ul>
-          <p>Cruzial Parfums no procesa pagos dentro del sitio web. La forma de pago se coordina y confirma directamente por WhatsApp.</p>
+          <p>Cruzial Parfums no procesa pagos dentro del sitio web. La forma de pago disponible se coordina y confirma directamente por WhatsApp al momento de atender tu solicitud.</p>
 
           <h2>6. Envíos y Entregas</h2>
           <ul>
-            <li>El envío se realiza mediante agencia Shalom, con cobertura en Lima y en todo el Perú.</li>
-            <li>El tiempo de entrega depende de la agencia de transporte y se confirma al coordinar el pedido por WhatsApp.</li>
-            <li>El costo de envío corre por cuenta del cliente y se confirma por WhatsApp.</li>
+            <li>El envío se realiza mediante agencia Shalom. Cobertura, costo y tiempo de entrega se confirman por WhatsApp al coordinar el pedido.</li>
             <li>Cruzial Parfums no se hace responsable por demoras de servicios de transporte.</li>
           </ul>
 
           <h2>7. Política de Devoluciones</h2>
-          <p>Debido a la naturaleza de los productos (perfumes y decants), <b>no se aceptan devoluciones ni cambios</b> una vez sellado el producto, excepto en caso de:</p>
-          <ul>
-            <li>Producto defectuoso o dañado durante el transporte (reemplazo sin costo).</li>
-            <li>Envío incorrecto (producto distinto al solicitado).</li>
-          </ul>
-          <p>Para solicitar un reemplazo, contáctanos al recibir tu pedido.</p>
+          <p>Debido a la naturaleza de los productos (perfumes y decants), <b>no se aceptan devoluciones ni cambios</b> una vez sellado el producto. Si recibes un producto defectuoso o distinto al solicitado, contáctanos por WhatsApp al recibir tu pedido para evaluar tu caso.</p>
 
           <h2>8. Regalo: Decant 2 ml</h2>
           <p>Con la compra de un frasco completo, el cliente puede solicitar un decant de 2 ml de cualquier perfume árabe de nuestro catálogo, sujeto a disponibilidad. Esta promoción:</p>
           <ul>
             <li>Solo aplica con la compra de un frasco completo; no aplica a decants (3, 5 o 10 ml) por sí solos.</li>
-            <li>No es acumulable con otros descuentos especiales.</li>
             <li>No aplica en pedidos mayoristas.</li>
             <li>Debe solicitarse al momento del pedido.</li>
           </ul>
 
           <h2>9. Propiedad Intelectual</h2>
-          <p>Todo el contenido del sitio web (diseño, textos, imágenes, logotipos) es propiedad de Cruzial Parfums y está protegido por las leyes de propiedad intelectual. Queda prohibida su reproducción sin autorización.</p>
+          <p>El diseño, los textos y los logotipos de este sitio web son propiedad de Cruzial Parfums y están protegidos por las leyes de propiedad intelectual. Las fotografías de producto pueden pertenecer a sus respectivas casas de perfumería; su uso aquí es únicamente ilustrativo del producto vendido. Queda prohibida la reproducción del contenido del sitio sin autorización.</p>
 
           <h2>10. Limitación de Responsabilidad</h2>
           <p>Cruzial Parfums no será responsable por:</p>
@@ -98,8 +86,8 @@ export default async function TerminosPage() {
             <li>Demoras en entregas por causas de fuerza mayor.</li>
           </ul>
 
-          <h2>11. Ley Aplicable y Arbitraje</h2>
-          <p>Estos términos se rigen por las leyes de la República del Perú. Cualquier controversia, diferencia o reclamación derivada de estos términos será resuelta definitivamente mediante arbitraje administrado por la Cámara de Comercio de Lima, de conformidad con su Reglamento de Arbitraje. El tribunal arbitral estará compuesto por un (1) árbitro único. El lugar del arbitraje será la ciudad de Lima, Perú. El idioma del arbitraje será el español.</p>
+          <h2>11. Ley Aplicable</h2>
+          <p>Estos términos se rigen por las leyes de la República del Perú. Ante cualquier controversia, buscaremos primero una solución directa contigo por WhatsApp o correo electrónico. Este documento no constituye asesoría legal.</p>
 
           <h2>12. Política de Cookies</h2>
           <p>El carrito se guarda en el almacenamiento local de tu navegador, no en cookies. Las únicas cookies del sitio son técnicas y se usan en el área administrativa para mantener la sesión del personal autorizado. Puedes gestionarlas desde la configuración de tu navegador; consulta la Política de Privacidad para el detalle de proveedores y datos.</p>

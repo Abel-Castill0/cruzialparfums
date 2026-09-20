@@ -135,7 +135,11 @@ export function CheckoutExperience({
           <div className={styles.formHead}>
             <span>Paso 2</span>
             <h2 id="details-title">Datos para coordinar</h2>
-            <p>Los usaremos únicamente para preparar el mensaje de WhatsApp.</p>
+            <p>
+              Usaremos estos datos para registrar y atender tu solicitud y coordinarla por WhatsApp. Consulta la{" "}
+              <Link href={"/parfums/privacidad" as Route}>Política de Privacidad</Link> y los{" "}
+              <Link href={"/parfums/terminos" as Route}>Términos y Condiciones</Link>.
+            </p>
           </div>
           <form onSubmit={submit} aria-busy={isPending}>
             {result?.status === "error" ? (

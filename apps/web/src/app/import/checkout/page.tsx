@@ -320,6 +320,11 @@ export default function ImportCheckoutPage() {
               <label htmlFor="checkout-note">Nota (opcional)</label>
               <textarea id="checkout-note" name="note" rows={3} maxLength={500} />
             </div>
+            <p className={styles.summaryNote}>
+              Usaremos estos datos para registrar y atender tu solicitud y coordinarla por WhatsApp. Consulta la{" "}
+              <Link href={"/parfums/privacidad" as Route}>Política de Privacidad</Link> y los{" "}
+              <Link href={"/parfums/terminos" as Route}>Términos y Condiciones</Link>.
+            </p>
           </fieldset>
 
           <div className={styles.formActions}>

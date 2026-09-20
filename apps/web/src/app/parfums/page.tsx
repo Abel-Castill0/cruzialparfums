@@ -24,12 +24,12 @@ const principios = [
   {
     num: "01",
     title: "Originalidad absoluta",
-    text: "Solo trabajamos con frascos auténticos de las casas oficiales. Cada decant se prepara con material nuevo por cliente.",
+    text: "Solo trabajamos con frascos auténticos de las casas oficiales. Cada decant se prepara a partir de ese frasco original.",
   },
   {
     num: "02",
     title: "Selección curada",
-    text: "El catálogo pasa un filtro de carácter: proyección, duración y versatilidad antes de entrar.",
+    text: "No vendemos ruido: menos volumen, más carácter en cada fragancia del catálogo.",
   },
   {
     num: "03",
@@ -43,11 +43,11 @@ const principios = [
 const homeFaqs = [
   {
     q: "¿Qué es un decant?",
-    a: "Es la misma fragancia original, trasvasada desde el frasco auténtico a envases de 3, 5 y 10 ml. Conserva exactamente el mismo aroma, proyección y duración.",
+    a: "Es la misma fragancia original, trasvasada desde el frasco auténtico a envases de 3, 5 y 10 ml.",
   },
   {
     q: "¿Son perfumes originales o réplicas?",
-    a: "100% originales. Trabajamos con frascos auténticos de las casas oficiales y preparamos los decants con jeringas nuevas por cada cliente y producto.",
+    a: "100% originales. Trabajamos con frascos auténticos de las casas oficiales.",
   },
   {
     q: "¿Cómo hago mi pedido?",
@@ -84,7 +84,7 @@ export default async function ParfumsHomePage() {
           <p className={styles.eyebrow}>Cruzial Parfums</p>
           <h1 id="home-hero-title">Perfumería de descubrimiento.</h1>
           <p className={styles.heroSummary}>
-            Decants desde 3 ml y frascos completos, con envío por Shalom a todo el Perú.
+            Decants desde 3 ml y frascos completos, con envío por agencia Shalom.
           </p>
           <Link href="/parfums/catalogo" className={styles.heroCta}>
             Explorar catálogo <span aria-hidden="true">→</span>
@@ -106,7 +106,7 @@ export default async function ParfumsHomePage() {
         <div>
           <strong>Shalom</strong>
           <span>Envío nacional</span>
-          <p>Agencia Shalom, con cobertura en Lima y todo el Perú.</p>
+          <p>Agencia Shalom. Cobertura y costo se confirman por WhatsApp.</p>
         </div>
         <div>
           <strong>3 · 5 · 10</strong>
