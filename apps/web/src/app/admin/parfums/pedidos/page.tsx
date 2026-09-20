@@ -5,7 +5,8 @@ import { getAdminSession } from "@/lib/auth/admin-session";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { AdminParfumsOrdersRepository } from "@/domains/admin-parfums/orders-repository";
 import { orderStatusLabel } from "@/domains/admin-parfums/order-status";
-import { OrderFilters } from "./order-filters";
+import { OrderFilters, type OrderStatusOption } from "@/components/admin/order-filters";
+import { isOrderAgeBucket } from "@/domains/admin/order-age";
 import styles from "../productos/page.module.css";
 
 export const dynamic = "force-dynamic";
@@ -13,6 +14,13 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Pedidos" };
 
 const PAGE_SIZE = 20;
+
+const STATUS_OPTIONS: OrderStatusOption[] = [
+  { value: "pending_whatsapp_confirmation", label: "Pendiente" },
+  { value: "confirmed", label: "Confirmado" },
+  { value: "fulfilled", label: "Completado" },
+  { value: "cancelled", label: "Cancelado" },
+];
 
 function money(amount: number, currency: string): string {
   return new Intl.NumberFormat("es-PE", { style: "currency", currency }).format(amount);
@@ -58,10 +66,19 @@ export default async function AdminParfumsOrdersPage({
 
   const params = await searchParams;
   const search = typeof params.q === "string" ? params.q : "";
+  const statusParam = typeof params.status === "string" ? params.status : "";
+  const ageParam = typeof params.age === "string" ? params.age : "";
   const page = Math.max(1, Number(params.page) || 1);
 
   const repository = new AdminParfumsOrdersRepository(supabase, membership.businessUnitId);
-  const listResult = await repository.list({ search }, { page, pageSize: PAGE_SIZE });
+  const listResult = await repository.list(
+    {
+      search,
+      status: statusParam || undefined,
+      age: isOrderAgeBucket(ageParam) ? ageParam : undefined,
+    },
+    { page, pageSize: PAGE_SIZE },
+  );
 
   if (!listResult.ok) {
     return (
@@ -88,11 +105,13 @@ export default async function AdminParfumsOrdersPage({
       </header>
 
       <main>
-        <OrderFilters initial={{ search }} />
+        <OrderFilters statusOptions={STATUS_OPTIONS} initial={{ search, status: statusParam, age: ageParam }} />
 
         {items.length === 0 ? (
           <p className={styles.empty}>
-            No hay pedidos que coincidan con esta búsqueda.
+            {search || statusParam || ageParam
+              ? "No hay pedidos que coincidan con estos filtros."
+              : "No hay pedidos registrados todavía."}
           </p>
         ) : (
           <>

@@ -5,8 +5,16 @@ import { getAdminSession } from "@/lib/auth/admin-session";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { AdminImportOrdersRepository } from "@/domains/admin-import/orders-repository";
 import { importOrderStatusLabel } from "@/domains/admin-import/import-status";
-import { OrderFilters } from "./order-filters";
+import { OrderFilters, type OrderStatusOption } from "@/components/admin/order-filters";
+import { isOrderAgeBucket } from "@/domains/admin/order-age";
 import styles from "../productos/page.module.css";
+
+const STATUS_OPTIONS: OrderStatusOption[] = [
+  { value: "pending_whatsapp_confirmation", label: "Pendiente" },
+  { value: "confirmed", label: "Confirmado" },
+  { value: "fulfilled", label: "Completado" },
+  { value: "cancelled", label: "Cancelado" },
+];
 
 export const dynamic = "force-dynamic";
 
@@ -65,11 +73,16 @@ export default async function AdminImportOrdersPage({
   const params = await searchParams;
   const search = typeof params.q === "string" ? params.q : "";
   const statusParam = typeof params.status === "string" ? params.status : "";
+  const ageParam = typeof params.age === "string" ? params.age : "";
   const page = Math.max(1, Number(params.page) || 1);
 
   const repository = new AdminImportOrdersRepository(supabase, membership.businessUnitId);
   const listResult = await repository.list(
-    { search, status: statusParam || undefined },
+    {
+      search,
+      status: statusParam || undefined,
+      age: isOrderAgeBucket(ageParam) ? ageParam : undefined,
+    },
     { page, pageSize: PAGE_SIZE },
   );
 
@@ -98,11 +111,13 @@ export default async function AdminImportOrdersPage({
       </header>
 
       <main>
-        <OrderFilters initial={{ search, status: statusParam }} />
+        <OrderFilters statusOptions={STATUS_OPTIONS} initial={{ search, status: statusParam, age: ageParam }} />
 
         {items.length === 0 ? (
           <p className={styles.empty}>
-            No hay pedidos que coincidan con esta búsqueda.
+            {search || statusParam || ageParam
+              ? "No hay pedidos que coincidan con estos filtros."
+              : "No hay pedidos registrados todavía."}
           </p>
         ) : (
           <>

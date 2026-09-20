@@ -3,6 +3,7 @@ import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database, Json } from "@/lib/supabase/database.types";
 import { mapPostgrestError, type AdminRepositoryResult } from "./products-repository";
+import { orderAgeRange, type OrderAgeBucket } from "@/domains/admin/order-age";
 
 /**
  * Admin Parfums orders data access (Phase 4E2 — Orders Inbox / Detail).
@@ -42,6 +43,8 @@ export type OrderListItem = {
 
 export type OrderListFilters = {
   search?: string;
+  status?: string | undefined;
+  age?: OrderAgeBucket | undefined;
 };
 
 export type OrderListPage = {
@@ -144,6 +147,16 @@ export class AdminParfumsOrdersRepository {
       query = query.or(
         `order_number.ilike.%${term}%,customer_snapshot->>name.ilike.%${term}%,customer_snapshot->>phone.ilike.%${term}%`,
       );
+    }
+
+    if (filters.status) {
+      query = query.eq("status", filters.status);
+    }
+
+    if (filters.age) {
+      const range = orderAgeRange(filters.age);
+      if (range.gte) query = query.gte("created_at", range.gte);
+      if (range.lt) query = query.lt("created_at", range.lt);
     }
 
     const { data, error, count } = await query;
