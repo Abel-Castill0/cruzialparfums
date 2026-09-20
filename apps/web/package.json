@@ -24,7 +24,8 @@
     "etl:legacy": "node ../../scripts/etl-legacy-catalog.mjs",
     "etl:check": "node ../../scripts/etl-legacy-catalog.mjs --check",
     "db:reset": "npx supabase db reset",
-    "db:test": "npx supabase test db"
+    "db:test": "node ../../scripts/prepare-commercial-reconciliation-test.mjs && npx supabase test db",
+    "db:gate": "npm run db:reset && npm run db:test"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.6",
