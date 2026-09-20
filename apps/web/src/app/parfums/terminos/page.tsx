@@ -61,7 +61,6 @@ export default async function TerminosPage() {
           <h2>6. Envíos y Entregas</h2>
           <ul>
             <li>El envío se realiza mediante agencia Shalom. Cobertura, costo y tiempo de entrega se confirman por WhatsApp al coordinar el pedido.</li>
-            <li>Cruzial Parfums no se hace responsable por demoras de servicios de transporte.</li>
           </ul>
 
           <h2>7. Incidencias con tu pedido</h2>
@@ -75,7 +74,7 @@ export default async function TerminosPage() {
           </ul>
 
           <h2>9. Propiedad Intelectual</h2>
-          <p>El diseño, los textos y los logotipos de este sitio web son propiedad de Cruzial Parfums y están protegidos por las leyes de propiedad intelectual. Las fotografías de producto pueden pertenecer a sus respectivas casas de perfumería; su uso aquí es únicamente ilustrativo del producto vendido. Queda prohibida la reproducción del contenido del sitio sin autorización.</p>
+          <p>El diseño, los textos y los logotipos propios de este sitio web son propiedad de Cruzial Parfums. Las marcas, nombres de producto y fotografías de terceros que aparecen en el catálogo siguen siendo propiedad de sus respectivos titulares; su uso aquí es únicamente ilustrativo del producto vendido, sin implicar afiliación ni patrocinio. Queda prohibida la reproducción del contenido propio del sitio sin autorización.</p>
 
           <h2>10. Ley Aplicable</h2>
           <p>Estos términos se rigen por las leyes de la República del Perú. Ante cualquier controversia, buscaremos primero una solución directa contigo por WhatsApp o correo electrónico.</p>

@@ -53,10 +53,10 @@ export default async function ImportPrivacidadPage() {
             <li><b>Cloudinary</b> — alojamiento de las fotografías de producto que se muestran en el catálogo.</li>
             <li><b>WhatsApp (Meta)</b> — canal de coordinación de tu solicitud; al abrir WhatsApp desde la web se aplican sus propias condiciones.</li>
           </ul>
-          <p><b>Protección contra abuso.</b> Para evitar solicitudes automatizadas o masivas, al registrar una solicitud calculamos una huella irreversible (hash con clave) de tu dirección IP y de tu número; esas huellas se usan únicamente para limitar la frecuencia de solicitudes, no permiten reconstruir el dato original, y se eliminan automáticamente a las 48 horas.</p>
+          <p><b>Protección contra abuso.</b> Para evitar solicitudes automatizadas o masivas, al registrar una solicitud generamos identificadores seudonimizados de tu dirección IP y de tu número mediante HMAC-SHA256 con una clave de servidor; se utilizan para aplicar límites de frecuencia sin almacenar esos valores en texto plano en la tabla de control. Los registros técnicos se conservan durante aproximadamente 48 horas; las entradas vencidas se depuran de forma automática cuando opera el limitador.</p>
 
-          <h2>3. No Vendemos tus Datos</h2>
-          <p>Cruzial Import <b>nunca vende, alquila ni comparte</b> tus datos personales con terceros para fines de marketing.</p>
+          <h2>3. Uso Actual de tus Datos</h2>
+          <p>La plataforma no implementa actualmente venta de datos ni uso de los datos de pedidos para publicidad de terceros. Los proveedores indicados en la sección 2 intervienen únicamente para prestar las funciones ahí descritas.</p>
 
           <h2>4. Cookies y almacenamiento local</h2>
           <ul>
