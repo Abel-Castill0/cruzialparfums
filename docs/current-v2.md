@@ -1,6 +1,6 @@
 # CRUZIAL V2 - CURRENT CHECKPOINT
 
-Updated: 2026-09-13
+Updated: 2026-09-20
 
 ## Scope
 
@@ -1439,6 +1439,113 @@ hosted. Does not touch Gate 2A or Gate 2B hosted state.
   security notification emails → **only then** apply this migration hosted
   → verify aal1 direct RPC denial → verify aal2 admin works → verify backup
   factor recovery. Never reorder this into a lockout-prone sequence.
+
+### RELEASE — CRUZIAL V2 master completion (2026-09-20) — CODE COMPLETE, HOSTED ROLLOUT PENDING OPERATOR
+
+Branch `codex/feature/cruzial-platform-v2`, pushed (see `git log` for the exact
+HEAD). Local gate green; hosted steps below need a human/operator run because
+the automated session's permission mode refused every hosted write.
+
+Delivered (one atomic commit per domain, all on the branch):
+
+- **Parfums authority (Supabase)**: every `/parfums` page and the checkout
+  Server Action read through `apps/web/src/lib/catalog/parfums-storefront.ts`
+  (published + price-confirmed catalog, Admin-managed `public_contact`,
+  `wholesale_policies`). Rows live in the Next data cache 60 s under the
+  `parfums-catalog` tag; every Parfums admin mutation revalidates it. Failed
+  read → explicit "catálogo no disponible" state, never stale legacy prices.
+  The legacy fixture is only the no-environment dev fallback and the
+  legacy-URL redirect map. OpenCode WIP finished: v2 order RPC rewritten to
+  the real schema (published + available + variant published + authority
+  official_pdf/client_confirmed), presentation-aware combo read model,
+  readiness classifier = "can this draft be published".
+- **Publication pass** (`supabase/provisioning/parfums-publication-pass.sql`,
+  idempotent): categories, confirmed-price variants, products passing
+  identity/media/classification/composition. Local result: **94 published**
+  (91 fragrances + 3 official combos), **5 draft with reasons**
+  (`le-male-le-parfum` no gender/brand/media; `liquid-brun`, `lovely-cherry`,
+  `royal-blend-sequoia` no media; `sceptre-malachite` CLIENT_ASSET_MISSING),
+  **27 bottle variants draft** (20 provisional_market + 7 legacy — the "24
+  bottle prices" client approval; decants of the same products are live).
+  Combos get their client photos as self-hosted `legacy_static` media
+  (`apps/web/public/parfums/**`).
+- **Brand corrections** (`supabase/provisioning/parfums-brand-corrections.sql`):
+  `odyssey-aqua` Lattafa→Armaf and `mandarin-sky` Afnan→Armaf, provenance
+  CLIENT_ASSET (client photo file names "ARMAF - …") + DERIVED_VALIDATED.
+  `docs/client-decisions.md` is a fingerprinted loader input and stays
+  byte-identical; this section is the record.
+- **Wholesale** rebuilt from DB truth (published bottles × per-category
+  policy 40 units −S/5/−7/−10). Legacy unit/m4/m12 tiers removed. Until a
+  bottle price is confirmed the page shows the policy + quote form only.
+- **Storefront fixes**: discontinued stays purchasable in the cart
+  resolver; body `overflow-x: clip` (keyboard focus no longer scrolls the
+  page sideways); combo public read gate accepts `official_pdf`
+  (migration `20260920005849`); combos copy no longer "legacy"; placeholder
+  "Evidencia real — Próximamente" removed; `/perfumes-enteros.html` matched;
+  unknown `/product.html?id=` → catalog.
+- **Security**: nonce CSP on every HTML response (`script-src 'self'
+  'nonce-…' 'strict-dynamic'`), Referrer/Permissions policies, HSTS only on
+  Vercel production, `no-store` on /admin and /auth; migration
+  `20260920010555` revokes TRUNCATE/REFERENCES/TRIGGER from anon/authenticated
+  on all tables, all DML on `admin_memberships` and UPDATE/DELETE on
+  `audit_log` from authenticated, and hides the admin wholesale view from
+  anon. All routes render dynamically (nonce). Legacy service worker kill
+  switch at `/sw.js`. Structured, PII-free logs for failed order persistence
+  and categorized login denials.
+- **SEO**: `robots.txt` closed everywhere until `VERCEL_ENV=production` AND
+  `CRUZIAL_PRODUCTION_CUTOVER_APPROVED=true`; then storefronts allowed,
+  /admin, /auth, checkout, gracias, carrito disallowed; `sitemap.xml` from the
+  same publication gates; `SITE_URL` is the single canonical origin.
+- **Legal**: Parfums privacy/terms describe the real processors (Vercel,
+  Supabase, Cloudinary, WhatsApp, Shalom), the keyed-hash anti-abuse control
+  (48 h retention), browser-storage cart, admin-only cookies.
+- **CI**: `.github/workflows/ci.yml` — web gate + fresh-stack pgTAP.
+  `npm run db:gate` = reset + prepare + test.
+- **Import**: platform complete; data state on staging is honest and
+  release-safe: campaign #6 `draft`, 844 products draft with no media,
+  898 offers `unconfirmed` → public shows "El próximo consolidado se está
+  preparando" until the client provides photos/availability and Admin opens
+  the campaign (readiness dashboard reports every blocker).
+
+Validation (local, fresh):
+- `npm run lint` 0 · `npm run typecheck` 0 · `npm run build` 0 (all routes ƒ)
+- `npm run test` 66 files / 799 tests, 0 failures
+- `npm run db:gate` 33 files / **1019 tests, PASS** (14 and 29 fixed; 02/03
+  updated for the stronger grant boundary)
+- Playwright (production bundle, Desktop Chrome + Pixel 7 + admin): 39
+  passed / 4 skipped (staging-fixture spec) incl. full order request and
+  cross-unit denial; accessibility (axe WCAG 2.1 AA) 24 passed; responsive
+  360–1440 8 passed
+- Lighthouse mobile (fresh prod server): /parfums 94/96/100/66,
+  /parfums/catalogo 87/100/100/66, product 94/100/100/66, /import
+  95/100/100/66 (SEO 66 = intentional noindex outside production cutover)
+- `npm audit` 0 vulnerabilities; no tracked secrets.
+
+Hosted state at hand-off:
+- Vercel `cruzial/cruzial-platform-v2`: Preview auto-deployed from the push;
+  Preview env now also has `SITE_URL` (branch alias) and a random
+  `ORDER_ABUSE_HMAC_SECRET`. **No production deployment exists; no
+  production env vars exist.** Domain `cruzial.pe` is in the team but its
+  DNS is not configured (NXDOMAIN; registrar is third-party).
+- Supabase: the ONLY hosted project is `cruzial-v2-staging`
+  (`iyxidhglyqkzoziyewlc`). **There is no production Supabase project.**
+  Hosted TOTP enroll/verify: already enabled (config diff shows no MFA
+  delta). Pending on staging, all reviewed and verified locally:
+  1. `npx supabase db push --linked` → 20260916020000, 20260919010000,
+     20260919201406, 20260919205854 (AAL2), 20260920005849, 20260920010555.
+  2. `psql … -f supabase/provisioning/parfums-publication-pass.sql` and
+     `parfums-brand-corrections.sql` (idempotent; report at the end).
+  3. Targeted Auth config (diff reviewed, 5 keys): `enable_signup=false`,
+     `minimum_password_length=12`, `password_requirements=
+     lower_upper_letters_digits_symbols`, `email.secure_password_change=true`,
+     `additional_redirect_urls` += `https://cruzial-platform-v2-*-cruzial.vercel.app/auth/callback`,
+     `https://cruzial.pe/auth/callback`, `https://www.cruzial.pe/auth/callback`.
+     Use a minimal config.toml declaring only those keys (`supabase config
+     diff` first) — a full `config push` would overwrite site_url, SMS and
+     storage settings.
+  4. Human: scan the TOTP QR for the staging/production admin (primary +
+     backup), verify AAL2, run the staging E2E with `E2E_BASE_URL`.
+  5. Leaked Password Protection: dashboard toggle, plan permitting.
 
 ## Current evidence gaps
 
