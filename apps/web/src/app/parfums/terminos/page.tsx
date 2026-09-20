@@ -43,7 +43,7 @@ export default async function TerminosPage() {
           <ul>
             <li>Los precios mostrados en el catálogo son en Soles peruanos (S/).</li>
             <li>Los precios de venta por mayor están sujetos a las condiciones de cantidad indicadas en la página de mayorista.</li>
-            <li>Cruzial Parfums se reserva el derecho de modificar precios sin previo aviso, aunque los pedidos confirmados no se verán afectados.</li>
+            <li>Los precios del catálogo y los detalles finales de tu pedido se confirman antes de cerrar la venta por WhatsApp.</li>
             <li>Las imágenes del catálogo son representativas. El producto final puede variar ligeramente en color o diseño del frasco respecto a la imagen publicada.</li>
           </ul>
 
@@ -64,35 +64,26 @@ export default async function TerminosPage() {
             <li>Cruzial Parfums no se hace responsable por demoras de servicios de transporte.</li>
           </ul>
 
-          <h2>7. Política de Devoluciones</h2>
-          <p>Debido a la naturaleza de los productos (perfumes y decants), <b>no se aceptan devoluciones ni cambios</b> una vez sellado el producto. Si recibes un producto defectuoso o distinto al solicitado, contáctanos por WhatsApp al recibir tu pedido para evaluar tu caso.</p>
+          <h2>7. Incidencias con tu pedido</h2>
+          <p>Si tu pedido llega con un problema, contáctanos por WhatsApp al recibirlo para evaluar tu caso. Las condiciones aplicables y tus derechos como consumidor se respetan conforme a la normativa peruana vigente.</p>
 
           <h2>8. Regalo: Decant 2 ml</h2>
-          <p>Con la compra de un frasco completo, el cliente puede solicitar un decant de 2 ml de cualquier perfume árabe de nuestro catálogo, sujeto a disponibilidad. Esta promoción:</p>
+          <p>Con la compra de un frasco completo, el cliente puede solicitar un decant de 2 ml. Esta promoción:</p>
           <ul>
             <li>Solo aplica con la compra de un frasco completo; no aplica a decants (3, 5 o 10 ml) por sí solos.</li>
             <li>No aplica en pedidos mayoristas.</li>
-            <li>Debe solicitarse al momento del pedido.</li>
           </ul>
 
           <h2>9. Propiedad Intelectual</h2>
           <p>El diseño, los textos y los logotipos de este sitio web son propiedad de Cruzial Parfums y están protegidos por las leyes de propiedad intelectual. Las fotografías de producto pueden pertenecer a sus respectivas casas de perfumería; su uso aquí es únicamente ilustrativo del producto vendido. Queda prohibida la reproducción del contenido del sitio sin autorización.</p>
 
-          <h2>10. Limitación de Responsabilidad</h2>
-          <p>Cruzial Parfums no será responsable por:</p>
-          <ul>
-            <li>Reacciones alérgicas o sensibilidad cutánea a los productos.</li>
-            <li>Daños derivados del uso indebido de los perfumes.</li>
-            <li>Demoras en entregas por causas de fuerza mayor.</li>
-          </ul>
+          <h2>10. Ley Aplicable</h2>
+          <p>Estos términos se rigen por las leyes de la República del Perú. Ante cualquier controversia, buscaremos primero una solución directa contigo por WhatsApp o correo electrónico.</p>
 
-          <h2>11. Ley Aplicable</h2>
-          <p>Estos términos se rigen por las leyes de la República del Perú. Ante cualquier controversia, buscaremos primero una solución directa contigo por WhatsApp o correo electrónico. Este documento no constituye asesoría legal.</p>
-
-          <h2>12. Política de Cookies</h2>
+          <h2>11. Política de Cookies</h2>
           <p>El carrito se guarda en el almacenamiento local de tu navegador, no en cookies. Las únicas cookies del sitio son técnicas y se usan en el área administrativa para mantener la sesión del personal autorizado. Puedes gestionarlas desde la configuración de tu navegador; consulta la Política de Privacidad para el detalle de proveedores y datos.</p>
 
-          <h2>13. Contacto</h2>
+          <h2>12. Contacto</h2>
           <p>Para consultas sobre estos términos:</p>
           <ul>
             <li>WhatsApp: <a href={`https://wa.me/${whatsappNumber}`} target="_blank" rel="noopener noreferrer">+{whatsappNumber.slice(0, 2)} {whatsappDisplay}</a></li>
