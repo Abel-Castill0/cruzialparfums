@@ -86,3 +86,36 @@ who finds a Preview URL, can read or write real Parfums/Import data.
 No code change was made for this section: creating a second Supabase
 project is an infrastructure decision for the operator, not something to
 apply unilaterally from here.
+
+## 3. Attempted mitigation (2026-09-20) — incident, not a fix
+
+An attempt was made to narrow `SUPABASE_SECRET_KEY` to `Production` only via
+`vercel env rm SUPABASE_SECRET_KEY preview`, following the Vercel CLI's own
+`--help` text ("Remove a variable from a specific Environment"). In
+practice this command **deleted the row entirely** — `SUPABASE_SECRET_KEY`
+is currently **absent from both Production and Preview** on
+`cruzial-platform-v2`. The plaintext value was never read or held by this
+session and cannot be recreated from here.
+
+`CLOUDINARY_API_SECRET` was deliberately left untouched (still `Production,
+Preview`, unchanged) once this behavior was discovered, to avoid repeating
+the same mistake. `ORDER_ABUSE_HMAC_SECRET` needed no action — it was
+already two separate rows (`Production`-only and `Preview`-only, different
+creation timestamps), not a shared row.
+
+**Operator action required (this session cannot do this):**
+1. Supabase Dashboard → project `iyxidhglyqkzoziyewlc` → Settings → API
+   Keys → copy the secret key.
+2. Vercel Dashboard → `cruzial-platform-v2` → Settings → Environment
+   Variables → Add New → `SUPABASE_SECRET_KEY`, paste the value, target
+   **Production only**.
+3. Confirm the currently-live Production deployment still functions (it may
+   be running on an env snapshot taken before the deletion); redeploy once
+   the variable is restored to be safe.
+
+**Lesson for any future attempt at this same mitigation:** do not assume
+`vercel env rm <name> <environment>` narrows a multi-target row on this
+CLI version (54.15.1) — test the exact behavior on a disposable/non-secret
+variable first, or do the narrowing directly in the Vercel dashboard UI
+(which does support editing a variable's environment targets in place,
+as already used earlier in this release for the reverse operation).
