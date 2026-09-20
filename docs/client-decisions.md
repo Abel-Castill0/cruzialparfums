@@ -102,7 +102,9 @@ Consolidados:
 - 24 bottle prices commercial approval
 - 3 combo compositions
 - Import catalog/categories, currencies, taxes and price-display policy
-- final order states, transitions, cancellation and operational ownership
+- business/legal policy behind order cancellation and operational ownership
+  of the lifecycle below (see the 2026-09-20 note) — the states/transitions
+  themselves are now implemented as a system release default, not this
 - campaign automatic transitions/timezone, concurrent campaigns and numbering
 - Import legal/returns/refund/guarantee/shipping/lead-time rules
 - waitlist fields, consent, channel and retention
@@ -115,6 +117,27 @@ Consolidados:
 - whether the “Précieux” or “Amber Gold Elixir es E.” notes imply any further
   correction beyond the confirmed rows above
 - Production cutover window
+
+## 2026-09-20 note — Parfums order status lifecycle
+
+SYSTEM RELEASE DEFAULT (not client-confirmed):
+
+    pending_whatsapp_confirmation -> confirmed -> fulfilled
+    pending_whatsapp_confirmation -> cancelled
+    confirmed -> cancelled
+
+`confirmed` means coordination was confirmed by WhatsApp. It NEVER means
+payment was processed by the website — Parfums takes no payment on the
+site. `fulfilled` and `cancelled` are terminal in the current V2
+implementation (`admin_parfums_update_order_status`,
+supabase/migrations/20260920020000_admin_parfums_order_status.sql).
+
+This is an engineering default chosen to close a real gap (orders were
+stuck `pending_whatsapp_confirmation` forever), not a client-approved
+business/legal policy. The business/legal question of who owns
+cancellation decisions, under what conditions, and any consumer-rights
+implications remains UNKNOWN (see above) and may require revision once the
+client weighs in.
 
 ## 4K-B2B.2A note (2026-09-13)
 
