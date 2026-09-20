@@ -55,7 +55,15 @@ select is((select publication_status from public.import_presentations where prod
 
 set local role authenticated;
 set local request.jwt.claims='{"aal":"aal2","sub":"4c4c0000-0000-4000-8000-000000000002","role":"authenticated"}';
-select lives_ok($$select * from public.admin_list_import_products('4c4c3000-0000-4000-8000-000000000001',null,null,null,'active',null,null,null)$$,'Import viewer can read catalog');
+-- Explicit ::uuid cast: with the Codex P1 rollout-compatibility overload
+-- (admin_list_import_products(text,text,text,text,text,text,text,integer,
+-- integer)) now coexisting, an all-untyped-literal 8-arg positional call is
+-- ambiguous between "old, page_size defaulted" and "new, media_state/page/
+-- page_size defaulted" — a real caller always disambiguates via named
+-- PostgREST dispatch or (like every other call in this suite) a full/typed
+-- argument list; this raw positional pgTAP call needs the same explicit
+-- typing to pick the NEW p_campaign_id overload it's actually testing.
+select lives_ok($$select * from public.admin_list_import_products('4c4c3000-0000-4000-8000-000000000001'::uuid,null,null,null,'active',null,null,null)$$,'Import viewer can read catalog');
 select throws_ok($$select public.admin_archive_import_product('4c4c2000-0000-4000-8000-000000000001',(select updated_at from public.products where id='4c4c2000-0000-4000-8000-000000000001'))$$,'42501',null,'Import viewer cannot mutate');
 reset role;
 set local role authenticated;

@@ -12,6 +12,7 @@ export type ImportOrderError =
   | { type: "ambiguous_customer" }
   | { type: "deposit_policy_missing" }
   | { type: "deposit_policy_ambiguity" }
+  | { type: "customer_conflict_unresolved" }
   | { type: "invalid_input" }
   | { type: "unknown"; message: string };
 
@@ -37,6 +38,8 @@ function mapImportOrderError(error: { code?: string; message: string }): ImportO
       return { type: "deposit_policy_missing" };
     case "P2015":
       return { type: "deposit_policy_ambiguity" };
+    case "P2033":
+      return { type: "customer_conflict_unresolved" };
     case "P2016":
       return { type: "campaign_unavailable" };
     case "P2017":

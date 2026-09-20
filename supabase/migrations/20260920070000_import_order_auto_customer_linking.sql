@@ -17,8 +17,13 @@
 -- (business_unit_id, app.normalize_import_phone(phone)) added by
 -- 20260911100300_import_admin_operations_concurrency.sql — rather than
 -- adding a second, overlapping one. If a concurrent request wins that
--- race, this function catches the unique_violation and links to the row
--- that won instead of failing the order.
+-- race, this function catches the unique_violation and re-resolves the
+-- canonical active customer AFTER the conflict, reading its ACTUAL status
+-- (Codex P1 correction — the original pass of this migration forced
+-- 'new'/50% here even when the row that won the race was an existing
+-- 'returning' customer whose phone had concurrently changed to collide
+-- with ours). Fails closed (P2033) if that re-resolution does not land on
+-- exactly one active customer — never an arbitrary LIMIT 1 pick.
 --
 -- Additive: does not modify 20260911010000/20260911020000. Rebased on the
 -- TRUE latest already-applied body (20260911020000, the "correction"
@@ -304,19 +309,45 @@ begin
       insert into public.customers (business_unit_id, full_name, phone, verified_customer_status)
       values (import_unit_id, customer_name, customer_phone, 'pending_verification')
       returning id into resolved_customer_id;
+      v_customer_status := 'new';
     exception when unique_violation then
-      -- A concurrent first order for the same normalized phone won the
-      -- race (customers_import_active_phone_uniq) and already created the
-      -- customer — link to that row instead of failing this order or
-      -- creating a duplicate.
-      select c.id into resolved_customer_id
+      -- A concurrent request for the same normalized phone won the race
+      -- (customers_import_active_phone_uniq) — the winner is NOT
+      -- necessarily a freshly-created 'new' customer: it could be an
+      -- existing 'returning' customer whose phone was concurrently changed
+      -- to collide with ours. Re-resolve the canonical active customer
+      -- AFTER the conflict (same predicate as the exactly-one branch above)
+      -- and read its actual status — never assume 'new' just because THIS
+      -- request's own insert lost the race.
+      select count(*) into v_customer_match_count
       from public.customers c
       where c.business_unit_id = import_unit_id
         and app.normalize_import_phone(c.phone) = normalized_phone
-        and c.archived_at is null
-      limit 1;
+        and c.archived_at is null;
+
+      if v_customer_match_count <> 1 then
+        -- No arbitrary LIMIT 1 pick. Zero rows (the winner was archived
+        -- between the conflict and this re-read) or more than one (would
+        -- mean the unique index somehow let two active rows collide) are
+        -- both an integrity condition this function cannot safely resolve
+        -- on its own — fail closed rather than link an unverified/wrong
+        -- customer or silently pick one.
+        raise exception 'could not resolve exactly one active customer after a concurrent phone conflict' using errcode = 'P2033';
+      end if;
+
+      select c.id, c.verified_customer_status
+      into resolved_customer_id, v_customer_status
+      from public.customers c
+      where c.business_unit_id = import_unit_id
+        and app.normalize_import_phone(c.phone) = normalized_phone
+        and c.archived_at is null;
+
+      -- Same status-collapsing rule as the exactly-one branch: only an
+      -- actual 'returning' status earns the higher deposit percentage.
+      if v_customer_status is distinct from 'returning' then
+        v_customer_status := 'new';
+      end if;
     end;
-    v_customer_status := 'new';
   else
     resolved_customer_id := null;
     v_customer_status := 'new';
@@ -511,4 +542,4 @@ grant execute on function public.create_import_order_request(uuid, jsonb, jsonb,
   to service_role;
 
 comment on function public.create_import_order_request(uuid, jsonb, jsonb, jsonb) is
-  'Task 6: service-only atomic Import order request. Exactly-one phone match links that customer; zero matches atomically creates a pending_verification customer under new-customer deposit semantics and links it (never auto-promoted to returning); ambiguous match fails closed with no link. Concurrent first orders for the same phone are protected by the existing customers_import_active_phone_uniq index.';
+  'Task 6 + Codex P1 correction: service-only atomic Import order request. Exactly-one phone match links that customer; zero matches atomically creates a pending_verification customer under new-customer deposit semantics and links it (never auto-promoted to returning); ambiguous match fails closed with no link. A concurrent phone conflict on insert (customers_import_active_phone_uniq) re-resolves the canonical active customer AFTER the conflict and reads its ACTUAL status (never assumes new) — fails closed with P2033 if that re-resolution does not land on exactly one active customer.';
