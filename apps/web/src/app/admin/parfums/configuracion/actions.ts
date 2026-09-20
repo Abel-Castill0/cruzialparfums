@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { revalidateParfumsStorefront } from "@/lib/catalog/parfums-storefront-revalidate";
 import { requireUnitAdmin } from "@/lib/auth/admin-session";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { FieldErrors } from "@/domains/admin-parfums/product-schema";
@@ -82,5 +83,6 @@ export async function updatePublicContactSettingAction(
 
   revalidatePath("/admin/parfums/configuracion");
   revalidatePath("/admin/parfums");
+  revalidateParfumsStorefront();
   return { status: "success", data: result.data };
 }

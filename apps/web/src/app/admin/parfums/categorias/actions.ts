@@ -2,6 +2,7 @@
 
 import type { Route } from "next";
 import { revalidatePath } from "next/cache";
+import { revalidateParfumsStorefront } from "@/lib/catalog/parfums-storefront-revalidate";
 import { redirect } from "next/navigation";
 import { requireUnitAdmin } from "@/lib/auth/admin-session";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -121,6 +122,7 @@ export async function createCategoryAction(
 
   revalidatePath(CATEGORIES_PATH);
   revalidatePath("/admin/parfums");
+  revalidateParfumsStorefront();
   redirect(editPath(result.data.id));
 }
 
@@ -150,6 +152,7 @@ export async function updateCategoryAction(
 
   revalidatePath(CATEGORIES_PATH);
   revalidatePath(editPath(categoryId));
+  revalidateParfumsStorefront();
   return { status: "success", data: result.data };
 }
 
@@ -166,6 +169,7 @@ export async function archiveCategoryAction(
   revalidatePath(CATEGORIES_PATH);
   revalidatePath(editPath(categoryId));
   revalidatePath("/admin/parfums");
+  revalidateParfumsStorefront();
   return { status: "success", data: result.data };
 }
 
@@ -182,5 +186,6 @@ export async function restoreCategoryAction(
   revalidatePath(CATEGORIES_PATH);
   revalidatePath(editPath(categoryId));
   revalidatePath("/admin/parfums");
+  revalidateParfumsStorefront();
   return { status: "success", data: result.data };
 }

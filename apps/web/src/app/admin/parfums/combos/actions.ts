@@ -2,6 +2,7 @@
 
 import type { Route } from "next";
 import { revalidatePath } from "next/cache";
+import { revalidateParfumsStorefront } from "@/lib/catalog/parfums-storefront-revalidate";
 import { redirect } from "next/navigation";
 import { requireUnitAdmin } from "@/lib/auth/admin-session";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -134,6 +135,7 @@ export async function createComboAction(
 
   revalidatePath(COMBOS_PATH);
   revalidatePath("/admin/parfums");
+  revalidateParfumsStorefront();
   redirect(comboEditPath(result.data.id));
 }
 
@@ -158,6 +160,7 @@ export async function updateVerificationAction(
 
   revalidatePath(comboEditPath(comboId));
   revalidatePath(COMBOS_PATH);
+  revalidateParfumsStorefront();
   return { status: "success", data: result.data };
 }
 
@@ -178,6 +181,7 @@ export async function archiveComboAction(
   revalidatePath(comboEditPath(comboId));
   revalidatePath(COMBOS_PATH);
   revalidatePath("/admin/parfums");
+  revalidateParfumsStorefront();
   return { status: "success", data: result.data };
 }
 
@@ -198,6 +202,7 @@ export async function restoreComboAction(
   revalidatePath(comboEditPath(comboId));
   revalidatePath(COMBOS_PATH);
   revalidatePath("/admin/parfums");
+  revalidateParfumsStorefront();
   return { status: "success", data: result.data };
 }
 
@@ -228,5 +233,6 @@ export async function setComboCompositionAction(
 
   revalidatePath(comboEditPath(comboId));
   revalidatePath(COMBOS_PATH);
+  revalidateParfumsStorefront();
   return { status: "success", data: result.data };
 }

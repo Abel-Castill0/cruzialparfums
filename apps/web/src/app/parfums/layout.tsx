@@ -12,6 +12,11 @@ export const metadata: Metadata = {
   description: "Decants premium y perfumes originales en Lima, Perú.",
 };
 
+// Prices, publication state and contact are admin-managed database truth:
+// never bake a build-time snapshot into static HTML. The storefront data
+// itself is served from the Next data cache (see lib/catalog/parfums-storefront).
+export const dynamic = "force-dynamic";
+
 export default async function ParfumsLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {

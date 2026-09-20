@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { revalidateParfumsStorefront } from "@/lib/catalog/parfums-storefront-revalidate";
 import type { Route } from "next";
 import { requireUnitAdmin } from "@/lib/auth/admin-session";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -222,6 +223,7 @@ export async function registerMediaAction(
   }
 
   revalidatePath(productEditPath(productId));
+  revalidateParfumsStorefront();
   return { status: "success", data: result.data };
 }
 
@@ -244,6 +246,7 @@ export async function updateMediaAction(
   if (!result.ok) return { status: "error", message: friendlyError(result.error) };
 
   revalidatePath(productEditPath(productId));
+  revalidateParfumsStorefront();
   return { status: "success", data: result.data };
 }
 
@@ -261,6 +264,7 @@ export async function setPrimaryMediaAction(
   if (!result.ok) return { status: "error", message: friendlyError(result.error) };
 
   revalidatePath(productEditPath(productId));
+  revalidateParfumsStorefront();
   return { status: "success", data: result.data };
 }
 
@@ -278,6 +282,7 @@ export async function archiveMediaAction(
   if (!result.ok) return { status: "error", message: friendlyError(result.error) };
 
   revalidatePath(productEditPath(productId));
+  revalidateParfumsStorefront();
   return { status: "success", data: result.data };
 }
 
@@ -295,6 +300,7 @@ export async function restoreMediaAction(
   if (!result.ok) return { status: "error", message: friendlyError(result.error) };
 
   revalidatePath(productEditPath(productId));
+  revalidateParfumsStorefront();
   return { status: "success", data: result.data };
 }
 
@@ -314,5 +320,6 @@ export async function reorderMediaAction(
   if (!result.ok) return { status: "error", message: friendlyError(result.error) };
 
   revalidatePath(productEditPath(productId));
+  revalidateParfumsStorefront();
   return { status: "success", data: result.data };
 }

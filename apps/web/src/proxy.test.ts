@@ -25,13 +25,13 @@ describe("legacy route proxy", () => {
     );
   });
 
-  it("does not invent a redirect for an unknown legacy product", async () => {
+  it("sends an unknown legacy product link to the catalog, never a 404", async () => {
     const response = await proxy(new NextRequest(
       "https://preview.example/product.html?id=missing",
     ));
 
-    expect(response.headers.get("location")).toBeNull();
-    expect(response.headers.get("x-middleware-next")).toBe("1");
+    expect(response.status).toBe(307);
+    expect(response.headers.get("location")).toBe("https://preview.example/parfums/catalogo");
   });
 
   it("passes an admin route through without redirecting when Supabase is unconfigured", async () => {

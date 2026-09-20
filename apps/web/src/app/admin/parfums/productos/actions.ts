@@ -2,6 +2,7 @@
 
 import type { Route } from "next";
 import { revalidatePath } from "next/cache";
+import { revalidateParfumsStorefront } from "@/lib/catalog/parfums-storefront-revalidate";
 import { redirect } from "next/navigation";
 import { requireUnitAdmin } from "@/lib/auth/admin-session";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -151,6 +152,7 @@ export async function createProductAction(
 
   revalidatePath(PRODUCTS_LIST_PATH);
   revalidatePath(productEditPath(result.data.id));
+  revalidateParfumsStorefront();
   redirect(productEditPath(result.data.id));
 }
 
@@ -178,6 +180,7 @@ export async function updateProductAction(
 
   revalidatePath(PRODUCTS_LIST_PATH);
   revalidatePath(productEditPath(productId));
+  revalidateParfumsStorefront();
   return { status: "success", data: result.data };
 }
 
@@ -195,6 +198,7 @@ export async function archiveProductAction(
 
   revalidatePath(PRODUCTS_LIST_PATH);
   revalidatePath(productEditPath(productId));
+  revalidateParfumsStorefront();
   return { status: "success", data: result.data };
 }
 
@@ -212,6 +216,7 @@ export async function restoreProductAction(
 
   revalidatePath(PRODUCTS_LIST_PATH);
   revalidatePath(productEditPath(productId));
+  revalidateParfumsStorefront();
   return { status: "success", data: result.data };
 }
 
@@ -248,6 +253,7 @@ export async function createVariantAction(
   }
 
   revalidatePath(productEditPath(productId));
+  revalidateParfumsStorefront();
   return { status: "success", data: result.data };
 }
 
@@ -275,6 +281,7 @@ export async function updateVariantAction(
   }
 
   revalidatePath(productEditPath(productId));
+  revalidateParfumsStorefront();
   return { status: "success", data: result.data };
 }
 
@@ -292,6 +299,7 @@ export async function archiveVariantAction(
   if (!result.ok) return { status: "error", message: friendlyError(result.error, "variant") };
 
   revalidatePath(productEditPath(productId));
+  revalidateParfumsStorefront();
   return { status: "success", data: result.data };
 }
 
@@ -309,6 +317,7 @@ export async function restoreVariantAction(
   if (!result.ok) return { status: "error", message: friendlyError(result.error, "variant") };
 
   revalidatePath(productEditPath(productId));
+  revalidateParfumsStorefront();
   return { status: "success", data: result.data };
 }
 
@@ -331,6 +340,7 @@ export async function updateInventoryAction(
   if (!result.ok) return { status: "error", message: friendlyError(result.error, "inventory") };
 
   revalidatePath(productEditPath(productId));
+  revalidateParfumsStorefront();
   return { status: "success", data: result.data };
 }
 
@@ -350,5 +360,6 @@ export async function setProductCategoriesAction(
   if (!result.ok) return { status: "error", message: friendlyError(result.error, "categories") };
 
   revalidatePath(productEditPath(productId));
+  revalidateParfumsStorefront();
   return { status: "success", data: null };
 }

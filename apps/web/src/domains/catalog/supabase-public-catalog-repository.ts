@@ -415,7 +415,7 @@ export class SupabasePublicCatalogRepository implements PublicCatalogRepository 
   ) {}
 
   /** One public/RLS-bound composed query. No secret client and no per-product reads. */
-  static async load(supabase: SupabaseClient<Database>): Promise<SupabasePublicCatalogRepository> {
+  static async fetchPublicRows(supabase: SupabaseClient<Database>): Promise<PublicProductRow[]> {
     const { data, error } = await supabase
       .from("products")
       .select(PUBLIC_PRODUCT_SELECT)
@@ -424,12 +424,11 @@ export class SupabasePublicCatalogRepository implements PublicCatalogRepository 
       .is("archived_at", null)
       .order("name", { ascending: true });
     if (error) throw new Error(`Public catalog read failed: ${error.message}`);
-    const all = ((data ?? []) as unknown as PublicProductRow[])
-      .map(mapPublicProduct)
-      .filter((product): product is CatalogProduct => product !== null);
-    const combos = all.filter((product) => product.type === "combo");
-    const products = all.filter((product) => product.type !== "combo");
-    return new SupabasePublicCatalogRepository(products, combos);
+    return (data ?? []) as unknown as PublicProductRow[];
+  }
+
+  static async load(supabase: SupabaseClient<Database>): Promise<SupabasePublicCatalogRepository> {
+    return SupabasePublicCatalogRepository.fromPublicRows(await SupabasePublicCatalogRepository.fetchPublicRows(supabase));
   }
 
   static fromPublicRows(rows: PublicProductRow[]): SupabasePublicCatalogRepository {
