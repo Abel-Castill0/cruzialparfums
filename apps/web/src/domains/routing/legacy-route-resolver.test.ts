@@ -38,7 +38,11 @@ describe("legacy route compatibility contract", () => {
     });
   });
 
-  it("does not invent a destination for an unknown product", () => {
-    expect(resolveLegacyRoute("/product.html?id=missing", products)).toBeNull();
+  it("sends an unknown legacy product id to the catalog instead of a 404", () => {
+    expect(resolveLegacyRoute("/product.html?id=missing", products)).toEqual({
+      destination: "/parfums/catalogo",
+      permanent: false,
+      statusCode: 307,
+    });
   });
 });

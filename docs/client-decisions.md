@@ -56,6 +56,8 @@ Product corrections:
 | `amber-o-gold-e` | Amber Oud Gold Edition | DERIVED_VALIDATED |
 | `supremacy-noi` | Supremacy Not Only Intense | CLIENT_CONFIRMED |
 | `1-million-lucky` | One Million Lucky | CLIENT_CONFIRMED + DERIVED_VALIDATED |
+| `odyssey-aqua` | Armaf / Odyssey Aqua (legacy said Lattafa) | CLIENT_ASSET ("ARMAF - ODYSSEY AQUA.png") + DERIVED_VALIDATED — 2026-09-20 |
+| `mandarin-sky` | Armaf / Mandarin Sky (legacy said Afnan) | CLIENT_ASSET ("ARMAF - MANDARIN SKY.png") + DERIVED_VALIDATED — 2026-09-20 |
 
 Availability:
 

@@ -233,15 +233,6 @@ export default async function ParfumsHomePage() {
         </Link>
       </section>
 
-      <section className={styles.evidence} aria-labelledby="evidence-title">
-        <p className={styles.eyebrow}>Evidencia real</p>
-        <h2 id="evidence-title">Próximamente</h2>
-        <p>
-          Estamos reuniendo fotos reales de pedidos y evidencia de despacho para
-          mostrar aquí. No publicamos reseñas ni fotos que no sean nuestras.
-        </p>
-      </section>
-
       <section className={styles.faq} aria-labelledby="faq-title" id="faq">
         <div className={styles.sectionHead}>
           <div>

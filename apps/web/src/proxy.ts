@@ -31,6 +31,7 @@ export const config = {
     "/combos.html",
     "/checkout.html",
     "/mayorista.html",
+    "/perfumes-enteros.html",
     "/nosotros.html",
     "/contacto.html",
     "/privacidad.html",

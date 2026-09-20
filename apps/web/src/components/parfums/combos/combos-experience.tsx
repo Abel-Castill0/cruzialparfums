@@ -39,6 +39,8 @@ function money(value: number) {
 function ComboCard({ combo, onAdded, preload }: { combo: CatalogProduct; onAdded: (message: string) => void; preload: boolean }) {
   const [size, setSize] = useState<ComboSize>(3);
   const price = combo.decantPrices[String(size)] ?? 0;
+  const compositionConfirmed = combo.comboContent?.verificationStatus === "official_pdf"
+    || combo.comboContent?.verificationStatus === "client_confirmed";
 
   function add() {
     const mutation = addParfumsCartLine(localStorage, {
@@ -58,7 +60,7 @@ function ComboCard({ combo, onAdded, preload }: { combo: CatalogProduct; onAdded
     <article className={styles.comboCard} id={combo.slug} data-combo-card>
       <div className={styles.comboMedia}>
         {combo.imageUrl ? <Image src={combo.imageUrl} alt={combo.name} fill sizes="(max-width: 767px) calc(100vw - 32px), 33vw" className={styles.comboImage} preload={preload} /> : null}
-        <span>Set legacy</span>
+        <span>Set Cruzial</span>
       </div>
       <div className={styles.comboBody}>
         <div>
@@ -69,7 +71,9 @@ function ComboCard({ combo, onAdded, preload }: { combo: CatalogProduct; onAdded
         <ul className={styles.composition}>
           {combo.comboContent?.perfumes.map((perfume) => <li key={perfume}>{perfume}</li>)}
         </ul>
-        <p className={styles.reconfirmation}>Composición de paridad legacy; se reconfirma por WhatsApp antes de continuar.</p>
+        {compositionConfirmed ? null : (
+          <p className={styles.reconfirmation}>Composición pendiente de reconfirmación; se valida por WhatsApp antes de continuar.</p>
+        )}
         <div className={styles.comboSizes} aria-label={`Tamaño de ${combo.name}`}>
           {COMBO_SIZES.map((value) => (
             <button key={value} type="button" aria-pressed={size === value} className={size === value ? styles.selected : ""} onClick={() => setSize(value)}>{value} ml</button>
@@ -149,22 +153,24 @@ export function CombosExperience({
       <header className={styles.hero}>
         <p>Combos Cruzial</p>
         <h1>Arma tu selección,<br /><em>tu regla.</em></h1>
-        <span>Elige un set de paridad legacy o combina de 3 a 6 fragancias. Stock, composición y total final se confirman por WhatsApp.</span>
+        <span>Elige un set Cruzial o combina de 3 a 6 fragancias. Stock y total final se confirman por WhatsApp.</span>
         <div>
-          <a href="#sets-armados">Ver sets <span aria-hidden="true">↓</span></a>
+          {combos.length > 0 ? <a href="#sets-armados">Ver sets <span aria-hidden="true">↓</span></a> : null}
           <a href="#arma-combo">Armar mi combo <span aria-hidden="true">↓</span></a>
         </div>
       </header>
 
-      <section className={styles.setsSection} id="sets-armados" aria-labelledby="sets-title">
-        <div className={styles.sectionHead}>
-          <div><p>Selecciones existentes</p><h2 id="sets-title">Tres sets de <em>paridad.</em></h2></div>
-          <span>Se reproducen los nombres, precios y composiciones recibidos del sitio legacy, pendientes de reconfirmación comercial.</span>
-        </div>
-        <div className={styles.comboGrid}>
-          {combos.map((combo, index) => <ComboCard key={cartIdentity(combo)} combo={combo} onAdded={announce} preload={index === 0} />)}
-        </div>
-      </section>
+      {combos.length > 0 ? (
+        <section className={styles.setsSection} id="sets-armados" aria-labelledby="sets-title">
+          <div className={styles.sectionHead}>
+            <div><p>Selecciones existentes</p><h2 id="sets-title">Sets <em>Cruzial.</em></h2></div>
+            <span>Sets con composición y precio publicados del catálogo. Cada fragancia del set va en el tamaño elegido.</span>
+          </div>
+          <div className={styles.comboGrid}>
+            {combos.map((combo, index) => <ComboCard key={cartIdentity(combo)} combo={combo} onAdded={announce} preload={index === 0} />)}
+          </div>
+        </section>
+      ) : null}
 
       <section className={styles.builderSection} id="arma-combo" aria-labelledby="builder-title">
         <div className={styles.sectionHead}>

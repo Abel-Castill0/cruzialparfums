@@ -37,12 +37,13 @@ export function resolveLegacyRoute(
     if (!legacyId) return null;
 
     const product = products.findByLegacyId(legacyId);
-    if (!product) return null;
-
     legacyUrl.searchParams.delete("id");
+
+    // A legacy product link whose id no longer resolves (renamed, hidden,
+    // never existed) still deserves a real page: the catalog, not a 404.
     return {
       destination: withQueryAndHash(
-        `/parfums/productos/${encodeURIComponent(product.slug)}`,
+        product ? `/parfums/productos/${encodeURIComponent(product.slug)}` : "/parfums/catalogo",
         legacyUrl,
       ),
       permanent: false,
