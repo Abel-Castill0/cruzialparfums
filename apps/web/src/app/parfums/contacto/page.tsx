@@ -57,7 +57,7 @@ export default async function ContactoPage() {
             <div className={styles.contactCard}>
               <div className={styles.contactIcon} aria-hidden="true">✈</div>
               <h3>Envíos</h3>
-              <p>Envío por agencia Shalom, con cobertura en Lima y en todo el Perú.</p>
+              <p>Envío por agencia Shalom. Cobertura y costo se confirman por WhatsApp.</p>
               <span className={styles.contactValue}>Agencia Shalom</span>
             </div>
             <div className={styles.contactCard}>

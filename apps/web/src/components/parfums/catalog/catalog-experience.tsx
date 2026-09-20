@@ -64,6 +64,26 @@ export function CatalogExperience({ products, initialFilters }: { products: Cata
   const results = useMemo(() => filterCatalogProducts(products, filters), [filters, products]);
   const activeFilters = filterDefinitions.filter(({ key }) => filters[key] !== "all");
 
+  // Keep the URL in sync with filter/search/sort changes so back/forward,
+  // refresh, and sharing a link all preserve the same view — without a
+  // Next.js navigation (which would re-render the route) on every
+  // keystroke. window.history.replaceState only updates the address bar;
+  // filtering itself stays entirely client-side off the `products` prop.
+  useEffect(() => {
+    const handle = setTimeout(() => {
+      const params = new URLSearchParams();
+      for (const { key } of filterDefinitions) {
+        if (filters[key] !== "all") params.set(key, filters[key]);
+      }
+      if (filters.sort !== "featured") params.set("sort", filters.sort);
+      if (filters.search.trim()) params.set("search", filters.search);
+      const query = params.toString();
+      const url = query ? `${window.location.pathname}?${query}` : window.location.pathname;
+      window.history.replaceState(null, "", url);
+    }, 300);
+    return () => clearTimeout(handle);
+  }, [filters]);
+
   useEffect(() => {
     if (!filtersOpen) return;
     const previousOverflow = document.body.style.overflow;

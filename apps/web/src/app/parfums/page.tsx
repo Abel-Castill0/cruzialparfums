@@ -105,7 +105,7 @@ export default async function ParfumsHomePage() {
         </div>
         <div>
           <strong>Shalom</strong>
-          <span>Envío nacional</span>
+          <span>Envío por agencia</span>
           <p>Agencia Shalom. Cobertura y costo se confirman por WhatsApp.</p>
         </div>
         <div>

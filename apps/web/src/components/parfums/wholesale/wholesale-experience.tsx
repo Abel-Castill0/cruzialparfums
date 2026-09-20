@@ -109,7 +109,7 @@ export function WholesaleExperience({
         <div><span>◆</span><strong>Frascos completos</strong><p>Solo presentaciones selladas del catálogo. Los decants no aplican a mayorista.</p></div>
         <div><span>◇</span><strong>Descuento por categoría</strong><p>Precio por unidad según el tipo de fragancia.</p></div>
         <div><span>◈</span><strong>Atención directa</strong><p>Confirmación final por WhatsApp.</p></div>
-        <div><span>✦</span><strong>Envío nacional</strong><p>Agencia Shalom, Lima y todo el Perú.</p></div>
+        <div><span>✦</span><strong>Envío por Shalom</strong><p>Cobertura y costo se confirman por WhatsApp.</p></div>
       </section>
 
       {policies.length > 0 ? (
