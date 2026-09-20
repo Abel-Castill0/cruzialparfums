@@ -6,7 +6,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useImportCart } from "@/components/import/cart/use-import-cart";
 import { createImportOrderRequest } from "@/app/import/checkout/actions";
 import type { CreateImportOrderResult } from "@/app/import/checkout/actions";
-import { getCurrentImportCampaign, type CurrentImportCampaign } from "@/app/import/carrito/actions";
+import { getCurrentImportCampaignState } from "@/app/import/carrito/actions";
+import type { ImportCartCampaignState } from "@/domains/carts/import-cart";
 import styles from "./page.module.css";
 
 type CheckoutFormState =
@@ -71,18 +72,23 @@ function formatPrice(value: number): string {
 }
 
 export default function ImportCheckoutPage() {
-  const [campaign, setCampaign] = useState<CurrentImportCampaign>(null);
+  const [campaignState, setCampaignState] = useState<ImportCartCampaignState>({ status: "loading" });
+  const loadCampaignState = () => {
+    getCurrentImportCampaignState().then(setCampaignState);
+  };
   useEffect(() => {
     let active = true;
-    getCurrentImportCampaign().then((result) => {
-      if (active) setCampaign(result);
+    getCurrentImportCampaignState().then((result) => {
+      if (active) setCampaignState(result);
     });
     return () => {
       active = false;
     };
   }, []);
 
-  const { lines, clear, reconciliation } = useImportCart(campaign);
+  const { lines, clear, reconciliation } = useImportCart(campaignState);
+  const campaign = campaignState.status === "active" ? campaignState.campaign : null;
+  const checkoutUsable = campaignState.status === "active";
   const [formState, setFormState] = useState<CheckoutFormState>(() => {
     const saved = getStoredSuccess();
     if (saved) return { phase: "success", data: saved };
@@ -100,6 +106,7 @@ export default function ImportCheckoutPage() {
   const handleSubmit = useCallback(
     async (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
+      if (!checkoutUsable) return;
       setFieldErrors({});
 
       const fd = new FormData(e.currentTarget);
@@ -152,7 +159,7 @@ export default function ImportCheckoutPage() {
         });
       }
     },
-    [lines, clear],
+    [lines, clear, checkoutUsable],
   );
 
   if (formState.phase === "success") {
@@ -237,6 +244,11 @@ export default function ImportCheckoutPage() {
               </p>
             </div>
           )}
+          {(reconciliation?.status === "closed" || campaignState.status === "closed") && (
+            <div className={styles.noticeBanner} role="status" aria-live="polite">
+              <p>El consolidado anterior ya cerró. No hay un consolidado vigente en este momento.</p>
+            </div>
+          )}
           <div className={styles.empty}>
             <p>Tu carrito de Import está vacío.</p>
             <Link href={"/import#catalogo" as Route} className={styles.primaryAction}>
@@ -260,6 +272,15 @@ export default function ImportCheckoutPage() {
                 ? "El consolidado cambió desde tu última visita. Vaciamos tu carrito anterior para evitar precios u ofertas de un consolidado distinto."
                 : "No pudimos confirmar a qué consolidado pertenecía tu carrito guardado, así que lo vaciamos por seguridad."}
             </p>
+          </div>
+        )}
+
+        {campaignState.status === "error" && (
+          <div className={styles.errorBanner} role="alert" aria-live="assertive">
+            <p>No pudimos confirmar el consolidado vigente. Tu carrito se conserva, pero no puedes registrar tu solicitud hasta confirmarlo.</p>
+            <button type="button" onClick={loadCampaignState} className={styles.secondaryAction}>
+              Reintentar
+            </button>
           </div>
         )}
 
@@ -366,10 +387,14 @@ export default function ImportCheckoutPage() {
           <div className={styles.formActions}>
             <button
               type="submit"
-              disabled={formState.phase === "submitting"}
+              disabled={formState.phase === "submitting" || !checkoutUsable}
               className={styles.primaryAction}
             >
-              {formState.phase === "submitting" ? "Registrando solicitud..." : "Registrar solicitud"}
+              {formState.phase === "submitting"
+                ? "Registrando solicitud..."
+                : checkoutUsable
+                  ? "Registrar solicitud"
+                  : "Confirmando consolidado…"}
             </button>
             <Link href={"/import/carrito" as Route} className={styles.secondaryAction}>
               Volver al carrito

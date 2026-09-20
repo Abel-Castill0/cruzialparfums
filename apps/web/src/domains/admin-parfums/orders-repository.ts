@@ -247,17 +247,21 @@ export class AdminParfumsOrdersRepository {
     return counts;
   }
 
-  /** Count of pending requests that have sat unconfirmed for at least
-   * `days` — a factual age grouping (see Task 5's age buckets), never an
-   * invented SLA/"late" label. */
-  async countPendingOlderThanDays(days: number): Promise<number | null> {
-    const cutoff = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
-    const { count, error } = await this.supabase
+  /** Count of pending requests in the "3+ días" age bucket — reuses the same
+   * `orderAgeRange("old")` bounds the order inbox's `?age=old` filter uses
+   * (see Task 5), so this dashboard count can never disagree with what that
+   * link actually lists. A factual age grouping, never an invented SLA/
+   * "late" label. */
+  async countPendingOld(): Promise<number | null> {
+    const range = orderAgeRange("old");
+    let query = this.supabase
       .from("orders")
       .select("*", { count: "exact", head: true })
       .eq("business_unit_id", this.businessUnitId)
-      .eq("status", "pending_whatsapp_confirmation")
-      .lt("created_at", cutoff);
+      .eq("status", "pending_whatsapp_confirmation");
+    if (range.gte) query = query.gte("created_at", range.gte);
+    if (range.lt) query = query.lt("created_at", range.lt);
+    const { count, error } = await query;
     if (error) return null;
     return count ?? 0;
   }

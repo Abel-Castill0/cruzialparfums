@@ -7,10 +7,11 @@ import {
   countImportCart,
   IMPORT_CART_UPDATED_EVENT,
   reconcileImportCartForCampaign,
+  reconcileImportCartForClosedCampaign,
   readImportCart,
   removeImportCartLine,
   setImportCartLineQuantity,
-  type ImportCartCampaign,
+  type ImportCartCampaignState,
   type ImportCartLine,
   type ImportCartMutation,
   type ImportCartReconciliation,
@@ -25,14 +26,23 @@ function readSerializedCart() {
   }
 }
 
-/** Pass `campaign` from pages that know the currently active consolidado
- * (cart, checkout) so a cart left over from a previous/different campaign is
- * reconciled (discarded, with the reason surfaced via `reconciliation`)
- * instead of silently presented as if it belonged to the new one. Pages that
- * don't know the campaign (the header badge, generic line controls) omit it
- * and get read/write access to whatever is stored without triggering a
- * reconciliation decision. */
-export function useImportCart(campaign?: ImportCartCampaign | null) {
+/** Pass `campaignState` from pages that resolve the currently active
+ * consolidado (cart, checkout) so a stored cart is reconciled against it:
+ * - `loading` — campaign lookup still in flight. No reconciliation runs and
+ *   the stored cart is left untouched; the caller must not treat this as
+ *   "no active campaign" or enable an irreversible checkout submission yet.
+ * - `active` — a cart from a different/legacy consolidado is discarded
+ *   (surfaced via `reconciliation`); the same campaign's cart is kept.
+ * - `closed` — the lookup POSITIVELY confirmed there is no active campaign
+ *   (not an error). Any stored cart is cleared with no fabricated campaign
+ *   identity.
+ * - `error` — the lookup failed (network/backend). The stored cart is left
+ *   untouched — a transient failure must never destroy it — and the caller
+ *   should block checkout submission until the state is known.
+ * Pages that don't resolve a campaign at all (the header badge, generic
+ * line controls) omit this argument and get read/write access to whatever
+ * is stored without triggering any reconciliation decision. */
+export function useImportCart(campaignState?: ImportCartCampaignState) {
   const [persistenceError, setPersistenceError] = useState(false);
   const [reconciliation, setReconciliation] = useState<ImportCartReconciliation | null>(null);
 
@@ -51,25 +61,29 @@ export function useImportCart(campaign?: ImportCartCampaign | null) {
     () => "[]",
   );
 
-  const campaignId = campaign?.id ?? null;
-  const campaignNumber = campaign?.number ?? null;
+  const status = campaignState?.status;
+  const activeCampaign = campaignState?.status === "active" ? campaignState.campaign : null;
+  const campaignId = activeCampaign?.id ?? null;
+  const campaignNumber = activeCampaign?.number ?? null;
 
   useEffect(() => {
-    if (campaignNumber === null) return;
+    // No opinion passed (generic consumer), still loading, or a lookup
+    // error: never mutate the stored cart in any of these cases.
+    if (status === undefined || status === "loading" || status === "error") return;
     // Deferred to a microtask so the state update happens from an async
     // callback boundary (the same pattern used for the page-level campaign
     // fetch), not synchronously inside the effect body.
     queueMicrotask(() => {
-      const result = reconcileImportCartForCampaign(localStorage, {
-        id: campaignId,
-        number: campaignNumber,
-      });
+      const result =
+        status === "active" && campaignId !== null && campaignNumber !== null
+          ? reconcileImportCartForCampaign(localStorage, { id: campaignId, number: campaignNumber })
+          : reconcileImportCartForClosedCampaign(localStorage);
       setReconciliation(result);
-      if (result.status === "discarded") {
+      if (result.status === "discarded" || result.status === "closed") {
         window.dispatchEvent(new Event(IMPORT_CART_UPDATED_EVENT));
       }
     });
-  }, [campaignId, campaignNumber]);
+  }, [status, campaignId, campaignNumber]);
 
   const lines = useMemo(
     () =>
@@ -91,9 +105,9 @@ export function useImportCart(campaign?: ImportCartCampaign | null) {
 
   const add = useCallback(
     (line: ImportCartLine) => {
-      apply(addImportCartLine(localStorage, line, campaign ?? null));
+      apply(addImportCartLine(localStorage, line, activeCampaign));
     },
-    [apply, campaign],
+    [apply, activeCampaign],
   );
 
   const setQuantity = useCallback(

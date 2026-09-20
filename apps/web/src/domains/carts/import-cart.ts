@@ -17,11 +17,28 @@ export type ImportCartLine = {
 };
 
 /** The authoritative identity of the consolidado a stored cart belongs to.
- * `id` is the immutable campaign uuid when the caller has it (public product
- * pages resolve it server-side); `number` is the display fallback used only
- * when an id was never available for either side of the comparison. Never
- * compare by number alone when both sides have an id. */
+ * `id` is the immutable campaign uuid; it is `null` only for a cart whose
+ * identity was never recorded (legacy/pre-Task-2 storage). `number` is
+ * DISPLAY data only — never used to decide whether a cart still belongs to
+ * the active campaign. */
 export type ImportCartCampaign = { id: string | null; number: number };
+
+/** The currently active consolidado, as resolved server-side. Always carries
+ * a real campaign uuid — there is no "active campaign with unknown id"
+ * state, so reconciliation against it never falls back to comparing the
+ * display number. */
+export type ActiveImportCampaign = { id: string; number: number };
+
+/** Explicit lifecycle of the "what's the active consolidado" lookup used by
+ * the cart/checkout pages. Distinguishes "still asking" and "asked and
+ * failed" from "asked and there truly is none" — collapsing those into one
+ * null would either destroy a cart on a transient network error, or leave a
+ * closed campaign's stale cart usable at checkout. See Task-2 P1 review. */
+export type ImportCartCampaignState =
+  | { status: "loading" }
+  | { status: "active"; campaign: ActiveImportCampaign }
+  | { status: "closed" }
+  | { status: "error" };
 
 export type ImportCartMutation = {
   lines: ImportCartLine[];
@@ -31,7 +48,8 @@ export type ImportCartMutation = {
 export type ImportCartReconciliation =
   | { status: "empty" }
   | { status: "same_campaign"; lines: ImportCartLine[] }
-  | { status: "discarded"; reason: "legacy" | "campaign_changed"; discardedLineCount: number };
+  | { status: "discarded"; reason: "legacy" | "campaign_changed"; discardedLineCount: number }
+  | { status: "closed"; discardedLineCount: number };
 
 type StorageReader = Pick<Storage, "getItem">;
 type StorageWriter = Pick<Storage, "getItem" | "setItem">;
@@ -142,9 +160,13 @@ function writeStoredState(
   }
 }
 
+/** Identity comparison is UUID-only. A cart/campaign with no recorded id
+ * (legacy/pre-Task-2) is never treated as matching another one merely
+ * because their display numbers happen to agree — the number is not
+ * authority, and a coincidental match must not carry stale commercial lines
+ * forward. */
 function sameCampaign(a: ImportCartCampaign, b: ImportCartCampaign): boolean {
-  if (a.id !== null && b.id !== null) return a.id === b.id;
-  return a.number === b.number;
+  return a.id !== null && b.id !== null && a.id === b.id;
 }
 
 export function readImportCart(storage: StorageReader): ImportCartLine[] {
@@ -173,7 +195,7 @@ export function importCartLineKey(line: { offerId: string }): string {
  * no-op when the cart already belongs to that campaign. */
 export function reconcileImportCartForCampaign(
   storage: StorageWriter,
-  currentCampaign: ImportCartCampaign,
+  currentCampaign: ActiveImportCampaign,
 ): ImportCartReconciliation {
   const { lines, campaign } = readStoredState(storage);
   if (lines.length === 0) {
@@ -186,9 +208,25 @@ export function reconcileImportCartForCampaign(
   writeStoredState(storage, currentCampaign, []);
   return {
     status: "discarded",
-    reason: campaign === null ? "legacy" : "campaign_changed",
+    reason: campaign === null || campaign.id === null ? "legacy" : "campaign_changed",
     discardedLineCount: lines.length,
   };
+}
+
+/** Reconciles a POSITIVELY CONFIRMED "no active consolidado" state — the
+ * public campaign RPC succeeded and returned none, not a network/backend
+ * failure. Clears any stored cart to the neutral empty/no-campaign
+ * representation (never a fabricated campaign identity) so a future
+ * campaign reconciles cleanly via `reconcileImportCartForCampaign` above.
+ * Never call this for a transient lookup error — that must preserve the
+ * cart instead (see `ImportCartCampaignState`). */
+export function reconcileImportCartForClosedCampaign(
+  storage: StorageWriter,
+): ImportCartReconciliation {
+  const { lines } = readStoredState(storage);
+  writeStoredState(storage, null, []);
+  if (lines.length === 0) return { status: "empty" };
+  return { status: "closed", discardedLineCount: lines.length };
 }
 
 /** Adds a line to the cart. When `campaign` is supplied (the caller knows

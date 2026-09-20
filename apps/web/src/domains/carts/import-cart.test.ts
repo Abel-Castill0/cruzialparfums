@@ -7,6 +7,7 @@ import {
   countImportCart,
   importCartLineKey,
   reconcileImportCartForCampaign,
+  reconcileImportCartForClosedCampaign,
   readImportCart,
   readImportCartCampaign,
   removeImportCartLine,
@@ -256,11 +257,12 @@ describe("import cart campaign scoping (Task 2)", () => {
     expect(readImportCartCampaign(storage)).toBeNull();
   });
 
-  it("falls back to comparing campaign number when either side lacks an id", () => {
+  it("never treats a matching display number as identity when the stored campaign has no id — UUID is the only authority", () => {
     const { storage } = mockStorage();
     addImportCartLine(storage, validLine, { id: null, number: 6 });
     const result = reconcileImportCartForCampaign(storage, { id: "cccccccc-0000-4000-8000-000000000003", number: 6 });
-    expect(result.status).toBe("same_campaign");
+    expect(result).toEqual({ status: "discarded", reason: "legacy", discardedLineCount: 1 });
+    expect(readImportCartCampaign(storage)).toEqual({ id: "cccccccc-0000-4000-8000-000000000003", number: 6 });
   });
 
   it("stale offer within the same campaign: reconciliation does not itself revalidate offer freshness (server does, at order creation)", () => {
@@ -289,5 +291,34 @@ describe("import cart campaign scoping (Task 2)", () => {
     clearImportCart(storage);
     expect(readImportCartCampaign(storage)).toEqual(campaignA);
     expect(readImportCart(storage)).toEqual([]);
+  });
+});
+
+describe("import cart reconciliation for a confirmed-closed campaign (P1 correction)", () => {
+  const campaignA: ImportCartCampaign = { id: "aaaaaaaa-0000-4000-8000-000000000001", number: 6 };
+
+  it("clears a stored cart and leaves no fabricated campaign identity", () => {
+    const { storage } = mockStorage();
+    addImportCartLine(storage, validLine, campaignA);
+    const result = reconcileImportCartForClosedCampaign(storage);
+    expect(result).toEqual({ status: "closed", discardedLineCount: 1 });
+    expect(readImportCart(storage)).toEqual([]);
+    expect(readImportCartCampaign(storage)).toBeNull();
+  });
+
+  it("an already-empty cart reconciles to 'empty', not 'closed'", () => {
+    const { storage } = mockStorage();
+    const result = reconcileImportCartForClosedCampaign(storage);
+    expect(result).toEqual({ status: "empty" });
+  });
+
+  it("after a confirmed-closed reconciliation, a future campaign opening reconciles cleanly (starts empty, gets stamped)", () => {
+    const { storage } = mockStorage();
+    addImportCartLine(storage, validLine, campaignA);
+    reconcileImportCartForClosedCampaign(storage);
+    const futureCampaign: ImportCartCampaign = { id: "dddddddd-0000-4000-8000-000000000004", number: 7 };
+    const result = reconcileImportCartForCampaign(storage, futureCampaign);
+    expect(result).toEqual({ status: "empty" });
+    expect(readImportCartCampaign(storage)).toEqual(futureCampaign);
   });
 });

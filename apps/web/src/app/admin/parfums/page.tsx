@@ -36,7 +36,7 @@ export default async function AdminParfumsPage() {
     const ordersRepository = new AdminParfumsOrdersRepository(supabase, membership.businessUnitId);
     const [orderCounts, olderPending, draftProducts, outOfStockProducts] = await Promise.all([
       ordersRepository.countByStatus(),
-      ordersRepository.countPendingOlderThanDays(3),
+      ordersRepository.countPendingOld(),
       supabase
         .from("products")
         .select("*", { count: "exact", head: true })

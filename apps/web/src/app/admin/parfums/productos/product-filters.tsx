@@ -2,7 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useRef, useState, useTransition } from "react";
-import type { ProductionStatus, PublicationStatus } from "@/domains/admin-parfums/product-schema";
+import type { AvailabilityStatus, ProductionStatus, PublicationStatus } from "@/domains/admin-parfums/product-schema";
 import styles from "./page.module.css";
 
 export function ProductFilters({
@@ -12,6 +12,7 @@ export function ProductFilters({
     search: string;
     publicationStatus: PublicationStatus | undefined;
     productionStatus: ProductionStatus | undefined;
+    availabilityStatus: AvailabilityStatus | undefined;
     featuredOnly: boolean;
     includeArchived: boolean;
   };
@@ -22,7 +23,7 @@ export function ProductFilters({
   const [isPending, startTransition] = useTransition();
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  function apply(next: Partial<Record<"q" | "publication" | "production" | "featured" | "archived", string>>) {
+  function apply(next: Partial<Record<"q" | "publication" | "production" | "availability" | "featured" | "archived", string>>) {
     const params = new URLSearchParams(searchParams.toString());
     for (const [key, value] of Object.entries(next)) {
       if (value === undefined || value === "") params.delete(key);
@@ -74,6 +75,18 @@ export function ProductFilters({
           <option value="">Producción: todas</option>
           <option value="active">Activo</option>
           <option value="discontinued">Descontinuado</option>
+        </select>
+      </label>
+
+      <label className={styles.filterField}>
+        <span className={styles.srOnly}>Disponibilidad</span>
+        <select
+          value={initial.availabilityStatus ?? ""}
+          onChange={(event) => apply({ availability: event.target.value })}
+        >
+          <option value="">Disponibilidad: todas</option>
+          <option value="available">Disponible</option>
+          <option value="out_of_stock">Agotado</option>
         </select>
       </label>
 

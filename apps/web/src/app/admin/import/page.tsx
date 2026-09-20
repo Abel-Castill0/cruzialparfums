@@ -15,8 +15,9 @@ export const metadata: Metadata = { title: "Cruzial Import Admin" };
 type ReadinessJson = {
   unconfirmed_offer_count?: number;
   media_blockers?: number;
-  publication_blockers?: number;
 };
+
+type BlockerRow = { total_count?: number };
 
 // "Hoy": what actually needs a decision right now, not a directory of
 // modules or a raw counter dump. Every item is a real query, deep-linked to
@@ -69,9 +70,15 @@ export default async function AdminImportPage() {
     if (campaign) {
       campaignSubtitle = `Consolidado #${campaign.number} · ${campaignStatusLabel(campaign.status)}.`;
 
-      const readinessResult = await rpc("admin_get_import_publication_readiness", {
-        p_campaign_id: campaign.id,
-      });
+      const [readinessResult, unpublishedResult] = await Promise.all([
+        rpc("admin_get_import_publication_readiness", { p_campaign_id: campaign.id }),
+        rpc("admin_list_import_publication_blockers", {
+          p_campaign_id: campaign.id,
+          p_blocker: "product_unpublished",
+          p_page: 1,
+          p_page_size: 1,
+        }),
+      ]);
       const readiness = (readinessResult.data ?? {}) as ReadinessJson;
       const campaignParam = `campaign=${campaign.id}`;
 
@@ -90,8 +97,15 @@ export default async function AdminImportPage() {
           href: `/admin/import/publicacion?blocker=missing_primary_media&${campaignParam}` as Route,
         });
       }
-      if ((readiness.publication_blockers ?? 0) > 0) {
-        const n = readiness.publication_blockers!;
+      // The count here comes from the exact same guarded RPC + p_blocker
+      // filter the destination page (?blocker=product_unpublished) queries
+      // — never the readiness RPC's broader publication-blockers tally
+      // (which also includes presentation_unpublished and could disagree
+      // with what the link actually shows).
+      const unpublishedRows = (unpublishedResult.data ?? []) as BlockerRow[];
+      const unpublishedCount = unpublishedRows[0]?.total_count ?? 0;
+      if (unpublishedCount > 0) {
+        const n = unpublishedCount;
         items.push({
           label: `${n} producto${n === 1 ? "" : "s"} no publicado${n === 1 ? "" : "s"}`,
           href: `/admin/import/publicacion?blocker=product_unpublished&${campaignParam}` as Route,

@@ -121,7 +121,7 @@ export default async function AdminParfumsProductsPage({
 
       <main>
       <ProductFilters
-        initial={{ search, publicationStatus, productionStatus, featuredOnly, includeArchived }}
+        initial={{ search, publicationStatus, productionStatus, availabilityStatus, featuredOnly, includeArchived }}
       />
 
       {items.length === 0 ? (
