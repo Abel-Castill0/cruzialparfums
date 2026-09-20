@@ -5,6 +5,7 @@ import { AdminActionCenter, type AdminActionItem } from "@/components/admin/admi
 import { getAdminSession } from "@/lib/auth/admin-session";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { AdminParfumsOrdersRepository } from "@/domains/admin-parfums/orders-repository";
+import { AdminComplaintsRepository } from "@/domains/complaints/complaint-repository";
 
 export const dynamic = "force-dynamic";
 
@@ -34,7 +35,8 @@ export default async function AdminParfumsPage() {
 
   if (supabase) {
     const ordersRepository = new AdminParfumsOrdersRepository(supabase, membership.businessUnitId);
-    const [orderCounts, olderPending, draftProducts, outOfStockProducts] = await Promise.all([
+    const complaintsRepository = new AdminComplaintsRepository(supabase, membership.businessUnitId);
+    const [orderCounts, olderPending, draftProducts, outOfStockProducts, complaintCounts] = await Promise.all([
       ordersRepository.countByStatus(),
       ordersRepository.countPendingOld(),
       supabase
@@ -49,6 +51,7 @@ export default async function AdminParfumsPage() {
         .eq("business_unit_id", membership.businessUnitId)
         .eq("availability_status", "out_of_stock")
         .is("archived_at", null),
+      complaintsRepository.countByStatus(),
     ]);
 
     const pending = orderCounts?.pending_whatsapp_confirmation ?? 0;
@@ -85,6 +88,14 @@ export default async function AdminParfumsPage() {
       items.push({
         label: `${outOfStockProducts.count} producto${outOfStockProducts.count === 1 ? "" : "s"} agotado${outOfStockProducts.count === 1 ? "" : "s"}`,
         href: "/admin/parfums/productos?availability=out_of_stock" as Route,
+      });
+    }
+    const newComplaints = complaintCounts?.received ?? 0;
+    if (newComplaints > 0) {
+      items.push({
+        label: `${newComplaints} reclamo${newComplaints === 1 ? "" : "s"} nuevo${newComplaints === 1 ? "" : "s"} sin revisar`,
+        href: "/admin/parfums/reclamos?status=received" as Route,
+        tone: "attention",
       });
     }
   }

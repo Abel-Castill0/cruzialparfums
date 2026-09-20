@@ -1,0 +1,147 @@
+.page {
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 40px 20px 80px;
+}
+
+.eyebrow {
+  margin: 0 0 8px;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #607087;
+}
+
+.intro {
+  margin: 8px 0 32px;
+  color: #3a4453;
+  line-height: 1.6;
+}
+
+.form {
+  display: grid;
+  gap: 24px;
+}
+
+.fieldset {
+  border: 1px solid #d7e0e9;
+  padding: 16px;
+  display: grid;
+  gap: 12px;
+}
+
+.fieldset legend {
+  padding: 0 6px;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.field,
+.fieldFull {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+}
+
+.fieldFull {
+  grid-column: 1 / -1;
+}
+
+.field input,
+.field select,
+.fieldFull input,
+.fieldFull select,
+.fieldFull textarea {
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid #cbd5e1;
+  font-size: 14px;
+}
+
+.fieldFull textarea {
+  padding: 10px 12px;
+  min-height: 88px;
+}
+
+.radioRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  font-size: 14px;
+}
+
+.radioRow label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.checkboxRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.fieldError {
+  color: #b3261e;
+  font-size: 12px;
+}
+
+.errorBanner {
+  padding: 12px 14px;
+  border: 1px solid #b3261e;
+  background: #fdecea;
+  color: #b3261e;
+  font-size: 13px;
+}
+
+.primaryAction {
+  min-height: 48px;
+  padding: 0 20px;
+  border: none;
+  background: #0b2d57;
+  color: #fff;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.primaryAction:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.secondaryAction {
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid #0b2d57;
+  background: transparent;
+  color: #0b2d57;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.success {
+  padding: 24px;
+  border: 1px solid #275e46;
+  background: #f0f8f4;
+}
+
+.success h2 {
+  margin: 0 0 8px;
+  color: #275e46;
+}
+
+@media (max-width: 480px) {
+  .page {
+    padding-inline: 16px;
+  }
+}

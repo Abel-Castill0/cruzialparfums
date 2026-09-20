@@ -6,6 +6,7 @@ import { AdminActionCenter, type AdminActionItem } from "@/components/admin/admi
 import { AdminParfumsSettingsRepository } from "@/domains/admin-parfums/settings-repository";
 import { AdminImportOrdersRepository } from "@/domains/admin-import/orders-repository";
 import { AdminImportCustomersRepository } from "@/domains/admin-import/customers-repository";
+import { AdminComplaintsRepository } from "@/domains/complaints/complaint-repository";
 import { campaignStatusLabel } from "@/domains/admin-import/campaign-schema";
 
 export const dynamic = "force-dynamic";
@@ -48,7 +49,7 @@ export default async function AdminImportPage() {
       args?: Record<string, unknown>,
     ) => Promise<{ data: unknown; error: unknown }>;
 
-    const [campaignResult, orderCounts, pendingCustomers, contactSetting] = await Promise.all([
+    const [campaignResult, orderCounts, pendingCustomers, contactSetting, complaintCounts] = await Promise.all([
       supabase
         .from("campaigns")
         .select("id,number,status")
@@ -60,6 +61,7 @@ export default async function AdminImportPage() {
       new AdminImportOrdersRepository(supabase, membership.businessUnitId).countByStatus(),
       new AdminImportCustomersRepository(supabase, membership.businessUnitId).countPendingVerification(),
       new AdminParfumsSettingsRepository(supabase, membership.businessUnitId, "import").getPublicContact(),
+      new AdminComplaintsRepository(supabase, membership.businessUnitId).countByStatus(),
     ]);
 
     const campaign = campaignResult.data;
@@ -138,6 +140,14 @@ export default async function AdminImportPage() {
       items.push({
         label: "Contacto público de WhatsApp sin configurar",
         href: "/admin/import/configuracion" as Route,
+        tone: "attention",
+      });
+    }
+    const newComplaints = complaintCounts?.received ?? 0;
+    if (newComplaints > 0) {
+      items.push({
+        label: `${newComplaints} reclamo${newComplaints === 1 ? "" : "s"} nuevo${newComplaints === 1 ? "" : "s"} sin revisar`,
+        href: "/admin/import/reclamos?status=received" as Route,
         tone: "attention",
       });
     }
