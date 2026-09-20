@@ -6,7 +6,7 @@
 
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(16);
+select plan(17);
 
 insert into auth.users (id, instance_id, aud, role, email, encrypted_password, created_at, updated_at)
 values ('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', '00000000-0000-0000-0000-000000000000',
@@ -134,8 +134,15 @@ select throws_ok(
 set local role authenticated;
 set local request.jwt.claims to '{"aal":"aal2","sub":"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
 
-update public.audit_log set action = 'create'
-where id = '11111111-0000-4000-8000-0000000000f1';
+-- Since 20260920010555 authenticated has no UPDATE grant on audit_log either,
+-- so the attempt is refused outright (42501) rather than matching nothing.
+select throws_ok(
+  $$update public.audit_log set action = 'create'
+    where id = '11111111-0000-4000-8000-0000000000f1'$$,
+  '42501',
+  null,
+  'an admin cannot update audit entries (no grant, no policy)'
+);
 
 reset role;
 

@@ -7,7 +7,7 @@
 
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(20);
+select plan(21);
 
 -- ---------------------------------------------------------------------------
 -- Fixtures
@@ -90,8 +90,15 @@ select throws_ok(
   'Parfums admin cannot grant itself an Import membership'
 );
 
-update public.admin_memberships set business_unit_id = '22222222-2222-4222-8222-222222222222'
-where user_id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+-- Since 20260920010555 authenticated holds no UPDATE grant on memberships at
+-- all: the statement is refused before RLS even gets to match zero rows.
+select throws_ok(
+  $$update public.admin_memberships set business_unit_id = '22222222-2222-4222-8222-222222222222'
+    where user_id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'$$,
+  '42501',
+  null,
+  'Parfums admin has no UPDATE grant on admin_memberships'
+);
 select is(
   (select count(*)::int from public.admin_memberships
     where user_id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'
