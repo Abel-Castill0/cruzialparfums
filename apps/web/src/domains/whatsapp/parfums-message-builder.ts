@@ -1,0 +1,232 @@
+export function buildProductConsultationMessage({
+  storeName,
+  brand,
+  productName,
+  discontinued = false,
+}: {
+  storeName: string;
+  brand: string;
+  productName: string;
+  discontinued?: boolean;
+}) {
+  if (discontinued) {
+    return `Hola ${storeName}, quiero saber si aún queda ${brand} ${productName} (descontinuado), o una alternativa similar.`;
+  }
+  return `Hola ${storeName}, quiero consultar por ${brand} ${productName}.`;
+}
+
+export function buildWhatsAppUrl(number: string, message: string) {
+  return `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
+}
+
+export type ParfumsCheckoutMessageLine = {
+  brand: string;
+  name: string;
+  variantLabel: string;
+  quantity: number;
+  subtotal: number;
+  contents?: readonly string[];
+};
+
+export type ParfumsCheckoutCustomer = {
+  name: string;
+  phone: string;
+  district: string;
+  delivery: string;
+  note?: string;
+};
+
+function money(value: number) {
+  return `S/ ${value.toFixed(2)}`;
+}
+
+export function buildCheckoutMessage({
+  storeName,
+  lines,
+  total,
+  customer,
+}: {
+  storeName: string;
+  lines: readonly ParfumsCheckoutMessageLine[];
+  total: number;
+  customer: ParfumsCheckoutCustomer;
+}) {
+  const selection = lines.map((line) => {
+    const contents = line.contents?.length
+      ? `\n   Incluye: ${line.contents.join(" · ")}`
+      : "";
+    return `- ${line.variantLabel} · ${line.brand} ${line.name} ×${line.quantity} = ${money(line.subtotal)}${contents}`;
+  });
+
+  return [
+    `Hola ${storeName}. Quiero solicitar la revisión de esta selección:`,
+    "",
+    ...selection,
+    "",
+    `TOTAL ESTIMADO: ${money(total)}`,
+    "",
+    "— MIS DATOS —",
+    `Nombre: ${customer.name.trim()}`,
+    `WhatsApp: ${customer.phone.trim()}`,
+    `Distrito / Ciudad: ${customer.district.trim()}`,
+    `Entrega: ${customer.delivery}`,
+    `Nota: ${customer.note?.trim() || "—"}`,
+    "",
+    "Continúo en WhatsApp para confirmar stock, envío y total final.",
+  ].join("\n");
+}
+
+export function buildPersistedOrderRequestMessage({
+  storeName,
+  orderNumber,
+  lines,
+  subtotal,
+  customer,
+}: {
+  storeName: string;
+  orderNumber: string;
+  lines: readonly {
+    productName: string;
+    variantLabel: string;
+    quantity: number;
+    lineTotal: number;
+  }[];
+  subtotal: number;
+  customer: ParfumsCheckoutCustomer;
+}) {
+  return [
+    `Hola ${storeName}. Registré una solicitud y quiero terminar la coordinación.`,
+    `Referencia: ${orderNumber}`,
+    "",
+    ...lines.map((line) => `- ${line.variantLabel} · ${line.productName} ×${line.quantity} = ${money(line.lineTotal)}`),
+    "",
+    `SUBTOTAL REGISTRADO: ${money(subtotal)}`,
+    "",
+    "— DATOS PARA COORDINAR —",
+    `Nombre: ${customer.name.trim()}`,
+    `WhatsApp: ${customer.phone.trim()}`,
+    `Distrito / Ciudad: ${customer.district.trim()}`,
+    `Entrega: ${customer.delivery}`,
+    `Nota: ${customer.note?.trim() || "—"}`,
+    "",
+    "Esta es una solicitud pendiente de confirmación. Continúo en WhatsApp para coordinar disponibilidad, envío y pago.",
+  ].join("\n");
+}
+
+/** Admin → customer opener for the Orders Detail "Contactar por WhatsApp"
+ * action (Phase 4E2). Store's own voice, not the customer's — distinct from
+ * `buildPersistedOrderRequestMessage`, which is what the customer sent. Pure
+ * operational contact, no status/price/promise beyond the reference number
+ * the admin is already looking at. */
+export function buildAdminOrderFollowUpMessage({
+  customerName,
+  orderNumber,
+}: {
+  customerName: string;
+  orderNumber: string;
+}) {
+  const greeting = customerName.trim() ? `Hola ${customerName.trim()}` : "Hola";
+  return `${greeting}, te escribimos de Cruzial Parfums sobre tu pedido ${orderNumber}.`;
+}
+
+export function buildCustomComboMessage({
+  storeName,
+  lines,
+  total,
+}: {
+  storeName: string;
+  lines: readonly Pick<ParfumsCheckoutMessageLine, "brand" | "name" | "subtotal" | "variantLabel">[];
+  total: number;
+}) {
+  return [
+    `Hola ${storeName}. Quiero solicitar un combo personalizado de ${lines.length} fragancias, cada una con su propio tamaño:`,
+    "",
+    ...lines.map((line) => `- ${line.brand} ${line.name} (${line.variantLabel}) — ${money(line.subtotal)}`),
+    "",
+    `TOTAL ESTIMADO: ${money(total)}`,
+    "",
+    "Continúo en WhatsApp para confirmar stock y total final.",
+  ].join("\n");
+}
+
+export function buildContactMessage({
+  storeName,
+  name,
+  phone,
+  topic,
+  message,
+}: {
+  storeName: string;
+  name: string;
+  phone: string;
+  topic: string;
+  message: string;
+}) {
+  return [
+    `Hola ${storeName}. Quiero hacer una consulta.`,
+    "",
+    `Nombre: ${name.trim()}`,
+    `WhatsApp: ${phone.trim()}`,
+    `Motivo: ${topic.trim()}`,
+    `Mensaje: ${message.trim()}`,
+    "",
+    "Continúo en WhatsApp para que me orienten.",
+  ].join("\n");
+}
+
+export function buildWholesaleProductMessage({
+  storeName,
+  brand,
+  productName,
+  variantLabel,
+  basePriceAmount,
+  policy,
+}: {
+  storeName: string;
+  brand: string;
+  productName: string;
+  variantLabel: string;
+  /** Retail bottle price, canonical decimal text (PEN). */
+  basePriceAmount: string;
+  /** Active per-category policy; omitted when none covers the product. */
+  policy?: { minQuantity: number; discountAmount: string; wholesaleUnitPriceAmount: string } | null;
+}) {
+  const priceLine = policy
+    ? `Precio frasco: S/ ${basePriceAmount}. Mayorista desde ${policy.minQuantity} unidades: S/ ${policy.wholesaleUnitPriceAmount} por unidad (−S/ ${policy.discountAmount}).`
+    : `Precio frasco: S/ ${basePriceAmount}. Tarifa mayorista a confirmar.`;
+  return [
+    `Hola ${storeName}. Quiero cotizar por MAYOR ${brand} ${productName} (${variantLabel}).`,
+    "Cantidad: ___ unidades.",
+    priceLine,
+    "",
+    "Continúo en WhatsApp para confirmar disponibilidad y tarifa exacta.",
+  ].join("\n");
+}
+
+export function buildWholesaleInquiryMessage({
+  storeName,
+  name,
+  business,
+  phone,
+  volume,
+  message,
+}: {
+  storeName: string;
+  name: string;
+  business?: string;
+  phone: string;
+  volume: string;
+  message?: string;
+}) {
+  return [
+    `Hola ${storeName}. Quiero información sobre precios por MAYOR.`,
+    "",
+    `Nombre: ${name.trim()}`,
+    `Negocio: ${business?.trim() || "—"}`,
+    `WhatsApp: ${phone.trim()}`,
+    `Volumen estimado: ${volume}`,
+    `Fragancias de interés: ${message?.trim() || "—"}`,
+    "",
+    "Continúo en WhatsApp para confirmar disponibilidad y tarifa exacta.",
+  ].join("\n");
+}

@@ -1,0 +1,2334 @@
+{
+  "schema_version": 1,
+  "purpose": "Independent reconciliation of the official 2026 client decant-price PDF against the current V2 Parfums commercial staging (assets/data.js -> legacy-catalog-staging.json). Read-only evidence; no DB writes, no publication, no commercial mutation performed by this artifact.",
+  "gate": "4K-A3",
+  "authority_note": "Operator instruction 2026-09-13: \"Guiate del PDF, ese esta actualizado.\" The PDF is the current commercial authority for Parfums decant prices, combo composition/prices, and discontinued labeling. It contains NO full-bottle prices; bottle-price authority is out of scope here (see bottle_price_authority below).",
+  "source_fingerprints": {
+    "official_pdf_sha256": "578289fcc8f49249021a58a2dc9b3fab9b2b39e3e38e7b656267bb0c7e201656",
+    "official_pdf_path": "docs/client-source/CATALOGO DE DECANTS.pdf (untracked; not committed)",
+    "official_pdf_pages": 38,
+    "legacy_source_sha256": "f2cc900aa8851474b3e6d3e799deeac2103ed77da7f1e66034c1f05a9624021a",
+    "legacy_source_path": "assets/data.js",
+    "legacy_staging_source_sha256": "f2cc900aa8851474b3e6d3e799deeac2103ed77da7f1e66034c1f05a9624021a",
+    "legacy_staging_path": "supabase/staging/legacy-catalog-staging.json"
+  },
+  "extraction_method": "pdfplumber text + word-position extraction; every visible line in the PDF renders twice (a normal line immediately followed by a character-doubled shadow duplicate) and the duplicate was mechanically discarded. 4 product name labels (pages 34/35/37/38) render as two overlapping text layers from the source PDF itself (a leftover Le Male Elixir placeholder text box behind the real label); these were decoded by character-interleave analysis and independently confirmed against (a) the exact price match to legacy_ids already present in legacy-catalog-staging.json and (b) the resulting total product count landing exactly on 96. Combo member composition for all 3 combos was confirmed by rendering page 5 to an image and reading the bottle labels visually (no member list exists as extractable text in the PDF).",
+  "counts": {
+    "pdf_non_combo_products": 96,
+    "v2_staged_non_combo_products": 96,
+    "identity_matches_total": 95,
+    "identity_matches_exact_name_normalized": 69,
+    "identity_matches_legacy_id_normalized_alias": 21,
+    "identity_matches_alias_map": 1,
+    "identity_matches_decoded_overlapping_text": 4,
+    "ambiguous_identities": 0,
+    "pdf_only_products": 1,
+    "v2_only_products": 1,
+    "decant_price_rows_pdf": 288,
+    "decant_price_rows_comparable": 285,
+    "decant_price_rows_exact_match": 279,
+    "decant_price_rows_changed": 6,
+    "combos_reconciled": 3
+  },
+  "row_reconciliation": {
+    "note": "Added in 4K-A3.1 to make product-level and decant-row-level counts individually explicit and separately auditable; no change to any figure computed in 4K-A3 (see counts above for the same values under their original field names).",
+    "pdf_product_count": 96,
+    "v2_product_count": 96,
+    "matched_product_count": 95,
+    "pdf_only_product_count": 1,
+    "v2_only_product_count": 1,
+    "pdf_decant_row_count": 288,
+    "comparable_decant_row_count": 285,
+    "exact_price_match_row_count": 279,
+    "changed_price_row_count": 6,
+    "pdf_only_price_row_count": 3,
+    "v2_only_price_row_count": 3,
+    "ambiguous_price_row_count": 0,
+    "arithmetic_check": "pdf_decant_row_count(288) = comparable_decant_row_count(285) + pdf_only_price_row_count(3); comparable_decant_row_count(285) = exact_price_match_row_count(279) + changed_price_row_count(6); pdf_only_price_row_count = pdf_only_product_count(1) x 3; v2_only_price_row_count = v2_only_product_count(1) x 3. All hold."
+  },
+  "product_reconciliation": [
+    {
+      "legacy_id": "khamrah-clasico",
+      "v2_name": "Khamrah Clásico",
+      "pdf_label": "Khamrah Clasico",
+      "match_basis": "EXACT_NAME_NORMALIZED",
+      "pdf_page": 6,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          12,
+          16,
+          26
+        ],
+        "official_pdf": [
+          12.0,
+          16.0,
+          26.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "khamrah-qahwa",
+      "v2_name": "Khamrah Qahwa",
+      "pdf_label": "Khamrah Qahwa",
+      "match_basis": "EXACT_NAME_NORMALIZED",
+      "pdf_page": 6,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          12,
+          16,
+          26
+        ],
+        "official_pdf": [
+          12.0,
+          16.0,
+          26.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "khamrah-dukhan",
+      "v2_name": "Khamrah Dukhan",
+      "pdf_label": "Khamrah Dukhan",
+      "match_basis": "EXACT_NAME_NORMALIZED",
+      "pdf_page": 6,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          12,
+          16,
+          26
+        ],
+        "official_pdf": [
+          12.0,
+          16.0,
+          26.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "khamrah-waha",
+      "v2_name": "Khamrah Waha",
+      "pdf_label": "Khamrah Waha",
+      "match_basis": "EXACT_NAME_NORMALIZED",
+      "pdf_page": 7,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          13,
+          17,
+          28
+        ],
+        "official_pdf": [
+          13.0,
+          17.0,
+          28.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "mashrabya",
+      "v2_name": "Mashrabya",
+      "pdf_label": "Mashrabya",
+      "match_basis": "EXACT_NAME_NORMALIZED",
+      "pdf_page": 7,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          11,
+          15,
+          24
+        ],
+        "official_pdf": [
+          11.0,
+          15.0,
+          24.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "asad-elixir",
+      "v2_name": "Asad Elixir",
+      "pdf_label": "Asad Elixir",
+      "match_basis": "EXACT_NAME_NORMALIZED",
+      "pdf_page": 7,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          12,
+          16,
+          26
+        ],
+        "official_pdf": [
+          12.0,
+          16.0,
+          26.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "asad-clasico",
+      "v2_name": "Asad Clásico",
+      "pdf_label": "Asad Clasico",
+      "match_basis": "EXACT_NAME_NORMALIZED",
+      "pdf_page": 8,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          11,
+          15,
+          24
+        ],
+        "official_pdf": [
+          11.0,
+          15.0,
+          24.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "asad-bourbon",
+      "v2_name": "Asad Bourbon",
+      "pdf_label": "Asad Bourbon",
+      "match_basis": "EXACT_NAME_NORMALIZED",
+      "pdf_page": 8,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          12,
+          16,
+          26
+        ],
+        "official_pdf": [
+          12.0,
+          16.0,
+          26.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "zanzibar-limited-e",
+      "v2_name": "Zanzibar Limited Edition",
+      "pdf_label": "Zanzibar Limited E.",
+      "match_basis": "LEGACY_ID_NORMALIZED",
+      "pdf_page": 8,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          11,
+          15,
+          24
+        ],
+        "official_pdf": [
+          11.0,
+          15.0,
+          24.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "yara-pink",
+      "v2_name": "Yara Pink",
+      "pdf_label": "Yara Pink",
+      "match_basis": "EXACT_NAME_NORMALIZED",
+      "pdf_page": 9,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          11,
+          15,
+          24
+        ],
+        "official_pdf": [
+          11.0,
+          15.0,
+          24.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "yara-candy",
+      "v2_name": "Yara Candy",
+      "pdf_label": "Yara Candy",
+      "match_basis": "EXACT_NAME_NORMALIZED",
+      "pdf_page": 9,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          11,
+          15,
+          24
+        ],
+        "official_pdf": [
+          11.0,
+          15.0,
+          24.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "yara-elixir",
+      "v2_name": "Yara Elixir",
+      "pdf_label": "Yara Elixir",
+      "match_basis": "EXACT_NAME_NORMALIZED",
+      "pdf_page": 9,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          12,
+          16,
+          26
+        ],
+        "official_pdf": [
+          12.0,
+          16.0,
+          26.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "mandarin-sky",
+      "v2_name": "Mandarin Sky",
+      "pdf_label": "Mandarin Sky",
+      "match_basis": "EXACT_NAME_NORMALIZED",
+      "pdf_page": 10,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          12,
+          16,
+          26
+        ],
+        "official_pdf": [
+          12.0,
+          16.0,
+          26.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "m-sky-elixir",
+      "v2_name": "Mandarin Sky Elixir",
+      "pdf_label": "M. Sky Elixir",
+      "match_basis": "LEGACY_ID_NORMALIZED",
+      "pdf_page": 10,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          12,
+          16,
+          26
+        ],
+        "official_pdf": [
+          12.0,
+          16.0,
+          26.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "m-sky-vintage",
+      "v2_name": "Mandarin Sky Vintage",
+      "pdf_label": "M. Sky Vintage",
+      "match_basis": "LEGACY_ID_NORMALIZED",
+      "pdf_page": 10,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          12,
+          16,
+          26
+        ],
+        "official_pdf": [
+          12.0,
+          16.0,
+          26.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "odyssey-aqua",
+      "v2_name": "Odyssey Aqua",
+      "pdf_label": "Odyssey Aqua",
+      "match_basis": "EXACT_NAME_NORMALIZED",
+      "pdf_page": 11,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          12,
+          16,
+          26
+        ],
+        "official_pdf": [
+          12.0,
+          16.0,
+          26.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "odyssey-homme",
+      "v2_name": "Odyssey Homme",
+      "pdf_label": "Odyssey Homme",
+      "match_basis": "EXACT_NAME_NORMALIZED",
+      "pdf_page": 11,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          11,
+          15,
+          24
+        ],
+        "official_pdf": [
+          11.0,
+          15.0,
+          24.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "homme-white",
+      "v2_name": "Homme White",
+      "pdf_label": "Homme White",
+      "match_basis": "EXACT_NAME_NORMALIZED",
+      "pdf_page": 11,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          11,
+          15,
+          24
+        ],
+        "official_pdf": [
+          11.0,
+          15.0,
+          24.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "odyssey-spectra",
+      "v2_name": "Odyssey Spectra",
+      "pdf_label": "Odyssey Spectra",
+      "match_basis": "EXACT_NAME_NORMALIZED",
+      "pdf_page": 12,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          11,
+          15,
+          24
+        ],
+        "official_pdf": [
+          11.0,
+          15.0,
+          24.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "odyssey-mega",
+      "v2_name": "Odyssey Mega",
+      "pdf_label": "Odyssey Mega",
+      "match_basis": "EXACT_NAME_NORMALIZED",
+      "pdf_page": 12,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          11,
+          15,
+          24
+        ],
+        "official_pdf": [
+          11.0,
+          15.0,
+          24.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "odyssey-limoni",
+      "v2_name": "Odyssey Limoni",
+      "pdf_label": "Odyssey Limoni",
+      "match_basis": "EXACT_NAME_NORMALIZED",
+      "pdf_page": 12,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          11,
+          15,
+          24
+        ],
+        "official_pdf": [
+          11.0,
+          15.0,
+          24.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "odyssey-artisto",
+      "v2_name": "Odyssey Artisto",
+      "pdf_label": "Odyssey Artisto",
+      "match_basis": "EXACT_NAME_NORMALIZED",
+      "pdf_page": 13,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          12,
+          16,
+          26
+        ],
+        "official_pdf": [
+          12.0,
+          16.0,
+          26.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "mayar",
+      "v2_name": "Mayar",
+      "pdf_label": "Mayar",
+      "match_basis": "EXACT_NAME_NORMALIZED",
+      "pdf_page": 13,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          12,
+          16,
+          26
+        ],
+        "official_pdf": [
+          12.0,
+          16.0,
+          26.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "mayar-cherry-i",
+      "v2_name": "Mayar Cherry Intense",
+      "pdf_label": "Mayar Cherry I.",
+      "match_basis": "LEGACY_ID_NORMALIZED",
+      "pdf_page": 13,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          12,
+          16,
+          26
+        ],
+        "official_pdf": [
+          12.0,
+          16.0,
+          26.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "sublime",
+      "v2_name": "Sublime",
+      "pdf_label": "Sublime",
+      "match_basis": "EXACT_NAME_NORMALIZED",
+      "pdf_page": 14,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          12,
+          16,
+          26
+        ],
+        "official_pdf": [
+          12.0,
+          16.0,
+          26.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "oud-for-glory",
+      "v2_name": "Oud For Glory",
+      "pdf_label": "Oud For Glory",
+      "match_basis": "EXACT_NAME_NORMALIZED",
+      "pdf_page": 14,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          12,
+          16,
+          26
+        ],
+        "official_pdf": [
+          12.0,
+          16.0,
+          26.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "honor-and-glory",
+      "v2_name": "Honor And Glory",
+      "pdf_label": "Honor And Glory",
+      "match_basis": "EXACT_NAME_NORMALIZED",
+      "pdf_page": 14,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          12,
+          16,
+          26
+        ],
+        "official_pdf": [
+          12.0,
+          16.0,
+          26.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "eclaire",
+      "v2_name": "Eclaire",
+      "pdf_label": "Eclaire",
+      "match_basis": "EXACT_NAME_NORMALIZED",
+      "pdf_page": 15,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          12,
+          16,
+          26
+        ],
+        "official_pdf": [
+          12.0,
+          16.0,
+          26.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "eclaire-banoffi",
+      "v2_name": "Eclaire Banoffi",
+      "pdf_label": "Eclaire Banoffi",
+      "match_basis": "EXACT_NAME_NORMALIZED",
+      "pdf_page": 15,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          11,
+          15,
+          24
+        ],
+        "official_pdf": [
+          11.0,
+          15.0,
+          24.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "eclaire-pistache",
+      "v2_name": "Eclaire Pistache",
+      "pdf_label": "Eclaire Pistache",
+      "match_basis": "EXACT_NAME_NORMALIZED",
+      "pdf_page": 15,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          11,
+          15,
+          24
+        ],
+        "official_pdf": [
+          11.0,
+          15.0,
+          24.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "yum-yum",
+      "v2_name": "Yum Yum",
+      "pdf_label": "Yum Yum",
+      "match_basis": "EXACT_NAME_NORMALIZED",
+      "pdf_page": 16,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          12,
+          16,
+          26
+        ],
+        "official_pdf": [
+          12.0,
+          16.0,
+          26.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "angham",
+      "v2_name": "Angham",
+      "pdf_label": "Angham",
+      "match_basis": "EXACT_NAME_NORMALIZED",
+      "pdf_page": 16,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          12,
+          16,
+          26
+        ],
+        "official_pdf": [
+          12.0,
+          16.0,
+          26.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "hawas-exotic",
+      "v2_name": "Hawas Exotic",
+      "pdf_label": "Hawas Exotic",
+      "match_basis": "EXACT_NAME_NORMALIZED",
+      "pdf_page": 16,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          13,
+          17,
+          28
+        ],
+        "official_pdf": [
+          13.0,
+          17.0,
+          28.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "hawas-ice",
+      "v2_name": "Hawas Ice",
+      "pdf_label": "Hawas Ice",
+      "match_basis": "EXACT_NAME_NORMALIZED",
+      "pdf_page": 17,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          12,
+          16,
+          26
+        ],
+        "official_pdf": [
+          12.0,
+          16.0,
+          26.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "hawas-fire",
+      "v2_name": "Hawas Fire",
+      "pdf_label": "Hawas Fire",
+      "match_basis": "EXACT_NAME_NORMALIZED",
+      "pdf_page": 17,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          12,
+          16,
+          26
+        ],
+        "official_pdf": [
+          12.0,
+          16.0,
+          26.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "hawas-kobra",
+      "v2_name": "Hawas Kobra",
+      "pdf_label": "Hawas Kobra",
+      "match_basis": "EXACT_NAME_NORMALIZED",
+      "pdf_page": 17,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          12,
+          16,
+          26
+        ],
+        "official_pdf": [
+          12.0,
+          16.0,
+          26.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "hawas-verde",
+      "v2_name": "Hawas Verde",
+      "pdf_label": "Hawas Verde",
+      "match_basis": "EXACT_NAME_NORMALIZED",
+      "pdf_page": 18,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          13,
+          17,
+          28
+        ],
+        "official_pdf": [
+          13.0,
+          17.0,
+          28.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "hawas-elixir",
+      "v2_name": "Hawas Elixir",
+      "pdf_label": "Hawas Elixir",
+      "match_basis": "EXACT_NAME_NORMALIZED",
+      "pdf_page": 18,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          12,
+          16,
+          26
+        ],
+        "official_pdf": [
+          12.0,
+          16.0,
+          26.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "hawas-tropical",
+      "v2_name": "Hawas Tropical",
+      "pdf_label": "Hawas Tropical",
+      "match_basis": "EXACT_NAME_NORMALIZED",
+      "pdf_page": 18,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          12,
+          16,
+          26
+        ],
+        "official_pdf": [
+          12.0,
+          16.0,
+          26.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "9pm",
+      "v2_name": "9 PM",
+      "pdf_label": "9 PM",
+      "match_basis": "EXACT_NAME_NORMALIZED",
+      "pdf_page": 19,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          12,
+          16,
+          26
+        ],
+        "official_pdf": [
+          12.0,
+          16.0,
+          26.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "9pm-rebel",
+      "v2_name": "9 PM Rebel",
+      "pdf_label": "9 PM Rebel",
+      "match_basis": "EXACT_NAME_NORMALIZED",
+      "pdf_page": 19,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          12,
+          16,
+          26
+        ],
+        "official_pdf": [
+          12.0,
+          16.0,
+          26.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "9pm-elixir",
+      "v2_name": "9 PM Elixir",
+      "pdf_label": "9 PM Elixir",
+      "match_basis": "EXACT_NAME_NORMALIZED",
+      "pdf_page": 19,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          12,
+          16,
+          26
+        ],
+        "official_pdf": [
+          12.0,
+          16.0,
+          26.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "9pm-night-out",
+      "v2_name": "9 PM Night Out",
+      "pdf_label": "9 PM Night Out",
+      "match_basis": "EXACT_NAME_NORMALIZED",
+      "pdf_page": 20,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          13,
+          17,
+          28
+        ],
+        "official_pdf": [
+          13.0,
+          17.0,
+          28.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "9am",
+      "v2_name": "9 AM",
+      "pdf_label": "9AM",
+      "match_basis": "EXACT_NAME_NORMALIZED",
+      "pdf_page": 20,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          11,
+          15,
+          24
+        ],
+        "official_pdf": [
+          11.0,
+          15.0,
+          24.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "9am-dive",
+      "v2_name": "9 AM Dive",
+      "pdf_label": "9AM Dive",
+      "match_basis": "EXACT_NAME_NORMALIZED",
+      "pdf_page": 20,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          12,
+          16,
+          26
+        ],
+        "official_pdf": [
+          12.0,
+          16.0,
+          26.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "art-of-universe",
+      "v2_name": "Art Of Universe",
+      "pdf_label": "Art Of Universe",
+      "match_basis": "EXACT_NAME_NORMALIZED",
+      "pdf_page": 21,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          13,
+          17,
+          28
+        ],
+        "official_pdf": [
+          13.0,
+          17.0,
+          28.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "liquid-brun",
+      "v2_name": "Liquid Brun",
+      "pdf_label": "Liquid Brun",
+      "match_basis": "EXACT_NAME_NORMALIZED",
+      "pdf_page": 21,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          12,
+          16,
+          26
+        ],
+        "official_pdf": [
+          12.0,
+          16.0,
+          26.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "vulcan-feu",
+      "v2_name": "Vulcan Feu",
+      "pdf_label": "Vulcan Feu",
+      "match_basis": "EXACT_NAME_NORMALIZED",
+      "pdf_page": 21,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          13,
+          17,
+          28
+        ],
+        "official_pdf": [
+          13.0,
+          17.0,
+          28.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "amber-o-gold-e",
+      "v2_name": "Amber Oud Gold Edition",
+      "pdf_label": "Amber O. Gold E.",
+      "match_basis": "LEGACY_ID_NORMALIZED",
+      "pdf_page": 22,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          13,
+          17,
+          28
+        ],
+        "official_pdf": [
+          13.0,
+          17.0,
+          28.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "ao-aqua-dubai",
+      "v2_name": "Amber Oud Aqua Dubai",
+      "pdf_label": "A.O. Aqua Dubai",
+      "match_basis": "LEGACY_ID_NORMALIZED",
+      "pdf_page": 22,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          13,
+          17,
+          28
+        ],
+        "official_pdf": [
+          13.0,
+          17.0,
+          28.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "ao-dubai-night",
+      "v2_name": "Amber Oud Dubai Night",
+      "pdf_label": "A.O. Dubai Night",
+      "match_basis": "LEGACY_ID_NORMALIZED",
+      "pdf_page": 22,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          14,
+          18,
+          30
+        ],
+        "official_pdf": [
+          14.0,
+          18.0,
+          30.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "nitro-red",
+      "v2_name": "Nitro Red",
+      "pdf_label": "Nitro Red",
+      "match_basis": "EXACT_NAME_NORMALIZED",
+      "pdf_page": 23,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          12,
+          16,
+          26
+        ],
+        "official_pdf": [
+          12.0,
+          16.0,
+          26.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "red-intensely",
+      "v2_name": "Nitro Red Intensely",
+      "pdf_label": "Red Intensely",
+      "match_basis": "LEGACY_ID_NORMALIZED",
+      "pdf_page": 23,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          13,
+          17,
+          28
+        ],
+        "official_pdf": [
+          13.0,
+          17.0,
+          28.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "cdn-intense-man",
+      "v2_name": "Club de Nuit Intense Man",
+      "pdf_label": "CDN Intense Man",
+      "match_basis": "LEGACY_ID_NORMALIZED",
+      "pdf_page": 23,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          12,
+          16,
+          26
+        ],
+        "official_pdf": [
+          12.0,
+          16.0,
+          26.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "cdn-urban-man-e",
+      "v2_name": "Club de Nuit Urban Man Elixir",
+      "pdf_label": "CDN Urban Man E.",
+      "match_basis": "LEGACY_ID_NORMALIZED",
+      "pdf_page": 24,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          12,
+          17,
+          29
+        ],
+        "official_pdf": [
+          12.0,
+          17.0,
+          29.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "cdn-preciux-i",
+      "v2_name": "Club de Nuit Precieux I",
+      "pdf_label": "CDN Preciux I",
+      "match_basis": "LEGACY_ID_NORMALIZED",
+      "pdf_page": 24,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          22,
+          30,
+          48
+        ],
+        "official_pdf": [
+          22.0,
+          30.0,
+          48.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "supremacy-colle",
+      "v2_name": "Supremacy Collection",
+      "pdf_label": "Supremacy Colle.",
+      "match_basis": "LEGACY_ID_NORMALIZED",
+      "pdf_page": 24,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          13,
+          17,
+          28
+        ],
+        "official_pdf": [
+          13.0,
+          17.0,
+          28.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "supremacy-noi",
+      "v2_name": "Supremacy Not Only Intense",
+      "pdf_label": "Supremacy NOI",
+      "match_basis": "LEGACY_ID_NORMALIZED",
+      "pdf_page": 25,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          12,
+          16,
+          26
+        ],
+        "official_pdf": [
+          12.0,
+          16.0,
+          26.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "sceptre-malachite",
+      "v2_name": "Sceptre Malachite",
+      "pdf_label": "Sceptre Malachite",
+      "match_basis": "EXACT_NAME_NORMALIZED",
+      "pdf_page": 25,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          11,
+          14,
+          24
+        ],
+        "official_pdf": [
+          11.0,
+          14.0,
+          24.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "lovely-cherry",
+      "v2_name": "Lovely Cherry",
+      "pdf_label": "Lovely Cherry",
+      "match_basis": "EXACT_NAME_NORMALIZED",
+      "pdf_page": 25,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          13,
+          17,
+          28
+        ],
+        "official_pdf": [
+          13.0,
+          17.0,
+          28.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": true,
+      "v2_production_status": "discontinued"
+    },
+    {
+      "legacy_id": "bright-peach",
+      "v2_name": "Bright Peach",
+      "pdf_label": "Bright Peach",
+      "match_basis": "EXACT_NAME_NORMALIZED",
+      "pdf_page": 26,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          13,
+          17,
+          28
+        ],
+        "official_pdf": [
+          13.0,
+          17.0,
+          28.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": true,
+      "v2_production_status": "discontinued"
+    },
+    {
+      "legacy_id": "qaed-al-fursan",
+      "v2_name": "Qaed Al Fursan",
+      "pdf_label": "Qaed Al Fursan",
+      "match_basis": "EXACT_NAME_NORMALIZED",
+      "pdf_page": 26,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          11,
+          15,
+          24
+        ],
+        "official_pdf": [
+          11.0,
+          15.0,
+          24.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "bharara-king",
+      "v2_name": "Bharara King",
+      "pdf_label": "Bharara King",
+      "match_basis": "EXACT_NAME_NORMALIZED",
+      "pdf_page": 26,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          13,
+          17,
+          28
+        ],
+        "official_pdf": [
+          13.0,
+          17.0,
+          28.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "jean-lowe-vibe",
+      "v2_name": "Jean Lowe Vibe",
+      "pdf_label": "Jean Lowe Vibe",
+      "match_basis": "EXACT_NAME_NORMALIZED",
+      "pdf_page": 27,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          12,
+          16,
+          26
+        ],
+        "official_pdf": [
+          12.0,
+          16.0,
+          26.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "jean-lowe-inmotel",
+      "v2_name": "Jean Lowe Inmotel",
+      "pdf_label": "Jean Lowe Inmotel",
+      "match_basis": "EXACT_NAME_NORMALIZED",
+      "pdf_page": 27,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          12,
+          16,
+          26
+        ],
+        "official_pdf": [
+          12.0,
+          16.0,
+          26.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "fakhar-black",
+      "v2_name": "Fakhar Black",
+      "pdf_label": "Fakhar Black",
+      "match_basis": "EXACT_NAME_NORMALIZED",
+      "pdf_page": 27,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          12,
+          16,
+          26
+        ],
+        "official_pdf": [
+          12.0,
+          16.0,
+          26.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "rayhaan-italia",
+      "v2_name": "Rayhaan Italia",
+      "pdf_label": "Rayhaan Italia",
+      "match_basis": "EXACT_NAME_NORMALIZED",
+      "pdf_page": 28,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          12,
+          16,
+          26
+        ],
+        "official_pdf": [
+          12.0,
+          16.0,
+          26.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "hawas-chrome",
+      "v2_name": "Hawas Chrome",
+      "pdf_label": "Hawas Chrome",
+      "match_basis": "EXACT_NAME_NORMALIZED",
+      "pdf_page": 28,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          13,
+          17,
+          28
+        ],
+        "official_pdf": [
+          13.0,
+          17.0,
+          28.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "royal-blend-sequoia",
+      "v2_name": "Royal Blend Sequoia",
+      "pdf_label": "Royal Blend Sequoia",
+      "match_basis": "EXACT_NAME_NORMALIZED",
+      "pdf_page": 28,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          12,
+          16,
+          26
+        ],
+        "official_pdf": [
+          12.0,
+          16.0,
+          26.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "212-edt",
+      "v2_name": "212 EDT",
+      "pdf_label": "212 EDT",
+      "match_basis": "EXACT_NAME_NORMALIZED",
+      "pdf_page": 30,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          22,
+          30,
+          48
+        ],
+        "official_pdf": [
+          22.0,
+          30.0,
+          48.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "eros-edt",
+      "v2_name": "Eros EDT",
+      "pdf_label": "Eros EDT",
+      "match_basis": "EXACT_NAME_NORMALIZED",
+      "pdf_page": 30,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          22,
+          30,
+          48
+        ],
+        "official_pdf": [
+          22.0,
+          30.0,
+          48.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "eros-flame",
+      "v2_name": "Eros Flame",
+      "pdf_label": "Eros Flame",
+      "match_basis": "EXACT_NAME_NORMALIZED",
+      "pdf_page": 30,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          22,
+          30,
+          48
+        ],
+        "official_pdf": [
+          22.0,
+          30.0,
+          48.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "spicebomb-extreme",
+      "v2_name": "Spicebomb Extreme",
+      "pdf_label": "Spicebomb Extreme",
+      "match_basis": "EXACT_NAME_NORMALIZED",
+      "pdf_page": 31,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          24,
+          32,
+          51
+        ],
+        "official_pdf": [
+          24.0,
+          32.0,
+          51.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "azzaro-tmw-edp",
+      "v2_name": "The Most Wanted EDP",
+      "pdf_label": "Azzaro TMW EDP",
+      "match_basis": "LEGACY_ID_NORMALIZED",
+      "pdf_page": 31,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          22,
+          30,
+          48
+        ],
+        "official_pdf": [
+          22.0,
+          30.0,
+          48.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "swy-intensely",
+      "v2_name": "Stronger With You Intensely",
+      "pdf_label": "SWY Intensely",
+      "match_basis": "LEGACY_ID_NORMALIZED",
+      "pdf_page": 31,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          24,
+          32,
+          51
+        ],
+        "official_pdf": [
+          24.0,
+          32.0,
+          51.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "swy-absolutely",
+      "v2_name": "Stronger With You Absolutely",
+      "pdf_label": "SWY Absolutely",
+      "match_basis": "LEGACY_ID_NORMALIZED",
+      "pdf_page": 32,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          26,
+          34,
+          56
+        ],
+        "official_pdf": [
+          26.0,
+          34.0,
+          56.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "ultra-male",
+      "v2_name": "Ultra Male",
+      "pdf_label": "Ultra Male",
+      "match_basis": "EXACT_NAME_NORMALIZED",
+      "pdf_page": 32,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          24,
+          32,
+          51
+        ],
+        "official_pdf": [
+          24.0,
+          32.0,
+          51.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": true,
+      "v2_production_status": "discontinued"
+    },
+    {
+      "legacy_id": "le-male-elixir",
+      "v2_name": "Le Male Elixir",
+      "pdf_label": "Le Male Elixir",
+      "match_basis": "EXACT_NAME_NORMALIZED",
+      "pdf_page": 33,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          24,
+          32,
+          51
+        ],
+        "official_pdf": [
+          24.0,
+          32.0,
+          51.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "le-beau-le-parfum",
+      "v2_name": "Le Beau Le Parfum",
+      "pdf_label": "Le Beau Le Parfum",
+      "match_basis": "EXACT_NAME_NORMALIZED",
+      "pdf_page": 33,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          24,
+          32,
+          51
+        ],
+        "official_pdf": [
+          24.0,
+          32.0,
+          51.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "paradise-garden",
+      "v2_name": "Paradise Garden",
+      "pdf_label": "Paradise Garden",
+      "match_basis": "EXACT_NAME_NORMALIZED",
+      "pdf_page": 33,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          24,
+          32,
+          51
+        ],
+        "official_pdf": [
+          24.0,
+          32.0,
+          51.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "bir-intense",
+      "v2_name": "Burberry Brit Intense",
+      "pdf_label": "BIR Intense",
+      "match_basis": "DECODED_OVERLAPPING_PDF_TEXT_LAYER",
+      "pdf_page": 34,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          26,
+          34,
+          56
+        ],
+        "official_pdf": [
+          26.0,
+          34.0,
+          56.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "victory-elixir",
+      "v2_name": "Victory Elixir",
+      "pdf_label": "Victory Elixir",
+      "match_basis": "EXACT_NAME_NORMALIZED",
+      "pdf_page": 34,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          24,
+          32,
+          51
+        ],
+        "official_pdf": [
+          24.0,
+          32.0,
+          51.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "purple-melancholia",
+      "v2_name": "Purple Melancholia",
+      "pdf_label": "Purple Melancholia",
+      "match_basis": "EXACT_NAME_NORMALIZED",
+      "pdf_page": 34,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          26,
+          34,
+          56
+        ],
+        "official_pdf": [
+          26.0,
+          34.0,
+          56.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "dylan-blue",
+      "v2_name": "Dylan Blue",
+      "pdf_label": "Dylan Blue",
+      "match_basis": "DECODED_OVERLAPPING_PDF_TEXT_LAYER",
+      "pdf_page": 35,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          30,
+          38,
+          69
+        ],
+        "official_pdf": [
+          22.0,
+          30.0,
+          48.0
+        ],
+        "match": false
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "b-man-in-black",
+      "v2_name": "Bvlgari Man In Black",
+      "pdf_label": "B. Man In Black",
+      "match_basis": "LEGACY_ID_NORMALIZED",
+      "pdf_page": 35,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          26,
+          34,
+          56
+        ],
+        "official_pdf": [
+          26.0,
+          34.0,
+          56.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "sauvage-edt",
+      "v2_name": "Sauvage EDT",
+      "pdf_label": "Sauvage EDT",
+      "match_basis": "EXACT_NAME_NORMALIZED",
+      "pdf_page": 35,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          22,
+          30,
+          48
+        ],
+        "official_pdf": [
+          30.0,
+          38.0,
+          69.0
+        ],
+        "match": false
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "adg-profondo-edp",
+      "v2_name": "Acqua di Gio Profondo EDP",
+      "pdf_label": "ADG Profondo EDP",
+      "match_basis": "LEGACY_ID_NORMALIZED",
+      "pdf_page": 36,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          26,
+          34,
+          56
+        ],
+        "official_pdf": [
+          26.0,
+          34.0,
+          56.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "1-million-lucky",
+      "v2_name": "One Million Lucky",
+      "pdf_label": "1 Million Lucky",
+      "match_basis": "LEGACY_ID_NORMALIZED",
+      "pdf_page": 36,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          26,
+          34,
+          56
+        ],
+        "official_pdf": [
+          26.0,
+          34.0,
+          56.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "reserve-privee",
+      "v2_name": "Gentleman Réserve Privée",
+      "pdf_label": "Reserve Privée",
+      "match_basis": "ALIAS_MAP",
+      "pdf_page": 36,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          26,
+          34,
+          56
+        ],
+        "official_pdf": [
+          26.0,
+          34.0,
+          56.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "tmw-parfum",
+      "v2_name": "The Most Wanted Parfum",
+      "pdf_label": "TMW Parfum",
+      "match_basis": "DECODED_OVERLAPPING_PDF_TEXT_LAYER",
+      "pdf_page": 37,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          24,
+          32,
+          51
+        ],
+        "official_pdf": [
+          24.0,
+          32.0,
+          51.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "cedrat-boise-int",
+      "v2_name": "Cedrat Boise Intense",
+      "pdf_label": "Cedrat Boise Int.",
+      "match_basis": "LEGACY_ID_NORMALIZED",
+      "pdf_page": 37,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          26,
+          34,
+          56
+        ],
+        "official_pdf": [
+          26.0,
+          34.0,
+          56.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "m-red-tobacco",
+      "v2_name": "Mancera Red Tobacco",
+      "pdf_label": "M. Red Tobacco",
+      "match_basis": "LEGACY_ID_NORMALIZED",
+      "pdf_page": 37,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          26,
+          34,
+          56
+        ],
+        "official_pdf": [
+          26.0,
+          34.0,
+          56.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "nautica-voyage",
+      "v2_name": "Nautica Voyage",
+      "pdf_label": "Nautica Voyage",
+      "match_basis": "DECODED_OVERLAPPING_PDF_TEXT_LAYER",
+      "pdf_page": 38,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          12,
+          16,
+          26
+        ],
+        "official_pdf": [
+          12.0,
+          16.0,
+          26.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "by-the-fireplace",
+      "v2_name": "By The Fireplace",
+      "pdf_label": "By The Fireplace",
+      "match_basis": "EXACT_NAME_NORMALIZED",
+      "pdf_page": 38,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          26,
+          34,
+          56
+        ],
+        "official_pdf": [
+          26.0,
+          34.0,
+          56.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    },
+    {
+      "legacy_id": "erba-pura",
+      "v2_name": "Erba Pura",
+      "pdf_label": "Erba Pura",
+      "match_basis": "EXACT_NAME_NORMALIZED",
+      "pdf_page": 38,
+      "decant_price_3_5_10": {
+        "v2_current": [
+          40,
+          48,
+          89
+        ],
+        "official_pdf": [
+          40.0,
+          48.0,
+          89.0
+        ],
+        "match": true
+      },
+      "manufacturer_discontinued_in_pdf": false,
+      "v2_production_status": "active"
+    }
+  ],
+  "pdf_only_products": [
+    {
+      "pdf_label": "Le Male Le Parfum",
+      "pdf_page": 32,
+      "decant_price_3_5_10": [
+        24.0,
+        32.0,
+        51.0
+      ],
+      "note": "Not present in legacy-catalog-staging.json. Needs a new product identity if added to V2 (deferred to 4K-B)."
+    }
+  ],
+  "v2_only_products": [
+    {
+      "legacy_id": "invictus-elixir",
+      "note": "Not present in the official 2026 PDF. PDF is silent on this product, not evidence of removal by itself; commercial disposition (e.g. archive from current public catalog while preserving history) deferred to 4K-B."
+    }
+  ],
+  "price_diffs": [
+    {
+      "legacy_id": "dylan-blue",
+      "v2_name": "Dylan Blue",
+      "size_ml": 3,
+      "v2_current": 30,
+      "official_pdf": 22.0
+    },
+    {
+      "legacy_id": "sauvage-edt",
+      "v2_name": "Sauvage EDT",
+      "size_ml": 3,
+      "v2_current": 22,
+      "official_pdf": 30.0
+    },
+    {
+      "legacy_id": "dylan-blue",
+      "v2_name": "Dylan Blue",
+      "size_ml": 5,
+      "v2_current": 38,
+      "official_pdf": 30.0
+    },
+    {
+      "legacy_id": "sauvage-edt",
+      "v2_name": "Sauvage EDT",
+      "size_ml": 5,
+      "v2_current": 30,
+      "official_pdf": 38.0
+    },
+    {
+      "legacy_id": "dylan-blue",
+      "v2_name": "Dylan Blue",
+      "size_ml": 10,
+      "v2_current": 69,
+      "official_pdf": 48.0
+    },
+    {
+      "legacy_id": "sauvage-edt",
+      "v2_name": "Sauvage EDT",
+      "size_ml": 10,
+      "v2_current": 48,
+      "official_pdf": 69.0
+    }
+  ],
+  "price_diff_root_cause": "assets/data.js:474-475 assigns the wrong shared price-template constant to two products: sauvage-edt uses T223048 (22/30/48, actually Dylan Blue's official price) and dylan-blue uses T303869 (30/38/69, actually Sauvage EDT's official price). This reads as a copy/paste swap in the legacy source, not a genuine 2026 price change. Not corrected by this gate (read-only).",
+  "discontinued_products": {
+    "manufacturer_discontinued_in_pdf": [
+      {
+        "legacy_id": "lovely-cherry",
+        "v2_name": "Lovely Cherry",
+        "v2_production_status": "discontinued"
+      },
+      {
+        "legacy_id": "bright-peach",
+        "v2_name": "Bright Peach",
+        "v2_production_status": "discontinued"
+      },
+      {
+        "legacy_id": "ultra-male",
+        "v2_name": "Ultra Male",
+        "v2_production_status": "discontinued"
+      }
+    ],
+    "client_semantic_clarification": "CLIENT_CONFIRMED 2026-09-13: DESCONTINUADO in the PDF means the manufacturer no longer produces the fragrance. It does NOT mean Cruzial has no stock. Cruzial owns remaining units and continues selling them. manufacturer_discontinued=true and still_sellable=true are independent and both true for these 3 products. discontinued != archived, discontinued != out_of_stock, discontinued != hidden.",
+    "current_v2_model_note": "apps/web/src/domains/catalog/types.ts already models this split: a boolean discontinued field (production stopped) is independent of availabilityStatus (available/out_of_stock) per the 2026-09-06 client-confirmed comment there. legacy-catalog-staging.json already carries production_status='discontinued' with availability_status='available' for all 3 of these -- consistent with the clarified semantics already. No V2 mutation is required by this fact alone."
+  },
+  "bir_intense": {
+    "pdf_status": "Active/current in the official 2026 PDF, page 34, decant prices 3ml=S/26, 5ml=S/34, 10ml=S/56 (exact match to legacy-catalog-staging.json's existing bir-intense variant prices).",
+    "v2_current_state": "legacy-catalog-staging.json: production_status='active', specs.legacy_hidden=true. assets/data.js:472 sets hidden:true with the inline comment 'hidden: CLIENT_CONFIRMED 2026-09-06 -- no lo tienen en inventario' (previously recorded in docs/client-decisions.md as bir-intense = CLIENT_CONFIRMED_HIDDEN).",
+    "supersession_result": "The hidden decision was CLIENT_CONFIRMED on a no-stock basis. The operator's 2026-09-13 instruction to follow the updated PDF, and the PDF listing BIR Intense as a current, priced, non-discontinued product, is a newer client-facing source than the 2026-09-06 stock note. This gate records the newer source as superseding the older hidden decision; it does NOT flip the hidden flag itself (no code/data mutation in 4K-A3). The historical hidden decision and its stock-based rationale remain readable at assets/data.js:472 and docs/client-decisions.md unless 4K-B explicitly supersedes them there."
+  },
+  "combos": [
+    {
+      "name": "Cuarteto Oriental",
+      "pdf_page": 5,
+      "members_legacy_ids": [
+        "khamrah-qahwa",
+        "khamrah-clasico",
+        "khamrah-waha",
+        "khamrah-dukhan"
+      ],
+      "decant_price_3_5_10": [
+        40.0,
+        55.0,
+        89.0
+      ],
+      "mapping_confidence": "HIGH -- page 5 rendered to an image; all 4 bottle labels (KHAMRAH QAHWA, KHAMRAH [unlabeled variant = Clasico], KHAMRAH WAHA, KHAMRAH DUKHAN, all Lattafa) are directly legible."
+    },
+    {
+      "name": "Vainilla Freak",
+      "pdf_page": 5,
+      "members_legacy_ids": [
+        "yara-pink",
+        "yara-candy",
+        "eclaire"
+      ],
+      "decant_price_3_5_10": [
+        27.0,
+        39.0,
+        65.0
+      ],
+      "mapping_confidence": "MEDIUM-HIGH -- page 5 image shows one legible ECLAIRE (Lattafa) bottle flanked by two pink YARA-line jars. The ECLAIRE identity is certain. The two Yara jars are not individually legible at available render resolution; their color scheme (both rose/pink) is consistent with Yara Pink + Yara Candy and inconsistent with the darker Yara Elixir bottle, so those two are inferred by elimination rather than read directly."
+    },
+    {
+      "name": "Set Tulum",
+      "pdf_page": 5,
+      "members_legacy_ids": [
+        "odyssey-aqua",
+        "hawas-tropical",
+        "supremacy-colle"
+      ],
+      "decant_price_3_5_10": [
+        31.0,
+        42.0,
+        71.0
+      ],
+      "mapping_confidence": "HIGH -- page 5 image shows 3 directly legible bottle labels: ODYSSEY AQUA (Rasasi), HAWAS ... TROPICAL (Rasasi), SUPREMACY COLLECTOR'S EDITION (Afnan)."
+    }
+  ],
+  "combo_staging_state": "supabase/staging/legacy-catalog-staging.json already carries 3 blocked placeholder entries (combo-cuarteto, combo-vainilla, combo-tulum) with reason CLIENT_PROVIDED_PENDING_RECONFIRMATION. This artifact resolves what the pending reconfirmation needed; it does not itself change their blocked status (deferred to 4K-B).",
+  "bottle_price_authority": {
+    "pdf_contains_bottle_prices": false,
+    "note": "All 38 pages were parsed; every priced line is one of 3 ml / 5 ml / 10 ml. No full-bottle (100 ml+) price appears anywhere in the PDF. Full-bottle prices therefore remain outside official_pdf authority; existing legacy bottle prices in assets/data.js keep verification_status='legacy' until a separate, explicit commercial decision is made (see docs/client-decisions.md -> '24 bottle prices commercial approval', still UNKNOWN)."
+  },
+  "other_official_pdf_rules": [
+    {
+      "rule": "Decants offered in 3 ml, 5 ml, 10 ml across arabic/designer/nicho perfumery.",
+      "classification": "informational",
+      "already_modeled": true
+    },
+    {
+      "rule": "Arabic decants presented in classic atomizer packaging; designer/nicho 5ml+10ml in premium packaging, 3ml in classic packaging.",
+      "classification": "4K2",
+      "already_modeled": false
+    },
+    {
+      "rule": "Free delivery within Lima Metropolitana via Linea 1 (tren electrico).",
+      "classification": "4K2",
+      "already_modeled": false
+    },
+    {
+      "rule": "Motorizado delivery for other parts of Lima at additional cost.",
+      "classification": "4K2",
+      "already_modeled": false
+    },
+    {
+      "rule": "Contra-entrega (cash on delivery) available in Lima Metropolitana.",
+      "classification": "4K2",
+      "already_modeled": false
+    },
+    {
+      "rule": "Order confirmed with 50% advance payment.",
+      "classification": "4K2",
+      "already_modeled": false
+    },
+    {
+      "rule": "Nationwide shipping via Shalom or Olva agencies.",
+      "classification": "4K2",
+      "already_modeled": false
+    },
+    {
+      "rule": "Payment methods shown per request to official contact (Yape/Plin/BCP context).",
+      "classification": "informational",
+      "already_modeled": false
+    }
+  ],
+  "remaining_unresolved_before_4k_b": [
+    "Promote official_pdf provenance for the 288 confirmed decant rows: scripts/commercial-reconciliation.mjs has no existing mechanism to override a variant's price_verification_status (only product-field provenance); a small extension is needed there before Part A/B of 4K-B can be applied.",
+    "Correct the sauvage-edt/dylan-blue price-template swap in assets/data.js (2 products, 6 variant rows).",
+    "Add Le Male Le Parfum as a new product identity (no code path currently adds a product outside the ETL from assets/data.js).",
+    "Give invictus-elixir a real archived-from-current-public-catalog outcome with history preserved: reconcileProduct() in commercial-reconciliation.mjs only ever emits publication_status 'hidden' or 'draft' for a legacy product, never 'archived'.",
+    "Unhide bir-intense (flip assets/data.js:472 hidden:true -> false) and record the supersession in docs/client-decisions.md.",
+    "Unblock the 3 combo entries in legacy-catalog-staging.json now that composition + price are reconciled.",
+    "No provisional/market-reference provenance value exists yet in PROVENANCE_VALUES / CatalogVerificationStatus for future full-bottle reference prices (separate from this gate's bottle_price_authority finding, which only says the PDF itself has none)."
+  ]
+}

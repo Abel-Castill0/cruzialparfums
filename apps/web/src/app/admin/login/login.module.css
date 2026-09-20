@@ -1,0 +1,122 @@
+.page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-paper);
+  color: var(--color-ink);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px clamp(16px, 4vw, 40px);
+  border-bottom: 1px solid rgba(10, 9, 8, 0.12);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.header a {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.header a:hover {
+  border-bottom-color: currentColor;
+}
+
+.main {
+  width: min(420px, calc(100% - 32px));
+  margin: clamp(40px, 8vh, 96px) auto;
+}
+
+.main h1 {
+  margin-bottom: 12px;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: clamp(26px, 4vw, 34px);
+  font-weight: 500;
+}
+
+.intro,
+.notice {
+  margin-bottom: 24px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #55504a;
+}
+
+.notice {
+  padding: 14px 16px;
+  border: 1px solid rgba(10, 9, 8, 0.16);
+  background: #fff;
+}
+
+.form {
+  display: grid;
+  gap: 16px;
+}
+
+.field {
+  display: grid;
+  gap: 6px;
+}
+
+.field span {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #55504a;
+}
+
+.field input {
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid rgba(10, 9, 8, 0.2);
+  background: #fff;
+  color: inherit;
+  font-size: 14px;
+}
+
+.field input:disabled {
+  background: rgba(10, 9, 8, 0.04);
+  color: #8a837b;
+}
+
+.error {
+  padding: 10px 14px;
+  border: 1px solid rgba(150, 40, 30, 0.4);
+  background: rgba(150, 40, 30, 0.06);
+  color: #7d2018;
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+.submit {
+  min-height: 48px;
+  border: 0;
+  background: var(--color-ink);
+  color: var(--color-paper);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.submit:disabled {
+  background: #8a837b;
+  cursor: not-allowed;
+}
+
+.note {
+  font-size: 11.5px;
+  line-height: 1.6;
+  color: #6d665f;
+}

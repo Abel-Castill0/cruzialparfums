@@ -1,0 +1,124 @@
+.cartLine {
+  padding: 20px 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 24px;
+  align-items: start;
+  border-bottom: 1px solid var(--import-line, rgba(11, 31, 61, 0.15));
+}
+
+.lineInfo {
+  min-width: 0;
+}
+
+.lineProduct {
+  font-size: 0.92rem;
+  font-weight: 620;
+  line-height: 1.3;
+}
+
+.lineLabel {
+  margin-top: 4px;
+  color: var(--import-muted, #536478);
+  font-size: 0.78rem;
+}
+
+.lineUnitPrice {
+  margin-top: 6px;
+  color: var(--import-muted, #536478);
+  font-size: 0.74rem;
+}
+
+.lineControls {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.quantityGroup {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--import-line, rgba(11, 31, 61, 0.15));
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.qtyButton {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--import-text, #0b1f3d);
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: background-color 120ms ease;
+}
+
+.qtyButton:hover:not(:disabled) {
+  background: var(--import-surface-strong, #e7edf4);
+}
+
+.qtyButton:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.qtyOutput {
+  min-width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-inline: 1px solid var(--import-line, rgba(11, 31, 61, 0.15));
+  font-size: 0.85rem;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+
+.lineTotal {
+  font-size: 0.92rem;
+  font-weight: 680;
+}
+
+.removeButton {
+  border: none;
+  background: transparent;
+  color: var(--import-muted, #536478);
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 120ms ease;
+}
+
+.removeButton:hover {
+  color: #a33a32;
+}
+
+@media (max-width: 639px) {
+  .cartLine {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .lineControls {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .qtyButton:hover:not(:disabled) {
+    background: var(--import-surface-strong, #132d4b);
+  }
+
+  .removeButton:hover {
+    color: #f4aaa2;
+  }
+}

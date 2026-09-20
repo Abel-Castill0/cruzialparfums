@@ -1,0 +1,32 @@
+.badge {
+  position: relative;
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-import-silver);
+  transition: color 180ms ease;
+}
+
+.badge:hover {
+  color: var(--color-import-white);
+}
+
+.count {
+  position: absolute;
+  top: 4px;
+  right: 2px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: var(--color-import-white);
+  color: var(--color-import-navy);
+  font-size: 0.62rem;
+  font-weight: 700;
+  line-height: 1;
+}

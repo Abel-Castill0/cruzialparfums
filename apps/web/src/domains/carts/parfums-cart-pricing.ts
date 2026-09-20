@@ -1,0 +1,80 @@
+import { isProductPurchasable } from "../catalog/availability";
+import { listProductPurchaseVariants } from "../catalog/product-purchase";
+import type { CatalogProduct } from "../catalog/types";
+import type { ParfumsCartLine } from "./parfums-cart";
+
+export type ResolvedParfumsCartLine = {
+  key: string;
+  product: CatalogProduct;
+  variant: ReturnType<typeof listProductPurchaseVariants>[number];
+  quantity: number;
+  subtotal: number;
+};
+
+export function parfumsCartLineKey(
+  line: Pick<ParfumsCartLine, "productId" | "variantId">,
+) {
+  return `${line.productId}:${line.variantId}`;
+}
+
+export function resolveParfumsCart(
+  lines: readonly ParfumsCartLine[],
+  products: readonly CatalogProduct[],
+): ResolvedParfumsCartLine[] {
+  const byLegacyId = new Map(products.filter((p) => p.legacyId !== null).map((product) => [product.legacyId!, product]));
+  const byProductId = new Map(products.filter((p) => p.productId !== null).map((product) => [product.productId!, product]));
+  return lines.flatMap((line) => {
+    const product = byProductId.get(line.productId) ?? byLegacyId.get(line.productId);
+    // Same rule as the server: only out_of_stock blocks a purchase.
+    // Discontinued (production stopped) stays purchasable.
+    if (!product || !isProductPurchasable(product)) return [];
+    const variant = listProductPurchaseVariants(product).find(
+      (candidate) => candidate.variantId === line.variantId,
+    );
+    if (!variant) return [];
+    return [{
+      key: parfumsCartLineKey(line),
+      product,
+      variant,
+      quantity: line.quantity,
+      subtotal: variant.price * line.quantity,
+    }];
+  });
+}
+
+export function calculateParfumsCartTotal(
+  lines: readonly ResolvedParfumsCartLine[],
+) {
+  return lines.reduce((total, line) => total + line.subtotal, 0);
+}
+
+export function formatParfumsVariant(
+  line: Pick<ResolvedParfumsCartLine, "variant" | "product">,
+) {
+  if (line.product.type === "combo") {
+    return `Set · ${line.variant.size} ml c/u`;
+  }
+  return line.variant.group === "bottle"
+    ? `Frasco ${line.variant.size} ml`
+    : `Decant ${line.variant.size} ml`;
+}
+
+/**
+ * Projection shipped to the client for cart resolution (header drawer and
+ * checkout). Keeps the identity, purchasability, prices and images the cart
+ * needs; drops editorial payload (description, notes, media lists, combo
+ * presentations) that would otherwise be serialized into every page.
+ */
+export function toCartCatalogProduct(product: CatalogProduct): CatalogProduct {
+  return {
+    ...product,
+    description: "",
+    notes: [],
+    tag: "",
+    media: [],
+    comboPresentations: [],
+    comboContent: product.comboContent
+      ? { ...product.comboContent, desc: "", heroImageUrl: null }
+      : null,
+  };
+}

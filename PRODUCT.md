@@ -1,5 +1,12 @@
 # Product
 
+LEGACY. This document describes the root static legacy storefront (V1:
+`assets/data.js` as sole commercial source, no build step, Shalom/Olva
+mentioned as shipping agencies). It does not describe Cruzial Platform V2
+(apps/web, Next.js, Supabase). For current V2 product/business state see
+docs/current-v2.md and docs/client-decisions.md — in particular, the
+confirmed V2 Parfums shipping decision is Shalom only.
+
 ## Register
 
 brand

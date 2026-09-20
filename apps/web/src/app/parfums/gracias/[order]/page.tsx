@@ -1,0 +1,28 @@
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { OrderHandoff } from "@/components/parfums/checkout/order-handoff";
+import { loadParfumsStorefront } from "@/lib/catalog/parfums-storefront";
+
+export const metadata: Metadata = {
+  title: "Solicitud registrada",
+  description: "Continúa la coordinación de tu solicitud por WhatsApp.",
+  robots: { index: false, follow: false },
+};
+
+const ORDER_NUMBER_PATTERN = /^CRP-[0-9]{8}-[A-F0-9]{12}$/;
+
+export default async function ParfumsOrderThankYouPage({
+  params,
+}: {
+  params: Promise<{ order: string }>;
+}) {
+  const { order } = await params;
+  if (!ORDER_NUMBER_PATTERN.test(order)) notFound();
+  const { contact } = await loadParfumsStorefront();
+
+  return (
+    <main>
+      <OrderHandoff orderNumber={order} whatsappNumber={contact.whatsappNumber} />
+    </main>
+  );
+}

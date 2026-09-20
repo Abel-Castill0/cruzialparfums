@@ -5,3 +5,19 @@ skills-lock.json
 # OS/editor junk
 .DS_Store
 Thumbs.db
+
+# Secrets — never track. Root .env holds TOKEN_VERCEL; apps/web/.gitignore
+# already covers env files under apps/web, this covers the repo root too.
+.env
+.env.*
+!.env.example
+
+# Local QA tooling state
+.playwright-cli/
+tmp/
+
+# Vercel CLI local project link (4I2)
+.vercel
+
+# Node dependencies
+node_modules/

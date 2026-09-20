@@ -1,0 +1,28 @@
+-- Cruzial Platform V2 — seed
+--
+-- Intentionally almost empty.
+--
+-- The reference data that genuinely belongs to the schema — the two business
+-- units, the Shalom / private-delivery shipping methods, and the confirmed
+-- 50% / 70% Import deposit policies — is inserted by the migrations
+-- themselves, because it is structural and the pgTAP suite depends on it
+-- existing after a plain `supabase db reset`.
+--
+-- What is deliberately NOT seeded:
+--
+--   * Products, variants and prices. Every price in assets/data.js is still
+--     CLIENT_PROVIDED_PENDING_RECONFIRMATION (docs/client-decisions.md);
+--     loading them here would silently promote unverified legacy parity into
+--     stated commercial fact.
+--   * Combo compositions, for the same reason.
+--   * Auth users. The first administrator's email, password, MFA and recovery
+--     procedure are UNKNOWN in docs/client-decisions.md, and a password does
+--     not belong in a file that lives in Git. See supabase/provisioning/ for
+--     the operator-run path that grants a membership to an account the
+--     operator created themselves.
+--
+-- Local catalogue data for development comes from the ETL in
+-- scripts/etl-legacy-catalog.mjs, which writes a staging report first and
+-- never publishes rows on its own.
+
+select 1;
