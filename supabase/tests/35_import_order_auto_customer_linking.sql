@@ -18,9 +18,16 @@
 -- G. Deposit snapshot is immutable: promoting the auto-created customer to
 --    'returning' afterward does not change the already-created order's
 --    deposit_percentage_snapshot
+-- H. Codex P1 #3 atomicity correction — explicit status-mapping fail-closed:
+--    an active customer whose verified_customer_status is NOT one of the
+--    three recognized values (reachable only via pre-existing dirty data,
+--    since customers_verified_status_check normally prevents it — same
+--    "temporarily loosen a constraint within this transaction" technique
+--    as F's dirty duplicate) makes the exactly-one path raise P2033 rather
+--    than silently collapsing an unrecognized status to 'new'.
 
 begin;
-select plan(11);
+select plan(13);
 
 -- =========================================================================
 -- Fixtures
@@ -195,6 +202,39 @@ select is(
   50.00::numeric,
   'G1: promoting the customer to returning after the fact does not change the immutable deposit snapshot'
 );
+
+-- =========================================================================
+-- H. Explicit status-mapping fail-closed (exactly-one path)
+-- =========================================================================
+
+alter table public.customers drop constraint customers_verified_status_check;
+
+insert into public.customers(id,business_unit_id,full_name,phone,verified_customer_status,verified_at) values
+ ('9c9c5000-0000-4000-8000-000000000005',(select id from public.business_units where code='import'),'Unrecognized Status','+51900100005','vip_unrecognized',now());
+
+set local role service_role;
+
+select throws_ok(
+  format(
+    $$select * from public.create_import_order_request(
+      '9c9c7000-e000-4000-8000-000000000001'::uuid,
+      '{"name":"Unrecognized Status","phone":"+51900100005"}'::jsonb,
+      '{"district":"San Isidro","address":"Av. 1","note":""}'::jsonb,
+      '[{"offer_id":"%s","offer_updated_at":"%s","quantity":1}]'::jsonb
+    )$$,
+    (select id from public.campaign_products where campaign_id='9c9c2000-0000-4000-8000-000000000001'),
+    (select updated_at from public.campaign_products where campaign_id='9c9c2000-0000-4000-8000-000000000001')
+  ),
+  'P2033', null,
+  'H1: an active customer with an unrecognized verified_customer_status fails closed (P2033), never silently mapped to new'
+);
+
+select ok(
+  not exists(select 1 from public.orders where request_id='9c9c7000-e000-4000-8000-000000000001'),
+  'H2: the failed-closed request creates no order row at all (function raised before insert)'
+);
+
+reset role;
 
 select * from finish();
 rollback;

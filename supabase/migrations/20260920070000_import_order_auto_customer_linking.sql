@@ -25,6 +25,19 @@
 -- with ours). Fails closed (P2033) if that re-resolution does not land on
 -- exactly one active customer — never an arbitrary LIMIT 1 pick.
 --
+-- Codex P1 #3 atomicity correction: the customer/status truth an order
+-- freezes into its immutable snapshot is now established by a single
+-- locked, STRICT read (`for update`, `select into strict`) — both in the
+-- normal exactly-one path and in the post-conflict recovery path — never
+-- by a COUNT taken on one statement and trusted on a later, separate one.
+-- A plain COUNT is still used up front only to pick which of the three
+-- branches (zero/one/ambiguous) to attempt; the locked read is the sole
+-- authority for what actually gets frozen into the order, and it holds the
+-- row lock until this order's transaction commits, serializing against
+-- the admin operations that already take `for update` on a customer row
+-- (update, verify/status-change, archive). An unrecognized customer status
+-- fails closed (P2033) rather than silently collapsing to 'new'.
+--
 -- Additive: does not modify 20260911010000/20260911020000. Rebased on the
 -- TRUE latest already-applied body (20260911020000, the "correction"
 -- migration — not the earlier 20260911010000 draft).
@@ -294,15 +307,38 @@ begin
     and c.archived_at is null;
 
   if v_customer_match_count = 1 then
-    select c.id, c.verified_customer_status
-    into resolved_customer_id, v_customer_status
-    from public.customers c
-    where c.business_unit_id = import_unit_id
-      and app.normalize_import_phone(c.phone) = normalized_phone
-      and c.archived_at is null;
+    -- The COUNT above only picked this branch; it is NOT the authority —
+    -- between it and here another transaction could archive this row,
+    -- change its phone, or flip its status. The locked, STRICT read below
+    -- is what actually establishes "exactly one active customer" and its
+    -- status: FOR UPDATE takes the row lock now and holds it until this
+    -- order's transaction commits, serializing against the admin
+    -- operations that already lock a customer row for update/verify/
+    -- archive — whichever transaction gets the lock first decides the
+    -- ordering. STRICT turns "zero rows" or "more than one row" (the
+    -- unique index should prevent the latter) into an exception instead of
+    -- PL/pgSQL's default silent "just use the last row" behavior.
+    begin
+      select c.id, c.verified_customer_status
+      into strict resolved_customer_id, v_customer_status
+      from public.customers c
+      where c.business_unit_id = import_unit_id
+        and app.normalize_import_phone(c.phone) = normalized_phone
+        and c.archived_at is null
+      for update of c;
+    exception
+      when no_data_found or too_many_rows then
+        raise exception 'could not resolve exactly one active customer for this phone' using errcode = 'P2033';
+    end;
 
-    if v_customer_status is distinct from 'returning' then
+    if v_customer_status = 'returning' then
+      v_customer_status := 'returning';
+    elsif v_customer_status in ('new', 'pending_verification') then
       v_customer_status := 'new';
+    else
+      -- Never silently collapse an unrecognized status to 'new' — that
+      -- would be guessing at commercial authority. Fail closed instead.
+      raise exception 'customer has an unrecognized verification status' using errcode = 'P2033';
     end if;
   elsif v_customer_match_count = 0 then
     begin
@@ -315,37 +351,38 @@ begin
       -- (customers_import_active_phone_uniq) — the winner is NOT
       -- necessarily a freshly-created 'new' customer: it could be an
       -- existing 'returning' customer whose phone was concurrently changed
-      -- to collide with ours. Re-resolve the canonical active customer
-      -- AFTER the conflict (same predicate as the exactly-one branch above)
-      -- and read its actual status — never assume 'new' just because THIS
-      -- request's own insert lost the race.
-      select count(*) into v_customer_match_count
-      from public.customers c
-      where c.business_unit_id = import_unit_id
-        and app.normalize_import_phone(c.phone) = normalized_phone
-        and c.archived_at is null;
+      -- to collide with ours. customers_import_active_phone_uniq already
+      -- guarantees at most one active Import customer for this normalized
+      -- phone, so a successful locked, STRICT read below IS the authority
+      -- — no separate COUNT needed first. FOR UPDATE holds the row lock
+      -- until this order's transaction commits, same as the exactly-one
+      -- path above.
+      begin
+        select c.id, c.verified_customer_status
+        into strict resolved_customer_id, v_customer_status
+        from public.customers c
+        where c.business_unit_id = import_unit_id
+          and app.normalize_import_phone(c.phone) = normalized_phone
+          and c.archived_at is null
+        for update of c;
+      exception
+        when no_data_found or too_many_rows then
+          -- No arbitrary pick. Zero rows (the winner was archived between
+          -- the conflict and this read) or more than one (would mean the
+          -- unique index somehow let two active rows collide) are both an
+          -- integrity condition this function cannot safely resolve on its
+          -- own — fail closed rather than link an unverified/wrong
+          -- customer, and never continue with resolved_customer_id = null
+          -- / v_customer_status = 'new' as if the conflict never happened.
+          raise exception 'could not resolve exactly one active customer after a concurrent phone conflict' using errcode = 'P2033';
+      end;
 
-      if v_customer_match_count <> 1 then
-        -- No arbitrary LIMIT 1 pick. Zero rows (the winner was archived
-        -- between the conflict and this re-read) or more than one (would
-        -- mean the unique index somehow let two active rows collide) are
-        -- both an integrity condition this function cannot safely resolve
-        -- on its own — fail closed rather than link an unverified/wrong
-        -- customer or silently pick one.
-        raise exception 'could not resolve exactly one active customer after a concurrent phone conflict' using errcode = 'P2033';
-      end if;
-
-      select c.id, c.verified_customer_status
-      into resolved_customer_id, v_customer_status
-      from public.customers c
-      where c.business_unit_id = import_unit_id
-        and app.normalize_import_phone(c.phone) = normalized_phone
-        and c.archived_at is null;
-
-      -- Same status-collapsing rule as the exactly-one branch: only an
-      -- actual 'returning' status earns the higher deposit percentage.
-      if v_customer_status is distinct from 'returning' then
+      if v_customer_status = 'returning' then
+        v_customer_status := 'returning';
+      elsif v_customer_status in ('new', 'pending_verification') then
         v_customer_status := 'new';
+      else
+        raise exception 'customer has an unrecognized verification status' using errcode = 'P2033';
       end if;
     end;
   else
@@ -542,4 +579,4 @@ grant execute on function public.create_import_order_request(uuid, jsonb, jsonb,
   to service_role;
 
 comment on function public.create_import_order_request(uuid, jsonb, jsonb, jsonb) is
-  'Task 6 + Codex P1 correction: service-only atomic Import order request. Exactly-one phone match links that customer; zero matches atomically creates a pending_verification customer under new-customer deposit semantics and links it (never auto-promoted to returning); ambiguous match fails closed with no link. A concurrent phone conflict on insert (customers_import_active_phone_uniq) re-resolves the canonical active customer AFTER the conflict and reads its ACTUAL status (never assumes new) — fails closed with P2033 if that re-resolution does not land on exactly one active customer.';
+  'Task 6 + Codex P1 corrections: service-only atomic Import order request. Exactly-one phone match locks that customer row (FOR UPDATE, held until commit) and freezes its ACTUAL status into the order snapshot (returning->70%, new/pending_verification->50%, anything else fails closed P2033); zero matches atomically creates a pending_verification customer under new-customer deposit semantics and links it (never auto-promoted to returning); ambiguous match fails closed with no link. A concurrent phone conflict on insert (customers_import_active_phone_uniq) re-resolves the canonical active customer via the same locked, STRICT read — never a COUNT trusted across statements, never a silent status collapse.';
