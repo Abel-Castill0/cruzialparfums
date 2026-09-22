@@ -3,10 +3,17 @@ import { WholesaleExperience } from "@/components/parfums/wholesale/wholesale-ex
 import { PARFUMS_STORE_NAME } from "@/domains/platform/parfums-storefront";
 import { loadParfumsStorefront } from "@/lib/catalog/parfums-storefront";
 
-export const metadata: Metadata = {
-  title: "Venta por mayor",
-  description: "Frascos completos con descuento mayorista por categoría desde 40 unidades y cotización directa por WhatsApp.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { wholesale } = await loadParfumsStorefront();
+  const minQuantities = wholesale.policies.map((policy) => policy.minQuantity).filter((value) => value > 0);
+  const threshold = minQuantities.length > 0 ? Math.min(...minQuantities) : null;
+  return {
+    title: "Venta por mayor",
+    description: threshold !== null
+      ? `Frascos completos con descuento mayorista por categoría desde ${threshold} unidades y cotización directa por WhatsApp.`
+      : "Frascos completos con descuento mayorista por categoría y cotización directa por WhatsApp.",
+  };
+}
 
 export default async function WholesalePage() {
   const { wholesale, contact } = await loadParfumsStorefront();

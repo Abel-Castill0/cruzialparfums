@@ -10,6 +10,7 @@ import {
   isCategoryPublicationStatus,
   type CategoryPublicationStatus,
 } from "@/domains/admin-parfums/category-schema";
+import { PRODUCT_STATUS_LABELS } from "@/domains/admin-parfums/product-schema";
 import { CategoryFilters } from "./category-filters";
 import styles from "../productos/page.module.css";
 
@@ -99,7 +100,7 @@ export default async function CategoriesPage({
                       </span>
                     </div>
                     <div className={styles.rowBadges}>
-                      <span className={`${styles.badge} ${styles[`status-${category.publication_status}`] ?? ""}`}>{category.publication_status}</span>
+                      <span className={`${styles.badge} ${styles[`status-${category.publication_status}`] ?? ""}`}>{PRODUCT_STATUS_LABELS[category.publication_status as keyof typeof PRODUCT_STATUS_LABELS] ?? category.publication_status}</span>
                       <span className={styles.badge}>{kindLabel(category.kind)}</span>
                       {category.archived_at ? <span className={styles.badgeArchived}>Archivada</span> : null}
                     </div>

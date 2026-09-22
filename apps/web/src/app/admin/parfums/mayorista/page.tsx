@@ -14,6 +14,7 @@ import {
   isWholesaleCommercialType,
   type WholesaleCommercialType,
 } from "@/domains/admin-parfums/wholesale-schema";
+import { PRODUCT_STATUS_LABELS } from "@/domains/admin-parfums/product-schema";
 import { WholesalePolicyEditor } from "./policy-editor";
 import baseStyles from "../productos/page.module.css";
 import styles from "./wholesale.module.css";
@@ -194,7 +195,7 @@ export default async function AdminWholesalePage({
                       <td data-label="Precio base">{money(item.base_price_amount, item.currency)}</td>
                       <td data-label="Precio mayorista">{money(item.wholesale_price_amount, item.currency)}</td>
                       <td data-label="Disponibilidad">{item.availability_status === "available" ? "Disponible" : item.availability_status === "out_of_stock" ? "Agotado" : "Sin estado"}</td>
-                      <td data-label="Publicación"><span>{item.product_publication_status}</span><small>Variante: {item.variant_publication_status}</small></td>
+                      <td data-label="Publicación"><span>{PRODUCT_STATUS_LABELS[item.product_publication_status as keyof typeof PRODUCT_STATUS_LABELS] ?? item.product_publication_status}</span><small>Variante: {PRODUCT_STATUS_LABELS[item.variant_publication_status as keyof typeof PRODUCT_STATUS_LABELS] ?? item.variant_publication_status}</small></td>
                       <td data-label="Elegibilidad"><span className={item.eligibility_status === "eligible" ? styles.eligible : styles.ineligible}>{ELIGIBILITY_LABELS[item.eligibility_status]}</span></td>
                     </tr>
                   ))}

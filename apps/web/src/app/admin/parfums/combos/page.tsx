@@ -6,6 +6,7 @@ import { getAdminSession } from "@/lib/auth/admin-session";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { AdminParfumsCombosRepository } from "@/domains/admin-parfums/combos-repository";
 import { isVerificationStatus, VERIFICATION_STATUS_LABELS } from "@/domains/admin-parfums/combo-schema";
+import { PRODUCT_STATUS_LABELS } from "@/domains/admin-parfums/product-schema";
 import { ComboFilters } from "./combo-filters";
 import styles from "../productos/page.module.css";
 
@@ -109,7 +110,7 @@ export default async function CombosPage({
                     </div>
                     <div className={styles.rowBadges}>
                       <span className={`${styles.badge} ${styles[`status-${combo.product_publication_status}`] ?? ""}`}>
-                        {combo.product_publication_status}
+                        {PRODUCT_STATUS_LABELS[combo.product_publication_status as keyof typeof PRODUCT_STATUS_LABELS] ?? combo.product_publication_status}
                       </span>
                       <span className={styles.badge}>
                         {VERIFICATION_STATUS_LABELS[combo.composition_verification_status as keyof typeof VERIFICATION_STATUS_LABELS]

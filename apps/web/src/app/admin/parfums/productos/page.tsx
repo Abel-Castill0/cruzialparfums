@@ -9,6 +9,7 @@ import type {
   ProductionStatus,
   PublicationStatus,
 } from "@/domains/admin-parfums/product-schema";
+import { PRODUCT_STATUS_LABELS, PRODUCTION_STATUS_LABELS, PRODUCT_AVAILABILITY_LABELS } from "@/domains/admin-parfums/product-schema";
 import { ProductFilters } from "./product-filters";
 import styles from "./page.module.css";
 
@@ -142,10 +143,10 @@ export default async function AdminParfumsProductsPage({
                   </div>
                   <div className={styles.rowBadges}>
                     <span className={`${styles.badge} ${styles[`status-${product.publication_status}`] ?? ""}`}>
-                      {product.publication_status}
+                      {PRODUCT_STATUS_LABELS[product.publication_status as PublicationStatus] ?? product.publication_status}
                     </span>
-                    <span className={styles.badge}>{product.production_status}</span>
-                    <span className={styles.badge}>{product.availability_status}</span>
+                    <span className={styles.badge}>{PRODUCTION_STATUS_LABELS[product.production_status as ProductionStatus] ?? product.production_status}</span>
+                    <span className={styles.badge}>{PRODUCT_AVAILABILITY_LABELS[product.availability_status as AvailabilityStatus] ?? product.availability_status}</span>
                     {product.is_featured ? <span className={styles.badgeFeatured}>★ Destacado</span> : null}
                     {product.archived_at ? <span className={styles.badgeArchived}>Archivado</span> : null}
                   </div>

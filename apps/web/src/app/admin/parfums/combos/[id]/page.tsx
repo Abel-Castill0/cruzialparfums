@@ -4,7 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import { getAdminSession } from "@/lib/auth/admin-session";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { AdminParfumsCombosRepository } from "@/domains/admin-parfums/combos-repository";
-import { isValidUuid } from "@/domains/admin-parfums/product-schema";
+import { isValidUuid, PRODUCT_STATUS_LABELS } from "@/domains/admin-parfums/product-schema";
 import { computeComboReadiness, COMBO_READINESS_BLOCKER_LABELS } from "@/domains/admin-parfums/combo-schema";
 import { ComboWorkspace } from "./combo-workspace";
 import styles from "../../productos/page.module.css";
@@ -90,7 +90,7 @@ export default async function EditComboPage({
           <Link href="/admin/parfums/combos" className={styles.back}>← Combos</Link>
           <h1>Combo: {product.name}</h1>
           <p>
-            Producto: {product.slug} ({product.publication_status}) · Combo actualizado{" "}
+            Producto: {product.slug} ({PRODUCT_STATUS_LABELS[product.publication_status as keyof typeof PRODUCT_STATUS_LABELS] ?? product.publication_status}) · Combo actualizado{" "}
             {new Date(combo.updated_at).toLocaleString("es-PE")}
           </p>
         </div>
