@@ -19,6 +19,17 @@ values ('99001000-0000-4000-8000-000000000006','99001000-0000-4000-8000-00000000
 -- A generic brand mark labels synthetic QA data; never a substituted perfume.
 insert into public.product_media(id,product_id,provider,secure_url,alt,is_primary)
 values ('99001000-0000-4000-8000-000000000008','99001000-0000-4000-8000-000000000002','legacy_static','/icon.png','LOCAL QA — imagen de prueba',true) on conflict do nothing;
+
+-- Parfums QA product: one published, always-available decant so the admin
+-- product/variant/media/inventory journeys have something real to open.
+insert into public.products(id,business_unit_id,slug,name,brand,sales_mode,publication_status)
+values ('99002000-0000-4000-8000-000000000001','11111111-1111-4111-8111-111111111111','local-qa-parfums','LOCAL QA — Producto de prueba','LOCAL QA','always_available','published') on conflict do nothing;
+insert into public.product_variants(id,product_id,variant_kind,size_ml,label,price_amount,currency,publication_status)
+values ('99002000-0000-4000-8000-000000000002','99002000-0000-4000-8000-000000000001','decant',5,'LOCAL QA 5 ml',10,'PEN','published') on conflict do nothing;
+insert into public.inventory(product_variant_id,inventory_mode,availability_status)
+values ('99002000-0000-4000-8000-000000000002','status_only','available') on conflict do nothing;
+insert into public.product_media(id,product_id,provider,secure_url,alt,is_primary)
+values ('99002000-0000-4000-8000-000000000003','99002000-0000-4000-8000-000000000001','legacy_static','/icon.png','LOCAL QA — imagen de prueba',true) on conflict do nothing;
 select * from public.create_import_order_request('99001000-1111-4000-8000-000000000009',
   '{"name":"LOCAL QA Cliente","phone":"987999001"}',
   '{"district":"Lima","address":"LOCAL QA — no despachar"}',
