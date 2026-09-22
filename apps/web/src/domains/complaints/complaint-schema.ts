@@ -42,6 +42,8 @@ export type ComplaintFormInput = {
 };
 
 const EMAIL_PATTERN = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+export const COMPLAINT_DETAIL_MAX_LENGTH = 4000;
+export const COMPLAINT_REQUEST_MAX_LENGTH = 2000;
 
 /** Mirrors public_submit_complaint_entry's own validation server-side —
  * this is the client/server-action-facing copy, not the authority. The RPC
@@ -57,6 +59,7 @@ export function validateComplaintForm(input: Record<string, unknown>): Validatio
 
   const fullName = str(input.fullName);
   if (fullName.length < 2) errors.fullName = "Ingresa tu nombre completo.";
+  else if (fullName.length > 200) errors.fullName = "El nombre no puede superar 200 caracteres.";
 
   const documentType = str(input.documentType);
   if (documentType !== "dni" && documentType !== "ce" && documentType !== "pasaporte") {
@@ -65,31 +68,39 @@ export function validateComplaintForm(input: Record<string, unknown>): Validatio
 
   const documentNumber = str(input.documentNumber);
   if (documentNumber.length < 4) errors.documentNumber = "Ingresa tu número de documento.";
+  else if (documentNumber.length > 20) errors.documentNumber = "El documento no puede superar 20 caracteres.";
 
   const address = str(input.address);
   if (address.length < 4) errors.address = "Ingresa tu dirección.";
+  else if (address.length > 300) errors.address = "La dirección no puede superar 300 caracteres.";
 
   const phoneDigits = str(input.phone).replace(/\D/g, "");
   if (!/^[0-9]{9,15}$/.test(phoneDigits)) errors.phone = "Ingresa un teléfono válido (9-15 dígitos).";
 
   const email = str(input.email);
   if (!EMAIL_PATTERN.test(email)) errors.email = "Ingresa un correo válido.";
+  else if (email.length > 254) errors.email = "El correo no puede superar 254 caracteres.";
 
   const isMinor = input.isMinor === true || input.isMinor === "true" || input.isMinor === "on";
   const guardianFullName = str(input.guardianFullName);
   const guardianDocumentNumber = str(input.guardianDocumentNumber);
   if (isMinor) {
     if (guardianFullName.length < 2) errors.guardianFullName = "Ingresa el nombre del apoderado.";
+    else if (guardianFullName.length > 200) errors.guardianFullName = "El nombre del apoderado no puede superar 200 caracteres.";
     if (guardianDocumentNumber.length < 4) errors.guardianDocumentNumber = "Ingresa el documento del apoderado.";
+    else if (guardianDocumentNumber.length > 20) errors.guardianDocumentNumber = "El documento del apoderado no puede superar 20 caracteres.";
   }
 
-  const orderReference = str(input.orderReference).slice(0, 60);
+  const orderReference = str(input.orderReference);
+  if (orderReference.length > 60) errors.orderReference = "El número de pedido no puede superar 60 caracteres.";
 
   const detail = str(input.detail);
   if (detail.length < 10) errors.detail = "Describe tu reclamo o queja con más detalle (mínimo 10 caracteres).";
+  else if (detail.length > COMPLAINT_DETAIL_MAX_LENGTH) errors.detail = `El detalle no puede superar ${COMPLAINT_DETAIL_MAX_LENGTH} caracteres.`;
 
   const consumerRequest = str(input.consumerRequest);
   if (consumerRequest.length < 5) errors.consumerRequest = "Indica qué solución esperas.";
+  else if (consumerRequest.length > COMPLAINT_REQUEST_MAX_LENGTH) errors.consumerRequest = `La solución solicitada no puede superar ${COMPLAINT_REQUEST_MAX_LENGTH} caracteres.`;
 
   if (Object.keys(errors).length > 0) return { ok: false, errors };
 

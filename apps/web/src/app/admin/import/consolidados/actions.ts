@@ -36,7 +36,7 @@ export type CampaignActionState =
 
 export type CampaignProductsActionState =
   | { status: "idle" }
-  | { status: "success"; data: { campaign: CampaignRow; itemCount: number } }
+  | { status: "success"; data: { campaignUpdatedAt: string; itemCount: number } }
   | { status: "field_errors"; errors: FieldErrors }
   | { status: "error"; message: string };
 

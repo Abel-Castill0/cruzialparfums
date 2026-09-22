@@ -24,3 +24,12 @@ describe("Import Action Center product_unpublished count matches its link", () =
     expect(page).not.toContain("readiness.publication_blockers");
   });
 });
+
+describe("Import Action Center missing media count matches its link", () => {
+  it("queries the destination blocker filter", () => {
+    const page = read();
+    expect(page).toMatch(/p_blocker:\s*"missing_primary_media"/);
+    expect(page).toMatch(/missingMediaResult\.data/);
+    expect(page).not.toContain("readiness.media_blockers");
+  });
+});

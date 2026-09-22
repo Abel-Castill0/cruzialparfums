@@ -32,7 +32,7 @@ import {
 import {
   diffCampaignCsvRows,
   exportCampaignRowsToCsv,
-  parseCampaignCsv,
+  readCampaignCsvFile,
   type CampaignCsvDiffRow,
   type CampaignCsvSourceRow,
 } from "@/domains/admin-import/campaign-csv";
@@ -276,8 +276,7 @@ export function CampaignProductsManager({
     if (!file) return;
     setCsvError(null);
     setCsvDiff(null);
-    file.text().then((text) => {
-      const parsed = parseCampaignCsv(text);
+    readCampaignCsvFile(file).then((parsed) => {
       if (!parsed.ok) {
         setCsvError(parsed.error);
         return;
@@ -498,7 +497,7 @@ export function CampaignProductsManager({
       const payload = serializeCampaignRows(rows);
       const result = await setCampaignProductsAction(campaignId, campaignUpdatedAt, payload);
       if (result.status === "success") {
-        onUpdatedAtChange(result.data.campaign.updated_at);
+        onUpdatedAtChange(result.data.campaignUpdatedAt);
         onSavedCountChange?.(result.data.itemCount);
         setBaseline(rows);
         setSaved(true);

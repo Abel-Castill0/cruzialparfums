@@ -12,7 +12,6 @@ import {
   type CampaignProductAvailability,
   type CampaignProductItemInput,
 } from "./campaign-products-schema";
-import type { CampaignRow } from "./campaigns-repository";
 import type {
   ImportPresentationPublicationStatus,
   ProductPublicationStatus,
@@ -252,7 +251,7 @@ export class AdminImportCampaignProductsRepository {
     campaignId: string,
     expectedUpdatedAt: string,
     items: CampaignProductItemInput[],
-  ): Promise<CampaignProductMutationResult<{ campaign: CampaignRow; itemCount: number }>> {
+  ): Promise<CampaignProductMutationResult<{ campaignUpdatedAt: string; itemCount: number }>> {
     // quantity_limit is deliberately never sent: it is not a
     // browser-authoritative field (4J2 correction). The RPC preserves any
     // existing value server-side by (product_id, product_variant_id) and
@@ -268,22 +267,17 @@ export class AdminImportCampaignProductsRepository {
       sort_order: item.sortOrder,
     }));
 
-    const { data, error } = await this.supabase.rpc("admin_set_campaign_products", {
+    const { data, error } = await this.supabase.rpc("admin_set_campaign_products_with_version", {
       p_campaign_id: campaignId,
       p_expected_updated_at: expectedUpdatedAt,
       p_items: payload,
     });
     if (error) return { ok: false, error: mapCampaignProductError(error) };
-
-    const { data: campaignRow, error: campaignError } = await this.supabase
-      .from("campaigns")
-      .select("*")
-      .eq("id", campaignId)
-      .maybeSingle();
-    if (campaignError) return { ok: false, error: mapPostgrestError(campaignError) };
-    if (!campaignRow) return { ok: false, error: { type: "not_found" } };
-
-    return { ok: true, data: { campaign: campaignRow, itemCount: (data ?? []).length } };
+    const result = data?.[0];
+    if (!result?.campaign_updated_at || typeof result.item_count !== "number") {
+      return { ok: false, error: { type: "unknown", message: "Malformed atomic campaign save response" } };
+    }
+    return { ok: true, data: { campaignUpdatedAt: result.campaign_updated_at, itemCount: result.item_count } };
   }
 }
 

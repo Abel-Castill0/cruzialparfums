@@ -2629,6 +2629,17 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      admin_set_campaign_products_with_version: {
+        Args: {
+          p_campaign_id: string
+          p_expected_updated_at: string
+          p_items: Json
+        }
+        Returns: {
+          campaign_updated_at: string
+          item_count: number
+        }[]
+      }
       admin_set_campaign_status: {
         Args: {
           p_campaign_id: string

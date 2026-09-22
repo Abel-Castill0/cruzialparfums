@@ -7,6 +7,7 @@ import {
   availableComboSizes,
   calculateComboLinesTotal,
   canSendCombo,
+  createComboLine,
   defaultComboSize,
   filterComboProducts,
   listComboEligibleProducts,
@@ -199,7 +200,7 @@ describe("resolveComboLines with a Supabase-sourced product (no legacyId)", () =
     // every line for it — this is the regression this test guards against.
     const product = fakeProduct({ productId: "11111111-1111-4111-8111-000000000099", legacyId: null });
     let lines: ComboLine[] = [];
-    lines = addComboLine(lines, product.productId!, defaultComboSize(product));
+    lines = addComboLine(lines, product.productId!, defaultComboSize(product)!);
     const resolved = resolveComboLines([product], lines);
     expect(resolved).toHaveLength(1);
     expect(resolved[0]!.product.productId).toBe(product.productId);
@@ -221,14 +222,37 @@ describe("availableComboSizes / defaultComboSize", () => {
     const product = fakeProduct({ legacyId: "fake-5-10-only", decantPrices: { "5": 20, "10": 35 } });
     const size = defaultComboSize(product);
     let lines: ComboLine[] = [];
-    lines = addComboLine(lines, product.productId ?? product.legacyId!, size);
+    lines = addComboLine(lines, product.productId ?? product.legacyId!, size!);
     const resolved = resolveComboLines([product], lines);
     expect(resolved[0]!.price).toBeGreaterThan(0);
   });
 
-  it("falls back to COMBO_SIZES[0] when a product has no priced sizes at all", () => {
+  it("has no default when a product has no supported priced size", () => {
     const product = fakeProduct({ decantPrices: {} });
     expect(availableComboSizes(product)).toEqual([]);
-    expect(defaultComboSize(product)).toBe(3);
+    expect(defaultComboSize(product)).toBeNull();
+    expect(listComboEligibleProducts([product])).toEqual([]);
+  });
+
+  it("excludes a 2 ml-only product and fails closed before a zero-price WhatsApp line", () => {
+    const product = fakeProduct({ productId: "11111111-1111-4111-8111-000000000099", decantPrices: { "2": 9 } });
+    expect(availableComboSizes(product)).toEqual([]);
+    expect(defaultComboSize(product)).toBeNull();
+    expect(listComboEligibleProducts([product])).toEqual([]);
+
+    const attempted = [createComboLine(product.productId!, 3)];
+    const resolved = resolveComboLines([product], attempted);
+    expect(resolved).toEqual([]);
+    expect(canSendCombo(resolved.length)).toBe(false);
+    const message = buildCustomComboMessage({
+      storeName: "Cruzial Parfums",
+      lines: resolved.map((entry) => ({
+        brand: entry.product.brand, name: entry.product.name,
+        subtotal: entry.price, variantLabel: `${entry.line.size} ml`,
+      })),
+      total: calculateComboLinesTotal(resolved),
+    });
+    expect(message).not.toContain(product.name);
+    expect(message).not.toContain("3 ml");
   });
 });

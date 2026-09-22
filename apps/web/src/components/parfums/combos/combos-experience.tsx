@@ -17,7 +17,6 @@ import {
   canSendCombo,
   COMBO_MAX_ITEMS,
   COMBO_MIN_ITEMS,
-  COMBO_SIZES,
   defaultComboSize,
   filterComboProducts,
   listComboEligibleProducts,
@@ -40,12 +39,13 @@ function money(value: number) {
 
 function ComboCard({ combo, onAdded, preload }: { combo: CatalogProduct; onAdded: (message: string) => void; preload: boolean }) {
   const sizes = availableComboSizes(combo);
-  const [size, setSize] = useState<ComboSize>(defaultComboSize(combo));
-  const price = combo.decantPrices[String(size)] ?? 0;
+  const [size, setSize] = useState<ComboSize | null>(defaultComboSize(combo));
+  const price = size === null ? null : combo.decantPrices[String(size)] ?? null;
   const compositionConfirmed = combo.comboContent?.verificationStatus === "official_pdf"
     || combo.comboContent?.verificationStatus === "client_confirmed";
 
   function add() {
+    if (size === null || price === null || price <= 0) return;
     const mutation = addParfumsCartLine(localStorage, {
       productId: cartIdentity(combo),
       variantId: `decant-${size}ml`,
@@ -83,8 +83,8 @@ function ComboCard({ combo, onAdded, preload }: { combo: CatalogProduct; onAdded
           ))}
         </div>
         <div className={styles.comboBuy}>
-          <div><span>Total estimado</span><strong>{money(price)}</strong></div>
-          <button type="button" onClick={add}>Añadir set <span aria-hidden="true">→</span></button>
+          <div><span>Total estimado</span><strong>{price === null ? "No disponible" : money(price)}</strong></div>
+          <button type="button" onClick={add} disabled={price === null}>Añadir set <span aria-hidden="true">→</span></button>
         </div>
       </div>
     </article>
@@ -129,6 +129,8 @@ export function CombosExperience({
 
   function toggle(product: CatalogProduct) {
     const productId = cartIdentity(product);
+    const initialSize = defaultComboSize(product);
+    if (initialSize === null) return;
     setLines((current) => {
       if (current.some((line) => line.productId === productId)) {
         return removeComboLine(current, productId);
@@ -137,7 +139,7 @@ export function CombosExperience({
         announce(`El máximo es ${COMBO_MAX_ITEMS} fragancias. Quita una para cambiarla.`);
         return current;
       }
-      return addComboLine(current, productId, defaultComboSize(product));
+      return addComboLine(current, productId, initialSize);
     });
   }
 
@@ -197,7 +199,8 @@ export function CombosExperience({
                 const line = lines.find((candidate) => candidate.productId === cartIdentity(product));
                 const isSelected = Boolean(line);
                 const disabled = lines.length >= COMBO_MAX_ITEMS && !isSelected;
-                const referenceSize = line?.size ?? availableComboSizes(product)[0] ?? COMBO_SIZES[0];
+                const referenceSize = line?.size ?? defaultComboSize(product);
+                const referencePrice = referenceSize === null ? null : product.decantPrices[String(referenceSize)] ?? null;
                 return (
                   <button
                     key={cartIdentity(product)}
@@ -214,7 +217,7 @@ export function CombosExperience({
                     <span className={styles.itemInfo}>
                       <small>{product.brand}</small>
                       <strong>{product.name}</strong>
-                      <em>{isSelected ? `${referenceSize} ml · ` : "desde "}{money(product.decantPrices[String(referenceSize)] ?? 0)}</em>
+                      <em>{referencePrice === null ? "No disponible" : <>{isSelected ? `${referenceSize} ml · ` : "desde "}{money(referencePrice)}</>}</em>
                     </span>
                   </button>
                 );

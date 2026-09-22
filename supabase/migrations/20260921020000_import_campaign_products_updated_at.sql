@@ -1,10 +1,9 @@
 -- Cruzial Platform V2 — Final Product Completion Sprint
 --
--- Adds updated_at to admin_get_import_campaign_products's read model. The
--- CSV export/import workflow (CampaignProductsManager) needs a per-offer
--- timestamp to show the admin when each offer was last touched — the same
--- column campaign_products already has, just not previously selected here.
--- Purely additive: same input signature, one new output column.
+-- Adds updated_at to admin_get_import_campaign_products's read model and a
+-- new atomic save-result RPC for bulk/CSV updates. The existing
+-- admin_set_campaign_products signature and result remain intact for an old
+-- app generation during DB-first rollout or rollback.
 --
 -- True latest already-applied definition of this function is in
 -- 20260909050000_import_presentations_and_unconfirmed_availability.sql —
@@ -68,3 +67,36 @@ grant execute on function public.admin_get_import_campaign_products(uuid) to aut
 
 comment on function public.admin_get_import_campaign_products(uuid) is
   'Read model for one campaign''s configured offers, including each offer''s own updated_at (added for the CSV export/import bulk workflow — lets the admin see and reason about staleness per row even though the write path (admin_set_campaign_products) is still a whole-campaign optimistic-concurrency full replace, not per-row).';
+
+-- Wrap the existing authorized, audited, full-replace RPC in ONE database
+-- transaction and return the bumped campaign version in the same response.
+-- If either the write or version read fails, the entire request rolls back.
+-- Keep the old RPC unchanged so the pre-release app can still use it after
+-- DB migrations and during a temporary application rollback.
+create function public.admin_set_campaign_products_with_version(
+  p_campaign_id uuid,
+  p_expected_updated_at timestamptz,
+  p_items jsonb
+)
+returns table (campaign_updated_at timestamptz, item_count bigint)
+language plpgsql
+security invoker
+set search_path = ''
+as $$
+declare
+  v_item_count bigint;
+  v_updated_at timestamptz;
+begin
+  select count(*) into v_item_count
+  from public.admin_set_campaign_products(p_campaign_id, p_expected_updated_at, p_items);
+
+  select campaign.updated_at into strict v_updated_at
+  from public.campaigns campaign
+  where campaign.id = p_campaign_id;
+
+  return query select v_updated_at, v_item_count;
+end;
+$$;
+
+revoke all on function public.admin_set_campaign_products_with_version(uuid, timestamptz, jsonb) from public, anon;
+grant execute on function public.admin_set_campaign_products_with_version(uuid, timestamptz, jsonb) to authenticated;

@@ -17,7 +17,6 @@ export const metadata: Metadata = { title: "Cruzial Import Admin" };
 
 type ReadinessJson = {
   unconfirmed_offer_count?: number;
-  media_blockers?: number;
 };
 
 type BlockerRow = { total_count?: number };
@@ -82,11 +81,17 @@ export default async function AdminImportPage({searchParams}:{searchParams:Promi
       const priceCount=((priceResult.data??[]) as BlockerRow[])[0]?.total_count??0;
       if(priceCount>0) items.push({label:`${priceCount} ofertas con precio pendiente de corregir`,href:`/admin/import/publicacion?blocker=offer_invalid_price&campaign=${campaign.id}` as Route,tone:"attention"});
 
-      const [readinessResult, unpublishedResult] = await Promise.all([
+      const [readinessResult, unpublishedResult, missingMediaResult] = await Promise.all([
         rpc("admin_get_import_publication_readiness", { p_campaign_id: campaign.id }),
         rpc("admin_list_import_publication_blockers", {
           p_campaign_id: campaign.id,
           p_blocker: "product_unpublished",
+          p_page: 1,
+          p_page_size: 1,
+        }),
+        rpc("admin_list_import_publication_blockers", {
+          p_campaign_id: campaign.id,
+          p_blocker: "missing_primary_media",
           p_page: 1,
           p_page_size: 1,
         }),
@@ -102,8 +107,11 @@ export default async function AdminImportPage({searchParams}:{searchParams:Promi
           tone: "attention",
         });
       }
-      if ((readiness.media_blockers ?? 0) > 0) {
-        const n = readiness.media_blockers!;
+      // Count with the destination's exact priority blocker predicate. A
+      // draft product may lack media but is listed as product_unpublished.
+      const missingMediaCount = ((missingMediaResult.data ?? []) as BlockerRow[])[0]?.total_count ?? 0;
+      if (missingMediaCount > 0) {
+        const n = missingMediaCount;
         items.push({
           label: `${n} producto${n === 1 ? "" : "s"} sin imagen principal`,
           href: `/admin/import/publicacion?blocker=missing_primary_media&${campaignParam}` as Route,

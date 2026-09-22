@@ -2,6 +2,7 @@
 
 import { useCallback, useRef, useState } from "react";
 import { submitComplaintAction, type SubmitComplaintResult } from "./actions";
+import { COMPLAINT_DETAIL_MAX_LENGTH, COMPLAINT_REQUEST_MAX_LENGTH } from "@/domains/complaints/complaint-schema";
 import styles from "./page.module.css";
 
 function generateUUID(): string {
@@ -129,7 +130,7 @@ export function ComplaintForm({initialUnit = "parfums"}:{initialUnit?:"parfums"|
         <div className={styles.grid}>
           <label className={styles.field}>
             <span>Nombre completo *</span>
-            <input name="fullName" type="text" required aria-invalid={Boolean(fieldErrors.fullName)} />
+            <input name="fullName" type="text" required maxLength={200} aria-invalid={Boolean(fieldErrors.fullName)} />
             {fieldErrors.fullName ? <span className={styles.fieldError}>{fieldErrors.fullName}</span> : null}
           </label>
           <label className={styles.field}>
@@ -142,12 +143,12 @@ export function ComplaintForm({initialUnit = "parfums"}:{initialUnit?:"parfums"|
           </label>
           <label className={styles.field}>
             <span>Número de documento *</span>
-            <input name="documentNumber" type="text" required aria-invalid={Boolean(fieldErrors.documentNumber)} />
+            <input name="documentNumber" type="text" required maxLength={20} aria-invalid={Boolean(fieldErrors.documentNumber)} />
             {fieldErrors.documentNumber ? <span className={styles.fieldError}>{fieldErrors.documentNumber}</span> : null}
           </label>
           <label className={styles.fieldFull}>
             <span>Dirección *</span>
-            <input name="address" type="text" required aria-invalid={Boolean(fieldErrors.address)} />
+            <input name="address" type="text" required maxLength={300} aria-invalid={Boolean(fieldErrors.address)} />
             {fieldErrors.address ? <span className={styles.fieldError}>{fieldErrors.address}</span> : null}
           </label>
           <label className={styles.field}>
@@ -157,7 +158,7 @@ export function ComplaintForm({initialUnit = "parfums"}:{initialUnit?:"parfums"|
           </label>
           <label className={styles.field}>
             <span>Correo electrónico *</span>
-            <input name="email" type="email" required aria-invalid={Boolean(fieldErrors.email)} />
+            <input name="email" type="email" required maxLength={254} aria-invalid={Boolean(fieldErrors.email)} />
             {fieldErrors.email ? <span className={styles.fieldError}>{fieldErrors.email}</span> : null}
           </label>
         </div>
@@ -176,12 +177,12 @@ export function ComplaintForm({initialUnit = "parfums"}:{initialUnit?:"parfums"|
           <div className={styles.grid}>
             <label className={styles.field}>
               <span>Nombre del apoderado *</span>
-              <input name="guardianFullName" type="text" aria-invalid={Boolean(fieldErrors.guardianFullName)} />
+              <input name="guardianFullName" type="text" maxLength={200} aria-invalid={Boolean(fieldErrors.guardianFullName)} />
               {fieldErrors.guardianFullName ? <span className={styles.fieldError}>{fieldErrors.guardianFullName}</span> : null}
             </label>
             <label className={styles.field}>
               <span>Documento del apoderado *</span>
-              <input name="guardianDocumentNumber" type="text" aria-invalid={Boolean(fieldErrors.guardianDocumentNumber)} />
+              <input name="guardianDocumentNumber" type="text" maxLength={20} aria-invalid={Boolean(fieldErrors.guardianDocumentNumber)} />
               {fieldErrors.guardianDocumentNumber ? <span className={styles.fieldError}>{fieldErrors.guardianDocumentNumber}</span> : null}
             </label>
           </div>
@@ -192,16 +193,19 @@ export function ComplaintForm({initialUnit = "parfums"}:{initialUnit?:"parfums"|
         <legend>Detalle</legend>
         <label className={styles.fieldFull}>
           <span>Número de pedido (opcional)</span>
-          <input name="orderReference" type="text" maxLength={60} />
+          <input name="orderReference" type="text" maxLength={60} aria-invalid={Boolean(fieldErrors.orderReference)} />
+          {fieldErrors.orderReference ? <span className={styles.fieldError}>{fieldErrors.orderReference}</span> : null}
         </label>
         <label className={styles.fieldFull}>
           <span>Detalle del reclamo o queja *</span>
-          <textarea name="detail" rows={5} required aria-invalid={Boolean(fieldErrors.detail)} />
+          <span id="complaint-detail-limit">Máximo {COMPLAINT_DETAIL_MAX_LENGTH} caracteres.</span>
+          <textarea name="detail" rows={5} required maxLength={COMPLAINT_DETAIL_MAX_LENGTH} aria-describedby="complaint-detail-limit" aria-invalid={Boolean(fieldErrors.detail)} />
           {fieldErrors.detail ? <span className={styles.fieldError}>{fieldErrors.detail}</span> : null}
         </label>
         <label className={styles.fieldFull}>
           <span>¿Qué solución esperas? *</span>
-          <textarea name="consumerRequest" rows={3} required aria-invalid={Boolean(fieldErrors.consumerRequest)} />
+          <span id="complaint-request-limit">Máximo {COMPLAINT_REQUEST_MAX_LENGTH} caracteres.</span>
+          <textarea name="consumerRequest" rows={3} required maxLength={COMPLAINT_REQUEST_MAX_LENGTH} aria-describedby="complaint-request-limit" aria-invalid={Boolean(fieldErrors.consumerRequest)} />
           {fieldErrors.consumerRequest ? <span className={styles.fieldError}>{fieldErrors.consumerRequest}</span> : null}
         </label>
       </fieldset>

@@ -367,19 +367,38 @@ begin
     raise exception 'consumer_request is required (what resolution are you asking for)' using errcode = '22023';
   end if;
 
+  -- Reject oversized submissions before writing anything. Truncating a
+  -- complaint and returning success would discard part of the consumer's
+  -- statement or requested remedy without their knowledge.
+  if char_length(btrim(p_detail)) > 4000 then
+    raise exception 'detail exceeds 4000 characters' using errcode = '22023';
+  end if;
+  if char_length(btrim(p_consumer_request)) > 2000 then
+    raise exception 'consumer_request exceeds 2000 characters' using errcode = '22023';
+  end if;
+  if char_length(btrim(p_full_name)) > 200
+     or char_length(btrim(p_document_number)) > 20
+     or char_length(btrim(p_address)) > 300
+     or char_length(btrim(p_email)) > 254
+     or char_length(btrim(coalesce(p_guardian_full_name, ''))) > 200
+     or char_length(btrim(coalesce(p_guardian_document_number, ''))) > 20
+     or char_length(btrim(coalesce(p_order_reference, ''))) > 60 then
+    raise exception 'complaint identity or reference field exceeds its maximum length' using errcode = '22023';
+  end if;
+
   insert into public.complaint_book_entries (
     business_unit_id, request_id, complaint_type, full_name, document_type,
     document_number, address, phone, email, is_minor, guardian_full_name,
     guardian_document_number, order_reference, detail, consumer_request
   ) values (
     v_business_unit_id, p_request_id, p_complaint_type,
-    left(btrim(p_full_name), 200), p_document_type, left(btrim(p_document_number), 20),
-    left(btrim(p_address), 300), regexp_replace(p_phone, '[^0-9]', '', 'g'),
-    left(btrim(p_email), 254), coalesce(p_is_minor, false),
-    nullif(left(btrim(coalesce(p_guardian_full_name, '')), 200), ''),
-    nullif(left(btrim(coalesce(p_guardian_document_number, '')), 20), ''),
-    nullif(left(btrim(coalesce(p_order_reference, '')), 60), ''),
-    left(btrim(p_detail), 4000), left(btrim(p_consumer_request), 2000)
+    btrim(p_full_name), p_document_type, btrim(p_document_number),
+    btrim(p_address), regexp_replace(p_phone, '[^0-9]', '', 'g'),
+    btrim(p_email), coalesce(p_is_minor, false),
+    nullif(btrim(coalesce(p_guardian_full_name, '')), ''),
+    nullif(btrim(coalesce(p_guardian_document_number, '')), ''),
+    nullif(btrim(coalesce(p_order_reference, '')), ''),
+    btrim(p_detail), btrim(p_consumer_request)
   )
   returning * into v_row;
 

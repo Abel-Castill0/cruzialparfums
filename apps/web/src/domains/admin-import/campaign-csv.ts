@@ -24,6 +24,12 @@ export const CAMPAIGN_CSV_COLUMNS = [
   "updated_at",
 ] as const;
 
+// A full campaign holds at most 1500 offers. 2 MiB leaves ample room for
+// names/labels while preventing an accidental supplier file from being read
+// and parsed without a bound in the Admin browser.
+export const CAMPAIGN_CSV_MAX_BYTES = 2 * 1024 * 1024;
+const CSV_TOO_LARGE_MESSAGE = "El CSV supera 2 MiB. Exporta el consolidado y usa ese archivo como plantilla.";
+
 export type CampaignCsvSourceRow = {
   offerId: string;
   productName: string;
@@ -39,6 +45,10 @@ function csvEscape(value: string): string {
   return value;
 }
 
+function spreadsheetSafeText(value: string): string {
+  return /^\s*[=+\-@]/u.test(value) ? `'${value}` : value;
+}
+
 export function exportCampaignRowsToCsv(rows: CampaignCsvSourceRow[]): string {
   const lines = [CAMPAIGN_CSV_COLUMNS.join(",")];
   for (const row of rows) {
@@ -52,7 +62,9 @@ export function exportCampaignRowsToCsv(rows: CampaignCsvSourceRow[]): string {
         row.availabilityStatus,
         row.updatedAt,
       ]
-        .map((value) => csvEscape(String(value)))
+        .map((value, index) => csvEscape(index === 1 || index === 2
+          ? spreadsheetSafeText(String(value))
+          : String(value)))
         .join(","),
     );
   }
@@ -133,7 +145,17 @@ export type CampaignCsvParseResult =
   | { ok: true; rows: CampaignCsvParsedRow[] }
   | { ok: false; error: string };
 
+export async function readCampaignCsvFile(file: Pick<File, "size" | "text">): Promise<CampaignCsvParseResult> {
+  if (file.size > CAMPAIGN_CSV_MAX_BYTES) return { ok: false, error: CSV_TOO_LARGE_MESSAGE };
+  try {
+    return parseCampaignCsv(await file.text());
+  } catch {
+    return { ok: false, error: "No pudimos leer el CSV. Vuelve a exportarlo e inténtalo otra vez." };
+  }
+}
+
 export function parseCampaignCsv(text: string): CampaignCsvParseResult {
+  if (text.length > CAMPAIGN_CSV_MAX_BYTES) return { ok: false, error: CSV_TOO_LARGE_MESSAGE };
   const rows = parseCsvText(text);
   if (rows.length === 0) return { ok: false, error: "El archivo CSV está vacío." };
 

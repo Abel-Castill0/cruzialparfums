@@ -25,7 +25,9 @@ export type ResolvedComboLine = {
 };
 
 export function listComboEligibleProducts(products: readonly CatalogProduct[]) {
-  return products.filter((product) => product.type !== "combo" && !product.discontinued);
+  return products.filter((product) =>
+    product.type !== "combo" && !product.discontinued && availableComboSizes(product).length > 0,
+  );
 }
 
 export function filterComboProducts(
@@ -50,11 +52,14 @@ export function filterComboProducts(
  * dependency (matters for the add/dedup/cap logic, which is tested with
  * synthetic ids that don't resolve to real products). */
 export function availableComboSizes(product: CatalogProduct): ComboSize[] {
-  return COMBO_SIZES.filter((size) => product.decantPrices[String(size)] !== undefined);
+  return COMBO_SIZES.filter((size) => {
+    const price = product.decantPrices[String(size)];
+    return price !== undefined && Number.isFinite(price) && price > 0;
+  });
 }
 
-export function defaultComboSize(product: CatalogProduct): ComboSize {
-  return availableComboSizes(product)[0] ?? COMBO_SIZES[0];
+export function defaultComboSize(product: CatalogProduct): ComboSize | null {
+  return availableComboSizes(product)[0] ?? null;
 }
 
 export function createComboLine(
@@ -100,12 +105,15 @@ export function resolveComboLines(
   lines: readonly ComboLine[],
 ): ResolvedComboLine[] {
   const byId = new Map(products.map((product) => [cartIdentity(product), product]));
-  return lines.flatMap((line) => {
+  const resolved: ResolvedComboLine[] = [];
+  for (const line of lines) {
     const product = byId.get(line.productId);
-    if (!product) return [];
-    const unitPrice = product.decantPrices[String(line.size)] ?? 0;
-    return [{ product, line, price: unitPrice * line.quantity }];
-  });
+    if (!product || !availableComboSizes(product).includes(line.size)) return [];
+    const unitPrice = product.decantPrices[String(line.size)];
+    if (unitPrice === undefined) return [];
+    resolved.push({ product, line, price: unitPrice * line.quantity });
+  }
+  return resolved;
 }
 
 export function calculateComboLinesTotal(

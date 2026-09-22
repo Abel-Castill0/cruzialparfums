@@ -52,4 +52,3 @@ $$;
 
 revoke all on function public.admin_update_inventory(uuid, timestamptz, text, text, integer) from public, anon;
 grant execute on function public.admin_update_inventory(uuid, timestamptz, text, text, integer) to authenticated;
-

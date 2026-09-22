@@ -19,7 +19,7 @@
 -- I. admin_list_import_products rejects null/wrong-unit campaign ids
 
 begin;
-select plan(19);
+select plan(21);
 
 -- =========================================================================
 -- Fixtures
@@ -238,6 +238,29 @@ select throws_ok(
   'P0002',
   null,
   'I2: a Parfums-owned campaign id is rejected for admin_list_import_products'
+);
+
+-- The readiness summary counts every missing primary image, while the
+-- blocker list assigns one priority reason per product. The Action Center
+-- must use the latter count for its missing-media deep link.
+reset role;
+insert into public.products(id,business_unit_id,name,brand,slug,publication_status) values
+ ('5c5c1000-0000-4000-8000-000000000002',(select id from public.business_units where code='import'),'Draft No Media','Brand S','scoped-draft-no-media','draft'),
+ ('5c5c1000-0000-4000-8000-000000000003',(select id from public.business_units where code='import'),'Published No Media','Brand S','scoped-published-no-media','published');
+insert into public.import_presentations(id,product_id,stable_key,label,presentation_class,publication_status) values
+ ('5c5c4000-0000-4000-8000-000000000003','5c5c1000-0000-4000-8000-000000000003','scoped-no-media','Scoped Pres No Media','single_fixed','published');
+set role authenticated;
+
+select is(
+  (select (admin_get_import_publication_readiness('5c5c2000-0000-4000-8000-000000000007') ->> 'media_blockers')::bigint),
+  2::bigint,
+  'J1: readiness counts both draft and published products without media'
+);
+
+select is(
+  (select total_count from admin_list_import_publication_blockers('5c5c2000-0000-4000-8000-000000000007',null,'missing_primary_media',1,1)),
+  1::bigint,
+  'J2: the missing-media destination contains only the published product; the Action Center must use this count'
 );
 
 select * from finish();

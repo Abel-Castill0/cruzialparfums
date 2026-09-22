@@ -1,9 +1,12 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
+  CAMPAIGN_CSV_MAX_BYTES,
+  CAMPAIGN_CSV_COLUMNS,
   diffCampaignCsvRows,
   exportCampaignRowsToCsv,
   parseCampaignCsv,
   parseCsvText,
+  readCampaignCsvFile,
   type CampaignCsvSourceRow,
 } from "./campaign-csv";
 
@@ -30,6 +33,20 @@ describe("exportCampaignRowsToCsv / parseCampaignCsv round-trip", () => {
     expect(csv).toContain('"Brand ""X"", Ltd"');
   });
 
+  it.each(["=1+1", "+SUM(1,2)", "-1+2", "@cmd", "  =1+1"])("exports formula-looking text as spreadsheet text: %s", (name) => {
+    const csv = exportCampaignRowsToCsv([{ ...baseRow, productName: name, presentationLabel: name }]);
+    const cells = parseCsvText(csv)[1]!;
+    expect(cells[1]).toBe(`'${name}`);
+    expect(cells[2]).toBe(`'${name}`);
+    expect(cells[3]).toBe("120.00");
+  });
+
+  it("leaves normal catalog names unchanged", () => {
+    const cells = parseCsvText(exportCampaignRowsToCsv([baseRow]))[1]!;
+    expect(cells[1]).toBe(baseRow.productName);
+    expect(cells[2]).toBe(baseRow.presentationLabel);
+  });
+
   it("round-trips through parseCampaignCsv", () => {
     const csv = exportCampaignRowsToCsv([baseRow]);
     const result = parseCampaignCsv(csv);
@@ -49,6 +66,34 @@ describe("exportCampaignRowsToCsv / parseCampaignCsv round-trip", () => {
   it("rejects an empty CSV", () => {
     const result = parseCampaignCsv("");
     expect(result.ok).toBe(false);
+  });
+});
+
+describe("campaign CSV size bounds", () => {
+  it("rejects an oversized File before invoking text()", async () => {
+    const text = vi.fn().mockResolvedValue("ignored");
+    const result = await readCampaignCsvFile({ size: CAMPAIGN_CSV_MAX_BYTES + 1, text });
+    expect(result).toMatchObject({ ok: false, error: expect.stringContaining("2 MiB") });
+    expect(text).not.toHaveBeenCalled();
+  });
+
+  it("allows a File exactly at the byte limit to reach text()", async () => {
+    const text = vi.fn().mockResolvedValue(exportCampaignRowsToCsv([baseRow]));
+    const result = await readCampaignCsvFile({ size: CAMPAIGN_CSV_MAX_BYTES, text });
+    expect(text).toHaveBeenCalledOnce();
+    expect(result.ok).toBe(true);
+  });
+
+  it("rejects oversized raw parser input before scanning rows", () => {
+    const result = parseCampaignCsv("x".repeat(CAMPAIGN_CSV_MAX_BYTES + 1));
+    expect(result).toMatchObject({ ok: false, error: expect.stringContaining("2 MiB") });
+  });
+
+  it("continues to reject more than 2000 rows", () => {
+    const header = CAMPAIGN_CSV_COLUMNS.join(",");
+    const row = `${baseRow.offerId},Product,100 ml,120.00,PEN,available,${baseRow.updatedAt}`;
+    const result = parseCampaignCsv([header, ...Array.from({ length: 2001 }, () => row)].join("\n"));
+    expect(result).toMatchObject({ ok: false, error: expect.stringContaining("2000") });
   });
 });
 
