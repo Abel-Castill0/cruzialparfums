@@ -22,10 +22,17 @@ values ('99001000-0000-4000-8000-000000000008','99001000-0000-4000-8000-00000000
 
 -- Parfums QA product: one published, always-available decant so the admin
 -- product/variant/media/inventory journeys have something real to open.
-insert into public.products(id,business_unit_id,slug,name,brand,sales_mode,publication_status)
-values ('99002000-0000-4000-8000-000000000001','11111111-1111-4111-8111-111111111111','local-qa-parfums','LOCAL QA — Producto de prueba','LOCAL QA','always_available','published') on conflict do nothing;
-insert into public.product_variants(id,product_id,variant_kind,size_ml,label,price_amount,currency,publication_status)
-values ('99002000-0000-4000-8000-000000000002','99002000-0000-4000-8000-000000000001','decant',5,'LOCAL QA 5 ml',10,'PEN','published') on conflict do nothing;
+-- Gender + a published commercial_type category are required for the
+-- PUBLIC storefront to show it at all (mapPublicProduct fails closed
+-- without both) — included so the public Parfums journey is also testable.
+insert into public.categories(id,business_unit_id,kind,slug,name,publication_status)
+values ('99002000-0000-4000-8000-000000000004','11111111-1111-4111-8111-111111111111','commercial_type','niche','LOCAL QA Nicho','published') on conflict do nothing;
+insert into public.products(id,business_unit_id,slug,name,brand,gender,sales_mode,publication_status)
+values ('99002000-0000-4000-8000-000000000001','11111111-1111-4111-8111-111111111111','local-qa-parfums','LOCAL QA — Producto de prueba','LOCAL QA','unisex','always_available','published') on conflict do nothing;
+insert into public.product_categories(product_id,category_id)
+values ('99002000-0000-4000-8000-000000000001','99002000-0000-4000-8000-000000000004') on conflict do nothing;
+insert into public.product_variants(id,product_id,variant_kind,size_ml,label,price_amount,currency,publication_status,price_verification_status)
+values ('99002000-0000-4000-8000-000000000002','99002000-0000-4000-8000-000000000001','decant',5,'LOCAL QA 5 ml',10,'PEN','published','client_confirmed') on conflict do nothing;
 insert into public.inventory(product_variant_id,inventory_mode,availability_status)
 values ('99002000-0000-4000-8000-000000000002','status_only','available') on conflict do nothing;
 insert into public.product_media(id,product_id,provider,secure_url,alt,is_primary)
