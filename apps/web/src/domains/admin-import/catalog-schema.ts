@@ -15,6 +15,16 @@ export const PRESENTATION_CLASS_LABELS: Record<ImportPresentationClass, string> 
   single_fixed: "Presentación única", multi_presentation: "Múltiple", pack_set: "Pack / set", ambiguous: "Ambigua",
 };
 
+/** products.verification_status — how the product's identity/data was
+ * established, shown in the "Identidad y procedencia" panel. */
+export const PRODUCT_VERIFICATION_LABELS: Record<string, string> = {
+  legacy: "Origen histórico (sin reconfirmar)",
+  client_confirmed: "Confirmado por cliente",
+  derived_validated: "Validado por sistema",
+  official_pdf: "Confirmado por PDF oficial",
+  unknown: "Desconocido",
+};
+
 function one(value: string | string[] | undefined): string | undefined {
   return typeof value === "string" ? value : undefined;
 }
