@@ -608,3 +608,14 @@
   color: #7a5417;
   font-size: 12px;
 }
+
+/* Shared operational controls remain usable on small screens and keyboards. */
+.page :is(button, input, select) { min-height: 44px; }
+.page :is(button, input, select, textarea, a):focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+.page :is(p, dd, td, a) { overflow-wrap: anywhere; }
+@media (max-width: 600px) {
+  .rowLink { grid-template-columns: minmax(0, 1fr); }
+  .rowBadges { justify-content: flex-start; }
+  .filters { align-items: stretch; }
+  .filters > * { min-width: 0; max-width: 100%; }
+}

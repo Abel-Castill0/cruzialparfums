@@ -145,7 +145,7 @@ async function withCampaignFixture({ campaignId, productId, presentationId, offe
 
 function orderRequestSql({ requestId, phone, offerId, offerUpdatedAtExpr, name }) {
   return `
-    select o.order_id, ord.order_number, ord.verified_customer_status_snapshot, ord.deposit_percentage_snapshot, ord.customer_id
+    select o.order_id
     from public.create_import_order_request(
       '${requestId}'::uuid,
       jsonb_build_object('name', '${name}', 'phone', '${phone}'),
@@ -155,8 +155,12 @@ function orderRequestSql({ requestId, phone, offerId, offerUpdatedAtExpr, name }
         'offer_updated_at', (${offerUpdatedAtExpr}),
         'quantity', 1
       ))
-    ) o
-    join public.orders ord on ord.id = o.order_id;
+    ) o;
+    -- A separate statement sees the inserted row. Joining orders in the
+    -- same statement shares its pre-insert snapshot and, on a fresh empty
+    -- database, the planner can skip the function entirely.
+    select order_number, verified_customer_status_snapshot, deposit_percentage_snapshot, customer_id
+    from public.orders where request_id = '${requestId}';
   `;
 }
 
