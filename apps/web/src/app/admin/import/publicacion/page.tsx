@@ -8,16 +8,16 @@ import { campaignStatusLabel } from "@/domains/admin-import/campaign-schema";
 import styles from "../productos/page.module.css";
 
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = { title: "Publicacion Import" };
+export const metadata: Metadata = { title: "Publicación Import" };
 
 const BLOCKER_LABELS: Record<string, string> = {
   product_unpublished: "Producto no publicado",
-  presentation_unpublished: "Presentacion no publicada",
+  presentation_unpublished: "Presentación no publicada",
   missing_primary_media: "Sin imagen principal",
   missing_offer: "Sin oferta en consolidado",
   offer_unconfirmed: "Disponibilidad por confirmar",
-  offer_invalid_price: "Precio invalido",
-  offer_invalid_availability: "Estado de disponibilidad invalido",
+  offer_invalid_price: "Precio inválido",
+  offer_invalid_availability: "Estado de disponibilidad inválido",
   no_active_presentations: "Sin presentaciones activas",
 };
 
@@ -67,8 +67,9 @@ export default async function Page({
     .order("number", { ascending: false });
   const campaigns = campaignsResult.data ?? [];
   const requestedCampaignId = params.campaign ?? "";
-  const selectedCampaign =
-    campaigns.find((c) => c.id === requestedCampaignId) ?? campaigns[0] ?? null;
+  const selectedCampaign = requestedCampaignId
+    ? campaigns.find((c) => c.id === requestedCampaignId) ?? null
+    : campaigns[0] ?? null;
 
   const blockerQuery = params.blocker ?? "";
   const searchQuery = params.q ?? "";
@@ -117,8 +118,8 @@ export default async function Page({
     <div className={styles.page}>
       <header className={styles.header}>
         <div>
-          <h1>Publicacion</h1>
-          <p>Preparacion de lanzamiento</p>
+          <h1>Publicación</h1>
+          <p>Preparación de lanzamiento</p>
         </div>
       </header>
       <main>
@@ -147,7 +148,7 @@ export default async function Page({
               No hay consolidados activos (no archivados) para Cruzial
               Import. Crea uno desde{" "}
               <Link href="/admin/import/consolidados">Consolidados</Link>{" "}
-              para poder evaluar su preparacion de lanzamiento.
+              para poder evaluar su preparación de lanzamiento.
             </p>
           )}
         </section>
@@ -156,8 +157,8 @@ export default async function Page({
           <section className={`${styles.panel} ${styles.warning}`}>
             <h2>Error de datos</h2>
             <p className={styles.help}>
-              No se pudo obtener la informacion de preparacion. Error:{" "}
-              {rpcError.message}. Intenta recargar la pagina.
+              No se pudo obtener la información de preparación. Error:{" "}
+              {rpcError.message}. Intenta recargar la página.
             </p>
           </section>
         ) : (
@@ -171,17 +172,17 @@ export default async function Page({
                 </div>
                 <div>
                   <dt>Existe</dt>
-                  <dd>{campaignExists ? "Si" : "No"}</dd>
+                  <dd>{campaignExists ? "Sí" : "No"}</dd>
                 </div>
               </dl>
               {!campaignExists ? (
                 <p className={styles.help}>
-                  No se encontro este consolidado. Esto es un bloqueador.
+                  No se encontró este consolidado. Esto es un bloqueador.
                 </p>
               ) : campaignStatus !== "open" ? (
                 <p className={styles.help}>
-                  El consolidado no esta abierto. La apertura se realiza desde
-                  consolidados.
+                  El consolidado no está abierto. La apertura se realiza desde
+                  Consolidados.
                 </p>
               ) : null}
             </section>
@@ -245,14 +246,14 @@ export default async function Page({
                   className={`${styles.qaCard} ${invalidPriceOfferCount > 0 ? styles.warning : ""}`}
                 >
                   <strong>{invalidPriceOfferCount}</strong>
-                  <span>precios invalidos</span>
+                  <span>precios inválidos</span>
                 </div>
               </div>
             </section>
 
             {qaResult.ok ? (
               <section className={styles.panel}>
-                <h2>Cobertura de media</h2>
+                <h2>Cobertura de imágenes</h2>
                 <div className={styles.qaGrid}>
                   <div
                     className={`${styles.qaCard} ${Number(qaResult.data.products_without_primary_media) > 0 ? styles.warning : ""}`}
@@ -272,11 +273,11 @@ export default async function Page({
                     className={`${styles.qaCard} ${Number(qaResult.data.products_without_media) > 0 ? styles.warning : ""}`}
                   >
                     <strong>{qaResult.data.products_without_media}</strong>
-                    <span>sin media alguna</span>
+                    <span>sin ninguna imagen</span>
                   </div>
                   <div className={styles.qaCard}>
                     <strong>{qaResult.data.total_active_media}</strong>
-                    <span>media activa total</span>
+                    <span>imágenes activas en total</span>
                   </div>
                 </div>
               </section>
@@ -320,7 +321,7 @@ export default async function Page({
 
               {blockerTotal === 0 ? (
                 <p className={styles.help}>
-                  No hay bloqueadores. Todos los productos estan listos.
+                  No hay bloqueadores. Todos los productos están listos.
                 </p>
               ) : (
                 <>
@@ -328,9 +329,9 @@ export default async function Page({
                     <thead>
                       <tr>
                         <th>Producto</th>
-                        <th>Presentacion</th>
+                        <th>Presentación</th>
                         <th>Problema</th>
-                        <th>Accion</th>
+                        <th>Acción</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -370,7 +371,7 @@ export default async function Page({
                         </Link>
                       )}
                       <span>
-                        Pagina {page} de {totalPages}
+                        Página {page} de {totalPages}
                       </span>
                       {page < totalPages && (
                         <Link
@@ -388,8 +389,8 @@ export default async function Page({
             <section className={styles.panel}>
               <h2>Acciones</h2>
               <p className={styles.help}>
-                Esta pantalla muestra el estado de preparacion. No ejecuta
-                publicaciones automaticas. Para publicar productos, editalos
+                Esta pantalla muestra el estado de preparación. No ejecuta
+                publicaciones automáticas. Para publicar productos, edítalos
                 individualmente desde{" "}
                 <Link href={`/admin/import/productos?campaign=${selectedCampaign.id}` as Route}>Productos</Link>. Para
                 abrir el consolidado, ve a{" "}
