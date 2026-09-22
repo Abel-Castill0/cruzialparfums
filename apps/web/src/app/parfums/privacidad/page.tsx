@@ -1,3 +1,4 @@
+import { PublicBusinessLegal } from "@/components/public-business-legal";
 import type { Metadata } from "next";
 import { Breadcrumbs, type BreadcrumbItem } from "@/components/parfums/navigation/breadcrumbs";
 import { loadParfumsStorefront } from "@/lib/catalog/parfums-storefront";
@@ -33,6 +34,7 @@ export default async function PrivacidadPage() {
         </div>
 
         <div className={styles.legalBody}>
+          <PublicBusinessLegal unit="parfums" />
           <h2>1. Información que Recopilamos</h2>
           <p>Cuando nos contactas por WhatsApp, Instagram o nuestro formulario, podemos recopilar:</p>
           <ul>

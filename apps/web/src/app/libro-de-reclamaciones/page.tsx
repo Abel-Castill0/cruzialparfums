@@ -7,7 +7,9 @@ export const metadata: Metadata = {
   description: "Registra un reclamo o queja sobre Cruzial Parfums o Cruzial Import.",
 };
 
-export default function LibroDeReclamacionesPage() {
+export default async function LibroDeReclamacionesPage({searchParams}:{searchParams:Promise<Record<string,string|string[]|undefined>>}) {
+  const query=await searchParams;
+  const unit=query.unidad === "import" ? "import" : "parfums";
   return (
     <main className={styles.page}>
       <div className={styles.container}>
@@ -17,7 +19,7 @@ export default function LibroDeReclamacionesPage() {
           Este es nuestro canal para registrar reclamos y quejas conforme a tus derechos como consumidor en el Perú.
           Completa el formulario y te contactaremos para dar seguimiento a tu caso.
         </p>
-        <ComplaintForm />
+        <ComplaintForm initialUnit={unit} />
       </div>
     </main>
   );

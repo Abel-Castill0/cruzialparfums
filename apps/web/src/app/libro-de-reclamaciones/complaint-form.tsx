@@ -19,8 +19,8 @@ type FormState =
   | { phase: "success"; id: string }
   | { phase: "error"; message: string };
 
-export function ComplaintForm() {
-  const [businessUnit, setBusinessUnit] = useState<"parfums" | "import">("parfums");
+export function ComplaintForm({initialUnit = "parfums"}:{initialUnit?:"parfums"|"import"}) {
+  const [businessUnit, setBusinessUnit] = useState<"parfums" | "import">(initialUnit);
   const [state, setState] = useState<FormState>({ phase: "form" });
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [isMinor, setIsMinor] = useState(false);
@@ -36,11 +36,15 @@ export function ComplaintForm() {
       const fd = new FormData(event.currentTarget);
       const input = Object.fromEntries(fd.entries());
 
-      const result: SubmitComplaintResult = await submitComplaintAction(
+      let result: SubmitComplaintResult;
+      try { result = await submitComplaintAction(
         businessUnit,
         requestIdRef.current,
         input,
-      );
+      ); } catch {
+        setState({phase:"error",message:"No se pudo confirmar el envío. Conservamos tus datos; vuelve a intentarlo."});
+        return;
+      }
 
       if (result.status === "error") {
         setState({ phase: "error", message: result.message });

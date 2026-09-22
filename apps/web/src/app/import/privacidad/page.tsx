@@ -1,3 +1,4 @@
+import { PublicBusinessLegal } from "@/components/public-business-legal";
 import type { Metadata } from "next";
 import { Breadcrumbs, type BreadcrumbItem } from "@/components/parfums/navigation/breadcrumbs";
 import { readImportPublicContact } from "@/domains/import/import-public-contact";
@@ -35,6 +36,7 @@ export default async function ImportPrivacidadPage() {
         </div>
 
         <div className={styles.legalBody}>
+          <PublicBusinessLegal unit="import" />
           <h2>1. Información que Recopilamos</h2>
           <p>Cuando registras una solicitud en Cruzial Import, recopilamos:</p>
           <ul>

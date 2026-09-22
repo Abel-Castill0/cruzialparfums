@@ -4,6 +4,7 @@ import { validateComplaintForm, type ComplaintFormInput } from "@/domains/compla
 import { submitComplaintEntry } from "@/domains/complaints/complaint-repository";
 import { checkOrderRequestRateLimit } from "@/lib/security/order-abuse";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
+import { isValidUuid } from "@/domains/admin-parfums/product-schema";
 
 const RATE_LIMITED_MESSAGE =
   "Recibimos varias solicitudes en poco tiempo. Espera unos minutos antes de intentarlo de nuevo.";
@@ -19,6 +20,9 @@ export async function submitComplaintAction(
   requestId: string,
   formInput: Record<string, unknown>,
 ): Promise<SubmitComplaintResult> {
+  if ((businessUnitCode !== "parfums" && businessUnitCode !== "import") || !isValidUuid(requestId)) {
+    return { status: "error", message: "Selecciona el negocio y recarga el formulario antes de enviarlo." };
+  }
   const validation = validateComplaintForm(formInput);
   if (!validation.ok) {
     return { status: "error", message: "Revisa los campos marcados.", fieldErrors: validation.errors };

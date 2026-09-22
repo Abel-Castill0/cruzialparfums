@@ -1,3 +1,4 @@
+import { PublicBusinessLegal } from "@/components/public-business-legal";
 import type { Metadata } from "next";
 import { Breadcrumbs, type BreadcrumbItem } from "@/components/parfums/navigation/breadcrumbs";
 import { readImportPublicContact } from "@/domains/import/import-public-contact";
@@ -38,6 +39,7 @@ export default async function ImportTerminosPage() {
         </div>
 
         <div className={styles.legalBody}>
+          <PublicBusinessLegal unit="import" policies />
           <h2>1. Aceptación de los Términos</h2>
           <p>Al acceder a nuestro sitio web, utilizar nuestros servicios o registrar una solicitud, aceptas íntegramente estos Términos y Condiciones. Si no estás de acuerdo, no utilices nuestros servicios.</p>
 
