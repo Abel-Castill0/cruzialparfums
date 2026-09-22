@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useActionState, useTransition } from "react";
 import { createCustomerFromOrderAction } from "../../clientes/customer-actions";
+import { importCustomerStatusLabel } from "@/domains/admin-import/import-status";
 import styles from "../../productos/page.module.css";
 
 type LinkedCustomer = {
@@ -47,7 +48,7 @@ export function CustomerLinkingSection({ orderId, customerId, linkedCustomer, or
         <dl className={styles.detailList}>
           <div><dt>Nombre</dt><dd>{linkedCustomer.full_name}</dd></div>
           <div><dt>Teléfono</dt><dd>{linkedCustomer.phone || "—"}</dd></div>
-          <div><dt>Estado verificado</dt><dd>{linkedCustomer.verified_customer_status}</dd></div>
+          <div><dt>Estado verificado</dt><dd>{importCustomerStatusLabel(linkedCustomer.verified_customer_status)}</dd></div>
           <div>
             <dt>Enlace</dt>
             <dd>

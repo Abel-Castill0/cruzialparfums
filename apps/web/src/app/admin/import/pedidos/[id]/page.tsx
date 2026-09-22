@@ -180,7 +180,7 @@ export default async function AdminImportOrderDetailPage({
             </div>
             <dl className={styles.detailList}>
               <div><dt>Nombre</dt><dd>{linkedCustomer.full_name}</dd></div>
-              <div><dt>Estado</dt><dd>{linkedCustomer.verified_customer_status}</dd></div>
+              <div><dt>Estado</dt><dd>{importCustomerStatusLabel(linkedCustomer.verified_customer_status)}</dd></div>
               <div>
                 <dt>Enlace</dt>
                 <dd><Link href={`/admin/import/clientes/${linkedCustomer.id}` as Route}>Ver cliente →</Link></dd>
