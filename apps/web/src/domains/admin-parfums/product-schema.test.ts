@@ -181,6 +181,11 @@ describe("validateVariantForm", () => {
 });
 
 describe("validateInventoryForm", () => {
+  it("rejects available with zero tracked quantity, but accepts an explicit out-of-stock state", () => {
+    expect(validateInventoryForm({inventoryMode:"tracked_quantity",availabilityStatus:"available",quantityOnHand:0}).ok).toBe(false);
+    expect(validateInventoryForm({inventoryMode:"tracked_quantity",availabilityStatus:"out_of_stock",quantityOnHand:0}).ok).toBe(true);
+  });
+
   it("accepts status_only with no quantity", () => {
     const result = validateInventoryForm({
       inventoryMode: "status_only",

@@ -393,6 +393,10 @@ export function validateInventoryForm(input: {
     errors.quantityOnHand = "La cantidad solo aplica en modo \"cantidad controlada\".";
   }
 
+  if (inventoryMode === "tracked_quantity" && quantityOnHand === 0 && availabilityStatus === "available") {
+    errors.availabilityStatus = "Con cantidad cero, selecciona Agotado. Para marcar Disponible, registra una cantidad mayor a cero.";
+  }
+
   if (Object.keys(errors).length > 0) return { ok: false, errors };
 
   return {
