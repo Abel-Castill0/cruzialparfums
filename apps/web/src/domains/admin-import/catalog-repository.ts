@@ -16,6 +16,8 @@ export type ImportProductDetail={
  presentations:(PresentationRow&{offer:{price_amount:number;currency:string;availability_status:string}|null})[];
  offerCount:number;
  activeCampaignNumber:number|null;
+ activeCampaignId:string|null;
+ activeCampaignUpdatedAt:string|null;
 };
 
 export class AdminImportCatalogRepository {
@@ -44,7 +46,7 @@ export class AdminImportCatalogRepository {
     const productResult=await this.supabase.from("products").select("*").eq("id",productId).eq("business_unit_id",this.businessUnitId).maybeSingle();
     if(productResult.error)return{ok:false,error:mapPostgrestError(productResult.error)}; if(!productResult.data)return{ok:false,error:{type:"not_found"}};
     const campaignResult=campaignId
-      ?await this.supabase.from("campaigns").select("id,number").eq("id",campaignId).eq("business_unit_id",this.businessUnitId).maybeSingle()
+      ?await this.supabase.from("campaigns").select("id,number,updated_at").eq("id",campaignId).eq("business_unit_id",this.businessUnitId).maybeSingle()
       :{data:null,error:null};
     if(campaignResult.error)return{ok:false,error:mapPostgrestError(campaignResult.error)};
     const activeCampaignId=campaignResult.data?.id??null;
@@ -61,7 +63,7 @@ export class AdminImportCatalogRepository {
     const offers=(offersResult.data??[]) as unknown as {import_presentation_id:string|null;price_amount:number;currency:string;availability_status:string}[];
     const presentations=(presentationsResult.data??[]).map(p=>({...p,offer:(()=>{const o=offers.find(x=>x.import_presentation_id===p.id);return o?{price_amount:o.price_amount,currency:o.currency,availability_status:o.availability_status}:null;})()}));
     const categoryId=linksResult.data?.[0]?.category_id??null; const categories=categoriesResult.data??[];
-    return{ok:true,data:{product:productResult.data,categories,category:categories.find(c=>c.id===categoryId)??null,presentations,offerCount:offers.length,activeCampaignNumber}};
+    return{ok:true,data:{product:productResult.data,categories,category:categories.find(c=>c.id===categoryId)??null,presentations,offerCount:offers.length,activeCampaignNumber,activeCampaignId,activeCampaignUpdatedAt:campaignResult.data?.updated_at??null}};
   }
   async updateProduct(id:string,expected:string,input:{name:string;brand:string|null;categoryId:string;publicationStatus:string}){const {data,error}=await this.rpc("admin_update_import_product",{p_product_id:id,p_expected_updated_at:expected,p_name:input.name,p_brand:input.brand,p_category_id:input.categoryId,p_publication_status:input.publicationStatus});return error?{ok:false as const,error:mapPostgrestError(error)}:{ok:true as const,data:data as ProductRow};}
   async archiveProduct(id:string,expected:string,restore=false){const {data,error}=await this.rpc(restore?"admin_restore_import_product":"admin_archive_import_product",{p_product_id:id,p_expected_updated_at:expected});return error?{ok:false as const,error:mapPostgrestError(error)}:{ok:true as const,data:data as ProductRow};}

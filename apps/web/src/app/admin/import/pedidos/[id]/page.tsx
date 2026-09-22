@@ -4,7 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import { getAdminSession } from "@/lib/auth/admin-session";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { AdminImportOrdersRepository } from "@/domains/admin-import/orders-repository";
-import { importOrderStatusLabel, allowedImportOrderTransitions } from "@/domains/admin-import/import-status";
+import { importOrderStatusLabel, importCustomerStatusLabel, allowedImportOrderTransitions } from "@/domains/admin-import/import-status";
 import { isValidUuid } from "@/domains/admin-parfums/product-schema";
 import { OrderStatusControls } from "./order-status-controls";
 import { CustomerLinkingSection } from "./customer-linking-section";
@@ -26,7 +26,7 @@ function money(amount: number, currency: string): string {
 }
 
 function formatDateTime(iso: string): string {
-  return new Date(iso).toLocaleString("es-PE", { dateStyle: "medium", timeStyle: "short" });
+  return new Date(iso).toLocaleString("es-PE", { dateStyle: "medium", timeStyle: "short", timeZone: "America/Lima" });
 }
 
 function buildWhatsAppUrl(phone: string, message: string): string | null {
@@ -149,7 +149,7 @@ export default async function AdminImportOrderDetailPage({
             <div><dt>Teléfono</dt><dd>{order.customer.phone || "—"}</dd></div>
             <div>
               <dt>Estado verificado al crear</dt>
-              <dd>{order.verifiedCustomerStatusSnapshot ?? "—"}</dd>
+              <dd>{order.verifiedCustomerStatusSnapshot ? importCustomerStatusLabel(order.verifiedCustomerStatusSnapshot) : "—"}</dd>
             </div>
             <div>
               <dt>Política de depósito</dt>

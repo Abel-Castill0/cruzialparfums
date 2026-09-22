@@ -338,6 +338,36 @@ export async function setCampaignProductsAction(
 
 const PICKER_RESULT_LIMIT = 20;
 
+/** Edit one existing offer through the same atomic campaign contract as bulk/CSV.
+ * The expected campaign version guards the complete read/replace operation. */
+export async function updatePresentationOfferAction(campaignId: string, expectedUpdatedAt: string,
+  productId: string, presentationId: string, raw: Record<string, unknown>): Promise<CampaignProductsActionState> {
+  if (![campaignId, productId, presentationId].every(isValidUuid) || !isValidExpectedTimestamp(expectedUpdatedAt)) {
+    return { status: "error", message: "Recarga la página para obtener la versión vigente." };
+  }
+  const validation = validateCampaignProductItems([{ productId, importPresentationId: presentationId,
+    productVariantId: null, priceAmount: raw.priceAmount, availabilityStatus: raw.availabilityStatus, sortOrder: 0 }]);
+  if (!validation.ok) return { status: "field_errors", errors: validation.errors };
+  const repository = await campaignProductsRepositoryOrError();
+  if (!repository.ok) return repository.state;
+  const current = await repository.repository.getCampaignProducts(campaignId);
+  if (!current.ok) return {status:"error",message:friendlyCampaignProductError(current.error)};
+  if (!current.data.some(item => item.productId === productId && item.importPresentationId === presentationId)) {
+    return {status:"error",message:"Esta oferta ya no pertenece al consolidado seleccionado. Recarga la página."};
+  }
+  const input = validation.value[0]!;
+  const items = current.data.map(item => ({ productId:item.productId, productVariantId:item.productVariantId,
+    importPresentationId:item.importPresentationId, sortOrder:item.sortOrder,
+    priceAmount:item.productId===productId && item.importPresentationId===presentationId ? input.priceAmount : item.priceAmount,
+    availabilityStatus:item.productId===productId && item.importPresentationId===presentationId ? input.availabilityStatus : item.availabilityStatus }));
+  const result = await repository.repository.setCampaignProducts(campaignId, expectedUpdatedAt, items);
+  if (!result.ok) return {status:"error",message:friendlyCampaignProductError(result.error)};
+  revalidatePath(editPath(campaignId));
+  revalidatePath(`/admin/import/productos/${productId}`);
+  revalidatePath("/admin/import");
+  return {status:"success",data:result.data};
+}
+
 export type SearchEligibleProductsResult =
   | { ok: true; data: EligibleImportProduct[] }
   | { ok: false; message: string };

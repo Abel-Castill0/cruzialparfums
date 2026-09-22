@@ -58,11 +58,12 @@ export default async function AdminImportCustomersPage({
   const params = await searchParams;
   const search = typeof params.q === "string" ? params.q : "";
   const statusParam = typeof params.status === "string" ? params.status : "";
-  const page = Math.max(1, Number(params.page) || 1);
+  const page = Math.max(1, Math.floor(Number(params.page) || 1));
+  const archived = params.archived === "archived" || params.archived === "all" ? params.archived : "active";
 
   const repository = new AdminImportCustomersRepository(supabase, membership.businessUnitId);
   const listResult = await repository.list(
-    { search, status: statusParam || undefined },
+    { search, status: statusParam || undefined, archived },
     { page, pageSize: PAGE_SIZE },
   );
 
@@ -91,7 +92,7 @@ export default async function AdminImportCustomersPage({
       </header>
 
       <main>
-        <CustomerFilters initial={{ search, status: statusParam }} />
+        <CustomerFilters initial={{ search, status: statusParam, archived }} />
 
         {items.length === 0 ? (
           <p className={styles.empty}>

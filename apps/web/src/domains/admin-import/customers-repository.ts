@@ -18,6 +18,7 @@ export type ImportCustomerListItem = {
 
 export type ImportCustomerListFilters = {
   search?: string | undefined;
+  archived?: "active" | "archived" | "all";
   status?: string | undefined;
 };
 
@@ -61,6 +62,24 @@ export class AdminImportCustomersRepository {
     private readonly businessUnitId: string,
   ) {}
 
+  async orderHistory(customerId: string, requestedPage = 1) {
+    const page = Number.isSafeInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
+    const pageSize = 20;
+    const base = () => this.supabase.from("orders")
+      .select("id,order_number,status,created_at,subtotal_amount,currency", { count: "exact" })
+      .eq("business_unit_id", this.businessUnitId).eq("customer_id", customerId);
+    const [orders, completed, latest] = await Promise.all([
+      base().order("created_at", { ascending: false }).order("id").range((page - 1) * pageSize, page * pageSize - 1),
+      this.supabase.from("orders").select("id", { count: "exact", head: true })
+        .eq("business_unit_id", this.businessUnitId).eq("customer_id", customerId).eq("status", "fulfilled"),
+      base().order("created_at", { ascending: false }).order("id").limit(1),
+    ]);
+    const error = orders.error ?? completed.error ?? latest.error;
+    if (error) return { ok: false as const, error: mapPostgrestError(error) };
+    return { ok: true as const, data: { items: orders.data ?? [], total: orders.count ?? 0,
+      completed: completed.count ?? 0, latest: latest.data?.[0] ?? null, page, pageSize } };
+  }
+
   async list(
     filters: ImportCustomerListFilters,
     pagination: { page: number; pageSize: number },
@@ -77,9 +96,12 @@ export class AdminImportCustomersRepository {
       .order("created_at", { ascending: false })
       .range(from, to);
 
+    if (filters.archived === "archived") query = query.not("archived_at", "is", null);
+    else if (filters.archived !== "all") query = query.is("archived_at", null);
+
     const search = filters.search?.trim();
     if (search) {
-      const term = search.replace(/[%_]/g, (char) => `\\${char}`);
+      const term = search.replace(/[,().]/g, " ").replace(/[%_]/g, (char) => `\\${char}`);
       query = query.or(`full_name.ilike.%${term}%,phone.ilike.%${term}%`);
     }
 

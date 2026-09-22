@@ -1,4 +1,6 @@
 import type { Metadata, Route } from "next";
+import Link from "next/link";
+import { isValidUuid } from "@/domains/admin-parfums/product-schema";
 import { redirect } from "next/navigation";
 import { getAdminSession } from "@/lib/auth/admin-session";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -24,7 +26,9 @@ type BlockerRow = { total_count?: number };
 // modules or a raw counter dump. Every item is a real query, deep-linked to
 // the filtered screen that acts on it; a zero/undetermined count is left
 // out rather than shown.
-export default async function AdminImportPage() {
+export default async function AdminImportPage({searchParams}:{searchParams:Promise<Record<string,string|string[]|undefined>>}) {
+  const params=await searchParams;
+  const selectedId=typeof params.campaign === "string" && isValidUuid(params.campaign) ? params.campaign : null;
   const result = await getAdminSession();
 
   if (result.status === "not_configured") redirect("/admin");
@@ -52,8 +56,9 @@ export default async function AdminImportPage() {
     const [campaignResult, orderCounts, pendingCustomers, contactSetting, complaintCounts] = await Promise.all([
       supabase
         .from("campaigns")
-        .select("id,number,status")
+        .select("id,number,status,closes_at")
         .eq("business_unit_id", membership.businessUnitId)
+        .or(selectedId ? `id.eq.${selectedId}` : "archived_at.is.null")
         .is("archived_at", null)
         .order("number", { ascending: false })
         .limit(1)
@@ -71,6 +76,11 @@ export default async function AdminImportPage() {
 
     if (campaign) {
       campaignSubtitle = `Consolidado #${campaign.number} · ${campaignStatusLabel(campaign.status)}.`;
+      items.push({label:`Continuar preparación del consolidado #${campaign.number}`,href:`/admin/import/consolidados/${campaign.id}` as Route});
+      if(campaign.closes_at) campaignSubtitle += ` Cierre de solicitudes: ${new Date(campaign.closes_at).toLocaleString("es-PE",{timeZone:"America/Lima",dateStyle:"medium",timeStyle:"short"})}.`;
+      const priceResult=await rpc("admin_list_import_publication_blockers",{p_campaign_id:campaign.id,p_blocker:"offer_invalid_price",p_page:1,p_page_size:1});
+      const priceCount=((priceResult.data??[]) as BlockerRow[])[0]?.total_count??0;
+      if(priceCount>0) items.push({label:`${priceCount} ofertas con precio pendiente de corregir`,href:`/admin/import/publicacion?blocker=offer_invalid_price&campaign=${campaign.id}` as Route,tone:"attention"});
 
       const [readinessResult, unpublishedResult] = await Promise.all([
         rpc("admin_get_import_publication_readiness", { p_campaign_id: campaign.id }),
@@ -154,11 +164,11 @@ export default async function AdminImportPage() {
   }
 
   return (
-    <AdminActionCenter
+    <><p style={{padding:"16px 24px"}}><Link href="/admin/import/consolidados">Seleccionar otro consolidado</Link></p><AdminActionCenter
       title="Hoy en Cruzial Import"
       subtitle={campaignSubtitle}
       items={items}
       emptyMessage="No hay acciones pendientes en este momento. Todo lo operativo está al día."
-    />
+    /></>
   );
 }

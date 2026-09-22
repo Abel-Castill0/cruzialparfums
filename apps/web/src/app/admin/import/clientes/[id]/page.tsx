@@ -4,7 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import { getAdminSession } from "@/lib/auth/admin-session";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { AdminImportCustomersRepository } from "@/domains/admin-import/customers-repository";
-import { importCustomerStatusLabel } from "@/domains/admin-import/import-status";
+import { importCustomerStatusLabel, importOrderStatusLabel } from "@/domains/admin-import/import-status";
 import { isValidUuid } from "@/domains/admin-parfums/product-schema";
 import { CustomerEditForm } from "./customer-edit-form";
 import { CustomerStatusControls } from "./customer-status-controls";
@@ -23,13 +23,14 @@ export async function generateMetadata({
 }
 
 function formatDate(iso: string): string {
-  return new Date(iso).toLocaleString("es-PE", { dateStyle: "medium", timeStyle: "short" });
+  return new Date(iso).toLocaleString("es-PE", { dateStyle: "medium", timeStyle: "short", timeZone: "America/Lima" });
 }
 
 export default async function AdminImportCustomerDetailPage({
-  params,
+  params, searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { id } = await params;
   if (!isValidUuid(id)) notFound();
@@ -61,9 +62,11 @@ export default async function AdminImportCustomerDetailPage({
   }
 
   const repository = new AdminImportCustomersRepository(supabase, membership.businessUnitId);
-  const [detailResult, depositPercentages] = await Promise.all([
+  const query = await searchParams;
+  const [detailResult, depositPercentages, history] = await Promise.all([
     repository.getById(id),
     repository.getActiveDepositPercentages(),
+    repository.orderHistory(id, Number(query.page) || 1),
   ]);
 
   if (!detailResult.ok) {
@@ -112,6 +115,28 @@ export default async function AdminImportCustomerDetailPage({
             ) : null}
             <div><dt>Estado verificado</dt><dd>{importCustomerStatusLabel(customer.verifiedCustomerStatus)}</dd></div>
           </dl>
+        </section>
+
+        <section className={styles.panel} aria-labelledby="history-heading">
+          <h2 id="history-heading">Historial de pedidos</h2>
+          {!history.ok ? <p role="alert">No se pudo cargar el historial. Recarga para volver a intentarlo.</p> : <>
+            <p>{history.data.total} pedidos · {history.data.completed} pedidos completados</p>
+            <p>Este historial muestra pedidos vinculados a este cliente. No cambia automáticamente su estado ni las condiciones de pedidos anteriores.</p>
+            {history.data.latest ? <p>Último pedido: <Link href={`/admin/import/pedidos/${history.data.latest.id}` as Route}>{history.data.latest.order_number}</Link> · {formatDate(history.data.latest.created_at)}</p> : <p>Aún no hay pedidos vinculados.</p>}
+            <ul className={styles.list}>
+              {history.data.items.map(order => <li key={order.id} className={styles.row}>
+                <Link href={`/admin/import/pedidos/${order.id}` as Route}>
+                  <strong>{order.order_number}</strong> · {importOrderStatusLabel(order.status)}
+                  <p>{formatDate(order.created_at)} · {order.currency} {order.subtotal_amount.toFixed(2)}</p>
+                </Link>
+              </li>)}
+            </ul>
+            {history.data.total > history.data.pageSize ? <nav className={styles.pagination} aria-label="Paginación del historial">
+              {history.data.page > 1 ? <Link href={`?page=${history.data.page - 1}` as Route}>Anterior</Link> : null}
+              <span>Página {history.data.page}</span>
+              {history.data.page * history.data.pageSize < history.data.total ? <Link href={`?page=${history.data.page + 1}` as Route}>Siguiente</Link> : null}
+            </nav> : null}
+          </>}
         </section>
 
         {isAdmin && !isArchived ? (
