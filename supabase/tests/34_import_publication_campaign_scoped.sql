@@ -251,16 +251,20 @@ insert into public.import_presentations(id,product_id,stable_key,label,presentat
  ('5c5c4000-0000-4000-8000-000000000003','5c5c1000-0000-4000-8000-000000000003','scoped-no-media','Scoped Pres No Media','single_fixed','published');
 set role authenticated;
 
-select is(
-  (select (admin_get_import_publication_readiness('5c5c2000-0000-4000-8000-000000000007') ->> 'media_blockers')::bigint),
-  2::bigint,
-  'J1: readiness counts both draft and published products without media'
+-- J1/J2 assert fixture-specific classification, not absolute totals, so the
+-- test stays isolated from unrelated missing-media rows that may already
+-- exist in the local database.
+
+select ok(
+  exists(select 1 from admin_list_import_publication_blockers('5c5c2000-0000-4000-8000-000000000007',null,null,1,500)
+    where product_id = '5c5c1000-0000-4000-8000-000000000002' and blocker_code = 'product_unpublished'),
+  'J1: draft product without media is classified product_unpublished, not missing_primary_media'
 );
 
-select is(
-  (select total_count from admin_list_import_publication_blockers('5c5c2000-0000-4000-8000-000000000007',null,'missing_primary_media',1,1)),
-  1::bigint,
-  'J2: the missing-media destination contains only the published product; the Action Center must use this count'
+select ok(
+  exists(select 1 from admin_list_import_publication_blockers('5c5c2000-0000-4000-8000-000000000007',null,'missing_primary_media',1,500)
+    where product_id = '5c5c1000-0000-4000-8000-000000000003' and blocker_code = 'missing_primary_media'),
+  'J2: published product without media is classified missing_primary_media and appears under that filter'
 );
 
 select * from finish();

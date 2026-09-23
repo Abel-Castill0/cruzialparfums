@@ -27,6 +27,7 @@ jobs:
       - run: npm ci
       - run: npm run catalog:check
       - run: npm run commercial:check
+      - run: npm run test:4j4b
       - run: npm run lint
       - run: npm run typecheck
       - run: npm run test
@@ -52,5 +53,37 @@ jobs:
       - run: supabase start -x studio,imgproxy,edge-runtime,logflare,vector
       - run: node scripts/prepare-commercial-reconciliation-test.mjs
       - run: supabase test db
+      - if: always()
+        run: supabase stop --no-backup
+
+  e2e:
+    name: Browser E2E (public · responsive · MFA admin)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.117.0
+      # Fresh, disposable local stack. The runner (scripts/local-admin-browser.mjs)
+      # refuses anything but a loopback Supabase URL, so this can never touch
+      # a hosted project. No Supabase/password/TOTP/HMAC secret is used: the
+      # runner mints random local identities and a random HMAC secret per run.
+      - run: supabase start -x studio,imgproxy,edge-runtime,logflare,vector
+      - run: npm ci
+        working-directory: apps/web
+      - run: npx playwright install --with-deps chromium
+        working-directory: apps/web
+      # Production bundle built against the local Supabase stack, matching
+      # what the Playwright webServer runs (`next start`, not the dev server).
+      - run: node scripts/local-admin-browser.mjs --build
+      # --seed loads the fixtures then runs the full Playwright suite itself
+      # (the runner does not exit after seeding), so no separate run step follows.
+      - run: node scripts/local-admin-browser.mjs --seed
       - if: always()
         run: supabase stop --no-backup
