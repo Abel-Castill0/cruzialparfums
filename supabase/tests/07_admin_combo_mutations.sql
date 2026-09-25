@@ -229,12 +229,17 @@ select throws_ok(
 -- Archived-product-variant rejection for a *new* addition: archive Product C
 -- (and its variant is untouched, but the product itself going archived means
 -- a *new* combo could not add it) — actually exercised via a fresh product.
+-- Gate A3 revoked authenticated's direct INSERT grant on products/
+-- product_variants/inventory, so this fixture-only setup (not itself under
+-- test) runs as the table owner, same as the fixtures above.
+reset role;
 insert into public.products (id, business_unit_id, slug, name, publication_status, archived_at) values
   ('e0000000-0000-4000-8000-00000000000e', '11111111-1111-4111-8111-111111111111', 'combo-test-archived-product', 'TEST Archived Product', 'archived', now());
 insert into public.product_variants (id, product_id, label, variant_kind, price_amount, sort_order) values
   ('e1000000-0000-4000-8000-00000000000e', 'e0000000-0000-4000-8000-00000000000e', '3 ml', 'decant', 8.00, 0);
 insert into public.inventory (product_variant_id, inventory_mode, availability_status) values
   ('e1000000-0000-4000-8000-00000000000e', 'status_only', 'available');
+set local role authenticated;
 
 select throws_ok(
   $$select public.admin_set_combo_composition(
