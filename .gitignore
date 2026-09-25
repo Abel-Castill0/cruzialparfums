@@ -21,3 +21,8 @@ tmp/
 
 # Node dependencies
 node_modules/
+
+.vercel
+
+# Local logical database backups (Gate A6) — never committed
+backups/

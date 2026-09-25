@@ -125,3 +125,50 @@ unchanged.
 CLI version (54.15.1) — test the exact behavior on a disposable/non-secret
 variable first, or do the narrowing directly in the Vercel dashboard UI
 (which does support editing a variable's environment targets in place).
+
+## 4. Resolution (2026-09-25, Gate A4): Preview Supabase binding removed
+
+Re-verified via `vercel env ls --scope cruzial` (names/targets only) before
+touching anything: `NEXT_PUBLIC_SUPABASE_URL` and
+`NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` were each **two separate rows** with
+different creation timestamps (Production 6d old, Preview 13–17d old) — not
+a single shared `Production, Preview` row like the §3 incident. This was
+confirmed again immediately after removal: Production's rows are still
+present, unchanged, only the Preview-target rows are gone.
+
+Since this Supabase organization still has exactly one project
+(`iyxidhglyqkzoziyewlc`, confirmed via `list_projects`, still Free tier, no
+database branches) and §2's "second Supabase project" option was explicitly
+out of scope to create unilaterally, this applies the brief's preferred
+zero-cost fallback instead: **Preview no longer has any Supabase
+URL/publishable-key binding at all.**
+`apps/web/src/lib/supabase/env.ts`'s `isSupabaseConfigured()` /
+`readSupabasePublicEnv()` already treat a missing URL or key as an honest
+"backend not configured" state rather than a crash (used by the server/
+client factories and the admin login page), so this is not a new code path
+— it activates an existing one.
+
+**Post-fix state:**
+
+| Variable | Production | Preview |
+|---|---|---|
+| `SUPABASE_SECRET_KEY` | present | absent (since §3) |
+| `NEXT_PUBLIC_SUPABASE_URL` | present, unchanged | **removed** |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | present, unchanged | **removed** |
+
+Preview can no longer reach any Supabase project — service-role (§3) and
+now anon/RLS-authenticated access (this section) are both closed. A Preview
+deployment will render the app's existing "not configured" UI for any
+Supabase-backed page (storefront, admin login) until a dedicated staging
+project exists (§2, option 1) and gets its own Preview-only rows pointing
+at it.
+
+**Not yet re-verified:** a fresh Preview *build* picking up this change and
+rendering correctly at runtime. A local `vercel deploy` from this monorepo
+currently fails before it can test this (`File size limit exceeded (100
+MB)` — the CLI's file-collection walks the full working tree rather than
+respecting the project's `apps/web` Root Directory setting the way a
+GitHub-triggered build does; a `.vercelignore` was not investigated as part
+of this Gate). The next Preview build triggered by pushing this branch
+(the normal, GitHub-integration deploy path, unaffected by this local CLI
+limitation) will be the first real confirmation.
