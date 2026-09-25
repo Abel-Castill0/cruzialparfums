@@ -92,32 +92,101 @@ node scripts/backup-production-db.mjs   # dumps the production project
 
 ## Restore validation
 
-A backup that has never been restored is unverified. Validate against a
-disposable local stack, never against the hosted project, and restore in
-the same order the files were produced — roles, then schema, then data:
+A backup that has never been restored is unverified. The restore target
+must be a genuinely **empty** Supabase project — not Cruzial's normal local
+dev stack. `supabase/config.toml` has `[db.migrations] enabled = true` and
+`[db.seed] enabled = true`, so `supabase start`/`supabase db reset` in this
+repo always applies the full Cruzial migration chain and seed data first —
+restoring on top of that is not a clean test and can produce object/data
+conflicts. Never validate against hosted Production either.
+
+### 1. Stand up a disposable, empty Supabase project
+
+In a directory **outside this repo** (so `supabase start` cannot find
+Cruzial's migrations via ancestor-directory search), and with any locally
+running Cruzial stack stopped first (`npx supabase stop`, from this repo,
+to free the default ports):
 
 ```bash
-npx supabase stop --no-backup   # if a local stack is already running
-npx supabase start
+mkdir -p /tmp/cruzial-restore-check && cd /tmp/cruzial-restore-check
+npx supabase init --force      # scaffolds an EMPTY project: no migrations/, no seed.sql
+npx supabase start -x studio,imgproxy,edge-runtime,logflare,vector
 DB_URL=$(npx supabase status -o env | grep DB_URL | cut -d'"' -f4)
-
-psql "$DB_URL" -f backups/cruzial-<project-ref>-<timestamp>/roles.sql
-psql "$DB_URL" -f backups/cruzial-<project-ref>-<timestamp>/schema.sql
-psql "$DB_URL" -f backups/cruzial-<project-ref>-<timestamp>/data.sql
 ```
 
-Then, against that local restore, sanity-check (never against production):
+This boots the base Supabase platform (Postgres, GoTrue, PostgREST,
+Realtime, Storage) with none of Cruzial's schema or data — exactly the
+target a restore should land on.
 
-- `select count(*) from public.products;` and a couple of other core
-  tables return plausible, non-zero counts.
-- Spot-check one recent `public.orders` row and its `public.order_lines`
-  join resolve correctly.
-- `npx supabase test db` may not pass cleanly against restored production
-  data (pgTAP's fixtures assume a specific seeded state, not whatever real
-  data happens to be in the dump) — treat a pgTAP failure here as
-  informational about fixture mismatch, not a sign the backup itself is
-  bad. Re-run pgTAP against a fresh empty stack (`supabase db reset`) to
-  confirm the test suite itself is still green.
+### 2. Restore in order, atomically, with clear failure signaling
 
-When done, tear the local stack back down (`npx supabase stop`) so the
-restored PII doesn't linger on a laptop disk longer than needed.
+```bash
+psql "$DB_URL" -v ON_ERROR_STOP=1 --single-transaction -f roles.sql
+psql "$DB_URL" -v ON_ERROR_STOP=1 --single-transaction -f schema.sql
+psql "$DB_URL" -v ON_ERROR_STOP=1 --single-transaction -f data.sql
+```
+
+`--single-transaction` makes each file atomic (a failure partway through
+one file rolls back that file's changes, not just stops mid-statement);
+`ON_ERROR_STOP=1` makes the command itself fail loudly and exit non-zero
+instead of continuing past an error. Three separate invocations (not one
+chained `-f roles.sql -f schema.sql -f data.sql`) because `psql` only
+honors its last `-f` when given more than one — official Supabase restore
+guidance runs them as separate commands for this reason.
+
+**Two narrow, confirmed caveats** (found by actually running this restore
+against a real local dump, not assumed):
+
+- `roles.sql` restoring against a non-hosted target can fail on
+  `GRANT SET ON PARAMETER "log_min_messages" TO "supabase_realtime_admin";`
+  — Supabase's local/managed `postgres` role is not a true PostgreSQL
+  superuser and cannot itself grant a parameter-level privilege. This one
+  statement only tunes Realtime's own log verbosity; dropping it (`grep -v
+  "GRANT SET ON PARAMETER"`) does not affect restored schema or data.
+- `data.sql` can fail with `permission denied` on `storage.*` tables
+  (`buckets_vectors`, `vector_indexes`, etc.) — these are RLS-protected,
+  owned by `supabase_storage_admin`, and `postgres` has no `BYPASSRLS`
+  locally. Cruzial stores media in Cloudinary, not Supabase Storage, so
+  these tables are always empty for this project and safe to skip.
+
+`scripts/restore-validate-backup.mjs` applies both filters automatically —
+prefer it over the raw three-command sequence above:
+
+```bash
+node scripts/restore-validate-backup.mjs \
+  --backup-dir backups/cruzial-<project-ref>-<timestamp> \
+  --db-url "$DB_URL"
+```
+
+### 3. Post-restore checks (counts and schema objects only — never PII)
+
+The script prints row counts for `products`, `campaigns`, `orders`,
+`customers`, `complaint_book_entries`, and `admin_memberships`, plus
+presence checks for: RLS enabled on `inventory` / `complaint_book_entries`
+/ `audit_log`; the `admin_update_inventory`, `admin_create_variant`, and
+`check_abuse_rate_limit` functions; and the
+`inventory_tracked_zero_not_available_check` constraint. A restore of real
+production data should show non-zero counts for at least `products` and
+`admin_memberships`; a restore of local dev data may legitimately show
+zeros (the local seed doesn't populate these tables) — that's still a
+valid mechanism test, just not evidence about production data.
+
+A successful run of this proves the SQL backup restores cleanly and the
+schema/RPC/constraint surface came back intact. It does **not** by itself
+restore or validate:
+
+- **Cloudinary-hosted media** (see "What this backup does NOT cover" above).
+- **Vercel/platform configuration** (env vars, domains, deployment settings).
+- **Any other external provider configuration** (Cloudinary account
+  settings, DNS, etc.).
+
+### 4. Tear down
+
+```bash
+cd /tmp/cruzial-restore-check && npx supabase stop --no-backup
+cd - && npx supabase start   # bring your normal Cruzial local stack back, if you use it
+rm -rf /tmp/cruzial-restore-check
+```
+
+Don't let the restored PII linger on a laptop disk longer than the check
+takes.
