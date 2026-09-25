@@ -15,6 +15,12 @@
 --   - the retention sweep never removes a row still inside an active window
 --   - the table stores only the pseudonymized/contract columns (no raw
 --     IP/phone column exists)
+--
+-- Gate A correction (20260925180000): public.check_order_request_rate_limit
+-- now writes purpose = 'legacy_shared' internally, not 'order_request' --
+-- the fixture rows below that simulate its own prior writes are inserted
+-- with purpose = 'legacy_shared' explicitly so the sliding-window counts
+-- this file exercises still line up with what the RPC itself now reads.
 
 begin;
 create extension if not exists pgtap with schema extensions;
@@ -101,8 +107,8 @@ select is(
 -- =========================================================================
 -- E. IP sliding windows: 12/10min then deny; 40/1h then deny
 -- =========================================================================
-insert into private.order_request_rate_events (business_unit_code, request_id, ip_hash, phone_hash, created_at)
-select 'parfums', gen_random_uuid(), repeat('a1', 32), lpad(to_hex(n), 64, '0'), now() - interval '2 minutes'
+insert into private.order_request_rate_events (business_unit_code, purpose, request_id, ip_hash, phone_hash, created_at)
+select 'parfums', 'legacy_shared', gen_random_uuid(), repeat('a1', 32), lpad(to_hex(n), 64, '0'), now() - interval '2 minutes'
 from generate_series(1, 11) as n;
 
 select results_eq(
@@ -119,8 +125,8 @@ select results_eq(
   'the 13th new request from the same IP within 10 minutes is denied'
 );
 
-insert into private.order_request_rate_events (business_unit_code, request_id, ip_hash, phone_hash, created_at)
-select 'parfums', gen_random_uuid(), repeat('a2', 32), lpad(to_hex(100 + n), 64, '0'), now() - interval '40 minutes'
+insert into private.order_request_rate_events (business_unit_code, purpose, request_id, ip_hash, phone_hash, created_at)
+select 'parfums', 'legacy_shared', gen_random_uuid(), repeat('a2', 32), lpad(to_hex(100 + n), 64, '0'), now() - interval '40 minutes'
 from generate_series(1, 39) as n;
 
 select results_eq(
@@ -140,8 +146,8 @@ select results_eq(
 -- =========================================================================
 -- F. Phone sliding windows: 5/1h then deny; 12/24h then deny
 -- =========================================================================
-insert into private.order_request_rate_events (business_unit_code, request_id, ip_hash, phone_hash, created_at)
-select 'parfums', gen_random_uuid(), null, repeat('c1', 32), now() - interval '10 minutes'
+insert into private.order_request_rate_events (business_unit_code, purpose, request_id, ip_hash, phone_hash, created_at)
+select 'parfums', 'legacy_shared', gen_random_uuid(), null, repeat('c1', 32), now() - interval '10 minutes'
 from generate_series(1, 4) as n;
 
 select results_eq(
@@ -158,8 +164,8 @@ select results_eq(
   'the 6th new request from the same phone within 1 hour is denied'
 );
 
-insert into private.order_request_rate_events (business_unit_code, request_id, ip_hash, phone_hash, created_at)
-select 'parfums', gen_random_uuid(), null, repeat('c2', 32), now() - interval '2 hours'
+insert into private.order_request_rate_events (business_unit_code, purpose, request_id, ip_hash, phone_hash, created_at)
+select 'parfums', 'legacy_shared', gen_random_uuid(), null, repeat('c2', 32), now() - interval '2 hours'
 from generate_series(1, 11) as n;
 
 select results_eq(
@@ -211,11 +217,11 @@ select is(
 -- =========================================================================
 -- I. Retention sweep never removes a row still inside an active window
 -- =========================================================================
-insert into private.order_request_rate_events (business_unit_code, request_id, ip_hash, phone_hash, created_at)
-values ('parfums', gen_random_uuid(), null, repeat('d1', 32), now() - interval '23 hours');
+insert into private.order_request_rate_events (business_unit_code, purpose, request_id, ip_hash, phone_hash, created_at)
+values ('parfums', 'legacy_shared', gen_random_uuid(), null, repeat('d1', 32), now() - interval '23 hours');
 
-insert into private.order_request_rate_events (business_unit_code, request_id, ip_hash, phone_hash, created_at)
-values ('parfums', gen_random_uuid(), null, repeat('d2', 32), now() - interval '50 hours');
+insert into private.order_request_rate_events (business_unit_code, purpose, request_id, ip_hash, phone_hash, created_at)
+values ('parfums', 'legacy_shared', gen_random_uuid(), null, repeat('d2', 32), now() - interval '50 hours');
 
 -- Any RPC call runs the opportunistic sweep (rows older than 48h).
 select public.check_order_request_rate_limit(

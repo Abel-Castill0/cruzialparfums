@@ -13,11 +13,16 @@
 --     cross-purpose duplicate (idempotency is (business_unit, purpose,
 --     request_id), not (business_unit, request_id))
 --   - the pre-existing public.check_order_request_rate_limit signature is
---     now a compatibility wrapper that always writes purpose = 'order_request'
+--     now a compatibility wrapper. Gate A correction (20260925180000): it
+--     writes purpose = 'legacy_shared', not 'order_request' -- a caller on
+--     that old, purpose-less signature cannot disambiguate order vs.
+--     complaint, so its events must not silently become order quota. See
+--     supabase/tests/43_rate_limit_legacy_purpose_transition.sql for the
+--     dedicated legacy_shared coverage.
 
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(12);
+select plan(13);
 
 -- =========================================================================
 -- A. Privilege matrix on the new RPC
@@ -119,8 +124,10 @@ select is(
 );
 
 -- =========================================================================
--- E. Compatibility wrapper: public.check_order_request_rate_limit always
---    writes purpose = 'order_request'
+-- E. Compatibility wrapper: public.check_order_request_rate_limit writes
+--    purpose = 'legacy_shared' (Gate A correction, 20260925180000) -- not
+--    'order_request', since a caller on this old signature never
+--    disambiguated purpose in the first place
 -- =========================================================================
 select public.check_order_request_rate_limit(
   'parfums', '20000000-0000-4000-8000-000000000099'::uuid, null, repeat('e5', 32));
@@ -128,8 +135,8 @@ select public.check_order_request_rate_limit(
 select is(
   (select purpose from private.order_request_rate_events
    where request_id = '20000000-0000-4000-8000-000000000099'::uuid),
-  'order_request',
-  'the pre-Gate-A2 RPC signature still writes purpose = order_request'
+  'legacy_shared',
+  'the pre-Gate-A2 RPC signature writes purpose = legacy_shared, not order_request'
 );
 
 select results_eq(
@@ -137,6 +144,13 @@ select results_eq(
       'complaint', 'parfums', '20000000-0000-4000-8000-0000000000aa'::uuid, null, repeat('e5', 32))$$,
   $$VALUES (true)$$,
   'an event written via the old wrapper does not consume the complaint quota for the same phone'
+);
+
+select results_eq(
+  $$SELECT allowed FROM public.check_abuse_rate_limit(
+      'order_request', 'parfums', '20000000-0000-4000-8000-0000000000ab'::uuid, null, repeat('e5', 32))$$,
+  $$VALUES (true)$$,
+  'an event written via the old wrapper does not consume the order_request quota for the same phone either'
 );
 
 reset role;
