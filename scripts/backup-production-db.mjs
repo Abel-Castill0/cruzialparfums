@@ -73,6 +73,22 @@ export function readProjectRef(argv) {
   return DEFAULT_PROJECT_REF;
 }
 
+// Per the Supabase CLI's own documentation (`supabase link --help`):
+// "Values that are exactly 20 lowercase letters are always treated as
+// project refs." A strict allowlist on this exact shape, rather than a
+// blacklist of dangerous characters, is what keeps a malformed or hostile
+// --project-ref value from ever reaching a spawned command at all —
+// confirmed the real production ref (iyxidhglyqkzoziyewlc) matches.
+const PROJECT_REF_PATTERN = /^[a-z]{20}$/;
+
+/** Pure validation for --project-ref. Returns { ok: true } or { ok: false, reason }. */
+export function validateProjectRef(ref) {
+  if (typeof ref !== "string" || !PROJECT_REF_PATTERN.test(ref)) {
+    return { ok: false, reason: `--project-ref must be exactly 20 lowercase letters (the Supabase project ref format), got: ${JSON.stringify(ref)}` };
+  }
+  return { ok: true };
+}
+
 export function readOutputDirArg(argv) {
   const flagIndex = argv.indexOf("--output-dir");
   if (flagIndex !== -1 && argv[flagIndex + 1]) return argv[flagIndex + 1];
@@ -101,6 +117,18 @@ const SYNCED_DIR_MARKERS = [
   "clouddocs",
 ];
 
+// On Windows, npx.cmd can only be spawned with shell: true (see
+// resolveNpxCommand below) — and confirmed empirically on this exact host
+// that shell: true does NOT safely isolate array elements from each other:
+// spawnSync("npx.cmd", ["--version", "&&", "echo", "INJECTED"], { shell:
+// true }) genuinely ran the injected command. A strict character allowlist
+// on --output-dir (checked before this value ever reaches spawnSync) is
+// what actually closes that path, not array-argument structure. Allows the
+// characters a real absolute path legitimately needs — letters, digits,
+// space, and . _ - : \ / ( ) — and nothing a Windows shell treats as
+// composition, redirection, or expansion syntax (& | > < ^ % ! " ' `, CR/LF).
+const SAFE_PATH_CHARS = /^[A-Za-z0-9 _.:()\\/-]+$/;
+
 /**
  * Pure validation for --output-dir. Never touches the filesystem. Returns
  * { ok: true } or { ok: false, reason } — callers must fail closed on
@@ -112,6 +140,9 @@ export function validateOutputDir(outputDir, cwd) {
   }
   if (!isAbsolute(outputDir)) {
     return { ok: false, reason: `--output-dir must be an absolute path, got: ${outputDir}` };
+  }
+  if (!SAFE_PATH_CHARS.test(outputDir)) {
+    return { ok: false, reason: "--output-dir contains a character outside the safe allowlist (letters, digits, space, . _ - : \\ / ( ) only) — refusing before this value ever reaches a spawned command" };
   }
 
   const resolvedOut = resolve(outputDir);
@@ -141,6 +172,22 @@ export function validateOutputDir(outputDir, cwd) {
  */
 export function resolveNpxCommand(platform = process.platform) {
   return platform === "win32" ? { command: "npx.cmd", shell: true } : { command: "npx", shell: false };
+}
+
+/**
+ * Wraps a single argument in double quotes for safe inclusion in a Windows
+ * shell command line — only ever applied when shell: true (see
+ * resolveNpxCommand). Confirmed empirically on this host that Node's
+ * automatic array-to-command-line conversion for shell: true does NOT
+ * reliably quote an argument containing spaces: a --file path with a space
+ * in it was split into several unrelated positional arguments by the
+ * spawned CLI. This function is only ever applied to arguments that have
+ * already passed validateOutputDir/validateProjectRef's strict character
+ * allowlists, which exclude the double-quote character itself, so simple
+ * wrapping is sufficient — there is nothing to escape.
+ */
+export function quoteForWindowsShell(arg) {
+  return arg.length === 0 || /\s/.test(arg) ? `"${arg}"` : arg;
 }
 
 /**
@@ -183,11 +230,21 @@ async function sha256File(path) {
 function runStep(step) {
   console.log(`[backup] dumping ${step.name} -> ${step.file}`);
   const { command, shell } = resolveNpxCommand();
-  const result = spawnSync(command, step.args, {
-    stdio: ["inherit", "inherit", "inherit"],
-    env: process.env,
-    shell,
-  });
+  // shell: true needs a single, manually-quoted command-line string, not an
+  // args array — Node does not reliably quote array elements containing
+  // spaces for cmd.exe (confirmed empirically). Every other platform keeps
+  // passing command + args as an array straight to the process, no shell.
+  const result = shell
+    ? spawnSync([command, ...step.args].map(quoteForWindowsShell).join(" "), {
+        stdio: ["inherit", "inherit", "inherit"],
+        env: process.env,
+        shell: true,
+      })
+    : spawnSync(command, step.args, {
+        stdio: ["inherit", "inherit", "inherit"],
+        env: process.env,
+        shell: false,
+      });
   if (result.status !== 0) {
     throw new Error(`[backup] ${step.name} dump failed (exit ${result.status ?? "unknown"})`);
   }
@@ -200,6 +257,12 @@ async function main() {
   const argv = process.argv.slice(2);
   const projectRef = readProjectRef(argv);
   const outputDirArg = readOutputDirArg(argv);
+
+  const refCheck = validateProjectRef(projectRef);
+  if (!refCheck.ok) {
+    console.error(`[backup] refusing to run: ${refCheck.reason}`);
+    process.exit(1);
+  }
 
   const check = validateOutputDir(outputDirArg, process.cwd());
   if (!check.ok) {

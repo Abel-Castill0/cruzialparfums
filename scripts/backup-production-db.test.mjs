@@ -8,11 +8,13 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   buildDumpCommands,
+  quoteForWindowsShell,
   readOutputDirArg,
   readProjectRef,
   resolveNpxCommand,
   timestamp,
   validateOutputDir,
+  validateProjectRef,
 } from "./backup-production-db.mjs";
 
 test("readProjectRef falls back to the default when --project-ref is absent", () => {
@@ -135,4 +137,93 @@ test("each step writes its own named file under the output directory", () => {
   assert.ok(steps[0].file.endsWith("roles.sql"));
   assert.ok(steps[1].file.endsWith("schema.sql"));
   assert.ok(steps[2].file.endsWith("data.sql"));
+});
+
+// --- P2 follow-up: shell:true input hardening ---------------------------
+//
+// Confirmed empirically on this actual Windows host that shell: true does
+// NOT safely isolate array elements from each other: spawnSync("npx.cmd",
+// ["--version", "&&", "echo", "INJECTED"], { shell: true }) genuinely ran
+// the injected command, even with "&&" as its own array entry. These tests
+// prove the strict allowlists reject that class of value before it can
+// ever reach spawnSync.
+
+test("validateProjectRef accepts the real production ref (exactly 20 lowercase letters)", () => {
+  assert.deepEqual(validateProjectRef("iyxidhglyqkzoziyewlc"), { ok: true });
+});
+
+test("validateProjectRef rejects anything not exactly 20 lowercase letters", () => {
+  for (const bad of [
+    "tooshort",
+    "waytoolongtobearealprojectref12345",
+    "iyxidhglyqkzoziyewl1", // digit
+    "IYXIDHGLYQKZOZIYEWLC", // uppercase
+    "",
+    undefined,
+    null,
+  ]) {
+    assert.equal(validateProjectRef(bad).ok, false, `expected ${JSON.stringify(bad)} to be rejected`);
+  }
+});
+
+test("validateProjectRef rejects shell metacharacter injection attempts", () => {
+  for (const bad of [
+    "foo&whoami",
+    "foo|whoami",
+    "foo>file",
+    "foo^&whoami",
+    "%COMSPEC%",
+    'foo"bar',
+    "foo'bar",
+    "foo\rbar",
+    "foo\nbar",
+    "foo bar",
+  ]) {
+    const result = validateProjectRef(bad);
+    assert.equal(result.ok, false, `expected ${JSON.stringify(bad)} to be rejected`);
+  }
+});
+
+test("validateOutputDir accepts a safe absolute Windows path containing spaces", () => {
+  const result = validateOutputDir("C:\\Cruzial Private Backups", "C:\\Users\\ABEL\\OneDrive\\Desktop\\cruzialparfums");
+  assert.equal(result.ok, true);
+});
+
+test("validateOutputDir rejects shell metacharacter injection attempts", () => {
+  const cwd = "C:\\repo";
+  for (const bad of [
+    "C:\\backups && whoami",
+    "C:\\backups & whoami",
+    "C:\\backups | whoami",
+    "C:\\backups > evil.txt",
+    "C:\\backups ^& whoami",
+    "%COMSPEC%\\backups",
+    'C:\\backups"evil',
+    "C:\\backups'evil",
+    "C:\\backups\revil",
+    "C:\\backups\nevil",
+    "C:\\backups`whoami`",
+    "C:\\backups$(whoami)",
+  ]) {
+    const result = validateOutputDir(bad, cwd);
+    assert.equal(result.ok, false, `expected ${JSON.stringify(bad)} to be rejected`);
+  }
+});
+
+test("validateOutputDir still rejects OneDrive/repo paths after the character allowlist check", () => {
+  assert.equal(validateOutputDir("C:\\Users\\ABEL\\OneDrive\\backups", "C:\\somewhere-else").ok, false);
+  assert.equal(validateOutputDir("C:\\repo\\backups", "C:\\repo").ok, false);
+});
+
+test("quoteForWindowsShell wraps an argument containing a space in double quotes", () => {
+  assert.equal(quoteForWindowsShell("C:\\Cruzial Private Backups\\roles.sql"), '"C:\\Cruzial Private Backups\\roles.sql"');
+});
+
+test("quoteForWindowsShell leaves a space-free argument unquoted", () => {
+  assert.equal(quoteForWindowsShell("--role-only"), "--role-only");
+  assert.equal(quoteForWindowsShell("iyxidhglyqkzoziyewlc"), "iyxidhglyqkzoziyewlc");
+});
+
+test("quoteForWindowsShell quotes an empty string", () => {
+  assert.equal(quoteForWindowsShell(""), '""');
 });
