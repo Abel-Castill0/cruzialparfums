@@ -53,9 +53,10 @@ reset role;
 -- =========================================================================
 -- B. Contract shape: only the pseudonymized columns exist
 -- =========================================================================
+-- Gate A2 (20260925140000) added the `purpose` scope column.
 select columns_are(
   'private', 'order_request_rate_events',
-  ARRAY['id', 'business_unit_code', 'request_id', 'ip_hash', 'phone_hash', 'created_at'],
+  ARRAY['id', 'business_unit_code', 'request_id', 'ip_hash', 'phone_hash', 'created_at', 'purpose'],
   'order_request_rate_events has only the pseudonymized/contract columns'
 );
 

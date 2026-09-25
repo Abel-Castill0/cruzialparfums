@@ -94,6 +94,7 @@ describe("checkOrderRequestRateLimit", () => {
 
     const result = await checkOrderRequestRateLimit({
       client: fakeClient(rpc),
+      purpose: "order_request",
       businessUnit: "parfums",
       requestId: "11111111-1111-4111-8111-111111111111",
       phone: "987654321",
@@ -108,6 +109,7 @@ describe("checkOrderRequestRateLimit", () => {
 
     const result = await checkOrderRequestRateLimit({
       client: fakeClient(rpc),
+      purpose: "order_request",
       businessUnit: "import",
       requestId: "11111111-1111-4111-8111-111111111111",
       phone: "987654321",
@@ -124,6 +126,7 @@ describe("checkOrderRequestRateLimit", () => {
 
     const result = await checkOrderRequestRateLimit({
       client: fakeClient(rpc),
+      purpose: "order_request",
       businessUnit: "parfums",
       requestId: "11111111-1111-4111-8111-111111111111",
       phone: "987654321",
@@ -140,6 +143,7 @@ describe("checkOrderRequestRateLimit", () => {
 
     const result = await checkOrderRequestRateLimit({
       client: fakeClient(rpc),
+      purpose: "order_request",
       businessUnit: "parfums",
       requestId: "11111111-1111-4111-8111-111111111111",
       phone: "987654321",
@@ -158,6 +162,7 @@ describe("checkOrderRequestRateLimit", () => {
 
     await checkOrderRequestRateLimit({
       client: fakeClient(rpc),
+      purpose: "order_request",
       businessUnit: "parfums",
       requestId: "11111111-1111-4111-8111-111111111111",
       phone: "987654321",
@@ -179,12 +184,14 @@ describe("checkOrderRequestRateLimit", () => {
 
     await checkOrderRequestRateLimit({
       client: fakeClient(rpc),
+      purpose: "order_request",
       businessUnit: "parfums",
       requestId: "11111111-1111-4111-8111-111111111111",
       phone: "987654321",
     });
     await checkOrderRequestRateLimit({
       client: fakeClient(rpc),
+      purpose: "order_request",
       businessUnit: "parfums",
       requestId: "22222222-2222-4222-8222-222222222222",
       phone: "+51 987 654 321",
@@ -203,6 +210,7 @@ describe("checkOrderRequestRateLimit", () => {
 
     await checkOrderRequestRateLimit({
       client: fakeClient(rpc),
+      purpose: "order_request",
       businessUnit: "parfums",
       requestId: "11111111-1111-4111-8111-111111111111",
       phone: "987654321",
@@ -211,5 +219,49 @@ describe("checkOrderRequestRateLimit", () => {
     const call = rpc.mock.calls[0][1] as Record<string, unknown>;
     expect(call.p_ip_hash).toBeNull();
     expect(call.p_phone_hash).toMatch(/^[0-9a-f]{64}$/);
+  });
+
+  it("calls check_abuse_rate_limit with the caller's purpose forwarded verbatim", async () => {
+    const rpc = vi.fn().mockResolvedValue({
+      data: [{ allowed: true, retry_after_seconds: 0, reason: null, duplicate_request: false }],
+      error: null,
+    });
+
+    await checkOrderRequestRateLimit({
+      client: fakeClient(rpc),
+      purpose: "complaint",
+      businessUnit: "parfums",
+      requestId: "11111111-1111-4111-8111-111111111111",
+      phone: "987654321",
+    });
+
+    expect(rpc.mock.calls[0][0]).toBe("check_abuse_rate_limit");
+    expect((rpc.mock.calls[0][1] as Record<string, unknown>).p_purpose).toBe("complaint");
+  });
+
+  it("Gate A2: an order_request call and a complaint call for the same identity are independent RPC invocations (never merged into one quota)", async () => {
+    const rpc = vi.fn().mockResolvedValue({
+      data: [{ allowed: true, retry_after_seconds: 0, reason: null, duplicate_request: false }],
+      error: null,
+    });
+
+    await checkOrderRequestRateLimit({
+      client: fakeClient(rpc),
+      purpose: "order_request",
+      businessUnit: "parfums",
+      requestId: "11111111-1111-4111-8111-111111111111",
+      phone: "987654321",
+    });
+    await checkOrderRequestRateLimit({
+      client: fakeClient(rpc),
+      purpose: "complaint",
+      businessUnit: "parfums",
+      requestId: "22222222-2222-4222-8222-222222222222",
+      phone: "987654321",
+    });
+
+    expect(rpc).toHaveBeenCalledTimes(2);
+    expect((rpc.mock.calls[0][1] as Record<string, unknown>).p_purpose).toBe("order_request");
+    expect((rpc.mock.calls[1][1] as Record<string, unknown>).p_purpose).toBe("complaint");
   });
 });

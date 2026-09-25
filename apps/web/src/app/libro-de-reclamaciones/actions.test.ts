@@ -47,4 +47,11 @@ describe("public complaint action boundary", () => {
     expect(result.status).toBe("success");
     expect(submitComplaintEntry).toHaveBeenCalledWith(expect.anything(), "parfums", requestId, expect.objectContaining({ [field]: value }));
   });
+
+  it("Gate A2: rate-limits with purpose 'complaint', never 'order_request'", async () => {
+    await submitComplaintAction("parfums", requestId, input);
+    expect(checkOrderRequestRateLimit).toHaveBeenCalledWith(
+      expect.objectContaining({ purpose: "complaint", businessUnit: "parfums", requestId, phone: input.phone }),
+    );
+  });
 });
