@@ -1,29 +1,40 @@
 import styles from "./import-information.module.css";
+import type { ImportDepositPercentages } from "@/domains/import/import-deposit-policies";
 
-const faqs = [
-  {
-    question: "¿Import comparte carrito o catálogo con Parfums?",
-    answer: "No. Cruzial Import y Cruzial Parfums mantienen catálogos, pedidos, envíos y condiciones independientes.",
-  },
-  {
-    question: "¿Cómo funciona el adelanto?",
-    answer: "El adelanto es 50% para cliente nuevo y 70% para cliente con compras previas confirmadas. Se calcula automáticamente al registrar tu solicitud.",
-  },
-  {
-    question: "¿Cómo llega mi pedido?",
-    answer: "Cruzial Import usa delivery privado. No utiliza la modalidad Shalom de Cruzial Parfums.",
-  },
-  {
-    question: "¿Puedo comprar fuera de un consolidado?",
-    answer: "Depende de la categoría y la campaña. Confirma la disponibilidad y las condiciones vigentes por WhatsApp.",
-  },
-] as const;
+function buildFaqs(deposit: ImportDepositPercentages) {
+  const depositAnswer =
+    deposit.new === null && deposit.returning === null
+      ? "El adelanto se confirma al registrar tu solicitud, según tu historial como cliente."
+      : `El adelanto es ${deposit.new === null ? "un porcentaje a confirmar" : `${deposit.new}%`} para cliente nuevo y ${deposit.returning === null ? "un porcentaje a confirmar" : `${deposit.returning}%`} para cliente con compras previas confirmadas. Se calcula automáticamente al registrar tu solicitud.`;
+
+  return [
+    {
+      question: "¿Import comparte carrito o catálogo con Parfums?",
+      answer: "No. Cruzial Import y Cruzial Parfums mantienen catálogos, pedidos, envíos y condiciones independientes.",
+    },
+    {
+      question: "¿Cómo funciona el adelanto?",
+      answer: depositAnswer,
+    },
+    {
+      question: "¿Cómo llega mi pedido?",
+      answer: "Cruzial Import usa delivery privado. No utiliza la modalidad Shalom de Cruzial Parfums.",
+    },
+    {
+      question: "¿Puedo comprar fuera de un consolidado?",
+      answer: "No. Todas las compras de Cruzial Import se realizan dentro del consolidado vigente, con sus precios y su fecha de cierre.",
+    },
+  ] as const;
+}
 
 export function ImportInformation({
   contact,
+  depositPercentages,
 }: {
   contact: { whatsappNumber: string } | null;
+  depositPercentages: ImportDepositPercentages;
 }) {
+  const faqs = buildFaqs(depositPercentages);
   const waUrl = contact
     ? `https://wa.me/${contact.whatsappNumber}?text=${encodeURIComponent("Hola Cruzial Import, quiero conocer cómo funciona el consolidado.")}`
     : "";
@@ -45,11 +56,11 @@ export function ImportInformation({
       <section className={styles.conditions} aria-labelledby="import-conditions-title">
         <div>
           <h2 id="import-conditions-title">Condiciones claras antes de pedir</h2>
-          <p>El adelanto se calcula automáticamente al registrar. Los porcentajes son referenciales y se validan server-side.</p>
+          <p>El adelanto se calcula automáticamente al registrar tu solicitud, según tu historial como cliente.</p>
         </div>
         <dl>
-          <div><dt>50%</dt><dd>Cliente nuevo</dd></div>
-          <div><dt>70%</dt><dd>Historial de compras confirmado</dd></div>
+          <div><dt>{depositPercentages.new === null ? "—" : `${depositPercentages.new}%`}</dt><dd>Cliente nuevo</dd></div>
+          <div><dt>{depositPercentages.returning === null ? "—" : `${depositPercentages.returning}%`}</dt><dd>Historial de compras confirmado</dd></div>
           <div><dt>Entrega</dt><dd>Delivery privado</dd></div>
         </dl>
       </section>

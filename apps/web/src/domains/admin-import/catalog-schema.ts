@@ -15,6 +15,16 @@ export const PRESENTATION_CLASS_LABELS: Record<ImportPresentationClass, string> 
   single_fixed: "Presentación única", multi_presentation: "Múltiple", pack_set: "Pack / set", ambiguous: "Ambigua",
 };
 
+/** products.verification_status — how the product's identity/data was
+ * established, shown in the "Identidad y procedencia" panel. */
+export const PRODUCT_VERIFICATION_LABELS: Record<string, string> = {
+  legacy: "Origen histórico (sin reconfirmar)",
+  client_confirmed: "Confirmado por cliente",
+  derived_validated: "Validado por sistema",
+  official_pdf: "Confirmado por PDF oficial",
+  unknown: "Desconocido",
+};
+
 function one(value: string | string[] | undefined): string | undefined {
   return typeof value === "string" ? value : undefined;
 }
@@ -79,7 +89,7 @@ export function classifyProductReadiness(input: ProductReadinessInput): ProductR
   else if (input.productStatus === "hidden") blockers.push("Producto oculto");
   if (input.activePresentations === 0) blockers.push("Sin presentación activa");
   else if (input.publishedPresentations === 0) blockers.push("Sin presentación publicada");
-  if (input.offerCount === 0) blockers.push("Sin oferta en #6");
+  if (input.offerCount === 0) blockers.push("Sin oferta en consolidado");
   else if (input.unconfirmedOfferCount > 0) blockers.push("Disponibilidad por confirmar");
   if (input.campaignStatus !== "open") blockers.push("Consolidado no abierto");
   const structural = input.archived || input.activePresentations === 0 ? "blocked"

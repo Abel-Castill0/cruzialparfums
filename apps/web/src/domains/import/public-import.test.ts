@@ -38,6 +38,7 @@ const productRow = {
 
 describe("public Import campaign selection", () => {
   const row = {
+    id: "00000000-0000-4000-8000-000000000006",
     number: 6,
     name: "Sexto Consolidado",
     opens_at: null,
@@ -47,6 +48,7 @@ describe("public Import campaign selection", () => {
 
   it("maps exactly one selected campaign", () => {
     expect(selectPublicImportCampaign([row])).toEqual({
+      id: "00000000-0000-4000-8000-000000000006",
       number: 6,
       name: "Sexto Consolidado",
       opensAt: null,
@@ -58,6 +60,10 @@ describe("public Import campaign selection", () => {
   it("fails closed for zero or multiple campaign rows", () => {
     expect(selectPublicImportCampaign([])).toBeNull();
     expect(selectPublicImportCampaign([row, { ...row, number: 7 }])).toBeNull();
+  });
+
+  it("fails closed when the campaign id is missing", () => {
+    expect(selectPublicImportCampaign([{ ...row, id: "" }])).toBeNull();
   });
 });
 

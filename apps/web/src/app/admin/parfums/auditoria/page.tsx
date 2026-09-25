@@ -82,7 +82,6 @@ export default async function AdminParfumsAuditLogPage({
     <div className={styles.page}>
       <header className={styles.header}>
         <div>
-          <Link href="/admin/parfums" className={styles.back}>← Cruzial Parfums</Link>
           <h1>Auditoría</h1>
           <p>{total} evento{total === 1 ? "" : "s"} registrado{total === 1 ? "" : "s"} · solo lectura.</p>
         </div>

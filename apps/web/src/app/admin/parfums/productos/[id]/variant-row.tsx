@@ -100,10 +100,10 @@ export function VariantRow({
         </td>
         <td data-label="Inventario">
           {inventory
-            ? `${inventory.inventory_mode === "tracked_quantity" ? `${inventory.quantity_on_hand ?? 0} u.` : "Solo estado"} · ${inventory.availability_status === "available" ? "Disponible" : "Agotado"}`
+            ? `${inventory.inventory_mode === "tracked_quantity" ? `${inventory.quantity_on_hand ?? 0} u.` : "Solo estado"} · ${inventory.availability_status === "available" && (inventory.inventory_mode !== "tracked_quantity" || (inventory.quantity_on_hand ?? 0) > 0) ? "Disponible" : "Agotado"}`
             : "—"}
         </td>
-        <td data-label="Publicación">{variant.publication_status}</td>
+        <td data-label="Publicación">{{draft:"Borrador",published:"Publicado",hidden:"Oculto",archived:"Archivado"}[variant.publication_status]??"Sin publicar"}</td>
         <td data-label="Acciones">
           {!rowDisabled ? (
             <button type="button" className={styles.secondaryButton} onClick={() => setEditing(true)}>

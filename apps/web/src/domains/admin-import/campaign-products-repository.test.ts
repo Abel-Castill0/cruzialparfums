@@ -4,7 +4,8 @@ import type { Database } from "@/lib/supabase/database.types";
 
 vi.mock("server-only", () => ({}));
 vi.mock("@/domains/admin-parfums/products-repository", () => ({
-  mapPostgrestError: (error: { message: string }) => ({ type: "unknown", message: error.message }),
+  mapPostgrestError: (error: { code?: string; message: string }) =>
+    error.code === "40001" || error.code === "P2011" ? { type: "conflict" } : { type: "unknown", message: error.message },
 }));
 
 import { AdminImportCampaignProductsRepository } from "./campaign-products-repository";
@@ -116,5 +117,35 @@ describe("AdminImportCampaignProductsRepository", () => {
       "published",
       "draft",
     ]);
+  });
+
+  it("gets the committed campaign version and item count from one atomic write RPC", async () => {
+    const rpc = vi.fn().mockResolvedValue({
+      data: [{ campaign_updated_at: "2026-09-22T10:00:00Z", item_count: 2 }], error: null,
+    });
+    const from = vi.fn(() => { throw new Error("A follow-up read must never decide save success"); });
+    const repository = new AdminImportCampaignProductsRepository(
+      { rpc, from } as unknown as SupabaseClient<Database>, UNIT_ID,
+    );
+
+    const result = await repository.setCampaignProducts(CAMPAIGN_ID, "2026-09-21T10:00:00Z", [{
+      productId: "11111111-1111-4111-8111-111111111111",
+      productVariantId: null, importPresentationId: null, priceAmount: "12.00",
+      availabilityStatus: "available", sortOrder: 0,
+    }]);
+
+    expect(rpc).toHaveBeenCalledOnce();
+    expect(rpc).toHaveBeenCalledWith("admin_set_campaign_products_with_version", expect.objectContaining({ p_campaign_id: CAMPAIGN_ID }));
+    expect(from).not.toHaveBeenCalled();
+    expect(result).toEqual({ ok: true, data: { campaignUpdatedAt: "2026-09-22T10:00:00Z", itemCount: 2 } });
+  });
+
+  it("keeps a stale campaign/version error as a conflict", async () => {
+    const rpc = vi.fn().mockResolvedValue({ data: null, error: { code: "40001", message: "stale" } });
+    const repository = new AdminImportCampaignProductsRepository(
+      { rpc } as unknown as SupabaseClient<Database>, UNIT_ID,
+    );
+    await expect(repository.setCampaignProducts(CAMPAIGN_ID, "2026-09-21T10:00:00Z", []))
+      .resolves.toEqual({ ok: false, error: { type: "conflict" } });
   });
 });

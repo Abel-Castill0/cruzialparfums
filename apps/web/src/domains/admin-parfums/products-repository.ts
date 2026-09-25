@@ -67,6 +67,7 @@ export type ProductListFilters = {
   search?: string;
   publicationStatus?: PublicationStatus;
   productionStatus?: ProductionStatus;
+  availabilityStatus?: AvailabilityStatus;
   featuredOnly?: boolean;
   includeArchived?: boolean;
 };
@@ -148,6 +149,9 @@ export class AdminParfumsProductsRepository {
     }
     if (filters.productionStatus) {
       query = query.eq("production_status", filters.productionStatus);
+    }
+    if (filters.availabilityStatus) {
+      query = query.eq("availability_status", filters.availabilityStatus);
     }
     if (filters.featuredOnly) {
       query = query.eq("is_featured", true);

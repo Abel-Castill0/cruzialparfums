@@ -25,6 +25,7 @@ export function ImportFooter() {
           ) : null}
           <Link href={"/import/privacidad" as Route}>Privacidad</Link>
           <Link href={"/import/terminos" as Route}>Términos</Link>
+          <Link href={"/libro-de-reclamaciones?unidad=import" as Route}>Libro de Reclamaciones</Link>
           <Link href="/">Volver a Cruzial</Link>
         </div>
       </div>

@@ -7,10 +7,30 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-  __InternalSupabase: {
-    PostgrestVersion: "14.5"
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
   }
   public: {
     Tables: {
@@ -431,6 +451,89 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: true
             referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      complaint_book_entries: {
+        Row: {
+          address: string
+          admin_notes: string | null
+          business_unit_id: string
+          complaint_type: string
+          consumer_request: string
+          created_at: string
+          detail: string
+          document_number: string
+          document_type: string
+          email: string
+          full_name: string
+          guardian_document_number: string | null
+          guardian_full_name: string | null
+          id: string
+          is_minor: boolean
+          order_reference: string | null
+          phone: string
+          request_id: string
+          resolved_at: string | null
+          resolved_by: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          address: string
+          admin_notes?: string | null
+          business_unit_id: string
+          complaint_type: string
+          consumer_request: string
+          created_at?: string
+          detail: string
+          document_number: string
+          document_type: string
+          email: string
+          full_name: string
+          guardian_document_number?: string | null
+          guardian_full_name?: string | null
+          id?: string
+          is_minor?: boolean
+          order_reference?: string | null
+          phone: string
+          request_id: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string
+          admin_notes?: string | null
+          business_unit_id?: string
+          complaint_type?: string
+          consumer_request?: string
+          created_at?: string
+          detail?: string
+          document_number?: string
+          document_type?: string
+          email?: string
+          full_name?: string
+          guardian_document_number?: string | null
+          guardian_full_name?: string | null
+          id?: string
+          is_minor?: boolean
+          order_reference?: string | null
+          phone?: string
+          request_id?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "complaint_book_entries_business_unit_id_fkey"
+            columns: ["business_unit_id"]
+            isOneToOne: false
+            referencedRelation: "business_units"
             referencedColumns: ["id"]
           },
         ]
@@ -1865,6 +1968,7 @@ export type Database = {
           product_slug: string
           product_variant_id: string
           sort_order: number
+          updated_at: string
           variant_archived_at: string
           variant_label: string
           variant_publication_status: string
@@ -1894,7 +1998,9 @@ export type Database = {
           unconfirmed_offers: number
         }[]
       }
-      admin_get_import_publication_readiness: { Args: never; Returns: Json }
+      admin_get_import_publication_readiness:
+        | { Args: never; Returns: Json }
+        | { Args: { p_campaign_id: string }; Returns: Json }
       admin_import_archive_customer: {
         Args: { p_customer_id: string }
         Returns: {
@@ -2091,59 +2197,116 @@ export type Database = {
           total_count: number
         }[]
       }
-      admin_list_import_products: {
-        Args: {
-          p_archived?: string
-          p_category_slug?: string
-          p_media_state?: string
-          p_offer_state?: string
-          p_page?: number
-          p_page_size?: number
-          p_presentation_state?: string
-          p_publication_status?: string
-          p_query?: string
-        }
-        Returns: {
-          active_media_count: number
-          active_presentations: number
-          archived_at: string
-          brand: string
-          campaign_offer_count: number
-          category_name: string
-          category_slug: string
-          has_active_primary: boolean
-          id: string
-          legacy_id: string
-          name: string
-          publication_status: string
-          published_presentations: number
-          slug: string
-          total_count: number
-          unconfirmed_offer_count: number
-          updated_at: string
-          verification_status: string
-        }[]
-      }
-      admin_list_import_publication_blockers: {
-        Args: {
-          p_blocker?: string
-          p_page?: number
-          p_page_size?: number
-          p_query?: string
-        }
-        Returns: {
-          blocker_code: string
-          blocker_label: string
-          brand: string
-          offer_id: string
-          presentation_id: string
-          presentation_label: string
-          product_id: string
-          product_name: string
-          slug: string
-          total_count: number
-        }[]
-      }
+      admin_list_import_products:
+        | {
+            Args: {
+              p_archived?: string
+              p_campaign_id: string
+              p_category_slug?: string
+              p_media_state?: string
+              p_offer_state?: string
+              p_page?: number
+              p_page_size?: number
+              p_presentation_state?: string
+              p_publication_status?: string
+              p_query?: string
+            }
+            Returns: {
+              active_media_count: number
+              active_presentations: number
+              archived_at: string
+              brand: string
+              campaign_offer_count: number
+              category_name: string
+              category_slug: string
+              has_active_primary: boolean
+              id: string
+              legacy_id: string
+              name: string
+              publication_status: string
+              published_presentations: number
+              slug: string
+              total_count: number
+              unconfirmed_offer_count: number
+              updated_at: string
+              verification_status: string
+            }[]
+          }
+        | {
+            Args: {
+              p_archived?: string
+              p_category_slug?: string
+              p_media_state?: string
+              p_offer_state?: string
+              p_page?: number
+              p_page_size?: number
+              p_presentation_state?: string
+              p_publication_status?: string
+              p_query?: string
+            }
+            Returns: {
+              active_media_count: number
+              active_presentations: number
+              archived_at: string
+              brand: string
+              campaign_offer_count: number
+              category_name: string
+              category_slug: string
+              has_active_primary: boolean
+              id: string
+              legacy_id: string
+              name: string
+              publication_status: string
+              published_presentations: number
+              slug: string
+              total_count: number
+              unconfirmed_offer_count: number
+              updated_at: string
+              verification_status: string
+            }[]
+          }
+      admin_list_import_publication_blockers:
+        | {
+            Args: {
+              p_blocker?: string
+              p_campaign_id: string
+              p_page?: number
+              p_page_size?: number
+              p_query?: string
+            }
+            Returns: {
+              blocker_code: string
+              blocker_label: string
+              brand: string
+              offer_id: string
+              presentation_id: string
+              presentation_label: string
+              product_id: string
+              product_name: string
+              slug: string
+              total_count: number
+            }[]
+          }
+        | {
+            Args: {
+              p_blocker?: string
+              p_page?: number
+              p_page_size?: number
+              p_query?: string
+            }
+            Returns: {
+              blocker_code: string
+              blocker_label: string
+              brand: string
+              offer_id: string
+              presentation_id: string
+              presentation_label: string
+              product_id: string
+              product_name: string
+              slug: string
+              total_count: number
+            }[]
+          }
       admin_parfums_update_order_status: {
         Args: {
           p_expected_status: string
@@ -2466,6 +2629,17 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      admin_set_campaign_products_with_version: {
+        Args: {
+          p_campaign_id: string
+          p_expected_updated_at: string
+          p_items: Json
+        }
+        Returns: {
+          campaign_updated_at: string
+          item_count: number
+        }[]
+      }
       admin_set_campaign_status: {
         Args: {
           p_campaign_id: string
@@ -2558,6 +2732,35 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      admin_update_business_legal_setting: {
+        Args: {
+          p_address: string
+          p_business_unit_code: string
+          p_claims_email: string
+          p_claims_phone: string
+          p_exchange_policy: string
+          p_expected_updated_at: string
+          p_legal_name: string
+          p_payment_methods_note: string
+          p_ruc: string
+        }
+        Returns: {
+          business_unit_id: string | null
+          created_at: string
+          id: string
+          is_public: boolean
+          key: string
+          updated_at: string
+          updated_by: string | null
+          value: Json
+        }
+        SetofOptions: {
+          from: "*"
+          to: "settings"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       admin_update_campaign: {
         Args: {
           p_campaign_id: string
@@ -2638,6 +2841,44 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "combos"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      admin_update_complaint_status: {
+        Args: {
+          p_admin_notes: string
+          p_expected_updated_at: string
+          p_id: string
+          p_status: string
+        }
+        Returns: {
+          address: string
+          admin_notes: string | null
+          business_unit_id: string
+          complaint_type: string
+          consumer_request: string
+          created_at: string
+          detail: string
+          document_number: string
+          document_type: string
+          email: string
+          full_name: string
+          guardian_document_number: string | null
+          guardian_full_name: string | null
+          id: string
+          is_minor: boolean
+          order_reference: string | null
+          phone: string
+          request_id: string
+          resolved_at: string | null
+          resolved_by: string | null
+          status: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "complaint_book_entries"
           isOneToOne: true
           isSetofReturn: false
         }
@@ -2996,6 +3237,7 @@ export type Database = {
         Args: never
         Returns: {
           closes_at: string
+          id: string
           name: string
           number: number
           opens_at: string
@@ -3007,6 +3249,7 @@ export type Database = {
         Returns: {
           brand: string
           campaign_closes_at: string
+          campaign_id: string
           campaign_name: string
           campaign_number: number
           category_name: string
@@ -3028,6 +3271,8 @@ export type Database = {
         }
         Returns: {
           brand: string
+          campaign_id: string
+          campaign_number: number
           category_name: string
           category_slug: string
           media_alt: string
@@ -3046,6 +3291,55 @@ export type Database = {
           product_count: number
           slug: string
         }[]
+      }
+      public_submit_complaint_entry: {
+        Args: {
+          p_address: string
+          p_business_unit_code: string
+          p_complaint_type: string
+          p_consumer_request: string
+          p_detail: string
+          p_document_number: string
+          p_document_type: string
+          p_email: string
+          p_full_name: string
+          p_guardian_document_number: string
+          p_guardian_full_name: string
+          p_is_minor: boolean
+          p_order_reference: string
+          p_phone: string
+          p_request_id: string
+        }
+        Returns: {
+          address: string
+          admin_notes: string | null
+          business_unit_id: string
+          complaint_type: string
+          consumer_request: string
+          created_at: string
+          detail: string
+          document_number: string
+          document_type: string
+          email: string
+          full_name: string
+          guardian_document_number: string | null
+          guardian_full_name: string | null
+          id: string
+          is_minor: boolean
+          order_reference: string | null
+          phone: string
+          request_id: string
+          resolved_at: string | null
+          resolved_by: string | null
+          status: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "complaint_book_entries"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
     }
     Enums: {
@@ -3175,6 +3469,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {},
   },

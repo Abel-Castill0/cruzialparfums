@@ -1,0 +1,130 @@
+.bulkBar {
+  margin: 12px 0;
+  padding: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid #d7e0e9;
+  background: #f7fafc;
+}
+
+.selectionControls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.selectionCount {
+  font-size: 12px;
+  color: #48566b;
+  font-weight: 600;
+}
+
+.bulkAction {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bulkAction select {
+  min-height: 40px;
+  padding: 0 10px;
+  border: 1px solid #cbd5e1;
+}
+
+.csvBar {
+  margin: 12px 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.csvHelp {
+  font-size: 11px;
+  color: #607087;
+}
+
+.csvDiff {
+  margin: 16px 0;
+  padding: 16px;
+  border: 1px solid #d7e0e9;
+}
+
+.csvDiffHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.csvDiffHeader h3 {
+  margin: 0;
+  font-size: 14px;
+}
+
+.csvSummary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  list-style: none;
+  margin: 0 0 12px;
+  padding: 0;
+  font-size: 12px;
+  color: #48566b;
+}
+
+.csvTableWrap {
+  max-height: 420px;
+  overflow: auto;
+  margin-bottom: 12px;
+}
+
+.csvBadge {
+  display: inline-block;
+  padding: 2px 8px;
+  font-size: 11px;
+  border: 1px solid #cbd5e1;
+}
+
+.csvBadge[data-kind="invalid"],
+.csvBadge[data-kind="not_found"] {
+  border-color: #b3261e;
+  color: #b3261e;
+}
+
+.csvBadge[data-kind="stale"] {
+  border-color: #a15c00;
+  color: #a15c00;
+}
+
+.csvBadge[data-kind="price_changed"],
+.csvBadge[data-kind="availability_changed"],
+.csvBadge[data-kind="both_changed"] {
+  border-color: #275e46;
+  color: #275e46;
+}
+
+.csvReason {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+  color: #607087;
+}
+
+@media (max-width: 640px) {
+  .bulkBar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .selectionControls,
+  .bulkAction {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

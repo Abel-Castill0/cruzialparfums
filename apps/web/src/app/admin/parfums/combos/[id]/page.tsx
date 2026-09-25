@@ -4,7 +4,8 @@ import { notFound, redirect } from "next/navigation";
 import { getAdminSession } from "@/lib/auth/admin-session";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { AdminParfumsCombosRepository } from "@/domains/admin-parfums/combos-repository";
-import { isValidUuid } from "@/domains/admin-parfums/product-schema";
+import { isValidUuid, PRODUCT_STATUS_LABELS } from "@/domains/admin-parfums/product-schema";
+import { computeComboReadiness, COMBO_READINESS_BLOCKER_LABELS } from "@/domains/admin-parfums/combo-schema";
 import { ComboWorkspace } from "./combo-workspace";
 import styles from "../../productos/page.module.css";
 
@@ -73,6 +74,15 @@ export default async function EditComboPage({
   const eligibleVariantsResult = await repository.listEligibleVariants(combo.product_id);
   const eligibleVariants = eligibleVariantsResult.ok ? eligibleVariantsResult.data : [];
 
+  const readinessBlockers = computeComboReadiness({
+    productPublicationStatus: product.publication_status,
+    productArchived: product.archived_at !== null,
+    comboArchived: combo.archived_at !== null,
+    compositionVerificationStatus: combo.composition_verification_status,
+    itemCount: items.length,
+    hasArchivedItem: items.some((item) => item.variantArchived || item.productArchived),
+  });
+
   return (
     <div className={styles.page}>
       <header className={styles.header}>
@@ -80,7 +90,7 @@ export default async function EditComboPage({
           <Link href="/admin/parfums/combos" className={styles.back}>← Combos</Link>
           <h1>Combo: {product.name}</h1>
           <p>
-            Producto: {product.slug} ({product.publication_status}) · Combo actualizado{" "}
+            Producto: {product.slug} ({PRODUCT_STATUS_LABELS[product.publication_status as keyof typeof PRODUCT_STATUS_LABELS] ?? product.publication_status}) · Combo actualizado{" "}
             {new Date(combo.updated_at).toLocaleString("es-PE")}
           </p>
         </div>
@@ -92,6 +102,24 @@ export default async function EditComboPage({
             Estás en modo solo lectura para Parfums. Puedes ver este combo pero no guardar cambios.
           </p>
         ) : null}
+
+        <section className={styles.section} aria-labelledby="readiness-heading">
+          <div className={styles.sectionTitle}>
+            <h2 id="readiness-heading">Estado de publicación</h2>
+          </div>
+          {readinessBlockers.length === 0 ? (
+            <p className={styles.savedNote} role="status">Este combo cumple todas las condiciones para mostrarse en el catálogo público.</p>
+          ) : (
+            <>
+              <p className={styles.notice} role="status">Este combo no es visible en el catálogo público por:</p>
+              <ul className={styles.notice}>
+                {readinessBlockers.map((blocker) => (
+                  <li key={blocker}>{COMBO_READINESS_BLOCKER_LABELS[blocker]}</li>
+                ))}
+              </ul>
+            </>
+          )}
+        </section>
 
         <section className={styles.section}>
           <div className={styles.sectionTitle}>

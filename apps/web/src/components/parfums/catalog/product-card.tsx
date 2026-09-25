@@ -140,7 +140,7 @@ export function ProductCard({
           <h2 className={styles.cardName}>{product.name}</h2>
         </Link>
         <div className={styles.cardMeta}>
-          <span>{mode === "bottle" ? `frasco ${currentVariant.size} ml` : "desde 3 ml"}</span>
+          <span>{mode === "bottle" ? `frasco ${currentVariant.size} ml` : `desde ${decantVariant.size} ml`}</span>
           <strong data-price>{money(minimumPrice(currentPrices))}</strong>
         </div>
         <div className={styles.quantityRow} data-quantity-row>

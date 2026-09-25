@@ -24,9 +24,25 @@ export type ValidationResult<T> =
 const SALES_MODES = ["campaign", "always_available", "catalog_only"] as const;
 const PRODUCTION_STATUSES = ["active", "discontinued"] as const;
 const PUBLICATION_STATUSES = ["draft", "published", "archived"] as const;
+
+/** Copy shown in Admin UI — never the raw enum value. */
+export const PRODUCT_STATUS_LABELS: Record<(typeof PUBLICATION_STATUSES)[number], string> = {
+  draft: "Borrador",
+  published: "Publicado",
+  archived: "Archivado",
+};
+export const PRODUCTION_STATUS_LABELS: Record<(typeof PRODUCTION_STATUSES)[number], string> = {
+  active: "Activo",
+  discontinued: "Descontinuado",
+};
 const VARIANT_KINDS = ["decant", "bottle"] as const;
 const INVENTORY_MODES = ["status_only", "tracked_quantity"] as const;
 const AVAILABILITY_STATUSES = ["available", "out_of_stock"] as const;
+
+export const PRODUCT_AVAILABILITY_LABELS: Record<(typeof AVAILABILITY_STATUSES)[number], string> = {
+  available: "Disponible",
+  out_of_stock: "Agotado",
+};
 
 export type SalesMode = (typeof SALES_MODES)[number];
 export type ProductionStatus = (typeof PRODUCTION_STATUSES)[number];
@@ -391,6 +407,10 @@ export function validateInventoryForm(input: {
     // quantity. Caught here for a field-level message instead of a raw
     // 23514 check-violation from Postgres.
     errors.quantityOnHand = "La cantidad solo aplica en modo \"cantidad controlada\".";
+  }
+
+  if (inventoryMode === "tracked_quantity" && quantityOnHand === 0 && availabilityStatus === "available") {
+    errors.availabilityStatus = "Con cantidad cero, selecciona Agotado. Para marcar Disponible, registra una cantidad mayor a cero.";
   }
 
   if (Object.keys(errors).length > 0) return { ok: false, errors };

@@ -1,22 +1,23 @@
-import type { Metadata } from "next";
+import type { Metadata, Route } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getAdminSession } from "@/lib/auth/admin-session";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { AdminImportCatalogRepository } from "@/domains/admin-import/catalog-repository";
+import { campaignStatusLabel } from "@/domains/admin-import/campaign-schema";
 import styles from "../productos/page.module.css";
 
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = { title: "Publicacion Import" };
+export const metadata: Metadata = { title: "Publicación Import" };
 
 const BLOCKER_LABELS: Record<string, string> = {
   product_unpublished: "Producto no publicado",
-  presentation_unpublished: "Presentacion no publicada",
+  presentation_unpublished: "Presentación no publicada",
   missing_primary_media: "Sin imagen principal",
   missing_offer: "Sin oferta en consolidado",
   offer_unconfirmed: "Disponibilidad por confirmar",
-  offer_invalid_price: "Precio invalido",
-  offer_invalid_availability: "Estado de disponibilidad invalido",
+  offer_invalid_price: "Precio inválido",
+  offer_invalid_availability: "Estado de disponibilidad inválido",
   no_active_presentations: "Sin presentaciones activas",
 };
 
@@ -55,24 +56,49 @@ export default async function Page({
     args?: Record<string, unknown>,
   ) => Promise<{ data: unknown; error: { message: string } | null }>;
 
+  // Which consolidado (campaign) is being assessed must always be explicit —
+  // never an implicit "current campaign" guess inside the RPCs. The operator
+  // picks one; ?campaign=<uuid> preserves that choice across reloads/links.
+  const campaignsResult = await client
+    .from("campaigns")
+    .select("id,number,name,status,archived_at")
+    .eq("business_unit_id", member.businessUnitId)
+    .is("archived_at", null)
+    .order("number", { ascending: false });
+  const campaigns = campaignsResult.data ?? [];
+  const requestedCampaignId = params.campaign ?? "";
+  const selectedCampaign = requestedCampaignId
+    ? campaigns.find((c) => c.id === requestedCampaignId) ?? null
+    : campaigns[0] ?? null;
+
   const blockerQuery = params.blocker ?? "";
   const searchQuery = params.q ?? "";
   const page = Math.max(1, Number(params.page ?? 1));
-  const [qaResult, readinessResult, blockersResult] = await Promise.all([
-    repo.qa(),
-    rpc("admin_get_import_publication_readiness"),
-    rpc("admin_list_import_publication_blockers", {
-      p_query: searchQuery || null,
-      p_blocker: blockerQuery || null,
-      p_page: page,
-      p_page_size: 20,
-    }),
-  ]);
+
+  const [qaResult, readinessResult, blockersResult] = selectedCampaign
+    ? await Promise.all([
+        repo.qa(),
+        rpc("admin_get_import_publication_readiness", {
+          p_campaign_id: selectedCampaign.id,
+        }),
+        rpc("admin_list_import_publication_blockers", {
+          p_campaign_id: selectedCampaign.id,
+          p_query: searchQuery || null,
+          p_blocker: blockerQuery || null,
+          p_page: page,
+          p_page_size: 20,
+        }),
+      ])
+    : [
+        await repo.qa(),
+        { data: null, error: null } as { data: unknown; error: { message: string } | null },
+        { data: [], error: null } as { data: unknown; error: { message: string } | null },
+      ];
 
   const rpcError = readinessResult.error;
   const readiness = ((readinessResult.data ?? {}) as Record<string, unknown>) ?? {};
   const campaignStatus = (readiness.campaign_status as string) ?? "unknown";
-  const campaignNumber = (readiness.campaign_number as number) ?? 6;
+  const campaignNumber = (readiness.campaign_number as number | undefined) ?? selectedCampaign?.number ?? null;
   const campaignExists = (readiness.campaign_exists as boolean) ?? false;
   const totalProducts = Number(readiness.total_products ?? 0);
   const readyProducts = Number(readiness.ready_products ?? 0);
@@ -86,35 +112,53 @@ export default async function Page({
   const blockers = (blockersResult.data ?? []) as BlockerRow[];
   const blockerTotal = blockers[0]?.total_count ?? 0;
   const totalPages = Math.max(1, Math.ceil(blockerTotal / 20));
-
-  const campaignStatusLabels: Record<string, string> = {
-    draft: "Borrador",
-    scheduled: "Programado",
-    open: "Abierto",
-    paused: "Pausado",
-    closed: "Cerrado",
-    completed: "Completado",
-    archived: "Archivado",
-  };
+  const campaignParam = selectedCampaign ? `&campaign=${selectedCampaign.id}` : "";
 
   return (
     <div className={styles.page}>
       <header className={styles.header}>
         <div>
-          <Link className={styles.back} href="/admin/import">
-            &larr; Cruzial Import
-          </Link>
-          <h1>Publicacion</h1>
-          <p>Preparacion de lanzamiento</p>
+          <h1>Publicación</h1>
+          <p>Preparación de lanzamiento</p>
         </div>
       </header>
       <main>
-        {rpcError ? (
+        <section className={styles.panel}>
+          <h2>Consolidado evaluado</h2>
+          {campaigns.length > 0 ? (
+            <form method="get" className={styles.facts}>
+              <select
+                name="campaign"
+                defaultValue={selectedCampaign?.id}
+                className={styles.filterInput}
+                aria-label="Seleccionar consolidado"
+              >
+                {campaigns.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    #{c.number} — {c.name} ({campaignStatusLabel(c.status)})
+                  </option>
+                ))}
+              </select>
+              <button type="submit" className={styles.filterButton}>
+                Ver este consolidado
+              </button>
+            </form>
+          ) : (
+            <p className={styles.help}>
+              No hay consolidados activos (no archivados) para Cruzial
+              Import. Crea uno desde{" "}
+              <Link href="/admin/import/consolidados">Consolidados</Link>{" "}
+              para poder evaluar su preparación de lanzamiento.
+            </p>
+          )}
+        </section>
+
+        {!selectedCampaign ? null : rpcError ? (
           <section className={`${styles.panel} ${styles.warning}`}>
             <h2>Error de datos</h2>
             <p className={styles.help}>
-              No se pudo obtener la informacion de preparacion. Error:{" "}
-              {rpcError.message}. Intenta recargar la pagina.
+              No se pudo obtener la información de preparación. Error:{" "}
+              {rpcError.message}. Intenta recargar la página.
             </p>
           </section>
         ) : (
@@ -124,21 +168,21 @@ export default async function Page({
               <dl className={styles.facts}>
                 <div>
                   <dt>Estado</dt>
-                  <dd>{campaignStatusLabels[campaignStatus] ?? campaignStatus}</dd>
+                  <dd>{campaignStatusLabel(campaignStatus)}</dd>
                 </div>
                 <div>
                   <dt>Existe</dt>
-                  <dd>{campaignExists ? "Si" : "No"}</dd>
+                  <dd>{campaignExists ? "Sí" : "No"}</dd>
                 </div>
               </dl>
               {!campaignExists ? (
                 <p className={styles.help}>
-                  No se encontro el consolidado #6. Esto es un bloqueador.
+                  No se encontró este consolidado. Esto es un bloqueador.
                 </p>
               ) : campaignStatus !== "open" ? (
                 <p className={styles.help}>
-                  El consolidado no esta abierto. La apertura se realiza desde
-                  consolidados.
+                  El consolidado no está abierto. La apertura se realiza desde
+                  Consolidados.
                 </p>
               ) : null}
             </section>
@@ -202,14 +246,14 @@ export default async function Page({
                   className={`${styles.qaCard} ${invalidPriceOfferCount > 0 ? styles.warning : ""}`}
                 >
                   <strong>{invalidPriceOfferCount}</strong>
-                  <span>precios invalidos</span>
+                  <span>precios inválidos</span>
                 </div>
               </div>
             </section>
 
             {qaResult.ok ? (
               <section className={styles.panel}>
-                <h2>Cobertura de media</h2>
+                <h2>Cobertura de imágenes</h2>
                 <div className={styles.qaGrid}>
                   <div
                     className={`${styles.qaCard} ${Number(qaResult.data.products_without_primary_media) > 0 ? styles.warning : ""}`}
@@ -229,11 +273,11 @@ export default async function Page({
                     className={`${styles.qaCard} ${Number(qaResult.data.products_without_media) > 0 ? styles.warning : ""}`}
                   >
                     <strong>{qaResult.data.products_without_media}</strong>
-                    <span>sin media alguna</span>
+                    <span>sin ninguna imagen</span>
                   </div>
                   <div className={styles.qaCard}>
                     <strong>{qaResult.data.total_active_media}</strong>
-                    <span>media activa total</span>
+                    <span>imágenes activas en total</span>
                   </div>
                 </div>
               </section>
@@ -242,6 +286,7 @@ export default async function Page({
             <section className={styles.panel}>
               <h2>Bloqueadores ({blockerTotal})</h2>
               <form method="get" className={styles.facts}>
+                <input type="hidden" name="campaign" value={selectedCampaign.id} />
                 <input
                   type="text"
                   name="q"
@@ -266,7 +311,7 @@ export default async function Page({
                 </button>
                 {(searchQuery || blockerQuery) && (
                   <Link
-                    href="/admin/import/publicacion"
+                    href={`/admin/import/publicacion?campaign=${selectedCampaign.id}`}
                     className={styles.filterButton}
                   >
                     Limpiar
@@ -276,7 +321,7 @@ export default async function Page({
 
               {blockerTotal === 0 ? (
                 <p className={styles.help}>
-                  No hay bloqueadores. Todos los productos estan listos.
+                  No hay bloqueadores. Todos los productos están listos.
                 </p>
               ) : (
                 <>
@@ -284,9 +329,9 @@ export default async function Page({
                     <thead>
                       <tr>
                         <th>Producto</th>
-                        <th>Presentacion</th>
+                        <th>Presentación</th>
                         <th>Problema</th>
-                        <th>Accion</th>
+                        <th>Acción</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -294,7 +339,7 @@ export default async function Page({
                         <tr key={`${b.product_id}-${b.blocker_code}-${b.offer_id ?? "null"}-${i}`}>
                           <td>
                             <Link
-                              href={`/admin/import/productos/${b.product_id}`}
+                              href={`/admin/import/productos/${b.product_id}?campaign=${selectedCampaign.id}`}
                             >
                               {b.product_name}
                             </Link>
@@ -306,7 +351,7 @@ export default async function Page({
                           <td>{b.blocker_label}</td>
                           <td>
                             <Link
-                              href={`/admin/import/productos/${b.product_id}`}
+                              href={`/admin/import/productos/${b.product_id}?campaign=${selectedCampaign.id}`}
                             >
                               Editar
                             </Link>
@@ -320,17 +365,17 @@ export default async function Page({
                     <nav className={styles.facts}>
                       {page > 1 && (
                         <Link
-                          href={`/admin/import/publicacion?page=${page - 1}${blockerQuery ? `&blocker=${blockerQuery}` : ""}${searchQuery ? `&q=${searchQuery}` : ""}`}
+                          href={`/admin/import/publicacion?page=${page - 1}${campaignParam}${blockerQuery ? `&blocker=${blockerQuery}` : ""}${searchQuery ? `&q=${searchQuery}` : ""}`}
                         >
                           Anterior
                         </Link>
                       )}
                       <span>
-                        Pagina {page} de {totalPages}
+                        Página {page} de {totalPages}
                       </span>
                       {page < totalPages && (
                         <Link
-                          href={`/admin/import/publicacion?page=${page + 1}${blockerQuery ? `&blocker=${blockerQuery}` : ""}${searchQuery ? `&q=${searchQuery}` : ""}`}
+                          href={`/admin/import/publicacion?page=${page + 1}${campaignParam}${blockerQuery ? `&blocker=${blockerQuery}` : ""}${searchQuery ? `&q=${searchQuery}` : ""}`}
                         >
                           Siguiente
                         </Link>
@@ -344,10 +389,10 @@ export default async function Page({
             <section className={styles.panel}>
               <h2>Acciones</h2>
               <p className={styles.help}>
-                Esta pantalla muestra el estado de preparacion. No ejecuta
-                publicaciones automaticas. Para publicar productos, editalos
+                Esta pantalla muestra el estado de preparación. No ejecuta
+                publicaciones automáticas. Para publicar productos, edítalos
                 individualmente desde{" "}
-                <Link href="/admin/import/productos">Productos</Link>. Para
+                <Link href={`/admin/import/productos?campaign=${selectedCampaign.id}` as Route}>Productos</Link>. Para
                 abrir el consolidado, ve a{" "}
                 <Link href="/admin/import/consolidados">Consolidados</Link>.
               </p>

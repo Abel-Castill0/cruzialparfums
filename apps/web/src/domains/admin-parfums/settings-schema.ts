@@ -41,4 +41,50 @@ export function validatePublicContactSettingForm(
   return { ok: true, value: { whatsappNumber, whatsappDisplay, contactEmail } };
 }
 
+/**
+ * Typed contract for the `business_legal` setting — legal identity, RUC,
+ * address, claims contact, and public policy copy. Every field is optional:
+ * the business owner fills these in over time from Admin > Configuración.
+ * Blank stays blank (never a fabricated RUC or legal name); the public
+ * pages omit the corresponding block rather than showing an empty label.
+ */
+export type BusinessLegalSettingInput = {
+  legalName: string;
+  ruc: string;
+  address: string;
+  claimsEmail: string;
+  claimsPhone: string;
+  exchangePolicy: string;
+  paymentMethodsNote: string;
+};
+
+export function validateBusinessLegalSettingForm(
+  input: Record<string, unknown>,
+): ValidationResult<BusinessLegalSettingInput> {
+  const errors: FieldErrors = {};
+  const str = (value: unknown, max: number) => (typeof value === "string" ? value.trim().slice(0, max) : "");
+
+  const legalName = str(input.legalName, 200);
+  const ruc = str(input.ruc, 11);
+  if (ruc.length > 0 && !/^[0-9]{11}$/.test(ruc)) {
+    errors.ruc = "El RUC debe tener 11 dígitos, o déjalo en blanco.";
+  }
+
+  const address = str(input.address, 300);
+  const claimsEmail = str(input.claimsEmail, 254);
+  if (claimsEmail.length > 0 && !EMAIL_PATTERN.test(claimsEmail)) {
+    errors.claimsEmail = "Ingresa un correo válido, o déjalo en blanco.";
+  }
+
+  const claimsPhone = str(input.claimsPhone, 40);
+  const exchangePolicy = str(input.exchangePolicy, 4000);
+  const paymentMethodsNote = str(input.paymentMethodsNote, 1000);
+
+  if (Object.keys(errors).length > 0) return { ok: false, errors };
+  return {
+    ok: true,
+    value: { legalName, ruc, address, claimsEmail, claimsPhone, exchangePolicy, paymentMethodsNote },
+  };
+}
+
 export { isValidExpectedTimestamp };

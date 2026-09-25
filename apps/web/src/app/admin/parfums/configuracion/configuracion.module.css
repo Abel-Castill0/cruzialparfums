@@ -12,6 +12,12 @@
   background: #fff;
 }
 
+.sectionTitle {
+  margin: 8px 0 -8px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
 .help {
   color: #8a8378;
   font-size: 10px;

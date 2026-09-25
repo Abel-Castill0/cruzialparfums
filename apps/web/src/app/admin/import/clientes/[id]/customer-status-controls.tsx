@@ -8,15 +8,21 @@ import styles from "../../productos/page.module.css";
 type Props = {
   customerId: string;
   currentStatus: string;
+  depositPercentages: { new: number | null; returning: number | null };
 };
 
-const STATUS_OPTIONS = [
-  { value: "pending_verification", label: "Pendiente de verificación" },
-  { value: "new", label: "Nuevo" },
-  { value: "returning", label: "Recurrente (70% depósito)" },
-];
-
-export function CustomerStatusControls({ customerId, currentStatus }: Props) {
+export function CustomerStatusControls({ customerId, currentStatus, depositPercentages }: Props) {
+  const statusOptions = [
+    { value: "pending_verification", label: "Pendiente de verificación" },
+    { value: "new", label: "Nuevo" },
+    {
+      value: "returning",
+      label:
+        depositPercentages.returning === null
+          ? "Recurrente (depósito sin configurar)"
+          : `Recurrente (${depositPercentages.returning}% depósito)`,
+    },
+  ];
   const router = useRouter();
   const [, startTransition] = useTransition();
 
@@ -40,7 +46,9 @@ export function CustomerStatusControls({ customerId, currentStatus }: Props) {
         <h2 id="verify-heading">Estado de verificación</h2>
       </div>
       <p style={{ fontSize: 12, color: "#5c574f", marginBottom: 12 }}>
-        El estado determina la política de depósito: <strong>Nuevo/Pendiente = 50%</strong>, <strong>Recurrente = 70%</strong>.
+        El estado determina la política de depósito activa:{" "}
+        <strong>Nuevo/Pendiente = {depositPercentages.new === null ? "sin configurar" : `${depositPercentages.new}%`}</strong>,{" "}
+        <strong>Recurrente = {depositPercentages.returning === null ? "sin configurar" : `${depositPercentages.returning}%`}</strong>.
       </p>
       {state?.status === "success" ? (
         <p className={styles.savedNote} role="status" aria-live="polite">{state.message}</p>
@@ -48,7 +56,7 @@ export function CustomerStatusControls({ customerId, currentStatus }: Props) {
         <p className={styles.conflictBanner} role="alert">{state.message}</p>
       ) : null}
       <form action={formAction} style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-        {STATUS_OPTIONS.map((opt) => (
+        {statusOptions.map((opt) => (
           <button
             key={opt.value}
             type="submit"

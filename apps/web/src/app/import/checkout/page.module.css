@@ -156,6 +156,17 @@
   font-weight: 600;
 }
 
+.noticeBanner {
+  padding: 14px 18px;
+  border: 1px solid #a6761f;
+  border-radius: 12px;
+  background: #fdf6e8;
+  color: #5c4108;
+  font-size: 0.85rem;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
 .primaryAction {
   min-height: 48px;
   padding: 13px 22px;

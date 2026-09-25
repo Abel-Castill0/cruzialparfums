@@ -1,6 +1,8 @@
+import { PublicBusinessLegal } from "@/components/public-business-legal";
 import type { Metadata } from "next";
 import { Breadcrumbs, type BreadcrumbItem } from "@/components/parfums/navigation/breadcrumbs";
 import { readImportPublicContact } from "@/domains/import/import-public-contact";
+import { readImportDepositPercentages } from "@/domains/import/import-deposit-policies";
 import { createSupabasePublicServerClient } from "@/lib/supabase/server";
 import styles from "@/components/parfums/institutional/institutional.module.css";
 
@@ -16,7 +18,9 @@ const crumbs: BreadcrumbItem[] = [
 
 export default async function ImportTerminosPage() {
   const supabase = createSupabasePublicServerClient();
-  const contact = supabase ? await readImportPublicContact(supabase) : null;
+  const [contact, depositPercentages] = supabase
+    ? await Promise.all([readImportPublicContact(supabase), readImportDepositPercentages(supabase)])
+    : [null, { new: null, returning: null }];
   const whatsappNumber = contact?.whatsappNumber ?? "";
   const whatsappDisplay = contact?.whatsappDisplay ?? "";
   const contactEmail = contact?.contactEmail ?? "";
@@ -35,6 +39,7 @@ export default async function ImportTerminosPage() {
         </div>
 
         <div className={styles.legalBody}>
+          <PublicBusinessLegal unit="import" policies />
           <h2>1. Aceptación de los Términos</h2>
           <p>Al acceder a nuestro sitio web, utilizar nuestros servicios o registrar una solicitud, aceptas íntegramente estos Términos y Condiciones. Si no estás de acuerdo, no utilices nuestros servicios.</p>
 
@@ -49,12 +54,12 @@ export default async function ImportTerminosPage() {
           </ol>
 
           <h2>4. Adelanto</h2>
-          <p>El porcentaje de adelanto se calcula del lado del servidor según el estado del cliente:</p>
+          <p>El porcentaje de adelanto se calcula automáticamente según el estado del cliente:</p>
           <ul>
-            <li>Cliente nuevo: 50% de adelanto.</li>
-            <li>Cliente recurrente verificado: 70% de adelanto.</li>
+            <li>Cliente nuevo: {depositPercentages.new === null ? "porcentaje a confirmar al registrar la solicitud" : `${depositPercentages.new}% de adelanto`}.</li>
+            <li>Cliente recurrente verificado: {depositPercentages.returning === null ? "porcentaje a confirmar al registrar la solicitud" : `${depositPercentages.returning}% de adelanto`}.</li>
           </ul>
-          <p>El estado de cliente (nuevo o recurrente verificado) se resuelve del lado del servidor/administración, no lo declara el propio cliente.</p>
+          <p>El estado de cliente (nuevo o recurrente verificado) se resuelve mediante verificación interna, no lo declara el propio cliente.</p>
 
           <h2>5. Entrega</h2>
           <p>La entrega se realiza mediante delivery privado. El costo y el horario se coordinan por WhatsApp.</p>

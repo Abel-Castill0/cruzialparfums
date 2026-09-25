@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getAdminSession } from "@/lib/auth/admin-session";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { AdminParfumsSettingsRepository } from "@/domains/admin-parfums/settings-repository";
 import { PublicContactSettingEditor } from "./contact-editor";
+import { BusinessLegalSettingEditor } from "./legal-editor";
 import baseStyles from "../productos/page.module.css";
 import styles from "./configuracion.module.css";
 
@@ -26,9 +26,12 @@ export default async function AdminImportSettingsPage() {
   }
 
   const repository = new AdminParfumsSettingsRepository(supabase, membership.businessUnitId, "import");
-  const result = await repository.getPublicContact();
+  const [result, legalResult] = await Promise.all([
+    repository.getPublicContact(),
+    repository.getBusinessLegal(),
+  ]);
 
-  if (!result.ok) {
+  if (!result.ok || !legalResult.ok) {
     return <div className={baseStyles.page}><main><p className={baseStyles.notice} role="alert">No se pudo cargar Configuración. Intenta de nuevo.</p></main></div>;
   }
 
@@ -36,7 +39,6 @@ export default async function AdminImportSettingsPage() {
     <div className={baseStyles.page}>
       <header className={baseStyles.header}>
         <div>
-          <Link href="/admin/import" className={baseStyles.back}>← Cruzial Import</Link>
           <h1>Configuración</h1>
           <p>Contacto público confirmado — WhatsApp y correo que ve el cliente.</p>
         </div>
@@ -52,6 +54,15 @@ export default async function AdminImportSettingsPage() {
         ) : (
           <p className={baseStyles.notice} role="alert">
             Falta la configuración de contacto público. Revisa las migraciones.
+          </p>
+        )}
+
+        <h2 className={styles.sectionTitle}>Datos legales y políticas públicas</h2>
+        {legalResult.data ? (
+          <BusinessLegalSettingEditor setting={legalResult.data} disabled={membership.role !== "admin"} />
+        ) : (
+          <p className={baseStyles.notice} role="alert">
+            Falta la configuración legal. Revisa las migraciones.
           </p>
         )}
       </main>

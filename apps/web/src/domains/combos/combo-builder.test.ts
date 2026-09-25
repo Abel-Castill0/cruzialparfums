@@ -1,10 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { LegacyCatalogRepository } from "../catalog/legacy-catalog-repository";
+import type { CatalogProduct } from "../catalog/types";
 import { buildCustomComboMessage } from "../whatsapp/parfums-message-builder";
 import {
   addComboLine,
+  availableComboSizes,
   calculateComboLinesTotal,
   canSendCombo,
+  createComboLine,
+  defaultComboSize,
   filterComboProducts,
   listComboEligibleProducts,
   removeComboLine,
@@ -12,6 +16,45 @@ import {
   setComboLineSize,
   type ComboLine,
 } from "./combo-builder";
+
+function fakeProduct(overrides: Partial<CatalogProduct>): CatalogProduct {
+  return {
+    productId: null,
+    legacyId: null,
+    slug: "fake-product",
+    brand: "Fake",
+    name: "Fake Product",
+    gender: "unisex",
+    type: "niche",
+    family: "",
+    concentration: "",
+    decantPrices: { "3": 10, "5": 15, "10": 25 },
+    bottlePrices: null,
+    notes: [],
+    tag: "",
+    description: "",
+    discontinued: false,
+    bestseller: false,
+    hidden: false,
+    availabilityStatus: "available",
+    isFeatured: false,
+    featuredRank: null,
+    featuredFrom: null,
+    featuredUntil: null,
+    imageUrl: null,
+    decantImageUrl: null,
+    bottleImageUrl: null,
+    imageAlt: "",
+    verificationStatus: "client_confirmed",
+    bottlePricingVerificationStatus: null,
+    comboCompositionVerificationStatus: null,
+    comboContent: null,
+    comboPresentations: [],
+    variants: [],
+    media: [],
+    ...overrides,
+  };
+}
 
 describe("custom combo rules", () => {
   const eligible = listComboEligibleProducts(new LegacyCatalogRepository().list());
@@ -146,5 +189,70 @@ describe("custom combo rules", () => {
     for (const id of ids) lines = addComboLine(lines, id);
     expect(lines).toHaveLength(6);
     expect(lines.map((line) => line.productId)).not.toContain("g");
+  });
+});
+
+describe("resolveComboLines with a Supabase-sourced product (no legacyId)", () => {
+  it("resolves by cartIdentity, not by the (null) legacyId", () => {
+    // Any product created after the Supabase cutover has legacyId === null
+    // and only a real productId (UUID). Keying the lookup map by legacyId
+    // would collide every such product onto the same `null` key and drop
+    // every line for it — this is the regression this test guards against.
+    const product = fakeProduct({ productId: "11111111-1111-4111-8111-000000000099", legacyId: null });
+    let lines: ComboLine[] = [];
+    lines = addComboLine(lines, product.productId!, defaultComboSize(product)!);
+    const resolved = resolveComboLines([product], lines);
+    expect(resolved).toHaveLength(1);
+    expect(resolved[0]!.product.productId).toBe(product.productId);
+    expect(resolved[0]!.price).toBe(10);
+  });
+});
+
+describe("availableComboSizes / defaultComboSize", () => {
+  it("only lists sizes with a confirmed decant price", () => {
+    const product = fakeProduct({ decantPrices: { "5": 15 } });
+    expect(availableComboSizes(product)).toEqual([5]);
+    expect(defaultComboSize(product)).toBe(5);
+  });
+
+  it("never lets a product be priced at S/ 0.00 for a size it doesn't sell", () => {
+    // Product only sells 5ml and 10ml decants — no 3ml. Defaulting to the
+    // global COMBO_SIZES[0] (3ml) would resolve to decantPrices["3"] ?? 0,
+    // silently showing a free item.
+    const product = fakeProduct({ legacyId: "fake-5-10-only", decantPrices: { "5": 20, "10": 35 } });
+    const size = defaultComboSize(product);
+    let lines: ComboLine[] = [];
+    lines = addComboLine(lines, product.productId ?? product.legacyId!, size!);
+    const resolved = resolveComboLines([product], lines);
+    expect(resolved[0]!.price).toBeGreaterThan(0);
+  });
+
+  it("has no default when a product has no supported priced size", () => {
+    const product = fakeProduct({ decantPrices: {} });
+    expect(availableComboSizes(product)).toEqual([]);
+    expect(defaultComboSize(product)).toBeNull();
+    expect(listComboEligibleProducts([product])).toEqual([]);
+  });
+
+  it("excludes a 2 ml-only product and fails closed before a zero-price WhatsApp line", () => {
+    const product = fakeProduct({ productId: "11111111-1111-4111-8111-000000000099", decantPrices: { "2": 9 } });
+    expect(availableComboSizes(product)).toEqual([]);
+    expect(defaultComboSize(product)).toBeNull();
+    expect(listComboEligibleProducts([product])).toEqual([]);
+
+    const attempted = [createComboLine(product.productId!, 3)];
+    const resolved = resolveComboLines([product], attempted);
+    expect(resolved).toEqual([]);
+    expect(canSendCombo(resolved.length)).toBe(false);
+    const message = buildCustomComboMessage({
+      storeName: "Cruzial Parfums",
+      lines: resolved.map((entry) => ({
+        brand: entry.product.brand, name: entry.product.name,
+        subtotal: entry.price, variantLabel: `${entry.line.size} ml`,
+      })),
+      total: calculateComboLinesTotal(resolved),
+    });
+    expect(message).not.toContain(product.name);
+    expect(message).not.toContain("3 ml");
   });
 });

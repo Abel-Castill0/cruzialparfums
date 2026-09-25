@@ -85,6 +85,8 @@ function importOrderErrorToMessage(error: {
       return "No se encontró la política de anticipo. Contacta soporte.";
     case "deposit_policy_ambiguity":
       return "Error de configuración de anticipo. Contacta soporte.";
+    case "customer_conflict_unresolved":
+      return "No pudimos verificar tu contacto por un conflicto inesperado. Contacta soporte antes de reintentar.";
     case "invalid_input":
       return "Los datos enviados no son válidos. Revisa e inténtalo otra vez.";
     default:

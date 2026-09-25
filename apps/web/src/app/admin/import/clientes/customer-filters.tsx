@@ -11,7 +11,7 @@ const STATUS_OPTIONS = [
   { value: "returning", label: "Recurrente" },
 ];
 
-export function CustomerFilters({ initial }: { initial: { search: string; status: string } }) {
+export function CustomerFilters({ initial }: { initial: { search: string; status: string; archived: string } }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [, startTransition] = useTransition();
@@ -34,6 +34,7 @@ export function CustomerFilters({ initial }: { initial: { search: string; status
 
   return (
     <div className={styles.filters}>
+      <label>Archivo<select value={initial.archived} onChange={e=>push("archived",e.target.value)}><option value="active">Activos</option><option value="archived">Archivados</option><option value="all">Todos</option></select></label>
       <div className={styles.searchField}>
         <label htmlFor="customer-search" className={styles.srOnly}>
           Buscar cliente

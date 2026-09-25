@@ -3,6 +3,7 @@ import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database, Json } from "@/lib/supabase/database.types";
 import { mapPostgrestError, type AdminRepositoryResult } from "@/domains/admin-parfums/products-repository";
+import { orderAgeRange, type OrderAgeBucket } from "@/domains/admin/order-age";
 
 type OrderRow = Database["public"]["Tables"]["orders"]["Row"];
 type OrderLineRow = Database["public"]["Tables"]["order_lines"]["Row"];
@@ -31,6 +32,7 @@ export type ImportOrderListFilters = {
   search?: string | undefined;
   status?: string | undefined;
   campaignId?: string | undefined;
+  age?: OrderAgeBucket | undefined;
 };
 
 export type ImportOrderListPage = {
@@ -151,6 +153,12 @@ export class AdminImportOrdersRepository {
 
     if (filters.campaignId) {
       query = query.eq("campaign_id", filters.campaignId);
+    }
+
+    if (filters.age) {
+      const range = orderAgeRange(filters.age);
+      if (range.gte) query = query.gte("created_at", range.gte);
+      if (range.lt) query = query.lt("created_at", range.lt);
     }
 
     const { data, error, count } = await query;

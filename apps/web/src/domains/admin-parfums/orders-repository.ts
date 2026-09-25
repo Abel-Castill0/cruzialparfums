@@ -3,6 +3,7 @@ import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database, Json } from "@/lib/supabase/database.types";
 import { mapPostgrestError, type AdminRepositoryResult } from "./products-repository";
+import { orderAgeRange, type OrderAgeBucket } from "@/domains/admin/order-age";
 
 /**
  * Admin Parfums orders data access (Phase 4E2 — Orders Inbox / Detail).
@@ -42,6 +43,8 @@ export type OrderListItem = {
 
 export type OrderListFilters = {
   search?: string;
+  status?: string | undefined;
+  age?: OrderAgeBucket | undefined;
 };
 
 export type OrderListPage = {
@@ -146,6 +149,16 @@ export class AdminParfumsOrdersRepository {
       );
     }
 
+    if (filters.status) {
+      query = query.eq("status", filters.status);
+    }
+
+    if (filters.age) {
+      const range = orderAgeRange(filters.age);
+      if (range.gte) query = query.gte("created_at", range.gte);
+      if (range.lt) query = query.lt("created_at", range.lt);
+    }
+
     const { data, error, count } = await query;
     if (error) return { ok: false, error: mapPostgrestError(error) };
 
@@ -213,6 +226,42 @@ export class AdminParfumsOrdersRepository {
       .select("*", { count: "exact", head: true })
       .eq("business_unit_id", this.businessUnitId)
       .eq("status", "pending_whatsapp_confirmation");
+    if (error) return null;
+    return count ?? 0;
+  }
+
+  /** Per-status counts for the Action Center — same shape as
+   * AdminImportOrdersRepository.countByStatus, real counts only. */
+  async countByStatus(): Promise<Record<string, number> | null> {
+    const statuses = ["pending_whatsapp_confirmation", "confirmed", "fulfilled", "cancelled"];
+    const counts: Record<string, number> = {};
+    for (const status of statuses) {
+      const { count, error } = await this.supabase
+        .from("orders")
+        .select("*", { count: "exact", head: true })
+        .eq("business_unit_id", this.businessUnitId)
+        .eq("status", status);
+      if (error) return null;
+      counts[status] = count ?? 0;
+    }
+    return counts;
+  }
+
+  /** Count of pending requests in the "3+ días" age bucket — reuses the same
+   * `orderAgeRange("old")` bounds the order inbox's `?age=old` filter uses
+   * (see Task 5), so this dashboard count can never disagree with what that
+   * link actually lists. A factual age grouping, never an invented SLA/
+   * "late" label. */
+  async countPendingOld(): Promise<number | null> {
+    const range = orderAgeRange("old");
+    let query = this.supabase
+      .from("orders")
+      .select("*", { count: "exact", head: true })
+      .eq("business_unit_id", this.businessUnitId)
+      .eq("status", "pending_whatsapp_confirmation");
+    if (range.gte) query = query.gte("created_at", range.gte);
+    if (range.lt) query = query.lt("created_at", range.lt);
+    const { count, error } = await query;
     if (error) return null;
     return count ?? 0;
   }

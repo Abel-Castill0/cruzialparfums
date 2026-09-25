@@ -5,9 +5,11 @@ import { getAdminSession } from "@/lib/auth/admin-session";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { AdminParfumsProductsRepository } from "@/domains/admin-parfums/products-repository";
 import type {
+  AvailabilityStatus,
   ProductionStatus,
   PublicationStatus,
 } from "@/domains/admin-parfums/product-schema";
+import { PRODUCT_STATUS_LABELS, PRODUCTION_STATUS_LABELS, PRODUCT_AVAILABILITY_LABELS } from "@/domains/admin-parfums/product-schema";
 import { ProductFilters } from "./product-filters";
 import styles from "./page.module.css";
 
@@ -23,6 +25,10 @@ function isPublicationStatus(value: string | undefined): value is PublicationSta
 
 function isProductionStatus(value: string | undefined): value is ProductionStatus {
   return value === "active" || value === "discontinued";
+}
+
+function isAvailabilityStatus(value: string | undefined): value is AvailabilityStatus {
+  return value === "available" || value === "out_of_stock";
 }
 
 export default async function AdminParfumsProductsPage({
@@ -64,6 +70,9 @@ export default async function AdminParfumsProductsPage({
   const productionStatus = isProductionStatus(params.production as string | undefined)
     ? (params.production as ProductionStatus)
     : undefined;
+  const availabilityStatus = isAvailabilityStatus(params.availability as string | undefined)
+    ? (params.availability as AvailabilityStatus)
+    : undefined;
   const featuredOnly = params.featured === "1";
   const includeArchived = params.archived === "1";
   const page = Math.max(1, Number(params.page) || 1);
@@ -76,6 +85,7 @@ export default async function AdminParfumsProductsPage({
       includeArchived,
       ...(publicationStatus ? { publicationStatus } : {}),
       ...(productionStatus ? { productionStatus } : {}),
+      ...(availabilityStatus ? { availabilityStatus } : {}),
     },
     { page, pageSize: PAGE_SIZE },
   );
@@ -100,9 +110,6 @@ export default async function AdminParfumsProductsPage({
     <div className={styles.page}>
       <header className={styles.header}>
         <div>
-          <Link href="/admin/parfums" className={styles.back}>
-            ← Cruzial Parfums
-          </Link>
           <h1>Productos</h1>
           <p>{total} producto{total === 1 ? "" : "s"} en total.</p>
         </div>
@@ -115,7 +122,7 @@ export default async function AdminParfumsProductsPage({
 
       <main>
       <ProductFilters
-        initial={{ search, publicationStatus, productionStatus, featuredOnly, includeArchived }}
+        initial={{ search, publicationStatus, productionStatus, availabilityStatus, featuredOnly, includeArchived }}
       />
 
       {items.length === 0 ? (
@@ -136,10 +143,10 @@ export default async function AdminParfumsProductsPage({
                   </div>
                   <div className={styles.rowBadges}>
                     <span className={`${styles.badge} ${styles[`status-${product.publication_status}`] ?? ""}`}>
-                      {product.publication_status}
+                      {PRODUCT_STATUS_LABELS[product.publication_status as PublicationStatus] ?? product.publication_status}
                     </span>
-                    <span className={styles.badge}>{product.production_status}</span>
-                    <span className={styles.badge}>{product.availability_status}</span>
+                    <span className={styles.badge}>{PRODUCTION_STATUS_LABELS[product.production_status as ProductionStatus] ?? product.production_status}</span>
+                    <span className={styles.badge}>{PRODUCT_AVAILABILITY_LABELS[product.availability_status as AvailabilityStatus] ?? product.availability_status}</span>
                     {product.is_featured ? <span className={styles.badgeFeatured}>★ Destacado</span> : null}
                     {product.archived_at ? <span className={styles.badgeArchived}>Archivado</span> : null}
                   </div>

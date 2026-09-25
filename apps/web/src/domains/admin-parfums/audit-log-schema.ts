@@ -35,6 +35,12 @@ const ACTION_LABELS: Record<string, string> = {
 };
 
 const ENTITY_LABELS: Record<string, string> = {
+  campaign: "Consolidado",
+  campaign_products: "Ofertas del consolidado",
+  import_presentation: "Presentación",
+  customer: "Cliente",
+  order: "Pedido",
+  complaint: "Reclamo",
   product: "Producto",
   product_variant: "Variante",
   inventory: "Inventario",
@@ -42,7 +48,7 @@ const ENTITY_LABELS: Record<string, string> = {
   category: "Categoría",
   combo: "Combo",
   wholesale_policy: "Regla mayorista",
-  product_media: "Media del producto",
+  product_media: "Imágenes del producto",
   settings: "Configuración",
 };
 

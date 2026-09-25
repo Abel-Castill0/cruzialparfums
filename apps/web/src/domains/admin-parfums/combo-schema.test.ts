@@ -8,6 +8,7 @@ import {
   ADMIN_EDITABLE_VERIFICATION_STATUSES,
   VERIFICATION_STATUS_LABELS,
   toComboCompositionPayload,
+  computeComboReadiness,
 } from "./combo-schema";
 
 const PRODUCT_ID = "11111111-1111-4111-8111-111111111111";
@@ -190,5 +191,54 @@ describe("validateComboItems", () => {
       { comboProductVariantId: COMBO_VARIANT_B, productVariantId: VARIANT_A, quantity: 1, sortOrder: 0 },
     ]);
     expect(result.ok).toBe(true);
+  });
+});
+
+describe("computeComboReadiness", () => {
+  const READY = {
+    productPublicationStatus: "published",
+    productArchived: false,
+    comboArchived: false,
+    compositionVerificationStatus: "client_confirmed",
+    itemCount: 2,
+    hasArchivedItem: false,
+  };
+
+  it("returns no blockers when every condition matches app.combo_is_public()", () => {
+    expect(computeComboReadiness(READY)).toEqual([]);
+  });
+
+  it("accepts official_pdf as a confirmed authority", () => {
+    expect(computeComboReadiness({ ...READY, compositionVerificationStatus: "official_pdf" })).toEqual([]);
+  });
+
+  it("flags an unconfirmed composition", () => {
+    expect(computeComboReadiness({ ...READY, compositionVerificationStatus: "pending_reconfirmation" }))
+      .toEqual(["composition_unconfirmed"]);
+  });
+
+  it("flags an unpublished product", () => {
+    expect(computeComboReadiness({ ...READY, productPublicationStatus: "draft" }))
+      .toEqual(["product_unpublished"]);
+  });
+
+  it("flags zero items instead of also flagging archived items", () => {
+    expect(computeComboReadiness({ ...READY, itemCount: 0, hasArchivedItem: true }))
+      .toEqual(["no_items"]);
+  });
+
+  it("flags an archived composition item", () => {
+    expect(computeComboReadiness({ ...READY, hasArchivedItem: true }))
+      .toEqual(["item_archived"]);
+  });
+
+  it("stacks multiple simultaneous blockers", () => {
+    expect(computeComboReadiness({
+      ...READY,
+      comboArchived: true,
+      productArchived: true,
+      productPublicationStatus: "draft",
+      compositionVerificationStatus: "unknown",
+    })).toEqual(["combo_archived", "product_archived", "product_unpublished", "composition_unconfirmed"]);
   });
 });

@@ -13,6 +13,7 @@ import {
 } from "@/domains/import/public-import";
 import { PublicImportRepository } from "@/domains/import/public-import-repository";
 import { readImportPublicContact } from "@/domains/import/import-public-contact";
+import { readImportDepositPercentages, type ImportDepositPercentages } from "@/domains/import/import-deposit-policies";
 import { createSupabasePublicServerClient } from "@/lib/supabase/server";
 import styles from "./page.module.css";
 
@@ -36,7 +37,15 @@ function formatClosingDate(value: string): string {
   }).format(new Date(value));
 }
 
-function ClosedState({ contact, unavailable = false }: { contact: { whatsappNumber: string } | null; unavailable?: boolean }) {
+function ClosedState({
+  contact,
+  depositPercentages,
+  unavailable = false,
+}: {
+  contact: { whatsappNumber: string } | null;
+  depositPercentages: ImportDepositPercentages;
+  unavailable?: boolean;
+}) {
   return (
     <>
       <section className={styles.closedHero} aria-labelledby="import-closed-title">
@@ -77,16 +86,18 @@ function ClosedState({ contact, unavailable = false }: { contact: { whatsappNumb
           />
         </div>
       </section>
-      <ImportInformation contact={contact} />
+      <ImportInformation contact={contact} depositPercentages={depositPercentages} />
     </>
   );
 }
 
 function ProductCard({
   product,
+  campaign,
   priority = false,
 }: {
   product: PublicImportProduct;
+  campaign: { id: string; number: number };
   priority?: boolean;
 }) {
   const href = `/import/producto/${product.slug}` as Route;
@@ -141,6 +152,7 @@ function ProductCard({
               currency: singleAvailable.currency,
               quantity: 1,
             }}
+            campaign={campaign}
           />
         ) : hasAvailable ? (
           <Link href={href} className={styles.choosePresentation}>
@@ -161,15 +173,16 @@ export default async function ImportHomePage({ searchParams }: PageProps) {
   const rawParams = await searchParams;
   const filters = parsePublicImportFilters(rawParams);
   const supabase = createSupabasePublicServerClient();
-  if (!supabase) return <main className={styles.home}><ClosedState contact={null} unavailable /></main>;
+  if (!supabase) return <main className={styles.home}><ClosedState contact={null} depositPercentages={{ new: null, returning: null }} unavailable /></main>;
 
-  const [catalogResult, contact] = await Promise.all([
+  const [catalogResult, contact, depositPercentages] = await Promise.all([
     new PublicImportRepository(supabase).readCatalog(filters),
     readImportPublicContact(supabase),
+    readImportDepositPercentages(supabase),
   ]);
 
-  if (catalogResult.status === "closed") return <main className={styles.home}><ClosedState contact={contact} /></main>;
-  if (catalogResult.status === "error") return <main className={styles.home}><ClosedState contact={contact} unavailable /></main>;
+  if (catalogResult.status === "closed") return <main className={styles.home}><ClosedState contact={contact} depositPercentages={depositPercentages} /></main>;
+  if (catalogResult.status === "error") return <main className={styles.home}><ClosedState contact={contact} depositPercentages={depositPercentages} unavailable /></main>;
 
   const result = catalogResult;
 
@@ -247,7 +260,12 @@ export default async function ImportHomePage({ searchParams }: PageProps) {
         {result.products.length > 0 && !invalidPage ? (
           <div className={styles.productGrid}>
             {result.products.map((product, index) => (
-              <ProductCard key={product.id} product={product} priority={index === 0} />
+              <ProductCard
+                key={product.id}
+                product={product}
+                campaign={result.campaign}
+                priority={index === 0}
+              />
             ))}
           </div>
         ) : (
@@ -271,7 +289,7 @@ export default async function ImportHomePage({ searchParams }: PageProps) {
         ) : null}
       </section>
 
-      <ImportInformation contact={contact} />
+      <ImportInformation contact={contact} depositPercentages={depositPercentages} />
     </main>
   );
 }

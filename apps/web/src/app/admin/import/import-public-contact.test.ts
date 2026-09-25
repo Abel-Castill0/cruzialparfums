@@ -142,23 +142,28 @@ describe("import checkout uses DB contact", () => {
 });
 
 describe("admin import dashboard navigation", () => {
-  it("dashboard includes Configuración link", () => {
-    const page = read("app/admin/import/page.tsx");
-    expect(page).toContain("/admin/import/configuracion");
-    expect(page).toContain("Configuración");
+  // Task 3 moved unit navigation out of the dashboard page and into the
+  // shared AdminShell sidebar/mobile nav (apps/web/src/app/admin/import/
+  // layout.tsx renders it) — these links now live there, not in page.tsx.
+  it("shared admin shell includes Configuración link for Import", () => {
+    const shell = read("components/admin/admin-shell.tsx");
+    expect(shell).toContain("/admin/import/configuracion");
+    expect(shell).toContain("Configuración");
   });
 
-  it("dashboard includes Auditoría link", () => {
-    const page = read("app/admin/import/page.tsx");
-    expect(page).toContain("/admin/import/auditoria");
-    expect(page).toContain("Auditoría");
+  it("shared admin shell includes Auditoría link for Import", () => {
+    const shell = read("components/admin/admin-shell.tsx");
+    expect(shell).toContain("/admin/import/auditoria");
+    expect(shell).toContain("Auditoría");
   });
 
-  it("dashboard shows contact configured status", () => {
+  // Task 4 replaced the raw "configured/missing" status card with an
+  // Action Center item that only appears when the contact is actually
+  // missing (no fake positive state, no zero-state card).
+  it("dashboard surfaces a missing-contact action item, omitting it once configured", () => {
     const page = read("app/admin/import/page.tsx");
-    expect(page).toContain("Contacto público");
-    expect(page).toContain("Configurado");
-    expect(page).toContain("Falta configurar");
+    expect(page).toContain("Contacto público de WhatsApp sin configurar");
+    expect(page).toContain("!contactConfigured");
   });
 
   it("dashboard reads settings via AdminParfumsSettingsRepository", () => {

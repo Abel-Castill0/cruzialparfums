@@ -16,7 +16,8 @@ import { defineConfig, devices } from "@playwright/test";
  *   - admin: authenticated journeys, desktop only.
  */
 
-const baseURL = process.env.E2E_BASE_URL || "http://localhost:3000";
+const localPort = process.env.E2E_LOCAL_PORT || "3000";
+const baseURL = process.env.E2E_BASE_URL || `http://localhost:${localPort}`;
 const isLocalTarget = !process.env.E2E_BASE_URL;
 const PUBLIC_SPECS = /(public-hub|parfums-public-journey|parfums-storefront|import-public-journey|admin-protection|accessibility)\.spec\.ts/;
 
@@ -46,9 +47,9 @@ export default defineConfig({
   ...(isLocalTarget
     ? {
         webServer: {
-          command: process.env.E2E_SERVER === "dev" ? "npm run dev" : "npm run start",
+          command: `${process.env.E2E_SERVER === "dev" ? "npm run dev" : "npm run start"} -- --port ${localPort}`,
           url: baseURL,
-          reuseExistingServer: true,
+          reuseExistingServer: !process.env.E2E_LOCAL_PORT,
           timeout: 60_000,
         },
       }

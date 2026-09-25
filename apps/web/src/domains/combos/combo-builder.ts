@@ -1,4 +1,4 @@
-import type { CatalogProduct } from "../catalog/types";
+import { cartIdentity, type CatalogProduct } from "../catalog/types";
 
 export const COMBO_MIN_ITEMS = 3;
 export const COMBO_MAX_ITEMS = 6;
@@ -25,7 +25,9 @@ export type ResolvedComboLine = {
 };
 
 export function listComboEligibleProducts(products: readonly CatalogProduct[]) {
-  return products.filter((product) => product.type !== "combo" && !product.discontinued);
+  return products.filter((product) =>
+    product.type !== "combo" && !product.discontinued && availableComboSizes(product).length > 0,
+  );
 }
 
 export function filterComboProducts(
@@ -41,6 +43,25 @@ export function filterComboProducts(
   );
 }
 
+/** Sizes this specific product actually has a confirmed decant price for —
+ * not every product in the catalog carries all three standard sizes, and
+ * pricing a combo line at a size the product doesn't offer would silently
+ * show S/ 0.00 (`decantPrices[size] ?? 0`), understating what the customer
+ * would actually owe. The UI resolves this per-product size before calling
+ * addComboLine, so this stays a pure lookup with no product-existence
+ * dependency (matters for the add/dedup/cap logic, which is tested with
+ * synthetic ids that don't resolve to real products). */
+export function availableComboSizes(product: CatalogProduct): ComboSize[] {
+  return COMBO_SIZES.filter((size) => {
+    const price = product.decantPrices[String(size)];
+    return price !== undefined && Number.isFinite(price) && price > 0;
+  });
+}
+
+export function defaultComboSize(product: CatalogProduct): ComboSize | null {
+  return availableComboSizes(product)[0] ?? null;
+}
+
 export function createComboLine(
   productId: string,
   size: ComboSize = COMBO_SIZES[0],
@@ -51,10 +72,11 @@ export function createComboLine(
 export function addComboLine(
   lines: readonly ComboLine[],
   productId: string,
+  size: ComboSize = COMBO_SIZES[0],
 ): ComboLine[] {
   if (lines.some((line) => line.productId === productId)) return [...lines];
   if (lines.length >= COMBO_MAX_ITEMS) return [...lines];
-  return [...lines, createComboLine(productId)];
+  return [...lines, createComboLine(productId, size)];
 }
 
 export function removeComboLine(
@@ -82,13 +104,16 @@ export function resolveComboLines(
   products: readonly CatalogProduct[],
   lines: readonly ComboLine[],
 ): ResolvedComboLine[] {
-  const byId = new Map(products.map((product) => [product.legacyId, product]));
-  return lines.flatMap((line) => {
+  const byId = new Map(products.map((product) => [cartIdentity(product), product]));
+  const resolved: ResolvedComboLine[] = [];
+  for (const line of lines) {
     const product = byId.get(line.productId);
-    if (!product) return [];
-    const unitPrice = product.decantPrices[String(line.size)] ?? 0;
-    return [{ product, line, price: unitPrice * line.quantity }];
-  });
+    if (!product || !availableComboSizes(product).includes(line.size)) return [];
+    const unitPrice = product.decantPrices[String(line.size)];
+    if (unitPrice === undefined) return [];
+    resolved.push({ product, line, price: unitPrice * line.quantity });
+  }
+  return resolved;
 }
 
 export function calculateComboLinesTotal(

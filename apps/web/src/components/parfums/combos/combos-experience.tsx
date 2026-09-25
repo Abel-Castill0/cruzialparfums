@@ -12,11 +12,12 @@ import {
 import { cartIdentity } from "@/domains/catalog/types";
 import {
   addComboLine,
+  availableComboSizes,
   calculateComboLinesTotal,
   canSendCombo,
   COMBO_MAX_ITEMS,
   COMBO_MIN_ITEMS,
-  COMBO_SIZES,
+  defaultComboSize,
   filterComboProducts,
   listComboEligibleProducts,
   removeComboLine,
@@ -37,12 +38,14 @@ function money(value: number) {
 }
 
 function ComboCard({ combo, onAdded, preload }: { combo: CatalogProduct; onAdded: (message: string) => void; preload: boolean }) {
-  const [size, setSize] = useState<ComboSize>(3);
-  const price = combo.decantPrices[String(size)] ?? 0;
+  const sizes = availableComboSizes(combo);
+  const [size, setSize] = useState<ComboSize | null>(defaultComboSize(combo));
+  const price = size === null ? null : combo.decantPrices[String(size)] ?? null;
   const compositionConfirmed = combo.comboContent?.verificationStatus === "official_pdf"
     || combo.comboContent?.verificationStatus === "client_confirmed";
 
   function add() {
+    if (size === null || price === null || price <= 0) return;
     const mutation = addParfumsCartLine(localStorage, {
       productId: cartIdentity(combo),
       variantId: `decant-${size}ml`,
@@ -75,13 +78,13 @@ function ComboCard({ combo, onAdded, preload }: { combo: CatalogProduct; onAdded
           <p className={styles.reconfirmation}>Composición pendiente de reconfirmación; se valida por WhatsApp antes de continuar.</p>
         )}
         <div className={styles.comboSizes} aria-label={`Tamaño de ${combo.name}`}>
-          {COMBO_SIZES.map((value) => (
+          {sizes.map((value) => (
             <button key={value} type="button" aria-pressed={size === value} className={size === value ? styles.selected : ""} onClick={() => setSize(value)}>{value} ml</button>
           ))}
         </div>
         <div className={styles.comboBuy}>
-          <div><span>Total estimado</span><strong>{money(price)}</strong></div>
-          <button type="button" onClick={add}>Añadir set <span aria-hidden="true">→</span></button>
+          <div><span>Total estimado</span><strong>{price === null ? "No disponible" : money(price)}</strong></div>
+          <button type="button" onClick={add} disabled={price === null}>Añadir set <span aria-hidden="true">→</span></button>
         </div>
       </div>
     </article>
@@ -124,7 +127,10 @@ export function CombosExperience({
     window.setTimeout(() => setNotice(""), 2800);
   }
 
-  function toggle(productId: string) {
+  function toggle(product: CatalogProduct) {
+    const productId = cartIdentity(product);
+    const initialSize = defaultComboSize(product);
+    if (initialSize === null) return;
     setLines((current) => {
       if (current.some((line) => line.productId === productId)) {
         return removeComboLine(current, productId);
@@ -133,7 +139,7 @@ export function CombosExperience({
         announce(`El máximo es ${COMBO_MAX_ITEMS} fragancias. Quita una para cambiarla.`);
         return current;
       }
-      return addComboLine(current, productId);
+      return addComboLine(current, productId, initialSize);
     });
   }
 
@@ -193,7 +199,8 @@ export function CombosExperience({
                 const line = lines.find((candidate) => candidate.productId === cartIdentity(product));
                 const isSelected = Boolean(line);
                 const disabled = lines.length >= COMBO_MAX_ITEMS && !isSelected;
-                const referenceSize = line?.size ?? COMBO_SIZES[0];
+                const referenceSize = line?.size ?? defaultComboSize(product);
+                const referencePrice = referenceSize === null ? null : product.decantPrices[String(referenceSize)] ?? null;
                 return (
                   <button
                     key={cartIdentity(product)}
@@ -202,7 +209,7 @@ export function CombosExperience({
                     aria-selected={isSelected}
                     disabled={disabled}
                     className={`${styles.pickerItem} ${isSelected ? styles.pickerSelected : ""}`}
-                    onClick={() => toggle(cartIdentity(product))}
+                    onClick={() => toggle(product)}
                     data-combo-option={cartIdentity(product)}
                   >
                     <span className={styles.check} aria-hidden="true">✓</span>
@@ -210,7 +217,7 @@ export function CombosExperience({
                     <span className={styles.itemInfo}>
                       <small>{product.brand}</small>
                       <strong>{product.name}</strong>
-                      <em>{isSelected ? `${referenceSize} ml · ` : "desde "}{money(product.decantPrices[String(referenceSize)] ?? 0)}</em>
+                      <em>{referencePrice === null ? "No disponible" : <>{isSelected ? `${referenceSize} ml · ` : "desde "}{money(referencePrice)}</>}</em>
                     </span>
                   </button>
                 );
@@ -227,10 +234,10 @@ export function CombosExperience({
                     <div className={styles.summaryLineHead}>
                       <span>{entry.product.name}</span>
                       <strong>{money(entry.price)}</strong>
-                      <button type="button" onClick={() => toggle(cartIdentity(entry.product))} aria-label={`Quitar ${entry.product.name} del combo`}>×</button>
+                      <button type="button" onClick={() => toggle(entry.product)} aria-label={`Quitar ${entry.product.name} del combo`}>×</button>
                     </div>
                     <div className={styles.summaryLineSizes} role="group" aria-label={`Tamaño de ${entry.product.name}`}>
-                      {COMBO_SIZES.map((value) => (
+                      {availableComboSizes(entry.product).map((value) => (
                         <button
                           key={value}
                           type="button"

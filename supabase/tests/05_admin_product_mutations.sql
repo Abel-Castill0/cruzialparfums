@@ -7,7 +7,7 @@
 
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(42);
+select plan(44);
 
 -- ---------------------------------------------------------------------------
 -- Fixtures
@@ -120,6 +120,19 @@ select is(
     where p.slug = 'test-product-crud'),
   1,
   'the variant has a paired inventory row created atomically'
+);
+
+select throws_ok(
+  $$select public.admin_update_inventory(i.product_variant_id, i.updated_at, 'tracked_quantity', 'available', 0)
+    from public.inventory i join public.product_variants v on v.id=i.product_variant_id
+    join public.products p on p.id=v.product_id where p.slug='test-product-crud'$$,
+  '22023', null, 'zero tracked quantity cannot be marked available'
+);
+select lives_ok(
+  $$select public.admin_update_inventory(i.product_variant_id, i.updated_at, 'tracked_quantity', 'out_of_stock', 0)
+    from public.inventory i join public.product_variants v on v.id=i.product_variant_id
+    join public.products p on p.id=v.product_id where p.slug='test-product-crud'$$,
+  'zero tracked quantity can be explicitly out of stock'
 );
 
 -- A status_only/quantity mismatch is still rejected by the DB constraint,
