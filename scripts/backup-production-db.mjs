@@ -22,7 +22,16 @@
  * prints a Supabase access token, database password, or any dumped row.
  *
  * Usage:
- *   node scripts/backup-production-db.mjs [--project-ref <ref>]
+ *   node scripts/backup-production-db.mjs --output-dir <absolute-private-path> [--project-ref <ref>]
+ *
+ * --output-dir is REQUIRED and has no default. A real backup containing
+ * customer/order/complaint PII must never silently land inside this
+ * repository, the current working directory, or a cloud-sync folder
+ * (OneDrive, Dropbox, Google Drive, iCloud) where it could be uploaded
+ * unencrypted without anyone deciding that on purpose. The path must be
+ * absolute; see validateOutputDir below for the exact checks. The operator
+ * chooses the destination (e.g. C:\cruzial-private-backups on Windows) —
+ * nothing here hardcodes or suggests a specific path in application logic.
  *
  * The database password is read from the SUPABASE_DB_PASSWORD environment
  * variable if set. It is NEVER passed as a `--password`/`-p` CLI argument —
@@ -39,9 +48,9 @@
  * WARNING: the resulting files are an UNENCRYPTED logical dump containing
  * real customer PII (names, phone numbers, addresses, order history). Never
  * upload them as a public (or unencrypted) GitHub Actions artifact, never
- * commit them (backups/ is gitignored), and never attach them to a public
- * issue/PR. If they need to leave this machine, encrypt them first and send
- * them only to an approved private destination.
+ * commit them, and never attach them to a public issue/PR. If they need to
+ * leave this machine, encrypt them first and send them only to an approved
+ * private destination.
  *
  * NOT covered by this backup: external Cloudinary media assets (images are
  * stored with Cloudinary, not in the Supabase database) and Vercel/platform
@@ -53,7 +62,8 @@
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { createReadStream, existsSync, mkdirSync, statSync, writeFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { isAbsolute, resolve, sep } from "node:path";
+import { pathToFileURL } from "node:url";
 
 export const DEFAULT_PROJECT_REF = "iyxidhglyqkzoziyewlc";
 
@@ -63,9 +73,74 @@ export function readProjectRef(argv) {
   return DEFAULT_PROJECT_REF;
 }
 
+export function readOutputDirArg(argv) {
+  const flagIndex = argv.indexOf("--output-dir");
+  if (flagIndex !== -1 && argv[flagIndex + 1]) return argv[flagIndex + 1];
+  return undefined;
+}
+
 export function timestamp() {
   // Sortable, filesystem-safe, unambiguous UTC timestamp.
   return new Date().toISOString().replace(/[:.]/g, "-");
+}
+
+// Case-insensitive markers for common cloud-sync roots. Checked against
+// each path segment (not a bare substring of the full path) so a legitimate
+// directory that merely contains one of these words elsewhere in a longer
+// unrelated path is not what triggers this — a segment named "OneDrive",
+// "Google Drive", etc. is what actually indicates a synced tree.
+const SYNCED_DIR_MARKERS = [
+  "onedrive",
+  "dropbox",
+  "google drive",
+  "googledrive",
+  "icloud",
+  "icloud drive",
+  // macOS's actual iCloud Drive path segment is "com~apple~CloudDocs", not
+  // a literal "icloud" — confirmed by testing the real path shape.
+  "clouddocs",
+];
+
+/**
+ * Pure validation for --output-dir. Never touches the filesystem. Returns
+ * { ok: true } or { ok: false, reason } — callers must fail closed on
+ * anything but ok: true.
+ */
+export function validateOutputDir(outputDir, cwd) {
+  if (!outputDir) {
+    return { ok: false, reason: "no --output-dir given: a real backup must never silently default into the repository/cwd" };
+  }
+  if (!isAbsolute(outputDir)) {
+    return { ok: false, reason: `--output-dir must be an absolute path, got: ${outputDir}` };
+  }
+
+  const resolvedOut = resolve(outputDir);
+  const resolvedCwd = resolve(cwd);
+  if (resolvedOut === resolvedCwd || resolvedOut.startsWith(resolvedCwd + sep)) {
+    return { ok: false, reason: `--output-dir must not be inside the current working directory (${resolvedCwd}) or the repository it contains` };
+  }
+
+  const segments = resolvedOut.toLowerCase().split(sep);
+  for (const marker of SYNCED_DIR_MARKERS) {
+    if (segments.some((seg) => seg.includes(marker))) {
+      return { ok: false, reason: `--output-dir appears to be inside a cloud-sync folder ("${marker}") — a real backup must never land somewhere that could sync it unencrypted` };
+    }
+  }
+
+  return { ok: true };
+}
+
+/**
+ * The Supabase CLI is invoked through npx. On Windows, npx is a .cmd
+ * wrapper, and Node's spawn/spawnSync cannot execute a .cmd file directly
+ * (CreateProcess needs cmd.exe as the interpreter) — even with an absolute
+ * path, `spawnSync("npx.cmd", ...)` fails with EINVAL unless shell: true.
+ * This is confirmed against this exact Node/Windows combination, not
+ * assumed. shell is scoped to win32 only; everywhere else the plain "npx"
+ * binary runs directly, no shell involved.
+ */
+export function resolveNpxCommand(platform = process.platform) {
+  return platform === "win32" ? { command: "npx.cmd", shell: true } : { command: "npx", shell: false };
 }
 
 /**
@@ -107,9 +182,11 @@ async function sha256File(path) {
 
 function runStep(step) {
   console.log(`[backup] dumping ${step.name} -> ${step.file}`);
-  const result = spawnSync("npx", step.args, {
+  const { command, shell } = resolveNpxCommand();
+  const result = spawnSync(command, step.args, {
     stdio: ["inherit", "inherit", "inherit"],
     env: process.env,
+    shell,
   });
   if (result.status !== 0) {
     throw new Error(`[backup] ${step.name} dump failed (exit ${result.status ?? "unknown"})`);
@@ -120,9 +197,18 @@ function runStep(step) {
 }
 
 async function main() {
-  const projectRef = readProjectRef(process.argv.slice(2));
-  const backupsDir = resolve(process.cwd(), "backups");
-  const outDir = resolve(backupsDir, `cruzial-${projectRef}-${timestamp()}`);
+  const argv = process.argv.slice(2);
+  const projectRef = readProjectRef(argv);
+  const outputDirArg = readOutputDirArg(argv);
+
+  const check = validateOutputDir(outputDirArg, process.cwd());
+  if (!check.ok) {
+    console.error(`[backup] refusing to run: ${check.reason}`);
+    console.error("[backup] usage: node scripts/backup-production-db.mjs --output-dir <absolute-private-path> [--project-ref <ref>]");
+    process.exit(1);
+  }
+
+  const outDir = resolve(outputDirArg, `cruzial-${projectRef}-${timestamp()}`);
   mkdirSync(outDir, { recursive: true });
 
   console.log(`[backup] project: ${projectRef}`);
@@ -158,7 +244,9 @@ async function main() {
   console.log("NOT included: Cloudinary-hosted media assets, Vercel/platform configuration.");
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+const isMainEntry = process.argv[1] !== undefined && import.meta.url === pathToFileURL(process.argv[1]).href;
+
+if (isMainEntry) {
   main().catch((err) => {
     console.error("[backup] failed:", err.message);
     process.exit(1);

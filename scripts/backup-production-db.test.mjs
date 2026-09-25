@@ -6,7 +6,14 @@
 // import, matching the convention in migrate-client-media.test.mjs.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { buildDumpCommands, readProjectRef, timestamp } from "./backup-production-db.mjs";
+import {
+  buildDumpCommands,
+  readOutputDirArg,
+  readProjectRef,
+  resolveNpxCommand,
+  timestamp,
+  validateOutputDir,
+} from "./backup-production-db.mjs";
 
 test("readProjectRef falls back to the default when --project-ref is absent", () => {
   assert.equal(readProjectRef([]), "iyxidhglyqkzoziyewlc");
@@ -14,6 +21,73 @@ test("readProjectRef falls back to the default when --project-ref is absent", ()
 
 test("readProjectRef reads an explicit --project-ref", () => {
   assert.equal(readProjectRef(["--project-ref", "abcxyz"]), "abcxyz");
+});
+
+test("readOutputDirArg returns undefined when --output-dir is absent", () => {
+  assert.equal(readOutputDirArg([]), undefined);
+});
+
+test("readOutputDirArg reads an explicit --output-dir", () => {
+  assert.equal(readOutputDirArg(["--output-dir", "C:\\cruzial-private-backups"]), "C:\\cruzial-private-backups");
+});
+
+test("validateOutputDir rejects a missing --output-dir", () => {
+  const result = validateOutputDir(undefined, "C:\\repo");
+  assert.equal(result.ok, false);
+});
+
+test("validateOutputDir rejects a relative path", () => {
+  const result = validateOutputDir("backups", "C:\\repo");
+  assert.equal(result.ok, false);
+  assert.match(result.reason, /absolute/i);
+});
+
+test("validateOutputDir rejects a path inside the current working directory", () => {
+  const result = validateOutputDir("C:\\repo\\backups", "C:\\repo");
+  assert.equal(result.ok, false);
+  assert.match(result.reason, /current working directory|repository/i);
+});
+
+test("validateOutputDir rejects a path equal to the current working directory", () => {
+  const result = validateOutputDir("C:\\repo", "C:\\repo");
+  assert.equal(result.ok, false);
+});
+
+test("validateOutputDir rejects OneDrive-synced paths case-insensitively", () => {
+  for (const p of [
+    "C:\\Users\\ABEL\\OneDrive\\Desktop\\backups",
+    "C:\\Users\\ABEL\\onedrive\\Desktop\\backups",
+    "C:\\Users\\ABEL\\ONEDRIVE\\Desktop\\backups",
+  ]) {
+    const result = validateOutputDir(p, "C:\\somewhere-else");
+    assert.equal(result.ok, false, `expected ${p} to be rejected`);
+    assert.match(result.reason, /cloud-sync|onedrive/i);
+  }
+});
+
+test("validateOutputDir rejects Dropbox, Google Drive, and iCloud paths", () => {
+  for (const p of [
+    "C:\\Users\\ABEL\\Dropbox\\backups",
+    "C:\\Users\\ABEL\\Google Drive\\backups",
+    "/Users/abel/Library/Mobile Documents/com~apple~CloudDocs/backups",
+  ]) {
+    const result = validateOutputDir(p, "/somewhere-else");
+    assert.equal(result.ok, false, `expected ${p} to be rejected`);
+  }
+});
+
+test("validateOutputDir accepts a genuinely separate absolute private path", () => {
+  const result = validateOutputDir("C:\\cruzial-private-backups", "C:\\Users\\ABEL\\OneDrive\\Desktop\\cruzialparfums");
+  assert.equal(result.ok, true);
+});
+
+test("resolveNpxCommand uses npx.cmd with shell:true only on win32", () => {
+  assert.deepEqual(resolveNpxCommand("win32"), { command: "npx.cmd", shell: true });
+});
+
+test("resolveNpxCommand uses plain npx with no shell on other platforms", () => {
+  assert.deepEqual(resolveNpxCommand("linux"), { command: "npx", shell: false });
+  assert.deepEqual(resolveNpxCommand("darwin"), { command: "npx", shell: false });
 });
 
 test("timestamp is filesystem-safe (no colons or dots)", () => {

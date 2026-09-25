@@ -46,10 +46,26 @@ documented restore order:
 ## Manual backup
 
 ```bash
-npx supabase login                      # once, if not already authenticated
-node scripts/backup-production-db.mjs   # dumps the production project
+npx supabase login   # once, if not already authenticated
+
+node scripts/backup-production-db.mjs --output-dir C:\cruzial-private-backups
 ```
 
+- **`--output-dir` is required and has no default.** This repository lives
+  under `C:\Users\...\OneDrive\Desktop\cruzialparfums` on the operator's
+  machine — a default of "the repo" or "the current directory" would put
+  real customer PII inside a OneDrive-synchronized tree before anyone
+  chose to encrypt it. The script refuses to run without an explicit
+  `--output-dir`, and rejects (fails closed, before anything is dumped) a
+  path that is:
+  - not absolute,
+  - inside the current working directory (the repository), or
+  - inside an obvious cloud-sync folder — OneDrive, Dropbox, Google Drive,
+    or iCloud, checked case-insensitively against each path segment.
+
+  Choose your own private destination outside all of the above —
+  `C:\cruzial-private-backups` is only an example, not a default the code
+  assumes.
 - Optional: set `SUPABASE_DB_PASSWORD` in your own shell environment first.
   The script never constructs a `--password`/`-p` command-line argument —
   confirmed via `--dry-run` that the Supabase CLI reads
@@ -58,12 +74,15 @@ node scripts/backup-production-db.mjs   # dumps the production project
   argument visible in the process list. If the variable is unset, the CLI
   prompts interactively instead (this script does not invent a
   non-interactive fallback of its own).
-- Output: `backups/cruzial-<project-ref>-<UTC timestamp>/` containing
+- Output: `<output-dir>/cruzial-<project-ref>-<UTC timestamp>/` containing
   `roles.sql`, `schema.sql`, `data.sql`, and `checksums.sha256` (a SHA-256
-  manifest covering all three files). `backups/` is gitignored — nothing
-  here is ever committed.
+  manifest covering all three files).
 - The script prints only status lines (file names, sizes, checksums). It
   never prints a secret value, a database password, or any row of data.
+- On Windows, the Supabase CLI is invoked through `npx.cmd` with
+  `shell: true` (Windows cannot execute a `.cmd` file directly via
+  `spawnSync` even with an absolute path — confirmed empirically, not
+  assumed); every other platform runs plain `npx` with no shell involved.
 
 ## What this backup does NOT cover
 
