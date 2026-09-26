@@ -23,7 +23,7 @@ where app.complaint_sla_due_at(candidate)>=now()
 order by app.complaint_sla_due_at(candidate) limit 1;
 
 begin;
-select plan(4);
+select plan(6);
 
 select extensions.dblink_connect('gate_b_race_worker','host=supabase_db_cruzialparfums port=5432 dbname=postgres user=postgres password=postgres');
 select extensions.dblink_connect('gate_b_race_resolver','host=supabase_db_cruzialparfums port=5432 dbname=postgres user=postgres password=postgres');
@@ -62,8 +62,36 @@ select is((select count(*)::integer from public.notification_outbox where entity
  and entity_id='50000000-0000-4000-8000-000000000041' and event_type='complaint_received'),1,
  'the unrelated acknowledgement notification is untouched');
 
+-- Second, later boundary: a delivery worker was 'sending' this complaint's
+-- reminder at the exact instant of resolution (missed by the one-shot
+-- cancel_closed_complaint_reminders trigger, which never touches 'sending'
+-- -- see the migration for why not), and the send then failed, cycling the
+-- row back to 'retry'. Without the claim-time lazy cancel this would sit
+-- claimable forever. A genuinely unrelated, still-pending reminder for a
+-- DIFFERENT (unresolved) complaint must keep being claimed normally.
+insert into public.complaint_book_entries(id,business_unit_id,request_id,complaint_type,full_name,
+ document_type,document_number,address,phone,email,detail,consumer_request,created_at)
+values ('50000000-0000-4000-8000-000000000042','11111111-1111-4111-8111-111111111111',
+ '50000000-0000-4000-8000-000000000052','reclamo','Unrelated Fixture','dni','12345678','Fixture address',
+ '999000051','fixture2@example.test','Fixture detail','Fixture request',now()-interval '1 day');
+insert into public.notification_outbox(id,business_unit_id,event_type,entity_type,entity_id,recipient,
+ template_key,status,attempts,next_attempt_at,idempotency_key)
+values
+ ('50000000-0000-4000-8000-000000000061','11111111-1111-4111-8111-111111111111','complaint_approaching',
+  'complaint','50000000-0000-4000-8000-000000000041','51999000050','complaint_approaching','retry',1,now(),
+  'gate-b-race-claim-boundary-041'),
+ ('50000000-0000-4000-8000-000000000062','11111111-1111-4111-8111-111111111111','complaint_approaching',
+  'complaint','50000000-0000-4000-8000-000000000042','51999000051','complaint_approaching','retry',1,now(),
+  'gate-b-race-claim-boundary-042');
+select * from public.worker_claim_notifications(10);
+select is((select status from public.notification_outbox where id='50000000-0000-4000-8000-000000000061'),
+ 'cancelled','a retry stranded by the missed sending-window is lazily cancelled on the next claim cycle, never retried');
+select is((select status from public.notification_outbox where id='50000000-0000-4000-8000-000000000062'),
+ 'claimed','an unrelated pending reminder for a still-unresolved complaint keeps being claimed normally');
+
 select extensions.dblink_disconnect('gate_b_race_worker');
 select extensions.dblink_disconnect('gate_b_race_resolver');
 select * from finish();
 rollback;
-delete from public.complaint_book_entries where id='50000000-0000-4000-8000-000000000041';
+delete from public.complaint_book_entries where id in
+ ('50000000-0000-4000-8000-000000000041','50000000-0000-4000-8000-000000000042');
