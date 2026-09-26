@@ -67,6 +67,12 @@ if (args.includes("--seed")) {
 }
 env.E2E_LOCAL_FIXTURES="1";
 env.E2E_ALLOW_ORDER_SUBMIT="1";
+if (args[0] === "--gate") {
+ const audit=spawnSync("npm audit --omit=dev --audit-level=high",{cwd:web,env,shell:true,stdio:"inherit"});
+ if(audit.status!==0)process.exit(audit.status??1);
+ const gate=spawnSync("npm run check",{cwd:web,env,shell:true,stdio:"inherit"});
+ process.exit(gate.status??1);
+}
 if (args[0] === "--build") {
   const result=spawnSync("npm run build",{cwd:web,env,shell:true,stdio:"inherit"});
   process.exit(result.status ?? 1);
