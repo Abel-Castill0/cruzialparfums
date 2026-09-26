@@ -1,6 +1,6 @@
 import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
+import { join } from "node:path";
 
 /**
  * Direct SQL against the DISPOSABLE local Supabase stack only — used to make
@@ -13,7 +13,7 @@ export const LOCAL_DB_AVAILABLE = process.env.E2E_LOCAL_FIXTURES === "1" && !pro
 const QA_PARFUMS_VARIANT = "99002000-0000-4000-8000-000000000002";
 
 function projectId() {
-  const config = readFileSync(fileURLToPath(new URL("../../../supabase/config.toml", import.meta.url)), "utf8");
+  const config = readFileSync(join(__dirname, "../../../supabase/config.toml"), "utf8");
   const id = config.match(/^project_id\s*=\s*"([a-zA-Z0-9_-]+)"/m)?.[1];
   if (!id) throw new Error("Invalid local project id.");
   return id;
