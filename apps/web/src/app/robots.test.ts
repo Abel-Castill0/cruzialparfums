@@ -1,5 +1,17 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+// The B14 cutover safeguard (getAuthoritativeIndexingPolicy) also requires a
+// factual "launch ready" signal from the database before it will open the
+// storefronts, even when the env flag is approved. Only the "opens after
+// cutover" case below reaches this call — the closed-by-env cases return
+// before ever consulting it.
+vi.mock("@/lib/supabase/server", () => ({
+  createSupabasePublicServerClient: () => ({
+    rpc: async (name: string) =>
+      name === "public_launch_ready" ? { data: true, error: null } : { data: null, error: new Error("unexpected rpc") },
+  }),
+}));
+
 async function loadRobots(env: Record<string, string | undefined>) {
   vi.resetModules();
   for (const [key, value] of Object.entries(env)) {

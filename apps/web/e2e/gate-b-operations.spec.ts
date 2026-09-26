@@ -27,7 +27,7 @@ test.describe("Gate B local operations",()=>{
  });
  test("bulk publication leaves campaign draft and media matching is exact",async({page})=>{
   await page.goto(`/admin/import/lotes?campaign=${ids.campaign}`);await page.getByRole("button",{name:"Seleccionar todos los elegibles (1)"}).click();await page.getByRole("button",{name:"Publicar 1 ofertas seleccionadas"}).click();await expect(page.getByRole("status")).toContainText("Lote publicado");
-  await page.goto(`/admin/import/productos/${ids.product}`);await expect(page.getByLabel("Publicación")).toHaveValue("published");
+  await page.goto(`/admin/import/productos/${ids.product}`);await expect(page.locator("section",{has:page.getByRole("heading",{name:"Datos del producto"})}).getByLabel("Publicación")).toHaveValue("published");
   await page.goto(`/admin/import/lotes?campaign=${ids.campaign}`);await expect(page.locator("#campaign option:checked")).toContainText("draft");
   await page.getByLabel("Imágenes PNG, JPG o WebP").setInputFiles({name:"local-gate-b-bulk.png",mimeType:"image/png",buffer:Buffer.from("fixture-image-preview")});await page.getByRole("button",{name:"Ver coincidencias"}).click();await expect(page.getByText("local-gate-b-bulk.png: LOCAL Gate B lote editado")).toBeVisible();
  });
