@@ -13,7 +13,7 @@ import { useParfumsCart } from "@/components/parfums/cart/use-parfums-cart";
 import { Breadcrumbs } from "@/components/parfums/navigation/breadcrumbs";
 import type { CatalogProduct } from "@/domains/catalog/types";
 import { cartIdentity } from "@/domains/catalog/types";
-import { handoffStorageKey } from "@/domains/orders/parfums-order-handoff";
+import { clearStoredRequestId, getOrCreatePersistedRequestId, handoffStorageKey } from "@/domains/orders/parfums-order-handoff";
 import { PARFUMS_DELIVERY_OPTIONS } from "@/domains/orders/parfums-order-request";
 import type { ParfumsCheckoutCustomer } from "@/domains/whatsapp/parfums-message-builder";
 import styles from "./checkout.module.css";
@@ -40,11 +40,17 @@ export function CheckoutExperience({
   const [customer, setCustomer] = useState(emptyCustomer);
   const [result, setResult] = useState<CreateParfumsOrderResult | null>(null);
   const [isPending, startTransition] = useTransition();
-  const requestIdRef = useRef<string | null>(null);
+  const requestIdRef = useRef<string | undefined>(undefined);
+  if (requestIdRef.current === undefined) {
+    // Durable across reload: a lost server response followed by a reload
+    // recovers this SAME id, so a retry replays idempotently instead of
+    // creating a second order. Never rotated by editing a field or cart
+    // line — only by a resolved success (see the submit() success branch).
+    requestIdRef.current = getOrCreatePersistedRequestId();
+  }
   const errorRef = useRef<HTMLDivElement>(null);
 
   function resetAttempt() {
-    requestIdRef.current = null;
     setResult(null);
   }
 
@@ -56,19 +62,31 @@ export function CheckoutExperience({
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (lines.length === 0 || isPending) return;
-    requestIdRef.current ??= crypto.randomUUID();
-    const requestId = requestIdRef.current;
+    const requestId = requestIdRef.current!;
     setResult(null);
     startTransition(async () => {
-      const actionResult = await createParfumsOrderRequest({
-        requestId,
-        lines: lines.map((line) => ({
-          productId: cartIdentity(line.product),
-          variantId: line.variant.variantId,
-          quantity: line.quantity,
-        })),
-        customer,
-      });
+      let actionResult: CreateParfumsOrderResult;
+      try {
+        actionResult = await createParfumsOrderRequest({
+          requestId,
+          lines: lines.map((line) => ({
+            productId: cartIdentity(line.product),
+            variantId: line.variant.variantId,
+            quantity: line.quantity,
+          })),
+          customer,
+        });
+      } catch {
+        // Network/connection failure: unknown outcome server-side. The
+        // request id is already persisted, so a retry (even after a reload)
+        // replays idempotently instead of risking a second order.
+        setResult({
+          status: "error",
+          message: "No pudimos conectar con el servidor. Tu carrito se conserva. Intenta nuevamente.",
+        });
+        requestAnimationFrame(() => errorRef.current?.focus());
+        return;
+      }
       setResult(actionResult);
       if (actionResult.status !== "success") {
         requestAnimationFrame(() => errorRef.current?.focus());
@@ -81,6 +99,9 @@ export function CheckoutExperience({
           // A safe reference-only fallback remains available on the next page.
         }
       }
+      // Resolved: the next checkout (a fresh cart, after navigating back)
+      // must not replay into this now-completed order.
+      clearStoredRequestId();
       clear();
       router.push(`/parfums/gracias/${encodeURIComponent(actionResult.orderNumber)}` as Route);
     });

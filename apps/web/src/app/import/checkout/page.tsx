@@ -27,12 +27,43 @@ function generateUUID(): string {
   });
 }
 
+const REQUEST_ID_KEY = "cruzial:import:checkout:request-id";
+
 function getStoredRequestId(): string | null {
   try {
-    return sessionStorage.getItem("cruzial:import:checkout:request-id");
+    return sessionStorage.getItem(REQUEST_ID_KEY);
   } catch {
     return null;
   }
+}
+
+function setStoredRequestId(requestId: string) {
+  try {
+    sessionStorage.setItem(REQUEST_ID_KEY, requestId);
+  } catch {
+    /* best-effort: durability degrades to in-memory only for this tab */
+  }
+}
+
+function clearStoredRequestId() {
+  try {
+    sessionStorage.removeItem(REQUEST_ID_KEY);
+  } catch {
+    /* noop */
+  }
+}
+
+/** Persists the id immediately (not just on submit) so a lost server
+ * response followed by a page reload still recovers the SAME pending
+ * attempt id, letting a retry land as an idempotent replay instead of a
+ * second order. Only ever rotated by clearStoredRequestId — a resolved
+ * success, or the user explicitly starting a new purchase. */
+function getOrCreatePersistedRequestId(): string {
+  const existing = getStoredRequestId();
+  if (existing) return existing;
+  const fresh = generateUUID();
+  setStoredRequestId(fresh);
+  return fresh;
 }
 
 function getStoredSuccess(): CreateImportOrderResult & { status: "success" } | null {
@@ -96,7 +127,7 @@ export default function ImportCheckoutPage() {
   });
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const formRef = useRef<HTMLFormElement>(null);
-  const requestIdRef = useRef<string>(getStoredRequestId() || generateUUID());
+  const requestIdRef = useRef<string>(getOrCreatePersistedRequestId());
 
   const displaySubtotal = useMemo(
     () => lines.reduce((sum, l) => sum + parseFloat(l.price) * l.quantity, 0),
@@ -218,6 +249,8 @@ export default function ImportCheckoutPage() {
                 type="button"
                 onClick={() => {
                   clearStoredSuccess();
+                  clearStoredRequestId();
+                  requestIdRef.current = getOrCreatePersistedRequestId();
                   setFormState({ phase: "form" });
                 }}
                 className={styles.secondaryAction}
