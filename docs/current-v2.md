@@ -1521,7 +1521,9 @@ Validation (local, fresh):
   95/100/100/66 (SEO 66 = intentional noindex outside production cutover)
 - `npm audit` 0 vulnerabilities; no tracked secrets.
 
-Hosted state at hand-off:
+Hosted state at hand-off (2026-09-20 — SUPERSEDED, see "Gate B closure and
+current Production state" below for the 2026-09-26 verified reality; kept
+here only as the historical record of what was true at hand-off time):
 - Vercel `cruzial/cruzial-platform-v2`: Preview auto-deployed from the push;
   Preview env now also has `SITE_URL` (branch alias) and a random
   `ORDER_ABUSE_HMAC_SECRET`. **No production deployment exists; no
@@ -1547,17 +1549,67 @@ Hosted state at hand-off:
      backup), verify AAL2, run the staging E2E with `E2E_BASE_URL`.
   5. Leaked Password Protection: dashboard toggle, plan permitting.
 
+## Gate B closure and current Production state (verified 2026-09-26)
+
+The 2026-09-20 "Hosted state at hand-off" section above is stale and was a
+source of real confusion during the Gate B release — it described a state
+that no longer held. Everything below was confirmed directly (Vercel CLI
+under the `cruzial` team login, Supabase MCP, live DNS lookups, `gh`), not
+copied from an earlier doc.
+
+- **Vercel**: project `cruzial/cruzial-platform-v2` under team `cruzial`
+  (reachable via the `dominiocruzial-5459` CLI login; a differently-scoped
+  Vercel MCP token cannot see this team). A real Production deployment
+  exists and serves `https://cruzial.pe` and `https://www.cruzial.pe`,
+  git-linked to `master`. `CRON_SECRET` and the Supabase/Cloudinary/site
+  secrets are set as Production env vars.
+- **Domain**: `cruzial.pe` DNS is live (record-based, not nameserver
+  delegation) and resolves through Vercel's edge. This is no longer
+  NXDOMAIN.
+- **Supabase**: the only hosted project remains
+  `iyxidhglyqkzoziyewlc` (dashboard name still says "cruzial-v2-staging" —
+  that label is stale/non-authoritative; this project is what Production
+  env vars point to and is operationally Production). There is still only
+  one Supabase project; none was created for a separate "production".
+- **Gate B**: PR #12 (`claude/feature/gate-b-operations-automation`,
+  head `f5c7ef49f283ef0af4e3f17f90d2797b69d568fa`) merged into `master` as
+  `0ba18017ecc8e075cfac3debf1eefdc6f81cd38c`. The 8
+  `gate_b_*` migrations were applied to `iyxidhglyqkzoziyewlc`
+  (62 → 70 hosted migrations), dry-run verified beforehand, business row
+  counts unchanged after (products 944, campaigns 1, orders 0, customers 0,
+  complaint_book_entries 0, admin_memberships 2). Master CI (web/db/E2E/
+  CodeQL/secret-scan) green on the merge commit; Production redeployed to
+  the merge SHA and smoke-checked (200s on `/` and `/parfums`, `/admin`
+  redirects unauthenticated, CSP/HSTS present).
+- **Indexing/cutover flag**: `CRUZIAL_PRODUCTION_CUTOVER_APPROVED` exists as
+  a Production env var but was not read or changed during this release;
+  `robots.txt` still returns `Disallow: /`, i.e. public indexing remains
+  closed. Do not flip this without a genuine, verified launch-readiness
+  decision — it is a business/legal gate, not a technical one.
+- **Backup**: a pre-migration logical backup
+  (`roles.sql`/`schema.sql`/`data.sql`/`checksums.sha256`) was taken to a
+  private, non-repo path, checksum-verified, and restore-tested against a
+  disposable empty project before the migrations were applied. See
+  `docs/backup-runbook.md` for the procedure; the backup path itself is
+  operator-private and intentionally not recorded in this repo.
+
 ## Current evidence gaps
 
 None outstanding for 4J5F. See Deferred defects above for the categoryId
-Import-editor gap carried into 4J5G.
+Import-editor gap carried into 4J5G. Full CRUZIAL-V2-completion audit (public/
+admin/backend, all business units) is in progress as of 2026-09-26 on
+`claude/final/cruzial-production-completion` — see git log on that branch for
+what has actually shipped rather than trusting this line after the fact.
 
 ## Important rules
 
-- Never touch production.
-- Never modify master before explicit cutover.
+- Production is no longer untouchable by policy alone — see CLAUDE.md's
+  Production safety model for when a mutation is authorized. Read-only
+  verification against Production is always fine; a write needs the
+  authorization CLAUDE.md describes, not a blanket "never".
+- Never modify master before explicit cutover/merge authorization.
 - Never weaken RLS/auth.
-- Migrations already applied to staging are append-only.
+- Migrations already applied (staging or Production) are append-only.
 - Never invent client prices, stock or commercial decisions.
 - Never touch client PNG/PDF assets in bulk.
 - Explicit git staging only.
