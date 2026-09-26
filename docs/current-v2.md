@@ -1604,13 +1604,43 @@ copied from an earlier doc.
   also clearing MFA. Revisit only if/when the org upgrades to Pro (a
   business/cost decision, not something to implement around).
 
-## Current evidence gaps
+## Final completion candidate (PR #13, 2026-09-26) — NOT merged, NOT applied hosted
 
-None outstanding for 4J5F. See Deferred defects above for the categoryId
-Import-editor gap carried into 4J5G. Full CRUZIAL-V2-completion audit (public/
-admin/backend, all business units) is in progress as of 2026-09-26 on
-`claude/final/cruzial-production-completion` — see git log on that branch for
-what has actually shipped rather than trusting this line after the fact.
+Branch `claude/final/cruzial-production-completion`, draft PR #13. Production
+is untouched: master `0ba18017`, 70 hosted migrations (latest
+`20260926020600`), `public_launch_ready()` = false, orders 0, complaints 0
+(read-only check, 2026-09-26).
+
+Pending migrations (append-only, apply in order at cutover):
+`030000` FK covering indexes · `040000` status-only availability enforcement ·
+`050000`/`070000` complaint milestone enqueue/claim races · `060000`/`080000`
+public variant availability + visibility (draft/archived/other-unit → NULL) ·
+`090000` notification dispatch commit point (`worker_begin_notification`
+locks complaint → outbox, cancels resolved-before-dispatch, records
+`dispatch_authorized_at`) · `100000` deterministic inventory lock order in
+`create_parfums_order_request_v2` (fixes a reproduced deadlock).
+
+Anonymous attempt capability (orders + complaints): server-issued 256-bit
+HttpOnly cookie per flow; `request_id` derived server-side; no signing secret.
+First contact (no cookie) → issue + one automatic retry. Expired/malformed →
+`attempt_expired`, cookie NOT replaced, never auto-retried, never replays;
+only the explicit "Registrar como nueva solicitud" rotates. Cookie max-age =
+TTL (24 h) + 30 days so expiry stays detectable. A replay (`created=false`)
+is always shown as "ya estaba registrada, no se creó una nueva"; the UI
+leaves a success only after the server confirms rotation. No browser storage
+is used for correctness.
+
+CSV: one strict lexer (`parseCsv`) for campaign/bulk/manifest; lone CR
+rejected, BOM stripped first.
+
+Residual P3 (documented, non-blocking): a browser that lost the cookie
+entirely (cleared, or >30 days) is indistinguishable from a new visitor;
+`app.*_unit(uuid)` helpers stay anon-executable because RLS policies call
+them (UUID-gated, no row data).
+
+Local gate on the candidate: Vitest 1011, pgTAP 1308 (54 files, fresh reset),
+Playwright 92 passed / 4 skipped (staging-only hosted-session spec), axe +
+console/hydration guard on 13 public routes + 404, npm audit 0.
 
 ## Important rules
 
