@@ -72,3 +72,8 @@ setup("parfums-only admin session", async ({ page }) => {
   setup.skip(!identity, "E2E_PARFUMS_ADMIN_* not set");
   await signIn(page, identity!, PARFUMS_ADMIN_STATE);
 });
+
+setup("Gate B independent dual admin session", async ({ page }) => {
+ const identity=identityFromEnv("E2E_GATE_B_ADMIN");setup.skip(!identity,"E2E_GATE_B_ADMIN_* not set");
+ await signIn(page,identity!,"e2e/.auth/gate-b-admin.json");
+});

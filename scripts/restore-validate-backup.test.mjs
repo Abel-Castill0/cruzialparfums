@@ -8,11 +8,15 @@ import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import {
   assessSchemaObjects,
+  buildQueryCommand,
   buildRestoreCommands,
   declaredSnapshotObjects,
+  explainSpawnError,
   filterRolesSql,
   filterStorageSchemaData,
+  isLocalDbUrl,
   isMainEntry,
+  isValidDockerContainerName,
 } from "./restore-validate-backup.mjs";
 
 const helperUrl = new URL("./restore-validate-backup.mjs", import.meta.url);
@@ -170,4 +174,97 @@ test("each restore command targets its own named file", () => {
   assert.ok(steps[0].args.includes("/tmp/roles.sql"));
   assert.ok(steps[1].args.includes("/tmp/schema.sql"));
   assert.ok(steps[2].args.includes("/tmp/data.sql"));
+});
+
+test("only the data step disables triggers/FKs for its own session, immediately before -f", () => {
+  const steps = buildRestoreCommands("postgresql://x", {
+    roles: "/tmp/roles.sql",
+    schema: "/tmp/schema.sql",
+    data: "/tmp/data.sql",
+  });
+  const [roles, schema, data] = steps;
+  assert.equal(roles.args.includes("SET session_replication_role = replica;"), false);
+  assert.equal(schema.args.includes("SET session_replication_role = replica;"), false);
+  const cIndex = data.args.indexOf("-c");
+  const fIndex = data.args.indexOf("-f");
+  assert.equal(data.args[cIndex + 1], "SET session_replication_role = replica;");
+  assert.ok(cIndex !== -1 && fIndex !== -1 && cIndex < fIndex, "SET must precede -f in the same invocation");
+});
+
+test("host mode retains --single-transaction and ON_ERROR_STOP=1 even with the new data prelude", () => {
+  const steps = buildRestoreCommands("postgresql://x", {
+    roles: "/tmp/roles.sql", schema: "/tmp/schema.sql", data: "/tmp/data.sql",
+  });
+  for (const step of steps) {
+    assert.ok(step.args.includes("--single-transaction"));
+    assert.ok(step.args.includes("ON_ERROR_STOP=1"));
+    assert.equal(step.transport, "host");
+  }
+});
+
+test("explainSpawnError reports a missing host psql explicitly, not a generic exit code", () => {
+  const message = explainSpawnError({ code: "ENOENT" }, false);
+  assert.match(message, /psql executable not found/i);
+  assert.doesNotMatch(message, /exit unknown/i);
+});
+
+test("explainSpawnError reports a missing docker explicitly when in docker mode", () => {
+  const message = explainSpawnError({ code: "ENOENT" }, true);
+  assert.match(message, /docker executable not found/i);
+});
+
+test("explainSpawnError passes through any other spawn error message unchanged", () => {
+  assert.equal(explainSpawnError({ code: "EACCES", message: "permission denied" }, false), "permission denied");
+});
+
+test("isValidDockerContainerName accepts a real Supabase local container name", () => {
+  assert.equal(isValidDockerContainerName("supabase_db_cruzial-restore-check-20260925-230641"), true);
+});
+
+test("isValidDockerContainerName rejects shell/metacharacter injection attempts", () => {
+  for (const name of ["; rm -rf /", "foo && echo pwned", "foo`whoami`", "foo|bar", "foo bar", "$(id)", "", "-x", undefined, null, 123]) {
+    assert.equal(isValidDockerContainerName(name), false, `expected ${JSON.stringify(name)} to be rejected`);
+  }
+});
+
+test("isLocalDbUrl accepts only loopback hosts", () => {
+  assert.equal(isLocalDbUrl("postgresql://postgres:postgres@127.0.0.1:54322/postgres"), true);
+  assert.equal(isLocalDbUrl("postgresql://postgres:postgres@localhost:54322/postgres"), true);
+  assert.equal(isLocalDbUrl("postgresql://postgres:postgres@[::1]:54322/postgres"), true);
+});
+
+test("isLocalDbUrl refuses a remote or hosted db-url", () => {
+  assert.equal(isLocalDbUrl("postgresql://postgres:secret@db.iyxidhglyqkzoziyewlc.supabase.co:5432/postgres"), false);
+  assert.equal(isLocalDbUrl("postgresql://postgres:secret@example.com:5432/postgres"), false);
+  assert.equal(isLocalDbUrl("not a url"), false);
+});
+
+test("docker restore commands use docker exec -i, target the exact container, and never carry a password", () => {
+  const steps = buildRestoreCommands("postgresql://ignored", {
+    roles: "/tmp/roles.sql", schema: "/tmp/schema.sql", data: "/tmp/data.sql",
+  }, "supabase_db_cruzial-restore-check-20260925-230641");
+  for (const step of steps) {
+    assert.equal(step.transport, "docker");
+    assert.deepEqual(step.args.slice(0, 4), ["docker", "exec", "-i", "supabase_db_cruzial-restore-check-20260925-230641"]);
+    assert.ok(step.args.includes("psql"));
+    assert.ok(step.args.includes("-U") && step.args.includes("postgres"));
+    assert.ok(step.args.includes("-d"));
+    assert.equal(step.args.includes("postgresql://ignored"), false, "the host db-url must never cross into the container invocation");
+    assert.equal(step.args.some((a) => /password/i.test(a)), false);
+    assert.ok(step.args.includes("-f") && step.args[step.args.length - 1] === "-", "SQL must be piped over stdin, not a host file path");
+  }
+});
+
+test("buildQueryCommand matches the restore path's docker connection convention", () => {
+  const { cmd, args } = buildQueryCommand("postgresql://ignored", "select 1;", "supabase_db_cruzial-restore-check-20260925-230641");
+  assert.equal(cmd, "docker");
+  assert.deepEqual(args.slice(0, 3), ["exec", "-i", "supabase_db_cruzial-restore-check-20260925-230641"]);
+  assert.ok(args.includes("-U") && args.includes("postgres"));
+  assert.equal(args.includes("postgresql://ignored"), false);
+});
+
+test("buildQueryCommand targets the host db-url directly outside docker mode", () => {
+  const { cmd, args } = buildQueryCommand("postgresql://x", "select 1;");
+  assert.equal(cmd, "psql");
+  assert.deepEqual(args, ["postgresql://x", "-t", "-A", "-c", "select 1;"]);
 });

@@ -1,4 +1,5 @@
 "use server";
+import { wakeNotificationWorker } from "@/domains/notifications/wake";
 
 import { ParfumsOrderRepository } from "@/domains/orders/parfums-order-repository";
 import {
@@ -83,6 +84,7 @@ export async function createParfumsOrderRequest(
 
   const persisted = await new ParfumsOrderRepository(client).create(validated);
   if (!persisted.ok) return { status: "error", message: persisted.message };
+  wakeNotificationWorker();
 
   const message = buildPersistedOrderRequestMessage({
     storeName: PARFUMS_STORE_NAME,

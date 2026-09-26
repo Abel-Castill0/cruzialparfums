@@ -1,3 +1,4 @@
+import { OrderAutomationProof } from "@/components/admin/order-automation-proof";
 import type { Metadata, Route } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
@@ -65,7 +66,8 @@ export default async function AdminImportOrderDetailPage({
           <p className={styles.notice}>
             El backend de administración no está configurado en este entorno.
           </p>
-        </main>
+          <OrderAutomationProof unit="import" unitId={membership.businessUnitId} orderId={id} />
+      </main>
       </div>
     );
   }
@@ -79,7 +81,8 @@ export default async function AdminImportOrderDetailPage({
       <div className={styles.page}>
         <main>
           <p className={styles.notice} role="alert">No se pudo cargar el pedido.</p>
-        </main>
+          <OrderAutomationProof unit="import" unitId={membership.businessUnitId} orderId={id} />
+      </main>
       </div>
     );
   }
@@ -243,6 +246,7 @@ export default async function AdminImportOrderDetailPage({
             ) : null}
           </dl>
         </section>
+        <OrderAutomationProof unit="import" unitId={membership.businessUnitId} orderId={id} />
       </main>
     </div>
   );

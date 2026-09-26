@@ -106,9 +106,9 @@ export function validateImportProductInput(raw: Record<string, unknown>) {
   const publicationStatus = raw.publicationStatus;
   if (!name || name.length > 180) errors.name = "Ingresa un nombre de hasta 180 caracteres.";
   if (brand.length > 120) errors.brand = "La marca admite hasta 120 caracteres.";
-  if (!/^[0-9a-f-]{36}$/i.test(categoryId)) errors.categoryId = "Selecciona una categoría Import válida.";
+  if (categoryId && !/^[0-9a-f-]{36}$/i.test(categoryId)) errors.categoryId = "Selecciona una categoría Import válida.";
   if (!member(IMPORT_PRODUCT_STATUSES, publicationStatus) || publicationStatus === "archived") errors.publicationStatus = "Selecciona borrador, publicado u oculto.";
-  return Object.keys(errors).length ? { ok: false as const, errors } : { ok: true as const, value: { name, brand: brand || null, categoryId, publicationStatus: publicationStatus as Exclude<ImportProductStatus,"archived"> } };
+  return Object.keys(errors).length ? { ok: false as const, errors } : { ok: true as const, value: { name, brand: brand || null, categoryId: categoryId || null, publicationStatus: publicationStatus as Exclude<ImportProductStatus,"archived"> } };
 }
 
 export function validatePresentationInput(raw: Record<string, unknown>, updating: boolean) {

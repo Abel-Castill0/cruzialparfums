@@ -1,0 +1,15 @@
+title = "cruzialparfums gitleaks config"
+
+# Keep every default gitleaks rule active; only add a narrow allowlist below.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Known false positive: a fixture-only test value, never a real credential"
+# apps/web/src/app/api/automation/health/route.test.ts stubs CRON_SECRET with
+# this literal string purely to satisfy automationAuthorized()'s minimum
+# 32-character length check in unit tests. It is not, and has never been,
+# a real secret for any system.
+regexes = [
+  '''fixture-secret-at-least-32-characters''',
+]

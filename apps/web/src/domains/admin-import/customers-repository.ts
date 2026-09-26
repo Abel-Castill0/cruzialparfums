@@ -68,16 +68,17 @@ export class AdminImportCustomersRepository {
     const base = () => this.supabase.from("orders")
       .select("id,order_number,status,created_at,subtotal_amount,currency", { count: "exact" })
       .eq("business_unit_id", this.businessUnitId).eq("customer_id", customerId);
-    const [orders, completed, latest] = await Promise.all([
+    const [orders, completed, latest, summary] = await Promise.all([
       base().order("created_at", { ascending: false }).order("id").range((page - 1) * pageSize, page * pageSize - 1),
       this.supabase.from("orders").select("id", { count: "exact", head: true })
         .eq("business_unit_id", this.businessUnitId).eq("customer_id", customerId).eq("status", "fulfilled"),
       base().order("created_at", { ascending: false }).order("id").limit(1),
+      this.supabase.rpc("admin_customer_order_summary",{p_customer_id:customerId}),
     ]);
-    const error = orders.error ?? completed.error ?? latest.error;
+    const error = orders.error ?? completed.error ?? latest.error ?? summary.error;
     if (error) return { ok: false as const, error: mapPostgrestError(error) };
     return { ok: true as const, data: { items: orders.data ?? [], total: orders.count ?? 0,
-      completed: completed.count ?? 0, latest: latest.data?.[0] ?? null, page, pageSize } };
+      summary: summary.data, completed: completed.count ?? 0, latest: latest.data?.[0] ?? null, page, pageSize } };
   }
 
   async list(

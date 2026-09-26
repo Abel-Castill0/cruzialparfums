@@ -19,6 +19,7 @@ const url = new URL(config.API_URL);
 if (!["127.0.0.1", "localhost", "[::1]"].includes(url.hostname) || url.protocol !== "http:") throw new Error("Only loopback Supabase is allowed.");
 const env = { ...process.env, NEXT_PUBLIC_SUPABASE_URL: url.origin,
   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: config.ANON_KEY, SUPABASE_SECRET_KEY: config.SERVICE_ROLE_KEY,
+  CRUZIAL_PRODUCTION_CUTOVER_APPROVED: "false", WHATSAPP_ACCESS_TOKEN: "", WHATSAPP_APP_SECRET: "", WHATSAPP_PARFUMS_PHONE_NUMBER_ID: "", WHATSAPP_IMPORT_PHONE_NUMBER_ID: "",
   ORDER_ABUSE_HMAC_SECRET: randomBytes(32).toString("hex"), SITE_URL: "http://localhost:3100", E2E_LOCAL_PORT: "3100" };
 delete env.E2E_BASE_URL;
 const admin = createClient(url.origin, config.SERVICE_ROLE_KEY, { auth: { persistSession: false } });
@@ -34,7 +35,7 @@ mkdirSync(`${web}e2e/.auth`, { recursive: true });
 const fixtureFile = `${web}e2e/.auth/local-fixtures.json`;
 const saved = existsSync(fixtureFile) ? JSON.parse(readFileSync(fixtureFile,"utf8")) : {};
 const units = assertResult(await admin.from("business_units").select("id,code"), "Read units");
-for (const [prefix, codes] of [["E2E_ADMIN",["parfums","import"]],["E2E_PARFUMS_ADMIN",["parfums"]]]) {
+for (const [prefix, codes] of [["E2E_ADMIN",["parfums","import"]],["E2E_PARFUMS_ADMIN",["parfums"]],["E2E_GATE_B_ADMIN",["parfums","import"]]]) {
   let identity = saved[prefix];
   if (identity && (await admin.auth.admin.getUserById(identity.id)).error) identity = null;
   if (!identity) {
@@ -60,12 +61,18 @@ if (args.includes("--seed")) {
   const project=readFileSync(`${root}supabase/config.toml`,"utf8").match(/^project_id\s*=\s*"([a-zA-Z0-9_-]+)"/m)?.[1];
   if(!project) throw new Error("Invalid local project id.");
   const seeded=spawnSync("docker",["exec","-i",`supabase_db_${project}`,"psql","-U","postgres","-d","postgres","-v","ON_ERROR_STOP=1"],{
-    input:readFileSync(`${root}scripts/local-browser-fixtures.sql`,"utf8"),encoding:"utf8"});
+    input:readFileSync(`${root}scripts/local-browser-fixtures.sql`,"utf8")+"\n"+readFileSync(`${root}scripts/local-gate-b-browser-fixtures.sql`,"utf8"),encoding:"utf8"});
   if(seeded.status!==0) throw new Error(`Local fixtures failed: ${seeded.stderr}`);
   console.log("Synthetic local Import browser fixtures ready.");
 }
 env.E2E_LOCAL_FIXTURES="1";
 env.E2E_ALLOW_ORDER_SUBMIT="1";
+if (args[0] === "--gate") {
+ const audit=spawnSync("npm audit --omit=dev --audit-level=high",{cwd:web,env,shell:true,stdio:"inherit"});
+ if(audit.status!==0)process.exit(audit.status??1);
+ const gate=spawnSync("npm run check",{cwd:web,env,shell:true,stdio:"inherit"});
+ process.exit(gate.status??1);
+}
 if (args[0] === "--build") {
   const result=spawnSync("npm run build",{cwd:web,env,shell:true,stdio:"inherit"});
   process.exit(result.status ?? 1);

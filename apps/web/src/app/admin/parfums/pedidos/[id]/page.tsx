@@ -1,3 +1,4 @@
+import { OrderAutomationProof } from "@/components/admin/order-automation-proof";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
@@ -60,7 +61,8 @@ export default async function AdminParfumsOrderDetailPage({
           <p className={styles.notice}>
             El backend de administración no está configurado en este entorno.
           </p>
-        </main>
+          <OrderAutomationProof unit="parfums" unitId={membership.businessUnitId} orderId={id} />
+      </main>
       </div>
     );
   }
@@ -74,7 +76,8 @@ export default async function AdminParfumsOrderDetailPage({
       <div className={styles.page}>
         <main>
           <p className={styles.notice} role="alert">No se pudo cargar el pedido.</p>
-        </main>
+          <OrderAutomationProof unit="parfums" unitId={membership.businessUnitId} orderId={id} />
+      </main>
       </div>
     );
   }
@@ -206,6 +209,7 @@ export default async function AdminParfumsOrderDetailPage({
             allowedTransitions={transitions}
           />
         ) : null}
+        <OrderAutomationProof unit="parfums" unitId={membership.businessUnitId} orderId={id} />
       </main>
     </div>
   );

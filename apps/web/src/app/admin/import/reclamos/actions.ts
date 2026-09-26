@@ -1,4 +1,5 @@
 "use server";
+import { wakeNotificationWorker } from "@/domains/notifications/wake";
 
 import { revalidatePath } from "next/cache";
 import { requireUnitAdmin } from "@/lib/auth/admin-session";
@@ -48,6 +49,7 @@ export async function updateImportComplaintStatusAction(
   }
 
   revalidatePath(`/admin/import/reclamos/${id}`);
+  wakeNotificationWorker();
   revalidatePath("/admin/import/reclamos");
   revalidatePath("/admin/import");
   return { status: "success", message: "Estado actualizado." };

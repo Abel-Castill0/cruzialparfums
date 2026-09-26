@@ -142,16 +142,30 @@ target a restore should land on.
 ```bash
 psql "$DB_URL" -v ON_ERROR_STOP=1 --single-transaction -f roles.sql
 psql "$DB_URL" -v ON_ERROR_STOP=1 --single-transaction -f schema.sql
-psql "$DB_URL" -v ON_ERROR_STOP=1 --single-transaction -f data.sql
+psql "$DB_URL" -v ON_ERROR_STOP=1 --single-transaction -c "SET session_replication_role = replica;" -f data.sql
 ```
 
 `--single-transaction` makes each file atomic (a failure partway through
 one file rolls back that file's changes, not just stops mid-statement);
 `ON_ERROR_STOP=1` makes the command itself fail loudly and exit non-zero
-instead of continuing past an error. Three separate invocations (not one
-chained `-f roles.sql -f schema.sql -f data.sql`) because `psql` only
-honors its last `-f` when given more than one — official Supabase restore
-guidance runs them as separate commands for this reason.
+instead of continuing past an error. Three separate invocations, one per
+file — not because `psql` mishandles a repeated `-f` (it doesn't: `-f`
+may be given multiple times, and `-c`/`-f` options run in the order they
+appear on the command line, in the same session), but because
+roles/schema/data are three genuinely separate atomic units: a failure
+restoring schema should not also roll back roles that already committed
+successfully in their own `--single-transaction` invocation.
+
+The data step's `-c "SET session_replication_role = replica;"` runs before
+`-f data.sql`, in the same psql invocation and therefore the same session
+(this setting does not persist across separate psql processes). It
+disables ordinary triggers and foreign-key enforcement for that session
+only, which two things require: `pg_dump` reports Cruzial's `categories`
+table has a circular foreign-key reference, and Cruzial's own business
+triggers (inventory reservation, notification enqueueing, complaint SLA
+calculation, ...) would otherwise re-fire against historical rows being
+reloaded, computing reservations and queuing notifications for orders and
+complaints that were already settled long ago.
 
 **Two narrow, confirmed caveats** (found by actually running this restore
 against a real local dump, not assumed):
@@ -175,6 +189,20 @@ prefer it over the raw three-command sequence above:
 node scripts/restore-validate-backup.mjs \
   --backup-dir backups/cruzial-<project-ref>-<timestamp> \
   --db-url "$DB_URL"
+```
+
+On a machine with no host `psql` installation, pass `--docker-container
+<name>` (the exact name from `docker ps` of the disposable Supabase stack's
+own DB container, typically `supabase_db_<local-project-ref>`) and psql runs
+inside that container instead — it already ships a compatible psql. `--db-url`
+is still required in this mode: it stays the fail-closed proof the target is
+`127.0.0.1` / `localhost` / `::1`, never a route to a hosted database.
+
+```bash
+node scripts/restore-validate-backup.mjs \
+  --backup-dir backups/cruzial-<project-ref>-<timestamp> \
+  --db-url "$DB_URL" \
+  --docker-container supabase_db_<local-project-ref>
 ```
 
 ### 3. Post-restore checks (counts and schema objects only — never PII)

@@ -1,0 +1,5 @@
+# Known false positive: a fixture-only test value in
+# apps/web/src/app/api/automation/health/route.test.ts, never a real
+# credential. See .gitleaks.toml for the matching allowlist regex.
+848e9f1952382c07c47792c56b1a183dd61d0f19:apps/web/src/app/api/automation/health/route.test.ts:generic-api-key:5
+848e9f1952382c07c47792c56b1a183dd61d0f19:apps/web/src/app/api/automation/health/route.test.ts:generic-api-key:6

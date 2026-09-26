@@ -81,6 +81,8 @@ export default async function AdminImportCustomerDetailPage({
   }
 
   const customer = detailResult.data;
+  const summary = history.ok && history.data.summary && typeof history.data.summary === "object" && !Array.isArray(history.data.summary) ? history.data.summary : {};
+  const values = Array.isArray(summary.fulfilled_value_by_currency) ? summary.fulfilled_value_by_currency.filter((v):v is { [key:string]:import("@/lib/supabase/database.types").Json } => v!==null&&typeof v==="object"&&!Array.isArray(v)) : [];
   const isAdmin = membership.role === "admin";
   const isArchived = customer.archivedAt !== null;
 
@@ -121,6 +123,7 @@ export default async function AdminImportCustomerDetailPage({
           <h2 id="history-heading">Historial de pedidos</h2>
           {!history.ok ? <p role="alert">No se pudo cargar el historial. Recarga para volver a intentarlo.</p> : <>
             <p>{history.data.total} pedido{history.data.total === 1 ? "" : "s"} · {history.data.completed} completado{history.data.completed === 1 ? "" : "s"}</p>
+            <p>Pendientes por confirmar: {Number(summary.pending??0)}. Valor de pedidos cumplidos: {values.map(v=>`${v.currency} ${v.amount}`).join(" · ")||"sin pedidos cumplidos"}.</p>
             <p>Este historial muestra pedidos vinculados a este cliente. No cambia automáticamente su estado ni las condiciones de pedidos anteriores.</p>
             {history.data.latest ? <p>Último pedido: <Link href={`/admin/import/pedidos/${history.data.latest.id}` as Route}>{history.data.latest.order_number}</Link> · {formatDate(history.data.latest.created_at)}</p> : <p>Aún no hay pedidos vinculados.</p>}
             <ul className={styles.list}>

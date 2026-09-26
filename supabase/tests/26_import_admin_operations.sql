@@ -238,9 +238,13 @@ select throws_ok(
 
 -- =========================================================================
 -- 10. Stale expected status rejected
+-- Order 002 is already 'confirmed' (see step above). Targeting 'fulfilled'
+-- (not the order's current status) with a stale expected status keeps this
+-- a genuine mismatch, distinct from the replay-safe case where expected and
+-- current status coincide with the already-recorded transition.
 -- =========================================================================
 select throws_ok(
-  $$select public.admin_import_update_order_status('a1000000-0000-4000-8000-000000000002', 'pending_whatsapp_confirmation', 'confirmed')$$,
+  $$select public.admin_import_update_order_status('a1000000-0000-4000-8000-000000000002', 'pending_whatsapp_confirmation', 'fulfilled')$$,
   'P2020', null,
   'stale expected status is rejected'
 );

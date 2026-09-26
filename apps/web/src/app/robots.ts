@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { getIndexingPolicy, getSiteUrl } from "@/lib/seo/site";
+import { getAuthoritativeIndexingPolicy, getSiteUrl } from "@/lib/seo/site";
 
 export const dynamic = "force-dynamic";
 
@@ -8,9 +8,9 @@ export const dynamic = "force-dynamic";
  * are closed to crawlers entirely. Production after cutover opens the public
  * storefronts and keeps the private/transactional surfaces out.
  */
-export default function robots(): MetadataRoute.Robots {
+export default async function robots(): Promise<MetadataRoute.Robots> {
   const site = getSiteUrl();
-  if (!getIndexingPolicy().index) {
+  if (!(await getAuthoritativeIndexingPolicy()).index) {
     return { rules: { userAgent: "*", disallow: "/" } };
   }
   return {

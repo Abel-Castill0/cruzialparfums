@@ -5,13 +5,14 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { AdminComplaintsRepository } from "@/domains/complaints/complaint-repository";
 import { COMPLAINT_DOCUMENT_LABELS, COMPLAINT_TYPE_LABELS } from "@/domains/complaints/complaint-schema";
 import { ComplaintStatusForm } from "./complaint-status-form";
+import { COMPLAINT_URGENCY_LABELS, classifyComplaintUrgency } from "@/domains/complaints/sla";
 import styles from "../../productos/page.module.css";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Detalle de reclamo" };
 
 function formatDate(iso: string): string {
-  return new Date(iso).toLocaleString("es-PE", { dateStyle: "long", timeStyle: "short" });
+  return new Date(iso).toLocaleString("es-PE", { dateStyle: "long", timeStyle: "short", timeZone: "America/Lima" });
 }
 
 export default async function AdminImportComplaintDetailPage({
@@ -51,6 +52,7 @@ export default async function AdminImportComplaintDetailPage({
         <div>
           <h1>{COMPLAINT_TYPE_LABELS[entry.complaintType]}</h1>
           <p>Registrado el {formatDate(entry.createdAt)}</p>
+          <p>{COMPLAINT_URGENCY_LABELS[classifyComplaintUrgency(entry)]} · Responder hasta {formatDate(entry.dueAt)} (hora de Lima).</p>
         </div>
       </header>
 

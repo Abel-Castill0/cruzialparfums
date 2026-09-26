@@ -1,4 +1,5 @@
 "use server";
+import { wakeNotificationWorker } from "@/domains/notifications/wake";
 
 import { ImportOrderRepository } from "@/domains/orders/import-order-repository";
 import {
@@ -138,6 +139,7 @@ export async function createImportOrderRequest(
   const persisted = await new ImportOrderRepository(client).create(validated);
   if (!persisted.ok)
     return { status: "error", message: importOrderErrorToMessage(persisted.error) };
+  wakeNotificationWorker();
 
   const summary = await getPersistedImportOrderSummary(
     client,

@@ -1,5 +1,7 @@
 import "server-only";
 
+import { cache } from "react";
+import { createSupabasePublicServerClient } from "@/lib/supabase/server";
 import { readSiteUrl } from "@/lib/supabase/env";
 import { resolveIndexingPolicy, type DeploymentEnvironment } from "./indexing-policy";
 
@@ -37,3 +39,11 @@ export function getIndexingPolicy() {
     cutoverApproved: isProductionCutoverApproved(),
   });
 }
+
+/** An incorrect approval flag cannot bypass missing factual business data. */
+export const getAuthoritativeIndexingPolicy = cache(async () => {
+ const policy=getIndexingPolicy(); if(!policy.index)return policy;
+ const db=createSupabasePublicServerClient();if(!db)return {index:false,follow:false} as const;
+ try{const result=await db.rpc("public_launch_ready");return !result.error&&result.data===true?policy:{index:false,follow:false} as const;}
+ catch{return {index:false,follow:false} as const;}
+});

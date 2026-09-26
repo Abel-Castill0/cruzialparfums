@@ -61,9 +61,10 @@ export class ParfumsOrderRepository {
         console.error("[parfums-order] v2 persistence failed", {
           requestId: request.requestId,
           code: error?.code ?? "no_row",
-          message: error?.message ?? "RPC returned no row",
         });
-        return { ok: false, message: "No pudimos registrar tu solicitud. Tu carrito se conserva para que puedas intentarlo nuevamente." };
+        return { ok: false, message: error?.code === "P2034"
+          ? "La cantidad solicitada ya no está disponible. Actualiza tu carrito; no se registró el pedido."
+          : "No pudimos registrar tu solicitud. Tu carrito se conserva para que puedas intentarlo nuevamente." };
       }
       return {
         ok: true,
