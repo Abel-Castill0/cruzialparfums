@@ -159,7 +159,7 @@ test.describe("parfums storefront", () => {
       await route.abort("connectionreset");
     });
     await page.locator("[data-checkout-submit]").click();
-    await expect(page.getByRole("alert")).toContainText(/No pudimos conectar/);
+    await expect(page.locator("[data-checkout-form-panel] [role=alert]")).toContainText(/No pudimos conectar/);
     expect(committed).toMatch(ORDER_NUMBER);
     expect(orderSideEffects(phone)).toEqual({ orders: 1, outbox: 1, reservations: 1 });
 
@@ -181,16 +181,23 @@ test.describe("parfums storefront", () => {
     const phone = uniquePhone();
     await checkoutWithQaProduct(page, phone);
 
-    // Simulates blocked cookies: the server never receives the capability.
+    // Simulates a browser that refuses cookies. Deleting the request's Cookie
+    // header is not faithful (Chromium re-attaches jar cookies after
+    // interception), so instead every Set-Cookie is discarded: the jar is
+    // cleared and the response is delivered without it, before the client
+    // can make its single capability retry.
+    await page.context().clearCookies();
     await page.route("**/parfums/checkout", async (route) => {
       if (route.request().method() !== "POST") return route.continue();
-      const headers = { ...route.request().headers() };
-      delete headers.cookie;
-      await route.continue({ headers });
+      const response = await route.fetch();
+      await page.context().clearCookies();
+      const headers = { ...response.headers() };
+      delete headers["set-cookie"];
+      await route.fulfill({ response, headers });
     });
     await page.locator("[data-checkout-submit]").click();
 
-    await expect(page.getByRole("alert")).toContainText(/Activa las cookies/);
+    await expect(page.locator("[data-checkout-form-panel] [role=alert]")).toContainText(/Activa las cookies/);
     await expect(page).toHaveURL(/\/parfums\/checkout$/);
     expect(orderSideEffects(phone).orders).toBe(0);
   });
