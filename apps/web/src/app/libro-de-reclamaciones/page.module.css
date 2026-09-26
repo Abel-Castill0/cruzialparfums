@@ -96,6 +96,7 @@
 }
 
 .errorBanner {
+  scroll-margin-top: 112px;
   padding: 12px 14px;
   border: 1px solid #b3261e;
   background: #fdecea;

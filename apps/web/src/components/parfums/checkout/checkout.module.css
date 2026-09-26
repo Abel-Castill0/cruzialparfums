@@ -299,6 +299,7 @@
   text-decoration: underline;
 }
 .submitError {
+  scroll-margin-top: 112px;
   padding: 12px 14px;
   border-left: 3px solid #7c3028;
   display: grid;
