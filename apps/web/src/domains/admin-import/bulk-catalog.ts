@@ -1,4 +1,4 @@
-import { parseCsvText } from "./campaign-csv";
+import { parseCsvText, spreadsheetSafeText } from "./campaign-csv";
 import { isValidUuid } from "@/domains/admin-parfums/product-schema";
 
 export const BULK_COLUMNS = ["kind", "id", "updated_at", "name", "brand", "category_id", "label", "presentation_class", "capacity_ml"] as const;
@@ -34,7 +34,7 @@ export function parseBulkCatalog(text: string): BulkParseResult {
  return { rows, issues };
 }
 export function exportBulkCatalog(rows: BulkCatalogRow[]): string {
- const escape = (v: string) => `"${v.replaceAll('"', '""')}"`;
+ const escape = (v: string) => `"${spreadsheetSafeText(v).replaceAll('"', '""')}"`;
  return [BULK_COLUMNS.join(","), ...rows.map(row => BULK_COLUMNS.map(key => escape(row[key])).join(","))].join("\r\n");
 }
 export type MediaIdentity = { id: string; slug: string; name: string };

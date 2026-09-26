@@ -45,7 +45,12 @@ function csvEscape(value: string): string {
   return value;
 }
 
-function spreadsheetSafeText(value: string): string {
+/** Prefixes a value with a harmless apostrophe when its first non-whitespace
+ * character would make a spreadsheet application treat the cell as a formula
+ * (=, +, -, @) instead of text — the standard CSV-formula-injection defense.
+ * Leading whitespace before the character does not bypass the check. Shared
+ * by every CSV export in this domain; do not duplicate this logic. */
+export function spreadsheetSafeText(value: string): string {
   return /^\s*[=+\-@]/u.test(value) ? `'${value}` : value;
 }
 
