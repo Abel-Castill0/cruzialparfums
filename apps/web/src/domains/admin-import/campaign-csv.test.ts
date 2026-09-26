@@ -4,6 +4,7 @@ import {
   CAMPAIGN_CSV_COLUMNS,
   diffCampaignCsvRows,
   exportCampaignRowsToCsv,
+  hasValidCsvQuotes,
   parseCampaignCsv,
   parseCsvText,
   readCampaignCsvFile,
@@ -104,6 +105,44 @@ describe("parseCsvText", () => {
       ["a", "b,c", "d"],
       ["multi\nline", "e", "f"],
     ]);
+  });
+});
+
+describe("hasValidCsvQuotes", () => {
+  it("rejects a quote appearing mid-unquoted-field, which parseCsvText would otherwise silently absorb", () => {
+    // Without this guard, `1"00"` parses via parseCsvText to the clean-
+    // looking value "100" — indistinguishable from a deliberately entered
+    // price of 100 by the time it reaches validation.
+    expect(hasValidCsvQuotes('offer,1"00"')).toBe(false);
+    expect(parseCsvText('offer,1"00"')[0]).toEqual(["offer", "100"]);
+  });
+
+  it("rejects a stray quote at the very start too, and an unclosed quoted field", () => {
+    expect(hasValidCsvQuotes('a,"unclosed')).toBe(false);
+    expect(hasValidCsvQuotes('a,b"')).toBe(false);
+  });
+
+  it("rejects garbage between a quoted field's closing quote and the next delimiter", () => {
+    expect(hasValidCsvQuotes('a,"b"x,c')).toBe(false);
+  });
+
+  it.each([
+    ["plain unquoted fields", "a,b,c"],
+    ["a quoted field with an embedded comma", 'a,"b,c",d'],
+    ["a doubled (escaped) quote inside a quoted field", 'a,"say ""hi""",c'],
+    ["CRLF between rows", "a,b\r\nc,d"],
+    ["a quoted field spanning multiple lines", '"multi\nline",e,f'],
+    ["a fully-quoted field with no special characters", '"a",b,c'],
+  ])("accepts valid quoting: %s", (_label, text) => {
+    expect(hasValidCsvQuotes(text)).toBe(true);
+  });
+});
+
+describe("parseCampaignCsv rejects malformed quoting end to end", () => {
+  it("rejects a CSV whose price field contains a stray mid-field quote instead of silently accepting it as a clean price", () => {
+    const csv = `offer_id,product_name,presentation_label,price,currency,availability,updated_at\n${baseRow.offerId},P,L,1"00",PEN,available,`;
+    const result = parseCampaignCsv(csv);
+    expect(result).toEqual({ ok: false, error: expect.stringContaining("comillas") });
   });
 });
 

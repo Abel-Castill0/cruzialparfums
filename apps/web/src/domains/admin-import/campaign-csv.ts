@@ -76,9 +76,49 @@ export function exportCampaignRowsToCsv(rows: CampaignCsvSourceRow[]): string {
   return lines.join("\r\n");
 }
 
+/** Strict RFC-4180 quote validation, run before parseCsvText. A quote is
+ * only ever valid as the first character of a field (opening a quoted
+ * field) or doubled inside one (an escaped quote); anything else — a quote
+ * appearing mid-field, or content following a quoted field's closing quote
+ * before the next delimiter/line end — is malformed and must be rejected
+ * rather than silently absorbed. Without this, parseCsvText's single
+ * inQuotes toggle treats a stray quote exactly like a real opening quote:
+ * the malformed field `1"00"` (a bare `1` followed by a quoted `00`) parses
+ * as the clean-looking value `100` instead of being rejected, which is
+ * indistinguishable from a deliberately-entered price of 100 by the time it
+ * reaches validation. Shared by every CSV import in this domain — do not
+ * duplicate or diverge this logic between callers. */
+export function hasValidCsvQuotes(text: string): boolean {
+  let quoted = false;
+  let closed = false;
+  let start = true;
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
+    if (quoted) {
+      if (char === '"') {
+        if (text[i + 1] === '"') i++;
+        else { quoted = false; closed = true; }
+      }
+      continue;
+    }
+    if (char === "," || char === "\n" || char === "\r") { start = true; closed = false; continue; }
+    if (char === '"') {
+      if (!start) return false;
+      quoted = true;
+      start = false;
+      continue;
+    }
+    if (closed) return false;
+    start = false;
+  }
+  return !quoted;
+}
+
 /** Minimal RFC-4180-ish CSV line parser: handles quoted fields, escaped
  * quotes, and commas/newlines inside quotes. No external dependency — this
- * format is simple enough (7 flat text columns) not to need one. */
+ * format is simple enough (7 flat text columns) not to need one. Callers
+ * MUST run hasValidCsvQuotes first — this function does not itself reject
+ * malformed quoting (see that function's comment for why that matters). */
 export function parseCsvText(text: string): string[][] {
   const rows: string[][] = [];
   let row: string[] = [];
@@ -161,6 +201,9 @@ export async function readCampaignCsvFile(file: Pick<File, "size" | "text">): Pr
 
 export function parseCampaignCsv(text: string): CampaignCsvParseResult {
   if (text.length > CAMPAIGN_CSV_MAX_BYTES) return { ok: false, error: CSV_TOO_LARGE_MESSAGE };
+  if (!hasValidCsvQuotes(text)) {
+    return { ok: false, error: "El CSV tiene comillas mal formadas. Vuelve a exportarlo e inténtalo otra vez." };
+  }
   const rows = parseCsvText(text);
   if (rows.length === 0) return { ok: false, error: "El archivo CSV está vacío." };
 
