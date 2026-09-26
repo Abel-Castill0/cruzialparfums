@@ -33,6 +33,23 @@ describe("exportCampaignRowsToCsv / parseCampaignCsv round-trip", () => {
     expect(csv).toContain('"Brand ""X"", Ltd"');
   });
 
+  it("round-trips a lone CR in a persisted catalog name", () => {
+    const csv = exportCampaignRowsToCsv([{ ...baseRow, productName: "Brand\rName" }]);
+    const result = parseCsv(csv);
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.rows[1]![1]).toBe("Brand\rName");
+    expect(parseCampaignCsv(csv).ok).toBe(true);
+  });
+
+  it.each([
+    "offer_id,price,availability\n11111111-0000-4000-8000-000000000001,120,available,unintended",
+    "offer_id,price,availability,updated_at\n11111111-0000-4000-8000-000000000001,120,available",
+    "offer_id,price,price,availability\n11111111-0000-4000-8000-000000000001,120,999,available",
+    "offer_id,price, PRICE ,availability\n11111111-0000-4000-8000-000000000001,120,999,available",
+  ])("rejects ambiguous or mismatched columns before producing edits: %s", (csv) => {
+    expect(parseCampaignCsv(csv).ok).toBe(false);
+  });
+
   it.each(["=1+1", "+SUM(1,2)", "-1+2", "@cmd", "  =1+1"])("exports formula-looking text as spreadsheet text: %s", (name) => {
     const csv = exportCampaignRowsToCsv([{ ...baseRow, productName: name, presentationLabel: name }]);
     const cells = (parseCsv(csv) as { rows: string[][] }).rows[1]!;
@@ -98,6 +115,17 @@ describe("campaign CSV size bounds", () => {
 });
 
 describe("parseCsv — the single strict CSV grammar", () => {
+  it("agrees with an independent lexical grammar on every short hostile string", () => {
+    const field = '(?:[^",\\r\\n]*|"(?:[^\"]|"\")*")';
+    const record = `${field}(?:,${field})*`;
+    const grammar = new RegExp(`^${record}(?:\\r?\\n${record})*(?:\\r?\\n)?$`);
+    const alphabet = ["a", ",", '"', "\r", "\n"];
+    let strings = [""];
+    for (let length = 0; length <= 6; length++) {
+      for (const value of strings) expect(parseCsv(value).ok, JSON.stringify(value)).toBe(grammar.test(value));
+      strings = strings.flatMap(value => alphabet.map(char => value + char));
+    }
+  });
   const rowsOf = (text: string) => {
     const result = parseCsv(text);
     if (!result.ok) throw new Error(`unexpected rejection: ${result.reason} at line ${result.line}`);

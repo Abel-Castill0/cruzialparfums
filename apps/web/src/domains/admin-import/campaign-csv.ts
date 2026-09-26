@@ -41,7 +41,7 @@ export type CampaignCsvSourceRow = {
 };
 
 function csvEscape(value: string): string {
-  if (/[",\n]/.test(value)) return `"${value.replace(/"/g, '""')}"`;
+  if (/[",\r\n]/.test(value)) return `"${value.replace(/"/g, '""')}"`;
   return value;
 }
 
@@ -190,6 +190,9 @@ export function parseCampaignCsv(text: string): CampaignCsvParseResult {
   if (rows.length === 0) return { ok: false, error: "El archivo CSV está vacío." };
 
   const header = rows[0]!.map((cell) => cell.trim().toLowerCase());
+  if (new Set(header).size !== header.length) {
+    return { ok: false, error: "El CSV contiene columnas duplicadas. Usa la plantilla exportada." };
+  }
   const idx = {
     offerId: header.indexOf("offer_id"),
     price: header.indexOf("price"),
@@ -207,6 +210,9 @@ export function parseCampaignCsv(text: string): CampaignCsvParseResult {
   const parsed: CampaignCsvParsedRow[] = [];
   for (let i = 1; i < rows.length; i += 1) {
     const cells = rows[i]!;
+    if (cells.length !== header.length) {
+      return { ok: false, error: `Número de columnas inválido en la fila ${i + 1}. Usa la plantilla exportada.` };
+    }
     parsed.push({
       lineNumber: i + 1,
       offerId: (cells[idx.offerId] ?? "").trim(),
