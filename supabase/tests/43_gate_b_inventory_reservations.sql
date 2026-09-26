@@ -149,5 +149,27 @@ values ('43000000-0000-4000-8000-000000000046','43000000-0000-4000-8000-00000000
 select is((select count(*)::integer from public.inventory_reservations where order_id='43000000-0000-4000-8000-000000000046'),0,
  'status_only available still gains no fabricated reservation after the fix');
 
+-- public.variant_effective_availability: the PostgREST computed-column
+-- function the public storefront actually reads (anon has no SELECT grant
+-- on public.inventory itself -- this proves the SECURITY DEFINER function
+-- works for anon without one, and that its logic matches the reservation
+-- trigger's own rules exactly).
+set local role anon;
+select is(public.variant_effective_availability(v),true,'tracked with uncommitted stock is available to anon')
+ from public.product_variants v where v.id='43000000-0000-4000-8000-000000000021';
+select is(public.variant_effective_availability(v),true,'status_only available is available to anon')
+ from public.product_variants v where v.id='43000000-0000-4000-8000-000000000022';
+select is(public.variant_effective_availability(v),false,'status_only out_of_stock is unavailable to anon')
+ from public.product_variants v where v.id='43000000-0000-4000-8000-000000000023';
+select throws_ok($$select count(*) from public.inventory$$,'42501',null,
+ 'anon still cannot select from public.inventory directly (unchanged; only the boolean crosses the API)');
+reset role;
+-- quantity_on_hand is 1 at this point (set by the fulfillment test above).
+update public.inventory set reserved_quantity=1 where id='43000000-0000-4000-8000-000000000031';
+select is((select public.variant_effective_availability(v) from public.product_variants v
+ where v.id='43000000-0000-4000-8000-000000000021'),false,
+ 'tracked fully reserved is unavailable even though availability_status still says available');
+update public.inventory set reserved_quantity=0 where id='43000000-0000-4000-8000-000000000031';
+
 select * from finish();
 rollback;

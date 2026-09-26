@@ -256,6 +256,20 @@
   color: #0a0806;
 }
 
+.sizeButton.sizeUnavailable {
+  border-style: dashed;
+  background: #f7f5f1;
+  opacity: 0.6;
+}
+
+.sizeButton.sizeUnavailable strong {
+  text-decoration: line-through;
+}
+
+.sizeButton.sizeUnavailable span {
+  color: #9a3f3f;
+}
+
 .performance {
   margin-top: 14px;
   padding: 13px 17px;
