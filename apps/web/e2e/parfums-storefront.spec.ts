@@ -214,6 +214,32 @@ test.describe("parfums storefront", () => {
     expect(orderSideEffects(phone)).toEqual({ orders: 0, outbox: 0, reservations: 0 });
   });
 
+  test("lost response with an empty cart recovers the capability's accepted order without another mutation", async ({ page }) => {
+    test.skip(!LOCAL_DB_AVAILABLE, "needs the disposable local stack");
+    const phone = testCustomerPhone(test.info());
+    await checkoutWithQaProduct(page, phone);
+    let committed: string | null = null;
+    await page.route("**/parfums/checkout", async route => {
+      const request = route.request();
+      if (request.method() !== "POST" || !(await request.headerValue("cookie"))?.includes("cz_attempt_parfums_order=") || committed) return route.continue();
+      const response = await route.fetch();
+      committed = (await response.text()).match(ORDER_NUMBER)?.[0] ?? null;
+      await route.abort("connectionreset");
+    });
+    await page.locator("[data-checkout-submit]").click();
+    await expect(page.locator("[data-checkout-form-panel] [role=alert]")).toContainText(/No pudimos conectar/);
+    expect(committed).toMatch(ORDER_NUMBER);
+    await page.unrouteAll();
+    await page.evaluate(() => localStorage.clear());
+    await page.reload();
+    await expect(page.locator("[data-checkout-total]")).toHaveText("S/ 0.00");
+    await page.locator("[data-attempt-recover]").click();
+    const held = page.locator('[data-attempt-held="replayed"]');
+    await expect(held).toContainText(committed!);
+    await expect(held).toBeFocused();
+    expect(orderSideEffects(phone)).toEqual({ orders: 1, outbox: 1, reservations: 1 });
+  });
+
   test("an expired capability never mutates on its own; only an explicit new request does", async ({ page, baseURL }) => {
     test.skip(process.env.E2E_ALLOW_ORDER_SUBMIT !== "1" || !LOCAL_DB_AVAILABLE, "needs the disposable local stack");
     const phone = testCustomerPhone(test.info());

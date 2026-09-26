@@ -199,6 +199,10 @@ export function CheckoutExperience({
             <div className={styles.empty}>
               <strong>Aún no hay productos en tu selección.</strong>
               <p>Vuelve al catálogo, elige una presentación y regresa para continuar.</p>
+              <button type="button" data-attempt-recover className={styles.submitErrorAction}
+                disabled={isPending || Boolean(held)} onClick={() => startTransition(performSubmit)}>
+                Comprobar solicitud registrada en esta sesión
+              </button>
               <Link href={"/parfums/catalogo" as Route}>Explorar catálogo <span aria-hidden="true">→</span></Link>
             </div>
           ) : (

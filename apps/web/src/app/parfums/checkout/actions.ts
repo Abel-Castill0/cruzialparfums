@@ -1,7 +1,7 @@
 "use server";
 import { wakeNotificationWorker } from "@/domains/notifications/wake";
 
-import { ParfumsOrderRepository } from "@/domains/orders/parfums-order-repository";
+import { ParfumsOrderRepository, type PersistedParfumsOrder } from "@/domains/orders/parfums-order-repository";
 import {
   validateAndResolveParfumsOrder,
   type ParfumsOrderRequestInput,
@@ -56,54 +56,65 @@ export async function createParfumsOrderRequest(
   // Server revalidation against the same published, price-confirmed catalog
   // the storefront rendered — never against client-supplied names or prices.
   const storefront = await loadParfumsStorefront();
-  if (storefront.source === "unavailable") {
-    return { status: "error", message: ORDER_SERVICE_UNAVAILABLE_MESSAGE };
-  }
   const attempt = await resolveAttempt("parfums-order", "parfums");
   if (!attempt.ok) {
     return attempt.code === ATTEMPT_EXPIRED_CODE
       ? { status: "error", code: ATTEMPT_EXPIRED_CODE, message: ATTEMPT_EXPIRED_MESSAGE }
       : { status: "error", code: ATTEMPT_REQUIRED_CODE, message: ATTEMPT_REQUIRED_MESSAGE };
   }
-  // Any client-supplied requestId is overwritten: only the capability holder
-  // can reproduce this id, so only they can have an existing order replayed.
-  const input = { ...(submission as object), requestId: attempt.requestId } as ParfumsOrderRequestInput;
-  const validated = validateAndResolveParfumsOrder(input, storefront.catalog);
-  if (isOrderError(validated)) return {
-    status: "error",
-    message: validated.message,
-    ...(validated.fieldErrors ? { fieldErrors: validated.fieldErrors } : {}),
-  };
-
   const client = createSupabaseAdminClient();
   if (!client) {
     return { status: "error", message: "El registro de solicitudes no está disponible en este momento. Tu carrito no fue modificado." };
   }
 
-  const rateLimit = await checkOrderRequestRateLimit({
-    client,
-    purpose: "order_request",
-    businessUnit: "parfums",
-    requestId: validated.requestId,
-    phone: validated.customer.phone,
-  });
-
-  if (rateLimit.kind === "denied") {
-    return {
+  const repository = new ParfumsOrderRepository(client);
+  const existing = await repository.findByRequestId(attempt.requestId);
+  if (!existing.ok) return { status: "error", message: existing.message };
+  let order: PersistedParfumsOrder;
+  let requestId = attempt.requestId;
+  if (existing.data) {
+    // Receipt recovery is authorized by the capability, independent of a
+    // cart, publication, or availability change after the original commit.
+    order = existing.data;
+  } else {
+    if (storefront.source === "unavailable") return { status: "error", message: ORDER_SERVICE_UNAVAILABLE_MESSAGE };
+    // Any client-supplied requestId is overwritten: only the capability holder
+    // can reproduce this id, so only they can have an existing order replayed.
+    const input = { ...(submission as object), requestId: attempt.requestId } as ParfumsOrderRequestInput;
+    const validated = validateAndResolveParfumsOrder(input, storefront.catalog);
+    if (isOrderError(validated)) return {
       status: "error",
-      message: RATE_LIMITED_MESSAGE,
-      code: "rate_limited",
-      retryAfterSeconds: rateLimit.retryAfterSeconds,
+      message: validated.message,
+      ...(validated.fieldErrors ? { fieldErrors: validated.fieldErrors } : {}),
     };
-  }
 
-  if (rateLimit.kind === "unavailable") {
-    return { status: "error", message: ORDER_SERVICE_UNAVAILABLE_MESSAGE };
-  }
+    const rateLimit = await checkOrderRequestRateLimit({
+      client,
+      purpose: "order_request",
+      businessUnit: "parfums",
+      requestId: validated.requestId,
+      phone: validated.customer.phone,
+    });
 
-  const persisted = await new ParfumsOrderRepository(client).create(validated);
-  if (!persisted.ok) return { status: "error", message: persisted.message };
-  wakeNotificationWorker();
+    if (rateLimit.kind === "denied") {
+      return {
+        status: "error",
+        message: RATE_LIMITED_MESSAGE,
+        code: "rate_limited",
+        retryAfterSeconds: rateLimit.retryAfterSeconds,
+      };
+    }
+
+    if (rateLimit.kind === "unavailable") {
+      return { status: "error", message: ORDER_SERVICE_UNAVAILABLE_MESSAGE };
+    }
+
+    const persisted = await repository.create(validated);
+    if (!persisted.ok) return { status: "error", message: persisted.message };
+    order = persisted.data;
+    requestId = validated.requestId;
+    wakeNotificationWorker();
+  }
 
   // Build the WhatsApp handoff from the authoritative persisted order, never
   // from `validated` — the catalog it was resolved against can be stale
@@ -112,16 +123,16 @@ export async function createParfumsOrderRequest(
   // just resubmitted, not the order that was actually accepted.
   const summary = await getPersistedParfumsOrderSummary(
     client,
-    persisted.data.orderId,
-    validated.requestId,
+    order.orderId,
+    requestId,
   );
 
   if (!summary) {
     return {
       status: "success",
-      orderNumber: persisted.data.orderNumber,
+      orderNumber: order.orderNumber,
       whatsappUrl: null,
-      created: persisted.data.created,
+      created: order.created,
     };
   }
 
@@ -148,7 +159,7 @@ export async function createParfumsOrderRequest(
     status: "success",
     orderNumber: summary.orderNumber,
     whatsappUrl: buildWhatsAppUrl(storefront.contact.whatsappNumber, message),
-    created: persisted.data.created,
+    created: order.created,
   };
 }
 
