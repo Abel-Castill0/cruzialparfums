@@ -1,4 +1,4 @@
-import { parseCsvText, spreadsheetSafeText } from "./campaign-csv";
+import { csvSyntaxMessage, parseCsv, spreadsheetSafeText } from "./campaign-csv";
 import { isValidUuid } from "@/domains/admin-parfums/product-schema";
 
 export const BULK_COLUMNS = ["kind", "id", "updated_at", "name", "brand", "category_id", "label", "presentation_class", "capacity_ml"] as const;
@@ -8,8 +8,9 @@ export type BulkParseResult = { rows: BulkCatalogRow[]; issues: BulkIssue[] };
 export function parseBulkCatalog(text: string): BulkParseResult {
  const issues: BulkIssue[] = []; const rows: BulkCatalogRow[] = [];
  if (new TextEncoder().encode(text).length > 2 * 1024 * 1024) return { rows, issues: [{ line: 1, reason: "Máximo 2 MiB." }] };
- if (!hasValidCsvQuotes(text)) return {rows,issues:[{line:1,reason:"Comillas CSV inválidas."}]};
- const csv = parseCsvText(text); const header = csv[0]?.map(x => x.trim().toLowerCase()) ?? [];
+ const lexed = parseCsv(text);
+ if (!lexed.ok) return { rows, issues: [{ line: lexed.line, reason: csvSyntaxMessage(lexed) }] };
+ const csv = lexed.rows; const header = csv[0]?.map(x => x.trim().toLowerCase()) ?? [];
  if (header.length !== BULK_COLUMNS.length || new Set(header).size !== header.length || BULK_COLUMNS.some(x => !header.includes(x)))
   return { rows, issues: [{ line: 1, reason: "Usa las columnas de la plantilla exportada." }] };
  if (csv.length < 2 || csv.length > 2001) return { rows, issues: [{ line: 1, reason: "Incluye de 1 a 2000 filas." }] };
@@ -44,7 +45,9 @@ export function matchMediaFiles(filenames: string[], products: MediaIdentity[], 
  const manifest = new Map<string, string>(); const duplicates = new Set<string>();
  if (manifestText) {
   if (new TextEncoder().encode(manifestText).length > 2 * 1024 * 1024) return filenames.map(filename => ({ filename, productId: null, reason: "Manifiesto supera 2 MiB." }));
-  const csv = parseCsvText(manifestText);
+  const lexed = parseCsv(manifestText);
+  if (!lexed.ok) return filenames.map(filename => ({ filename, productId: null, reason: `Manifiesto: ${csvSyntaxMessage(lexed)}` }));
+  const csv = lexed.rows;
   if (csv[0]?.join(",") !== "filename,product_id") return filenames.map(filename => ({ filename, productId: null, reason: "Manifiesto: filename,product_id." }));
   for (const row of csv.slice(1)) {
    const file = row[0]?.trim() ?? "";
@@ -65,14 +68,3 @@ export function matchMediaFiles(filenames: string[], products: MediaIdentity[], 
  });
 }
 
-function hasValidCsvQuotes(text:string):boolean {
- let quoted=false;let closed=false;let start=true;
- for(let i=0;i<text.length;i++){
-  const char=text[i];
-  if(quoted){if(char==='"'){if(text[i+1]==='"')i++;else{quoted=false;closed=true;}}continue;}
-  if(char===","||char==="\n"||char==="\r"){start=true;closed=false;continue;}
-  if(char==='"'){if(!start)return false;quoted=true;start=false;continue;}
-  if(closed)return false;start=false;
- }
- return !quoted;
-}

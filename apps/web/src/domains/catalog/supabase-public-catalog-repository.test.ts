@@ -178,3 +178,39 @@ describe("SupabasePublicCatalogRepository mapping", () => {
     expect(operations.some(([name, select]) => name === "select" && String(select).includes("product_variants") && String(select).includes("product_media"))).toBe(true);
   });
 });
+
+describe("variant effective availability", () => {
+  // is_available is a PostgREST computed column (public.variant_effective_
+  // availability, a SECURITY DEFINER function) -- the repository trusts
+  // whatever boolean the query returns; the actual status_only/tracked_
+  // quantity logic is exercised directly against the real database by
+  // supabase/tests/43_gate_b_inventory_reservations.sql. This suite only
+  // proves the repository carries that boolean through correctly per
+  // variant, including a mixed-availability product.
+  const decant = (id: string, sizeMl: number, isAvailable: boolean) => ({
+    id, label: `${sizeMl} ml`, variant_kind: "decant" as const, size_ml: sizeMl,
+    price_amount: "20.00", currency: "PEN", publication_status: "published", archived_at: null,
+    sort_order: sizeMl, price_verification_status: "client_confirmed", is_available: isAvailable,
+  });
+
+  it("carries a variant flagged unavailable through", () => {
+    const product = mapPublicProduct(row({ product_variants: [decant("v1", 3, false)] }));
+    expect(product?.variants[0]?.isAvailable).toBe(false);
+  });
+
+  it("carries a variant flagged available through", () => {
+    const product = mapPublicProduct(row({ product_variants: [decant("v1", 3, true)] }));
+    expect(product?.variants[0]?.isAvailable).toBe(true);
+  });
+
+  it("a mix of one unavailable and one available presentation keeps the product listed with each flagged correctly", () => {
+    const product = mapPublicProduct(row({
+      product_variants: [decant("v1", 3, false), decant("v2", 5, true)],
+    }));
+    expect(product).not.toBeNull();
+    expect(product?.variants.map((v) => ({ sizeMl: v.sizeMl, isAvailable: v.isAvailable }))).toEqual([
+      { sizeMl: "3", isAvailable: false },
+      { sizeMl: "5", isAvailable: true },
+    ]);
+  });
+});

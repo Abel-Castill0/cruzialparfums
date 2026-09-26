@@ -298,8 +298,8 @@
 .submitFeedback a {
   text-decoration: underline;
 }
-
 .submitError {
+  scroll-margin-top: 112px;
   padding: 12px 14px;
   border-left: 3px solid #7c3028;
   display: grid;
@@ -374,4 +374,27 @@
   .submit {
     transition: none;
   }
+}
+
+.submitErrorAction {
+  justify-self: start;
+  min-height: 44px;
+  margin-top: 6px;
+  padding: 10px 14px;
+  border: 1px solid #541e1a;
+  background: transparent;
+  color: #541e1a;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.submitErrorAction:focus-visible {
+  outline: 2px solid #541e1a;
+  outline-offset: 2px;
+}
+
+.submitErrorAction:disabled {
+  cursor: wait;
+  opacity: 0.6;
 }

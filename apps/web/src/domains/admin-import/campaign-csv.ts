@@ -76,65 +76,88 @@ export function exportCampaignRowsToCsv(rows: CampaignCsvSourceRow[]): string {
   return lines.join("\r\n");
 }
 
-/** Minimal RFC-4180-ish CSV line parser: handles quoted fields, escaped
- * quotes, and commas/newlines inside quotes. No external dependency — this
- * format is simple enough (7 flat text columns) not to need one. */
-export function parseCsvText(text: string): string[][] {
+export type CsvParseResult =
+  | { ok: true; rows: string[][] }
+  | { ok: false; line: number; reason: "quote" | "unterminated" | "bare_cr" };
+
+/**
+ * The ONE CSV grammar for every import in this domain (campaign prices, bulk
+ * catalog, media manifest): a single strict RFC-4180 lexical state machine.
+ * There is no separate validator and no permissive parser, so the two can
+ * never disagree about what a byte sequence means.
+ *
+ *   START_FIELD         `"` opens a quoted field; `,` ends an empty field;
+ *                       a record delimiter ends the record; anything else
+ *                       starts an unquoted field.
+ *   IN_UNQUOTED_FIELD   a quote here is malformed (`1"00"`, `100"`).
+ *   IN_QUOTED_FIELD     `""` is a literal quote; a lone `"` closes; commas,
+ *                       CR and LF are literal content (multiline fields).
+ *   AFTER_CLOSING_QUOTE only `,` or a record delimiter may follow
+ *                       (`"100"x` is malformed).
+ *
+ * Record delimiters are CRLF (one delimiter) or LF. A lone CR outside a
+ * quoted field is rejected, never dropped: dropping it would splice lexical
+ * fragments together (`1\r"00"` must never read as `100`). A UTF-8 BOM is
+ * stripped FIRST, so a BOM followed by a quoted first header is valid.
+ * Records whose cells are all blank are omitted.
+ */
+export function parseCsv(input: string): CsvParseResult {
+  const text = input.startsWith("\uFEFF") ? input.slice(1) : input;
   const rows: string[][] = [];
   let row: string[] = [];
   let field = "";
-  let inQuotes = false;
-  let i = 0;
-  const normalized = text.replace(/^﻿/, "");
+  let state: "START_FIELD" | "IN_UNQUOTED_FIELD" | "IN_QUOTED_FIELD" | "AFTER_CLOSING_QUOTE" = "START_FIELD";
+  let line = 1;
+  let recordStarted = false;
 
-  while (i < normalized.length) {
-    const char = normalized[i];
-    if (inQuotes) {
+  const endField = () => { row.push(field); field = ""; state = "START_FIELD"; };
+  const endRecord = () => {
+    endField();
+    if (row.some((cell) => cell.trim() !== "")) rows.push(row);
+    row = [];
+    recordStarted = false;
+  };
+
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i]!;
+    if (state === "IN_QUOTED_FIELD") {
       if (char === '"') {
-        if (normalized[i + 1] === '"') {
-          field += '"';
-          i += 2;
-          continue;
-        }
-        inQuotes = false;
-        i += 1;
-        continue;
+        if (text[i + 1] === '"') { field += '"'; i++; }
+        else state = "AFTER_CLOSING_QUOTE";
+      } else {
+        if (char === "\n") line++;
+        field += char;
       }
-      field += char;
-      i += 1;
       continue;
     }
-    if (char === '"') {
-      inQuotes = true;
-      i += 1;
-      continue;
-    }
-    if (char === ",") {
-      row.push(field);
-      field = "";
-      i += 1;
-      continue;
-    }
+    // Outside a quoted field: record delimiters first.
     if (char === "\r") {
-      i += 1;
+      if (text[i + 1] !== "\n") return { ok: false, line, reason: "bare_cr" };
+      continue; // the LF that follows ends the record
+    }
+    if (char === "\n") { endRecord(); line++; continue; }
+    if (char === ",") { recordStarted = true; endField(); continue; }
+    recordStarted = true;
+    if (state === "AFTER_CLOSING_QUOTE") return { ok: false, line, reason: "quote" };
+    if (char === '"') {
+      if (state === "IN_UNQUOTED_FIELD") return { ok: false, line, reason: "quote" };
+      state = "IN_QUOTED_FIELD";
       continue;
     }
-    if (char === "\n") {
-      row.push(field);
-      rows.push(row);
-      row = [];
-      field = "";
-      i += 1;
-      continue;
-    }
+    state = "IN_UNQUOTED_FIELD";
     field += char;
-    i += 1;
   }
-  if (field.length > 0 || row.length > 0) {
-    row.push(field);
-    rows.push(row);
-  }
-  return rows.filter((r) => r.some((cell) => cell.trim() !== ""));
+  if (state === "IN_QUOTED_FIELD") return { ok: false, line, reason: "unterminated" };
+  if (recordStarted || field !== "" || row.length > 0) endRecord();
+  return { ok: true, rows };
+}
+
+/** Consumer-facing message for a lexical rejection. */
+export function csvSyntaxMessage(error: Extract<CsvParseResult, { ok: false }>): string {
+  const where = `línea ${error.line}`;
+  if (error.reason === "bare_cr") return `Salto de línea inválido (CR aislado) en la ${where}. Vuelve a exportarlo e inténtalo otra vez.`;
+  if (error.reason === "unterminated") return `Hay comillas sin cerrar (${where}). Vuelve a exportarlo e inténtalo otra vez.`;
+  return `El CSV tiene comillas mal formadas (${where}). Vuelve a exportarlo e inténtalo otra vez.`;
 }
 
 export type CampaignCsvParsedRow = {
@@ -161,7 +184,9 @@ export async function readCampaignCsvFile(file: Pick<File, "size" | "text">): Pr
 
 export function parseCampaignCsv(text: string): CampaignCsvParseResult {
   if (text.length > CAMPAIGN_CSV_MAX_BYTES) return { ok: false, error: CSV_TOO_LARGE_MESSAGE };
-  const rows = parseCsvText(text);
+  const lexed = parseCsv(text);
+  if (!lexed.ok) return { ok: false, error: csvSyntaxMessage(lexed) };
+  const rows = lexed.rows;
   if (rows.length === 0) return { ok: false, error: "El archivo CSV está vacío." };
 
   const header = rows[0]!.map((cell) => cell.trim().toLowerCase());

@@ -82,6 +82,7 @@ function toCatalogProduct(
         currency: "PEN" as const,
         sortOrder,
         priceVerificationStatus: product.pricingVerificationStatus,
+        isAvailable: true,
       })),
       ...Object.entries(product.bottle ?? {}).map(([size, price], index) => ({
         dbVariantId: null,
@@ -94,6 +95,7 @@ function toCatalogProduct(
         sortOrder: Object.keys(product.price).length + index,
         priceVerificationStatus:
           product.bottlePricingVerificationStatus ?? product.pricingVerificationStatus,
+        isAvailable: true,
       })),
     ],
     media: media ? [{

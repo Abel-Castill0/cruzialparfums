@@ -407,13 +407,13 @@ isOneToOne: true
                   ]
                 },"notification_outbox": {
                   Row: {
-                    "attempts": number,"business_unit_id": string,"channel": string,"created_at": string,"delivery_status": string | null,"delivery_updated_at": string | null,"entity_id": string,"entity_type": string,"event_type": string,"id": string,"idempotency_key": string,"last_error_safe": string | null,"lease_expires_at": string | null,"lease_token": string | null,"next_attempt_at": string,"provider_message_id": string | null,"recipient": string | null,"sent_at": string | null,"status": string,"template_data": NonNullable<Json>,"template_key": string,"updated_at": string
+                    "attempts": number,"business_unit_id": string,"channel": string,"created_at": string,"delivery_status": string | null,"delivery_updated_at": string | null,"dispatch_authorized_at": string | null,"entity_id": string,"entity_type": string,"event_type": string,"id": string,"idempotency_key": string,"last_error_safe": string | null,"lease_expires_at": string | null,"lease_token": string | null,"next_attempt_at": string,"provider_message_id": string | null,"recipient": string | null,"sent_at": string | null,"status": string,"template_data": NonNullable<Json>,"template_key": string,"updated_at": string
                   }
                   Insert: {
-                    "attempts"?: number,"business_unit_id": string,"channel"?: string,"created_at"?: string,"delivery_status"?: string | null,"delivery_updated_at"?: string | null,"entity_id": string,"entity_type": string,"event_type": string,"id"?: string,"idempotency_key": string,"last_error_safe"?: string | null,"lease_expires_at"?: string | null,"lease_token"?: string | null,"next_attempt_at"?: string,"provider_message_id"?: string | null,"recipient"?: string | null,"sent_at"?: string | null,"status"?: string,"template_data"?: NonNullable<Json>,"template_key": string,"updated_at"?: string
+                    "attempts"?: number,"business_unit_id": string,"channel"?: string,"created_at"?: string,"delivery_status"?: string | null,"delivery_updated_at"?: string | null,"dispatch_authorized_at"?: string | null,"entity_id": string,"entity_type": string,"event_type": string,"id"?: string,"idempotency_key": string,"last_error_safe"?: string | null,"lease_expires_at"?: string | null,"lease_token"?: string | null,"next_attempt_at"?: string,"provider_message_id"?: string | null,"recipient"?: string | null,"sent_at"?: string | null,"status"?: string,"template_data"?: NonNullable<Json>,"template_key": string,"updated_at"?: string
                   }
                   Update: {
-                    "attempts"?: number,"business_unit_id"?: string,"channel"?: string,"created_at"?: string,"delivery_status"?: string | null,"delivery_updated_at"?: string | null,"entity_id"?: string,"entity_type"?: string,"event_type"?: string,"id"?: string,"idempotency_key"?: string,"last_error_safe"?: string | null,"lease_expires_at"?: string | null,"lease_token"?: string | null,"next_attempt_at"?: string,"provider_message_id"?: string | null,"recipient"?: string | null,"sent_at"?: string | null,"status"?: string,"template_data"?: NonNullable<Json>,"template_key"?: string,"updated_at"?: string
+                    "attempts"?: number,"business_unit_id"?: string,"channel"?: string,"created_at"?: string,"delivery_status"?: string | null,"delivery_updated_at"?: string | null,"dispatch_authorized_at"?: string | null,"entity_id"?: string,"entity_type"?: string,"event_type"?: string,"id"?: string,"idempotency_key"?: string,"last_error_safe"?: string | null,"lease_expires_at"?: string | null,"lease_token"?: string | null,"next_attempt_at"?: string,"provider_message_id"?: string | null,"recipient"?: string | null,"sent_at"?: string | null,"status"?: string,"template_data"?: NonNullable<Json>,"template_key"?: string,"updated_at"?: string
                   }
                   Relationships: [
                     {
@@ -2111,6 +2111,7 @@ isOneToOne: false
 "created_at": string,
 "delivery_status": string | null,
 "delivery_updated_at": string | null,
+"dispatch_authorized_at": string | null,
 "entity_id": string,
 "entity_type": string,
 "event_type": string,
@@ -2142,6 +2143,7 @@ isOneToOne: false
 "created_at": string,
 "delivery_status": string | null,
 "delivery_updated_at": string | null,
+"dispatch_authorized_at": string | null,
 "entity_id": string,
 "entity_type": string,
 "event_type": string,

@@ -42,4 +42,19 @@ select * from public.create_import_order_request('99001000-1111-4000-8000-000000
   '{"district":"Lima","address":"LOCAL QA — no despachar"}',
   jsonb_build_array(jsonb_build_object('offer_id','99001000-0000-4000-8000-000000000006',
   'offer_updated_at',(select updated_at from public.campaign_products where id='99001000-0000-4000-8000-000000000006'),'quantity',1)));
+-- LOCAL QA combo (synthetic, local stack only): one published set whose
+-- confirmed composition is the LOCAL QA fragrance, so the public combos
+-- surface renders a real card in local E2E instead of skipping.
+insert into public.products(id,business_unit_id,slug,name,brand,gender,sales_mode,publication_status,description)
+values ('99002000-0000-4000-8000-000000000011','11111111-1111-4111-8111-111111111111','local-qa-combo','LOCAL QA — Set de prueba','LOCAL QA','unisex','always_available','published','Set sintético de prueba local.') on conflict do nothing;
+insert into public.product_variants(id,product_id,variant_kind,size_ml,label,price_amount,currency,publication_status,price_verification_status)
+values ('99002000-0000-4000-8000-000000000012','99002000-0000-4000-8000-000000000011','decant',5,'LOCAL QA Set 5 ml',30,'PEN','published','client_confirmed') on conflict do nothing;
+insert into public.inventory(product_variant_id,inventory_mode,availability_status)
+values ('99002000-0000-4000-8000-000000000012','status_only','available') on conflict do nothing;
+insert into public.product_media(id,product_id,provider,secure_url,alt,is_primary)
+values ('99002000-0000-4000-8000-000000000013','99002000-0000-4000-8000-000000000011','legacy_static','/icon.png','LOCAL QA — set de prueba',true) on conflict do nothing;
+insert into public.combos(id,product_id,composition_verification_status)
+values ('99002000-0000-4000-8000-000000000014','99002000-0000-4000-8000-000000000011','client_confirmed') on conflict do nothing;
+insert into public.combo_items(id,combo_id,product_variant_id,combo_product_variant_id,quantity,sort_order)
+values ('99002000-0000-4000-8000-000000000015','99002000-0000-4000-8000-000000000014','99002000-0000-4000-8000-000000000002','99002000-0000-4000-8000-000000000012',1,0) on conflict do nothing;
 commit;

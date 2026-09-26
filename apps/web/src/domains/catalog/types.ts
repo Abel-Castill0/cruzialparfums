@@ -136,6 +136,15 @@ export type CatalogProductVariant = {
   currency: "PEN";
   sortOrder: number;
   priceVerificationStatus: CatalogVerificationStatus;
+  /**
+   * Effective purchasability mirroring what app.reserve_tracked_order_line()
+   * enforces at persistence (status_only out_of_stock, or tracked_quantity
+   * with no uncommitted stock, are both false). The DB remains the sole
+   * authority for the actual reservation — this only decides what the
+   * storefront honestly presents; checkout still fails safely on the real
+   * DB check if this went stale between catalog load and submission.
+   */
+  isAvailable: boolean;
 };
 
 export type CatalogProductMedia = {

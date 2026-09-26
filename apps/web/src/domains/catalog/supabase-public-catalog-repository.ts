@@ -25,6 +25,7 @@ type PublicCategory = {
   archived_at: string | null;
 };
 
+
 export type PublicProductRow = {
   id: string;
   business_unit_id: string;
@@ -57,6 +58,8 @@ export type PublicProductRow = {
     archived_at: string | null;
     sort_order: number;
     price_verification_status: string;
+    // NULL only for a non-public variant (never reached via the RLS-filtered embed).
+    is_available: boolean | null;
   }>;
   product_media: Array<{
     provider: string;
@@ -109,7 +112,8 @@ const PUBLIC_PRODUCT_SELECT = `
   archived_at, is_featured, featured_rank, featured_from, featured_until,
   verification_status, notes:specs->notes, tag:specs->>tag,
   product_variants(id, label, variant_kind, size_ml, price_amount, currency,
-    publication_status, archived_at, sort_order, price_verification_status),
+    publication_status, archived_at, sort_order, price_verification_status,
+    is_available:variant_effective_availability),
   product_media(provider, secure_url, alt, is_primary, sort_order, archived_at,
     product_variant_id, media_role:metadata->>media_role),
   product_categories(sort_order, category:categories(business_unit_id, kind,
@@ -201,6 +205,7 @@ function mapVariants(row: PublicProductRow): CatalogProductVariant[] {
         currency: "PEN" as const,
         sortOrder: item.sort_order,
         priceVerificationStatus: verification(item.price_verification_status),
+        isAvailable: item.is_available === true,
       }];
     })
     .sort((a, b) => a.sortOrder - b.sortOrder || a.variantId.localeCompare(b.variantId));
