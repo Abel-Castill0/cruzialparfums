@@ -9,8 +9,8 @@ const job = { id: "fixture-job", business_unit_id: "fixture-unit", lease_token: 
 function fakeClient(invalidLease = false, authorized: Record<string, unknown> = { ...job, status: "sending" }) {
   const rpc = vi.fn(async (name: string) => {
     if (name === "worker_claim_notifications") return { data: [job], error: null };
-    if (name === "worker_begin_notification" && invalidLease) return { data: null, error: { code: "P2036" } };
-    if (name === "worker_begin_notification") return { data: authorized, error: null };
+    if (name === "worker_begin_notification_v2" && invalidLease) return { data: null, error: { code: "P2036" } };
+    if (name === "worker_begin_notification_v2") return { data: authorized, error: null };
     return { data: null, error: null };
   });
   const client = { rpc, from: () => ({ select: async () => ({ data: [{ id: "fixture-unit", code: "parfums" }], error: null }) }) };
@@ -22,7 +22,7 @@ describe("notification worker", () => {
     const provider = { ready: () => true, send: vi.fn(async () => ({ status: "sent" as const, providerMessageId: "fixture-provider-id" })) };
     expect(await processNotificationBatch(client, () => provider)).toEqual({ ok: true, processed: 1 });
     expect(provider.send).toHaveBeenCalledOnce();
-    expect(rpc).toHaveBeenCalledWith("worker_begin_notification", { p_id: "fixture-job", p_lease_token: "fixture-lease" });
+    expect(rpc).toHaveBeenCalledWith("worker_begin_notification_v2", { p_id: "fixture-job", p_lease_token: "fixture-lease" });
     expect(rpc).toHaveBeenCalledWith("worker_finish_notification", {
       p_id: "fixture-job", p_lease_token: "fixture-lease", p_outcome: "sent", p_provider_message_id: "fixture-provider-id",
     });
@@ -32,7 +32,7 @@ describe("notification worker", () => {
     const provider = { ready: () => false, send: vi.fn(async () => ({ status: "blocked" as const, error: "provider_not_configured" })) };
     await processNotificationBatch(client, () => provider);
     expect(provider.send).not.toHaveBeenCalled();
-    expect(rpc.mock.calls.some(([name]) => name === "worker_begin_notification")).toBe(false);
+    expect(rpc.mock.calls.some(([name]) => name === "worker_begin_notification_v2")).toBe(false);
     expect(rpc).toHaveBeenCalledWith("worker_finish_notification", expect.objectContaining({ p_outcome: "blocked", p_error_safe: "provider_not_configured" }));
   });
   it("cannot send when its lease has been lost", async () => {

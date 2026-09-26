@@ -2105,6 +2105,8 @@ isOneToOne: false
 "worker_automation_health":
 { Args: Record<PropertyKey, never>; Returns: Json
                            },
+"worker_begin_notification_v2":
+{ Args: { "p_id": string,"p_lease_token": string }; Returns: Database["public"]["Tables"]["notification_outbox"]["Row"] },
 "worker_begin_notification":
 { Args: { "p_id": string,"p_lease_token": string }; Returns: {
               "attempts": number,
