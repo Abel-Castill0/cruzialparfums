@@ -4,9 +4,8 @@ import {
   CAMPAIGN_CSV_COLUMNS,
   diffCampaignCsvRows,
   exportCampaignRowsToCsv,
-  hasValidCsvQuotes,
   parseCampaignCsv,
-  parseCsvText,
+  parseCsv,
   readCampaignCsvFile,
   type CampaignCsvSourceRow,
 } from "./campaign-csv";
@@ -36,14 +35,14 @@ describe("exportCampaignRowsToCsv / parseCampaignCsv round-trip", () => {
 
   it.each(["=1+1", "+SUM(1,2)", "-1+2", "@cmd", "  =1+1"])("exports formula-looking text as spreadsheet text: %s", (name) => {
     const csv = exportCampaignRowsToCsv([{ ...baseRow, productName: name, presentationLabel: name }]);
-    const cells = parseCsvText(csv)[1]!;
+    const cells = (parseCsv(csv) as { rows: string[][] }).rows[1]!;
     expect(cells[1]).toBe(`'${name}`);
     expect(cells[2]).toBe(`'${name}`);
     expect(cells[3]).toBe("120.00");
   });
 
   it("leaves normal catalog names unchanged", () => {
-    const cells = parseCsvText(exportCampaignRowsToCsv([baseRow]))[1]!;
+    const cells = (parseCsv(exportCampaignRowsToCsv([baseRow])) as { rows: string[][] }).rows[1]!;
     expect(cells[1]).toBe(baseRow.productName);
     expect(cells[2]).toBe(baseRow.presentationLabel);
   });
@@ -98,51 +97,73 @@ describe("campaign CSV size bounds", () => {
   });
 });
 
-describe("parseCsvText", () => {
-  it("handles quoted fields with embedded commas and newlines", () => {
-    const rows = parseCsvText('a,"b,c",d\n"multi\nline",e,f');
-    expect(rows).toEqual([
-      ["a", "b,c", "d"],
-      ["multi\nline", "e", "f"],
-    ]);
-  });
-});
+describe("parseCsv — the single strict CSV grammar", () => {
+  const rowsOf = (text: string) => {
+    const result = parseCsv(text);
+    if (!result.ok) throw new Error(`unexpected rejection: ${result.reason} at line ${result.line}`);
+    return result.rows;
+  };
 
-describe("hasValidCsvQuotes", () => {
-  it("rejects a quote appearing mid-unquoted-field, which parseCsvText would otherwise silently absorb", () => {
-    // Without this guard, `1"00"` parses via parseCsvText to the clean-
-    // looking value "100" — indistinguishable from a deliberately entered
-    // price of 100 by the time it reaches validation.
-    expect(hasValidCsvQuotes('offer,1"00"')).toBe(false);
-    expect(parseCsvText('offer,1"00"')[0]).toEqual(["offer", "100"]);
-  });
-
-  it("rejects a stray quote at the very start too, and an unclosed quoted field", () => {
-    expect(hasValidCsvQuotes('a,"unclosed')).toBe(false);
-    expect(hasValidCsvQuotes('a,b"')).toBe(false);
+  it.each([
+    ["a quote inside an unquoted field", 'offer,1"00"', "quote"],
+    ["a lone CR splicing a bare and a quoted fragment", 'offer,1\r"00"', "bare_cr"],
+    ["an unterminated quoted field", 'offer,"100', "unterminated"],
+    ["content after a closing quote", 'offer,"100"x', "quote"],
+    ["a trailing stray quote", 'offer,100"', "quote"],
+    ["a lone CR between plain records", "a,b\rc,d", "bare_cr"],
+    ["a space after a closing quote", 'a,"b" ,c', "quote"],
+  ] as const)("rejects %s — never yields a clean-looking value", (_label, text, reason) => {
+    const result = parseCsv(text);
+    expect(result).toMatchObject({ ok: false, reason });
+    expect(JSON.stringify(result)).not.toContain('"100"');
   });
 
-  it("rejects garbage between a quoted field's closing quote and the next delimiter", () => {
-    expect(hasValidCsvQuotes('a,"b"x,c')).toBe(false);
+  it("reports the physical line of a rejection", () => {
+    expect(parseCsv('h1,h2\nok,ok\nbad,1"00"')).toEqual({ ok: false, line: 3, reason: "quote" });
   });
 
   it.each([
-    ["plain unquoted fields", "a,b,c"],
-    ["a quoted field with an embedded comma", 'a,"b,c",d'],
-    ["a doubled (escaped) quote inside a quoted field", 'a,"say ""hi""",c'],
-    ["CRLF between rows", "a,b\r\nc,d"],
-    ["a quoted field spanning multiple lines", '"multi\nline",e,f'],
-    ["a fully-quoted field with no special characters", '"a",b,c'],
-  ])("accepts valid quoting: %s", (_label, text) => {
-    expect(hasValidCsvQuotes(text)).toBe(true);
+    ["an escaped quote", 'a,"a""b"', [["a", 'a"b']]],
+    ["an embedded comma", 'x,"a,b"', [["x", "a,b"]]],
+    ["a multiline quoted field", '"multi\nline",e\n"crlf\r\ninside",f', [["multi\nline", "e"], ["crlf\r\ninside", "f"]]],
+    ["CRLF as ONE record delimiter", "a,b\r\nc,d\r\n", [["a", "b"], ["c", "d"]]],
+    ["LF delimiters", "a,b\nc,d\n", [["a", "b"], ["c", "d"]]],
+    ["BOM + quoted first header", '\uFEFF"offer_id",price\r\n1,2', [["offer_id", "price"], ["1", "2"]]],
+    ["ordinary BOM", "\uFEFFoffer_id,price\n1,2", [["offer_id", "price"], ["1", "2"]]],
+    ["empty fields (bare and quoted)", 'a,,""\n,b,', [["a", "", ""], ["", "b", ""]]],
+    ["blank records are omitted", "a,b\n\n\r\n,\nc,d", [["a", "b"], ["c", "d"]]],
+    ["a fully quoted plain field", '"a",b', [["a", "b"]]],
+  ] as const)("accepts %s", (_label, text, expected) => {
+    expect(rowsOf(text)).toEqual(expected);
+  });
+
+  it("round-trips the campaign export exactly, including hostile text", () => {
+    const hostile = { ...baseRow, productName: 'Brand "X", Ltd\nline 2', presentationLabel: "=cmd" };
+    const rows = rowsOf(exportCampaignRowsToCsv([hostile]));
+    expect(rows[0]).toEqual([...CAMPAIGN_CSV_COLUMNS]);
+    expect(rows[1]![1]).toBe(hostile.productName);
+    expect(rows[1]![2]).toBe("'=cmd");
+    expect(rows[1]![0]).toBe(hostile.offerId);
   });
 });
 
-describe("parseCampaignCsv rejects malformed quoting end to end", () => {
-  it("rejects a CSV whose price field contains a stray mid-field quote instead of silently accepting it as a clean price", () => {
-    const csv = `offer_id,product_name,presentation_label,price,currency,availability,updated_at\n${baseRow.offerId},P,L,1"00",PEN,available,`;
-    const result = parseCampaignCsv(csv);
-    expect(result).toEqual({ ok: false, error: expect.stringContaining("comillas") });
+describe("parseCampaignCsv rejects malformed input end to end", () => {
+  const header = "offer_id,product_name,presentation_label,price,currency,availability,updated_at";
+  it.each([
+    ['1"00"'],
+    ['1\r"00"'],
+    ['"100'],
+    ['"100"x'],
+    ['100"'],
+  ])("rejects the price field %j instead of accepting a clean price", (price) => {
+    const result = parseCampaignCsv(`${header}\n${baseRow.offerId},P,L,${price},PEN,available,`);
+    expect(result).toMatchObject({ ok: false });
+    expect(JSON.stringify(result)).not.toContain('"100"');
+  });
+
+  it("accepts a BOM-prefixed export whose first header is quoted", () => {
+    const csv = `\uFEFF"offer_id",product_name,presentation_label,price,currency,availability,updated_at\r\n${baseRow.offerId},P,L,120.00,PEN,available,${baseRow.updatedAt}`;
+    expect(parseCampaignCsv(csv)).toMatchObject({ ok: true, rows: [{ offerId: baseRow.offerId, price: "120.00" }] });
   });
 });
 
