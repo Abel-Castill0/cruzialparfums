@@ -20,9 +20,20 @@ begin
   if v_before.archived_at is not null then
     raise exception 'archived order cannot change status' using errcode = 'P2024';
   end if;
-  -- Desired state already reached: no inventory, event, timestamp or audit
-  -- mutation is repeated, including a retry after the first response was lost.
-  if v_before.status = p_new_status then return v_before; end if;
+  -- Desired state already reached: replay is safe only when the recorded
+  -- history shows THIS caller's own expected transition already landed
+  -- (from_status = p_expected_status, to_status = p_new_status). A status
+  -- that merely matches the target for an unrelated or stale reason still
+  -- rejects, so a caller with outdated information cannot be told "done".
+  if v_before.status = p_new_status then
+    if exists (
+      select 1 from public.order_status_events
+      where order_id = p_order_id and from_status = p_expected_status and to_status = p_new_status
+    ) then
+      return v_before;
+    end if;
+    raise exception 'order status changed since expected' using errcode = 'P2020';
+  end if;
   if v_before.status <> p_expected_status then
     raise exception 'order status changed since expected' using errcode = 'P2020';
   end if;
