@@ -8,7 +8,7 @@ export type BulkParseResult = { rows: BulkCatalogRow[]; issues: BulkIssue[] };
 export function parseBulkCatalog(text: string): BulkParseResult {
  const issues: BulkIssue[] = []; const rows: BulkCatalogRow[] = [];
  if (new TextEncoder().encode(text).length > 2 * 1024 * 1024) return { rows, issues: [{ line: 1, reason: "Máximo 2 MiB." }] };
- if (!hasValidCsvQuotes(text)) return {rows,issues:[{line:1,reason:"Comillas CSV inv�lidas."}]};
+ if (!hasValidCsvQuotes(text)) return {rows,issues:[{line:1,reason:"Comillas CSV inválidas."}]};
  const csv = parseCsvText(text); const header = csv[0]?.map(x => x.trim().toLowerCase()) ?? [];
  if (header.length !== BULK_COLUMNS.length || new Set(header).size !== header.length || BULK_COLUMNS.some(x => !header.includes(x)))
   return { rows, issues: [{ line: 1, reason: "Usa las columnas de la plantilla exportada." }] };
