@@ -4,7 +4,7 @@ import { wakeNotificationWorker } from "@/domains/notifications/wake";
 import { validateComplaintForm, type ComplaintFormInput } from "@/domains/complaints/complaint-schema";
 import { submitComplaintEntry } from "@/domains/complaints/complaint-repository";
 import type { ComplaintConsumerReceipt } from "@/domains/complaints/complaint-receipt";
-import { ATTEMPT_REQUIRED_CODE, resolveAttempt, rotateAttempt } from "@/lib/security/attempt-capability";
+import { ATTEMPT_EXPIRED_CODE, ATTEMPT_REQUIRED_CODE, resolveAttempt, rotateAttempt } from "@/lib/security/attempt-capability";
 import { checkOrderRequestRateLimit } from "@/lib/security/order-abuse";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
 
@@ -12,12 +12,19 @@ const RATE_LIMITED_MESSAGE =
   "Recibimos varias solicitudes en poco tiempo. Espera unos minutos antes de intentarlo de nuevo.";
 const ATTEMPT_REQUIRED_MESSAGE =
   "Tu navegador no conservó la sesión segura del formulario. Activa las cookies para este sitio y vuelve a intentarlo; tu solicitud no se registró.";
+const ATTEMPT_EXPIRED_MESSAGE =
+  "Por seguridad, la sesión anterior de este formulario venció. Si ya habías enviado esta solicitud, puede que ya esté registrada. No registramos nada nuevo.";
 const SERVICE_UNAVAILABLE_MESSAGE =
   "No pudimos registrar tu solicitud en este momento. Tus datos no se enviaron; intenta nuevamente.";
 
 export type SubmitComplaintResult =
-  | { status: "error"; message: string; fieldErrors?: Record<string, string>; code?: typeof ATTEMPT_REQUIRED_CODE }
-  | { status: "success"; receipt: ComplaintConsumerReceipt };
+  | {
+      status: "error";
+      message: string;
+      fieldErrors?: Record<string, string>;
+      code?: typeof ATTEMPT_REQUIRED_CODE | typeof ATTEMPT_EXPIRED_CODE;
+    }
+  | { status: "success"; receipt: ComplaintConsumerReceipt; created: boolean };
 
 /**
  * The idempotency identity is derived server-side from this browser's
@@ -39,7 +46,9 @@ export async function submitComplaintAction(
 
   const attempt = await resolveAttempt("complaint", businessUnitCode);
   if (!attempt.ok) {
-    return { status: "error", code: ATTEMPT_REQUIRED_CODE, message: ATTEMPT_REQUIRED_MESSAGE };
+    return attempt.code === ATTEMPT_EXPIRED_CODE
+      ? { status: "error", code: ATTEMPT_EXPIRED_CODE, message: ATTEMPT_EXPIRED_MESSAGE }
+      : { status: "error", code: ATTEMPT_REQUIRED_CODE, message: ATTEMPT_REQUIRED_MESSAGE };
   }
   const requestId = attempt.requestId;
 
@@ -69,11 +78,11 @@ export async function submitComplaintAction(
   }
 
   wakeNotificationWorker();
-  return { status: "success", receipt: result.data };
+  return { status: "success", receipt: result.data, created: result.created };
 }
 
-/** "Registrar otra solicitud": the next submission starts a fresh attempt.
- * Called only after the client received a resolved success. */
+/** Starts a fresh attempt: only after the client acknowledged a success, or
+ * when the consumer explicitly chose to register a NEW complaint. */
 export async function startNewComplaintAttempt(): Promise<void> {
   await rotateAttempt("complaint");
 }

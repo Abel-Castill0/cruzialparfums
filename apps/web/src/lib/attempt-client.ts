@@ -1,12 +1,18 @@
 export const ATTEMPT_REQUIRED = "attempt_required";
+export const ATTEMPT_EXPIRED = "attempt_expired";
 
 /**
- * Client side of the attempt-capability handshake. A browser with no usable
- * attempt cookie gets `attempt_required` (nothing was persisted) together
- * with a freshly issued HttpOnly cookie, so exactly ONE automatic retry is
- * made. If the browser could not keep that cookie, the retry fails the same
- * way and its fail-closed message is shown — the action is never repeated in
- * a loop and never proceeds without the capability.
+ * Client side of the attempt-capability handshake. A browser with no attempt
+ * cookie at all gets `attempt_required` (nothing was persisted) together with
+ * a freshly issued HttpOnly cookie, so exactly ONE automatic retry is made. If
+ * the browser could not keep that cookie, the retry fails the same way and its
+ * fail-closed message is shown — the action is never repeated in a loop and
+ * never proceeds without the capability.
+ *
+ * `attempt_expired` is never retried automatically: the previous capability
+ * may belong to a request that committed while its response was lost, so only
+ * an explicit "register as a new request" action (startNewAttempt) may lead to
+ * another mutation.
  */
 export async function submitWithAttemptCapability<T extends { status: string; code?: string }>(
   call: () => Promise<T>,
@@ -16,26 +22,19 @@ export async function submitWithAttemptCapability<T extends { status: string; co
   return first;
 }
 
-const ROTATION_PENDING_PREFIX = "cruzial:attempt-rotation-pending:";
-
 /**
- * Called once a success has actually been received: the next submission
- * must start a new attempt. If the rotation call itself fails, a marker is
- * left (storage used only as a UX hint, never for correctness) so the next
- * visit retries the rotation before the customer submits again.
+ * Moves this browser to a fresh attempt. Resolves true only when the server
+ * confirmed the rotation. Correctness never depends on it succeeding: while
+ * the old capability remains, the server replays the already-registered
+ * request (reported as `created: false`, which the UI presents as "already
+ * registered, nothing new was created") — it can never produce a duplicate
+ * or pass an old request off as a new one. No browser storage is involved.
  */
-export async function rotateAttemptAfterSuccess(flow: string, rotate: () => Promise<void>) {
+export async function startNewAttempt(rotate: () => Promise<void>): Promise<boolean> {
   try {
     await rotate();
-    try { localStorage.removeItem(ROTATION_PENDING_PREFIX + flow); } catch { /* noop */ }
+    return true;
   } catch {
-    try { localStorage.setItem(ROTATION_PENDING_PREFIX + flow, "1"); } catch { /* noop */ }
+    return false;
   }
-}
-
-/** Effect-only (never during render, so hydration stays deterministic). */
-export function recoverPendingAttemptRotation(flow: string, rotate: () => Promise<void>) {
-  let pending = false;
-  try { pending = localStorage.getItem(ROTATION_PENDING_PREFIX + flow) === "1"; } catch { /* noop */ }
-  if (pending) void rotateAttemptAfterSuccess(flow, rotate);
 }

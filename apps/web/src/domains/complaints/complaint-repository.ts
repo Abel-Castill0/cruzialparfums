@@ -74,7 +74,18 @@ export async function submitComplaintEntry(
   businessUnitCode: "parfums" | "import",
   requestId: string,
   input: ComplaintFormInput,
-): Promise<{ ok: true; data: ComplaintConsumerReceipt } | { ok: false; error: SubmitComplaintError }> {
+): Promise<{ ok: true; data: ComplaintConsumerReceipt; created: boolean } | { ok: false; error: SubmitComplaintError }> {
+  // Whether this attempt was already registered, so a replay is reported as
+  // "already registered" and never passed off as a new complaint. Existence
+  // only (no row data); the RPC stays the idempotency authority.
+  const prior = await client
+    .from("complaint_book_entries")
+    .select("id, business_units!inner(code)")
+    .eq("request_id", requestId)
+    .eq("business_units.code", businessUnitCode)
+    .limit(1);
+  if (prior.error) return { ok: false, error: { type: "unknown", message: prior.error.message } };
+  const created = (prior.data ?? []).length === 0;
   const { data, error } = await client.rpc("public_submit_complaint_entry", {
     p_business_unit_code: businessUnitCode,
     p_request_id: requestId,
@@ -99,7 +110,7 @@ export async function submitComplaintEntry(
   }
   // Public path: only the consumer-safe allowlisted receipt ever leaves here,
   // never the full row/ComplaintEntry (admin notes, resolver, internal state).
-  return { ok: true, data: toComplaintConsumerReceipt(data as ComplaintRow, businessUnitCode) };
+  return { ok: true, data: toComplaintConsumerReceipt(data as ComplaintRow, businessUnitCode), created };
 }
 
 export type ComplaintListPage = {

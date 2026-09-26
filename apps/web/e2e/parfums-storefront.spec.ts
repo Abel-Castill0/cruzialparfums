@@ -1,12 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
-import { LOCAL_DB_AVAILABLE, orderSideEffects, provisionQaParfumsUnit } from "./local-db";
+import { LOCAL_DB_AVAILABLE, orderSideEffects, provisionQaParfumsUnit, testCustomerPhone } from "./local-db";
 
 const ORDER_NUMBER = /CRP-\d{8}-[A-F0-9]{12}/;
-
-function uniquePhone() {
-  // 9 + 5 time digits + 3 random digits: unique across parallel projects.
-  return `9${String(Date.now()).slice(-5)}${String(Math.floor(Math.random() * 1_000)).padStart(3, "0")}`;
-}
 
 async function checkoutWithQaProduct(page: Page, phone: string) {
   // Self-provisioning: this test adds exactly the tracked unit it reserves,
@@ -130,7 +125,7 @@ test.describe("parfums storefront", () => {
     // since availability is enforced at persistence, an arbitrary catalog
     // card is not a reliable pick for a test that must always succeed.
     // Unique per test: the phone identity is rate limited (5 requests / hour).
-    await checkoutWithQaProduct(page, uniquePhone());
+    await checkoutWithQaProduct(page, testCustomerPhone(test.info()));
     await page.locator("[data-checkout-submit]").click();
 
     await expect(page).toHaveURL(/\/parfums\/gracias\/CRP-\d{8}-[A-F0-9]{12}$/, { timeout: 15_000 });
@@ -143,7 +138,7 @@ test.describe("parfums storefront", () => {
 
   test("lost response, reload, retry: the same browser gets the original order back, never a duplicate", async ({ page }) => {
     test.skip(process.env.E2E_ALLOW_ORDER_SUBMIT !== "1" || !LOCAL_DB_AVAILABLE, "needs the disposable local stack");
-    const phone = uniquePhone();
+    const phone = testCustomerPhone(test.info());
     await checkoutWithQaProduct(page, phone);
 
     // Let the server COMMIT the order, then drop its response on the floor —
@@ -172,13 +167,20 @@ test.describe("parfums storefront", () => {
     await fillCheckoutForm(page, phone);
     await page.locator("[data-checkout-submit]").click();
 
+    // The retry resolves the unknown outcome truthfully: the ORIGINAL order,
+    // explicitly labelled as already registered — never a new purchase.
+    const held = page.locator('[data-attempt-held="replayed"]');
+    await expect(held).toContainText(committed!);
+    await expect(held).toContainText(/No se creó una solicitud nueva/);
+    expect(orderSideEffects(phone)).toEqual({ orders: 1, outbox: 1, reservations: 1 });
+    await held.locator("[data-attempt-view]").click();
     await expect(page).toHaveURL(new RegExp(`/parfums/gracias/${committed}$`), { timeout: 15_000 });
     expect(orderSideEffects(phone)).toEqual({ orders: 1, outbox: 1, reservations: 1 });
   });
 
   test("a browser that cannot keep the attempt cookie fails closed before any order exists", async ({ page }) => {
     test.skip(process.env.E2E_ALLOW_ORDER_SUBMIT !== "1" || !LOCAL_DB_AVAILABLE, "needs the disposable local stack");
-    const phone = uniquePhone();
+    const phone = testCustomerPhone(test.info());
     await checkoutWithQaProduct(page, phone);
 
     // Simulates a browser that refuses cookies. Deleting the request's Cookie
@@ -187,9 +189,13 @@ test.describe("parfums storefront", () => {
     // cleared and the response is delivered without it, before the client
     // can make its single capability retry.
     await page.context().clearCookies();
+    const postsWithCapability: boolean[] = [];
+    const issued: boolean[] = [];
     await page.route("**/parfums/checkout", async (route) => {
       if (route.request().method() !== "POST") return route.continue();
+      postsWithCapability.push(Boolean((await route.request().headerValue("cookie"))?.includes("cz_attempt_")));
       const response = await route.fetch();
+      issued.push(Boolean(response.headers()["set-cookie"]?.includes("cz_attempt_parfums_order=")));
       await page.context().clearCookies();
       const headers = { ...response.headers() };
       delete headers["set-cookie"];
@@ -199,6 +205,88 @@ test.describe("parfums storefront", () => {
 
     await expect(page.locator("[data-checkout-form-panel] [role=alert]")).toContainText(/Activa las cookies/);
     await expect(page).toHaveURL(/\/parfums\/checkout$/);
-    expect(orderSideEffects(phone).orders).toBe(0);
+    // First attempt issued a capability the browser could not retain; the
+    // single automatic retry still carried none; nothing was persisted.
+    expect(issued).toEqual([true, true]);
+    expect(postsWithCapability).toEqual([false, false]);
+    expect(await page.context().cookies()).toEqual([]);
+    expect(orderSideEffects(phone)).toEqual({ orders: 0, outbox: 0, reservations: 0 });
+  });
+
+  test("an expired capability never mutates on its own; only an explicit new request does", async ({ page, baseURL }) => {
+    test.skip(process.env.E2E_ALLOW_ORDER_SUBMIT !== "1" || !LOCAL_DB_AVAILABLE, "needs the disposable local stack");
+    const phone = testCustomerPhone(test.info());
+    await checkoutWithQaProduct(page, phone);
+    const threeDaysAgo = Math.floor(Date.now() / 1000) - 3 * 24 * 60 * 60;
+    const expired = `v1.${"E".repeat(43)}.${threeDaysAgo}`;
+    // Exactly the cookie the server issues (same name, host and path).
+    await page.context().addCookies([{ name: "cz_attempt_parfums_order", value: expired,
+      domain: new URL(baseURL!).hostname, path: "/parfums/checkout", httpOnly: true, sameSite: "Strict" }]);
+
+    for (let i = 0; i < 2; i++) {
+      await page.locator("[data-checkout-submit]").click();
+      await expect(page.locator("[data-checkout-form-panel] [role=alert]")).toContainText(/venció/);
+    }
+    expect(orderSideEffects(phone)).toEqual({ orders: 0, outbox: 0, reservations: 0 });
+    // The expired capability is kept (not silently replaced by a fresh one).
+    const kept = (await page.context().cookies()).find((cookie) => cookie.name === "cz_attempt_parfums_order");
+    expect(kept?.value).toBe(expired);
+
+    await page.locator("[data-checkout-form-panel] [data-attempt-new]").click();
+    await expect(page).toHaveURL(/\/parfums\/gracias\/CRP-\d{8}-[A-F0-9]{12}$/, { timeout: 15_000 });
+    expect(orderSideEffects(phone)).toEqual({ orders: 1, outbox: 1, reservations: 1 });
+  });
+
+  test("success whose rotation fails (storage blocked) keeps the success state; a later purchase is never a silent replay", async ({ page }) => {
+    test.skip(process.env.E2E_ALLOW_ORDER_SUBMIT !== "1" || !LOCAL_DB_AVAILABLE, "needs the disposable local stack");
+    const phone = testCustomerPhone(test.info());
+    await checkoutWithQaProduct(page, phone);
+    // Browser storage writes are blocked on checkout: correctness must not
+    // depend on them.
+    await page.addInitScript(() => {
+      if (!location.pathname.startsWith("/parfums/checkout")) return;
+      Storage.prototype.setItem = () => { throw new DOMException("blocked", "SecurityError"); };
+    });
+    await page.reload();
+    await fillCheckoutForm(page, phone);
+
+    // Every rotation call (the argument-less server action) fails at the
+    // network layer; order submissions pass.
+    let blockRotation = true;
+    await page.route("**/parfums/checkout", async (route) => {
+      const request = route.request();
+      const isRotation = request.method() === "POST" && request.headers()["next-action"] !== undefined
+        && !(request.postData() ?? "").includes("\"lines\"");
+      if (isRotation && blockRotation) return route.abort("failed");
+      return route.continue();
+    });
+    await page.locator("[data-checkout-submit]").click();
+
+    const rotationFailed = page.locator('[data-attempt-held="rotation_failed"]');
+    await expect(rotationFailed).toContainText(ORDER_NUMBER);
+    const first = (await rotationFailed.textContent())!.match(ORDER_NUMBER)![0];
+    await expect(page).toHaveURL(/\/parfums\/checkout$/);
+    await expect(page.locator("[data-checkout-submit]")).toBeDisabled();
+    expect(orderSideEffects(phone)).toEqual({ orders: 1, outbox: 1, reservations: 1 });
+
+    // Reload while rotation still fails: the old, completed capability is
+    // still in the jar. A new submit is reported as the SAME registered
+    // order — never a second order, never a silent "new" purchase.
+    await page.reload();
+    await expect(page.locator("[data-checkout-total]")).not.toHaveText("S/ 0.00");
+    await fillCheckoutForm(page, phone);
+    await page.locator("[data-checkout-submit]").click();
+    const replayed = page.locator('[data-attempt-held="replayed"]');
+    await expect(replayed).toContainText(first);
+    expect(orderSideEffects(phone)).toEqual({ orders: 1, outbox: 1, reservations: 1 });
+
+    // Explicit new purchase once rotation works again: a different order
+    // under a different attempt identity; the first stays exactly one row.
+    blockRotation = false;
+    provisionQaParfumsUnit();
+    await replayed.locator("[data-attempt-new]").click();
+    await expect(page).toHaveURL(/\/parfums\/gracias\/CRP-\d{8}-[A-F0-9]{12}$/, { timeout: 15_000 });
+    expect(page.url()).not.toContain(first);
+    expect(orderSideEffects(phone)).toEqual({ orders: 2, outbox: 2, reservations: 2 });
   });
 });

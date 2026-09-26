@@ -128,6 +128,31 @@ describe("public complaint replay protection", () => {
     expect(importUnit).not.toBe(parfums);
   });
 
+  it("A1: an expired complaint capability never re-submits silently or reads back the earlier copy", async () => {
+    const expired = mintAttemptToken(Math.floor(Date.now() / 1000) - 2 * 24 * 60 * 60);
+    cookieJar.set(COOKIE, { value: expired });
+    for (let i = 0; i < 2; i++) {
+      const result = await submitComplaintAction("parfums", input);
+      expect(result).toMatchObject({ status: "error", code: "attempt_expired" });
+      expect(result).not.toHaveProperty("receipt");
+    }
+    expect(cookieJar.get(COOKIE)!.value).toBe(expired);
+    expect(submitComplaintEntry).not.toHaveBeenCalled();
+
+    await startNewComplaintAttempt();
+    await submitComplaintAction("parfums", input);
+    expect(submitComplaintEntry).toHaveBeenCalledOnce();
+  });
+
+  it("reports a replay as already registered (created=false), never as a new complaint", async () => {
+    cookieJar.set(COOKIE, { value: mintAttemptToken() });
+    submitComplaintEntry.mockResolvedValueOnce({ ok: true, data: receipt, created: true });
+    submitComplaintEntry.mockResolvedValueOnce({ ok: true, data: receipt, created: false });
+    expect(await submitComplaintAction("parfums", input)).toMatchObject({ status: "success", created: true });
+    expect(await submitComplaintAction("parfums", { ...input, detail: "Otro detalle" }))
+      .toEqual({ status: "success", receipt, created: false });
+  });
+
   it("registering another complaint rotates the attempt", async () => {
     cookieJar.set(COOKIE, { value: mintAttemptToken() });
     await submitComplaintAction("parfums", input);

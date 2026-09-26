@@ -34,7 +34,13 @@ import { createHash, randomBytes } from "node:crypto";
  */
 
 export const ATTEMPT_TOKEN_VERSION = "v1";
+/** Replay authority: how long a capability may have its request's receipt
+ * replayed. Past this the capability authorizes nothing (no replay, no PII). */
 export const ATTEMPT_TTL_SECONDS = 24 * 60 * 60;
+/** How long the browser keeps the cookie. Longer than the TTL on purpose, so
+ * an expired capability is still presented and recognised as EXPIRED (fail
+ * closed, explicit new request) rather than vanishing into "first visit". */
+export const ATTEMPT_COOKIE_MAX_AGE_SECONDS = ATTEMPT_TTL_SECONDS + 30 * 24 * 60 * 60;
 const CLOCK_SKEW_SECONDS = 5 * 60;
 const NONCE_BYTES = 32;
 const TOKEN_PATTERN = /^v1\.([A-Za-z0-9_-]{43})\.(\d{1,12})$/;

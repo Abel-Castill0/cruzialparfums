@@ -277,9 +277,10 @@ describe("createParfumsOrderRequest — anonymous attempt capability", () => {
     expect(browserB).not.toBe(browserA);
   });
 
-  it("rejects a malformed/forged capability and never replays through a tampered one", async () => {
+  it("rejects a malformed/forged capability without re-issuing one, and never replays through a tampered one", async () => {
     cookieJar.set(COOKIE, { value: "v1.not-a-real-nonce.1" });
-    expect(await createParfumsOrderRequest({} as never)).toMatchObject({ code: "attempt_required" });
+    expect(await createParfumsOrderRequest({} as never)).toMatchObject({ code: "attempt_expired" });
+    expect(cookieJar.get(COOKIE)!.value).toBe("v1.not-a-real-nonce.1");
     expect(repositoryCreate).not.toHaveBeenCalled();
 
     const original = mintAttemptToken();
@@ -294,12 +295,58 @@ describe("createParfumsOrderRequest — anonymous attempt capability", () => {
     expect(tamperedId).not.toBe(originalId);
   });
 
-  it("treats an expired capability as absent", async () => {
-    const twoDaysAgo = Math.floor(Date.now() / 1000) - 2 * 24 * 60 * 60;
-    cookieJar.set(COOKIE, { value: mintAttemptToken(twoDaysAgo) });
+  it("A3: neither the capability nor its derived request id is ever serialized back to the browser", async () => {
+    const token = mintAttemptToken();
+    cookieJar.set(COOKIE, { value: token });
+    const success = JSON.stringify(await createParfumsOrderRequest({} as never));
+    const nonce = token.split(".")[1]!;
+    expect(success).not.toContain(nonce);
+    expect(success).not.toContain(derivedIds()[0]!);
+    cookieJar.set(COOKIE, { value: mintAttemptToken(Math.floor(Date.now() / 1000) - 3 * 24 * 60 * 60) });
+    expect(JSON.stringify(await createParfumsOrderRequest({} as never))).not.toMatch(/v1\.|[A-Za-z0-9_-]{43}/);
+  });
 
-    expect(await createParfumsOrderRequest({} as never)).toMatchObject({ code: "attempt_required" });
+  it("a future-dated capability fails closed like a malformed one", async () => {
+    cookieJar.set(COOKIE, { value: mintAttemptToken(Math.floor(Date.now() / 1000) + 3600) });
+    expect(await createParfumsOrderRequest({} as never)).toMatchObject({ code: "attempt_expired" });
     expect(repositoryCreate).not.toHaveBeenCalled();
+  });
+
+  it("A1: committed order + lost response + capability expired: retries never mutate; only an explicit new request does", async () => {
+    const twoDaysAgo = Math.floor(Date.now() / 1000) - 2 * 24 * 60 * 60;
+    const expired = mintAttemptToken(twoDaysAgo);
+    cookieJar.set(COOKIE, { value: expired });
+
+    // The automatic retry path (and any number of repeats) fails closed and
+    // leaves the old capability in place — no fresh one is silently minted.
+    for (let i = 0; i < 3; i++) {
+      const result = await createParfumsOrderRequest({} as never);
+      expect(result).toMatchObject({ status: "error", code: "attempt_expired" });
+      expect(result).not.toHaveProperty("orderNumber");
+      expect(result).not.toHaveProperty("whatsappUrl");
+    }
+    expect(cookieJar.get(COOKIE)!.value).toBe(expired);
+    expect(repositoryCreate).not.toHaveBeenCalled();
+    expect(checkOrderRequestRateLimit).not.toHaveBeenCalled();
+    // An expired capability never reads back persisted customer data.
+    expect(getPersistedParfumsOrderSummary).not.toHaveBeenCalled();
+
+    // Explicit "register as a new request" is the only way forward, and it
+    // addresses a different request identity than the expired attempt.
+    await startNewParfumsCheckoutAttempt();
+    expect(cookieJar.get(COOKIE)!.value).not.toBe(expired);
+    await createParfumsOrderRequest({} as never);
+    expect(repositoryCreate).toHaveBeenCalledOnce();
+    const [, nonce, issuedAt] = expired.split(".");
+    const { deriveAttemptRequestId } = await import("@/lib/security/attempt-token");
+    expect(derivedIds()[0]).not.toBe(deriveAttemptRequestId("parfums-order", "parfums", { nonce: nonce!, issuedAt: Number(issuedAt) }));
+  });
+
+  it("keeps the cookie past the replay TTL so expiry is detected instead of looking like a first visit", async () => {
+    cookieJar.clear();
+    await createParfumsOrderRequest({} as never);
+    const { ATTEMPT_TTL_SECONDS } = await import("@/lib/security/attempt-token");
+    expect(Number(cookieJar.get(COOKIE)!.options!.maxAge)).toBeGreaterThan(ATTEMPT_TTL_SECONDS);
   });
 
   it("an explicit new purchase rotates the attempt to a fresh id", async () => {

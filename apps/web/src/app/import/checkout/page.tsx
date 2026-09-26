@@ -8,18 +8,23 @@ import { createImportOrderRequest, startNewImportCheckoutAttempt } from "@/app/i
 import type { CreateImportOrderResult } from "@/app/import/checkout/actions";
 import { getCurrentImportCampaignState } from "@/app/import/carrito/actions";
 import type { ImportCartCampaignState } from "@/domains/carts/import-cart";
-import {
-  recoverPendingAttemptRotation,
-  rotateAttemptAfterSuccess,
-  submitWithAttemptCapability,
-} from "@/lib/attempt-client";
+import { ATTEMPT_EXPIRED, startNewAttempt, submitWithAttemptCapability } from "@/lib/attempt-client";
 import styles from "./page.module.css";
 
 type CheckoutFormState =
   | { phase: "form" }
   | { phase: "submitting" }
   | { phase: "success"; data: NonNullable<CreateImportOrderResult & { status: "success" }> }
-  | { phase: "error"; message: string };
+  | { phase: "error"; message: string; code?: string };
+
+type ImportOrderSuccess = CreateImportOrderResult & { status: "success" };
+/** A registered order still to be acknowledged before a new purchase:
+ * "replayed" = registered EARLIER under this attempt (nothing new created);
+ * "rotation_failed" = created and received, fresh attempt not yet confirmed. */
+type HeldOrder = { kind: "replayed" | "rotation_failed"; order: ImportOrderSuccess };
+
+const NEW_ATTEMPT_FAILED_MESSAGE =
+  "No pudimos iniciar una nueva solicitud. Revisa tu conexión e inténtalo de nuevo; no registramos nada nuevo.";
 
 function getStoredSuccess(): CreateImportOrderResult & { status: "success" } | null {
   try {
@@ -79,7 +84,6 @@ export default function ImportCheckoutPage() {
   // success (a UX convenience only) is restored after hydration.
   const [formState, setFormState] = useState<CheckoutFormState>({ phase: "form" });
   useEffect(() => {
-    recoverPendingAttemptRotation("import-order", startNewImportCheckoutAttempt);
     let active = true;
     void Promise.resolve().then(() => {
       const saved = getStoredSuccess();
@@ -90,11 +94,20 @@ export default function ImportCheckoutPage() {
     };
   }, []);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [held, setHeld] = useState<HeldOrder | null>(null);
+  const [attemptBusy, setAttemptBusy] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
+  const heldRef = useRef<HTMLDivElement>(null);
   const displaySubtotal = useMemo(
     () => lines.reduce((sum, l) => sum + parseFloat(l.price) * l.quantity, 0),
     [lines],
   );
+
+  const completeWith = useCallback((order: ImportOrderSuccess) => {
+    storeSuccess(order);
+    clear();
+    setFormState({ phase: "success", data: order });
+  }, [clear]);
 
   const handleSubmit = useCallback(
     async (e: React.FormEvent<HTMLFormElement>) => {
@@ -140,15 +153,27 @@ export default function ImportCheckoutPage() {
         const result = await submitWithAttemptCapability(() => createImportOrderRequest(submission));
 
         if (result.status === "error") {
-          setFormState({ phase: "error", message: result.message });
+          setFormState({ phase: "error", message: result.message, ...(result.code ? { code: result.code } : {}) });
           if (result.fieldErrors) setFieldErrors(result.fieldErrors);
           return;
         }
 
-        storeSuccess(result);
-        await rotateAttemptAfterSuccess("import-order", startNewImportCheckoutAttempt);
-        clear();
-        setFormState({ phase: "success", data: result });
+        if (!result.created) {
+          // An order registered EARLIER under this attempt came back: never
+          // present it as a new purchase and never clear this cart for it.
+          setFormState({ phase: "form" });
+          setHeld({ kind: "replayed", order: result });
+          requestAnimationFrame(() => heldRef.current?.focus());
+          return;
+        }
+        // Only a server-confirmed rotation lets the UI leave this success.
+        if (await startNewAttempt(startNewImportCheckoutAttempt)) {
+          completeWith(result);
+          return;
+        }
+        setFormState({ phase: "form" });
+        setHeld({ kind: "rotation_failed", order: result });
+        requestAnimationFrame(() => heldRef.current?.focus());
       } catch {
         setFormState({
           phase: "error",
@@ -156,8 +181,35 @@ export default function ImportCheckoutPage() {
         });
       }
     },
-    [lines, clear, checkoutUsable],
+    [lines, checkoutUsable, completeWith],
   );
+
+  /** Explicit "register as a new request": the only path from an expired or
+   * already-used attempt to a new mutation, after a confirmed rotation. */
+  async function registerAsNewRequest() {
+    setAttemptBusy(true);
+    const rotated = await startNewAttempt(startNewImportCheckoutAttempt);
+    setAttemptBusy(false);
+    if (!rotated) {
+      setFormState({ phase: "error", message: NEW_ATTEMPT_FAILED_MESSAGE });
+      return;
+    }
+    setHeld(null);
+    setFormState({ phase: "form" });
+    formRef.current?.requestSubmit();
+  }
+
+  async function acknowledgeHeld(order: ImportOrderSuccess, requireRotation: boolean) {
+    setAttemptBusy(true);
+    const rotated = await startNewAttempt(startNewImportCheckoutAttempt);
+    setAttemptBusy(false);
+    if (requireRotation && !rotated) {
+      setFormState({ phase: "error", message: NEW_ATTEMPT_FAILED_MESSAGE });
+      return;
+    }
+    setHeld(null);
+    completeWith(order);
+  }
 
   if (formState.phase === "success") {
     const d = formState.data;
@@ -284,6 +336,39 @@ export default function ImportCheckoutPage() {
         {formState.phase === "error" && (
           <div className={styles.errorBanner} role="alert" aria-live="assertive">
             <p>{formState.message}</p>
+            {formState.code === ATTEMPT_EXPIRED && (
+              <button type="button" data-attempt-new onClick={registerAsNewRequest} disabled={attemptBusy}
+                className={styles.secondaryAction}>
+                Registrar como nueva solicitud
+              </button>
+            )}
+          </div>
+        )}
+
+        {held && (
+          <div ref={heldRef} className={styles.errorBanner} data-attempt-held={held.kind} tabIndex={-1}
+            role={held.kind === "rotation_failed" ? "alert" : "status"}>
+            {held.kind === "replayed" ? (
+              <>
+                <p><strong>Esta solicitud ya estaba registrada: {held.order.orderNumber}.</strong> No se creó una solicitud nueva. Puedes ver la solicitud registrada o, si quieres hacer otra compra, registrarla como nueva.</p>
+                <button type="button" data-attempt-view onClick={() => acknowledgeHeld(held.order, false)}
+                  disabled={attemptBusy} className={styles.secondaryAction}>
+                  Ver solicitud registrada
+                </button>
+                <button type="button" data-attempt-new onClick={registerAsNewRequest} disabled={attemptBusy}
+                  className={styles.secondaryAction}>
+                  Registrar como nueva solicitud
+                </button>
+              </>
+            ) : (
+              <>
+                <p><strong>Tu solicitud {held.order.orderNumber} quedó registrada.</strong> No pudimos preparar tu próxima compra. Reintenta para continuar; no se registrará nada nuevo.</p>
+                <button type="button" data-attempt-retry onClick={() => acknowledgeHeld(held.order, true)}
+                  disabled={attemptBusy} className={styles.secondaryAction}>
+                  Reintentar y continuar
+                </button>
+              </>
+            )}
           </div>
         )}
 
@@ -384,7 +469,7 @@ export default function ImportCheckoutPage() {
           <div className={styles.formActions}>
             <button
               type="submit"
-              disabled={formState.phase === "submitting" || !checkoutUsable}
+              disabled={formState.phase === "submitting" || !checkoutUsable || held !== null || attemptBusy}
               className={styles.primaryAction}
             >
               {formState.phase === "submitting"

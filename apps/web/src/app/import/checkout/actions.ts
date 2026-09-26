@@ -12,7 +12,7 @@ import {
   type PersistedImportOrderSummary,
 } from "@/domains/orders/import-persisted-summary";
 import { readImportPublicContact } from "@/domains/import/import-public-contact";
-import { ATTEMPT_REQUIRED_CODE, resolveAttempt, rotateAttempt } from "@/lib/security/attempt-capability";
+import { ATTEMPT_EXPIRED_CODE, ATTEMPT_REQUIRED_CODE, resolveAttempt, rotateAttempt } from "@/lib/security/attempt-capability";
 import { checkOrderRequestRateLimit } from "@/lib/security/order-abuse";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
 
@@ -20,6 +20,8 @@ const RATE_LIMITED_MESSAGE =
   "Recibimos varias solicitudes en poco tiempo. Espera unos minutos antes de intentarlo de nuevo.";
 const ATTEMPT_REQUIRED_MESSAGE =
   "Tu navegador no conservó la sesión de compra segura. Activa las cookies para este sitio y vuelve a intentarlo; no registramos ninguna solicitud.";
+const ATTEMPT_EXPIRED_MESSAGE =
+  "Por seguridad, tu sesión de compra anterior venció. Si ya habías enviado esta solicitud, puede que ya esté registrada: revisa tu WhatsApp antes de continuar. No registramos nada nuevo.";
 const ORDER_SERVICE_UNAVAILABLE_MESSAGE =
   "No pudimos procesar tu solicitud en este momento. Tu carrito se conserva.";
 
@@ -27,7 +29,7 @@ export type CreateImportOrderResult =
   | ({ status: "error" } & Pick<
       ImportOrderValidationError,
       "message" | "fieldErrors"
-    > & { code?: "rate_limited" | typeof ATTEMPT_REQUIRED_CODE; retryAfterSeconds?: number })
+    > & { code?: "rate_limited" | typeof ATTEMPT_REQUIRED_CODE | typeof ATTEMPT_EXPIRED_CODE; retryAfterSeconds?: number })
   | {
       status: "success";
       orderNumber: string;
@@ -107,7 +109,9 @@ export async function createImportOrderRequest(
 ): Promise<CreateImportOrderResult> {
   const attempt = await resolveAttempt("import-order", "import");
   if (!attempt.ok) {
-    return { status: "error", code: ATTEMPT_REQUIRED_CODE, message: ATTEMPT_REQUIRED_MESSAGE };
+    return attempt.code === ATTEMPT_EXPIRED_CODE
+      ? { status: "error", code: ATTEMPT_EXPIRED_CODE, message: ATTEMPT_EXPIRED_MESSAGE }
+      : { status: "error", code: ATTEMPT_REQUIRED_CODE, message: ATTEMPT_REQUIRED_MESSAGE };
   }
   // Any client-supplied requestId is overwritten: only the capability holder
   // can reproduce this id, so only they can have an existing order replayed.
@@ -205,8 +209,8 @@ export async function createImportOrderRequest(
   };
 }
 
-/** Starts a fresh attempt for the next request. The client calls this only
- * after it has actually received a resolved success. */
+/** Starts a fresh attempt: only after the client acknowledged a success, or
+ * when the customer explicitly chose to register a NEW request. */
 export async function startNewImportCheckoutAttempt(): Promise<void> {
   await rotateAttempt("import-order");
 }

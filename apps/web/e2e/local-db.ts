@@ -1,6 +1,7 @@
 import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
+import type { TestInfo } from "@playwright/test";
 
 /**
  * Direct SQL against the DISPOSABLE local Supabase stack only — used to make
@@ -43,14 +44,43 @@ export function provisionQaParfumsUnit() {
   );
 }
 
-/** Persistence side effects for one synthetic customer phone (unique per test). */
+/**
+ * Deterministic, collision-free synthetic customer identity for one test:
+ * run tag (set once by playwright.config for the whole run) + Playwright
+ * worker index (unique per worker process within a run, including retry
+ * workers) + a per-worker sequence. No clock-or-random guess per call, so
+ * parallel desktop/mobile workers and retries can never share an identity,
+ * and each test's persistence assertions see only its own rows. 13 digits:
+ * valid for the order form, never a deliverable Peru mobile, so the outbox
+ * row is created but blocked (no real message can be sent).
+ */
+let identitySequence = 0;
+export function testCustomerPhone(testInfo: TestInfo): string {
+  const runTag = (process.env.E2E_RUN_TAG ?? "000000").padStart(6, "0").slice(-6);
+  identitySequence += 1;
+  return `9${runTag}${String(testInfo.workerIndex % 1000).padStart(3, "0")}${String(identitySequence % 1000).padStart(3, "0")}`;
+}
+
+/** Persistence side effects for exactly one synthetic customer phone. */
 export function orderSideEffects(phone: string) {
   if (!/^\d{9,15}$/.test(phone)) throw new Error("phone must be digits only");
   const row = localSql(`
-    with o as (select id from public.orders where customer_snapshot->>'phone' like '%${phone}')
+    with o as (select id from public.orders
+                where regexp_replace(customer_snapshot->>'phone', '[^0-9]', '', 'g') = '${phone}')
     select (select count(*) from o),
            (select count(*) from public.notification_outbox n where n.entity_id in (select id from o)),
            (select count(*) from public.inventory_reservations r where r.order_id in (select id from o));`);
   const [orders, outbox, reservations] = row.split("|").map(Number);
   return { orders, outbox, reservations };
+}
+
+/** Libro de Reclamaciones rows (and their outbox jobs) for one synthetic phone. */
+export function complaintSideEffects(phone: string) {
+  if (!/^\d{9,15}$/.test(phone)) throw new Error("phone must be digits only");
+  const row = localSql(`
+    with c as (select id from public.complaint_book_entries where phone = '${phone}')
+    select (select count(*) from c),
+           (select count(*) from public.notification_outbox n where n.entity_id in (select id from c));`);
+  const [complaints, outbox] = row.split("|").map(Number);
+  return { complaints, outbox };
 }

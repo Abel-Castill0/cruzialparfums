@@ -1,15 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { startNewComplaintAttempt, submitComplaintAction, type SubmitComplaintResult } from "./actions";
 import { COMPLAINT_DETAIL_MAX_LENGTH, COMPLAINT_REQUEST_MAX_LENGTH } from "@/domains/complaints/complaint-schema";
 import type { BusinessLegalIdentity } from "@/domains/complaints/business-legal-identity";
 import type { ComplaintConsumerReceipt } from "@/domains/complaints/complaint-receipt";
-import {
-  recoverPendingAttemptRotation,
-  rotateAttemptAfterSuccess,
-  submitWithAttemptCapability,
-} from "@/lib/attempt-client";
+import { ATTEMPT_EXPIRED, startNewAttempt, submitWithAttemptCapability } from "@/lib/attempt-client";
 import styles from "./page.module.css";
 
 const DOCUMENT_TYPE_LABEL: Record<ComplaintConsumerReceipt["documentType"], string> = {
@@ -26,7 +22,15 @@ type FormState =
   | { phase: "form" }
   | { phase: "submitting" }
   | { phase: "success"; receipt: ComplaintConsumerReceipt }
-  | { phase: "error"; message: string };
+  | { phase: "error"; message: string; code?: string }
+  // A registered complaint still to be acknowledged, with the form (and what
+  // the consumer typed) kept mounted: "replayed" = registered EARLIER under
+  // this attempt, nothing new was created; "rotation_failed" = created and
+  // received, but the fresh attempt for a next complaint is not confirmed.
+  | { phase: "held"; kind: "replayed" | "rotation_failed"; receipt: ComplaintConsumerReceipt; note?: string };
+
+const NEW_ATTEMPT_FAILED_MESSAGE =
+  "No pudimos iniciar una nueva solicitud. Revisa tu conexión e inténtalo de nuevo; no registramos nada nuevo.";
 
 export function ComplaintForm({
   initialUnit = "parfums",
@@ -40,9 +44,7 @@ export function ComplaintForm({
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [isMinor, setIsMinor] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
-  useEffect(() => {
-    recoverPendingAttemptRotation("complaint", startNewComplaintAttempt);
-  }, []);
+  const [attemptBusy, setAttemptBusy] = useState(false);
 
   const handleSubmit = useCallback(
     async (event: React.FormEvent<HTMLFormElement>) => {
@@ -62,17 +64,50 @@ export function ComplaintForm({
       }
 
       if (result.status === "error") {
-        setState({ phase: "error", message: result.message });
+        setState({ phase: "error", message: result.message, ...(result.code ? { code: result.code } : {}) });
         if (result.fieldErrors) setFieldErrors(result.fieldErrors);
         return;
       }
 
-      // Received: any later submission is a new complaint, not a replay.
-      await rotateAttemptAfterSuccess("complaint", startNewComplaintAttempt);
-      setState({ phase: "success", receipt: result.receipt });
+      if (!result.created) {
+        // Registered EARLIER under this attempt: never shown as a new one.
+        setState({ phase: "held", kind: "replayed", receipt: result.receipt });
+        return;
+      }
+      // Received: a later submission must be a new complaint, not a replay.
+      // Only a server-confirmed rotation leaves this state.
+      if (await startNewAttempt(startNewComplaintAttempt)) setState({ phase: "success", receipt: result.receipt });
+      else setState({ phase: "held", kind: "rotation_failed", receipt: result.receipt });
     },
     [businessUnit],
   );
+
+  /** Explicit "register as a new complaint": the only path from an expired
+   * or already-used attempt to a new mutation, after a confirmed rotation. */
+  async function registerAsNewRequest() {
+    setAttemptBusy(true);
+    const rotated = await startNewAttempt(startNewComplaintAttempt);
+    setAttemptBusy(false);
+    if (!rotated) {
+      setState((current) => current.phase === "held"
+        ? { ...current, note: NEW_ATTEMPT_FAILED_MESSAGE }
+        : { phase: "error", message: NEW_ATTEMPT_FAILED_MESSAGE });
+      return;
+    }
+    setState({ phase: "form" });
+    formRef.current?.requestSubmit();
+  }
+
+  async function acknowledgeHeld(receipt: ComplaintConsumerReceipt, requireRotation: boolean) {
+    setAttemptBusy(true);
+    const rotated = await startNewAttempt(startNewComplaintAttempt);
+    setAttemptBusy(false);
+    if (requireRotation && !rotated) {
+      setState((current) => current.phase === "held" ? { ...current, note: NEW_ATTEMPT_FAILED_MESSAGE } : current);
+      return;
+    }
+    setState({ phase: "success", receipt });
+  }
 
   if (state.phase === "success") {
     const entry = state.receipt;
@@ -135,7 +170,42 @@ export function ComplaintForm({
   return (
     <form ref={formRef} onSubmit={handleSubmit} noValidate className={styles.form}>
       {state.phase === "error" ? (
-        <p className={styles.errorBanner} role="alert">{state.message}</p>
+        <div className={styles.errorBanner} role="alert">
+          <p>{state.message}</p>
+          {state.code === ATTEMPT_EXPIRED ? (
+            <button type="button" className={styles.secondaryAction} data-attempt-new
+              onClick={registerAsNewRequest} disabled={attemptBusy}>
+              Registrar como nueva solicitud
+            </button>
+          ) : null}
+        </div>
+      ) : null}
+      {state.phase === "held" ? (
+        <div className={styles.errorBanner} data-attempt-held={state.kind}
+          role={state.kind === "rotation_failed" ? "alert" : "status"}>
+          {state.kind === "replayed" ? (
+            <>
+              <p><strong>Esta solicitud ya estaba registrada (referencia {state.receipt.reference}).</strong> No se registró una solicitud nueva. Puedes ver la copia de la solicitud registrada o, si quieres presentar otra, registrarla como nueva.</p>
+              <button type="button" className={styles.secondaryAction} data-attempt-view
+                onClick={() => acknowledgeHeld(state.receipt, false)} disabled={attemptBusy}>
+                Ver copia de la solicitud registrada
+              </button>
+              <button type="button" className={styles.secondaryAction} data-attempt-new
+                onClick={registerAsNewRequest} disabled={attemptBusy}>
+                Registrar como nueva solicitud
+              </button>
+            </>
+          ) : (
+            <>
+              <p><strong>Tu solicitud quedó registrada (referencia {state.receipt.reference}).</strong> No pudimos preparar el formulario para una próxima solicitud. Reintenta para ver tu copia; no se registrará nada nuevo.</p>
+              <button type="button" className={styles.secondaryAction} data-attempt-retry
+                onClick={() => acknowledgeHeld(state.receipt, true)} disabled={attemptBusy}>
+                Reintentar y ver mi copia
+              </button>
+            </>
+          )}
+          {state.note ? <p role="alert">{state.note}</p> : null}
+        </div>
       ) : null}
 
       <fieldset className={styles.fieldset}>
@@ -281,7 +351,7 @@ export function ComplaintForm({
         </label>
       </fieldset>
 
-      <button type="submit" className={styles.primaryAction} disabled={state.phase === "submitting"}>
+      <button type="submit" className={styles.primaryAction} disabled={state.phase === "submitting" || state.phase === "held" || attemptBusy}>
         {state.phase === "submitting" ? "Enviando…" : "Registrar solicitud"}
       </button>
     </form>

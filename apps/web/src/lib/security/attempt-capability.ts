@@ -1,7 +1,7 @@
 import "server-only";
 import { cookies, headers } from "next/headers";
 import {
-  ATTEMPT_TTL_SECONDS,
+  ATTEMPT_COOKIE_MAX_AGE_SECONDS,
   deriveAttemptRequestId,
   mintAttemptToken,
   parseAttemptToken,
@@ -21,10 +21,12 @@ const FLOW_COOKIE: Record<AttemptFlow, { name: string; path: string }> = {
 };
 
 export const ATTEMPT_REQUIRED_CODE = "attempt_required" as const;
+export const ATTEMPT_EXPIRED_CODE = "attempt_expired" as const;
 
 export type ResolvedAttempt =
   | { ok: true; requestId: string }
-  | { ok: false; code: typeof ATTEMPT_REQUIRED_CODE; reason: "missing" | "malformed" | "expired" };
+  | { ok: false; code: typeof ATTEMPT_REQUIRED_CODE }
+  | { ok: false; code: typeof ATTEMPT_EXPIRED_CODE };
 
 async function isHttpsRequest() {
   if (process.env.VERCEL === "1") return true;
@@ -32,35 +34,45 @@ async function isHttpsRequest() {
   return proto?.split(",")[0]?.trim() === "https";
 }
 
-async function writeAttemptCookie(flow: AttemptFlow, value: string, maxAge: number) {
+async function writeAttemptCookie(flow: AttemptFlow, value: string) {
   const { name, path } = FLOW_COOKIE[flow];
   (await cookies()).set(name, value, {
     httpOnly: true,
     secure: await isHttpsRequest(),
     sameSite: "strict",
     path,
-    maxAge,
+    maxAge: ATTEMPT_COOKIE_MAX_AGE_SECONDS,
   });
 }
 
 /**
  * Returns the server-derived request_id for this browser's current attempt.
- * With no usable capability it issues a fresh one and returns
- * `attempt_required` WITHOUT touching persistence: the caller must stop, and
- * the client may retry exactly once. A browser that cannot keep the cookie
- * therefore never reaches the create RPC — it fails closed instead of
- * creating orders in a mode where a lost response cannot be replayed.
+ * Nothing here ever touches persistence; on failure the caller must stop.
+ *
+ *  - no cookie at all (first contact): a fresh capability is issued and
+ *    `attempt_required` returned; the client retries exactly once. A browser
+ *    that cannot keep the cookie fails the retry the same way and never
+ *    reaches the create RPC.
+ *  - an expired or malformed cookie: `attempt_expired`, and the cookie is
+ *    deliberately NOT replaced. That capability may belong to a request that
+ *    committed while its response was lost; silently minting a new one would
+ *    let an automatic retry turn that unknown outcome into a second order or
+ *    complaint. Only the explicit "new request" action (rotateAttempt) moves
+ *    this browser to a new attempt. The cookie outlives the replay TTL
+ *    (ATTEMPT_COOKIE_MAX_AGE_SECONDS) precisely so expiry is observable here
+ *    instead of degrading into "no cookie".
  */
 export async function resolveAttempt(flow: AttemptFlow, scope: string): Promise<ResolvedAttempt> {
   const parsed = parseAttemptToken((await cookies()).get(FLOW_COOKIE[flow].name)?.value);
   if (parsed.ok) return { ok: true, requestId: deriveAttemptRequestId(flow, scope, parsed) };
-  await writeAttemptCookie(flow, mintAttemptToken(), ATTEMPT_TTL_SECONDS);
-  return { ok: false, code: ATTEMPT_REQUIRED_CODE, reason: parsed.reason };
+  if (parsed.reason !== "missing") return { ok: false, code: ATTEMPT_EXPIRED_CODE };
+  await writeAttemptCookie(flow, mintAttemptToken());
+  return { ok: false, code: ATTEMPT_REQUIRED_CODE };
 }
 
 /** Explicit "new purchase / new complaint": the next submit starts a fresh
- * attempt. Called only after the client has received a resolved success, so
- * a lost response keeps the old capability and replays instead. */
+ * attempt. The client calls it only after it acknowledged a success, or when
+ * the customer explicitly chose to register a NEW request. */
 export async function rotateAttempt(flow: AttemptFlow) {
-  await writeAttemptCookie(flow, mintAttemptToken(), ATTEMPT_TTL_SECONDS);
+  await writeAttemptCookie(flow, mintAttemptToken());
 }
