@@ -8,6 +8,7 @@ import { createImportOrderRequest } from "@/app/import/checkout/actions";
 import type { CreateImportOrderResult } from "@/app/import/checkout/actions";
 import { getCurrentImportCampaignState } from "@/app/import/carrito/actions";
 import type { ImportCartCampaignState } from "@/domains/carts/import-cart";
+import { isSessionStorageAvailable } from "@/lib/browser-storage";
 import styles from "./page.module.css";
 
 type CheckoutFormState =
@@ -57,13 +58,21 @@ function clearStoredRequestId() {
  * response followed by a page reload still recovers the SAME pending
  * attempt id, letting a retry land as an idempotent replay instead of a
  * second order. Only ever rotated by clearStoredRequestId — a resolved
- * success, or the user explicitly starting a new purchase. */
-function getOrCreatePersistedRequestId(): string {
+ * success, or the user explicitly starting a new purchase.
+ *
+ * isDurable is false when sessionStorage cannot actually persist the id
+ * (blocked storage, some privacy modes/webviews) — duplicate prevention
+ * within this same unreloaded tab still works (the id stays stable in
+ * memory), but a reload after a lost response would lose it, so the
+ * caller must warn the customer rather than silently claim a guarantee
+ * that cannot be kept. */
+function getOrCreatePersistedRequestId(): { requestId: string; isDurable: boolean } {
+  if (!isSessionStorageAvailable()) return { requestId: generateUUID(), isDurable: false };
   const existing = getStoredRequestId();
-  if (existing) return existing;
+  if (existing) return { requestId: existing, isDurable: true };
   const fresh = generateUUID();
   setStoredRequestId(fresh);
-  return fresh;
+  return { requestId: fresh, isDurable: true };
 }
 
 function getStoredSuccess(): CreateImportOrderResult & { status: "success" } | null {
@@ -127,7 +136,13 @@ export default function ImportCheckoutPage() {
   });
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const formRef = useRef<HTMLFormElement>(null);
-  const requestIdRef = useRef<string>(getOrCreatePersistedRequestId());
+  const requestIdRef = useRef<string | undefined>(undefined);
+  const [isRequestIdDurable, setIsRequestIdDurable] = useState(true);
+  if (requestIdRef.current === undefined) {
+    const pending = getOrCreatePersistedRequestId();
+    requestIdRef.current = pending.requestId;
+    if (!pending.isDurable) setIsRequestIdDurable(false);
+  }
 
   const displaySubtotal = useMemo(
     () => lines.reduce((sum, l) => sum + parseFloat(l.price) * l.quantity, 0),
@@ -164,7 +179,7 @@ export default function ImportCheckoutPage() {
 
       try {
         const result = await createImportOrderRequest({
-          requestId: requestIdRef.current,
+          requestId: requestIdRef.current!,
           customer: { name, phone: phone.replace(/\D/g, "") },
           delivery: { district, address, ...(note ? { note } : {}) },
           lines: lines.map((l) => ({
@@ -250,7 +265,9 @@ export default function ImportCheckoutPage() {
                 onClick={() => {
                   clearStoredSuccess();
                   clearStoredRequestId();
-                  requestIdRef.current = getOrCreatePersistedRequestId();
+                  const pending = getOrCreatePersistedRequestId();
+                  requestIdRef.current = pending.requestId;
+                  setIsRequestIdDurable(pending.isDurable);
                   setFormState({ phase: "form" });
                 }}
                 className={styles.secondaryAction}
@@ -320,6 +337,16 @@ export default function ImportCheckoutPage() {
         {formState.phase === "error" && (
           <div className={styles.errorBanner} role="alert" aria-live="assertive">
             <p>{formState.message}</p>
+          </div>
+        )}
+
+        {!isRequestIdDurable && (
+          <div className={styles.noticeBanner} role="alert">
+            <p>
+              Tu navegador está bloqueando el almacenamiento que evita solicitudes duplicadas.
+              Si esta página se recarga o pierde conexión justo después de enviar, podrías
+              registrar la solicitud dos veces. Evita recargar hasta ver la confirmación.
+            </p>
           </div>
         )}
 

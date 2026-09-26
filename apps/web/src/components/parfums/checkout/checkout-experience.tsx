@@ -41,12 +41,21 @@ export function CheckoutExperience({
   const [result, setResult] = useState<CreateParfumsOrderResult | null>(null);
   const [isPending, startTransition] = useTransition();
   const requestIdRef = useRef<string | undefined>(undefined);
+  const [isRequestIdDurable, setIsRequestIdDurable] = useState(true);
   if (requestIdRef.current === undefined) {
     // Durable across reload: a lost server response followed by a reload
     // recovers this SAME id, so a retry replays idempotently instead of
     // creating a second order. Never rotated by editing a field or cart
     // line — only by a resolved success (see the submit() success branch).
-    requestIdRef.current = getOrCreatePersistedRequestId();
+    // isDurable is false when sessionStorage cannot actually persist it
+    // (blocked storage, some privacy modes/webviews) — duplicate
+    // prevention within this same unreloaded tab still works (the id
+    // stays stable in memory), but a reload after a lost response would
+    // lose it, so the customer is warned rather than left with a false
+    // guarantee.
+    const pending = getOrCreatePersistedRequestId();
+    requestIdRef.current = pending.requestId;
+    if (!pending.isDurable) setIsRequestIdDurable(false);
   }
   const errorRef = useRef<HTMLDivElement>(null);
 
@@ -165,6 +174,13 @@ export function CheckoutExperience({
             </p>
           </div>
           <form onSubmit={submit} aria-busy={isPending}>
+            {!isRequestIdDurable ? (
+              <p className={styles.storageWarning} role="alert">
+                Tu navegador está bloqueando el almacenamiento que evita solicitudes duplicadas.
+                Si esta página se recarga o pierde conexión justo después de enviar, podrías
+                registrar la solicitud dos veces. Evita recargar hasta ver la confirmación.
+              </p>
+            ) : null}
             {result?.status === "error" ? (
               <div ref={errorRef} className={styles.submitError} role="alert" tabIndex={-1}>
                 <strong>No pudimos registrar la solicitud.</strong>
