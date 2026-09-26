@@ -1592,6 +1592,17 @@ copied from an earlier doc.
   disposable empty project before the migrations were applied. See
   `docs/backup-runbook.md` for the procedure; the backup path itself is
   operator-private and intentionally not recorded in this repo.
+- **Leaked password protection (Supabase advisor, WARN)**: confirmed via
+  Supabase's own docs — "Leaked password protection is available on the Pro
+  Plan and above" — and this org (`tmqmxacqjslrkyrrzgih`) is confirmed on
+  the Free plan (`get_organization` → `"plan":"free"`). Accepted as a
+  documented Free-plan limitation, not a software gap: public signup is
+  already disabled, admin accounts are operator-provisioned only, AAL2/MFA
+  is already mandatory for every admin session, and password minimum
+  length (12) plus complexity (upper/lower/digits/symbols) are already
+  enforced — a reused/leaked password alone cannot authenticate without
+  also clearing MFA. Revisit only if/when the org upgrades to Pro (a
+  business/cost decision, not something to implement around).
 
 ## Current evidence gaps
 
