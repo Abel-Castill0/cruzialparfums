@@ -8,9 +8,11 @@ create extension if not exists dblink with schema extensions;
 
 insert into auth.users(id,instance_id,aud,role,email,encrypted_password,created_at,updated_at)
 values ('50000000-0000-4000-8000-000000000001','00000000-0000-0000-0000-000000000000',
- 'authenticated','authenticated','gate-b-race-admin@example.test','',now(),now());
+ 'authenticated','authenticated','gate-b-race-admin@example.test','',now(),now())
+on conflict (id) do nothing;
 insert into public.admin_memberships(user_id,business_unit_id,role)
-values ('50000000-0000-4000-8000-000000000001','11111111-1111-4111-8111-111111111111','admin');
+select '50000000-0000-4000-8000-000000000001','11111111-1111-4111-8111-111111111111','admin'
+where not exists (select 1 from public.admin_memberships where user_id='50000000-0000-4000-8000-000000000001');
 insert into public.complaint_book_entries(id,business_unit_id,request_id,complaint_type,full_name,
  document_type,document_number,address,phone,email,detail,consumer_request,created_at)
 select '50000000-0000-4000-8000-000000000041','11111111-1111-4111-8111-111111111111',
@@ -93,5 +95,7 @@ select extensions.dblink_disconnect('gate_b_race_worker');
 select extensions.dblink_disconnect('gate_b_race_resolver');
 select * from finish();
 rollback;
+delete from public.notification_outbox where entity_id in
+ ('50000000-0000-4000-8000-000000000041','50000000-0000-4000-8000-000000000042');
 delete from public.complaint_book_entries where id in
  ('50000000-0000-4000-8000-000000000041','50000000-0000-4000-8000-000000000042');
