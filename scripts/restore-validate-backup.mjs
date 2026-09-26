@@ -99,7 +99,11 @@ const SNAPSHOT_OBJECTS = [
   {
     kind: "constraints",
     name: "inventory_tracked_zero_not_available_check",
-    declaration: /^\s*ALTER\s+TABLE(?:\s+ONLY)?\s+(?:"public"|public)\.(?:"inventory"|inventory)\s+ADD\s+CONSTRAINT\s+(?:"inventory_tracked_zero_not_available_check"|inventory_tracked_zero_not_available_check)(?=\s)/im,
+    // pg_dump inlines a CHECK constraint inside CREATE TABLE (only PK/FK/UNIQUE
+    // get a separate ALTER TABLE ... ADD CONSTRAINT); a real Production backup
+    // uses the inline form, so both shapes must be recognized or this falsely
+    // reports the constraint as "not part of this backup snapshot".
+    declaration: /^\s*CONSTRAINT\s+(?:"inventory_tracked_zero_not_available_check"|inventory_tracked_zero_not_available_check)\s+CHECK\b|^\s*ALTER\s+TABLE(?:\s+ONLY)?\s+(?:"public"|public)\.(?:"inventory"|inventory)\s+ADD\s+CONSTRAINT\s+(?:"inventory_tracked_zero_not_available_check"|inventory_tracked_zero_not_available_check)(?=\s)/im,
   },
 ];
 

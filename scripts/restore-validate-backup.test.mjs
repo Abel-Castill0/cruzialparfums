@@ -25,6 +25,15 @@ const gateASchema = [
   'CREATE FUNCTION "public"."check_abuse_rate_limit"(p_purpose text) RETURNS boolean;',
   'ALTER TABLE ONLY "public"."inventory"\n    ADD CONSTRAINT "inventory_tracked_zero_not_available_check" CHECK (true);',
 ].join("\n");
+// The real pg_dump shape: a CHECK constraint inlined inside CREATE TABLE,
+// not a separate ALTER TABLE ... ADD CONSTRAINT (that form is what pg_dump
+// actually emits, confirmed against a real Production backup).
+const inlineCheckSchema = [
+  'CREATE TABLE "public"."inventory" (',
+  '    "variant_id" "uuid" NOT NULL,',
+  '    CONSTRAINT "inventory_tracked_zero_not_available_check" CHECK ((NOT (("inventory_mode" = \'tracked_quantity\'::"text"))))',
+  ');',
+].join("\n");
 
 test("Windows entrypoint URL comparison works with a native Windows path", () => {
   const path = "C:\\Cruzial Tools\\restore-validate-backup.mjs";
@@ -92,6 +101,15 @@ test("declared Gate A objects restored pass validation", () => {
   const result = assessSchemaObjects(gateASchema, observed);
   assert.equal(result.ok, true);
   assert.equal(result.checks.filter((check) => check.status === "present").length, 7);
+});
+
+test("a CHECK constraint inlined in CREATE TABLE is recognized as declared (real pg_dump shape)", () => {
+  assert.equal(
+    declaredSnapshotObjects(inlineCheckSchema).some((object) => object.name === "inventory_tracked_zero_not_available_check"),
+    true,
+  );
+  const result = assessSchemaObjects(inlineCheckSchema, baseline());
+  assert.equal(result.checks.find((check) => check.name === "inventory_tracked_zero_not_available_check").status, "missing");
 });
 
 test("filterRolesSql drops the realtime-admin parameter GRANT", () => {
