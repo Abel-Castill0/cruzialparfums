@@ -5,6 +5,7 @@ import { getAdminSession } from "@/lib/auth/admin-session";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { AdminComplaintsRepository } from "@/domains/complaints/complaint-repository";
 import { COMPLAINT_STATUS_LABELS, COMPLAINT_TYPE_LABELS, isComplaintStatus } from "@/domains/complaints/complaint-schema";
+import { COMPLAINT_URGENCY_LABELS, classifyComplaintUrgency, isComplaintUrgency } from "@/domains/complaints/sla";
 import { ComplaintFilters } from "./complaint-filters";
 import styles from "../productos/page.module.css";
 
@@ -14,7 +15,7 @@ export const metadata: Metadata = { title: "Libro de Reclamaciones — Import" }
 const PAGE_SIZE = 20;
 
 function formatDate(iso: string): string {
-  return new Date(iso).toLocaleString("es-PE", { dateStyle: "medium", timeStyle: "short" });
+  return new Date(iso).toLocaleString("es-PE", { dateStyle: "medium", timeStyle: "short", timeZone: "America/Lima" });
 }
 
 function statusBadgeClass(status: string): string {
@@ -47,10 +48,11 @@ export default async function AdminImportComplaintsPage({
   const params = await searchParams;
   const search = typeof params.q === "string" ? params.q : "";
   const statusParam = typeof params.status === "string" && isComplaintStatus(params.status) ? params.status : undefined;
+  const urgency = isComplaintUrgency(params.urgency) ? params.urgency : undefined;
   const page = Math.max(1, Number(params.page) || 1);
 
   const repository = new AdminComplaintsRepository(supabase, membership.businessUnitId);
-  const listResult = await repository.list({ search, status: statusParam }, { page, pageSize: PAGE_SIZE });
+  const listResult = await repository.list({ search, status: statusParam, urgency }, { page, pageSize: PAGE_SIZE });
 
   if (!listResult.ok) {
     return <div className={styles.page}><main><p className={styles.notice} role="alert">No se pudieron cargar los reclamos. Intenta de nuevo.</p></main></div>;
@@ -69,7 +71,7 @@ export default async function AdminImportComplaintsPage({
       </header>
 
       <main>
-        <ComplaintFilters initial={{ search, status: statusParam ?? "" }} />
+        <ComplaintFilters initial={{ search, status: statusParam ?? "", urgency: urgency ?? "" }} />
 
         {items.length === 0 ? (
           <p className={styles.empty}>No hay reclamos ni quejas que coincidan con esta búsqueda.</p>
@@ -88,6 +90,7 @@ export default async function AdminImportComplaintsPage({
                     </div>
                     <div className={styles.rowStats}>
                       <span>Registrado: {formatDate(entry.createdAt)}</span>
+                      <span>{COMPLAINT_URGENCY_LABELS[classifyComplaintUrgency(entry)]} · Vence: {formatDate(entry.dueAt)}</span>
                     </div>
                   </Link>
                 </li>

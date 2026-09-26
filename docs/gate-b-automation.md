@@ -100,3 +100,10 @@ and [scheduler configuration](https://vercel.com/docs/cron-jobs/quickstart).
 
 Complaint notifications communicate reference/status only. A human remains
 responsible for approving and delivering the legally sufficient written response.
+## Complaint deadlines and human resolution
+
+Indecopi's current rule requires responding to both complaints and grievances within **15 non-extendable business days**. Sources: [Indecopi consumer portal](https://consumidor.gob.pe/libro-de-reclamaciones/) and [official regulatory announcement](https://www.gob.pe/institucion/indecopi/noticias/641594-modifican-reglamento-del-libro-de-reclamaciones-para-que-proveedores-atiendan-reclamos-y-quejas-de-clientes-en-15-dias-habiles).
+
+PostgreSQL calculates the deadline from the original submission timestamp, starting the following date, using Lima time, Monday–Friday, and Peru national holidays including Holy Thursday/Good Friday. The deadline is the end of the fifteenth business day. The calendar was verified against [Peru's official holiday calendar](https://www.gob.pe/feriados) for 2026. Public-sector optional non-working dates are not automatically imposed on a private business. Rule identifier: `peru-15-business-days-2026`; review the calendar when law or private business obligations change. This documented calendar is the operational interpretation of business days, and does not replace legal review.
+
+Admins can configure their own unit's internal reminder recipient and lead time (1–7 business days). Blank recipient or missing provider produces an honest blocked job. Configuring a recipient recovers previously blocked internal alerts. Milestone jobs are unique; resolving a complaint cancels unsent reminder jobs. An already sending or uncertain job retains its evidence for reconciliation. Legal response substance remains in the human-approved admin workflow and is never included in automated templates.

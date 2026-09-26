@@ -4,6 +4,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/database.types";
 import { mapPostgrestError, type AdminRepositoryResult } from "@/domains/admin-parfums/products-repository";
 import type { ComplaintFormInput, ComplaintStatus } from "./complaint-schema";
+import type { ComplaintUrgency } from "./sla";
 
 export type ComplaintRow = Database["public"]["Tables"]["complaint_book_entries"]["Row"];
 
@@ -28,6 +29,8 @@ export type ComplaintEntry = {
   createdAt: string;
   updatedAt: string;
   resolvedAt: string | null;
+  dueAt: string;
+  approachingAt: string;
 };
 
 function toComplaintEntry(row: ComplaintRow): ComplaintEntry {
@@ -52,6 +55,8 @@ function toComplaintEntry(row: ComplaintRow): ComplaintEntry {
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     resolvedAt: row.resolved_at,
+    dueAt: row.due_at,
+    approachingAt: row.approaching_at,
   };
 }
 
@@ -110,7 +115,7 @@ export class AdminComplaintsRepository {
   ) {}
 
   async list(
-    filters: { status?: ComplaintStatus | undefined; search?: string },
+    filters: { status?: ComplaintStatus | undefined; search?: string; urgency?: ComplaintUrgency | undefined },
     pagination: { page: number; pageSize: number },
   ): Promise<AdminRepositoryResult<ComplaintListPage>> {
     const page = Math.max(1, pagination.page);
@@ -122,10 +127,19 @@ export class AdminComplaintsRepository {
       .from("complaint_book_entries")
       .select("*", { count: "exact" })
       .eq("business_unit_id", this.businessUnitId)
-      .order("created_at", { ascending: false })
+      .order("resolved_at", { ascending: true, nullsFirst: true })
+      .order("due_at", { ascending: true })
       .range(from, to);
 
     if (filters.status) query = query.eq("status", filters.status);
+    const now = new Date().toISOString();
+    if (filters.urgency === "resolved") query = query.eq("status", "resolved");
+    else if (filters.urgency) {
+      query = query.neq("status", "resolved");
+      if (filters.urgency === "overdue") query = query.lt("due_at", now);
+      if (filters.urgency === "approaching") query = query.lte("approaching_at", now).gte("due_at", now);
+      if (filters.urgency === "normal") query = query.gt("approaching_at", now);
+    }
 
     const search = filters.search?.trim();
     if (search) {

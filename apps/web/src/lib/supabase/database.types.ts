@@ -250,13 +250,13 @@ isOneToOne: true
                   ]
                 },"complaint_book_entries": {
                   Row: {
-                    "address": string,"admin_notes": string | null,"business_unit_id": string,"complaint_type": string,"consumer_request": string,"created_at": string,"detail": string,"document_number": string,"document_type": string,"email": string,"full_name": string,"guardian_document_number": string | null,"guardian_full_name": string | null,"id": string,"is_minor": boolean,"order_reference": string | null,"phone": string,"request_id": string,"resolved_at": string | null,"resolved_by": string | null,"status": string,"updated_at": string
+                    "address": string,"admin_notes": string | null,"approaching_at": string,"business_unit_id": string,"complaint_type": string,"consumer_request": string,"created_at": string,"detail": string,"document_number": string,"document_type": string,"due_at": string,"email": string,"full_name": string,"guardian_document_number": string | null,"guardian_full_name": string | null,"id": string,"is_minor": boolean,"order_reference": string | null,"phone": string,"request_id": string,"resolved_at": string | null,"resolved_by": string | null,"sla_rule": string,"status": string,"submitted_at": string | null,"updated_at": string
                   }
                   Insert: {
-                    "address": string,"admin_notes"?: string | null,"business_unit_id": string,"complaint_type": string,"consumer_request": string,"created_at"?: string,"detail": string,"document_number": string,"document_type": string,"email": string,"full_name": string,"guardian_document_number"?: string | null,"guardian_full_name"?: string | null,"id"?: string,"is_minor"?: boolean,"order_reference"?: string | null,"phone": string,"request_id": string,"resolved_at"?: string | null,"resolved_by"?: string | null,"status"?: string,"updated_at"?: string
+                    "address": string,"admin_notes"?: string | null,"approaching_at": string,"business_unit_id": string,"complaint_type": string,"consumer_request": string,"created_at"?: string,"detail": string,"document_number": string,"document_type": string,"due_at": string,"email": string,"full_name": string,"guardian_document_number"?: string | null,"guardian_full_name"?: string | null,"id"?: string,"is_minor"?: boolean,"order_reference"?: string | null,"phone": string,"request_id": string,"resolved_at"?: string | null,"resolved_by"?: string | null,"sla_rule"?: string,"status"?: string,"submitted_at"?: never,"updated_at"?: string
                   }
                   Update: {
-                    "address"?: string,"admin_notes"?: string | null,"business_unit_id"?: string,"complaint_type"?: string,"consumer_request"?: string,"created_at"?: string,"detail"?: string,"document_number"?: string,"document_type"?: string,"email"?: string,"full_name"?: string,"guardian_document_number"?: string | null,"guardian_full_name"?: string | null,"id"?: string,"is_minor"?: boolean,"order_reference"?: string | null,"phone"?: string,"request_id"?: string,"resolved_at"?: string | null,"resolved_by"?: string | null,"status"?: string,"updated_at"?: string
+                    "address"?: string,"admin_notes"?: string | null,"approaching_at"?: string,"business_unit_id"?: string,"complaint_type"?: string,"consumer_request"?: string,"created_at"?: string,"detail"?: string,"document_number"?: string,"document_type"?: string,"due_at"?: string,"email"?: string,"full_name"?: string,"guardian_document_number"?: string | null,"guardian_full_name"?: string | null,"id"?: string,"is_minor"?: boolean,"order_reference"?: string | null,"phone"?: string,"request_id"?: string,"resolved_at"?: string | null,"resolved_by"?: string | null,"sla_rule"?: string,"status"?: string,"submitted_at"?: never,"updated_at"?: string
                   }
                   Relationships: [
                     {
@@ -1755,6 +1755,7 @@ isOneToOne: false
 { Args: { "p_admin_notes": string,"p_expected_updated_at": string,"p_id": string,"p_status": string }; Returns: {
               "address": string,
 "admin_notes": string | null,
+"approaching_at": string,
 "business_unit_id": string,
 "complaint_type": string,
 "consumer_request": string,
@@ -1762,6 +1763,7 @@ isOneToOne: false
 "detail": string,
 "document_number": string,
 "document_type": string,
+"due_at": string,
 "email": string,
 "full_name": string,
 "guardian_document_number": string | null,
@@ -1773,7 +1775,9 @@ isOneToOne: false
 "request_id": string,
 "resolved_at": string | null,
 "resolved_by": string | null,
+"sla_rule": string,
 "status": string,
+"submitted_at": string | null,
 "updated_at": string
             }
                           SetofOptions: {
@@ -1877,6 +1881,23 @@ isOneToOne: false
                           SetofOptions: {
         from: "*"
         to: "product_media"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
+"admin_update_operations_settings":
+{ Args: { "p_expected_updated_at": string,"p_operations_phone": string,"p_reminder_business_days": number,"p_unit_code": string }; Returns: {
+              "business_unit_id": string | null,
+"created_at": string,
+"id": string,
+"is_public": boolean,
+"key": string,
+"updated_at": string,
+"updated_by": string | null,
+"value": NonNullable<Json>
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "settings"
         isOneToOne: true
         isSetofReturn: false
       } },
@@ -2030,6 +2051,7 @@ isOneToOne: false
 { Args: { "p_address": string,"p_business_unit_code": string,"p_complaint_type": string,"p_consumer_request": string,"p_detail": string,"p_document_number": string,"p_document_type": string,"p_email": string,"p_full_name": string,"p_guardian_document_number": string,"p_guardian_full_name": string,"p_is_minor": boolean,"p_order_reference": string,"p_phone": string,"p_request_id": string }; Returns: {
               "address": string,
 "admin_notes": string | null,
+"approaching_at": string,
 "business_unit_id": string,
 "complaint_type": string,
 "consumer_request": string,
@@ -2037,6 +2059,7 @@ isOneToOne: false
 "detail": string,
 "document_number": string,
 "document_type": string,
+"due_at": string,
 "email": string,
 "full_name": string,
 "guardian_document_number": string | null,
@@ -2048,7 +2071,9 @@ isOneToOne: false
 "request_id": string,
 "resolved_at": string | null,
 "resolved_by": string | null,
+"sla_rule": string,
 "status": string,
+"submitted_at": string | null,
 "updated_at": string
             }
                           SetofOptions: {
@@ -2119,6 +2144,9 @@ isOneToOne: false
         isOneToOne: false
         isSetofReturn: true
       } },
+"worker_enqueue_complaint_milestones":
+{ Args: Record<PropertyKey, never>; Returns: undefined
+                           },
 "worker_finish_notification":
 { Args: { "p_error_safe"?: string,"p_id": string,"p_lease_token": string,"p_outcome": string,"p_provider_message_id"?: string }; Returns: undefined
                            },

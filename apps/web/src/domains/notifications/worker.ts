@@ -10,9 +10,10 @@ export async function processNotificationBatch(
 ) {
   const started = await client.rpc("worker_record_health", { p_status: "running", p_processed: 0 });
   if (started.error) return { ok: false, processed: 0 };
+  const milestones = await client.rpc("worker_enqueue_complaint_milestones");
   const units = await client.from("business_units").select("id,code");
   const claimed = await client.rpc("worker_claim_notifications", { p_batch: 5 });
-  if (units.error || claimed.error) {
+  if (milestones.error || units.error || claimed.error) {
     await client.rpc("worker_record_health", { p_status: "failed", p_processed: 0 });
     return { ok: false, processed: 0 };
   }
