@@ -8,6 +8,7 @@ export type BulkParseResult = { rows: BulkCatalogRow[]; issues: BulkIssue[] };
 export function parseBulkCatalog(text: string): BulkParseResult {
  const issues: BulkIssue[] = []; const rows: BulkCatalogRow[] = [];
  if (new TextEncoder().encode(text).length > 2 * 1024 * 1024) return { rows, issues: [{ line: 1, reason: "MÃ¡ximo 2 MiB." }] };
+ if (!hasValidCsvQuotes(text)) return {rows,issues:[{line:1,reason:"Comillas CSV inválidas."}]};
  const csv = parseCsvText(text); const header = csv[0]?.map(x => x.trim().toLowerCase()) ?? [];
  if (header.length !== BULK_COLUMNS.length || new Set(header).size !== header.length || BULK_COLUMNS.some(x => !header.includes(x)))
   return { rows, issues: [{ line: 1, reason: "Usa las columnas de la plantilla exportada." }] };
@@ -62,4 +63,16 @@ export function matchMediaFiles(filenames: string[], products: MediaIdentity[], 
   if (seenProducts.has(productId)) return fail("Solo una imagen principal por producto en el lote."); seenProducts.add(productId);
   return { filename, productId, reason: null };
  });
+}
+
+function hasValidCsvQuotes(text:string):boolean {
+ let quoted=false;let closed=false;let start=true;
+ for(let i=0;i<text.length;i++){
+  const char=text[i];
+  if(quoted){if(char==='"'){if(text[i+1]==='"')i++;else{quoted=false;closed=true;}}continue;}
+  if(char===","||char==="\n"||char==="\r"){start=true;closed=false;continue;}
+  if(char==='"'){if(!start)return false;quoted=true;start=false;continue;}
+  if(closed)return false;start=false;
+ }
+ return !quoted;
 }

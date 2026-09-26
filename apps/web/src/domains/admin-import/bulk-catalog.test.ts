@@ -3,6 +3,7 @@ import { BULK_COLUMNS, exportBulkCatalog, matchMediaFiles, parseBulkCatalog, typ
 const id="48000000-0000-4000-8000-000000000001";
 const row: BulkCatalogRow={kind:"product",id,updated_at:"2026-09-26T00:00:00Z",name:"Perfume, verdadero",brand:"Cliente",category_id:"",label:"",presentation_class:"",capacity_ml:""};
 describe("factual bulk catalog",()=>{
+ it("rejects malformed quoted CSV",()=>expect(parseBulkCatalog(exportBulkCatalog([row])+'"').issues[0]?.reason).toContain("Comillas"));
  it("round trips exact identity and optional category",()=>expect(parseBulkCatalog(exportBulkCatalog([row]))).toEqual({rows:[row],issues:[]}));
  it("rejects duplicate identity before apply",()=>expect(parseBulkCatalog(exportBulkCatalog([row,row])).issues[0]?.reason).toContain("duplicada"));
  it("rejects malformed capacity and cross kind fields",()=>expect(parseBulkCatalog(exportBulkCatalog([{...row,kind:"presentation",capacity_ml:"1e3"}])).issues).toHaveLength(1));
