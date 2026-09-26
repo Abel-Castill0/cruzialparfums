@@ -1,4 +1,5 @@
 "use server";
+import { wakeNotificationWorker } from "@/domains/notifications/wake";
 
 import { revalidatePath } from "next/cache";
 import { requireUnitAdmin } from "@/lib/auth/admin-session";
@@ -55,6 +56,7 @@ export async function updateImportOrderStatusAction(
   }
 
   revalidatePath(PEDIDOS_PATH);
+  wakeNotificationWorker();
   revalidatePath(orderDetailPath(orderId));
   revalidatePath("/admin/import");
 

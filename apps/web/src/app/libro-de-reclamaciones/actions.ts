@@ -1,4 +1,5 @@
 "use server";
+import { wakeNotificationWorker } from "@/domains/notifications/wake";
 
 import { validateComplaintForm, type ComplaintFormInput } from "@/domains/complaints/complaint-schema";
 import { submitComplaintEntry } from "@/domains/complaints/complaint-repository";
@@ -53,5 +54,6 @@ export async function submitComplaintAction(
     return { status: "error", message: SERVICE_UNAVAILABLE_MESSAGE };
   }
 
+  wakeNotificationWorker();
   return { status: "success", id: result.data.id };
 }
