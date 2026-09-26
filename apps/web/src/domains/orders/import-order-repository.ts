@@ -54,6 +54,25 @@ function mapImportOrderError(error: { code?: string; message: string }): ImportO
 export class ImportOrderRepository {
   constructor(private readonly supabase: SupabaseClient<Database>) {}
 
+  /** The identity must come from the Import capability resolved by the server. */
+  async findByRequestId(requestId: string): Promise<
+    { ok: true; data: PersistedImportOrder | null } | { ok: false; error: ImportOrderError }
+  > {
+    const unitId = "22222222-2222-4222-8222-222222222222";
+    const { data, error } = await this.supabase.from("orders")
+      .select("id,order_number,subtotal_amount,deposit_percentage_snapshot,deposit_amount_snapshot,campaigns(number,business_unit_id)")
+      .eq("business_unit_id", unitId).eq("request_id", requestId).maybeSingle();
+    if (error) return { ok: false, error: { type: "unknown", message: "Receipt lookup unavailable" } };
+    if (!data) return { ok: true, data: null };
+    if (data.deposit_percentage_snapshot === null || data.deposit_amount_snapshot === null ||
+      !data.campaigns || data.campaigns.business_unit_id !== unitId) {
+      return { ok: false, error: { type: "unknown", message: "Receipt authority unavailable" } };
+    }
+    return { ok: true, data: { orderId: data.id, orderNumber: data.order_number, created: false,
+      subtotal: Number(data.subtotal_amount), depositPercentage: Number(data.deposit_percentage_snapshot),
+      depositAmount: Number(data.deposit_amount_snapshot), campaignNumber: data.campaigns.number } };
+  }
+
   async create(
     request: ValidatedImportOrderRequest,
   ): Promise<

@@ -1,7 +1,7 @@
 "use server";
 import { wakeNotificationWorker } from "@/domains/notifications/wake";
 
-import { ImportOrderRepository } from "@/domains/orders/import-order-repository";
+import { ImportOrderRepository, type PersistedImportOrder } from "@/domains/orders/import-order-repository";
 import {
   validateAndResolveImportOrder,
   type ImportOrderRequestInput,
@@ -113,70 +113,74 @@ export async function createImportOrderRequest(
       ? { status: "error", code: ATTEMPT_EXPIRED_CODE, message: ATTEMPT_EXPIRED_MESSAGE }
       : { status: "error", code: ATTEMPT_REQUIRED_CODE, message: ATTEMPT_REQUIRED_MESSAGE };
   }
-  // Any client-supplied requestId is overwritten: only the capability holder
-  // can reproduce this id, so only they can have an existing order replayed.
-  const validated = validateAndResolveImportOrder({
-    ...(submission as object),
-    requestId: attempt.requestId,
-  } as ImportOrderRequestInput);
-  if ("ok" in validated)
-    return {
-      status: "error",
-      message: validated.message,
-      ...(validated.fieldErrors ? { fieldErrors: validated.fieldErrors } : {}),
-    };
-
   const client = createSupabaseAdminClient();
-  if (!client) {
-    return {
-      status: "error",
-      message:
-        "El registro de solicitudes no está disponible en este momento. Tu carrito no fue modificado.",
-    };
+  if (!client) return { status: "error", message: "El registro de solicitudes no está disponible en este momento. Tu carrito no fue modificado." };
+  const repository = new ImportOrderRepository(client);
+  const existing = await repository.findByRequestId(attempt.requestId);
+  if (!existing.ok) return { status: "error", message: ORDER_SERVICE_UNAVAILABLE_MESSAGE };
+  let order: PersistedImportOrder;
+  let requestId = attempt.requestId;
+  if (existing.data) {
+    order = existing.data;
+  } else {
+    // Any client-supplied requestId is overwritten: only the capability holder
+    // can reproduce this id, so only they can have an existing order replayed.
+    const validated = validateAndResolveImportOrder({
+      ...(submission as object),
+      requestId: attempt.requestId,
+    } as ImportOrderRequestInput);
+    if ("ok" in validated)
+      return {
+        status: "error",
+        message: validated.message,
+        ...(validated.fieldErrors ? { fieldErrors: validated.fieldErrors } : {}),
+      };
+
+    const rateLimit = await checkOrderRequestRateLimit({
+      client,
+      purpose: "order_request",
+      businessUnit: "import",
+      requestId: validated.requestId,
+      phone: validated.customer.phone,
+    });
+
+    if (rateLimit.kind === "denied") {
+      return {
+        status: "error",
+        message: RATE_LIMITED_MESSAGE,
+        code: "rate_limited",
+        retryAfterSeconds: rateLimit.retryAfterSeconds,
+      };
+    }
+
+    if (rateLimit.kind === "unavailable") {
+      return { status: "error", message: ORDER_SERVICE_UNAVAILABLE_MESSAGE };
+    }
+
+    const persisted = await repository.create(validated);
+    if (!persisted.ok)
+      return { status: "error", message: importOrderErrorToMessage(persisted.error) };
+    wakeNotificationWorker();
+    order = persisted.data;
+    requestId = validated.requestId;
   }
-
-  const rateLimit = await checkOrderRequestRateLimit({
-    client,
-    purpose: "order_request",
-    businessUnit: "import",
-    requestId: validated.requestId,
-    phone: validated.customer.phone,
-  });
-
-  if (rateLimit.kind === "denied") {
-    return {
-      status: "error",
-      message: RATE_LIMITED_MESSAGE,
-      code: "rate_limited",
-      retryAfterSeconds: rateLimit.retryAfterSeconds,
-    };
-  }
-
-  if (rateLimit.kind === "unavailable") {
-    return { status: "error", message: ORDER_SERVICE_UNAVAILABLE_MESSAGE };
-  }
-
-  const persisted = await new ImportOrderRepository(client).create(validated);
-  if (!persisted.ok)
-    return { status: "error", message: importOrderErrorToMessage(persisted.error) };
-  wakeNotificationWorker();
 
   const summary = await getPersistedImportOrderSummary(
     client,
-    persisted.data.orderId,
-    validated.requestId,
+    order.orderId,
+    requestId,
   );
 
   if (!summary) {
     return {
       status: "success",
-      orderNumber: persisted.data.orderNumber,
+      orderNumber: order.orderNumber,
       whatsappUrl: null,
-      created: persisted.data.created,
-      subtotal: persisted.data.subtotal,
-      depositPercentage: persisted.data.depositPercentage,
-      depositAmount: persisted.data.depositAmount,
-      campaignNumber: persisted.data.campaignNumber,
+      created: order.created,
+      subtotal: order.subtotal,
+      depositPercentage: order.depositPercentage,
+      depositAmount: order.depositAmount,
+      campaignNumber: order.campaignNumber,
     };
   }
 
@@ -187,11 +191,11 @@ export async function createImportOrderRequest(
       status: "success",
       orderNumber: summary.orderNumber,
       whatsappUrl: null,
-      created: persisted.data.created,
+      created: order.created,
       subtotal: summary.subtotalAmount,
       depositPercentage: summary.depositPercentageSnapshot,
       depositAmount: summary.depositAmountSnapshot,
-      campaignNumber: summary.campaignNumber ?? persisted.data.campaignNumber,
+      campaignNumber: summary.campaignNumber ?? order.campaignNumber,
     };
   }
 
@@ -201,11 +205,11 @@ export async function createImportOrderRequest(
     status: "success",
     orderNumber: summary.orderNumber,
     whatsappUrl: buildImportWhatsAppUrl(contact.whatsappNumber, message),
-    created: persisted.data.created,
+    created: order.created,
     subtotal: summary.subtotalAmount,
     depositPercentage: summary.depositPercentageSnapshot,
     depositAmount: summary.depositAmountSnapshot,
-    campaignNumber: summary.campaignNumber ?? persisted.data.campaignNumber,
+    campaignNumber: summary.campaignNumber ?? order.campaignNumber,
   };
 }
 

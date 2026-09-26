@@ -77,6 +77,36 @@ test.describe("attempt lifecycle — Libro de Reclamaciones", () => {
 test.describe("attempt lifecycle — Import order", () => {
   test.skip(() => process.env.E2E_ALLOW_ORDER_SUBMIT !== "1" || !LOCAL_DB_AVAILABLE, "needs the disposable local stack");
 
+  test("lost response with an empty Import cart recovers the accepted order without another mutation", async ({ page }) => {
+    await page.goto("/import");
+    await page.getByRole("button", { name: "Agregar al carrito" }).first().click();
+    await page.goto("/import/checkout");
+    const phone = testCustomerPhone(test.info());
+    await page.locator("#checkout-name").fill("QA E2E Import");
+    await page.locator("#checkout-phone").fill(phone);
+    await page.locator("#checkout-district").fill("Miraflores");
+    await page.locator("#checkout-address").fill("[QA E2E] no despachar");
+    let committed: string | null = null;
+    await page.route("**/import/checkout", async route => {
+      if (route.request().method() !== "POST" || !(await route.request().headerValue("cookie"))?.includes("cz_attempt_import_order=") || committed) return route.continue();
+      const response = await route.fetch();
+      committed = (await response.text()).match(IMPORT_ORDER)?.[0] ?? null;
+      await route.abort("connectionreset");
+    });
+    await page.locator('form button[type="submit"]').click();
+    await expect(page.getByRole("alert").filter({ hasText: /No pudimos conectar/ })).toBeVisible();
+    expect(committed).toMatch(IMPORT_ORDER);
+    await page.unrouteAll();
+    await page.evaluate(() => { localStorage.clear(); sessionStorage.clear(); });
+    await page.reload();
+    await expect(page.getByText("Tu carrito de Import está vacío.")).toBeVisible();
+    await page.locator("[data-attempt-recover]").click();
+    const held = page.locator('[data-attempt-held="replayed"]');
+    await expect(held).toContainText(committed!);
+    await expectActionablePanelFocus(held);
+    expect(orderSideEffects(phone)).toEqual({ orders: 1, outbox: 1, reservations: 0 });
+  });
+
   test("lost response + reload: the retry reports the SAME order as already registered", async ({ page }) => {
     await page.goto("/import");
     const add = page.getByRole("button", { name: "Agregar al carrito" }).first();

@@ -100,11 +100,10 @@ export default function ImportCheckoutPage() {
   const errorRef = useRef<HTMLDivElement>(null);
   const heldRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    if (formState.phase === "error") {
-      errorRef.current?.focus({ preventScroll: true });
-      errorRef.current?.scrollIntoView({ block: "start" });
-    }
-  }, [formState]);
+    const panel = formState.phase === "error" ? errorRef.current : held ? heldRef.current : null;
+    panel?.focus({ preventScroll: true });
+    panel?.scrollIntoView({ block: "start" });
+  }, [formState, held]);
   const displaySubtotal = useMemo(
     () => lines.reduce((sum, l) => sum + parseFloat(l.price) * l.quantity, 0),
     [lines],
@@ -190,6 +189,25 @@ export default function ImportCheckoutPage() {
     },
     [lines, checkoutUsable, completeWith],
   );
+
+  async function recoverExistingRequest() {
+    setFormState({ phase: "submitting" });
+    try {
+      // Empty lines can only recover an accepted receipt; the server refuses
+      // to create an order from this input when no receipt exists.
+      const result = await submitWithAttemptCapability(() => createImportOrderRequest({
+        lines: [], customer: { name: "", phone: "" }, delivery: { district: "", address: "" },
+      }));
+      if (result.status === "error") {
+        setFormState({ phase: "error", message: result.message, ...(result.code ? { code: result.code } : {}) });
+        return;
+      }
+      setFormState({ phase: "form" });
+      setHeld({ kind: "replayed", order: result });
+    } catch {
+      setFormState({ phase: "error", message: "No pudimos conectar con el servidor. Intenta nuevamente." });
+    }
+  }
 
   /** Explicit "register as a new request": the only path from an expired or
    * already-used attempt to a new mutation, after a confirmed rotation. */
@@ -287,7 +305,7 @@ export default function ImportCheckoutPage() {
     );
   }
 
-  if (lines.length === 0 && formState.phase === "form") {
+  if (lines.length === 0 && formState.phase === "form" && !held) {
     return (
       <main className={styles.page}>
         <div className={styles.container}>
@@ -307,6 +325,9 @@ export default function ImportCheckoutPage() {
           )}
           <div className={styles.empty}>
             <p>Tu carrito de Import está vacío.</p>
+            <button type="button" data-attempt-recover onClick={recoverExistingRequest} className={styles.secondaryAction}>
+              Comprobar solicitud registrada en esta sesión
+            </button>
             <Link href={"/import#catalogo" as Route} className={styles.primaryAction}>
               Ver catálogo
             </Link>
