@@ -110,5 +110,44 @@ select is((select count(*)::integer from public.orders where request_id='4300000
 select is((select reserved_quantity from public.inventory where id='43000000-0000-4000-8000-000000000031'),0,
  'failed request leaves no half-created reservation');
 
+-- Independent-review finding: a status_only variant admins have flagged
+-- out_of_stock must not be orderable, either at the trigger level or through
+-- the real public order-request RPC (which never joins public.inventory in
+-- its own eligibility check -- the trigger is the only authoritative gate).
+insert into public.product_variants(id,product_id,variant_kind,label,price_amount,
+ publication_status,price_verification_status) values
+ ('43000000-0000-4000-8000-000000000023','43000000-0000-4000-8000-000000000011','decant',
+  'Status only OOS',15,'published','client_confirmed');
+insert into public.inventory(id,product_variant_id,inventory_mode,availability_status) values
+ ('43000000-0000-4000-8000-000000000033','43000000-0000-4000-8000-000000000023','status_only','out_of_stock');
+select throws_ok($$insert into public.order_lines(order_id,product_id,product_variant_id,
+ product_name_snapshot,variant_label_snapshot,unit_price_amount,quantity,line_total_amount)
+ values ('43000000-0000-4000-8000-000000000043','43000000-0000-4000-8000-000000000011',
+ '43000000-0000-4000-8000-000000000023','Status only OOS','Status only OOS',15,1,15)$$,
+ 'P2034',null,'status_only out_of_stock is rejected at the trigger');
+
+update public.products set availability_status='available' where id='43000000-0000-4000-8000-000000000011';
+select throws_ok($$select public.create_parfums_order_request_v2(
+ '43000000-0000-4000-8000-000000000098', '{"name":"OOS fixture","phone":"51999123457"}',
+ '{"district":"Lima","delivery":"Coordinar","note":""}',null,
+ '[{"product_id":"43000000-0000-4000-8000-000000000011",
+    "product_variant_id":"43000000-0000-4000-8000-000000000023",
+    "product_name":"Status only OOS","variant_label":"Status only OOS","quantity":1,
+    "variant_snapshot":{"group":"decant","size_ml":3,"brand":"Fixture"}}]')$$,
+ 'P2034',null,'the public order-request RPC also rejects a status_only out_of_stock variant');
+select is((select count(*)::integer from public.orders where request_id='43000000-0000-4000-8000-000000000098'),0,
+ 'the rejected status_only request leaves no half-created order');
+
+-- A status_only variant marked available (the common case) still orders
+-- correctly and still gains no fabricated reservation.
+insert into public.orders(id,business_unit_id,order_number,status) values
+ ('43000000-0000-4000-8000-000000000046','11111111-1111-4111-8111-111111111111','GATE-B-STATUS-OK','pending_whatsapp_confirmation');
+insert into public.order_lines(order_id,product_id,product_variant_id,product_name_snapshot,
+ variant_label_snapshot,unit_price_amount,quantity,line_total_amount)
+values ('43000000-0000-4000-8000-000000000046','43000000-0000-4000-8000-000000000011',
+ '43000000-0000-4000-8000-000000000022','Status only','Status only',20,1,20);
+select is((select count(*)::integer from public.inventory_reservations where order_id='43000000-0000-4000-8000-000000000046'),0,
+ 'status_only available still gains no fabricated reservation after the fix');
+
 select * from finish();
 rollback;
