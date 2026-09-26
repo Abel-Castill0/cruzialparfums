@@ -1,5 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { LOCAL_DB_AVAILABLE, orderSideEffects, provisionQaParfumsUnit, testCustomerPhone } from "./local-db";
+import { expectActionablePanelFocus } from "./focused-panel";
 
 const ORDER_NUMBER = /CRP-\d{8}-[A-F0-9]{12}/;
 
@@ -236,7 +237,7 @@ test.describe("parfums storefront", () => {
     await page.locator("[data-attempt-recover]").click();
     const held = page.locator('[data-attempt-held="replayed"]');
     await expect(held).toContainText(committed!);
-    await expect(held).toBeFocused();
+    await expectActionablePanelFocus(held);
     expect(orderSideEffects(phone)).toEqual({ orders: 1, outbox: 1, reservations: 1 });
   });
 
