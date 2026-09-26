@@ -14,6 +14,18 @@
  *
  * Usage:
  *   node scripts/restore-validate-backup.mjs --backup-dir backups/cruzial-<ref>-<ts> --db-url postgresql://postgres:postgres@127.0.0.1:<port>/postgres
+ *   node scripts/restore-validate-backup.mjs --backup-dir backups/cruzial-<ref>-<ts> --db-url postgresql://postgres:postgres@127.0.0.1:<port>/postgres --docker-container supabase_db_<local-project-ref>
+ *
+ * --db-url is always required, even in --docker-container mode: it is the
+ * fail-closed proof that the target is a local, disposable instance (only
+ * 127.0.0.1 / localhost / ::1 are accepted), never a route to a hosted
+ * database. When --docker-container is supplied, psql runs INSIDE that
+ * container instead of on the host, for machines without a host `psql`
+ * installation but with a local Supabase Docker stack already running
+ * (which always ships a compatible psql). The container's own local
+ * `postgres`/`postgres` connection is used; no db-url, network port or
+ * password ever crosses the docker exec boundary. SQL is piped over stdin
+ * (`-f -`) rather than left as an extra plaintext file inside the container.
  *
  * Two known, narrow filtering steps are applied automatically (both
  * confirmed empirically against a real restore, not assumed):
@@ -64,16 +76,59 @@ export function filterStorageSchemaData(content) {
   return out.join("\n");
 }
 
-/** Pure: the three restore invocations, in official order, each atomic and fail-fast. */
-export function buildRestoreCommands(dbUrl, files) {
+// Docker container names Docker itself accepts: start alphanumeric, then
+// alphanumeric plus _.- only. Rejects anything a shell or docker CLI could
+// interpret as an option, path, or metacharacter injection.
+const DOCKER_CONTAINER_NAME_PATTERN = /^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,127}$/;
+
+export function isValidDockerContainerName(name) {
+  return typeof name === "string" && DOCKER_CONTAINER_NAME_PATTERN.test(name);
+}
+
+const LOCAL_HOSTNAMES = new Set(["127.0.0.1", "localhost", "::1", "[::1]"]);
+
+export function isLocalDbUrl(dbUrl) {
+  try {
+    return LOCAL_HOSTNAMES.has(new URL(dbUrl).hostname);
+  } catch {
+    return false;
+  }
+}
+
+/** Pure: the three restore invocations, in official order, each atomic and
+ * fail-fast. The data step also disables triggers and FK enforcement for
+ * its own session only (SET session_replication_role = replica, in the same
+ * psql invocation, before -f) so restoring historical rows never re-fires
+ * Cruzial's own business triggers (inventory reservation, notification
+ * enqueueing, SLA calculation, ...) against already-settled data, and so
+ * pg_dump's reported circular foreign-key ordering on categories cannot
+ * fail the load. Host mode targets dbUrl directly; docker mode runs psql
+ * inside the given container against its own local postgres/postgres
+ * connection and expects the SQL piped over stdin (-f -), never a host
+ * file path the container cannot see. */
+export function buildRestoreCommands(dbUrl, files, dockerContainer = null) {
   return [
     { name: "roles", file: files.roles },
     { name: "schema", file: files.schema },
     { name: "data", file: files.data },
-  ].map((step) => ({
-    ...step,
-    args: ["psql", dbUrl, "-v", "ON_ERROR_STOP=1", "--single-transaction", "-f", step.file],
-  }));
+  ].map((step) => {
+    const dataPrelude = step.name === "data" ? ["-c", "SET session_replication_role = replica;"] : [];
+    if (dockerContainer) {
+      return {
+        ...step,
+        transport: "docker",
+        args: [
+          "docker", "exec", "-i", dockerContainer, "psql", "-U", "postgres", "-d", "postgres",
+          "-v", "ON_ERROR_STOP=1", "--single-transaction", ...dataPrelude, "-f", "-",
+        ],
+      };
+    }
+    return {
+      ...step,
+      transport: "host",
+      args: ["psql", dbUrl, "-v", "ON_ERROR_STOP=1", "--single-transaction", ...dataPrelude, "-f", step.file],
+    };
+  });
 }
 
 const COUNT_TABLES = [
@@ -140,15 +195,50 @@ function readArg(argv, flag) {
   return i !== -1 ? argv[i + 1] : undefined;
 }
 
-function runPsql(dbUrl, sql) {
-  const result = spawnSync("psql", [dbUrl, "-t", "-A", "-c", sql], { encoding: "utf8" });
+const MISSING_HOST_PSQL_HINT = "psql executable not found on PATH. Install the PostgreSQL client tools, "
+  + "or re-run with --docker-container <name> to run psql inside a local disposable Supabase database "
+  + "container instead (it already ships a compatible psql).";
+const MISSING_DOCKER_HINT = "docker executable not found on PATH. Install Docker Desktop, or drop "
+  + "--docker-container and install the PostgreSQL client tools for host mode instead.";
+
+/** Pure: turns a spawnSync `error` (set only when the executable itself
+ * never launched, e.g. ENOENT) into an actionable message instead of the
+ * generic "exit unknown" a bare non-zero-status check would otherwise
+ * report for a process that never started. */
+export function explainSpawnError(error, dockerContainer) {
+  if (error.code === "ENOENT") return dockerContainer ? MISSING_DOCKER_HINT : MISSING_HOST_PSQL_HINT;
+  return error.message;
+}
+
+/** Pure: the single ad-hoc query invocation, kept consistent with the exact
+ * same connection convention buildRestoreCommands uses for the docker
+ * transport (same user/db, no db-url/host/port/password crossing into the
+ * container) so the restore and query paths can never silently diverge. */
+export function buildQueryCommand(dbUrl, sql, dockerContainer = null) {
+  if (dockerContainer) {
+    return { cmd: "docker", args: ["exec", "-i", dockerContainer, "psql", "-U", "postgres", "-d", "postgres", "-t", "-A", "-c", sql] };
+  }
+  return { cmd: "psql", args: [dbUrl, "-t", "-A", "-c", sql] };
+}
+
+function runPsql(dbUrl, sql, dockerContainer = null) {
+  const { cmd, args } = buildQueryCommand(dbUrl, sql, dockerContainer);
+  const result = spawnSync(cmd, args, { encoding: "utf8" });
+  if (result.error) throw new Error(`psql query failed: ${explainSpawnError(result.error, dockerContainer)}`);
   if (result.status !== 0) throw new Error(`psql query failed: ${result.stderr}`);
   return result.stdout.trim();
 }
 
 function runStep(step) {
   console.log(`[restore-validate] ${step.name}...`);
-  const result = spawnSync(step.args[0], step.args.slice(1), { stdio: "inherit" });
+  const isDocker = step.transport === "docker";
+  const spawnOptions = isDocker
+    ? { stdio: ["pipe", "inherit", "inherit"], input: readFileSync(step.file, "utf8") }
+    : { stdio: "inherit" };
+  const result = spawnSync(step.args[0], step.args.slice(1), spawnOptions);
+  if (result.error) {
+    throw new Error(`[restore-validate] ${step.name} restore failed: ${explainSpawnError(result.error, isDocker)}`);
+  }
   if (result.status !== 0) {
     throw new Error(`[restore-validate] ${step.name} restore failed (exit ${result.status ?? "unknown"})`);
   }
@@ -157,8 +247,18 @@ function runStep(step) {
 async function main() {
   const backupDir = readArg(process.argv, "--backup-dir");
   const dbUrl = readArg(process.argv, "--db-url");
+  const dockerContainer = readArg(process.argv, "--docker-container") ?? null;
   if (!backupDir || !dbUrl) {
-    console.error("Usage: node scripts/restore-validate-backup.mjs --backup-dir <dir> --db-url <postgresql://...>");
+    console.error("Usage: node scripts/restore-validate-backup.mjs --backup-dir <dir> --db-url <postgresql://...> [--docker-container <name>]");
+    process.exit(1);
+  }
+  // db-url is the fail-closed local-only proof, required in both transports.
+  if (!isLocalDbUrl(dbUrl)) {
+    console.error("[restore-validate] --db-url must point to a local host (127.0.0.1 / localhost / ::1). Refusing a non-local target.");
+    process.exit(1);
+  }
+  if (dockerContainer && !isValidDockerContainerName(dockerContainer)) {
+    console.error("[restore-validate] --docker-container is not a valid Docker container name.");
     process.exit(1);
   }
 
@@ -175,12 +275,12 @@ async function main() {
       roles: rolesFiltered,
       schema: schemaFile,
       data: dataFiltered,
-    });
+    }, dockerContainer);
     for (const step of steps) runStep(step);
 
     console.log("\n[restore-validate] row counts (no data printed, counts only):");
     for (const table of COUNT_TABLES) {
-      const count = runPsql(dbUrl, `select count(*) from public.${table};`);
+      const count = runPsql(dbUrl, `select count(*) from public.${table};`, dockerContainer);
       console.log(`  ${table}: ${count}`);
     }
 
@@ -190,16 +290,17 @@ async function main() {
       observed.rlsEnabledTables[table] = runPsql(
         dbUrl,
         `select relrowsecurity from pg_class where relname='${table}' and relnamespace='public'::regnamespace;`,
+        dockerContainer,
       ) === "t";
     }
     const declared = declaredSnapshotObjects(schemaSql);
     const functionNames = [...REQUIRED_OBJECTS.functions, ...declared.filter(({ kind }) => kind === "functions").map(({ name }) => name)];
     for (const fn of functionNames) {
-      const found = runPsql(dbUrl, `select count(*) from pg_proc where proname='${fn}' and pronamespace='public'::regnamespace;`);
+      const found = runPsql(dbUrl, `select count(*) from pg_proc where proname='${fn}' and pronamespace='public'::regnamespace;`, dockerContainer);
       observed.functions[fn] = Number(found) > 0;
     }
     for (const { name } of declared.filter(({ kind }) => kind === "constraints")) {
-      const found = runPsql(dbUrl, `select count(*) from pg_constraint where conname='${name}' and conrelid='public.inventory'::regclass;`);
+      const found = runPsql(dbUrl, `select count(*) from pg_constraint where conname='${name}' and conrelid='public.inventory'::regclass;`, dockerContainer);
       observed.constraints[name] = Number(found) > 0;
     }
     const assessment = assessSchemaObjects(schemaSql, observed);
