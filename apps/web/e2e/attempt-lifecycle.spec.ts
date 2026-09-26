@@ -45,6 +45,7 @@ test.describe("attempt lifecycle — Libro de Reclamaciones", () => {
     await page.getByRole("button", { name: "Registrar solicitud" }).click();
     const held = page.locator('[data-attempt-held="replayed"]');
     await expect(held).toContainText(/ya estaba registrada/);
+    await expect(held).toBeFocused();
     expect(complaintSideEffects(phone).complaints).toBe(1);
 
     await held.locator("[data-attempt-view]").click();
@@ -63,6 +64,7 @@ test.describe("attempt lifecycle — Libro de Reclamaciones", () => {
     await page.getByRole("button", { name: "Registrar solicitud" }).click();
     const alert = page.getByRole("alert").filter({ hasText: /venció/ });
     await expect(alert).toBeVisible();
+    await expect(alert).toBeFocused();
     expect(complaintSideEffects(phone)).toEqual({ complaints: 0, outbox: 0 });
 
     await alert.locator("[data-attempt-new]").click();

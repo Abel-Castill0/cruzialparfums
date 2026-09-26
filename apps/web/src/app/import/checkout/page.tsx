@@ -97,7 +97,14 @@ export default function ImportCheckoutPage() {
   const [held, setHeld] = useState<HeldOrder | null>(null);
   const [attemptBusy, setAttemptBusy] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
+  const errorRef = useRef<HTMLDivElement>(null);
   const heldRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (formState.phase === "error") {
+      errorRef.current?.focus({ preventScroll: true });
+      errorRef.current?.scrollIntoView({ block: "start" });
+    }
+  }, [formState]);
   const displaySubtotal = useMemo(
     () => lines.reduce((sum, l) => sum + parseFloat(l.price) * l.quantity, 0),
     [lines],
@@ -334,7 +341,7 @@ export default function ImportCheckoutPage() {
         )}
 
         {formState.phase === "error" && (
-          <div className={styles.errorBanner} role="alert" aria-live="assertive">
+          <div ref={errorRef} tabIndex={-1} className={styles.errorBanner} role="alert" aria-live="assertive">
             <p>{formState.message}</p>
             {formState.code === ATTEMPT_EXPIRED && (
               <button type="button" data-attempt-new onClick={registerAsNewRequest} disabled={attemptBusy}
