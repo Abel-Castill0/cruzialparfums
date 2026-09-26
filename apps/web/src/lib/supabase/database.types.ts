@@ -959,6 +959,12 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"admin_bulk_import_catalog":
+{ Args: { "p_rows": Json }; Returns: number
+                           },
+"admin_bulk_publish_import":
+{ Args: { "p_campaign_id": string,"p_expected_updated_at": string,"p_rows": Json }; Returns: Json
+                           },
 "admin_create_campaign":
 { Args: { "p_closes_at"?: string,"p_name": string,"p_number": number,"p_opens_at"?: string,"p_public_message"?: string }; Returns: {
               "archived_at": string | null,
@@ -1211,6 +1217,9 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"admin_import_publish_candidates":
+{ Args: { "p_campaign_id": string }; Returns: Json
+                           },
 "admin_import_update_customer":
 { Args: { "p_customer_id": string,"p_full_name": string,"p_notes"?: string,"p_phone"?: string }; Returns: {
               "archived_at": string | null,
