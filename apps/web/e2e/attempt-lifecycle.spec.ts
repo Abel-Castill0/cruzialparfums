@@ -79,7 +79,7 @@ test.describe("attempt lifecycle — Import order", () => {
   test("lost response + reload: the retry reports the SAME order as already registered", async ({ page }) => {
     await page.goto("/import");
     const add = page.getByRole("button", { name: "Agregar al carrito" }).first();
-    test.skip(!(await add.isVisible().catch(() => false)), "local fixture has no open Import campaign with products");
+    await expect(add, "required local open Import campaign fixture").toBeVisible();
     await add.click();
     await page.goto("/import/checkout");
     const phone = testCustomerPhone(test.info());

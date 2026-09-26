@@ -64,7 +64,8 @@ test.describe("parfums storefront", () => {
     await page.goto("/parfums/combos");
     const sets = page.locator("[data-combo-card]");
     const count = await sets.count();
-    test.skip(count === 0, "no published combos in this environment");
+    if (LOCAL_DB_AVAILABLE) expect(count, "required local published combo fixture").toBeGreaterThan(0);
+    else test.skip(count === 0, "no published combos in this environment");
     await expect(sets.first().locator("li").first()).toBeVisible();
     await expect(sets.first()).toContainText(/S\/ \d/);
     await expect(page.getByText(/legacy/i)).toHaveCount(0);

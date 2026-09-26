@@ -5,7 +5,8 @@ const ADMIN_STATE="e2e/.auth/gate-b-admin.json";
 const ids={parfumsOrder:"99003000-0000-4000-8000-000000000010",importOrder:"99003000-0000-4000-8000-000000000011",product:"99003000-0000-4000-8000-000000000020",campaign:"99003000-0000-4000-8000-000000000030",complaint:"99003000-0000-4000-8000-000000000040"};
 test.describe("Gate B local operations",()=>{
  test.describe.configure({mode:"serial"});
- test.skip(process.env.E2E_LOCAL_FIXTURES!=="1"||!existsSync(ADMIN_STATE),"requires disposable local fixtures and real AAL2 session");
+ test.skip(()=>process.env.E2E_LOCAL_FIXTURES!=="1","requires disposable local fixtures and real AAL2 session");
+ test.beforeAll(()=>{expect(existsSync(ADMIN_STATE),"local setup must produce the Gate B AAL2 session").toBe(true);});
  test.use({storageState:ADMIN_STATE});
  test("Parfums tracked reservation follows confirmation and fulfillment",async({page})=>{
   await page.goto(`/admin/parfums/pedidos/${ids.parfumsOrder}`);await expect(page.getByText(/2 unidades · reserved/)).toBeVisible();

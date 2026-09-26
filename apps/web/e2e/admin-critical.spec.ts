@@ -11,7 +11,10 @@ test.describe("dual admin (Parfums + Import)", () => {
   // Serial: every test shares one storageState and the last one logs out
   // globally (revoking the refresh token for all contexts built from it).
   test.describe.configure({ mode: "serial" });
-  test.skip(!existsSync(ADMIN_STATE), "no dual-admin session (E2E_ADMIN_* not set)");
+  test.skip(() => process.env.E2E_LOCAL_FIXTURES !== "1" && !existsSync(ADMIN_STATE), "no dual-admin session (E2E_ADMIN_* not set)");
+  test.beforeAll(() => {
+    if (process.env.E2E_LOCAL_FIXTURES === "1") expect(existsSync(ADMIN_STATE), "local setup must produce the required dual-admin session").toBe(true);
+  });
   test.use({ storageState: ADMIN_STATE });
 
   test("shell shows both units and every module route renders", async ({ page }) => {
@@ -47,7 +50,8 @@ test.describe("dual admin (Parfums + Import)", () => {
   test("Parfums orders list opens an order detail with customer snapshot", async ({ page }) => {
     await page.goto("/admin/parfums/pedidos");
     const link = page.locator('a[href^="/admin/parfums/pedidos/"]').first();
-    test.skip((await link.count()) === 0, "no orders in this environment");
+    if (process.env.E2E_LOCAL_FIXTURES === "1") await expect(link, "required local order fixture").toBeVisible();
+    else test.skip((await link.count()) === 0, "no orders in this environment");
     await link.click();
     await expect(page.getByRole("heading", { level: 1 })).toContainText(/Pedido CRP-/);
   });
@@ -76,7 +80,10 @@ test.describe("dual admin (Parfums + Import)", () => {
 });
 
 test.describe("Parfums-only admin", () => {
-  test.skip(!existsSync(PARFUMS_ADMIN_STATE), "no parfums-only session (E2E_PARFUMS_ADMIN_* not set)");
+  test.skip(() => process.env.E2E_LOCAL_FIXTURES !== "1" && !existsSync(PARFUMS_ADMIN_STATE), "no parfums-only session (E2E_PARFUMS_ADMIN_* not set)");
+  test.beforeAll(() => {
+    if (process.env.E2E_LOCAL_FIXTURES === "1") expect(existsSync(PARFUMS_ADMIN_STATE), "local setup must produce the required single-unit session").toBe(true);
+  });
   test.use({ storageState: PARFUMS_ADMIN_STATE });
 
   test("can administer Parfums but is denied Import (cross-unit boundary)", async ({ page }) => {
