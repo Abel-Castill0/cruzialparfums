@@ -1,5 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { LOCAL_DB_AVAILABLE, complaintSideEffects, orderSideEffects, testCustomerPhone } from "./local-db";
+import { expectActionablePanelFocus } from "./focused-panel";
 
 // Anonymous attempt lifecycle for the Import order and Libro de Reclamaciones
 // flows (the Parfums flow is covered in parfums-storefront.spec.ts). Local
@@ -45,7 +46,7 @@ test.describe("attempt lifecycle — Libro de Reclamaciones", () => {
     await page.getByRole("button", { name: "Registrar solicitud" }).click();
     const held = page.locator('[data-attempt-held="replayed"]');
     await expect(held).toContainText(/ya estaba registrada/);
-    await expect(held).toBeFocused();
+    await expectActionablePanelFocus(held);
     expect(complaintSideEffects(phone).complaints).toBe(1);
 
     await held.locator("[data-attempt-view]").click();
@@ -64,7 +65,7 @@ test.describe("attempt lifecycle — Libro de Reclamaciones", () => {
     await page.getByRole("button", { name: "Registrar solicitud" }).click();
     const alert = page.getByRole("alert").filter({ hasText: /venció/ });
     await expect(alert).toBeVisible();
-    await expect(alert).toBeFocused();
+    await expectActionablePanelFocus(alert);
     expect(complaintSideEffects(phone)).toEqual({ complaints: 0, outbox: 0 });
 
     await alert.locator("[data-attempt-new]").click();
@@ -100,7 +101,9 @@ test.describe("attempt lifecycle — Import order", () => {
       await route.abort("connectionreset");
     });
     await page.locator('form button[type="submit"]').click();
-    await expect(page.getByRole("alert").filter({ hasText: /No pudimos conectar/ })).toBeVisible();
+    const error = page.getByRole("alert").filter({ hasText: /No pudimos conectar/ });
+    await expect(error).toBeVisible();
+    await expectActionablePanelFocus(error);
     expect(committed).toMatch(IMPORT_ORDER);
     expect(orderSideEffects(phone).orders).toBe(1);
 

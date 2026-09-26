@@ -17,6 +17,20 @@ function fakeClient(invalidLease = false, authorized: Record<string, unknown> = 
   return { rpc, client: client as unknown as SupabaseClient<Database> };
 }
 describe("notification worker", () => {
+  it("reports provider success with a failed DB finish without issuing a second send", async () => {
+    const { client, rpc } = fakeClient();
+    rpc.mockImplementation(async (name: string) => {
+      if (name === "worker_claim_notifications") return { data: [job], error: null };
+      if (name === "worker_begin_notification_v2") return { data: { ...job, status: "sending" }, error: null };
+      if (name === "worker_finish_notification") return { data: null, error: { code: "08006" } };
+      return { data: null, error: null };
+    });
+    const provider = { ready: () => true, send: vi.fn(async () => ({ status: "sent" as const, providerMessageId: "accepted-before-db-failure" })) };
+    expect(await processNotificationBatch(client, () => provider)).toEqual({ ok: false, processed: 1 });
+    expect(provider.send).toHaveBeenCalledOnce();
+    expect(rpc.mock.calls.filter(([name]) => name === "worker_finish_notification")).toHaveLength(1);
+    expect(rpc).toHaveBeenCalledWith("worker_record_health", { p_status: "failed", p_processed: 1 });
+  });
   it("uses a claimed lease, records intent and persists provider proof", async () => {
     const { client, rpc } = fakeClient();
     const provider = { ready: () => true, send: vi.fn(async () => ({ status: "sent" as const, providerMessageId: "fixture-provider-id" })) };
