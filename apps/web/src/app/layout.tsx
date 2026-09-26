@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Cormorant_Garamond, Jost } from "next/font/google";
-import { getIndexingPolicy, getSiteUrl } from "@/lib/seo/site";
+import { getAuthoritativeIndexingPolicy, getSiteUrl } from "@/lib/seo/site";
 import "./globals.css";
 
 const display = Cormorant_Garamond({
@@ -22,20 +22,21 @@ export const dynamic = "force-dynamic";
 
 const siteUrl = getSiteUrl();
 
-export const metadata: Metadata = {
+const baseMetadata: Metadata = {
   ...(siteUrl ? { metadataBase: siteUrl } : {}),
   title: {
     default: "Cruzial",
     template: "%s — Cruzial",
   },
   description: "Cruzial Parfums y Cruzial Import en una sola plataforma.",
-  robots: getIndexingPolicy(),
   openGraph: {
     type: "website",
     locale: "es_PE",
     siteName: "Cruzial",
   },
 };
+
+export async function generateMetadata():Promise<Metadata>{return {...baseMetadata,robots:await getAuthoritativeIndexingPolicy()};}
 
 export default function RootLayout({
   children,

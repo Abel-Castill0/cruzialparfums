@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 import { loadParfumsStorefront } from "@/lib/catalog/parfums-storefront";
-import { getIndexingPolicy, getSiteUrl } from "@/lib/seo/site";
+import { getAuthoritativeIndexingPolicy, getSiteUrl } from "@/lib/seo/site";
 import { createSupabasePublicServerClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
@@ -26,7 +26,7 @@ const PARFUMS_ROUTES: Array<{ path: string; priority: number; changeFrequency: "
  */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const site = getSiteUrl();
-  if (!site || !getIndexingPolicy().index) return [];
+  if (!site || !(await getAuthoritativeIndexingPolicy()).index) return [];
   const url = (path: string) => new URL(path, site).toString();
   const now = new Date();
 

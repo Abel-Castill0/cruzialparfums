@@ -1099,6 +1099,9 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"admin_customer_order_summary":
+{ Args: { "p_customer_id": string }; Returns: Json
+                           },
 "admin_duplicate_campaign":
 { Args: { "p_new_name": string,"p_new_number": number,"p_source_campaign_id": string }; Returns: {
               "archived_at": string | null,
@@ -1322,6 +1325,9 @@ isOneToOne: false
 { Args: { "p_business_unit_code": string,"p_entity_id"?: string }; Returns: {
               "attempts": number,"created_at": string,"delivery_status": string,"entity_id": string,"entity_type": string,"event_type": string,"id": string,"last_error_safe": string,"sent_at": string,"status": string,"updated_at": string
             }[]
+                           },
+"admin_operations_summary":
+{ Args: { "p_unit_code": string }; Returns: Json
                            },
 "admin_parfums_update_order_status":
 { Args: { "p_expected_status": string,"p_new_status": string,"p_order_id": string,"p_reason"?: string }; Returns: {
@@ -2046,6 +2052,9 @@ isOneToOne: false
               "brand": string,"campaign_closes_at": string,"campaign_id": string,"campaign_name": string,"campaign_number": number,"category_name": string,"category_slug": string,"media_alt": string,"media_url": string,"name": string,"presentations": Json,"product_id": string,"slug": string
             }[]
                            },
+"public_launch_ready":
+{ Args: Record<PropertyKey, never>; Returns: boolean
+                           },
 "public_list_import_catalog":
 { Args: { "p_category_slug"?: string,"p_page"?: number,"p_page_size"?: number,"p_query"?: string }; Returns: {
               "brand": string,"campaign_id": string,"campaign_number": number,"category_name": string,"category_slug": string,"media_alt": string,"media_url": string,"name": string,"presentations": Json,"product_id": string,"slug": string,"total_count": number
@@ -2091,6 +2100,9 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"worker_automation_health":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
 "worker_begin_notification":
 { Args: { "p_id": string,"p_lease_token": string }; Returns: {
               "attempts": number,

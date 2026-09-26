@@ -13,6 +13,7 @@ const NAV: Record<AdminShellUnit, { unitLabel: string; items: NavItem[] }> = {
     unitLabel: "Cruzial Parfums",
     items: [
       { label: "Resumen", href: "/admin/parfums", exact: true },
+      { label: "Operaciones", href: "/admin/parfums/operaciones" as Route },
       { label: "Pedidos", href: "/admin/parfums/pedidos" },
       { label: "Productos", href: "/admin/parfums/productos" },
       { label: "Categorías", href: "/admin/parfums/categorias" },
@@ -27,6 +28,7 @@ const NAV: Record<AdminShellUnit, { unitLabel: string; items: NavItem[] }> = {
     unitLabel: "Cruzial Import",
     items: [
       { label: "Resumen", href: "/admin/import", exact: true },
+      { label: "Operaciones", href: "/admin/import/operaciones" as Route },
       { label: "Pedidos", href: "/admin/import/pedidos" as Route },
       { label: "Clientes", href: "/admin/import/clientes" as Route },
       { label: "Consolidado", href: "/admin/import/consolidados" },
