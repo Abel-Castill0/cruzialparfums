@@ -154,13 +154,17 @@ select is((select count(*)::integer from public.inventory_reservations where ord
 -- on public.inventory itself -- this proves the SECURITY DEFINER function
 -- works for anon without one, and that its logic matches the reservation
 -- trigger's own rules exactly).
+-- Scalar form: a row filtered away by RLS yields NULL and FAILS, instead of
+-- a zero-row select silently skipping the assertion under no_plan().
+update public.product_variants set publication_status='published',price_verification_status='client_confirmed'
+ where id in ('43000000-0000-4000-8000-000000000022','43000000-0000-4000-8000-000000000023');
 set local role anon;
-select is(public.variant_effective_availability(v),true,'tracked with uncommitted stock is available to anon')
- from public.product_variants v where v.id='43000000-0000-4000-8000-000000000021';
-select is(public.variant_effective_availability(v),true,'status_only available is available to anon')
- from public.product_variants v where v.id='43000000-0000-4000-8000-000000000022';
-select is(public.variant_effective_availability(v),false,'status_only out_of_stock is unavailable to anon')
- from public.product_variants v where v.id='43000000-0000-4000-8000-000000000023';
+select is((select public.variant_effective_availability(v) from public.product_variants v
+ where v.id='43000000-0000-4000-8000-000000000021'),true,'tracked with uncommitted stock is available to anon');
+select is((select public.variant_effective_availability(v) from public.product_variants v
+ where v.id='43000000-0000-4000-8000-000000000022'),true,'status_only available is available to anon');
+select is((select public.variant_effective_availability(v) from public.product_variants v
+ where v.id='43000000-0000-4000-8000-000000000023'),false,'status_only out_of_stock is unavailable to anon');
 select throws_ok($$select count(*) from public.inventory$$,'42501',null,
  'anon still cannot select from public.inventory directly (unchanged; only the boolean crosses the API)');
 reset role;
@@ -170,6 +174,48 @@ select is((select public.variant_effective_availability(v) from public.product_v
  where v.id='43000000-0000-4000-8000-000000000021'),false,
  'tracked fully reserved is unavailable even though availability_status still says available');
 update public.inventory set reserved_quantity=0 where id='43000000-0000-4000-8000-000000000031';
+
+-- Direct RPC invocation (POST /rest/v1/rpc/variant_effective_availability
+-- with a caller-built row value): the SECURITY DEFINER function must not be
+-- an availability oracle for anything the public catalog cannot read.
+insert into public.products(id,business_unit_id,slug,name,publication_status) values
+ ('43000000-0000-4000-8000-000000000012','22222222-2222-4222-8222-222222222222','gate-b-import-unit','Gate B Import unit','published'),
+ ('43000000-0000-4000-8000-000000000013','11111111-1111-4111-8111-111111111111','gate-b-draft-product','Gate B draft product','draft');
+insert into public.product_variants(id,product_id,variant_kind,label,price_amount,publication_status,price_verification_status,archived_at) values
+ ('43000000-0000-4000-8000-000000000024','43000000-0000-4000-8000-000000000011','decant','Draft variant',9,'draft','client_confirmed',null),
+ ('43000000-0000-4000-8000-000000000025','43000000-0000-4000-8000-000000000012','bottle','Other unit',9,'published','client_confirmed',null),
+ ('43000000-0000-4000-8000-000000000026','43000000-0000-4000-8000-000000000011','decant','Archived variant',9,'published','client_confirmed',now()),
+ ('43000000-0000-4000-8000-000000000027','43000000-0000-4000-8000-000000000013','decant','Under draft product',9,'published','client_confirmed',null);
+insert into public.inventory(product_variant_id,inventory_mode,availability_status) values
+ ('43000000-0000-4000-8000-000000000024','status_only','available'),
+ ('43000000-0000-4000-8000-000000000025','status_only','available'),
+ ('43000000-0000-4000-8000-000000000026','status_only','available'),
+ ('43000000-0000-4000-8000-000000000027','status_only','available');
+
+set local role anon;
+select is(public.variant_effective_availability(jsonb_populate_record(null::public.product_variants,
+  '{"id":"43000000-0000-4000-8000-000000000024"}')), null::boolean,
+  'direct anon call with a known DRAFT variant uuid reveals nothing');
+select is(public.variant_effective_availability(jsonb_populate_record(null::public.product_variants,
+  '{"id":"43000000-0000-4000-8000-000000000025","publication_status":"published"}')), null::boolean,
+  'a non-Parfums variant reveals nothing, whatever the caller-built row claims');
+select is(public.variant_effective_availability(jsonb_populate_record(null::public.product_variants,
+  '{"id":"43000000-0000-4000-8000-000000000026","archived_at":null}')), null::boolean,
+  'an archived variant reveals nothing even if the supplied row claims it is not archived');
+select is(public.variant_effective_availability(jsonb_populate_record(null::public.product_variants,
+  '{"id":"43000000-0000-4000-8000-000000000027"}')), null::boolean,
+  'a published variant under a DRAFT product reveals nothing');
+select is(public.variant_effective_availability(jsonb_populate_record(null::public.product_variants,
+  '{"id":"43000000-0000-4000-8000-000000000022"}')), true,
+  'a genuinely public variant still answers through the direct call');
+select is((select count(*)::integer from public.product_variants where id in (
+  '43000000-0000-4000-8000-000000000024','43000000-0000-4000-8000-000000000026',
+  '43000000-0000-4000-8000-000000000027')), 0,
+  'the unpublished/archived variants are invisible to the anon catalog read the computed column rides on');
+select is((select public.variant_effective_availability(v) from public.product_variants v
+ where v.id='43000000-0000-4000-8000-000000000025'), null::boolean,
+  'an RLS-readable non-Parfums variant row still carries no availability through the embed');
+reset role;
 
 select * from finish();
 rollback;

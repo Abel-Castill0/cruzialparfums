@@ -58,7 +58,8 @@ export type PublicProductRow = {
     archived_at: string | null;
     sort_order: number;
     price_verification_status: string;
-    is_available: boolean;
+    // NULL only for a non-public variant (never reached via the RLS-filtered embed).
+    is_available: boolean | null;
   }>;
   product_media: Array<{
     provider: string;
@@ -204,7 +205,7 @@ function mapVariants(row: PublicProductRow): CatalogProductVariant[] {
         currency: "PEN" as const,
         sortOrder: item.sort_order,
         priceVerificationStatus: verification(item.price_verification_status),
-        isAvailable: item.is_available,
+        isAvailable: item.is_available === true,
       }];
     })
     .sort((a, b) => a.sortOrder - b.sortOrder || a.variantId.localeCompare(b.variantId));
