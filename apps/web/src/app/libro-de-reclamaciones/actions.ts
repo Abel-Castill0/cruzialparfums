@@ -2,32 +2,46 @@
 import { wakeNotificationWorker } from "@/domains/notifications/wake";
 
 import { validateComplaintForm, type ComplaintFormInput } from "@/domains/complaints/complaint-schema";
-import { submitComplaintEntry, type ComplaintEntry } from "@/domains/complaints/complaint-repository";
+import { submitComplaintEntry } from "@/domains/complaints/complaint-repository";
+import type { ComplaintConsumerReceipt } from "@/domains/complaints/complaint-receipt";
+import { ATTEMPT_REQUIRED_CODE, resolveAttempt, rotateAttempt } from "@/lib/security/attempt-capability";
 import { checkOrderRequestRateLimit } from "@/lib/security/order-abuse";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
-import { isValidUuid } from "@/domains/admin-parfums/product-schema";
 
 const RATE_LIMITED_MESSAGE =
   "Recibimos varias solicitudes en poco tiempo. Espera unos minutos antes de intentarlo de nuevo.";
+const ATTEMPT_REQUIRED_MESSAGE =
+  "Tu navegador no conservó la sesión segura del formulario. Activa las cookies para este sitio y vuelve a intentarlo; tu solicitud no se registró.";
 const SERVICE_UNAVAILABLE_MESSAGE =
   "No pudimos registrar tu solicitud en este momento. Tus datos no se enviaron; intenta nuevamente.";
 
 export type SubmitComplaintResult =
-  | { status: "error"; message: string; fieldErrors?: Record<string, string> }
-  | { status: "success"; id: string; entry: ComplaintEntry };
+  | { status: "error"; message: string; fieldErrors?: Record<string, string>; code?: typeof ATTEMPT_REQUIRED_CODE }
+  | { status: "success"; receipt: ComplaintConsumerReceipt };
 
+/**
+ * The idempotency identity is derived server-side from this browser's
+ * HttpOnly attempt capability (scoped to the business unit) — never accepted
+ * from the client — so a replay that returns the consumer's copy is only
+ * possible from the browser that made the original submission.
+ */
 export async function submitComplaintAction(
   businessUnitCode: "parfums" | "import",
-  requestId: string,
   formInput: Record<string, unknown>,
 ): Promise<SubmitComplaintResult> {
-  if ((businessUnitCode !== "parfums" && businessUnitCode !== "import") || !isValidUuid(requestId)) {
+  if (businessUnitCode !== "parfums" && businessUnitCode !== "import") {
     return { status: "error", message: "Selecciona el negocio y recarga el formulario antes de enviarlo." };
   }
   const validation = validateComplaintForm(formInput);
   if (!validation.ok) {
     return { status: "error", message: "Revisa los campos marcados.", fieldErrors: validation.errors };
   }
+
+  const attempt = await resolveAttempt("complaint", businessUnitCode);
+  if (!attempt.ok) {
+    return { status: "error", code: ATTEMPT_REQUIRED_CODE, message: ATTEMPT_REQUIRED_MESSAGE };
+  }
+  const requestId = attempt.requestId;
 
   const client = createSupabaseAdminClient();
   if (!client) {
@@ -55,5 +69,11 @@ export async function submitComplaintAction(
   }
 
   wakeNotificationWorker();
-  return { status: "success", id: result.data.id, entry: result.data };
+  return { status: "success", receipt: result.data };
+}
+
+/** "Registrar otra solicitud": the next submission starts a fresh attempt.
+ * Called only after the client received a resolved success. */
+export async function startNewComplaintAttempt(): Promise<void> {
+  await rotateAttempt("complaint");
 }

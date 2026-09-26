@@ -3,9 +3,10 @@
 import type { Route } from "next";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useRef, useState, useTransition, type FormEvent } from "react";
+import { useEffect, useRef, useState, useTransition, type FormEvent } from "react";
 import {
   createParfumsOrderRequest,
+  startNewParfumsCheckoutAttempt,
   type CreateParfumsOrderResult,
 } from "@/app/parfums/checkout/actions";
 import { CartLine } from "@/components/parfums/cart/cart-line";
@@ -13,9 +14,14 @@ import { useParfumsCart } from "@/components/parfums/cart/use-parfums-cart";
 import { Breadcrumbs } from "@/components/parfums/navigation/breadcrumbs";
 import type { CatalogProduct } from "@/domains/catalog/types";
 import { cartIdentity } from "@/domains/catalog/types";
-import { clearStoredRequestId, getOrCreatePersistedRequestId, handoffStorageKey } from "@/domains/orders/parfums-order-handoff";
+import { handoffStorageKey } from "@/domains/orders/parfums-order-handoff";
 import { PARFUMS_DELIVERY_OPTIONS } from "@/domains/orders/parfums-order-request";
 import type { ParfumsCheckoutCustomer } from "@/domains/whatsapp/parfums-message-builder";
+import {
+  recoverPendingAttemptRotation,
+  rotateAttemptAfterSuccess,
+  submitWithAttemptCapability,
+} from "@/lib/attempt-client";
 import styles from "./checkout.module.css";
 
 const emptyCustomer: ParfumsCheckoutCustomer = {
@@ -40,24 +46,10 @@ export function CheckoutExperience({
   const [customer, setCustomer] = useState(emptyCustomer);
   const [result, setResult] = useState<CreateParfumsOrderResult | null>(null);
   const [isPending, startTransition] = useTransition();
-  const requestIdRef = useRef<string | undefined>(undefined);
-  const [isRequestIdDurable, setIsRequestIdDurable] = useState(true);
-  if (requestIdRef.current === undefined) {
-    // Durable across reload: a lost server response followed by a reload
-    // recovers this SAME id, so a retry replays idempotently instead of
-    // creating a second order. Never rotated by editing a field or cart
-    // line — only by a resolved success (see the submit() success branch).
-    // isDurable is false when sessionStorage cannot actually persist it
-    // (blocked storage, some privacy modes/webviews) — duplicate
-    // prevention within this same unreloaded tab still works (the id
-    // stays stable in memory), but a reload after a lost response would
-    // lose it, so the customer is warned rather than left with a false
-    // guarantee.
-    const pending = getOrCreatePersistedRequestId();
-    requestIdRef.current = pending.requestId;
-    if (!pending.isDurable) setIsRequestIdDurable(false);
-  }
   const errorRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    recoverPendingAttemptRotation("parfums-order", startNewParfumsCheckoutAttempt);
+  }, []);
 
   function resetAttempt() {
     setResult(null);
@@ -71,23 +63,26 @@ export function CheckoutExperience({
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (lines.length === 0 || isPending) return;
-    const requestId = requestIdRef.current!;
     setResult(null);
     startTransition(async () => {
       let actionResult: CreateParfumsOrderResult;
       try {
-        actionResult = await createParfumsOrderRequest({
-          requestId,
+        // No client-side request id: the server derives the idempotency
+        // identity from this browser's HttpOnly attempt cookie, which
+        // survives a reload, so a retry after a lost response replays the
+        // original order instead of creating a second one.
+        const submission = {
           lines: lines.map((line) => ({
             productId: cartIdentity(line.product),
             variantId: line.variant.variantId,
             quantity: line.quantity,
           })),
           customer,
-        });
+        };
+        actionResult = await submitWithAttemptCapability(() => createParfumsOrderRequest(submission));
       } catch {
         // Network/connection failure: unknown outcome server-side. The
-        // request id is already persisted, so a retry (even after a reload)
+        // attempt cookie is untouched, so a retry (even after a reload)
         // replays idempotently instead of risking a second order.
         setResult({
           status: "error",
@@ -108,9 +103,9 @@ export function CheckoutExperience({
           // A safe reference-only fallback remains available on the next page.
         }
       }
-      // Resolved: the next checkout (a fresh cart, after navigating back)
-      // must not replay into this now-completed order.
-      clearStoredRequestId();
+      // Resolved and received: the next checkout (a fresh cart) must be a new
+      // attempt, never a replay of this now-completed order.
+      await rotateAttemptAfterSuccess("parfums-order", startNewParfumsCheckoutAttempt);
       clear();
       router.push(`/parfums/gracias/${encodeURIComponent(actionResult.orderNumber)}` as Route);
     });
@@ -174,13 +169,6 @@ export function CheckoutExperience({
             </p>
           </div>
           <form onSubmit={submit} aria-busy={isPending}>
-            {!isRequestIdDurable ? (
-              <p className={styles.storageWarning} role="alert">
-                Tu navegador está bloqueando el almacenamiento que evita solicitudes duplicadas.
-                Si esta página se recarga o pierde conexión justo después de enviar, podrías
-                registrar la solicitud dos veces. Evita recargar hasta ver la confirmación.
-              </p>
-            ) : null}
             {result?.status === "error" ? (
               <div ref={errorRef} className={styles.submitError} role="alert" tabIndex={-1}>
                 <strong>No pudimos registrar la solicitud.</strong>

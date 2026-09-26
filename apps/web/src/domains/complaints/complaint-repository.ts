@@ -5,6 +5,7 @@ import type { Database } from "@/lib/supabase/database.types";
 import { mapPostgrestError, type AdminRepositoryResult } from "@/domains/admin-parfums/products-repository";
 import type { ComplaintFormInput, ComplaintStatus } from "./complaint-schema";
 import type { ComplaintUrgency } from "./sla";
+import { toComplaintConsumerReceipt, type ComplaintConsumerReceipt } from "./complaint-receipt";
 
 export type ComplaintRow = Database["public"]["Tables"]["complaint_book_entries"]["Row"];
 
@@ -73,7 +74,7 @@ export async function submitComplaintEntry(
   businessUnitCode: "parfums" | "import",
   requestId: string,
   input: ComplaintFormInput,
-): Promise<{ ok: true; data: ComplaintEntry } | { ok: false; error: SubmitComplaintError }> {
+): Promise<{ ok: true; data: ComplaintConsumerReceipt } | { ok: false; error: SubmitComplaintError }> {
   const { data, error } = await client.rpc("public_submit_complaint_entry", {
     p_business_unit_code: businessUnitCode,
     p_request_id: requestId,
@@ -96,7 +97,9 @@ export async function submitComplaintEntry(
     if (error.code === "22023") return { ok: false, error: { type: "invalid_input", message: error.message } };
     return { ok: false, error: { type: "unknown", message: error.message } };
   }
-  return { ok: true, data: toComplaintEntry(data as ComplaintRow) };
+  // Public path: only the consumer-safe allowlisted receipt ever leaves here,
+  // never the full row/ComplaintEntry (admin notes, resolver, internal state).
+  return { ok: true, data: toComplaintConsumerReceipt(data as ComplaintRow, businessUnitCode) };
 }
 
 export type ComplaintListPage = {

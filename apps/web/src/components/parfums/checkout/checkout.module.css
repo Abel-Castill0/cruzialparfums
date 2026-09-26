@@ -298,17 +298,6 @@
 .submitFeedback a {
   text-decoration: underline;
 }
-
-.storageWarning {
-  margin-bottom: 15px;
-  padding: 11px 13px;
-  border-left: 3px solid #a3760b;
-  color: #6b5100;
-  background: #fff8e6;
-  font-size: 11px;
-  line-height: 1.5;
-}
-
 .submitError {
   padding: 12px 14px;
   border-left: 3px solid #7c3028;

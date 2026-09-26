@@ -15,17 +15,20 @@ import {
   buildWhatsAppUrl,
 } from "@/domains/whatsapp/parfums-message-builder";
 import { loadParfumsStorefront } from "@/lib/catalog/parfums-storefront";
+import { ATTEMPT_REQUIRED_CODE, resolveAttempt, rotateAttempt } from "@/lib/security/attempt-capability";
 import { checkOrderRequestRateLimit } from "@/lib/security/order-abuse";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
 
 const RATE_LIMITED_MESSAGE =
   "Recibimos varias solicitudes en poco tiempo. Espera unos minutos antes de intentarlo de nuevo.";
+const ATTEMPT_REQUIRED_MESSAGE =
+  "Tu navegador no conservó la sesión de compra segura. Activa las cookies para este sitio y vuelve a intentarlo; no registramos ninguna solicitud.";
 const ORDER_SERVICE_UNAVAILABLE_MESSAGE =
   "No pudimos procesar tu solicitud en este momento. Tu carrito se conserva.";
 
 export type CreateParfumsOrderResult =
   | ({ status: "error" } & Pick<ParfumsOrderValidationError, "message" | "fieldErrors"> & {
-        code?: "rate_limited";
+        code?: "rate_limited" | typeof ATTEMPT_REQUIRED_CODE;
         retryAfterSeconds?: number;
       })
   | {
@@ -41,8 +44,12 @@ function isOrderError(
   return !result.ok;
 }
 
+/** Public input: everything but the idempotency identity, which the server
+ * derives from this browser's HttpOnly attempt capability. */
+export type ParfumsOrderSubmission = Omit<ParfumsOrderRequestInput, "requestId">;
+
 export async function createParfumsOrderRequest(
-  input: ParfumsOrderRequestInput,
+  submission: ParfumsOrderSubmission,
 ): Promise<CreateParfumsOrderResult> {
   // Server revalidation against the same published, price-confirmed catalog
   // the storefront rendered — never against client-supplied names or prices.
@@ -50,6 +57,13 @@ export async function createParfumsOrderRequest(
   if (storefront.source === "unavailable") {
     return { status: "error", message: ORDER_SERVICE_UNAVAILABLE_MESSAGE };
   }
+  const attempt = await resolveAttempt("parfums-order", "parfums");
+  if (!attempt.ok) {
+    return { status: "error", code: ATTEMPT_REQUIRED_CODE, message: ATTEMPT_REQUIRED_MESSAGE };
+  }
+  // Any client-supplied requestId is overwritten: only the capability holder
+  // can reproduce this id, so only they can have an existing order replayed.
+  const input = { ...(submission as object), requestId: attempt.requestId } as ParfumsOrderRequestInput;
   const validated = validateAndResolveParfumsOrder(input, storefront.catalog);
   if (isOrderError(validated)) return {
     status: "error",
@@ -132,4 +146,10 @@ export async function createParfumsOrderRequest(
     whatsappUrl: buildWhatsAppUrl(storefront.contact.whatsappNumber, message),
     created: persisted.data.created,
   };
+}
+
+/** Starts a fresh attempt for the next purchase. The client calls this only
+ * after it has actually received a resolved success. */
+export async function startNewParfumsCheckoutAttempt(): Promise<void> {
+  await rotateAttempt("parfums-order");
 }

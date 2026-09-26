@@ -4,11 +4,15 @@ import type { Route } from "next";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useImportCart } from "@/components/import/cart/use-import-cart";
-import { createImportOrderRequest } from "@/app/import/checkout/actions";
+import { createImportOrderRequest, startNewImportCheckoutAttempt } from "@/app/import/checkout/actions";
 import type { CreateImportOrderResult } from "@/app/import/checkout/actions";
 import { getCurrentImportCampaignState } from "@/app/import/carrito/actions";
 import type { ImportCartCampaignState } from "@/domains/carts/import-cart";
-import { isSessionStorageAvailable } from "@/lib/browser-storage";
+import {
+  recoverPendingAttemptRotation,
+  rotateAttemptAfterSuccess,
+  submitWithAttemptCapability,
+} from "@/lib/attempt-client";
 import styles from "./page.module.css";
 
 type CheckoutFormState =
@@ -16,64 +20,6 @@ type CheckoutFormState =
   | { phase: "submitting" }
   | { phase: "success"; data: NonNullable<CreateImportOrderResult & { status: "success" }> }
   | { phase: "error"; message: string };
-
-function generateUUID(): string {
-  if (typeof crypto !== "undefined" && crypto.randomUUID) {
-    return crypto.randomUUID();
-  }
-  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
-    const r = (Math.random() * 16) | 0;
-    const v = c === "x" ? r : (r & 0x3) | 0x8;
-    return v.toString(16);
-  });
-}
-
-const REQUEST_ID_KEY = "cruzial:import:checkout:request-id";
-
-function getStoredRequestId(): string | null {
-  try {
-    return sessionStorage.getItem(REQUEST_ID_KEY);
-  } catch {
-    return null;
-  }
-}
-
-function setStoredRequestId(requestId: string) {
-  try {
-    sessionStorage.setItem(REQUEST_ID_KEY, requestId);
-  } catch {
-    /* best-effort: durability degrades to in-memory only for this tab */
-  }
-}
-
-function clearStoredRequestId() {
-  try {
-    sessionStorage.removeItem(REQUEST_ID_KEY);
-  } catch {
-    /* noop */
-  }
-}
-
-/** Persists the id immediately (not just on submit) so a lost server
- * response followed by a page reload still recovers the SAME pending
- * attempt id, letting a retry land as an idempotent replay instead of a
- * second order. Only ever rotated by clearStoredRequestId — a resolved
- * success, or the user explicitly starting a new purchase.
- *
- * isDurable is false when sessionStorage cannot actually persist the id
- * (blocked storage, some privacy modes/webviews) — duplicate prevention
- * within this same unreloaded tab still works (the id stays stable in
- * memory), but a reload after a lost response would lose it, so the
- * caller must warn the customer rather than silently claim a guarantee
- * that cannot be kept. */
-function getOrCreatePersistedRequestId(): { requestId: string; isDurable: boolean } {
-  if (!isSessionStorageAvailable()) return { requestId: generateUUID(), isDurable: false };
-  const existing = getStoredRequestId();
-  if (existing) return { requestId: existing, isDurable: true };
-  const fresh = generateUUID();
-  setStoredRequestId(fresh);
-  return { requestId: fresh, isDurable: true };
-}
 
 function getStoredSuccess(): CreateImportOrderResult & { status: "success" } | null {
   try {
@@ -129,21 +75,22 @@ export default function ImportCheckoutPage() {
   const { lines, clear, reconciliation } = useImportCart(campaignState);
   const campaign = campaignState.status === "active" ? campaignState.campaign : null;
   const checkoutUsable = campaignState.status === "active";
-  const [formState, setFormState] = useState<CheckoutFormState>(() => {
-    const saved = getStoredSuccess();
-    if (saved) return { phase: "success", data: saved };
-    return { phase: "form" };
-  });
+  // Deterministic first render on server and client; the tab's last
+  // success (a UX convenience only) is restored after hydration.
+  const [formState, setFormState] = useState<CheckoutFormState>({ phase: "form" });
+  useEffect(() => {
+    recoverPendingAttemptRotation("import-order", startNewImportCheckoutAttempt);
+    let active = true;
+    void Promise.resolve().then(() => {
+      const saved = getStoredSuccess();
+      if (active && saved) setFormState({ phase: "success", data: saved });
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const formRef = useRef<HTMLFormElement>(null);
-  const requestIdRef = useRef<string | undefined>(undefined);
-  const [isRequestIdDurable, setIsRequestIdDurable] = useState(true);
-  if (requestIdRef.current === undefined) {
-    const pending = getOrCreatePersistedRequestId();
-    requestIdRef.current = pending.requestId;
-    if (!pending.isDurable) setIsRequestIdDurable(false);
-  }
-
   const displaySubtotal = useMemo(
     () => lines.reduce((sum, l) => sum + parseFloat(l.price) * l.quantity, 0),
     [lines],
@@ -178,8 +125,10 @@ export default function ImportCheckoutPage() {
       setFormState({ phase: "submitting" });
 
       try {
-        const result = await createImportOrderRequest({
-          requestId: requestIdRef.current!,
+        // No client-side request id: the server derives the idempotency
+        // identity from this browser's HttpOnly attempt cookie, so a retry
+        // after a lost response (even across a reload) replays the original.
+        const submission = {
           customer: { name, phone: phone.replace(/\D/g, "") },
           delivery: { district, address, ...(note ? { note } : {}) },
           lines: lines.map((l) => ({
@@ -187,7 +136,8 @@ export default function ImportCheckoutPage() {
             offerUpdatedAt: l.offerUpdatedAt,
             quantity: l.quantity,
           })),
-        });
+        };
+        const result = await submitWithAttemptCapability(() => createImportOrderRequest(submission));
 
         if (result.status === "error") {
           setFormState({ phase: "error", message: result.message });
@@ -196,6 +146,7 @@ export default function ImportCheckoutPage() {
         }
 
         storeSuccess(result);
+        await rotateAttemptAfterSuccess("import-order", startNewImportCheckoutAttempt);
         clear();
         setFormState({ phase: "success", data: result });
       } catch {
@@ -264,10 +215,6 @@ export default function ImportCheckoutPage() {
                 type="button"
                 onClick={() => {
                   clearStoredSuccess();
-                  clearStoredRequestId();
-                  const pending = getOrCreatePersistedRequestId();
-                  requestIdRef.current = pending.requestId;
-                  setIsRequestIdDurable(pending.isDurable);
                   setFormState({ phase: "form" });
                 }}
                 className={styles.secondaryAction}
@@ -337,16 +284,6 @@ export default function ImportCheckoutPage() {
         {formState.phase === "error" && (
           <div className={styles.errorBanner} role="alert" aria-live="assertive">
             <p>{formState.message}</p>
-          </div>
-        )}
-
-        {!isRequestIdDurable && (
-          <div className={styles.noticeBanner} role="alert">
-            <p>
-              Tu navegador está bloqueando el almacenamiento que evita solicitudes duplicadas.
-              Si esta página se recarga o pierde conexión justo después de enviar, podrías
-              registrar la solicitud dos veces. Evita recargar hasta ver la confirmación.
-            </p>
           </div>
         )}
 

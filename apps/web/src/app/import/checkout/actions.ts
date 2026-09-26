@@ -12,11 +12,14 @@ import {
   type PersistedImportOrderSummary,
 } from "@/domains/orders/import-persisted-summary";
 import { readImportPublicContact } from "@/domains/import/import-public-contact";
+import { ATTEMPT_REQUIRED_CODE, resolveAttempt, rotateAttempt } from "@/lib/security/attempt-capability";
 import { checkOrderRequestRateLimit } from "@/lib/security/order-abuse";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
 
 const RATE_LIMITED_MESSAGE =
   "Recibimos varias solicitudes en poco tiempo. Espera unos minutos antes de intentarlo de nuevo.";
+const ATTEMPT_REQUIRED_MESSAGE =
+  "Tu navegador no conservó la sesión de compra segura. Activa las cookies para este sitio y vuelve a intentarlo; no registramos ninguna solicitud.";
 const ORDER_SERVICE_UNAVAILABLE_MESSAGE =
   "No pudimos procesar tu solicitud en este momento. Tu carrito se conserva.";
 
@@ -24,7 +27,7 @@ export type CreateImportOrderResult =
   | ({ status: "error" } & Pick<
       ImportOrderValidationError,
       "message" | "fieldErrors"
-    > & { code?: "rate_limited"; retryAfterSeconds?: number })
+    > & { code?: "rate_limited" | typeof ATTEMPT_REQUIRED_CODE; retryAfterSeconds?: number })
   | {
       status: "success";
       orderNumber: string;
@@ -95,10 +98,23 @@ function importOrderErrorToMessage(error: {
   }
 }
 
+/** Public input: everything but the idempotency identity, which the server
+ * derives from this browser's HttpOnly attempt capability. */
+export type ImportOrderSubmission = Omit<ImportOrderRequestInput, "requestId">;
+
 export async function createImportOrderRequest(
-  input: ImportOrderRequestInput,
+  submission: ImportOrderSubmission,
 ): Promise<CreateImportOrderResult> {
-  const validated = validateAndResolveImportOrder(input);
+  const attempt = await resolveAttempt("import-order", "import");
+  if (!attempt.ok) {
+    return { status: "error", code: ATTEMPT_REQUIRED_CODE, message: ATTEMPT_REQUIRED_MESSAGE };
+  }
+  // Any client-supplied requestId is overwritten: only the capability holder
+  // can reproduce this id, so only they can have an existing order replayed.
+  const validated = validateAndResolveImportOrder({
+    ...(submission as object),
+    requestId: attempt.requestId,
+  } as ImportOrderRequestInput);
   if ("ok" in validated)
     return {
       status: "error",
@@ -187,4 +203,10 @@ export async function createImportOrderRequest(
     depositAmount: summary.depositAmountSnapshot,
     campaignNumber: summary.campaignNumber ?? persisted.data.campaignNumber,
   };
+}
+
+/** Starts a fresh attempt for the next request. The client calls this only
+ * after it has actually received a resolved success. */
+export async function startNewImportCheckoutAttempt(): Promise<void> {
+  await rotateAttempt("import-order");
 }

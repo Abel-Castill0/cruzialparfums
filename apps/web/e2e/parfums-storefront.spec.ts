@@ -1,4 +1,30 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
+import { LOCAL_DB_AVAILABLE, orderSideEffects, provisionQaParfumsUnit } from "./local-db";
+
+const ORDER_NUMBER = /CRP-\d{8}-[A-F0-9]{12}/;
+
+function uniquePhone() {
+  // 9 + 5 time digits + 3 random digits: unique across parallel projects.
+  return `9${String(Date.now()).slice(-5)}${String(Math.floor(Math.random() * 1_000)).padStart(3, "0")}`;
+}
+
+async function checkoutWithQaProduct(page: Page, phone: string) {
+  // Self-provisioning: this test adds exactly the tracked unit it reserves,
+  // so desktop/mobile/parallel runs can never starve each other.
+  if (LOCAL_DB_AVAILABLE) provisionQaParfumsUnit();
+  await page.goto("/parfums/productos/local-qa-parfums");
+  await page.getByRole("button", { name: /^Añadir/ }).click();
+  await page.goto("/parfums/checkout");
+  await expect(page.locator("[data-checkout-total]")).not.toHaveText("S/ 0.00");
+  await fillCheckoutForm(page, phone);
+}
+
+async function fillCheckoutForm(page: Page, phone: string) {
+  await page.locator("#checkout-name").fill("QA E2E Cruzial");
+  await page.locator("#checkout-phone").fill(phone);
+  await page.locator("#checkout-district").fill("Miraflores");
+  await page.locator("#checkout-note").fill("[QA E2E] no despachar");
+}
 
 // Parfums storefront — database-truth surfaces, legacy URLs and the full
 // order request. Runs on desktop and mobile projects.
@@ -103,16 +129,8 @@ test.describe("parfums storefront", () => {
     // availability is realistic/mixed (some intentionally out_of_stock), and
     // since availability is enforced at persistence, an arbitrary catalog
     // card is not a reliable pick for a test that must always succeed.
-    await page.goto("/parfums/productos/local-qa-parfums");
-    await page.getByRole("button", { name: /^Añadir/ }).click();
-
-    await page.goto("/parfums/checkout");
-    await expect(page.locator("[data-checkout-total]")).not.toHaveText("S/ 0.00");
-    await page.locator("#checkout-name").fill("QA E2E Cruzial");
-    // Unique per run: the phone identity is rate limited (5 requests / hour).
-    await page.locator("#checkout-phone").fill(`9${String(Date.now() % 100_000_000).padStart(8, "0")}`);
-    await page.locator("#checkout-district").fill("Miraflores");
-    await page.locator("#checkout-note").fill("[QA E2E] no despachar");
+    // Unique per test: the phone identity is rate limited (5 requests / hour).
+    await checkoutWithQaProduct(page, uniquePhone());
     await page.locator("[data-checkout-submit]").click();
 
     await expect(page).toHaveURL(/\/parfums\/gracias\/CRP-\d{8}-[A-F0-9]{12}$/, { timeout: 15_000 });
@@ -123,40 +141,57 @@ test.describe("parfums storefront", () => {
     expect(decodeURIComponent(href!)).toContain(reference);
   });
 
-  const REQUEST_ID_KEY = "cruzial:parfums:checkout:request-id";
+  test("lost response, reload, retry: the same browser gets the original order back, never a duplicate", async ({ page }) => {
+    test.skip(process.env.E2E_ALLOW_ORDER_SUBMIT !== "1" || !LOCAL_DB_AVAILABLE, "needs the disposable local stack");
+    const phone = uniquePhone();
+    await checkoutWithQaProduct(page, phone);
 
-  test("checkout pending-attempt id survives a reload, so a lost-response retry replays instead of duplicating", async ({ page }) => {
-    test.skip(process.env.E2E_ALLOW_ORDER_SUBMIT !== "1", "set E2E_ALLOW_ORDER_SUBMIT=1 against a disposable database");
+    // Let the server COMMIT the order, then drop its response on the floor —
+    // but only for the submission that carries the attempt capability (the
+    // first one is the capability handshake and passes through untouched).
+    let committed: string | null = null;
+    await page.route("**/parfums/checkout", async (route) => {
+      const request = route.request();
+      const carriesAttempt = (await request.headerValue("cookie"))?.includes("cz_attempt_parfums_order=");
+      if (request.method() !== "POST" || !carriesAttempt || committed) return route.continue();
+      const response = await route.fetch();
+      committed = (await response.text()).match(ORDER_NUMBER)?.[0] ?? null;
+      await route.abort("connectionreset");
+    });
+    await page.locator("[data-checkout-submit]").click();
+    await expect(page.getByRole("alert")).toContainText(/No pudimos conectar/);
+    expect(committed).toMatch(ORDER_NUMBER);
+    expect(orderSideEffects(phone)).toEqual({ orders: 1, outbox: 1, reservations: 1 });
 
-    await page.goto("/parfums/productos/local-qa-parfums");
-    await page.getByRole("button", { name: /^Añadir/ }).click();
+    // The HttpOnly capability is never exposed to page script.
+    expect(await page.evaluate(() => document.cookie)).not.toContain("cz_attempt");
 
-    await page.goto("/parfums/checkout");
-    await expect(page.locator("[data-checkout-total]")).not.toHaveText("S/ 0.00");
-    // Persisted on mount, before any submit — the root of the fix: a lost
-    // server response no longer loses the pending-attempt identity with it.
-    const idBeforeReload = await page.evaluate((key) => sessionStorage.getItem(key), REQUEST_ID_KEY);
-    expect(idBeforeReload).toMatch(/^[0-9a-f-]{36}$/i);
-
+    await page.unrouteAll();
     await page.reload();
     await expect(page.locator("[data-checkout-total]")).not.toHaveText("S/ 0.00");
-    const idAfterReload = await page.evaluate((key) => sessionStorage.getItem(key), REQUEST_ID_KEY);
-    expect(idAfterReload).toBe(idBeforeReload);
-
-    // Editing the form before the first submit must not rotate the id either
-    // — only a resolved success (checked below) or an explicit new purchase.
-    await page.locator("#checkout-name").fill("QA E2E Reload");
-    const idAfterEdit = await page.evaluate((key) => sessionStorage.getItem(key), REQUEST_ID_KEY);
-    expect(idAfterEdit).toBe(idBeforeReload);
-
-    await page.locator("#checkout-phone").fill(`9${String(Date.now() % 100_000_000).padStart(8, "0")}`);
-    await page.locator("#checkout-district").fill("Miraflores");
+    await fillCheckoutForm(page, phone);
     await page.locator("[data-checkout-submit]").click();
-    await expect(page).toHaveURL(/\/parfums\/gracias\//, { timeout: 15_000 });
 
-    // Resolved: the id must be cleared so the next (fresh-cart) checkout
-    // never replays into this now-completed order.
-    const idAfterSuccess = await page.evaluate((key) => sessionStorage.getItem(key), REQUEST_ID_KEY);
-    expect(idAfterSuccess).toBeNull();
+    await expect(page).toHaveURL(new RegExp(`/parfums/gracias/${committed}$`), { timeout: 15_000 });
+    expect(orderSideEffects(phone)).toEqual({ orders: 1, outbox: 1, reservations: 1 });
+  });
+
+  test("a browser that cannot keep the attempt cookie fails closed before any order exists", async ({ page }) => {
+    test.skip(process.env.E2E_ALLOW_ORDER_SUBMIT !== "1" || !LOCAL_DB_AVAILABLE, "needs the disposable local stack");
+    const phone = uniquePhone();
+    await checkoutWithQaProduct(page, phone);
+
+    // Simulates blocked cookies: the server never receives the capability.
+    await page.route("**/parfums/checkout", async (route) => {
+      if (route.request().method() !== "POST") return route.continue();
+      const headers = { ...route.request().headers() };
+      delete headers.cookie;
+      await route.continue({ headers });
+    });
+    await page.locator("[data-checkout-submit]").click();
+
+    await expect(page.getByRole("alert")).toContainText(/Activa las cookies/);
+    await expect(page).toHaveURL(/\/parfums\/checkout$/);
+    expect(orderSideEffects(phone).orders).toBe(0);
   });
 });

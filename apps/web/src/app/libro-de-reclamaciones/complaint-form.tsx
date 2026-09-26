@@ -1,13 +1,18 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
-import { submitComplaintAction, type SubmitComplaintResult } from "./actions";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { startNewComplaintAttempt, submitComplaintAction, type SubmitComplaintResult } from "./actions";
 import { COMPLAINT_DETAIL_MAX_LENGTH, COMPLAINT_REQUEST_MAX_LENGTH } from "@/domains/complaints/complaint-schema";
 import type { BusinessLegalIdentity } from "@/domains/complaints/business-legal-identity";
-import type { ComplaintEntry } from "@/domains/complaints/complaint-repository";
+import type { ComplaintConsumerReceipt } from "@/domains/complaints/complaint-receipt";
+import {
+  recoverPendingAttemptRotation,
+  rotateAttemptAfterSuccess,
+  submitWithAttemptCapability,
+} from "@/lib/attempt-client";
 import styles from "./page.module.css";
 
-const DOCUMENT_TYPE_LABEL: Record<ComplaintEntry["documentType"], string> = {
+const DOCUMENT_TYPE_LABEL: Record<ComplaintConsumerReceipt["documentType"], string> = {
   dni: "DNI",
   ce: "Carné de extranjería",
   pasaporte: "Pasaporte",
@@ -17,19 +22,10 @@ function formatDateTime(iso: string) {
   return new Date(iso).toLocaleString("es-PE", { dateStyle: "long", timeStyle: "short" });
 }
 
-function generateUUID(): string {
-  if (typeof crypto !== "undefined" && crypto.randomUUID) return crypto.randomUUID();
-  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
-    const r = (Math.random() * 16) | 0;
-    const v = c === "x" ? r : (r & 0x3) | 0x8;
-    return v.toString(16);
-  });
-}
-
 type FormState =
   | { phase: "form" }
   | { phase: "submitting" }
-  | { phase: "success"; entry: ComplaintEntry }
+  | { phase: "success"; receipt: ComplaintConsumerReceipt }
   | { phase: "error"; message: string };
 
 export function ComplaintForm({
@@ -44,7 +40,9 @@ export function ComplaintForm({
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [isMinor, setIsMinor] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
-  const requestIdRef = useRef<string>(generateUUID());
+  useEffect(() => {
+    recoverPendingAttemptRotation("complaint", startNewComplaintAttempt);
+  }, []);
 
   const handleSubmit = useCallback(
     async (event: React.FormEvent<HTMLFormElement>) => {
@@ -56,11 +54,9 @@ export function ComplaintForm({
       const input = Object.fromEntries(fd.entries());
 
       let result: SubmitComplaintResult;
-      try { result = await submitComplaintAction(
-        businessUnit,
-        requestIdRef.current,
-        input,
-      ); } catch {
+      try {
+        result = await submitWithAttemptCapability(() => submitComplaintAction(businessUnit, input));
+      } catch {
         setState({phase:"error",message:"No se pudo confirmar el envío. Conservamos tus datos; vuelve a intentarlo."});
         return;
       }
@@ -71,22 +67,24 @@ export function ComplaintForm({
         return;
       }
 
-      setState({ phase: "success", entry: result.entry });
+      // Received: any later submission is a new complaint, not a replay.
+      await rotateAttemptAfterSuccess("complaint", startNewComplaintAttempt);
+      setState({ phase: "success", receipt: result.receipt });
     },
     [businessUnit],
   );
 
   if (state.phase === "success") {
-    const entry = state.entry;
-    const legal = legalIdentity[businessUnit];
-    const unitLabel = businessUnit === "parfums" ? "Cruzial Parfums" : "Cruzial Import";
+    const entry = state.receipt;
+    const legal = legalIdentity[entry.businessUnit];
+    const unitLabel = entry.businessUnit === "parfums" ? "Cruzial Parfums" : "Cruzial Import";
     return (
       <div className={styles.success} role="status">
         <div className={styles.printArea}>
           <h2>Tu solicitud fue registrada.</h2>
           <p>Conserva esta copia — puedes imprimirla o guardarla como PDF ahora mismo.</p>
           <div className={styles.receipt}>
-            <div className={styles.receiptRow}><span>Referencia</span><strong>{entry.id}</strong></div>
+            <div className={styles.receiptRow}><span>Referencia</span><strong>{entry.reference}</strong></div>
             <div className={styles.receiptRow}><span>Fecha</span><span>{formatDateTime(entry.createdAt)}</span></div>
             <div className={styles.receiptRow}><span>Unidad de negocio</span><span>{unitLabel}</span></div>
             <div className={styles.receiptRow}><span>Tipo</span><span>{entry.complaintType === "reclamo" ? "Reclamo" : "Queja"}</span></div>
@@ -122,7 +120,6 @@ export function ComplaintForm({
             type="button"
             className={styles.secondaryAction}
             onClick={() => {
-              requestIdRef.current = generateUUID();
               setState({ phase: "form" });
               formRef.current?.reset();
               setIsMinor(false);
@@ -178,9 +175,8 @@ export function ComplaintForm({
         }
         return (
           <p className={styles.legalNotice} role="status">
-            {unitLabel} aún no completó su identificación legal (razón social, RUC y dirección) en este sistema.
-            Puedes registrar tu solicitud igualmente — se procesará con normalidad — y esta información se
-            añadirá a tu copia impresa en cuanto esté disponible.
+            {unitLabel} aún no completó su identificación legal (razón social, RUC y dirección) en este sistema,
+            por lo que tu copia no la incluirá. Puedes registrar tu solicitud igualmente: quedará registrada con normalidad.
           </p>
         );
       })()}
