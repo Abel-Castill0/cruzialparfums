@@ -3174,6 +3174,21 @@ export type Database = {
           threshold_reached: boolean
         }[]
       }
+      check_abuse_rate_limit: {
+        Args: {
+          p_business_unit_code: string
+          p_ip_hash: string
+          p_phone_hash: string
+          p_purpose: string
+          p_request_id: string
+        }
+        Returns: {
+          allowed: boolean
+          duplicate_request: boolean
+          reason: string
+          retry_after_seconds: number
+        }[]
+      }
       check_order_request_rate_limit: {
         Args: {
           p_business_unit_code: string

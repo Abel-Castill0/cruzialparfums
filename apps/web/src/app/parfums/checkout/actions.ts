@@ -62,6 +62,7 @@ export async function createParfumsOrderRequest(
 
   const rateLimit = await checkOrderRequestRateLimit({
     client,
+    purpose: "order_request",
     businessUnit: "parfums",
     requestId: validated.requestId,
     phone: validated.customer.phone,

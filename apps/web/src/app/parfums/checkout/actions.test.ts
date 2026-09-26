@@ -134,6 +134,7 @@ describe("createParfumsOrderRequest — Gate 2B rate limit integration", () => {
 
     expect(checkOrderRequestRateLimit).toHaveBeenCalledWith(
       expect.objectContaining({
+        purpose: "order_request",
         businessUnit: "parfums",
         requestId: VALIDATED.requestId,
         phone: VALIDATED.customer.phone,

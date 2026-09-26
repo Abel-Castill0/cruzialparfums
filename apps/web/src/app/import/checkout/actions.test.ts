@@ -95,6 +95,7 @@ describe("createImportOrderRequest — Gate 2B rate limit integration", () => {
     expect(result.status).toBe("success");
     expect(checkOrderRequestRateLimit).toHaveBeenCalledWith(
       expect.objectContaining({
+        purpose: "order_request",
         businessUnit: "import",
         requestId: VALIDATED.requestId,
         phone: VALIDATED.customer.phone,

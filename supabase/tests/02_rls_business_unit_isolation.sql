@@ -7,7 +7,7 @@
 
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(21);
+select plan(23);
 
 -- ---------------------------------------------------------------------------
 -- Fixtures
@@ -65,13 +65,16 @@ select is(
   'Parfums admin cannot read Import customers'
 );
 
--- An UPDATE blocked by a USING clause is not an error: it silently matches no
--- row. Asserting that from inside the same role would prove nothing, because
--- the row is invisible to it either way — so the attempt is made here and the
--- product's real name is checked from the owner's context at the end of the
--- file, where nothing is filtered.
-update public.products set name = 'Renamed by Parfums admin'
-where slug = 'draft-import';
+-- Gate A3: authenticated holds no direct UPDATE grant on public.products at
+-- all any more (all catalog mutation is admin_update_product-only, SECURITY
+-- DEFINER). The attempt is refused before RLS even gets a chance to filter
+-- it out — not merely a silent no-op on an invisible row.
+select throws_ok(
+  $$update public.products set name = 'Renamed by Parfums admin' where slug = 'draft-import'$$,
+  '42501',
+  null,
+  'Parfums admin has no direct UPDATE grant on products'
+);
 
 select throws_ok(
   $$insert into public.products (business_unit_id, slug, name)
@@ -161,8 +164,12 @@ select is(
   'Import admin cannot read Parfums customers'
 );
 
-update public.products set name = 'Renamed by Import admin'
-where slug = 'draft-parfum';
+select throws_ok(
+  $$update public.products set name = 'Renamed by Import admin' where slug = 'draft-parfum'$$,
+  '42501',
+  null,
+  'Import admin has no direct UPDATE grant on products'
+);
 
 select throws_ok(
   $$insert into public.products (business_unit_id, slug, name)
@@ -184,9 +191,15 @@ select is(
   'an admin with both memberships reads both units, from one account'
 );
 
-select lives_ok(
+-- Gate A3: this is no longer a business-unit-isolation question — even a
+-- legitimately-scoped admin of BOTH units must go through admin_update_product;
+-- the whole point of the Gate is that no admin, however broadly scoped, can
+-- bypass the canonical RPC via direct table DML.
+select throws_ok(
   $$update public.products set name = 'Renamed by multi-unit admin' where slug = 'draft-import'$$,
-  'an admin with both memberships can write in either unit'
+  '42501',
+  null,
+  'even a both-units admin has no direct UPDATE grant on products'
 );
 
 -- ---------------------------------------------------------------------------
@@ -233,8 +246,8 @@ select is(
 
 select is(
   (select name from public.products where id = '22222222-0000-4000-8000-000000000002'),
-  'Renamed by multi-unit admin',
-  'the Import product changed only through the admin that holds an Import membership'
+  'Draft Import',
+  'the Import product was never renamed by direct DML, not even by a both-units admin'
 );
 
 select * from finish();

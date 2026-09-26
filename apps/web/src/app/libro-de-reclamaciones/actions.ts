@@ -35,6 +35,7 @@ export async function submitComplaintAction(
 
   const rateLimit = await checkOrderRequestRateLimit({
     client,
+    purpose: "complaint",
     businessUnit: businessUnitCode,
     requestId,
     phone: validation.value.phone,

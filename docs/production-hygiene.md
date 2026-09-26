@@ -125,3 +125,82 @@ unchanged.
 CLI version (54.15.1) — test the exact behavior on a disposable/non-secret
 variable first, or do the narrowing directly in the Vercel dashboard UI
 (which does support editing a variable's environment targets in place).
+
+## 4. Resolution (2026-09-25, Gate A4): Preview Supabase binding removed
+
+Re-verified via `vercel env ls --scope cruzial` (names/targets only) before
+touching anything: `NEXT_PUBLIC_SUPABASE_URL` and
+`NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` were each **two separate rows** with
+different creation timestamps (Production 6d old, Preview 13–17d old) — not
+a single shared `Production, Preview` row like the §3 incident. This was
+confirmed again immediately after removal: Production's rows are still
+present, unchanged, only the Preview-target rows are gone.
+
+Since this Supabase organization still has exactly one project
+(`iyxidhglyqkzoziyewlc`, confirmed via `list_projects`, still Free tier, no
+database branches) and §2's "second Supabase project" option was explicitly
+out of scope to create unilaterally, this applies the brief's preferred
+zero-cost fallback instead: **Preview no longer has any Supabase
+URL/publishable-key binding at all.**
+`apps/web/src/lib/supabase/env.ts`'s `isSupabaseConfigured()` /
+`readSupabasePublicEnv()` already treat a missing URL or key as an honest
+"backend not configured" state rather than a crash (used by the server/
+client factories and the admin login page), so this is not a new code path
+— it activates an existing one.
+
+**Post-fix state:**
+
+| Variable | Production | Preview |
+|---|---|---|
+| `SUPABASE_SECRET_KEY` | present | absent (since §3) |
+| `NEXT_PUBLIC_SUPABASE_URL` | present, unchanged | **removed** |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | present, unchanged | **removed** |
+
+Preview can no longer reach any Supabase project — service-role (§3) and
+now anon/RLS-authenticated access (this section) are both closed. A Preview
+deployment will render the app's existing "not configured" UI for any
+Supabase-backed page (storefront, admin login) until a dedicated staging
+project exists (§2, option 1) and gets its own Preview-only rows pointing
+at it.
+
+**Confirmed on a fresh Git-triggered Preview build** (`dpl_EcANhFhzGuZGZqVGDrFAGTfYnZ9c`,
+this Gate's branch, status READY): its `/admin/login` renders the app's own
+"El backend de administración no está configurado en este entorno" state
+with the form fields and submit button disabled — fetched and read
+directly, not assumed. Every future Preview built from this branch or any
+other will get the same Preview-target env rows (i.e. none), so this is the
+new steady state for Preview, not a one-off.
+
+## 5. Resolution (2026-09-25, Gate A4 follow-up): Vercel Authentication enabled for Preview and raw deployment URLs
+
+A residual gap remained: with no deployment protection at all
+(`ssoProtection: null`, confirmed via `vercel project protection
+cruzial-platform-v2 --format json`), a Preview build from **before** the §4
+fix — e.g. `dpl_CNCJg8RKRZRLkr3d1hFog4RCduDH`, 3 days old at the time,
+branch `claude/feature/operations-...` — still had the real production
+Supabase URL/key inlined into its already-built JS bundle (confirmed: its
+`/admin/login` showed the live, enabled form, not the disabled one), and
+remained reachable by anyone with the URL.
+
+With explicit operator approval, enabled Vercel Authentication scoped to
+`prod_deployment_urls_and_all_previews` (via the Vercel API's project
+update, not the CLI's `--sso` flag — the CLI doesn't expose which of the
+three possible scopes it applies, so the ambiguous path was avoided).
+Verified immediately after, by fetching each URL directly:
+
+| Target | Status before | Status after |
+|---|---|---|
+| `cruzial.pe` (Production custom domain) | 200 | **200 — unchanged** |
+| `www.cruzial.pe` | 307 (redirect) | **307 — unchanged** |
+| Production's own raw `*.vercel.app` deployment URL | 200 | **302 → Vercel Authentication** |
+| The new, correctly-unconfigured Preview | 200 (app-level "not configured") | **302 → Vercel Authentication** |
+| The historical vulnerable Preview (`dpl_CNCJg8RKRZRLkr3d1hFog4RCduDH`) | 200, live login form | **302 → Vercel Authentication** |
+
+**Current state:** `cruzial.pe` and `www.cruzial.pe` remain the public,
+unauthenticated Production domains — unchanged. Every other URL this
+project can produce (raw production deployment URLs, all Preview
+deployments past and future) now requires signing in with a Vercel account
+that has project access before anything renders. Combined with §4, no
+future Preview will have Production Supabase credentials, and no deployment
+URL other than the two production custom domains is reachable without
+Vercel Authentication.

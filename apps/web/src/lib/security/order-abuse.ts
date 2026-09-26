@@ -13,10 +13,11 @@ import { readOrderAbuseHmacSecret } from "@/lib/supabase/env";
  * `requestId` only protects idempotency when a caller reuses the SAME uuid —
  * a bot can mint unlimited new ones. This module is the Next.js side of the
  * authoritative, PostgreSQL-backed sliding-window limiter
- * (public.check_order_request_rate_limit, migration
- * 20260919201406_order_request_rate_limiting.sql). It never keeps its own
- * counters in Node memory: a serverless deployment has no single process to
- * hold them in.
+ * (public.check_abuse_rate_limit, migration
+ * 20260925140000_order_request_rate_limit_purpose_scope.sql). It never keeps
+ * its own counters in Node memory: a serverless deployment has no single
+ * process to hold them in. Every caller passes an explicit `purpose` so
+ * order requests and complaint submissions never share a quota.
  *
  * Raw IP and raw phone never leave this module — only an HMAC-SHA256 hex
  * digest, keyed by a secret dedicated to this purpose
@@ -24,6 +25,13 @@ import { readOrderAbuseHmacSecret } from "@/lib/supabase/env";
  */
 
 export type OrderAbuseBusinessUnit = "parfums" | "import";
+
+/**
+ * Gate A2: independent abuse-limit scope. Order requests and Libro de
+ * Reclamaciones complaints must never share a quota — a flood of one must
+ * not be able to exhaust the other's budget for the same IP/phone.
+ */
+export type OrderAbusePurpose = "order_request" | "complaint";
 
 export type OrderRequestRateLimitDecision =
   | { kind: "allowed" }
@@ -101,6 +109,7 @@ export function hashPhoneForAbuseKey(secret: string, canonicalPhone: string): st
 
 export type CheckOrderRequestRateLimitInput = {
   client: SupabaseClient<Database>;
+  purpose: OrderAbusePurpose;
   businessUnit: OrderAbuseBusinessUnit;
   requestId: string;
   /** Raw phone as entered by the customer; canonicalized and hashed here. */
@@ -134,7 +143,8 @@ export async function checkOrderRequestRateLimit(
   const ipHash = ip ? hashIpForAbuseKey(secret, ip) : null;
   const phoneHash = hashPhoneForAbuseKey(secret, canonicalizePhoneForAbuseKey(input.phone));
 
-  const { data, error } = await input.client.rpc("check_order_request_rate_limit", {
+  const { data, error } = await input.client.rpc("check_abuse_rate_limit", {
+    p_purpose: input.purpose,
     p_business_unit_code: input.businessUnit,
     p_request_id: input.requestId,
     p_ip_hash: ipHash as unknown as string,
@@ -143,6 +153,7 @@ export async function checkOrderRequestRateLimit(
 
   if (error) {
     console.error("[order-abuse] rate-limit RPC failed; failing closed.", {
+      purpose: input.purpose,
       businessUnit: input.businessUnit,
       requestId: input.requestId,
       errorCode: error.code,
@@ -153,6 +164,7 @@ export async function checkOrderRequestRateLimit(
   const result = Array.isArray(data) ? data[0] : data;
   if (!result) {
     console.error("[order-abuse] rate-limit RPC returned no row; failing closed.", {
+      purpose: input.purpose,
       businessUnit: input.businessUnit,
       requestId: input.requestId,
     });

@@ -225,9 +225,14 @@ select lives_ok(
 -- would already be in from the 4K-B1 reconciliation widening
 -- (20260913010000_commercial_authority_extensions.sql). No RPC produces this
 -- value; it is not something this test exercises through the API surface.
+-- Gate A3 revoked authenticated's direct UPDATE grant on product_variants,
+-- so this fixture-only write (not itself under test) runs as the table
+-- owner, same as the other fixture setup above.
+reset role;
 update public.product_variants set price_verification_status = 'provisional_market'
 where id = (select pv.id from public.product_variants pv join public.products p
   on p.id = pv.product_id where p.slug = 'test-product-crud' and pv.label = '10 ml');
+set local role authenticated;
 
 -- A numeric price edit alone must never imply confirmation.
 select lives_ok(
@@ -329,9 +334,13 @@ select lives_ok(
   'Parfums admin creates a third variant to exercise the official_pdf guard'
 );
 
+-- Gate A3: fixture-only write (not itself under test); see the identical
+-- note above for the 'provisional_market' seed.
+reset role;
 update public.product_variants set price_verification_status = 'official_pdf'
 where id = (select pv.id from public.product_variants pv join public.products p
   on p.id = pv.product_id where p.slug = 'test-product-crud' and pv.label = '15 ml');
+set local role authenticated;
 
 select throws_ok(
   $$select public.admin_update_variant(
