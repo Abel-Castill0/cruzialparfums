@@ -2,7 +2,7 @@
 import { wakeNotificationWorker } from "@/domains/notifications/wake";
 
 import { validateComplaintForm, type ComplaintFormInput } from "@/domains/complaints/complaint-schema";
-import { submitComplaintEntry } from "@/domains/complaints/complaint-repository";
+import { submitComplaintEntry, type ComplaintEntry } from "@/domains/complaints/complaint-repository";
 import { checkOrderRequestRateLimit } from "@/lib/security/order-abuse";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
 import { isValidUuid } from "@/domains/admin-parfums/product-schema";
@@ -14,7 +14,7 @@ const SERVICE_UNAVAILABLE_MESSAGE =
 
 export type SubmitComplaintResult =
   | { status: "error"; message: string; fieldErrors?: Record<string, string> }
-  | { status: "success"; id: string };
+  | { status: "success"; id: string; entry: ComplaintEntry };
 
 export async function submitComplaintAction(
   businessUnitCode: "parfums" | "import",
@@ -55,5 +55,5 @@ export async function submitComplaintAction(
   }
 
   wakeNotificationWorker();
-  return { status: "success", id: result.data.id };
+  return { status: "success", id: result.data.id, entry: result.data };
 }

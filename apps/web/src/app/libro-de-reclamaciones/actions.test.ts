@@ -48,6 +48,19 @@ describe("public complaint action boundary", () => {
     expect(submitComplaintEntry).toHaveBeenCalledWith(expect.anything(), "parfums", requestId, expect.objectContaining({ [field]: value }));
   });
 
+  it("returns the complete persisted entry, not just the id, so the client can render a full receipt without a second lookup by id", async () => {
+    const persisted = { id: requestId, fullName: "Ana Pérez", documentType: "dni", documentNumber: "12345678",
+      address: "Av. Lima 123", phone: "987654321", email: "ana@example.test", detail: "Detalle válido",
+      consumerRequest: "Solicito respuesta", createdAt: "2026-01-01T00:00:00Z", dueAt: "2026-01-22T00:00:00Z",
+      complaintType: "reclamo", isMinor: false, guardianFullName: null, guardianDocumentNumber: null, orderReference: null };
+    submitComplaintEntry.mockResolvedValue({ ok: true, data: persisted });
+
+    const result = await submitComplaintAction("parfums", requestId, input);
+
+    expect(result.status).toBe("success");
+    expect(result.status === "success" && result.entry).toEqual(persisted);
+  });
+
   it("Gate A2: rate-limits with purpose 'complaint', never 'order_request'", async () => {
     await submitComplaintAction("parfums", requestId, input);
     expect(checkOrderRequestRateLimit).toHaveBeenCalledWith(

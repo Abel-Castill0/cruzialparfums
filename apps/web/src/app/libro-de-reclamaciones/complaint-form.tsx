@@ -3,7 +3,19 @@
 import { useCallback, useRef, useState } from "react";
 import { submitComplaintAction, type SubmitComplaintResult } from "./actions";
 import { COMPLAINT_DETAIL_MAX_LENGTH, COMPLAINT_REQUEST_MAX_LENGTH } from "@/domains/complaints/complaint-schema";
+import type { BusinessLegalIdentity } from "@/domains/complaints/business-legal-identity";
+import type { ComplaintEntry } from "@/domains/complaints/complaint-repository";
 import styles from "./page.module.css";
+
+const DOCUMENT_TYPE_LABEL: Record<ComplaintEntry["documentType"], string> = {
+  dni: "DNI",
+  ce: "Carné de extranjería",
+  pasaporte: "Pasaporte",
+};
+
+function formatDateTime(iso: string) {
+  return new Date(iso).toLocaleString("es-PE", { dateStyle: "long", timeStyle: "short" });
+}
 
 function generateUUID(): string {
   if (typeof crypto !== "undefined" && crypto.randomUUID) return crypto.randomUUID();
@@ -17,10 +29,16 @@ function generateUUID(): string {
 type FormState =
   | { phase: "form" }
   | { phase: "submitting" }
-  | { phase: "success"; id: string }
+  | { phase: "success"; entry: ComplaintEntry }
   | { phase: "error"; message: string };
 
-export function ComplaintForm({initialUnit = "parfums"}:{initialUnit?:"parfums"|"import"}) {
+export function ComplaintForm({
+  initialUnit = "parfums",
+  legalIdentity,
+}: {
+  initialUnit?: "parfums" | "import";
+  legalIdentity: { parfums: BusinessLegalIdentity | null; import: BusinessLegalIdentity | null };
+}) {
   const [businessUnit, setBusinessUnit] = useState<"parfums" | "import">(initialUnit);
   const [state, setState] = useState<FormState>({ phase: "form" });
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -53,29 +71,66 @@ export function ComplaintForm({initialUnit = "parfums"}:{initialUnit?:"parfums"|
         return;
       }
 
-      setState({ phase: "success", id: result.id });
+      setState({ phase: "success", entry: result.entry });
     },
     [businessUnit],
   );
 
   if (state.phase === "success") {
+    const entry = state.entry;
+    const legal = legalIdentity[businessUnit];
+    const unitLabel = businessUnit === "parfums" ? "Cruzial Parfums" : "Cruzial Import";
     return (
       <div className={styles.success} role="status">
-        <h2>Tu solicitud fue registrada.</h2>
-        <p>Número de referencia: <strong>{state.id}</strong></p>
-        <p>Te contactaremos usando los datos proporcionados. Conserva este número de referencia.</p>
-        <button
-          type="button"
-          className={styles.secondaryAction}
-          onClick={() => {
-            requestIdRef.current = generateUUID();
-            setState({ phase: "form" });
-            formRef.current?.reset();
-            setIsMinor(false);
-          }}
-        >
-          Registrar otra solicitud
-        </button>
+        <div className={styles.printArea}>
+          <h2>Tu solicitud fue registrada.</h2>
+          <p>Conserva esta copia — puedes imprimirla o guardarla como PDF ahora mismo.</p>
+          <div className={styles.receipt}>
+            <div className={styles.receiptRow}><span>Referencia</span><strong>{entry.id}</strong></div>
+            <div className={styles.receiptRow}><span>Fecha</span><span>{formatDateTime(entry.createdAt)}</span></div>
+            <div className={styles.receiptRow}><span>Unidad de negocio</span><span>{unitLabel}</span></div>
+            <div className={styles.receiptRow}><span>Tipo</span><span>{entry.complaintType === "reclamo" ? "Reclamo" : "Queja"}</span></div>
+            <div className={styles.receiptRow}><span>Consumidor</span><span>{entry.fullName}</span></div>
+            <div className={styles.receiptRow}><span>Documento</span><span>{DOCUMENT_TYPE_LABEL[entry.documentType]} {entry.documentNumber}</span></div>
+            <div className={styles.receiptRow}><span>Dirección</span><span>{entry.address}</span></div>
+            <div className={styles.receiptRow}><span>Teléfono</span><span>{entry.phone}</span></div>
+            <div className={styles.receiptRow}><span>Correo</span><span>{entry.email}</span></div>
+            {entry.isMinor ? (
+              <div className={styles.receiptRow}><span>Apoderado</span><span>{entry.guardianFullName} — {entry.guardianDocumentNumber}</span></div>
+            ) : null}
+            {entry.orderReference ? (
+              <div className={styles.receiptRow}><span>Pedido relacionado</span><span>{entry.orderReference}</span></div>
+            ) : null}
+            <div className={styles.receiptRow}><span>Detalle</span><span>{entry.detail}</span></div>
+            <div className={styles.receiptRow}><span>Solución solicitada</span><span>{entry.consumerRequest}</span></div>
+            <div className={styles.receiptRow}><span>Plazo de respuesta</span><span>{formatDateTime(entry.dueAt)}</span></div>
+          </div>
+          {legal ? (
+            <div className={styles.legalIdentity}>
+              <strong>Proveedor</strong>
+              {legal.legalName || "—"}{legal.ruc ? ` · RUC ${legal.ruc}` : ""}
+              {legal.address ? <><br />{legal.address}</> : null}
+              {legal.claimsEmail ? <><br />{legal.claimsEmail}</> : null}
+            </div>
+          ) : null}
+        </div>
+        <div className={styles.receiptActions}>
+          <button type="button" className={styles.primaryAction} onClick={() => window.print()}>
+            Imprimir / Guardar copia
+          </button>
+          <button
+            type="button"
+            className={styles.secondaryAction}
+            onClick={() => {
+              requestIdRef.current = generateUUID();
+              setState({ phase: "form" });
+              formRef.current?.reset();
+              setIsMinor(false);
+            }}
+          >
+            Registrar otra solicitud
+          </button>
+        </div>
       </div>
     );
   }
@@ -109,6 +164,26 @@ export function ComplaintForm({initialUnit = "parfums"}:{initialUnit?:"parfums"|
           </label>
         </div>
       </fieldset>
+
+      {(() => {
+        const legal = legalIdentity[businessUnit];
+        const unitLabel = businessUnit === "parfums" ? "Cruzial Parfums" : "Cruzial Import";
+        if (legal?.isComplete) {
+          return (
+            <div className={styles.legalIdentity}>
+              <strong>Proveedor</strong>
+              {legal.legalName} · RUC {legal.ruc}<br />{legal.address}
+            </div>
+          );
+        }
+        return (
+          <p className={styles.legalNotice} role="status">
+            {unitLabel} aún no completó su identificación legal (razón social, RUC y dirección) en este sistema.
+            Puedes registrar tu solicitud igualmente — se procesará con normalidad — y esta información se
+            añadirá a tu copia impresa en cuanto esté disponible.
+          </p>
+        );
+      })()}
 
       <fieldset className={styles.fieldset}>
         <legend>Tipo de solicitud</legend>
