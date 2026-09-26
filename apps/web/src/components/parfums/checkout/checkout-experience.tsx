@@ -74,10 +74,12 @@ export function CheckoutExperience({
         requestAnimationFrame(() => errorRef.current?.focus());
         return;
       }
-      try {
-        sessionStorage.setItem(handoffStorageKey(actionResult.orderNumber), actionResult.whatsappUrl);
-      } catch {
-        // A safe reference-only fallback remains available on the next page.
+      if (actionResult.whatsappUrl) {
+        try {
+          sessionStorage.setItem(handoffStorageKey(actionResult.orderNumber), actionResult.whatsappUrl);
+        } catch {
+          // A safe reference-only fallback remains available on the next page.
+        }
       }
       clear();
       router.push(`/parfums/gracias/${encodeURIComponent(actionResult.orderNumber)}` as Route);

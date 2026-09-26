@@ -25,8 +25,14 @@ vi.mock("@/domains/platform/settings", () => ({
   PARFUMS_SETTINGS: { whatsappNumber: "51999000000" },
 }));
 
+const getPersistedParfumsOrderSummary = vi.fn();
+vi.mock("@/domains/orders/parfums-persisted-summary", () => ({
+  getPersistedParfumsOrderSummary: (...args: unknown[]) => getPersistedParfumsOrderSummary(...args),
+}));
+
+const buildPersistedOrderRequestMessage = vi.fn(() => "message");
 vi.mock("@/domains/whatsapp/parfums-message-builder", () => ({
-  buildPersistedOrderRequestMessage: () => "message",
+  buildPersistedOrderRequestMessage: (...args: unknown[]) => buildPersistedOrderRequestMessage(...args),
   buildWhatsAppUrl: () => "https://wa.me/x",
 }));
 
@@ -50,6 +56,14 @@ const VALIDATED = {
   customer: { name: "Ana", phone: "51987654321", district: "d", delivery: "d" },
 };
 
+const PERSISTED_SUMMARY = {
+  orderNumber: "CRP-1",
+  customerSnapshot: { name: "Ana", phone: "51987654321" },
+  deliverySnapshot: { district: "d", delivery: "d", note: "" },
+  subtotalAmount: 20,
+  lines: [{ productNameSnapshot: "P", variantLabelSnapshot: "V", unitPriceAmount: 20, quantity: 1, lineTotalAmount: 20 }],
+};
+
 describe("createParfumsOrderRequest — Gate 2B rate limit integration", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
@@ -60,6 +74,7 @@ describe("createParfumsOrderRequest — Gate 2B rate limit integration", () => {
     });
     validateAndResolveParfumsOrder.mockReturnValue(VALIDATED);
     createSupabaseAdminClient.mockReturnValue({ marker: "fake-client" });
+    getPersistedParfumsOrderSummary.mockResolvedValue(PERSISTED_SUMMARY);
   });
 
   it("fails closed without touching the limiter or repository when the catalog is unavailable", async () => {
@@ -74,11 +89,42 @@ describe("createParfumsOrderRequest — Gate 2B rate limit integration", () => {
 
   it("revalidates the cart against the storefront catalog, not a client-supplied one", async () => {
     checkOrderRequestRateLimit.mockResolvedValue({ kind: "allowed" });
-    repositoryCreate.mockResolvedValue({ ok: true, data: { orderNumber: "CRP-1", created: true } });
+    repositoryCreate.mockResolvedValue({ ok: true, data: { orderId: "order-1", orderNumber: "CRP-1", created: true } });
 
     await createParfumsOrderRequest({} as never);
 
     expect(validateAndResolveParfumsOrder).toHaveBeenCalledWith({}, { marker: "catalog" });
+  });
+
+  it("builds the WhatsApp handoff from the persisted order summary, never from the (possibly stale) validated request", async () => {
+    checkOrderRequestRateLimit.mockResolvedValue({ kind: "allowed" });
+    repositoryCreate.mockResolvedValue({ ok: true, data: { orderId: "order-1", orderNumber: "CRP-1", created: true } });
+
+    await createParfumsOrderRequest({} as never);
+
+    expect(getPersistedParfumsOrderSummary).toHaveBeenCalledWith({ marker: "fake-client" }, "order-1", VALIDATED.requestId);
+    expect(buildPersistedOrderRequestMessage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        orderNumber: PERSISTED_SUMMARY.orderNumber,
+        subtotal: PERSISTED_SUMMARY.subtotalAmount,
+        lines: [expect.objectContaining({ lineTotal: 20 })],
+      }),
+    );
+    // The stale validated subtotal (10) must never reach the message builder.
+    expect(buildPersistedOrderRequestMessage).not.toHaveBeenCalledWith(
+      expect.objectContaining({ subtotal: VALIDATED.subtotal }),
+    );
+  });
+
+  it("returns a reference-only success with no WhatsApp link when the persisted summary cannot be fetched", async () => {
+    checkOrderRequestRateLimit.mockResolvedValue({ kind: "allowed" });
+    repositoryCreate.mockResolvedValue({ ok: true, data: { orderId: "order-1", orderNumber: "CRP-1", created: true } });
+    getPersistedParfumsOrderSummary.mockResolvedValue(null);
+
+    const result = await createParfumsOrderRequest({} as never);
+
+    expect(result).toEqual({ status: "success", orderNumber: "CRP-1", whatsappUrl: null, created: true });
+    expect(buildPersistedOrderRequestMessage).not.toHaveBeenCalled();
   });
 
   it("denies and never calls the repository when the limiter denies", async () => {
@@ -107,7 +153,7 @@ describe("createParfumsOrderRequest — Gate 2B rate limit integration", () => {
 
   it("calls the repository once the limiter allows a new request", async () => {
     checkOrderRequestRateLimit.mockResolvedValue({ kind: "allowed" });
-    repositoryCreate.mockResolvedValue({ ok: true, data: { orderNumber: "CRP-1", created: true } });
+    repositoryCreate.mockResolvedValue({ ok: true, data: { orderId: "order-1", orderNumber: "CRP-1", created: true } });
 
     const result = await createParfumsOrderRequest({} as never);
 
@@ -117,7 +163,7 @@ describe("createParfumsOrderRequest — Gate 2B rate limit integration", () => {
 
   it("still calls the repository on an allowed duplicate-request retry (idempotency preserved)", async () => {
     checkOrderRequestRateLimit.mockResolvedValue({ kind: "allowed" });
-    repositoryCreate.mockResolvedValue({ ok: true, data: { orderNumber: "CRP-1", created: false } });
+    repositoryCreate.mockResolvedValue({ ok: true, data: { orderId: "order-1", orderNumber: "CRP-1", created: false } });
 
     const result = await createParfumsOrderRequest({} as never);
 
@@ -128,7 +174,7 @@ describe("createParfumsOrderRequest — Gate 2B rate limit integration", () => {
 
   it("passes the parfums business unit and the validated requestId/phone to the limiter", async () => {
     checkOrderRequestRateLimit.mockResolvedValue({ kind: "allowed" });
-    repositoryCreate.mockResolvedValue({ ok: true, data: { orderNumber: "CRP-1", created: true } });
+    repositoryCreate.mockResolvedValue({ ok: true, data: { orderId: "order-1", orderNumber: "CRP-1", created: true } });
 
     await createParfumsOrderRequest({} as never);
 

@@ -8,6 +8,7 @@ import {
   type ParfumsOrderValidationError,
   type ValidatedParfumsOrderRequest,
 } from "@/domains/orders/parfums-order-request";
+import { getPersistedParfumsOrderSummary } from "@/domains/orders/parfums-persisted-summary";
 import { PARFUMS_STORE_NAME } from "@/domains/platform/parfums-storefront";
 import {
   buildPersistedOrderRequestMessage,
@@ -30,7 +31,7 @@ export type CreateParfumsOrderResult =
   | {
     status: "success";
     orderNumber: string;
-    whatsappUrl: string;
+    whatsappUrl: string | null;
     created: boolean;
   };
 
@@ -86,24 +87,48 @@ export async function createParfumsOrderRequest(
   if (!persisted.ok) return { status: "error", message: persisted.message };
   wakeNotificationWorker();
 
+  // Build the WhatsApp handoff from the authoritative persisted order, never
+  // from `validated` — the catalog it was resolved against can be stale
+  // relative to the DB price/authority the RPC actually wrote, and on a
+  // replayed idempotent request `validated` reflects whatever the client
+  // just resubmitted, not the order that was actually accepted.
+  const summary = await getPersistedParfumsOrderSummary(
+    client,
+    persisted.data.orderId,
+    validated.requestId,
+  );
+
+  if (!summary) {
+    return {
+      status: "success",
+      orderNumber: persisted.data.orderNumber,
+      whatsappUrl: null,
+      created: persisted.data.created,
+    };
+  }
+
   const message = buildPersistedOrderRequestMessage({
     storeName: PARFUMS_STORE_NAME,
-    orderNumber: persisted.data.orderNumber,
-    lines: validated.lines.map((line) => ({
-      productName: line.product_name,
-      variantLabel: line.variant_label,
+    orderNumber: summary.orderNumber,
+    lines: summary.lines.map((line) => ({
+      productName: line.productNameSnapshot,
+      variantLabel: line.variantLabelSnapshot,
       quantity: line.quantity,
-      lineTotal: line.unit_price_amount
-        ? Number(line.unit_price_amount) * line.quantity
-        : validated.subtotal / validated.lines.length,
+      lineTotal: line.lineTotalAmount,
     })),
-    subtotal: validated.subtotal,
-    customer: validated.customer,
+    subtotal: summary.subtotalAmount,
+    customer: {
+      name: summary.customerSnapshot.name,
+      phone: summary.customerSnapshot.phone,
+      district: summary.deliverySnapshot.district,
+      delivery: summary.deliverySnapshot.delivery,
+      note: summary.deliverySnapshot.note,
+    },
   });
 
   return {
     status: "success",
-    orderNumber: persisted.data.orderNumber,
+    orderNumber: summary.orderNumber,
     whatsappUrl: buildWhatsAppUrl(storefront.contact.whatsappNumber, message),
     created: persisted.data.created,
   };
