@@ -181,17 +181,23 @@ node scripts/restore-validate-backup.mjs \
 
 The script prints row counts for `products`, `campaigns`, `orders`,
 `customers`, `complaint_book_entries`, and `admin_memberships`, plus
-presence checks for: RLS enabled on `inventory` / `complaint_book_entries`
-/ `audit_log`; the `admin_update_inventory`, `admin_create_variant`, and
-`check_abuse_rate_limit` functions; and the
-`inventory_tracked_zero_not_available_check` constraint. A restore of real
+presence checks for baseline RLS on `inventory` / `complaint_book_entries`
+/ `audit_log` and baseline functions `admin_update_inventory` and
+`admin_create_variant`. These are required for every Cruzial backup and a
+missing one makes the helper exit non-zero. The helper also reads the backup's
+`schema.sql`: if it declares `check_abuse_rate_limit` or
+`inventory_tracked_zero_not_available_check`, that object is required after
+restore; otherwise the helper reports "not part of this backup snapshot".
+This allows the pre-Gate-A recovery backup and future Gate-A backups to be
+validated against the schema each one actually contains. A restore of real
 production data should show non-zero counts for at least `products` and
 `admin_memberships`; a restore of local dev data may legitimately show
 zeros (the local seed doesn't populate these tables) — that's still a
 valid mechanism test, just not evidence about production data.
 
-A successful run of this proves the SQL backup restores cleanly and the
-schema/RPC/constraint surface came back intact. It does **not** by itself
+A successful run means the SQL backup restored cleanly and every required
+schema check passed; a missing required object now fails the command. Direct
+invocation works on Windows as well as Linux/macOS. This check does **not** by itself
 restore or validate:
 
 - **Cloudinary-hosted media** (see "What this backup does NOT cover" above).

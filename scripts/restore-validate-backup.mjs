@@ -37,6 +37,7 @@ import { spawnSync } from "node:child_process";
 import { readFileSync, writeFileSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
+import { pathToFileURL } from "node:url";
 
 export function filterRolesSql(content) {
   return content
@@ -84,11 +85,55 @@ const COUNT_TABLES = [
   "admin_memberships",
 ];
 
-const EXPECTED_OBJECTS = {
+const REQUIRED_OBJECTS = {
   rlsEnabledTables: ["inventory", "complaint_book_entries", "audit_log"],
-  functions: ["admin_update_inventory", "admin_create_variant", "check_abuse_rate_limit"],
-  constraints: ["inventory_tracked_zero_not_available_check"],
+  functions: ["admin_update_inventory", "admin_create_variant"],
 };
+
+const SNAPSHOT_OBJECTS = [
+  {
+    kind: "functions",
+    name: "check_abuse_rate_limit",
+    declaration: /^\s*CREATE\s+(?:OR\s+REPLACE\s+)?FUNCTION\s+(?:"public"|public)\.(?:"check_abuse_rate_limit"|check_abuse_rate_limit)\s*\(/im,
+  },
+  {
+    kind: "constraints",
+    name: "inventory_tracked_zero_not_available_check",
+    declaration: /^\s*ALTER\s+TABLE(?:\s+ONLY)?\s+(?:"public"|public)\.(?:"inventory"|inventory)\s+ADD\s+CONSTRAINT\s+(?:"inventory_tracked_zero_not_available_check"|inventory_tracked_zero_not_available_check)(?=\s)/im,
+  },
+];
+
+/** The comparison is platform-specific, but testable on either host OS. */
+export function isMainEntry(moduleUrl, entryPath, platform = process.platform) {
+  return typeof entryPath === "string"
+    && moduleUrl === pathToFileURL(entryPath, { windows: platform === "win32" }).href;
+}
+
+/** Decide which newer objects actually belong to this backup's schema. */
+export function declaredSnapshotObjects(schemaSql) {
+  const ddl = schemaSql.replace(/^\s*--[^\n]*$/gm, "");
+  return SNAPSHOT_OBJECTS.filter(({ declaration }) => declaration.test(ddl));
+}
+
+/** Pure assessment; a missing baseline or declared snapshot object is fatal. */
+export function assessSchemaObjects(schemaSql, observed) {
+  const checks = [];
+  for (const name of REQUIRED_OBJECTS.rlsEnabledTables) {
+    checks.push({ kind: "rlsEnabledTables", name, status: observed.rlsEnabledTables?.[name] === true ? "present" : "missing" });
+  }
+  for (const name of REQUIRED_OBJECTS.functions) {
+    checks.push({ kind: "functions", name, status: observed.functions?.[name] === true ? "present" : "missing" });
+  }
+  for (const { kind, name } of SNAPSHOT_OBJECTS) {
+    const declared = declaredSnapshotObjects(schemaSql).some((object) => object.kind === kind && object.name === name);
+    checks.push({
+      kind,
+      name,
+      status: !declared ? "not part of this backup snapshot" : observed[kind]?.[name] === true ? "present" : "missing",
+    });
+  }
+  return { ok: checks.every(({ status }) => status !== "missing"), checks };
+}
 
 function readArg(argv, flag) {
   const i = argv.indexOf(flag);
@@ -119,6 +164,8 @@ async function main() {
 
   const tmp = mkdtempSync(join(tmpdir(), "cruzial-restore-"));
   try {
+    const schemaFile = resolve(backupDir, "schema.sql");
+    const schemaSql = readFileSync(schemaFile, "utf8");
     const rolesFiltered = join(tmp, "roles.sql");
     const dataFiltered = join(tmp, "data.sql");
     writeFileSync(rolesFiltered, filterRolesSql(readFileSync(resolve(backupDir, "roles.sql"), "utf8")));
@@ -126,7 +173,7 @@ async function main() {
 
     const steps = buildRestoreCommands(dbUrl, {
       roles: rolesFiltered,
-      schema: resolve(backupDir, "schema.sql"),
+      schema: schemaFile,
       data: dataFiltered,
     });
     for (const step of steps) runStep(step);
@@ -138,20 +185,30 @@ async function main() {
     }
 
     console.log("\n[restore-validate] schema object checks:");
-    for (const table of EXPECTED_OBJECTS.rlsEnabledTables) {
-      const rls = runPsql(
+    const observed = { rlsEnabledTables: {}, functions: {}, constraints: {} };
+    for (const table of REQUIRED_OBJECTS.rlsEnabledTables) {
+      observed.rlsEnabledTables[table] = runPsql(
         dbUrl,
         `select relrowsecurity from pg_class where relname='${table}' and relnamespace='public'::regnamespace;`,
-      );
-      console.log(`  RLS enabled on ${table}: ${rls === "t" ? "yes" : "NO -- unexpected"}`);
+      ) === "t";
     }
-    for (const fn of EXPECTED_OBJECTS.functions) {
+    const declared = declaredSnapshotObjects(schemaSql);
+    const functionNames = [...REQUIRED_OBJECTS.functions, ...declared.filter(({ kind }) => kind === "functions").map(({ name }) => name)];
+    for (const fn of functionNames) {
       const found = runPsql(dbUrl, `select count(*) from pg_proc where proname='${fn}' and pronamespace='public'::regnamespace;`);
-      console.log(`  function ${fn} present: ${found !== "0" ? "yes" : "NO -- unexpected"}`);
+      observed.functions[fn] = Number(found) > 0;
     }
-    for (const constraint of EXPECTED_OBJECTS.constraints) {
-      const found = runPsql(dbUrl, `select count(*) from pg_constraint where conname='${constraint}';`);
-      console.log(`  constraint ${constraint} present: ${found !== "0" ? "yes" : "NO -- unexpected"}`);
+    for (const { name } of declared.filter(({ kind }) => kind === "constraints")) {
+      const found = runPsql(dbUrl, `select count(*) from pg_constraint where conname='${name}' and conrelid='public.inventory'::regclass;`);
+      observed.constraints[name] = Number(found) > 0;
+    }
+    const assessment = assessSchemaObjects(schemaSql, observed);
+    for (const { kind, name, status } of assessment.checks) {
+      const label = kind === "rlsEnabledTables" ? `RLS enabled on ${name}` : `${kind === "functions" ? "function" : "constraint"} ${name} present`;
+      console.log(`  ${label}: ${status === "present" ? "yes" : status}`);
+    }
+    if (!assessment.ok) {
+      throw new Error(`required schema object checks failed: ${assessment.checks.filter(({ status }) => status === "missing").map(({ name }) => name).join(", ")}`);
     }
 
     console.log("\n[restore-validate] restore mechanism proven. Reminder: this validates the SQL");
@@ -162,7 +219,7 @@ async function main() {
   }
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (isMainEntry(import.meta.url, process.argv[1])) {
   main().catch((err) => {
     console.error("[restore-validate] failed:", err.message);
     process.exit(1);
