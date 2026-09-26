@@ -15,6 +15,7 @@ insert into public.categories(id,business_unit_id,kind,slug,name) values
  ('4c4c1000-0000-4000-8000-000000000001','22222222-2222-4222-8222-222222222222','import_category','import-test','Import Test');
 insert into public.products(id,business_unit_id,legacy_id,slug,name,brand,sales_mode,publication_status,verification_status) values
  ('4c4c2000-0000-4000-8000-000000000001','22222222-2222-4222-8222-222222222222','source-immutable','import-immutable','Original','Marca','campaign','draft','official_pdf'),
+ ('4c4c2000-0000-4000-8000-000000000003','22222222-2222-4222-8222-222222222222','source-no-category','import-no-category','Uncategorized','Marca','campaign','draft','official_pdf'),
  ('4c4c2000-0000-4000-8000-000000000002','11111111-1111-4111-8111-111111111111','parfums-safe','parfums-safe','Parfums Safe','Marca','always_available','draft','legacy');
 insert into public.product_categories(product_id,category_id) values('4c4c2000-0000-4000-8000-000000000001','4c4c1000-0000-4000-8000-000000000001');
 insert into public.campaigns(id,business_unit_id,number,name,status) values('4c4c3000-0000-4000-8000-000000000001','22222222-2222-4222-8222-222222222222',6,'Sexto','draft');
@@ -24,8 +25,10 @@ set local request.jwt.claims='{"aal":"aal2","sub":"4c4c0000-0000-4000-8000-00000
 select lives_ok($$select * from public.admin_list_import_products('4c4c3000-0000-4000-8000-000000000001',null,null,null,'active',null,null,null,1,500)$$,'Import admin can list catalog; server caps page size');
 select lives_ok($$select * from public.admin_get_import_catalog_qa()$$,'Import admin can read bounded QA counters');
 select lives_ok($$select public.admin_update_import_product('4c4c2000-0000-4000-8000-000000000001',(select updated_at from public.products where id='4c4c2000-0000-4000-8000-000000000001'),'Display edit','Nueva marca','4c4c1000-0000-4000-8000-000000000001','hidden')$$,'Import admin updates safe display/category/publication fields');
+select lives_ok($$select public.admin_update_import_product('4c4c2000-0000-4000-8000-000000000003',(select updated_at from public.products where id='4c4c2000-0000-4000-8000-000000000003'),'Edited without category','Marca',null,'draft')$$,'category-less ingested product can be edited');
 reset role;
 select is((select name from public.products where id='4c4c2000-0000-4000-8000-000000000001'),'Display edit','product display name changed');
+select is((select count(*)::integer from public.product_categories where product_id='4c4c2000-0000-4000-8000-000000000003'),0,'edit does not invent a category');
 select is((select slug from public.products where id='4c4c2000-0000-4000-8000-000000000001'),'import-immutable','loader slug stays immutable');
 select is((select legacy_id from public.products where id='4c4c2000-0000-4000-8000-000000000001'),'source-immutable','loader source identity stays immutable');
 select is((select actor_user_id from public.audit_log where entity_type='import_product' order by created_at desc limit 1),'4c4c0000-0000-4000-8000-000000000001'::uuid,'audit actor comes from auth.uid()');
