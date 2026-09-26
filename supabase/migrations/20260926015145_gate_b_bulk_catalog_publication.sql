@@ -1,6 +1,6 @@
 -- Explicit catalog mappings; existing canonical mutations preserve all authorization/audit rules.
 create function public.admin_bulk_import_catalog(p_rows jsonb) returns integer
-language plpgsql security definer set search_path='' as $$
+language plpgsql security definer set search_path = '' as $$
 declare v_unit uuid; v_row jsonb; v_product public.products; v_presentation public.import_presentations; v_count integer:=0;
 begin
  select id into v_unit from public.business_units where code='import'; perform app.assert_admin_for(v_unit);
@@ -31,7 +31,7 @@ grant execute on function public.admin_bulk_import_catalog(jsonb) to authenticat
 
 -- Preview exposes exact identities and versions. Final mutation rechecks the facts.
 create function public.admin_import_publish_candidates(p_campaign_id uuid) returns jsonb
-language plpgsql stable security definer set search_path='' as $$
+language plpgsql stable security definer set search_path = '' as $$
 declare v_unit uuid; v_result jsonb;
 begin
  select id into v_unit from public.business_units where code='import';
@@ -54,7 +54,7 @@ revoke all on function public.admin_import_publish_candidates(uuid) from public,
 grant execute on function public.admin_import_publish_candidates(uuid) to authenticated;
 
 create function public.admin_bulk_publish_import(p_campaign_id uuid,p_expected_updated_at timestamptz,p_rows jsonb)
-returns jsonb language plpgsql security definer set search_path='' as $$
+returns jsonb language plpgsql security definer set search_path = '' as $$
 declare v_unit uuid; v_campaign public.campaigns; v_row jsonb; v_offer public.campaign_products;
  v_product public.products; v_presentation public.import_presentations; v_products uuid[]:='{}'; v_presentations uuid[]:='{}';
 begin

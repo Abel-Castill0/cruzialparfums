@@ -3,7 +3,7 @@
 -- National holidays follow the current Peru statutory calendar. Voluntary
 -- private-sector days off do not silently extend a consumer's deadline.
 create function app.peru_easter_date(p_year integer) returns date
-language plpgsql immutable strict set search_path='' as $$
+language plpgsql immutable strict set search_path = '' as $$
 declare a integer;b integer;c integer;d integer;e integer;f integer;g integer;h integer;
  i integer;k integer;l integer;m integer;n integer;
 begin
@@ -13,7 +13,7 @@ begin
  return make_date(p_year,n/31,n%31+1);
 end $$;
 create function app.peru_is_business_day(p_date date) returns boolean
-language sql immutable strict set search_path='' as $$
+language sql immutable strict set search_path = '' as $$
  select extract(isodow from p_date) between 1 and 5
   and (extract(month from p_date)::integer*100+extract(day from p_date)::integer)
    not in (101,501,607,629,723,728,729,806,830,1008,1101,1208,1209,1225)
@@ -21,7 +21,7 @@ language sql immutable strict set search_path='' as $$
                     app.peru_easter_date(extract(year from p_date)::integer)-2);
 $$;
 create function app.complaint_sla_due_at(p_submitted_at timestamptz) returns timestamptz
-language plpgsql stable strict set search_path='' as $$
+language plpgsql stable strict set search_path = '' as $$
 declare v_date date:=(p_submitted_at at time zone 'America/Lima')::date;v_days integer:=0;
 begin
  while v_days<15 loop
@@ -31,7 +31,7 @@ begin
  return (v_date+time '23:59:59') at time zone 'America/Lima';
 end $$;
 create function app.complaint_reminder_at(p_due_at timestamptz,p_business_days integer) returns timestamptz
-language plpgsql stable strict set search_path='' as $$
+language plpgsql stable strict set search_path = '' as $$
 declare v_date date:=(p_due_at at time zone 'America/Lima')::date;v_days integer:=0;
 begin
  if p_business_days not between 1 and 7 then raise exception 'invalid reminder interval' using errcode='22023'; end if;
@@ -65,7 +65,7 @@ create index complaint_sla_unresolved_idx on public.complaint_book_entries(busin
  where status<>'resolved';
 
 create function app.complaint_sla_guard() returns trigger
-language plpgsql security definer set search_path='' as $$
+language plpgsql security definer set search_path = '' as $$
 declare v_days integer;
 begin
  if tg_op='INSERT' then
@@ -86,7 +86,7 @@ create trigger complaint_sla_guard before insert or update on public.complaint_b
 
 create or replace function public.admin_update_operations_settings(
  p_unit_code text,p_expected_updated_at timestamptz,p_operations_phone text,p_reminder_business_days integer
-) returns public.settings language plpgsql security definer set search_path='' as $$
+) returns public.settings language plpgsql security definer set search_path = '' as $$
 declare v_unit uuid;v_before public.settings;v_after public.settings;v_changed integer;v_recovered integer:=0;
  v_phone text:=app.normalize_import_phone(coalesce(p_operations_phone,''));
 begin
@@ -124,7 +124,7 @@ revoke all on function public.admin_update_operations_settings(text,timestamptz,
 grant execute on function public.admin_update_operations_settings(text,timestamptz,text,integer) to authenticated;
 
 create or replace function public.worker_enqueue_complaint_milestones() returns void
-language plpgsql security definer set search_path='' as $$
+language plpgsql security definer set search_path = '' as $$
 declare v_entry record;
 begin
  for v_entry in
@@ -150,7 +150,7 @@ alter table public.notification_outbox drop constraint notification_outbox_statu
 alter table public.notification_outbox add constraint notification_outbox_status_check
  check(status in ('queued','claimed','sending','retry','blocked','sent','failed','uncertain','cancelled'));
 create function app.cancel_closed_complaint_reminders() returns trigger
-language plpgsql security definer set search_path='' as $$
+language plpgsql security definer set search_path = '' as $$
 declare v_count integer;
 begin
  if new.status='resolved' and old.status<>'resolved' then

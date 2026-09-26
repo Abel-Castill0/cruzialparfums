@@ -47,7 +47,7 @@ revoke all on public.notification_delivery_events from public,anon,authenticated
 grant select,insert on public.notification_delivery_events to service_role;
 
 create function public.worker_record_delivery(p_message_id text,p_status text,p_occurred_at timestamptz)
-returns void language plpgsql security invoker set search_path='' as $$
+returns void language plpgsql security invoker set search_path = '' as $$
 begin
  if p_message_id is null or length(p_message_id) not between 1 and 200
     or p_status is null or p_status not in ('sent','delivered','read','failed') or p_occurred_at is null then
@@ -192,7 +192,7 @@ begin
 end $$;
 
 create function public.worker_record_health(p_status text,p_processed integer default 0)
-returns void language plpgsql security invoker set search_path='' as $$
+returns void language plpgsql security invoker set search_path = '' as $$
 begin
  if p_status not in ('running','ok','failed') or p_processed not between 0 and 10 then
   raise exception 'invalid worker health' using errcode='22023'; end if;
@@ -205,7 +205,7 @@ end $$;
 create function public.admin_list_notifications(p_business_unit_code text,p_entity_id uuid default null)
 returns table(id uuid,event_type text,entity_type text,entity_id uuid,status text,attempts integer,
  last_error_safe text,created_at timestamptz,updated_at timestamptz,sent_at timestamptz,delivery_status text)
-language plpgsql security definer set search_path='' as $$
+language plpgsql security definer set search_path = '' as $$
 declare v_unit uuid;
 begin
  select u.id into v_unit from public.business_units u where u.code=p_business_unit_code;
@@ -218,7 +218,7 @@ end $$;
 
 create function public.admin_retry_notification(
  p_business_unit_code text,p_id uuid,p_expected_updated_at timestamptz,p_verified_not_sent boolean default false
-) returns void language plpgsql security definer set search_path='' as $$
+) returns void language plpgsql security definer set search_path = '' as $$
 declare v_unit uuid;v_before public.notification_outbox;
 begin
  select id into v_unit from public.business_units where code=p_business_unit_code;

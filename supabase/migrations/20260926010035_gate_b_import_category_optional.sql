@@ -3,7 +3,7 @@
 create or replace function public.admin_update_import_product(
   p_product_id uuid, p_expected_updated_at timestamptz, p_name text, p_brand text,
   p_category_id uuid, p_publication_status text
-) returns public.products language plpgsql security definer set search_path=''
+) returns public.products language plpgsql security definer set search_path = ''
 as $$
 declare v_unit uuid; v_before public.products; v_after public.products; v_name text:=btrim(coalesce(p_name,''));
 begin

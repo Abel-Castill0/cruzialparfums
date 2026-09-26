@@ -1,6 +1,6 @@
 -- One factual readiness calculation shared by dashboard, health and cutover checks.
 create function app.unit_launch_readiness(p_unit uuid) returns jsonb
-language plpgsql stable security definer set search_path='' as $$
+language plpgsql stable security definer set search_path = '' as $$
 declare v_code text; v_legal jsonb; v_contact jsonb; v_missing text[]:='{}'; v_field text;
  v_media integer; v_commercial integer:=0; v_unpublished integer; v_campaign public.campaigns; v_import jsonb;
 begin
@@ -49,7 +49,7 @@ begin
 end $$;
 revoke all on function app.unit_launch_readiness(uuid) from public,anon,authenticated;
 create function public.admin_operations_summary(p_unit_code text) returns jsonb
-language plpgsql stable security definer set search_path='' as $$
+language plpgsql stable security definer set search_path = '' as $$
 declare v_unit uuid; v_result jsonb;
 begin
  select id into v_unit from public.business_units where code=p_unit_code;
@@ -71,7 +71,7 @@ end $$;
 revoke all on function public.admin_operations_summary(text) from public,anon;
 grant execute on function public.admin_operations_summary(text) to authenticated;
 create function public.worker_automation_health() returns jsonb
-language sql stable security definer set search_path='' as $$
+language sql stable security definer set search_path = '' as $$
  select jsonb_build_object('schema_compatible',to_regclass('public.inventory_reservations') is not null
   and to_regprocedure('public.admin_bulk_publish_import(uuid,timestamp with time zone,jsonb)') is not null
   and to_regprocedure('public.worker_enqueue_complaint_milestones()') is not null,
@@ -82,14 +82,14 @@ revoke all on function public.worker_automation_health() from public,anon,authen
 grant execute on function public.worker_automation_health() to service_role;
 -- Only an aggregate boolean is public, so metadata can fail closed without leaking business details.
 create function public.public_launch_ready() returns boolean
-language sql stable security definer set search_path='' as $$
+language sql stable security definer set search_path = '' as $$
  select count(*)=2 and coalesce(bool_and((app.unit_launch_readiness(id)->>'factual_ready')::boolean),false)
  from public.business_units where code in ('parfums','import');
 $$;
 revoke all on function public.public_launch_ready() from public;
 grant execute on function public.public_launch_ready() to anon,authenticated,service_role;
 create function public.admin_customer_order_summary(p_customer_id uuid) returns jsonb
-language plpgsql stable security definer set search_path='' as $$
+language plpgsql stable security definer set search_path = '' as $$
 declare v_unit uuid;
 begin
  select business_unit_id into v_unit from public.customers where id=p_customer_id;
@@ -105,7 +105,7 @@ grant execute on function public.admin_customer_order_summary(uuid) to authentic
 create or replace function public.admin_list_notifications(p_business_unit_code text,p_entity_id uuid default null)
 returns table(id uuid,event_type text,entity_type text,entity_id uuid,status text,attempts integer,
  last_error_safe text,created_at timestamptz,updated_at timestamptz,sent_at timestamptz,delivery_status text)
-language plpgsql security definer set search_path='' as $$
+language plpgsql security definer set search_path = '' as $$
 declare v_unit uuid;
 begin
  select u.id into v_unit from public.business_units u where u.code=p_business_unit_code;
