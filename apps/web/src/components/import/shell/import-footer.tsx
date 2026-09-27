@@ -33,7 +33,9 @@ export function ImportFooter() {
                 WhatsApp
               </a>
             ) : null}
-            {contactEmail ? <a href={`mailto:${contactEmail}`}>Correo</a> : null}
+            {contactEmail ? (
+              <a href={`mailto:${contactEmail}`}>Correo</a>
+            ) : null}
           </nav>
 
           <Link href="/" className={styles.footerBack}>
