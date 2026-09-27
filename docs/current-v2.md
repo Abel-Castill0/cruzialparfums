@@ -1604,14 +1604,38 @@ copied from an earlier doc.
   also clearing MFA. Revisit only if/when the org upgrades to Pro (a
   business/cost decision, not something to implement around).
 
-## Final completion candidate (PR #13, 2026-09-26) — NOT merged, NOT applied hosted
+## Final completion cutover (PR #13, 2026-09-27) — Production DB MIGRATED 70 → 78
 
-Branch `claude/final/cruzial-production-completion`, draft PR #13. Production
-is untouched: master `0ba18017`, 70 hosted migrations (latest
-`20260926020600`), `public_launch_ready()` = false, orders 0, complaints 0
-(read-only check, 2026-09-26).
+Branch `claude/final/cruzial-production-completion`, PR #13 (candidate head
+`fe5d5f98`, all remote checks green). DB-first sequence, because the new app
+reads `variant_effective_availability` while the old app is compatible with
+the new DB (same RPC signatures; the worker change only matters for
+complaint-milestone rows, and Production had 0 orders/complaints/outbox rows).
 
-Pending migrations (append-only, apply in order at cutover):
+- **Applied 2026-09-27** to `iyxidhglyqkzoziyewlc`: exactly the 8 versions
+  below, in order, one guarded transaction each (precondition: exact hosted
+  count and no version ≥ target). No Supabase CLI login/DB password was
+  available in that session, so each migration was executed from the exact
+  statement array the pinned CLI (2.117.0) records, and recorded with that same
+  array and the repo version — the prior 8 hosted rows were first shown
+  byte-identical to a local CLI apply, and every new row's statement hash
+  matches the CLI's. Hosted count 78, latest `20260926100000`.
+- **Verification**: all 11 touched objects (6 functions incl. SECURITY mode +
+  grants, 1 CHECK, outbox columns, 3 indexes) md5-identical to a fresh local
+  reset from migration zero; full-content md5 of all 29 public/private tables
+  identical before and after (products 944, variants 324, inventory 324,
+  orders 0, customers 0, complaints 0). Pre-cutover drift found and resolved:
+  hosted `create_parfums_order_request_v2` lacked 5 in-body comment lines
+  (non-functional); `100000` replaced it with the repo body.
+- **Rollback**: `supabase/rollback/20260927_final_cutover_rollback.sql`
+  (sha256 `efe36381…d236f`) restores the 5 replaced function bodies and drops
+  the new public function; additive objects are kept. Generated from a local
+  70-state DB md5-verified against Production and rehearsed locally (after it,
+  all 5 functions hash-identical to the 70-state). Any real rollback must be
+  recorded as a new forward migration. No fresh off-site `pg_dump` was taken
+  in this session (no DB credential); the change set writes no business rows.
+
+Migrations applied (append-only, in order):
 `030000` FK covering indexes · `040000` status-only availability enforcement ·
 `050000`/`070000` complaint milestone enqueue/claim races · `060000`/`080000`
 public variant availability + visibility (draft/archived/other-unit → NULL) ·
