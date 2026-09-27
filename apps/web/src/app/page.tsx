@@ -60,7 +60,7 @@ export default function Home() {
         <div className={styles.heroVisual} aria-hidden="true">
           <div className={styles.heroPedestal}>
             <Image
-              src="/images/home-redesign/home-parfums-pedestal.png"
+              src="/images/home-redesign/home-parfums-pedestal.webp"
               alt=""
               fill
               sizes="(min-width: 1024px) 40vw, 80vw"
@@ -69,7 +69,7 @@ export default function Home() {
           </div>
           <div className={styles.heroBottle}>
             <Image
-              src="/images/home-redesign/home-hero-perfume.png"
+              src="/images/home-redesign/home-hero-perfume.webp"
               alt=""
               fill
               priority
@@ -103,7 +103,7 @@ export default function Home() {
 
       <section className={styles.editorial} aria-labelledby="editorial-title">
         <Image
-          src="/images/home-redesign/home-import-wave.png"
+          src="/images/home-redesign/home-import-wave.webp"
           alt=""
           fill
           sizes="100vw"
@@ -113,9 +113,9 @@ export default function Home() {
           <p className={styles.eyebrow}>Un mismo estándar</p>
           <h2 id="editorial-title">Dos mundos. Un solo criterio.</h2>
           <p>
-            Parfums e Import se construyen sobre la misma exigencia: origen
-            verificado, procesos claros y una plataforma pensada para que cada
-            unidad opere a su manera sin perder identidad Cruzial.
+            Parfums e Import se construyen sobre el mismo criterio: procesos
+            claros, coordinación directa y una plataforma pensada para que
+            cada unidad opere a su manera sin perder identidad Cruzial.
           </p>
         </div>
       </section>

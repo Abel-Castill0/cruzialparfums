@@ -10,11 +10,11 @@ type WorldPanelProps = {
 
 const PANEL_IMAGE: Record<BusinessUnitCode, { src: string; alt: string }> = {
   parfums: {
-    src: "/images/home-redesign/home-parfums-packaging.png",
+    src: "/images/home-redesign/home-parfums-packaging.webp",
     alt: "Estuche Cruzial Parfums",
   },
   import: {
-    src: "/images/home-redesign/home-import-port.png",
+    src: "/images/home-redesign/home-import-port.webp",
     alt: "Puerto de carga internacional, imagen editorial de Cruzial Import",
   },
 };
@@ -36,7 +36,7 @@ export function WorldPanel({ index, unit }: WorldPanelProps) {
           <div className={styles.accents} aria-hidden="true">
             <span className={styles.accentThumb}>
               <Image
-                src="/images/home-redesign/home-parfums-vainilla.png"
+                src="/images/home-redesign/home-parfums-vainilla.webp"
                 alt=""
                 width={200}
                 height={200}
@@ -45,7 +45,7 @@ export function WorldPanel({ index, unit }: WorldPanelProps) {
             </span>
             <span className={styles.accentThumb}>
               <Image
-                src="/images/home-redesign/home-parfums-canela.png"
+                src="/images/home-redesign/home-parfums-canela.webp"
                 alt=""
                 width={200}
                 height={200}
