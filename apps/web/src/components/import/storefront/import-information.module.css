@@ -9,81 +9,163 @@
 }
 
 .processHeading,
-.faqHeading { max-width: 660px; }
+.faqHeading { max-width: 400px; }
+
+.eyebrow {
+  color: var(--import-muted);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
 
 .process h2,
 .conditions h2,
 .faq h2,
 .contact h2 {
+  margin-top: 14px;
   font-family: var(--font-body), sans-serif;
-  font-size: clamp(1.9rem, 4vw, 3.5rem);
+  font-size: clamp(1.9rem, 4vw, 3.2rem);
   font-weight: 520;
-  letter-spacing: -0.045em;
-  line-height: 1.04;
+  letter-spacing: -0.04em;
+  line-height: 1.06;
 }
 
 .processHeading p,
-.conditions > div > p,
+.conditionsBody > div > p,
 .faqHeading p,
-.contact p {
-  max-width: 62ch;
+.contact p:not([role="status"]) {
+  max-width: 42ch;
   margin-top: 14px;
   color: var(--import-muted);
   line-height: 1.65;
 }
 
+.process { display: grid; grid-template-columns: minmax(260px, 0.75fr) minmax(0, 1.6fr); gap: clamp(32px, 6vw, 64px); align-items: start; }
+
 .processList {
-  margin-top: 44px;
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0 42px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
   list-style: none;
 }
 
 .processList li {
-  min-height: 130px;
-  padding: 24px 0;
-  display: grid;
-  grid-template-columns: minmax(110px, 0.35fr) minmax(0, 1fr);
-  gap: 20px;
-  border-top: 1px solid var(--import-line);
-}
-
-.processList strong { font-size: 0.9rem; font-weight: 680; }
-.processList span { color: var(--import-muted); font-size: 0.9rem; line-height: 1.6; }
-
-.conditions {
-  display: grid;
-  grid-template-columns: minmax(0, 0.85fr) minmax(420px, 1.15fr);
-  gap: clamp(40px, 9vw, 120px);
-  align-items: center;
-}
-
-.conditions dl {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
-}
-
-.conditions dl > div {
-  min-height: 148px;
-  padding: 22px;
+  position: relative;
+  min-height: 190px;
+  padding: 22px 18px;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  gap: 10px;
   border: 1px solid var(--import-line);
   border-radius: 16px;
   background: var(--import-surface);
 }
 
-.conditions dl > div:last-child { grid-column: 1 / -1; min-height: 112px; }
-.conditions dt { font-size: clamp(1.8rem, 4vw, 3.2rem); font-weight: 540; letter-spacing: -0.045em; }
-.conditions dd { color: var(--import-muted); font-size: 0.78rem; line-height: 1.5; }
+.processList li:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: -11px;
+  width: 14px;
+  height: 14px;
+  border-top: 1px solid var(--import-line);
+  border-right: 1px solid var(--import-line);
+  transform: translateY(-50%) rotate(45deg);
+  background: var(--import-bg);
+}
+
+.processNumber {
+  color: var(--import-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  font-variant-numeric: tabular-nums;
+}
+
+.processIcon {
+  width: 42px;
+  height: 42px;
+  margin-top: 2px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--import-line);
+  border-radius: 50%;
+  color: var(--import-text);
+}
+
+.processList strong { margin-top: 4px; font-size: 0.92rem; font-weight: 680; }
+.processList span:last-child { color: var(--import-muted); font-size: 0.82rem; line-height: 1.55; }
+
+.conditions {
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(420px, 1.15fr);
+  gap: clamp(28px, 6vw, 64px);
+  align-items: stretch;
+}
+
+.conditionsVisual {
+  position: relative;
+  min-height: 320px;
+  overflow: hidden;
+  border-radius: 20px;
+  border: 1px solid var(--import-line);
+}
+
+.conditionsVisual img { object-fit: cover; }
+
+.conditionsBody {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 26px;
+}
+
+.conditionsBody dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.conditionsBody dl > div {
+  min-height: 150px;
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border: 1px solid var(--import-line);
+  border-radius: 16px;
+  background: var(--import-surface);
+}
+
+.conditionsBody dl > .conditionDelivery {
+  grid-column: 1 / -1;
+  flex-direction: row;
+  align-items: center;
+  gap: 18px;
+  min-height: 96px;
+}
+.conditionDelivery dt { display: none; }
+
+.conditionIcon {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--import-surface-strong);
+  color: var(--import-text);
+}
+
+.conditionsBody dt { font-size: clamp(1.6rem, 3vw, 2.4rem); font-weight: 540; letter-spacing: -0.03em; }
+.conditionsBody dd { font-size: 0.86rem; font-weight: 650; line-height: 1.4; }
+.conditionsBody dd span { display: block; margin-top: 4px; color: var(--import-muted); font-size: 0.78rem; font-weight: 500; }
 
 .faq {
   display: grid;
-  grid-template-columns: minmax(280px, 0.7fr) minmax(0, 1.3fr);
-  gap: clamp(40px, 9vw, 120px);
+  grid-template-columns: minmax(280px, 0.6fr) minmax(0, 1.4fr);
+  gap: clamp(32px, 6vw, 64px);
 }
 
 .faqList { border-top: 1px solid var(--import-line); }
@@ -91,13 +173,27 @@
 .faqList summary {
   min-height: 62px;
   padding-block: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
   cursor: pointer;
+  list-style: none;
   font-size: 0.94rem;
   font-weight: 650;
   line-height: 1.4;
 }
+.faqList summary::-webkit-details-marker { display: none; }
+.faqChevron {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  color: var(--import-muted);
+  transition: transform 220ms ease;
+}
+.faqList details[open] .faqChevron { transform: rotate(180deg); }
 .faqList details p {
-  max-width: 68ch;
+  max-width: 60ch;
   padding: 0 24px 22px 0;
   color: var(--import-muted);
   font-size: 0.9rem;
@@ -105,41 +201,47 @@
 }
 
 .contact {
-  margin-bottom: clamp(48px, 7vw, 88px);
-  padding-inline: clamp(24px, 5vw, 72px);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 32px;
+  position: relative;
+  padding: clamp(40px, 6vw, 72px) clamp(24px, 5vw, 72px);
+  overflow: hidden;
   border: 1px solid var(--import-line);
-  border-radius: 16px;
+  border-radius: 20px;
   background: var(--import-surface-strong);
 }
 
-.contact h2 { font-size: clamp(1.7rem, 3.5vw, 2.8rem); }
-.contact a {
+.contactImage {
+  object-fit: cover;
+  object-position: right center;
+  opacity: 0.5;
+  mask-image: linear-gradient(90deg, transparent 0%, black 55%);
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, black 55%);
+}
+
+.contactBody { position: relative; max-width: 640px; }
+.contact h2 { font-size: clamp(1.7rem, 3.5vw, 2.6rem); }
+.contactBody a {
   min-height: 48px;
-  padding: 13px 22px;
+  margin-top: 26px;
+  padding: 13px 24px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  flex: 0 0 auto;
-  border: 1px solid var(--import-accent);
-  border-radius: 12px;
-  color: #f5f8fc;
-  background: #173f70;
+  border: 1px solid var(--import-accent, #f4f7fb);
+  border-radius: 999px;
+  color: var(--import-accent-text, #0b1f3d);
+  background: var(--import-accent, #f4f7fb);
   font-size: 0.82rem;
   font-weight: 650;
   white-space: nowrap;
 }
 
-@media (prefers-color-scheme: dark) {
-  .contact a { border-color: #dce8f5; color: #0b1f3d; background: #dce8f5; }
-}
-
 @media (max-width: 900px) {
+  .process,
   .conditions,
   .faq { grid-template-columns: 1fr; }
+  .processList { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .processList li:nth-child(2)::after,
+  .processList li:last-child::after { display: none; }
 }
 
 @media (max-width: 767px) {
@@ -147,13 +249,13 @@
   .conditions,
   .faq,
   .contact { width: min(100% - 32px, 1280px); }
-  .processList { grid-template-columns: 1fr; }
-  .contact { align-items: flex-start; flex-direction: column; }
+  .conditionsVisual { min-height: 220px; order: -1; }
 }
 
 @media (max-width: 520px) {
-  .processList li { grid-template-columns: 1fr; gap: 8px; }
-  .conditions dl { grid-template-columns: 1fr; }
-  .conditions dl > div:last-child { grid-column: auto; }
-  .contact a { width: 100%; }
+  .processList { grid-template-columns: 1fr; }
+  .processList li::after { display: none; }
+  .conditionsBody dl { grid-template-columns: 1fr; }
+  .conditionDelivery { grid-column: auto; }
+  .contactBody a { width: 100%; }
 }
