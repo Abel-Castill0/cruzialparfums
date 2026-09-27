@@ -159,8 +159,8 @@ export function ProductDetailExperience({
                 <p className={styles.sectionLabel}>Decant · 3 · 5 · 10 ml</p>
                 <div className={styles.sizeRow}>
                   {decants.map((variant) => (
-                    <button key={variant.variantId} type="button" className={`${styles.sizeButton} ${selected.variantId === variant.variantId ? styles.selected : ""}`} aria-pressed={selected.variantId === variant.variantId} data-variant-id={variant.variantId} onClick={() => selectVariant(variant)}>
-                      <strong>{variant.size} ml</strong><span>{money(variant.price)}</span>
+                    <button key={variant.variantId} type="button" className={`${styles.sizeButton} ${selected.variantId === variant.variantId ? styles.selected : ""} ${!variant.isAvailable ? styles.sizeUnavailable : ""}`} aria-pressed={selected.variantId === variant.variantId} aria-disabled={!variant.isAvailable} data-variant-id={variant.variantId} data-variant-available={variant.isAvailable} onClick={() => selectVariant(variant)}>
+                      <strong>{variant.size} ml</strong><span>{variant.isAvailable ? money(variant.price) : "Agotado"}</span>
                     </button>
                   ))}
                 </div>
@@ -176,8 +176,8 @@ export function ProductDetailExperience({
                   <p className={styles.bottleLabel}>Frasco completo · original sellado</p>
                   <div className={styles.sizeRow}>
                     {bottles.map((variant) => (
-                      <button key={variant.variantId} type="button" className={`${styles.sizeButton} ${selected.variantId === variant.variantId ? styles.selected : ""}`} aria-pressed={selected.variantId === variant.variantId} data-variant-id={variant.variantId} onClick={() => selectVariant(variant)}>
-                        <strong>{variant.size} ml</strong><span>{money(variant.price)}</span>
+                      <button key={variant.variantId} type="button" className={`${styles.sizeButton} ${selected.variantId === variant.variantId ? styles.selected : ""} ${!variant.isAvailable ? styles.sizeUnavailable : ""}`} aria-pressed={selected.variantId === variant.variantId} aria-disabled={!variant.isAvailable} data-variant-id={variant.variantId} data-variant-available={variant.isAvailable} onClick={() => selectVariant(variant)}>
+                        <strong>{variant.size} ml</strong><span>{variant.isAvailable ? money(variant.price) : "Agotado"}</span>
                       </button>
                     ))}
                   </div>
@@ -199,10 +199,16 @@ export function ProductDetailExperience({
               </div>
 
               <div className={styles.detailActions}>
-                <button type="button" className={styles.primaryAction} data-primary-action onClick={addSelection}>Añadir al carrito · {money(total)}</button>
+                <button type="button" className={styles.primaryAction} data-primary-action disabled={!selected.isAvailable} onClick={addSelection}>
+                  {selected.isAvailable ? `Añadir al carrito · ${money(total)}` : "Presentación agotada"}
+                </button>
                 <a className={styles.secondaryAction} target="_blank" rel="noopener noreferrer" href={buildWhatsAppUrl(whatsappNumber, consultation)}>Consultar <span aria-hidden="true">↗</span></a>
               </div>
-              <p className={styles.actionNote}>Se añadirá esta presentación al carrito. Envío, disponibilidad y total final se confirman en WhatsApp; la web no procesa pagos.</p>
+              <p className={styles.actionNote}>
+                {selected.isAvailable
+                  ? "Se añadirá esta presentación al carrito. Envío, disponibilidad y total final se confirman en WhatsApp; la web no procesa pagos."
+                  : "Esta presentación no tiene stock disponible en este momento. Elige otra o consulta por WhatsApp."}
+              </p>
               {isBottleGiftEligible(selected.group) ? (
                 <p className={styles.giftNote} data-bottle-gift-note>{BOTTLE_GIFT_MESSAGE}</p>
               ) : null}

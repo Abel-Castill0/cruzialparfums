@@ -31,12 +31,20 @@ export async function processNotificationBatch(
       processed++;
       continue;
     }
+    // The dispatch commit point: only a row the database has just moved to
+    // 'sending' authorizes a provider call, and the call is built from THAT
+    // authoritative row, never from the (possibly stale) claimed job. A
+    // complaint resolved before this point comes back 'cancelled' and is
+    // never sent.
     const begun = await client.rpc("worker_begin_notification", { p_id: job.id, p_lease_token: job.lease_token });
-    if (begun.error) { ok = false; continue; }
-    const reference = job.template_data && typeof job.template_data === "object" && !Array.isArray(job.template_data)
-      && typeof job.template_data.reference === "string" ? job.template_data.reference : "";
-    const result = await provider.send({ event: job.template_key, recipient: job.recipient ?? "", reference,
-      idempotencyKey: job.idempotency_key });
+    if (begun.error || !begun.data) { ok = false; continue; }
+    const authorized = begun.data;
+    if (authorized.status !== "sending") { processed++; continue; }
+    const templateData = authorized.template_data;
+    const reference = templateData && typeof templateData === "object" && !Array.isArray(templateData)
+      && typeof templateData.reference === "string" ? templateData.reference : "";
+    const result = await provider.send({ event: authorized.template_key, recipient: authorized.recipient ?? "", reference,
+      idempotencyKey: authorized.idempotency_key });
     const finished = await client.rpc("worker_finish_notification", {
       p_id: job.id, p_lease_token: job.lease_token, p_outcome: result.status,
       ...(result.status === "sent" ? { p_provider_message_id: result.providerMessageId } : { p_error_safe: result.error }),

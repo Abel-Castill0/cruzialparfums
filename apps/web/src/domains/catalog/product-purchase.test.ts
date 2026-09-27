@@ -13,11 +13,34 @@ describe("product purchase contract", () => {
 
   it("exposes decants and the legacy bottle as variants", () => {
     expect(listProductPurchaseVariants(product)).toEqual([
-      { group: "decant", size: 3, price: 12, variantId: "decant-3ml", dbVariantId: null },
-      { group: "decant", size: 5, price: 16, variantId: "decant-5ml", dbVariantId: null },
-      { group: "decant", size: 10, price: 26, variantId: "decant-10ml", dbVariantId: null },
-      { group: "bottle", size: 100, price: 380, variantId: "bottle-100ml", dbVariantId: null },
+      { group: "decant", size: 3, price: 12, variantId: "decant-3ml", dbVariantId: null, isAvailable: true },
+      { group: "decant", size: 5, price: 16, variantId: "decant-5ml", dbVariantId: null, isAvailable: true },
+      { group: "decant", size: 10, price: 26, variantId: "decant-10ml", dbVariantId: null, isAvailable: true },
+      { group: "bottle", size: 100, price: 380, variantId: "bottle-100ml", dbVariantId: null, isAvailable: true },
     ]);
+  });
+
+  it("carries a variant's isAvailable flag from product.variants, defaulting true when no matching DB variant exists", () => {
+    const withUnavailable = {
+      ...product,
+      variants: [
+        ...product.variants,
+        { ...product.variants[0]!, variantId: "decant-3ml", isAvailable: false },
+      ],
+    };
+    // The last matching entry wins the Map lookup — this exercises the real
+    // "some DB variant marked unavailable" path via the same lookup
+    // listProductPurchaseVariants uses.
+    expect(listProductPurchaseVariants(withUnavailable).find((v) => v.variantId === "decant-3ml")?.isAvailable).toBe(false);
+  });
+
+  it("resolveInitialProductVariant prefers an available size over the smallest one when the smallest is out of stock", () => {
+    const mixed = {
+      ...product,
+      variants: product.variants.map((v) => v.variantId === "decant-3ml" ? { ...v, isAvailable: false } : v),
+    };
+    expect(resolveInitialProductVariant(mixed, "decant").variantId).not.toBe("decant-3ml");
+    expect(resolveInitialProductVariant(mixed, "decant").isAvailable).toBe(true);
   });
 
   it("honors a bottle deep-link only when that variant exists", () => {

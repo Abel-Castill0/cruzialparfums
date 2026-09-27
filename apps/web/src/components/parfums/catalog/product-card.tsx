@@ -48,6 +48,15 @@ export function ProductCard({
     mode === "bottle" && product.bottlePrices
       ? product.bottlePrices
       : product.decantPrices;
+  const currentKind = mode === "bottle" ? "bottle" : "decant";
+  // The card offers only this one fixed (cheapest) size per mode with no
+  // size picker, so availability is checked against that exact variant —
+  // never assumed from the product as a whole. DB persistence remains the
+  // final authority regardless; this only keeps the storefront from
+  // advertising a size the backend would reject.
+  const currentVariantAvailable = product.variants.some(
+    (v) => v.kind === currentKind && v.sizeMl === String(currentVariant.size) && v.isAvailable,
+  );
   const [quantity, setQuantity] = useState(1);
 
   function addSelection() {
@@ -143,30 +152,36 @@ export function ProductCard({
           <span>{mode === "bottle" ? `frasco ${currentVariant.size} ml` : `desde ${decantVariant.size} ml`}</span>
           <strong data-price>{money(minimumPrice(currentPrices))}</strong>
         </div>
-        <div className={styles.quantityRow} data-quantity-row>
-          <div className={styles.stepper} role="group" aria-label={`Cantidad de ${product.name}`}>
-            <button
-              type="button"
-              onClick={() => setQuantity((value) => clampPurchaseQuantity(value - 1))}
-              disabled={quantity === 1}
-              aria-label={`Reducir cantidad de ${product.name}`}
-            >
-              −
-            </button>
-            <output aria-label="Cantidad seleccionada">{quantity}</output>
-            <button
-              type="button"
-              onClick={() => setQuantity((value) => clampPurchaseQuantity(value + 1))}
-              disabled={quantity === 99}
-              aria-label={`Aumentar cantidad de ${product.name}`}
-            >
-              +
+        {currentVariantAvailable ? (
+          <div className={styles.quantityRow} data-quantity-row>
+            <div className={styles.stepper} role="group" aria-label={`Cantidad de ${product.name}`}>
+              <button
+                type="button"
+                onClick={() => setQuantity((value) => clampPurchaseQuantity(value - 1))}
+                disabled={quantity === 1}
+                aria-label={`Reducir cantidad de ${product.name}`}
+              >
+                −
+              </button>
+              <output aria-label="Cantidad seleccionada">{quantity}</output>
+              <button
+                type="button"
+                onClick={() => setQuantity((value) => clampPurchaseQuantity(value + 1))}
+                disabled={quantity === 99}
+                aria-label={`Aumentar cantidad de ${product.name}`}
+              >
+                +
+              </button>
+            </div>
+            <button type="button" className={styles.addButton} onClick={addSelection} aria-label={`Añadir ${quantity} × ${product.name}, ${currentVariant.size} ml`}>
+              Añadir
             </button>
           </div>
-          <button type="button" className={styles.addButton} onClick={addSelection} aria-label={`Añadir ${quantity} × ${product.name}, ${currentVariant.size} ml`}>
-            Añadir
-          </button>
-        </div>
+        ) : (
+          <div className={styles.quantityRow} data-quantity-row data-variant-unavailable>
+            <span className={styles.soldOut}>{currentVariant.size} ml agotado</span>
+          </div>
+        )}
         <div className={styles.bottleSlot}>
           {crossSell ? (
             <Link href={crossSell.href} className={styles.bottleLink}>

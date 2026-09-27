@@ -16,10 +16,14 @@ import { defineConfig, devices } from "@playwright/test";
  *   - admin: authenticated journeys, desktop only.
  */
 
+// One tag per run, inherited by every worker: the prefix of deterministic
+// synthetic test identities (see e2e/local-db.ts testCustomerPhone).
+process.env.E2E_RUN_TAG ??= String(Math.floor(Date.now() / 1000) % 1_000_000).padStart(6, "0");
+
 const localPort = process.env.E2E_LOCAL_PORT || "3000";
 const baseURL = process.env.E2E_BASE_URL || `http://localhost:${localPort}`;
 const isLocalTarget = !process.env.E2E_BASE_URL;
-const PUBLIC_SPECS = /(public-hub|parfums-public-journey|parfums-storefront|import-public-journey|admin-protection|accessibility)\.spec\.ts/;
+const PUBLIC_SPECS = /(public-hub|parfums-public-journey|parfums-storefront|import-public-journey|attempt-lifecycle|admin-protection|accessibility)\.spec\.ts/;
 
 export default defineConfig({
   testDir: "./e2e",
