@@ -9,6 +9,7 @@ import {
   updateVariantAction,
   type ActionState,
 } from "../actions";
+import { StatusBadge } from "@/components/admin/admin-ui";
 import formStyles from "@/components/admin/product-form-fields.module.css";
 import styles from "../page.module.css";
 
@@ -83,14 +84,26 @@ export function VariantRow({
   const rowDisabled = disabled || Boolean(variant.archived_at);
   const errorIdPrefix = `variant-${variant.id}`;
 
+  const variantAvailable = Boolean(
+    inventory &&
+      inventory.availability_status === "available" &&
+      (inventory.inventory_mode !== "tracked_quantity" || (inventory.quantity_on_hand ?? 0) > 0),
+  );
+
   if (!editing) {
     return (
       <tr>
-        <td data-label="Nombre">{variant.label}</td>
-        <td data-label="Tipo">{variant.variant_kind === "bottle" ? "Frasco" : "Decant"}</td>
+        <td data-label="Presentación">{variant.label}</td>
+        <td data-label="Formato">{variant.variant_kind === "bottle" ? "Frasco" : "Decant"}</td>
         <td data-label="Tamaño (ml)">{variant.size_ml ?? "—"}</td>
         <td data-label="Precio">
           {variant.currency} {variant.price_amount.toFixed(2)}
+          {variant.price_amount <= 0 ? (
+            <>
+              {" "}
+              <StatusBadge tone="attention">Precio por corregir</StatusBadge>
+            </>
+          ) : null}
           {variant.price_verification_status === "provisional_market" ? (
             <>
               {" "}
@@ -98,12 +111,20 @@ export function VariantRow({
             </>
           ) : null}
         </td>
-        <td data-label="Inventario">
-          {inventory
-            ? `${inventory.inventory_mode === "tracked_quantity" ? `${inventory.quantity_on_hand ?? 0} u.` : "Solo estado"} · ${inventory.availability_status === "available" && (inventory.inventory_mode !== "tracked_quantity" || (inventory.quantity_on_hand ?? 0) > 0) ? "Disponible" : "Agotado"}`
-            : "—"}
+        <td data-label="Disponibilidad">
+          {inventory ? (
+            <>
+              <StatusBadge tone={variantAvailable ? "neutral" : "attention"}>{variantAvailable ? "Disponible" : "Agotado"}</StatusBadge>
+              {" "}
+              <span>{inventory.inventory_mode === "tracked_quantity" ? `${inventory.quantity_on_hand ?? 0} u. en stock` : "Solo estado"}</span>
+            </>
+          ) : "—"}
         </td>
-        <td data-label="Publicación">{{draft:"Borrador",published:"Publicado",hidden:"Oculto",archived:"Archivado"}[variant.publication_status]??"Sin publicar"}</td>
+        <td data-label="Publicación">
+          <StatusBadge tone={variant.publication_status === "published" ? "healthy" : variant.archived_at ? "neutral" : "attention"}>
+            {{draft:"Borrador",published:"Publicado",hidden:"Oculto",archived:"Archivado"}[variant.publication_status]??"Sin publicar"}
+          </StatusBadge>
+        </td>
         <td data-label="Acciones">
           {!rowDisabled ? (
             <button type="button" className={styles.secondaryButton} onClick={() => setEditing(true)}>

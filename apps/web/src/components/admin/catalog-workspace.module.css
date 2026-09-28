@@ -1,0 +1,409 @@
+/* Catalog + customer workspaces (Phase B2A). Tokens follow the admin shell. */
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.toolbar {
+  display: grid;
+  gap: 14px;
+}
+
+.muted {
+  margin: 0;
+  color: var(--admin-muted, #5c574f);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* Search + advanced filters */
+
+.filterBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 10px 12px;
+}
+
+.field {
+  flex: 1 1 200px;
+  display: grid;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--admin-text, #17130f);
+}
+
+.fieldWide {
+  flex: 3 1 280px;
+}
+
+.field input:not([type="checkbox"]),
+.field select,
+.field textarea {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--admin-line-strong, rgba(23, 19, 15, 0.22));
+  border-radius: 6px;
+  background: var(--admin-surface, #fff);
+  color: var(--admin-text, #17130f);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 400;
+}
+
+.field textarea {
+  min-height: 96px;
+  padding: 10px 12px;
+  resize: vertical;
+}
+
+.field input:focus-visible,
+.field select:focus-visible,
+.field textarea:focus-visible,
+.check input:focus-visible {
+  outline: 2px solid var(--admin-text, #17130f);
+  outline-offset: 1px;
+}
+
+.fieldHint {
+  color: var(--admin-muted, #5c574f);
+  font-size: 12.5px;
+  font-weight: 400;
+}
+
+.check {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.check input {
+  width: 20px;
+  height: 20px;
+}
+
+.advanced {
+  border: 1px solid var(--admin-line, rgba(23, 19, 15, 0.14));
+  border-radius: 8px;
+  background: var(--admin-surface, #fff);
+}
+
+.advanced > summary {
+  min-height: 44px;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  list-style: none;
+}
+
+.advanced > summary::-webkit-details-marker {
+  display: none;
+}
+
+.advanced > summary::before {
+  content: "▸";
+  color: var(--admin-muted, #5c574f);
+  font-size: 12px;
+}
+
+.advanced[open] > summary::before {
+  content: "▾";
+}
+
+.advanced > summary:focus-visible {
+  outline: 2px solid var(--admin-text, #17130f);
+  outline-offset: 2px;
+}
+
+.advancedBody {
+  padding: 4px 16px 16px;
+}
+
+/* Rows */
+
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--admin-line, rgba(23, 19, 15, 0.14));
+  border-radius: 8px;
+  background: var(--admin-surface, #fff);
+  overflow: hidden;
+}
+
+.list > li + li {
+  border-top: 1px solid var(--admin-line, rgba(23, 19, 15, 0.14));
+}
+
+.row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1.3fr) minmax(0, 1.4fr) 9rem;
+  align-items: center;
+  gap: 10px 18px;
+  padding: 12px 18px;
+  min-height: 64px;
+  color: var(--admin-text, #17130f);
+  text-decoration: none;
+}
+
+.rowNoThumb {
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1.4fr) 9rem;
+}
+
+.row:hover {
+  background: var(--admin-accent-soft, rgba(23, 19, 15, 0.04));
+}
+
+.row:focus-visible {
+  outline: 2px solid var(--admin-text, #17130f);
+  outline-offset: -2px;
+}
+
+.thumb {
+  width: 56px;
+  height: 56px;
+  flex: 0 0 auto;
+  border: 1px solid var(--admin-line, rgba(23, 19, 15, 0.14));
+  border-radius: 6px;
+  background: var(--admin-canvas, #f4f2ee);
+  object-fit: cover;
+  display: grid;
+  place-items: center;
+  color: var(--admin-muted, #5c574f);
+  font-size: 10.5px;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.2;
+  overflow: hidden;
+}
+
+.identity,
+.state {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+  justify-items: start;
+}
+
+.name {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.figures {
+  display: grid;
+  gap: 2px;
+  justify-items: end;
+  text-align: right;
+  color: var(--admin-muted, #5c574f);
+  font-size: 13px;
+}
+
+/* Detail layout */
+
+.headerBadges {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+}
+
+.summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  border: 1px solid var(--admin-line, rgba(23, 19, 15, 0.14));
+  border-top: 3px solid var(--admin-accent, #17130f);
+  border-radius: 8px;
+  background: var(--admin-surface, #fff);
+}
+
+.summaryMain,
+.summaryNext {
+  min-width: 0;
+  padding: clamp(16px, 2.4vw, 24px);
+  display: grid;
+  align-content: start;
+  gap: 10px;
+}
+
+.summaryNext {
+  border-left: 1px solid var(--admin-line, rgba(23, 19, 15, 0.14));
+  background: var(--admin-accent-soft, rgba(23, 19, 15, 0.04));
+}
+
+.summaryNext a {
+  justify-self: start;
+}
+
+.eyebrow {
+  margin: 0;
+  color: var(--admin-muted, #5c574f);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.headline {
+  margin: 0;
+  font-size: clamp(18px, 2vw, 21px);
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.consequence {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.anchor {
+  scroll-margin-top: 24px;
+  min-width: 0;
+}
+
+.scope {
+  margin: 0;
+  padding: 10px 14px;
+  border: 1px dashed var(--admin-line-strong, rgba(23, 19, 15, 0.22));
+  border-radius: 6px;
+  color: var(--admin-text, #17130f);
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+
+.card {
+  display: grid;
+  gap: 14px;
+  padding: 16px 18px;
+  border: 1px solid var(--admin-line, rgba(23, 19, 15, 0.14));
+  border-radius: 8px;
+  background: var(--admin-surface, #fff);
+  min-width: 0;
+}
+
+.cardAttention {
+  border-left: 4px solid #b57a14;
+}
+
+.cardHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+}
+
+.cardTitle {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.formGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 14px;
+  align-items: flex-end;
+}
+
+.actionsRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+}
+
+.cards {
+  display: grid;
+  gap: 12px;
+}
+
+@media (max-width: 900px) {
+  .summary {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .summaryNext {
+    border-left: 0;
+    border-top: 1px solid var(--admin-line, rgba(23, 19, 15, 0.14));
+  }
+}
+
+@media (max-width: 760px) {
+  .row {
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas:
+      "thumb identity"
+      "thumb state"
+      "thumb figures";
+    padding: 12px 14px;
+  }
+
+  .rowNoThumb {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "identity"
+      "state"
+      "figures";
+  }
+
+  .thumb {
+    grid-area: thumb;
+    align-self: start;
+  }
+
+  .identity {
+    grid-area: identity;
+  }
+
+  .state {
+    grid-area: state;
+  }
+
+  .figures {
+    grid-area: figures;
+    justify-items: start;
+    text-align: left;
+  }
+}
+
+/* Embeds legacy managers (own section/notice margins) inside the workspace. */
+.legacyReset > section,
+.legacyReset > section > p,
+.legacyReset > section > details {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+.legacyReset > section {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  border-radius: 8px;
+}

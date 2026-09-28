@@ -1,9 +1,10 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useActionState, useTransition } from "react";
+import { useState, useTransition } from "react";
+import { SaveStatus, adminButtonClass, type SaveStatusState } from "@/components/admin/admin-ui";
 import { updateImportCustomerAction } from "../customer-actions";
-import styles from "../../productos/page.module.css";
+import styles from "@/components/admin/catalog-workspace.module.css";
 
 type Props = {
   customerId: string;
@@ -14,78 +15,61 @@ type Props = {
 
 export function CustomerEditForm({ customerId, initialFullName, initialPhone, initialNotes }: Props) {
   const router = useRouter();
-  const [, startTransition] = useTransition();
-
-  const [state, formAction, isPending] = useActionState(
-    async (_prev: Awaited<ReturnType<typeof updateImportCustomerAction>> | null, formData: FormData) => {
-      const fullName = formData.get("full_name") as string;
-      const phone = formData.get("phone") as string;
-      const notes = formData.get("notes") as string;
-      const result = await updateImportCustomerAction(customerId, fullName, phone || null, notes || null);
-      if (result.status === "success") {
-        startTransition(() => {
-          router.refresh();
-        });
-      }
-      return result;
-    },
-    null,
-  );
+  const [pending, start] = useTransition();
+  const [status, setStatus] = useState<SaveStatusState>("idle");
+  const [message, setMessage] = useState<string | undefined>(undefined);
 
   return (
-    <section className={styles.section} aria-labelledby="edit-heading">
-      <div className={styles.sectionTitle}>
-        <h2 id="edit-heading">Editar cliente</h2>
+    <form
+      className={styles.card}
+      onChange={() => {
+        setStatus("dirty");
+        setMessage(undefined);
+      }}
+      onSubmit={(event) => {
+        event.preventDefault();
+        const formData = new FormData(event.currentTarget);
+        const fullName = String(formData.get("full_name") ?? "");
+        const phone = String(formData.get("phone") ?? "");
+        const notes = String(formData.get("notes") ?? "");
+        start(async () => {
+          setStatus("saving");
+          try {
+            const result = await updateImportCustomerAction(customerId, fullName, phone || null, notes || null);
+            if (result.status === "success") {
+              setStatus("saved");
+              setMessage("Datos del cliente guardados");
+              router.refresh();
+            } else {
+              setStatus("error");
+              setMessage(`${result.status === "error" ? result.message : "No se pudo guardar."} No se guardó.`);
+            }
+          } catch {
+            setStatus("error");
+            setMessage("No pudimos confirmar el guardado. Recarga antes de volver a intentarlo.");
+          }
+        });
+      }}
+    >
+      <div className={styles.formGrid}>
+        <label className={styles.field}>
+          <span>Nombre completo *</span>
+          <input id="full_name" name="full_name" type="text" required defaultValue={initialFullName} disabled={pending} />
+        </label>
+        <label className={styles.field}>
+          <span>Teléfono</span>
+          <input id="phone" name="phone" type="tel" defaultValue={initialPhone ?? ""} disabled={pending} />
+        </label>
       </div>
-      {state?.status === "success" ? (
-        <p className={styles.savedNote} role="status" aria-live="polite">{state.message}</p>
-      ) : state?.status === "error" ? (
-        <p className={styles.conflictBanner} role="alert">{state.message}</p>
-      ) : null}
-      <form action={formAction} style={{ display: "grid", gap: 12 }}>
-        <div>
-          <label htmlFor="full_name" style={{ display: "block", fontSize: 10, fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", color: "#8a8378", marginBottom: 4 }}>
-            Nombre completo *
-          </label>
-          <input
-            id="full_name"
-            name="full_name"
-            type="text"
-            required
-            defaultValue={initialFullName}
-            style={{ width: "100%", minHeight: 44, padding: "0 12px", border: "1px solid rgba(23,19,15,0.2)", fontSize: 13 }}
-          />
-        </div>
-        <div>
-          <label htmlFor="phone" style={{ display: "block", fontSize: 10, fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", color: "#8a8378", marginBottom: 4 }}>
-            Teléfono
-          </label>
-          <input
-            id="phone"
-            name="phone"
-            type="tel"
-            defaultValue={initialPhone ?? ""}
-            style={{ width: "100%", minHeight: 44, padding: "0 12px", border: "1px solid rgba(23,19,15,0.2)", fontSize: 13 }}
-          />
-        </div>
-        <div>
-          <label htmlFor="notes" style={{ display: "block", fontSize: 10, fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", color: "#8a8378", marginBottom: 4 }}>
-            Notas
-          </label>
-          <textarea
-            id="notes"
-            name="notes"
-            rows={3}
-            defaultValue={initialNotes ?? ""}
-            style={{ width: "100%", minHeight: 80, padding: "8px 12px", border: "1px solid rgba(23,19,15,0.2)", fontSize: 13, resize: "vertical" }}
-          />
-        </div>
-        <div className={styles.formActions}>
-          <button type="submit" className={styles.primaryButton} disabled={isPending}>
-            {isPending ? "Guardando..." : "Guardar cambios"}
-          </button>
-        </div>
-      </form>
-    </section>
+      <label className={styles.field}>
+        <span>Notas internas</span>
+        <textarea id="notes" name="notes" rows={3} defaultValue={initialNotes ?? ""} disabled={pending} />
+        <span className={styles.fieldHint}>Solo las ve tu equipo.</span>
+      </label>
+      <div className={styles.actionsRow}>
+        <button type="submit" className={adminButtonClass("primary")} disabled={pending}>{pending ? "Guardando…" : "Guardar datos"}</button>
+        <SaveStatus state={status} message={message} />
+      </div>
+    </form>
   );
 }

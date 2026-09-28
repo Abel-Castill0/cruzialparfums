@@ -73,7 +73,7 @@ export const VISIBILITY_REASON_LABELS: Record<VisibilityReason, string> = {
   variant_archived: "Variante archivada",
   presentation_not_published: "Presentación no publicada",
   presentation_archived: "Presentación archivada",
-  availability_unconfirmed: "Disponibilidad por confirmar",
+  availability_unconfirmed: "Disponibilidad sin confirmar",
   unknown_publication_status: "Estado de publicación desconocido",
 };
 

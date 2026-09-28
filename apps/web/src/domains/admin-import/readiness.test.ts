@@ -40,7 +40,7 @@ describe("classifyProductReadiness", () => {
   it("unconfirmed offers makes commercial pending", () => {
     const r = classifyProductReadiness({ ...baseInput, unconfirmedOfferCount: 2 });
     expect(r.commercial).toBe("pending");
-    expect(r.blockers).toContain("Disponibilidad por confirmar");
+    expect(r.blockers).toContain("Disponibilidad sin confirmar");
   });
 
   it("archived product is blocked", () => {

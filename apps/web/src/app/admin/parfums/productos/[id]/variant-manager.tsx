@@ -25,14 +25,14 @@ export function VariantManager({
   return (
     <section className={styles.section} aria-labelledby="variants-title">
       <div className={styles.sectionTitle}>
-        <h2 id="variants-title">Variantes ({activeVariants.length})</h2>
+        <h2 id="variants-title">Presentaciones y precios ({activeVariants.length})</h2>
         {!disabled ? (
           <button
             type="button"
             className={styles.secondaryButton}
             onClick={() => setShowAddForm((value) => !value)}
           >
-            {showAddForm ? "Cancelar" : "+ Añadir variante"}
+            {showAddForm ? "Cancelar" : "+ Agregar presentación"}
           </button>
         ) : null}
       </div>
@@ -42,16 +42,16 @@ export function VariantManager({
       ) : null}
 
       {activeVariants.length === 0 ? (
-        <p className={styles.notice}>Este producto todavía no tiene variantes.</p>
+        <p className={styles.notice}>Este producto todavía no tiene presentaciones. Agrega al menos un decant con tamaño y precio para que pueda aparecer en la tienda.</p>
       ) : (
         <table className={styles.variantTable}>
           <thead>
             <tr>
-              <th>Nombre</th>
-              <th>Tipo</th>
+              <th>Presentación</th>
+              <th>Formato</th>
               <th>Tamaño (ml)</th>
               <th>Precio</th>
-              <th>Inventario</th>
+              <th>Disponibilidad</th>
               <th>Publicación</th>
               <th>Acciones</th>
             </tr>
@@ -71,15 +71,15 @@ export function VariantManager({
 
       {archivedVariants.length > 0 ? (
         <details className={styles.notice}>
-          <summary>{archivedVariants.length} variante{archivedVariants.length === 1 ? "" : "s"} archivada{archivedVariants.length === 1 ? "" : "s"}</summary>
+          <summary>{archivedVariants.length} presentaci{archivedVariants.length === 1 ? "ón" : "ones"} archivada{archivedVariants.length === 1 ? "" : "s"}</summary>
           <table className={styles.variantTable}>
             <thead>
               <tr>
-                <th>Nombre</th>
-                <th>Tipo</th>
+                <th>Presentación</th>
+                <th>Formato</th>
                 <th>Tamaño (ml)</th>
                 <th>Precio</th>
-                <th>Inventario</th>
+                <th>Disponibilidad</th>
                 <th>Publicación</th>
                 <th>Acciones</th>
               </tr>

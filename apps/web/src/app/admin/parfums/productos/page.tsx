@@ -1,23 +1,36 @@
-import type { Metadata } from "next";
+import type { Metadata, Route } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getAdminSession } from "@/lib/auth/admin-session";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import {
+  ActionLink,
+  AdminPage,
+  AdminPageHeader,
+  EmptyState,
+  FilterTabs,
+  Notice,
+  Pagination,
+  StatusBadge,
+} from "@/components/admin/admin-ui";
 import { AdminParfumsProductsRepository } from "@/domains/admin-parfums/products-repository";
 import type {
   AvailabilityStatus,
   ProductionStatus,
   PublicationStatus,
 } from "@/domains/admin-parfums/product-schema";
-import { PRODUCT_STATUS_LABELS, PRODUCTION_STATUS_LABELS, PRODUCT_AVAILABILITY_LABELS } from "@/domains/admin-parfums/product-schema";
+import { PRODUCT_STATUS_LABELS, PRODUCT_AVAILABILITY_LABELS } from "@/domains/admin-parfums/product-schema";
+import { PARFUMS_LIST_VIEWS, currentParfumsView, parfumsViewHref } from "@/domains/admin-parfums/product-presentation";
+import { formatRelativeLima } from "@/domains/admin/order-presentation";
 import { ProductFilters } from "./product-filters";
-import styles from "./page.module.css";
+import styles from "@/components/admin/catalog-workspace.module.css";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = { title: "Productos" };
 
 const PAGE_SIZE = 20;
+const BASE_PATH = "/admin/parfums/productos";
 
 function isPublicationStatus(value: string | undefined): value is PublicationStatus {
   return value === "draft" || value === "published" || value === "archived";
@@ -48,139 +61,152 @@ export default async function AdminParfumsProductsPage({
     (candidate) => candidate.businessUnitCode === "parfums",
   );
   if (!membership) redirect("/admin");
+  const isAdmin = membership.role === "admin";
+
+  const header = (
+    <AdminPageHeader
+      eyebrow="Cruzial Parfums"
+      title="Productos"
+      description="Administra lo que aparece y se vende en Cruzial Parfums."
+      meta={isAdmin ? undefined : "Acceso de solo lectura: puedes consultar los productos, pero no modificarlos."}
+      actions={isAdmin ? <ActionLink href="/admin/parfums/productos/nuevo" variant="primary">Agregar producto</ActionLink> : undefined}
+    />
+  );
 
   const supabase = await createSupabaseServerClient();
   if (!supabase) {
     return (
-      <div className={styles.page}>
-        <main>
-          <p className={styles.notice}>
-            El backend de administración no está configurado en este entorno.
-          </p>
-        </main>
-      </div>
+      <AdminPage>
+        {header}
+        <Notice tone="danger" title="El backend de administración no está configurado en este entorno." />
+      </AdminPage>
     );
   }
 
   const params = await searchParams;
-  const search = typeof params.q === "string" ? params.q : "";
-  const publicationStatus = isPublicationStatus(params.publication as string | undefined)
-    ? (params.publication as PublicationStatus)
-    : undefined;
-  const productionStatus = isProductionStatus(params.production as string | undefined)
-    ? (params.production as ProductionStatus)
-    : undefined;
-  const availabilityStatus = isAvailabilityStatus(params.availability as string | undefined)
-    ? (params.availability as AvailabilityStatus)
-    : undefined;
-  const featuredOnly = params.featured === "1";
-  const includeArchived = params.archived === "1";
-  const page = Math.max(1, Number(params.page) || 1);
+  const stringParams: Record<string, string> = {};
+  for (const [key, value] of Object.entries(params)) if (typeof value === "string") stringParams[key] = value;
+  const search = stringParams.q ?? "";
+  const publicationStatus = isPublicationStatus(stringParams.publication) ? stringParams.publication : undefined;
+  const productionStatus = isProductionStatus(stringParams.production) ? stringParams.production : undefined;
+  const availabilityStatus = isAvailabilityStatus(stringParams.availability) ? stringParams.availability : undefined;
+  const featuredOnly = stringParams.featured === "1";
+  const includeArchived = stringParams.archived === "1";
+  const page = Math.max(1, Number(stringParams.page) || 1);
 
   const repository = new AdminParfumsProductsRepository(supabase, membership.businessUnitId);
-  const listResult = await repository.list(
-    {
-      search,
-      featuredOnly,
-      includeArchived,
-      ...(publicationStatus ? { publicationStatus } : {}),
-      ...(productionStatus ? { productionStatus } : {}),
-      ...(availabilityStatus ? { availabilityStatus } : {}),
-    },
-    { page, pageSize: PAGE_SIZE },
-  );
+  const [listResult, counts] = await Promise.all([
+    repository.list(
+      {
+        search,
+        featuredOnly,
+        includeArchived,
+        ...(publicationStatus ? { publicationStatus } : {}),
+        ...(productionStatus ? { productionStatus } : {}),
+        ...(availabilityStatus ? { availabilityStatus } : {}),
+      },
+      { page, pageSize: PAGE_SIZE },
+    ),
+    repository.countByView(),
+  ]);
 
-  if (!listResult.ok) {
-    return (
-      <div className={styles.page}>
-        <main>
-          <p className={styles.notice} role="alert">
-            No se pudo cargar el catálogo. Intenta de nuevo.
-          </p>
-        </main>
-      </div>
-    );
-  }
-
-  const { items, total, pageSize } = listResult.data;
-  const totalPages = Math.max(1, Math.ceil(total / pageSize));
-  const role = membership.role;
+  const currentView = currentParfumsView(stringParams);
+  const viewCount: Record<string, number | null> = {
+    published: counts?.published ?? null,
+    draft: counts?.draft ?? null,
+    out_of_stock: counts?.outOfStock ?? null,
+    archived: counts?.archived ?? null,
+  };
+  const tabs = PARFUMS_LIST_VIEWS.map((view) => ({
+    key: view.key,
+    label: view.label,
+    href: parfumsViewHref(BASE_PATH, stringParams, view),
+    count: viewCount[view.key] ?? null,
+    current: currentView === view.key,
+    ...(view.key === "out_of_stock" ? { tone: "attention" as const } : {}),
+  }));
+  const filtered = Boolean(search || productionStatus || featuredOnly || (currentView === null && (publicationStatus || availabilityStatus || includeArchived)));
+  const now = new Date();
 
   return (
-    <div className={styles.page}>
-      <header className={styles.header}>
-        <div>
-          <h1>Productos</h1>
-          <p>{total} producto{total === 1 ? "" : "s"} en total.</p>
-        </div>
-        {role === "admin" ? (
-          <Link href="/admin/parfums/productos/nuevo" className={styles.createLink}>
-            + Nuevo producto
-          </Link>
-        ) : null}
-      </header>
+    <AdminPage>
+      {header}
 
-      <main>
-      <ProductFilters
-        initial={{ search, publicationStatus, productionStatus, availabilityStatus, featuredOnly, includeArchived }}
-      />
+      <div className={styles.toolbar}>
+        <FilterTabs tabs={tabs} label="Ver productos por estado" />
+        <ProductFilters
+          initial={{ search, publicationStatus, productionStatus, availabilityStatus, featuredOnly, includeArchived }}
+        />
+      </div>
 
-      {items.length === 0 ? (
-        <p className={styles.empty}>
-          No hay productos que coincidan con estos filtros.
-        </p>
+      {!listResult.ok ? (
+        <Notice tone="danger" title="No pudimos cargar el catálogo">
+          Recarga la página. No asumas que el catálogo está vacío.
+        </Notice>
+      ) : listResult.data.items.length === 0 ? (
+        <EmptyState title={filtered || currentView !== "all" ? "No hay productos en esta vista." : "Todavía no hay productos."}>
+          {filtered ? "Prueba con otra búsqueda o quita filtros en “Más filtros”." : isAdmin && currentView === "all" ? "Agrega el primero con “Agregar producto”." : null}
+        </EmptyState>
       ) : (
         <>
+          <p className={styles.muted} aria-live="polite">
+            {listResult.data.total} {listResult.data.total === 1 ? "producto" : "productos"} en esta vista.
+            {counts === null ? " No pudimos verificar los totales por estado." : ""}
+          </p>
           <ul className={styles.list} aria-label="Lista de productos">
-            {items.map((product) => (
-              <li key={product.id} className={styles.row}>
-                <Link href={`/admin/parfums/productos/${product.id}`} className={styles.rowLink}>
-                  <div className={styles.rowMain}>
-                    <strong>{product.name}</strong>
-                    <span className={styles.rowMeta}>
-                      {product.brand ?? "Sin marca"} · {product.slug}
+            {listResult.data.items.map((product) => {
+              const publication = product.publication_status as PublicationStatus;
+              const archived = product.archived_at !== null || publication === "archived";
+              const outOfStock = product.availability_status === "out_of_stock";
+              return (
+                <li key={product.id}>
+                  <Link href={`${BASE_PATH}/${product.id}` as Route} className={styles.row}>
+                    {product.primary_image_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element -- admin thumbnail from the existing media URL
+                      <img className={styles.thumb} src={product.primary_image_url} alt="" loading="lazy" width={56} height={56} />
+                    ) : (
+                      <span className={styles.thumb} aria-hidden="true">Sin foto</span>
+                    )}
+                    <span className={styles.identity}>
+                      <strong className={styles.name}>{product.name}</strong>
+                      <span className={styles.muted}>
+                        {product.brand ?? "Sin marca"}
+                        {!product.primary_image_url ? " · Sin foto principal" : ""}
+                      </span>
                     </span>
-                  </div>
-                  <div className={styles.rowBadges}>
-                    <span className={`${styles.badge} ${styles[`status-${product.publication_status}`] ?? ""}`}>
-                      {PRODUCT_STATUS_LABELS[product.publication_status as PublicationStatus] ?? product.publication_status}
+                    <span className={styles.state}>
+                      <span className={styles.badges}>
+                        <StatusBadge tone={archived ? "neutral" : publication === "published" ? "healthy" : "attention"}>
+                          {PRODUCT_STATUS_LABELS[publication] ?? "Estado desconocido"}
+                        </StatusBadge>
+                        {!archived ? (
+                          <StatusBadge tone={outOfStock ? "attention" : "neutral"}>
+                            {PRODUCT_AVAILABILITY_LABELS[product.availability_status as AvailabilityStatus] ?? "Disponibilidad desconocida"}
+                          </StatusBadge>
+                        ) : null}
+                        {product.production_status === "discontinued" ? <StatusBadge tone="neutral">Descontinuado</StatusBadge> : null}
+                        {product.is_featured ? <StatusBadge tone="neutral">Destacado</StatusBadge> : null}
+                      </span>
+                      {product.variant_count === 0 && !archived ? (
+                        <span className={styles.muted}>Sin presentaciones</span>
+                      ) : null}
                     </span>
-                    <span className={styles.badge}>{PRODUCTION_STATUS_LABELS[product.production_status as ProductionStatus] ?? product.production_status}</span>
-                    <span className={styles.badge}>{PRODUCT_AVAILABILITY_LABELS[product.availability_status as AvailabilityStatus] ?? product.availability_status}</span>
-                    {product.is_featured ? <span className={styles.badgeFeatured}>★ Destacado</span> : null}
-                    {product.archived_at ? <span className={styles.badgeArchived}>Archivado</span> : null}
-                  </div>
-                  <div className={styles.rowStats}>
-                    <span>{product.variant_count} variante{product.variant_count === 1 ? "" : "s"}</span>
-                    <span>Actualizado {new Date(product.updated_at).toLocaleDateString("es-PE")}</span>
-                  </div>
-                </Link>
-              </li>
-            ))}
+                    <span className={styles.figures}>
+                      <span>{product.variant_count} {product.variant_count === 1 ? "presentación" : "presentaciones"}</span>
+                      <span>Actualizado {formatRelativeLima(product.updated_at, now).toLowerCase()}</span>
+                    </span>
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
-
-          {totalPages > 1 ? (
-            <nav className={styles.pagination} aria-label="Paginación">
-              {page > 1 ? (
-                <Link href={`?${new URLSearchParams({ ...params as Record<string, string>, page: String(page - 1) }).toString()}`}>
-                  ← Anterior
-                </Link>
-              ) : (
-                <span aria-disabled="true">← Anterior</span>
-              )}
-              <span>Página {page} de {totalPages}</span>
-              {page < totalPages ? (
-                <Link href={`?${new URLSearchParams({ ...params as Record<string, string>, page: String(page + 1) }).toString()}`}>
-                  Siguiente →
-                </Link>
-              ) : (
-                <span aria-disabled="true">Siguiente →</span>
-              )}
-            </nav>
-          ) : null}
+          <Pagination
+            page={page}
+            totalPages={Math.max(1, Math.ceil(listResult.data.total / listResult.data.pageSize))}
+            hrefFor={(next) => `${BASE_PATH}?${new URLSearchParams({ ...stringParams, page: String(next) }).toString()}`}
+          />
         </>
       )}
-      </main>
-    </div>
+    </AdminPage>
   );
 }

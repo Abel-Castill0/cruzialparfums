@@ -1,12 +1,29 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import type { Database } from "@/lib/supabase/database.types";
+import { SaveStatus, adminButtonClass } from "@/components/admin/admin-ui";
 import { setProductCategoriesAction } from "../actions";
 import formStyles from "@/components/admin/product-form-fields.module.css";
+import catalogStyles from "@/components/admin/catalog-workspace.module.css";
 import styles from "../page.module.css";
 
 type CategoryRow = Database["public"]["Tables"]["categories"]["Row"];
+
+const KIND_LABELS: Record<string, { title: string; hint: string }> = {
+  commercial_type: {
+    title: "Tipo comercial",
+    hint: "La tienda necesita un tipo comercial publicado (árabe, diseñador o nicho) para mostrar el producto.",
+  },
+  olfactory_family: { title: "Familia olfativa", hint: "Ayuda a tus clientes a filtrar y descubrir el producto." },
+};
+
+function sameSet(a: Set<string>, b: Set<string>): boolean {
+  if (a.size !== b.size) return false;
+  for (const value of a) if (!b.has(value)) return false;
+  return true;
+}
 
 export function CategoryPicker({
   productId,
@@ -19,10 +36,13 @@ export function CategoryPicker({
   assignedCategoryIds: string[];
   disabled: boolean;
 }) {
+  const router = useRouter();
+  const [saved, setSavedSet] = useState<Set<string>>(new Set(assignedCategoryIds));
   const [selected, setSelected] = useState<Set<string>>(new Set(assignedCategoryIds));
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  const [saved, setSaved] = useState(false);
+  const [justSaved, setJustSaved] = useState(false);
+  const dirty = !sameSet(selected, saved);
 
   function toggle(id: string) {
     setSelected((current) => {
@@ -31,15 +51,26 @@ export function CategoryPicker({
       else next.add(id);
       return next;
     });
-    setSaved(false);
+    setJustSaved(false);
   }
 
   function handleSave() {
     setError(null);
+    const snapshot = new Set(selected);
     startTransition(async () => {
-      const result = await setProductCategoriesAction(productId, [...selected]);
-      if (result.status === "error") setError(result.message);
-      else setSaved(true);
+      try {
+        const result = await setProductCategoriesAction(productId, [...snapshot]);
+        if (result.status === "error") setError(`${result.message} Las categorías no se guardaron.`);
+        else {
+          setSavedSet(snapshot);
+          setJustSaved(true);
+          // Refresh the server-rendered readiness summary; this section's
+          // own state is kept because it is not re-initialized from props.
+          router.refresh();
+        }
+      } catch {
+        setError("No pudimos confirmar el guardado. Recarga la página antes de volver a intentarlo.");
+      }
     });
   }
 
@@ -52,6 +83,13 @@ export function CategoryPicker({
     );
   }
 
+  const groups = new Map<string, CategoryRow[]>();
+  for (const category of availableCategories) {
+    const list = groups.get(category.kind) ?? [];
+    list.push(category);
+    groups.set(category.kind, list);
+  }
+
   return (
     <section className={styles.section} aria-labelledby="categories-title">
       <div className={styles.sectionTitle}>
@@ -59,27 +97,39 @@ export function CategoryPicker({
       </div>
 
       {error ? <p className={formStyles.error} role="alert">{error}</p> : null}
-      {saved ? <p className={styles.savedNote} role="status">Guardado.</p> : null}
 
-      <div className={styles.categoryList} role="group" aria-label="Categorías asignadas">
-        {availableCategories.map((category) => (
-          <label key={category.id} className={styles.categoryChip}>
-            <input
-              type="checkbox"
-              checked={selected.has(category.id)}
-              disabled={disabled || isPending}
-              onChange={() => toggle(category.id)}
-            />
-            {category.name}
-          </label>
-        ))}
-      </div>
+      {[...groups.entries()].map(([kind, categories]) => {
+        const meta = KIND_LABELS[kind] ?? { title: "Otras categorías", hint: "" };
+        return (
+          <fieldset key={kind} className={catalogStyles.card} disabled={disabled || isPending}>
+            <legend className={catalogStyles.cardTitle}>{meta.title}</legend>
+            {meta.hint ? <p className={catalogStyles.muted}>{meta.hint}</p> : null}
+            <div className={styles.categoryList}>
+              {categories.map((category) => (
+                <label key={category.id} className={styles.categoryChip}>
+                  <input
+                    type="checkbox"
+                    checked={selected.has(category.id)}
+                    onChange={() => toggle(category.id)}
+                  />
+                  {category.name}
+                  {category.publication_status !== "published" || category.archived_at ? " (no publicada)" : ""}
+                </label>
+              ))}
+            </div>
+          </fieldset>
+        );
+      })}
 
       {!disabled ? (
-        <div className={`${styles.formActions} ${styles.spacingTop}`}>
-          <button type="button" className={styles.primaryButton} onClick={handleSave} disabled={isPending}>
+        <div className={catalogStyles.actionsRow}>
+          <button type="button" className={adminButtonClass("primary")} onClick={handleSave} disabled={isPending || !dirty}>
             {isPending ? "Guardando…" : "Guardar categorías"}
           </button>
+          <SaveStatus
+            state={isPending ? "saving" : dirty ? "dirty" : justSaved ? "saved" : "idle"}
+            message={justSaved && !dirty && !isPending ? "Categorías guardadas" : undefined}
+          />
         </div>
       ) : null}
     </section>

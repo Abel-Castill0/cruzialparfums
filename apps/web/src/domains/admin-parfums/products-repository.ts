@@ -61,6 +61,8 @@ type ProductCategoryRow = Database["public"]["Tables"]["product_categories"]["Ro
 
 export type ProductListItem = ProductRow & {
   variant_count: number;
+  /** Active primary image, when one exists (read-only display). */
+  primary_image_url: string | null;
 };
 
 export type ProductListFilters = {
@@ -136,8 +138,12 @@ export class AdminParfumsProductsRepository {
 
     let query = this.supabase
       .from("products")
-      .select("*, product_variants(count)", { count: "exact" })
+      .select("*, product_variants(count), product_media(secure_url, is_primary, archived_at)", { count: "exact" })
       .eq("business_unit_id", this.businessUnitId)
+      // Filters the embedded media rows only (never the products): the
+      // row keeps its place in the list with or without a primary image.
+      .eq("product_media.is_primary", true)
+      .is("product_media.archived_at", null)
       .order("updated_at", { ascending: false })
       .range(from, to);
 
@@ -165,13 +171,39 @@ export class AdminParfumsProductsRepository {
     if (error) return { ok: false, error: mapPostgrestError(error) };
 
     const items: ProductListItem[] = (data ?? []).map((row) => {
-      const { product_variants, ...product } = row as ProductRow & {
+      const { product_variants, product_media, ...product } = row as ProductRow & {
         product_variants: { count: number }[];
+        product_media: { secure_url: string; is_primary: boolean; archived_at: string | null }[] | null;
       };
-      return { ...product, variant_count: product_variants?.[0]?.count ?? 0 };
+      const primary = (product_media ?? []).find((media) => media.is_primary && media.archived_at === null);
+      return {
+        ...product,
+        variant_count: product_variants?.[0]?.count ?? 0,
+        primary_image_url: primary && /^https:\/\//.test(primary.secure_url) ? primary.secure_url : null,
+      };
     });
 
     return { ok: true, data: { items, total: count ?? 0, page, pageSize } };
+  }
+
+  /** Unit-wide counts behind the list views (non-archived unless noted).
+   * Returns null when any count cannot be read — never a partial zero. */
+  async countByView(): Promise<{ published: number; draft: number; outOfStock: number; archived: number } | null> {
+    const base = () =>
+      this.supabase.from("products").select("*", { count: "exact", head: true }).eq("business_unit_id", this.businessUnitId);
+    const [published, draft, outOfStock, archived] = await Promise.all([
+      base().is("archived_at", null).eq("publication_status", "published"),
+      base().is("archived_at", null).eq("publication_status", "draft"),
+      base().is("archived_at", null).eq("availability_status", "out_of_stock"),
+      base().eq("publication_status", "archived"),
+    ]);
+    if (published.error || draft.error || outOfStock.error || archived.error) return null;
+    return {
+      published: published.count ?? 0,
+      draft: draft.count ?? 0,
+      outOfStock: outOfStock.count ?? 0,
+      archived: archived.count ?? 0,
+    };
   }
 
   async getById(

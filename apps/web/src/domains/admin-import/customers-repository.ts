@@ -179,6 +179,30 @@ export class AdminImportCustomersRepository {
     return { new: byStatus("new"), returning: byStatus("returning") };
   }
 
+  /** Same query as getActiveDepositPercentages, but a failed read is
+   * reported as unverified instead of collapsing into "no policy". */
+  async getActiveDepositPolicyState(): Promise<
+    { ok: true; new: number | null; returning: number | null } | { ok: false }
+  > {
+    const nowIso = new Date().toISOString();
+    const { data, error } = await this.supabase
+      .from("deposit_policies")
+      .select("customer_status, deposit_percentage, effective_from, effective_until")
+      .eq("business_unit_id", this.businessUnitId)
+      .eq("is_active", true)
+      .lte("effective_from", nowIso)
+      .or(`effective_until.is.null,effective_until.gt.${nowIso}`);
+
+    if (error || !data) return { ok: false };
+
+    const byStatus = (status: string): number | null => {
+      const matches = data.filter((row) => row.customer_status === status);
+      return matches.length === 1 ? matches[0]!.deposit_percentage : null;
+    };
+
+    return { ok: true, new: byStatus("new"), returning: byStatus("returning") };
+  }
+
   async countPendingVerification(): Promise<number | null> {
     const { count, error } = await this.supabase
       .from("customers")

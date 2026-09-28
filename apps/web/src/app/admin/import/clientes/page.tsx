@@ -3,26 +3,19 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getAdminSession } from "@/lib/auth/admin-session";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { AdminPage, AdminPageHeader, EmptyState, FilterTabs, Notice, Pagination, StatusBadge } from "@/components/admin/admin-ui";
 import { AdminImportCustomersRepository } from "@/domains/admin-import/customers-repository";
-import { importCustomerStatusLabel } from "@/domains/admin-import/import-status";
+import { CUSTOMER_STATUS_TABS, customerListHref, customerStatusPresentation } from "@/domains/admin-import/customer-presentation";
+import { formatLimaDateTime, formatRelativeLima } from "@/domains/admin/order-presentation";
 import { CustomerFilters } from "./customer-filters";
-import styles from "../productos/page.module.css";
+import styles from "@/components/admin/catalog-workspace.module.css";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = { title: "Clientes Import" };
 
 const PAGE_SIZE = 20;
-
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleString("es-PE", { dateStyle: "medium" });
-}
-
-function statusBadgeClass(status: string): string {
-  if (status === "returning") return [styles.badge, styles["status-published"]].filter(Boolean).join(" ");
-  if (status === "pending_verification") return [styles.badge, styles["status-draft"]].filter(Boolean).join(" ");
-  return styles.badge ?? "";
-}
+const BASE_PATH = "/admin/import/clientes";
 
 export default async function AdminImportCustomersPage({
   searchParams,
@@ -41,17 +34,24 @@ export default async function AdminImportCustomersPage({
     (candidate) => candidate.businessUnitCode === "import",
   );
   if (!membership) redirect("/admin");
+  const isAdmin = membership.role === "admin";
+
+  const header = (
+    <AdminPageHeader
+      eyebrow="Cruzial Import"
+      title="Clientes"
+      description="Verifica a tus clientes para que cada pedido use el depósito correcto."
+      meta={isAdmin ? undefined : "Acceso de solo lectura: puedes consultar clientes, pero no modificarlos."}
+    />
+  );
 
   const supabase = await createSupabaseServerClient();
   if (!supabase) {
     return (
-      <div className={styles.page}>
-        <main>
-          <p className={styles.notice}>
-            El backend de administración no está configurado en este entorno.
-          </p>
-        </main>
-      </div>
+      <AdminPage>
+        {header}
+        <Notice tone="danger" title="El backend de administración no está configurado en este entorno." />
+      </AdminPage>
     );
   }
 
@@ -62,93 +62,90 @@ export default async function AdminImportCustomersPage({
   const archived = params.archived === "archived" || params.archived === "all" ? params.archived : "active";
 
   const repository = new AdminImportCustomersRepository(supabase, membership.businessUnitId);
-  const listResult = await repository.list(
-    { search, status: statusParam || undefined, archived },
-    { page, pageSize: PAGE_SIZE },
-  );
+  const [listResult, pendingCount] = await Promise.all([
+    repository.list({ search, status: statusParam || undefined, archived }, { page, pageSize: PAGE_SIZE }),
+    repository.countPendingVerification(),
+  ]);
 
-  if (!listResult.ok) {
-    return (
-      <div className={styles.page}>
-        <main>
-          <p className={styles.notice} role="alert">
-            No se pudieron cargar los clientes. Intenta de nuevo.
-          </p>
-        </main>
-      </div>
-    );
-  }
-
-  const { items, total, pageSize } = listResult.data;
-  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const tabs = CUSTOMER_STATUS_TABS.map((tab) => ({
+    key: tab.key,
+    label: tab.label,
+    href: customerListHref(BASE_PATH, { q: search, archived }, tab.status),
+    current: statusParam === tab.status,
+    ...(tab.key === "pending" ? { count: pendingCount, tone: "attention" as const } : {}),
+  }));
+  const now = new Date();
 
   return (
-    <div className={styles.page}>
-      <header className={styles.header}>
-        <div>
-          <h1>Clientes</h1>
-          <p>{total} cliente{total === 1 ? "" : "s"} registrado{total === 1 ? "" : "s"}.</p>
-        </div>
-      </header>
+    <AdminPage>
+      {header}
 
-      <main>
+      {pendingCount !== null && pendingCount > 0 && statusParam !== "pending_verification" ? (
+        <Notice tone="attention" title={`${pendingCount} ${pendingCount === 1 ? "cliente espera" : "clientes esperan"} verificación`}>
+          Mientras estén pendientes, sus pedidos usan la política de depósito de cliente nuevo.
+        </Notice>
+      ) : null}
+
+      <div className={styles.toolbar}>
+        <FilterTabs tabs={tabs} label="Ver clientes por estado" />
         <CustomerFilters initial={{ search, status: statusParam, archived }} />
+      </div>
 
-        {items.length === 0 ? (
-          <p className={styles.empty}>
-            No hay clientes que coincidan con esta búsqueda.
+      {!listResult.ok ? (
+        <Notice tone="danger" title="No pudimos cargar los clientes">Recarga la página. No asumas que no hay clientes.</Notice>
+      ) : listResult.data.items.length === 0 ? (
+        <EmptyState
+          title={
+            statusParam === "pending_verification" && !search
+              ? "No hay clientes pendientes de verificar."
+              : search
+                ? "No hay clientes que coincidan con esta búsqueda."
+                : "No hay clientes en esta vista."
+          }
+        />
+      ) : (
+        <>
+          <p className={styles.muted} aria-live="polite">
+            {listResult.data.total} {listResult.data.total === 1 ? "cliente" : "clientes"} en esta vista.
           </p>
-        ) : (
-          <>
-            <ul className={styles.list} aria-label="Lista de clientes">
-              {items.map((customer) => (
-                <li key={customer.id} className={styles.row}>
-                  <Link href={`/admin/import/clientes/${customer.id}` as Route} className={styles.rowLink}>
-                    <div className={styles.rowMain}>
-                      <strong>{customer.fullName}</strong>
-                      <span className={styles.rowMeta}>
-                        {customer.phone || "Sin teléfono"}
-                        {customer.archivedAt ? " · Archivado" : ""}
+          <ul className={styles.list} aria-label="Lista de clientes">
+            {listResult.data.items.map((customer) => {
+              const status = customerStatusPresentation(customer.verifiedCustomerStatus);
+              return (
+                <li key={customer.id}>
+                  <Link href={`${BASE_PATH}/${customer.id}` as Route} className={`${styles.row} ${styles.rowNoThumb}`}>
+                    <span className={styles.identity}>
+                      <strong className={styles.name}>{customer.fullName}</strong>
+                      <span className={styles.muted}>{customer.phone || "Sin teléfono"}</span>
+                    </span>
+                    <span className={styles.state}>
+                      <span className={styles.badges}>
+                        <StatusBadge tone={customer.archivedAt ? "neutral" : status.tone}>{status.label}</StatusBadge>
+                        {customer.archivedAt ? <StatusBadge tone="neutral">Archivado</StatusBadge> : null}
                       </span>
-                    </div>
-                    <div className={styles.rowBadges}>
-                      <span className={statusBadgeClass(customer.verifiedCustomerStatus)}>
-                        {importCustomerStatusLabel(customer.verifiedCustomerStatus)}
-                      </span>
-                    </div>
-                    <div className={styles.rowStats}>
-                      <span>Creado: {formatDate(customer.createdAt)}</span>
-                      {customer.verifiedAt ? (
-                        <span>Verificado: {formatDate(customer.verifiedAt)}</span>
-                      ) : null}
-                    </div>
+                      <span className={styles.muted}>{status.description}</span>
+                    </span>
+                    <span className={styles.figures}>
+                      <span title={formatLimaDateTime(customer.createdAt)}>Registrado {formatRelativeLima(customer.createdAt, now).toLowerCase()}</span>
+                      {customer.verifiedAt ? <span title={formatLimaDateTime(customer.verifiedAt)}>Verificado {formatRelativeLima(customer.verifiedAt, now).toLowerCase()}</span> : null}
+                    </span>
                   </Link>
                 </li>
-              ))}
-            </ul>
-
-            {totalPages > 1 ? (
-              <nav className={styles.pagination} aria-label="Paginación">
-                {page > 1 ? (
-                  <Link href={`?${new URLSearchParams({ ...(params as Record<string, string>), page: String(page - 1) }).toString()}` as Route}>
-                    ← Anterior
-                  </Link>
-                ) : (
-                  <span aria-disabled="true">← Anterior</span>
-                )}
-                <span>Página {page} de {totalPages}</span>
-                {page < totalPages ? (
-                  <Link href={`?${new URLSearchParams({ ...(params as Record<string, string>), page: String(page + 1) }).toString()}` as Route}>
-                    Siguiente →
-                  </Link>
-                ) : (
-                  <span aria-disabled="true">Siguiente →</span>
-                )}
-              </nav>
-            ) : null}
-          </>
-        )}
-      </main>
-    </div>
+              );
+            })}
+          </ul>
+          <Pagination
+            page={page}
+            totalPages={Math.max(1, Math.ceil(listResult.data.total / listResult.data.pageSize))}
+            hrefFor={(next) => {
+              const query = new URLSearchParams();
+              for (const [key, value] of Object.entries(params)) if (typeof value === "string") query.set(key, value);
+              query.set("page", String(next));
+              return `${BASE_PATH}?${query.toString()}`;
+            }}
+          />
+        </>
+      )}
+    </AdminPage>
   );
 }
