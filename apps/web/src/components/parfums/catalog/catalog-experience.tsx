@@ -1,6 +1,7 @@
 "use client";
 
 import type { Route } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -17,6 +18,27 @@ import type { CatalogProduct } from "@/domains/catalog/types";
 import { SearchIcon } from "@/components/parfums/shell/shell-icons";
 import { ProductCard } from "./product-card";
 import styles from "./catalog.module.css";
+
+const discoveryShortcuts = [
+  {
+    key: "arab",
+    label: "Árabe",
+    note: "Lattafa, Afnan, Rasasi y más",
+    image: "/images/parfums-catalog/catalog-category-arab.webp",
+  },
+  {
+    key: "designer",
+    label: "Designer",
+    note: "Casas reconocidas internacionalmente",
+    image: "/images/parfums-catalog/catalog-category-designer.webp",
+  },
+  {
+    key: "niche",
+    label: "Nicho",
+    note: "Selección de autor",
+    image: "/images/parfums-catalog/catalog-category-niche.webp",
+  },
+] as const;
 
 const filterDefinitions = [
   { key: "gender", label: "Género" },
@@ -140,11 +162,26 @@ export function CatalogExperience({ products, initialFilters }: { products: Cata
   return (
     <>
       <section className={styles.catalogHero}>
-        <div className={styles.container}>
-          <p className={styles.eyebrow}>Cruzial Parfums</p>
-          <h1>Nuestra <em>Colección</em></h1>
-          <p>Explora nuestra selección de decants y frascos completos. Filtra por estilo, familia olfativa o presupuesto.</p>
-          <Link href={"/parfums/finder" as Route} className={styles.finderCta}>Encontrar mi fragancia <span aria-hidden="true">→</span></Link>
+        <div className={styles.catalogHeroMedia}>
+          <Image
+            src="/images/parfums-catalog/catalog-hero.webp"
+            alt=""
+            fill
+            sizes="100vw"
+            preload
+            className={styles.catalogHeroImage}
+          />
+          <div className={styles.catalogHeroScrim} aria-hidden="true" />
+        </div>
+        <div className={styles.catalogHeroCopyWrap}>
+          <div className={styles.container}>
+            <div className={styles.catalogHeroCopy}>
+              <p className={styles.eyebrow}>Cruzial Parfums</p>
+              <h1>Nuestra <em>Colección</em></h1>
+              <p>Explora nuestra selección de decants y frascos completos. Filtra por estilo, familia olfativa o presupuesto.</p>
+              <Link href={"/parfums/finder" as Route} className={styles.finderCta}>Encontrar mi fragancia <span aria-hidden="true">→</span></Link>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -155,7 +192,7 @@ export function CatalogExperience({ products, initialFilters }: { products: Cata
               <label className={styles.searchField}>
                 <span className={styles.srOnly}>Buscar fragancia</span>
                 <SearchIcon size={16} />
-                <input type="search" value={filters.search} onChange={(event) => updateFilter("search", event.target.value)} placeholder="Buscar fragancia…" />
+                <input type="search" value={filters.search} onChange={(event) => updateFilter("search", event.target.value)} placeholder="Buscar fragancia, marca o nota…" />
               </label>
               <button ref={filterTriggerRef} type="button" className={styles.mobileFilterTrigger} onClick={() => setFiltersOpen(true)} aria-expanded={filtersOpen} aria-controls="catalog-filters">Filtrar y ordenar</button>
               <div
@@ -203,6 +240,60 @@ export function CatalogExperience({ products, initialFilters }: { products: Cata
         </div>
         <button type="button" aria-label="Cerrar filtros" className={`${styles.filterOverlay} ${filtersOpen ? styles.filterOverlayOpen : ""}`} onClick={() => setFiltersOpen(false)} />
 
+        <nav className={styles.discoveryRail} aria-label="Explorar por categoría">
+          <div className={styles.container}>
+            <ul className={styles.discoveryList}>
+              {discoveryShortcuts.map((category) => (
+                <li key={category.key}>
+                  <button
+                    type="button"
+                    className={`${styles.discoveryTile} ${filters.type === category.key ? styles.discoveryTileActive : ""}`}
+                    onClick={() => updateFilter("type", category.key)}
+                    aria-pressed={filters.type === category.key}
+                  >
+                    <Image
+                      src={category.image}
+                      alt=""
+                      fill
+                      sizes="(max-width: 767px) 45vw, (max-width: 1100px) 33vw, 20vw"
+                      className={styles.discoveryTileImage}
+                    />
+                    <span className={styles.discoveryTileScrim} aria-hidden="true" />
+                    <span className={styles.discoveryTileBody}>
+                      <span className={styles.discoveryTileLabel}>{category.label}</span>
+                      <span className={styles.discoveryTileNote}>{category.note}</span>
+                      <span className={styles.discoveryTileArrow} aria-hidden="true">→</span>
+                    </span>
+                  </button>
+                </li>
+              ))}
+              <li>
+                <Link href={"/parfums/combos" as Route} className={`${styles.discoveryTile} ${styles.discoveryTileFlat} ${styles.discoveryTileDark}`}>
+                  <span className={styles.discoveryTileBody}>
+                    <span className={styles.discoveryTileLabel}>Combos</span>
+                    <span className={styles.discoveryTileNote}>Sets ya armados</span>
+                    <span className={styles.discoveryTileArrow} aria-hidden="true">→</span>
+                  </span>
+                </Link>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  className={`${styles.discoveryTile} ${styles.discoveryTileFlat} ${filters.format !== "bottle" ? styles.discoveryTileActive : ""}`}
+                  onClick={() => updateFilter("format", "all")}
+                  aria-pressed={filters.format !== "bottle"}
+                >
+                  <span className={styles.discoveryTileBody}>
+                    <span className={styles.discoveryTileLabel}>Decants</span>
+                    <span className={styles.discoveryTileNote}>3 · 5 · 10 ml</span>
+                    <span className={styles.discoveryTileArrow} aria-hidden="true">→</span>
+                  </span>
+                </button>
+              </li>
+            </ul>
+          </div>
+        </nav>
+
         <div className={styles.container}>
           <div className={styles.resultsTop}>
             <span>{results.length} {results.length === 1 ? "perfume" : "perfumes"}</span>
@@ -215,10 +306,38 @@ export function CatalogExperience({ products, initialFilters }: { products: Cata
               {results.map((product, index) => <ProductCard key={product.legacyId} product={product} mode={filters.format === "bottle" ? "bottle" : "decant"} onAdded={announceAdded} eager={index < 4} />)}
             </div>
           ) : (
-            <div className={styles.emptyState}><strong>Sin resultados</strong><p>Prueba ajustando los filtros o buscando otra familia olfativa.</p><button type="button" onClick={clearFilters}>Limpiar filtros</button></div>
+            <div className={styles.emptyState}>
+              <strong>Sin resultados</strong>
+              <p>Prueba ajustando los filtros o buscando otra familia olfativa.</p>
+              <div className={styles.emptyStateActions}>
+                <button type="button" onClick={clearFilters}>Limpiar filtros</button>
+                <Link href={"/parfums/finder" as Route} className={styles.emptyStateFinder}>Usar el Finder <span aria-hidden="true">→</span></Link>
+              </div>
+            </div>
           )}
         </div>
       </section>
+
+      <section className={styles.catalogFooterBand} aria-labelledby="catalog-footer-band-title">
+        <div className={styles.catalogFooterBandMedia}>
+          <Image
+            src="/images/parfums-catalog/catalog-footer-editorial.webp"
+            alt=""
+            fill
+            sizes="100vw"
+            className={styles.catalogFooterBandImage}
+          />
+          <div className={styles.catalogFooterBandScrim} aria-hidden="true" />
+        </div>
+        <div className={styles.catalogFooterBandCopy}>
+          <div className={styles.container}>
+            <p className={styles.eyebrow}>Cruzial Parfums</p>
+            <h2 id="catalog-footer-band-title">¿No encuentras tu <em>fragancia</em>?</h2>
+            <Link href={"/parfums/finder" as Route} className={styles.catalogFooterBandCta}>Usar el Finder <span aria-hidden="true">→</span></Link>
+          </div>
+        </div>
+      </section>
+
       <div className={`${styles.toast} ${toast ? styles.toastVisible : ""}`} role="status" aria-live="polite">{toast}</div>
     </>
   );
