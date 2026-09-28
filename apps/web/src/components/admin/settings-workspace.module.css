@@ -1,0 +1,32 @@
+/* Configuración editors (Phase C1). Layout primitives come from
+ * catalog-workspace.module.css; this file only adds what that doesn't
+ * cover. */
+
+.fieldFull {
+  flex: 1 1 100%;
+}
+
+.fieldError {
+  color: #8c1c1c;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.group + .group {
+  margin-top: 4px;
+  padding-top: 16px;
+  border-top: 1px solid var(--admin-line, rgba(23, 19, 15, 0.14));
+}
+
+.groupTitle {
+  margin: 0 0 2px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.groupHint {
+  margin: 0 0 12px;
+  color: var(--admin-muted, #5c574f);
+  font-size: 13px;
+  line-height: 1.5;
+}

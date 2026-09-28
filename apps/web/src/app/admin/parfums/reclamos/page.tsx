@@ -1,28 +1,26 @@
-import type { Metadata, Route } from "next";
-import Link from "next/link";
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getAdminSession } from "@/lib/auth/admin-session";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { AdminComplaintsRepository } from "@/domains/complaints/complaint-repository";
-import { COMPLAINT_STATUS_LABELS, COMPLAINT_TYPE_LABELS, isComplaintStatus } from "@/domains/complaints/complaint-schema";
-import { COMPLAINT_URGENCY_LABELS, classifyComplaintUrgency, isComplaintUrgency } from "@/domains/complaints/sla";
-import { ComplaintFilters } from "./complaint-filters";
-import styles from "../productos/page.module.css";
+import { COMPLAINT_STATUS_LABELS, COMPLAINT_TYPE_LABELS } from "@/domains/complaints/complaint-schema";
+import { COMPLAINT_URGENCY_LABELS, isComplaintUrgency } from "@/domains/complaints/sla";
+import {
+  classifyComplaintUrgency,
+  complaintStatusTone,
+  complaintUrgencyTone,
+  formatComplaintDate,
+  isComplaintFilterStatus,
+} from "@/domains/complaints/complaint-presentation";
+import { formatRelativeLima } from "@/domains/admin/order-presentation";
+import { ComplaintsInbox } from "@/components/admin/complaints-inbox";
+import type { ComplaintListRow } from "@/components/admin/complaint-list";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Libro de Reclamaciones — Parfums" };
 
 const PAGE_SIZE = 20;
-
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleString("es-PE", { dateStyle: "medium", timeStyle: "short", timeZone: "America/Lima" });
-}
-
-function statusBadgeClass(status: string): string {
-  if (status === "resolved") return [styles.badge, styles["status-published"]].filter(Boolean).join(" ");
-  if (status === "received") return [styles.badge, styles["status-draft"]].filter(Boolean).join(" ");
-  return styles.badge ?? "";
-}
+const BASE_PATH = "/admin/parfums/reclamos";
 
 export default async function AdminParfumsComplaintsPage({
   searchParams,
@@ -39,78 +37,75 @@ export default async function AdminParfumsComplaintsPage({
 
   const membership = result.session.memberships.find((candidate) => candidate.businessUnitCode === "parfums");
   if (!membership) redirect("/admin");
+  const canWrite = membership.role === "admin";
 
   const supabase = await createSupabaseServerClient();
-  if (!supabase) {
-    return <div className={styles.page}><main><p className={styles.notice}>El backend de administración no está configurado en este entorno.</p></main></div>;
-  }
-
   const params = await searchParams;
   const search = typeof params.q === "string" ? params.q : "";
-  const statusParam = typeof params.status === "string" && isComplaintStatus(params.status) ? params.status : undefined;
-  const urgency = isComplaintUrgency(params.urgency) ? params.urgency : undefined;
+  const statusParam = typeof params.status === "string" && isComplaintFilterStatus(params.status) ? params.status : undefined;
+  const urgencyParam = typeof params.urgency === "string" ? params.urgency : "";
+  const urgency = isComplaintUrgency(urgencyParam) ? urgencyParam : undefined;
   const page = Math.max(1, Number(params.page) || 1);
+  const filters = { search, status: statusParam ?? "", urgency: urgencyParam };
+  const hrefForPage = (nextPage: number) => {
+    const next = new URLSearchParams();
+    for (const [key, value] of Object.entries(params)) if (typeof value === "string") next.set(key, value);
+    next.set("page", String(nextPage));
+    return `${BASE_PATH}?${next.toString()}`;
+  };
 
-  const repository = new AdminComplaintsRepository(supabase, membership.businessUnitId);
-  const listResult = await repository.list({ search, status: statusParam, urgency }, { page, pageSize: PAGE_SIZE });
-
-  if (!listResult.ok) {
-    return <div className={styles.page}><main><p className={styles.notice} role="alert">No se pudieron cargar los reclamos. Intenta de nuevo.</p></main></div>;
+  if (!supabase) {
+    return (
+      <ComplaintsInbox
+        unitName="Cruzial Parfums" basePath={BASE_PATH} canWrite={canWrite} filters={filters}
+        counts={null} overdueCount={null} result={{ ok: false }} hrefForPage={hrefForPage}
+      />
+    );
   }
 
-  const { items, total, pageSize } = listResult.data;
-  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const repository = new AdminComplaintsRepository(supabase, membership.businessUnitId);
+  const [listResult, counts, overdueCount] = await Promise.all([
+    repository.list({ search, status: statusParam, urgency }, { page, pageSize: PAGE_SIZE }),
+    repository.countByStatus(),
+    repository.countOverdue(),
+  ]);
+
+  const now = new Date();
+  const inboxResult = listResult.ok
+    ? {
+        ok: true as const,
+        total: listResult.data.total,
+        page,
+        totalPages: Math.max(1, Math.ceil(listResult.data.total / listResult.data.pageSize)),
+        rows: listResult.data.items.map((entry): ComplaintListRow => {
+          const entryUrgency = classifyComplaintUrgency(entry, now.getTime());
+          return {
+            id: entry.id,
+            href: `${BASE_PATH}/${entry.id}`,
+            fullName: entry.fullName,
+            typeLabel: COMPLAINT_TYPE_LABELS[entry.complaintType],
+            statusLabel: COMPLAINT_STATUS_LABELS[entry.status],
+            statusTone: complaintStatusTone(entry.status),
+            urgencyLabel: entry.status === "resolved" || entryUrgency === "normal" ? null : COMPLAINT_URGENCY_LABELS[entryUrgency],
+            urgencyTone: complaintUrgencyTone(entryUrgency),
+            createdRelative: formatRelativeLima(entry.createdAt, now),
+            createdAbsolute: formatComplaintDate(entry.createdAt),
+            deadlineLine: entry.status === "resolved" ? "Resuelto" : `Responder antes del ${formatComplaintDate(entry.dueAt)}`,
+          };
+        }),
+      }
+    : { ok: false as const };
 
   return (
-    <div className={styles.page}>
-      <header className={styles.header}>
-        <div>
-          <h1>Libro de Reclamaciones</h1>
-          <p>{total} solicitud{total === 1 ? "" : "es"} registrada{total === 1 ? "" : "s"}.</p>
-        </div>
-      </header>
-
-      <main>
-        <ComplaintFilters initial={{ search, status: statusParam ?? "", urgency: urgency ?? "" }} />
-
-        {items.length === 0 ? (
-          <p className={styles.empty}>No hay reclamos ni quejas que coincidan con esta búsqueda.</p>
-        ) : (
-          <>
-            <ul className={styles.list} aria-label="Lista de reclamos">
-              {items.map((entry) => (
-                <li key={entry.id} className={styles.row}>
-                  <Link href={`/admin/parfums/reclamos/${entry.id}` as Route} className={styles.rowLink}>
-                    <div className={styles.rowMain}>
-                      <strong>{entry.fullName}</strong>
-                      <span className={styles.rowMeta}>{COMPLAINT_TYPE_LABELS[entry.complaintType]}</span>
-                    </div>
-                    <div className={styles.rowBadges}>
-                      <span className={statusBadgeClass(entry.status)}>{COMPLAINT_STATUS_LABELS[entry.status]}</span>
-                    </div>
-                    <div className={styles.rowStats}>
-                      <span>Registrado: {formatDate(entry.createdAt)}</span>
-                      <span>{COMPLAINT_URGENCY_LABELS[classifyComplaintUrgency(entry)]} · Vence: {formatDate(entry.dueAt)}</span>
-                    </div>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-
-            {totalPages > 1 ? (
-              <nav className={styles.pagination} aria-label="Paginación">
-                {page > 1 ? (
-                  <Link href={`?${new URLSearchParams({ ...(params as Record<string, string>), page: String(page - 1) }).toString()}` as Route}>← Anterior</Link>
-                ) : <span aria-disabled="true">← Anterior</span>}
-                <span>Página {page} de {totalPages}</span>
-                {page < totalPages ? (
-                  <Link href={`?${new URLSearchParams({ ...(params as Record<string, string>), page: String(page + 1) }).toString()}` as Route}>Siguiente →</Link>
-                ) : <span aria-disabled="true">Siguiente →</span>}
-              </nav>
-            ) : null}
-          </>
-        )}
-      </main>
-    </div>
+    <ComplaintsInbox
+      unitName="Cruzial Parfums"
+      basePath={BASE_PATH}
+      canWrite={canWrite}
+      filters={filters}
+      counts={counts}
+      overdueCount={overdueCount}
+      result={inboxResult}
+      hrefForPage={hrefForPage}
+    />
   );
 }

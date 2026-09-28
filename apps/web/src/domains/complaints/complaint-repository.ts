@@ -198,6 +198,20 @@ export class AdminComplaintsRepository {
     return counts;
   }
 
+  /** Unresolved cases already past `due_at` — the one number the owner needs
+   * surfaced unprompted (an Indecopi deadline, not a soft SLA). Null only on
+   * a genuine read failure, never a misleading zero. */
+  async countOverdue(): Promise<number | null> {
+    const { count, error } = await this.supabase
+      .from("complaint_book_entries")
+      .select("*", { count: "exact", head: true })
+      .eq("business_unit_id", this.businessUnitId)
+      .neq("status", "resolved")
+      .lt("due_at", new Date().toISOString());
+    if (error) return null;
+    return count ?? 0;
+  }
+
   async updateStatus(
     id: string,
     expectedUpdatedAt: string,
