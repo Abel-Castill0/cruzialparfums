@@ -95,23 +95,25 @@
 
 .finderCta {
   width: fit-content;
-  margin-top: 6px;
-  padding-bottom: 5px;
-  display: flex;
+  min-height: 46px;
+  margin-top: 8px;
+  padding: 0 22px;
+  display: inline-flex;
   align-items: center;
   gap: 10px;
-  border-bottom: 1px solid #0a0806;
-  color: #17130f;
+  border: 1px solid #0a0806;
+  color: #0a0806;
+  background: transparent;
   font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  transition: gap 180ms ease, color 180ms ease;
+  transition: background-color 180ms ease, color 180ms ease;
 }
 
 .finderCta:hover {
-  gap: 14px;
-  color: #756f66;
+  color: #fffdf8;
+  background: #0a0806;
 }
 
 .catalogLayout {
@@ -336,8 +338,40 @@
   line-height: 1.4;
 }
 
+.discoveryTileArrow {
+  width: 26px;
+  height: 26px;
+  margin-top: 8px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255, 253, 248, 0.55);
+  border-radius: 50%;
+  color: #fffdf8;
+  font-size: 12px;
+  transition: background-color 200ms ease, border-color 200ms ease, color 200ms ease;
+}
+
+.discoveryTile:hover .discoveryTileArrow,
+.discoveryTile:focus-visible .discoveryTileArrow {
+  border-color: #fffdf8;
+  background: #fffdf8;
+  color: #0a0806;
+}
+
 .discoveryTileFlat {
   background: #f6f1e9;
+}
+
+.discoveryTileFlat .discoveryTileArrow {
+  border-color: rgba(10, 8, 6, 0.35);
+  color: #0a0806;
+}
+
+.discoveryTileFlat:hover .discoveryTileArrow,
+.discoveryTileFlat:focus-visible .discoveryTileArrow {
+  border-color: #0a0806;
+  background: #0a0806;
+  color: #fffdf8;
 }
 
 .discoveryTileFlat .discoveryTileBody {
@@ -362,6 +396,18 @@
 
 .discoveryTileFlat.discoveryTileDark .discoveryTileNote {
   color: rgba(255, 253, 248, 0.76);
+}
+
+.discoveryTileFlat.discoveryTileDark .discoveryTileArrow {
+  border-color: rgba(255, 253, 248, 0.55);
+  color: #fffdf8;
+}
+
+.discoveryTileFlat.discoveryTileDark:hover .discoveryTileArrow,
+.discoveryTileFlat.discoveryTileDark:focus-visible .discoveryTileArrow {
+  border-color: #fffdf8;
+  background: #fffdf8;
+  color: #0a0806;
 }
 
 .discoveryTileActive {

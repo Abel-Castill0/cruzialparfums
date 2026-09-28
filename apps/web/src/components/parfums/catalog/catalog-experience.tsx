@@ -192,7 +192,7 @@ export function CatalogExperience({ products, initialFilters }: { products: Cata
               <label className={styles.searchField}>
                 <span className={styles.srOnly}>Buscar fragancia</span>
                 <SearchIcon size={16} />
-                <input type="search" value={filters.search} onChange={(event) => updateFilter("search", event.target.value)} placeholder="Buscar fragancia…" />
+                <input type="search" value={filters.search} onChange={(event) => updateFilter("search", event.target.value)} placeholder="Buscar fragancia, marca o nota…" />
               </label>
               <button ref={filterTriggerRef} type="button" className={styles.mobileFilterTrigger} onClick={() => setFiltersOpen(true)} aria-expanded={filtersOpen} aria-controls="catalog-filters">Filtrar y ordenar</button>
               <div
@@ -262,6 +262,7 @@ export function CatalogExperience({ products, initialFilters }: { products: Cata
                     <span className={styles.discoveryTileBody}>
                       <span className={styles.discoveryTileLabel}>{category.label}</span>
                       <span className={styles.discoveryTileNote}>{category.note}</span>
+                      <span className={styles.discoveryTileArrow} aria-hidden="true">→</span>
                     </span>
                   </button>
                 </li>
@@ -271,6 +272,7 @@ export function CatalogExperience({ products, initialFilters }: { products: Cata
                   <span className={styles.discoveryTileBody}>
                     <span className={styles.discoveryTileLabel}>Combos</span>
                     <span className={styles.discoveryTileNote}>Sets ya armados</span>
+                    <span className={styles.discoveryTileArrow} aria-hidden="true">→</span>
                   </span>
                 </Link>
               </li>
@@ -284,6 +286,7 @@ export function CatalogExperience({ products, initialFilters }: { products: Cata
                   <span className={styles.discoveryTileBody}>
                     <span className={styles.discoveryTileLabel}>Decants</span>
                     <span className={styles.discoveryTileNote}>3 · 5 · 10 ml</span>
+                    <span className={styles.discoveryTileArrow} aria-hidden="true">→</span>
                   </span>
                 </button>
               </li>
