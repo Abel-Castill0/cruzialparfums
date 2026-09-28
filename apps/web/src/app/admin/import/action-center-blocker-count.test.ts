@@ -6,30 +6,26 @@ function read(): string {
   return fs.readFileSync(path.resolve(process.cwd(), "src", "app", "admin", "import", "page.tsx"), "utf-8");
 }
 
-// Lead review P2: the dashboard's "producto(s) no publicado(s)" count used
-// readiness.publication_blockers (a broader tally that also includes
-// presentation_unpublished) while deep-linking to
-// ?blocker=product_unpublished — the count and destination could disagree.
-// The count must come from the exact same guarded RPC + blocker filter the
-// destination page queries.
-describe("Import Action Center product_unpublished count matches its link", () => {
-  it("derives the count from admin_list_import_publication_blockers with p_blocker: product_unpublished", () => {
+// Lead review P2: a dashboard count must come from the exact same guarded
+// RPC + blocker filter its destination queries — never from the readiness
+// RPC's broader tallies (publication_blockers also includes
+// presentation_unpublished; media_blockers counts differently), which could
+// disagree with what the link actually shows. The count→link pairing itself
+// is covered behaviorally in domains/admin-import/campaign-presentation.test.ts.
+describe("Import dashboard blocker counts match their destination filter", () => {
+  it("counts every blocker through admin_list_import_publication_blockers with its own p_blocker", () => {
     const page = read();
     expect(page).toContain("admin_list_import_publication_blockers");
-    expect(page).toMatch(/p_blocker:\s*"product_unpublished"/);
+    expect(page).toMatch(/p_blocker:\s*blocker/);
+    for (const blocker of ["product_unpublished", "presentation_unpublished", "missing_primary_media", "missing_offer", "offer_invalid_price"]) {
+      expect(page).toContain(`blockerTotal("${blocker}")`);
+    }
   });
 
-  it("no longer sources the product_unpublished count from readiness.publication_blockers", () => {
+  it("never sources a linked count from the readiness RPC's broader tallies", () => {
     const page = read();
     expect(page).not.toContain("readiness.publication_blockers");
-  });
-});
-
-describe("Import Action Center missing media count matches its link", () => {
-  it("queries the destination blocker filter", () => {
-    const page = read();
-    expect(page).toMatch(/p_blocker:\s*"missing_primary_media"/);
-    expect(page).toMatch(/missingMediaResult\.data/);
     expect(page).not.toContain("readiness.media_blockers");
+    expect(page).not.toContain("readiness.commercial_blockers");
   });
 });

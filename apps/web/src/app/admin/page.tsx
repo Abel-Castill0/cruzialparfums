@@ -19,8 +19,16 @@ export const dynamic = "force-dynamic";
  */
 
 const UNIT_LABELS = {
-  parfums: { eyebrow: "Cruzial Parfums", label: "Administrar Parfums", href: "/admin/parfums" },
-  import: { eyebrow: "Cruzial Import", label: "Administrar Import", href: "/admin/import" },
+  parfums: {
+    name: "Cruzial Parfums",
+    description: "Tienda de perfumes: pedidos, catálogo, combos, mayorista y reclamos.",
+    href: "/admin/parfums",
+  },
+  import: {
+    name: "Cruzial Import",
+    description: "Importación por consolidado: preparación, pedidos, clientes y reclamos.",
+    href: "/admin/import",
+  },
 } as const;
 
 export default async function AdminGatewayPage() {
@@ -95,24 +103,29 @@ export default async function AdminGatewayPage() {
 
       {result.status === "ok" ? (
         <main className={styles.main}>
-          <h1>¿Qué quieres administrar?</h1>
+          <h1>¿Qué negocio quieres administrar?</h1>
           <p className={styles.body}>
             Sesión activa como <strong>{result.session.email ?? "usuario sin correo"}</strong>.
           </p>
-          <div className={styles.selector}>
+          <ul className={styles.selector} aria-label="Negocios disponibles">
             {result.session.memberships.map((membership) => {
               const unit = UNIT_LABELS[membership.businessUnitCode];
               return (
-                <Link key={membership.businessUnitCode} href={unit.href as Route}>
-                  <span className={styles.selectorEyebrow}>{unit.eyebrow}</span>
-                  <strong>{unit.label}</strong>
-                  <span className={styles.selectorRole}>
-                    {membership.role === "admin" ? "Administrador" : "Solo lectura"}
-                  </span>
-                </Link>
+                <li key={membership.businessUnitCode}>
+                  <Link href={unit.href as Route} className={styles.unitCard} data-unit={membership.businessUnitCode}>
+                    <strong>{unit.name}</strong>
+                    <span className={styles.unitDescription}>{unit.description}</span>
+                    <span className={styles.unitFooter}>
+                      <span className={styles.selectorRole}>
+                        {membership.role === "admin" ? "Administrador" : "Solo lectura"}
+                      </span>
+                      <span className={styles.unitEnter} aria-hidden="true">Entrar →</span>
+                    </span>
+                  </Link>
+                </li>
               );
             })}
-          </div>
+          </ul>
         </main>
       ) : null}
 
