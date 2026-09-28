@@ -1,19 +1,32 @@
-import { OrderAutomationProof } from "@/components/admin/order-automation-proof";
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { OrderAutomationProof } from "@/components/admin/order-automation-proof";
+import { ActionLink, AdminPage, AdminPageHeader, BackLink, FactList, Notice } from "@/components/admin/admin-ui";
+import { CopyButton } from "@/components/admin/copy-button";
+import { OrderDetailView } from "@/components/admin/order-detail-view";
+import { OrderStatusPanel, type OrderActionOption } from "@/components/admin/order-status-panel";
 import { getAdminSession } from "@/lib/auth/admin-session";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { AdminParfumsOrdersRepository } from "@/domains/admin-parfums/orders-repository";
-import { orderStatusLabel, allowedParfumsOrderTransitions } from "@/domains/admin-parfums/order-status";
 import { isValidUuid } from "@/domains/admin-parfums/product-schema";
 import { normalizeParfumsCustomerPhoneForWhatsApp } from "@/domains/orders/customer-whatsapp-link";
 import { buildAdminOrderFollowUpMessage, buildWhatsAppUrl } from "@/domains/whatsapp/parfums-message-builder";
-import { CopyButton } from "../order-actions";
-import { OrderStatusControls } from "./order-status-controls";
-import styles from "../../productos/page.module.css";
+import {
+  buildOrderProgress,
+  formatLimaDateTime,
+  formatMoney,
+  formatRelativeLima,
+  orderActionCopy,
+  orderNextStep,
+  orderStatusPresentation,
+} from "@/domains/admin/order-presentation";
+import { loadOrderStatusEvents } from "@/domains/admin/order-status-events";
+import { updateParfumsOrderStatusAction } from "../order-status-actions";
+import workspace from "@/components/admin/order-workspace.module.css";
 
 export const dynamic = "force-dynamic";
+
+const LIST_HREF = "/admin/parfums/pedidos";
 
 export async function generateMetadata({
   params,
@@ -24,12 +37,24 @@ export async function generateMetadata({
   return { title: isValidUuid(id) ? "Pedido" : "Pedidos" };
 }
 
-function money(amount: number, currency: string): string {
-  return new Intl.NumberFormat("es-PE", { style: "currency", currency }).format(amount);
+function toOption(target: string): OrderActionOption | null {
+  const copy = orderActionCopy("parfums", target);
+  return copy ? { target, ...copy } : null;
 }
 
-function formatDateTime(iso: string): string {
-  return new Date(iso).toLocaleString("es-PE", { dateStyle: "medium", timeStyle: "short" });
+function LoadProblem({ title, unitId, orderId }: { title: string; unitId: string; orderId: string }) {
+  return (
+    <AdminPage>
+      <div>
+        <BackLink href={LIST_HREF}>Pedidos</BackLink>
+        <AdminPageHeader eyebrow="Cruzial Parfums · Pedido" title="Pedido" />
+      </div>
+      <Notice tone="danger" title={title}>
+        Recarga la página. Si el problema continúa, revisa Operaciones antes de cambiar el estado del pedido.
+      </Notice>
+      <OrderAutomationProof unit="parfums" unitId={unitId} orderId={orderId} />
+    </AdminPage>
+  );
 }
 
 export default async function AdminParfumsOrderDetailPage({
@@ -55,36 +80,25 @@ export default async function AdminParfumsOrderDetailPage({
 
   const supabase = await createSupabaseServerClient();
   if (!supabase) {
-    return (
-      <div className={styles.page}>
-        <main>
-          <p className={styles.notice}>
-            El backend de administración no está configurado en este entorno.
-          </p>
-          <OrderAutomationProof unit="parfums" unitId={membership.businessUnitId} orderId={id} />
-      </main>
-      </div>
-    );
+    return <LoadProblem title="El backend de administración no está configurado en este entorno." unitId={membership.businessUnitId} orderId={id} />;
   }
 
   const repository = new AdminParfumsOrdersRepository(supabase, membership.businessUnitId);
-  const detailResult = await repository.getById(id);
+  const [detailResult, events] = await Promise.all([
+    repository.getById(id),
+    loadOrderStatusEvents(supabase, membership.businessUnitId, id),
+  ]);
 
   if (!detailResult.ok) {
     if (detailResult.error.type === "not_found") notFound();
-    return (
-      <div className={styles.page}>
-        <main>
-          <p className={styles.notice} role="alert">No se pudo cargar el pedido.</p>
-          <OrderAutomationProof unit="parfums" unitId={membership.businessUnitId} orderId={id} />
-      </main>
-      </div>
-    );
+    return <LoadProblem title="No pudimos cargar el pedido." unitId={membership.businessUnitId} orderId={id} />;
   }
 
   const { order, lines } = detailResult.data;
-  const transitions = allowedParfumsOrderTransitions(order.status);
   const isAdmin = membership.role === "admin";
+  const status = orderStatusPresentation("parfums", order.status);
+  const nextStep = orderNextStep("parfums", order.status);
+  const progress = buildOrderProgress({ unit: "parfums", status: order.status, createdAt: order.createdAt, events });
   const normalizedPhone = order.customer.phone
     ? normalizeParfumsCustomerPhoneForWhatsApp(order.customer.phone)
     : null;
@@ -94,123 +108,101 @@ export default async function AdminParfumsOrderDetailPage({
         buildAdminOrderFollowUpMessage({ customerName: order.customer.name, orderNumber: order.orderNumber }),
       )
     : null;
+  const openOrder = order.status === "pending_whatsapp_confirmation" || order.status === "confirmed";
+  const primary = nextStep?.primaryTarget ? toOption(nextStep.primaryTarget) : null;
+  const secondary = (nextStep?.secondaryTargets ?? []).map(toOption).filter((option): option is OrderActionOption => option !== null);
+  const now = new Date();
 
   return (
-    <div className={styles.page}>
-      <header className={styles.header}>
-        <div>
-          <Link href="/admin/parfums/pedidos" className={styles.back}>← Pedidos</Link>
-          <h1>Pedido {order.orderNumber}</h1>
-          <p>
-            {formatDateTime(order.createdAt)} · {orderStatusLabel(order.status)}
-          </p>
-        </div>
-      </header>
-
-      <main className={styles.formWrapper}>
-        <section className={styles.section} aria-labelledby="ref-heading">
-          <div className={styles.sectionTitle}>
-            <h2 id="ref-heading">Referencia</h2>
-            <CopyButton value={order.orderNumber} label="Copiar referencia" />
+    <OrderDetailView
+      unitName="Cruzial Parfums"
+      listHref={LIST_HREF}
+      orderNumber={order.orderNumber}
+      customerName={order.customer.name}
+      total={formatMoney(order.subtotalAmount, order.currency)}
+      createdRelative={formatRelativeLima(order.createdAt, now)}
+      createdAbsolute={formatLimaDateTime(order.createdAt)}
+      statusLabel={status.label}
+      statusTone={status.tone}
+      progress={progress}
+      nextStep={nextStep}
+      nextStepContact={
+        openOrder && whatsAppUrl ? (
+          <div className={workspace.contactActions}>
+            <ActionLink href={whatsAppUrl} external>Escribir al cliente por WhatsApp</ActionLink>
           </div>
-          <dl className={styles.detailList}>
-            <div><dt>Número de pedido</dt><dd>{order.orderNumber}</dd></div>
-            <div><dt>Fecha</dt><dd>{formatDateTime(order.createdAt)}</dd></div>
-            <div><dt>Estado</dt><dd><span className={styles.badge}>{orderStatusLabel(order.status)}</span></dd></div>
-          </dl>
-          {/* Internal UUID for troubleshooting only — never the primary
-              reference an admin works with day to day. */}
-          <p className={styles.rowMeta}>ID interno: {order.id}</p>
-        </section>
-
-        <section className={styles.section} aria-labelledby="customer-heading">
-          <div className={styles.sectionTitle}>
-            <h2 id="customer-heading">Cliente</h2>
-          </div>
-          <dl className={styles.detailList}>
-            <div><dt>Nombre</dt><dd>{order.customer.name || "—"}</dd></div>
-            <div>
-              <dt>Teléfono</dt>
-              <dd>
-                {order.customer.phone || "—"}
-                {order.customer.phone ? (
-                  <span className={styles.actionSpacing}>
+        ) : null
+      }
+      actions={
+        isAdmin ? (
+          primary || secondary.length > 0 ? (
+            <OrderStatusPanel
+              orderId={order.id}
+              currentStatus={order.status}
+              primary={primary}
+              secondary={secondary}
+              action={updateParfumsOrderStatusAction}
+            />
+          ) : null
+        ) : primary || secondary.length > 0 ? (
+          <p className={workspace.readOnlyNote}>Acceso de solo lectura: un administrador de Cruzial Parfums puede cambiar el estado.</p>
+        ) : null
+      }
+      lines={lines.map((line) => ({
+        id: line.id,
+        product: line.productNameSnapshot,
+        presentation: line.variantLabelSnapshot,
+        quantity: line.quantity,
+        unitPrice: formatMoney(line.unitPriceAmount, order.currency),
+        lineTotal: formatMoney(line.lineTotalAmount, order.currency),
+      }))}
+      subtotal={formatMoney(order.subtotalAmount, order.currency)}
+      customer={
+        <>
+          <FactList
+            items={[
+              { term: "Nombre", value: order.customer.name || "Sin nombre" },
+              {
+                term: "Teléfono",
+                value: order.customer.phone ? (
+                  <span className={workspace.headerMeta}>
+                    {order.customer.phone}
                     <CopyButton value={order.customer.phone} label="Copiar teléfono" />
                   </span>
-                ) : null}
-              </dd>
-            </div>
-          </dl>
+                ) : (
+                  "Sin teléfono"
+                ),
+              },
+            ]}
+          />
           {whatsAppUrl ? (
-            <p className={styles.spacingTop}>
-              <a href={whatsAppUrl} target="_blank" rel="noopener noreferrer" className={styles.primaryButton}>
-                Contactar por WhatsApp
-              </a>
-            </p>
+            <div className={workspace.contactActions}>
+              <ActionLink href={whatsAppUrl} external>Contactar por WhatsApp</ActionLink>
+            </div>
           ) : order.customer.phone ? (
-            <p className={styles.rowMeta}>
-              No se pudo generar un enlace de WhatsApp seguro para este número. Usa el teléfono copiado arriba.
+            <p className={workspace.readOnlyNote}>
+              No se pudo generar un enlace de WhatsApp seguro para este número. Usa el teléfono copiado.
             </p>
           ) : null}
-        </section>
-
-        <section className={styles.section} aria-labelledby="delivery-heading">
-          <div className={styles.sectionTitle}>
-            <h2 id="delivery-heading">Entrega</h2>
-          </div>
-          <dl className={styles.detailList}>
-            <div><dt>Distrito / Ciudad</dt><dd>{order.delivery.district || "—"}</dd></div>
-            <div><dt>Método de entrega</dt><dd>{order.delivery.delivery || "—"}</dd></div>
-            {order.delivery.note ? (
-              <div><dt>Nota</dt><dd>{order.delivery.note}</dd></div>
-            ) : null}
-          </dl>
-        </section>
-
-        <section className={styles.section} aria-labelledby="lines-heading">
-          <div className={styles.sectionTitle}>
-            <h2 id="lines-heading">Líneas ({lines.length})</h2>
-          </div>
-          <table className={styles.variantTable}>
-            <thead>
-              <tr>
-                <th scope="col">Producto</th>
-                <th scope="col">Presentación</th>
-                <th scope="col">Cantidad</th>
-                <th scope="col">Precio unitario</th>
-                <th scope="col">Total línea</th>
-              </tr>
-            </thead>
-            <tbody>
-              {lines.map((line) => (
-                <tr key={line.id}>
-                  <td data-label="Producto">{line.productNameSnapshot}</td>
-                  <td data-label="Presentación">{line.variantLabelSnapshot}</td>
-                  <td data-label="Cantidad">{line.quantity}</td>
-                  <td data-label="Precio unitario">{money(line.unitPriceAmount, order.currency)}</td>
-                  <td data-label="Total línea">{money(line.lineTotalAmount, order.currency)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </section>
-
-        <section className={styles.section} aria-labelledby="total-heading">
-          <div className={styles.sectionTitle}>
-            <h2 id="total-heading">Total</h2>
-          </div>
-          <p><strong>Subtotal: {money(order.subtotalAmount, order.currency)}</strong></p>
-        </section>
-
-        {isAdmin && transitions.length > 0 ? (
-          <OrderStatusControls
-            orderId={order.id}
-            currentStatus={order.status}
-            allowedTransitions={transitions}
-          />
-        ) : null}
-        <OrderAutomationProof unit="parfums" unitId={membership.businessUnitId} orderId={id} />
-      </main>
-    </div>
+        </>
+      }
+      delivery={
+        <FactList
+          items={[
+            { term: "Distrito / Ciudad", value: order.delivery.district || "Sin indicar" },
+            { term: "Método de entrega", value: order.delivery.delivery || "Sin indicar" },
+            ...(order.delivery.note ? [{ term: "Nota del cliente", value: order.delivery.note }] : []),
+          ]}
+        />
+      }
+      technical={
+        <>
+          {/* Internal UUID for troubleshooting only — never the primary
+              reference an admin works with day to day. */}
+          <p className={workspace.readOnlyNote}>ID interno: {order.id}</p>
+          <OrderAutomationProof unit="parfums" unitId={membership.businessUnitId} orderId={id} />
+        </>
+      }
+    />
   );
 }
