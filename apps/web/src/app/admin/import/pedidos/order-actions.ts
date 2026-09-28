@@ -46,13 +46,13 @@ export async function updateImportOrderStatusAction(
 
   if (error) {
     const code = error.code;
-    if (code === "P2020") return { status: "error", message: "El pedido fue modificado por otra sesión. Recarga la página." };
-    if (code === "P2023") return { status: "error", message: "Transición de estado no permitida." };
-    if (code === "P2024") return { status: "error", message: "Un pedido archivado no puede cambiar de estado." };
-    if (code === "P2025") return { status: "error", message: reason && reason.length < 3 ? "La razón debe tener al menos 3 caracteres." : "Razón de cancelación inválida." };
+    if (code === "P2020") return { status: "error", message: "Otra persona cambió este pedido mientras lo revisabas. Recarga la página para ver su estado actual antes de continuar." };
+    if (code === "P2023") return { status: "error", message: "Este cambio ya no es posible desde el estado actual del pedido. Recarga la página para ver el estado más reciente." };
+    if (code === "P2024") return { status: "error", message: "Este pedido está archivado y ya no puede cambiar de estado." };
+    if (code === "P2025") return { status: "error", message: reason && reason.length < 3 ? "La razón debe tener al menos 3 caracteres." : "Escribe el motivo de la cancelación (entre 3 y 300 caracteres) e inténtalo otra vez." };
     if (code === "P0002") return { status: "error", message: "El pedido no existe o no pertenece a Cruzial Import." };
     if (code === "42501") return { status: "error", message: "No tienes permiso de administrador para Cruzial Import." };
-    return { status: "error", message: "No se pudo actualizar el estado. Intenta de nuevo." };
+    return { status: "error", message: "No pudimos cambiar el estado del pedido. Recarga la información e inténtalo otra vez." };
   }
 
   revalidatePath(PEDIDOS_PATH);
@@ -60,5 +60,5 @@ export async function updateImportOrderStatusAction(
   revalidatePath(orderDetailPath(orderId));
   revalidatePath("/admin/import");
 
-  return { status: "success", message: "Estado actualizado correctamente." };
+  return { status: "success", message: "Estado del pedido actualizado." };
 }

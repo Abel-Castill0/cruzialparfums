@@ -1,17 +1,32 @@
-import { OrderAutomationProof } from "@/components/admin/order-automation-proof";
-import type { Metadata, Route } from "next";
-import Link from "next/link";
+import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
+import { OrderAutomationProof } from "@/components/admin/order-automation-proof";
+import { ActionLink, AdminPage, AdminPageHeader, AdminSection, BackLink, FactList, Notice } from "@/components/admin/admin-ui";
+import { CopyButton } from "@/components/admin/copy-button";
+import { OrderDetailView } from "@/components/admin/order-detail-view";
+import { OrderStatusPanel, type OrderActionOption } from "@/components/admin/order-status-panel";
 import { getAdminSession } from "@/lib/auth/admin-session";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { AdminImportOrdersRepository } from "@/domains/admin-import/orders-repository";
-import { importOrderStatusLabel, importCustomerStatusLabel, allowedImportOrderTransitions } from "@/domains/admin-import/import-status";
+import { importCustomerStatusLabel } from "@/domains/admin-import/import-status";
 import { isValidUuid } from "@/domains/admin-parfums/product-schema";
-import { OrderStatusControls } from "./order-status-controls";
+import {
+  buildOrderProgress,
+  formatLimaDateTime,
+  formatMoney,
+  formatRelativeLima,
+  orderActionCopy,
+  orderNextStep,
+  orderStatusPresentation,
+} from "@/domains/admin/order-presentation";
+import { loadOrderStatusEvents } from "@/domains/admin/order-status-events";
+import { updateImportOrderStatusAction } from "../order-actions";
 import { CustomerLinkingSection } from "./customer-linking-section";
-import styles from "../../productos/page.module.css";
+import workspace from "@/components/admin/order-workspace.module.css";
 
 export const dynamic = "force-dynamic";
+
+const LIST_HREF = "/admin/import/pedidos";
 
 export async function generateMetadata({
   params,
@@ -22,19 +37,31 @@ export async function generateMetadata({
   return { title: isValidUuid(id) ? "Pedido Import" : "Pedidos Import" };
 }
 
-function money(amount: number, currency: string): string {
-  return new Intl.NumberFormat("es-PE", { style: "currency", currency }).format(amount);
-}
-
-function formatDateTime(iso: string): string {
-  return new Date(iso).toLocaleString("es-PE", { dateStyle: "medium", timeStyle: "short", timeZone: "America/Lima" });
-}
-
 function buildWhatsAppUrl(phone: string, message: string): string | null {
   const normalized = phone.replace(/[^0-9]/g, "");
   if (normalized.length < 9) return null;
   const encoded = encodeURIComponent(message);
   return `https://wa.me/${normalized}?text=${encoded}`;
+}
+
+function toOption(target: string): OrderActionOption | null {
+  const copy = orderActionCopy("import", target);
+  return copy ? { target, ...copy } : null;
+}
+
+function LoadProblem({ title, unitId, orderId }: { title: string; unitId: string; orderId: string }) {
+  return (
+    <AdminPage>
+      <div>
+        <BackLink href={LIST_HREF}>Pedidos</BackLink>
+        <AdminPageHeader eyebrow="Cruzial Import · Pedido" title="Pedido" />
+      </div>
+      <Notice tone="danger" title={title}>
+        Recarga la página. Si el problema continúa, revisa Operaciones antes de cambiar el estado del pedido.
+      </Notice>
+      <OrderAutomationProof unit="import" unitId={unitId} orderId={orderId} />
+    </AdminPage>
+  );
 }
 
 export default async function AdminImportOrderDetailPage({
@@ -60,36 +87,25 @@ export default async function AdminImportOrderDetailPage({
 
   const supabase = await createSupabaseServerClient();
   if (!supabase) {
-    return (
-      <div className={styles.page}>
-        <main>
-          <p className={styles.notice}>
-            El backend de administración no está configurado en este entorno.
-          </p>
-          <OrderAutomationProof unit="import" unitId={membership.businessUnitId} orderId={id} />
-      </main>
-      </div>
-    );
+    return <LoadProblem title="El backend de administración no está configurado en este entorno." unitId={membership.businessUnitId} orderId={id} />;
   }
 
   const repository = new AdminImportOrdersRepository(supabase, membership.businessUnitId);
-  const detailResult = await repository.getById(id);
+  const [detailResult, events] = await Promise.all([
+    repository.getById(id),
+    loadOrderStatusEvents(supabase, membership.businessUnitId, id),
+  ]);
 
   if (!detailResult.ok) {
     if (detailResult.error.type === "not_found") notFound();
-    return (
-      <div className={styles.page}>
-        <main>
-          <p className={styles.notice} role="alert">No se pudo cargar el pedido.</p>
-          <OrderAutomationProof unit="import" unitId={membership.businessUnitId} orderId={id} />
-      </main>
-      </div>
-    );
+    return <LoadProblem title="No pudimos cargar el pedido." unitId={membership.businessUnitId} orderId={id} />;
   }
 
   const { order, lines } = detailResult.data;
-  const transitions = allowedImportOrderTransitions(order.status);
   const isAdmin = membership.role === "admin";
+  const status = orderStatusPresentation("import", order.status);
+  const nextStep = orderNextStep("import", order.status);
+  const progress = buildOrderProgress({ unit: "import", status: order.status, createdAt: order.createdAt, events });
 
   const normalizedPhone = order.customer.phone?.replace(/[^0-9]/g, "") ?? null;
   const whatsappUrl = normalizedPhone && normalizedPhone.length >= 9
@@ -100,75 +116,144 @@ export default async function AdminImportOrderDetailPage({
     : null;
 
   let linkedCustomer: { id: string; full_name: string; phone: string | null; verified_customer_status: string; archived_at: string | null } | null = null;
+  let linkedCustomerFailed = false;
   if (order.customerId) {
     const customerResult = await repository.getLinkedCustomer(order.customerId);
     if (customerResult.ok) {
       linkedCustomer = customerResult.data;
+    } else {
+      linkedCustomerFailed = true;
     }
   }
 
+  const openOrder = order.status === "pending_whatsapp_confirmation" || order.status === "confirmed";
+  const primary = nextStep?.primaryTarget ? toOption(nextStep.primaryTarget) : null;
+  const secondary = (nextStep?.secondaryTargets ?? []).map(toOption).filter((option): option is OrderActionOption => option !== null);
+  const now = new Date();
+
   return (
-    <div className={styles.page}>
-      <header className={styles.header}>
-        <div>
-          <Link href={"/admin/import/pedidos" as Route} className={styles.back}>← Pedidos</Link>
-          <h1>Pedido {order.orderNumber}</h1>
-          <p>
-            {formatDateTime(order.createdAt)} · {importOrderStatusLabel(order.status)}
-          </p>
-        </div>
-      </header>
-
-      <main className={styles.formWrapper}>
-        <section className={styles.section} aria-labelledby="ref-heading">
-          <div className={styles.sectionTitle}>
-            <h2 id="ref-heading">Referencia</h2>
+    <OrderDetailView
+      unitName="Cruzial Import"
+      listHref={LIST_HREF}
+      orderNumber={order.orderNumber}
+      customerName={order.customer.name}
+      total={formatMoney(order.subtotalAmount, order.currency)}
+      createdRelative={formatRelativeLima(order.createdAt, now)}
+      createdAbsolute={formatLimaDateTime(order.createdAt)}
+      statusLabel={status.label}
+      statusTone={status.tone}
+      progress={progress}
+      nextStep={nextStep}
+      nextStepContact={
+        openOrder && whatsappUrl ? (
+          <div className={workspace.contactActions}>
+            <ActionLink href={whatsappUrl} external>Escribir al cliente por WhatsApp</ActionLink>
           </div>
-          <dl className={styles.detailList}>
-            <div><dt>Número de pedido</dt><dd>{order.orderNumber}</dd></div>
-            <div><dt>Fecha</dt><dd>{formatDateTime(order.createdAt)}</dd></div>
-            <div><dt>Estado</dt><dd><span className={styles.badge}>{importOrderStatusLabel(order.status)}</span></dd></div>
-            {order.campaignNumber != null ? (
-              <div><dt>Campaña</dt><dd>Consolidado #{order.campaignNumber}</dd></div>
-            ) : null}
-          </dl>
-          <p className={styles.rowMeta}>ID interno: {order.id}</p>
-        </section>
-
-        {isAdmin && transitions.length > 0 ? (
-          <OrderStatusControls
-            orderId={order.id}
-            currentStatus={order.status}
-            allowedTransitions={transitions}
+        ) : null
+      }
+      actions={
+        isAdmin ? (
+          primary || secondary.length > 0 ? (
+            <OrderStatusPanel
+              orderId={order.id}
+              currentStatus={order.status}
+              primary={primary}
+              secondary={secondary}
+              action={updateImportOrderStatusAction}
+            />
+          ) : null
+        ) : primary || secondary.length > 0 ? (
+          <p className={workspace.readOnlyNote}>Acceso de solo lectura: un administrador de Cruzial Import puede cambiar el estado.</p>
+        ) : null
+      }
+      lines={lines.map((line) => ({
+        id: line.id,
+        product: line.productNameSnapshot,
+        presentation: line.variantLabelSnapshot,
+        quantity: line.quantity,
+        unitPrice: formatMoney(line.unitPriceAmount, order.currency),
+        lineTotal: formatMoney(line.lineTotalAmount, order.currency),
+      }))}
+      subtotal={formatMoney(order.subtotalAmount, order.currency)}
+      orderContext={
+        <AdminSection
+          id="consolidado"
+          title="Consolidado y depósito"
+          description="Valores registrados al crear el pedido. No cambian si después se edita el consolidado o la política de depósito."
+        >
+          <FactList
+            items={[
+              {
+                term: "Consolidado",
+                value: order.campaignNumber != null ? (
+                  order.campaignId ? (
+                    <ActionLink href={`/admin/import/consolidados/${order.campaignId}`} variant="quiet">
+                      Consolidado #{order.campaignNumber}
+                    </ActionLink>
+                  ) : (
+                    `Consolidado #${order.campaignNumber}`
+                  )
+                ) : (
+                  "Sin consolidado registrado"
+                ),
+              },
+              {
+                term: "Porcentaje de depósito",
+                value: order.depositPercentageSnapshot != null ? `${order.depositPercentageSnapshot}%` : "Sin registrar",
+              },
+              {
+                term: "Monto de depósito",
+                value: order.depositAmountSnapshot != null ? formatMoney(order.depositAmountSnapshot, order.currency) : "Sin registrar",
+              },
+              {
+                term: "Tipo de cliente al pedir",
+                value: order.verifiedCustomerStatusSnapshot ? importCustomerStatusLabel(order.verifiedCustomerStatusSnapshot) : "Sin registrar",
+              },
+            ]}
           />
-        ) : null}
-
-        <section className={styles.section} aria-labelledby="customer-heading">
-          <div className={styles.sectionTitle}>
-            <h2 id="customer-heading">Cliente</h2>
-          </div>
-          <dl className={styles.detailList}>
-            <div><dt>Nombre</dt><dd>{order.customer.name || "—"}</dd></div>
-            <div><dt>Teléfono</dt><dd>{order.customer.phone || "—"}</dd></div>
-            <div>
-              <dt>Estado verificado al crear</dt>
-              <dd>{order.verifiedCustomerStatusSnapshot ? importCustomerStatusLabel(order.verifiedCustomerStatusSnapshot) : "—"}</dd>
-            </div>
-            <div>
-              <dt>Política de depósito</dt>
-              <dd>{order.depositPercentageSnapshot != null ? `${order.depositPercentageSnapshot}%` : "—"}</dd>
-            </div>
-          </dl>
+        </AdminSection>
+      }
+      customer={
+        <>
+          <FactList
+            items={[
+              { term: "Nombre", value: order.customer.name || "Sin nombre" },
+              {
+                term: "Teléfono",
+                value: order.customer.phone ? (
+                  <span className={workspace.headerMeta}>
+                    {order.customer.phone}
+                    <CopyButton value={order.customer.phone} label="Copiar teléfono" />
+                  </span>
+                ) : (
+                  "Sin teléfono"
+                ),
+              },
+            ]}
+          />
           {whatsappUrl ? (
-            <p className={styles.spacingTop}>
-              <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className={styles.primaryButton}>
-                Contactar por WhatsApp
-              </a>
-            </p>
+            <div className={workspace.contactActions}>
+              <ActionLink href={whatsappUrl} external>Contactar por WhatsApp</ActionLink>
+            </div>
           ) : null}
-        </section>
-
-        {isAdmin ? (
+        </>
+      }
+      delivery={
+        <FactList
+          items={[
+            { term: "Distrito", value: order.delivery.district || "Sin indicar" },
+            { term: "Dirección", value: order.delivery.address || "Sin indicar" },
+            ...(order.delivery.note ? [{ term: "Nota del cliente", value: order.delivery.note }] : []),
+            { term: "Costo de envío", value: "Por coordinar" },
+          ]}
+        />
+      }
+      asideExtra={
+        linkedCustomerFailed ? (
+          <Notice tone="attention" title="No pudimos verificar el cliente vinculado">
+            Recarga la página antes de registrar o vincular un cliente.
+          </Notice>
+        ) : isAdmin ? (
           <CustomerLinkingSection
             orderId={order.id}
             customerId={order.customerId}
@@ -177,77 +262,22 @@ export default async function AdminImportOrderDetailPage({
             orderName={order.customer.name}
           />
         ) : order.customerId && linkedCustomer ? (
-          <section className={styles.section}>
-            <div className={styles.sectionTitle}>
-              <h2>Cliente vinculado</h2>
-            </div>
-            <dl className={styles.detailList}>
-              <div><dt>Nombre</dt><dd>{linkedCustomer.full_name}</dd></div>
-              <div><dt>Estado</dt><dd>{importCustomerStatusLabel(linkedCustomer.verified_customer_status)}</dd></div>
-              <div>
-                <dt>Enlace</dt>
-                <dd><Link href={`/admin/import/clientes/${linkedCustomer.id}` as Route}>Ver cliente →</Link></dd>
-              </div>
-            </dl>
-          </section>
-        ) : null}
-
-        <section className={styles.section} aria-labelledby="delivery-heading">
-          <div className={styles.sectionTitle}>
-            <h2 id="delivery-heading">Entrega</h2>
-          </div>
-          <dl className={styles.detailList}>
-            <div><dt>Distrito</dt><dd>{order.delivery.district || "—"}</dd></div>
-            <div><dt>Dirección</dt><dd>{order.delivery.address || "—"}</dd></div>
-            {order.delivery.note ? (
-              <div><dt>Nota</dt><dd>{order.delivery.note}</dd></div>
-            ) : null}
-            <div><dt>Costo de envío</dt><dd>Por coordinar</dd></div>
-          </dl>
-        </section>
-
-        <section className={styles.section} aria-labelledby="lines-heading">
-          <div className={styles.sectionTitle}>
-            <h2 id="lines-heading">Líneas ({lines.length})</h2>
-          </div>
-          <table className={styles.variantTable}>
-            <thead>
-              <tr>
-                <th scope="col">Producto</th>
-                <th scope="col">Presentación</th>
-                <th scope="col">Cantidad</th>
-                <th scope="col">Precio unitario</th>
-                <th scope="col">Total línea</th>
-              </tr>
-            </thead>
-            <tbody>
-              {lines.map((line) => (
-                <tr key={line.id}>
-                  <td data-label="Producto">{line.productNameSnapshot}</td>
-                  <td data-label="Presentación">{line.variantLabelSnapshot}</td>
-                  <td data-label="Cantidad">{line.quantity}</td>
-                  <td data-label="Precio unitario">{money(line.unitPriceAmount, order.currency)}</td>
-                  <td data-label="Total línea">{money(line.lineTotalAmount, order.currency)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </section>
-
-        <section className={styles.section} aria-labelledby="summary-heading">
-          <div className={styles.sectionTitle}>
-            <h2 id="summary-heading">Resumen</h2>
-          </div>
-          <dl className={styles.detailList}>
-            <div><dt>Subtotal</dt><dd><strong>{money(order.subtotalAmount, order.currency)}</strong></dd></div>
-            <div><dt>Depósito</dt><dd>{order.depositPercentageSnapshot != null ? `${order.depositPercentageSnapshot}%` : "—"}</dd></div>
-            {order.depositAmountSnapshot != null ? (
-              <div><dt>Monto depósito</dt><dd>{money(order.depositAmountSnapshot, order.currency)}</dd></div>
-            ) : null}
-          </dl>
-        </section>
-        <OrderAutomationProof unit="import" unitId={membership.businessUnitId} orderId={id} />
-      </main>
-    </div>
+          <CustomerLinkingSection
+            orderId={order.id}
+            customerId={order.customerId}
+            linkedCustomer={linkedCustomer}
+            orderPhone={order.customer.phone}
+            orderName={order.customer.name}
+            readOnly
+          />
+        ) : null
+      }
+      technical={
+        <>
+          <p className={workspace.readOnlyNote}>ID interno: {order.id}</p>
+          <OrderAutomationProof unit="import" unitId={membership.businessUnitId} orderId={id} />
+        </>
+      }
+    />
   );
 }

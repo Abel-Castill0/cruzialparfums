@@ -4,7 +4,8 @@ import { useRouter } from "next/navigation";
 import { useActionState, useTransition } from "react";
 import { createCustomerFromOrderAction } from "../../clientes/customer-actions";
 import { importCustomerStatusLabel } from "@/domains/admin-import/import-status";
-import styles from "../../productos/page.module.css";
+import { ActionLink, AdminSection, FactList, adminButtonClass } from "@/components/admin/admin-ui";
+import workspace from "@/components/admin/order-workspace.module.css";
 
 type LinkedCustomer = {
   id: string;
@@ -20,9 +21,11 @@ type Props = {
   linkedCustomer: LinkedCustomer | null;
   orderPhone: string | null;
   orderName: string | null;
+  /** Viewer: show the linked customer, never the create/link control. */
+  readOnly?: boolean;
 };
 
-export function CustomerLinkingSection({ orderId, customerId, linkedCustomer, orderPhone, orderName }: Props) {
+export function CustomerLinkingSection({ orderId, customerId, linkedCustomer, orderPhone, orderName, readOnly = false }: Props) {
   const router = useRouter();
   const [, startTransition] = useTransition();
 
@@ -41,48 +44,42 @@ export function CustomerLinkingSection({ orderId, customerId, linkedCustomer, or
 
   if (customerId && linkedCustomer) {
     return (
-      <section className={styles.section}>
-        <div className={styles.sectionTitle}>
-          <h2>Cliente vinculado</h2>
+      <AdminSection id="cliente-registrado" title="Cliente registrado">
+        <FactList
+          items={[
+            { term: "Nombre", value: linkedCustomer.full_name },
+            ...(readOnly ? [] : [{ term: "Teléfono", value: linkedCustomer.phone || "Sin teléfono" }]),
+            { term: "Verificación", value: importCustomerStatusLabel(linkedCustomer.verified_customer_status) },
+          ]}
+        />
+        <div className={workspace.contactActions}>
+          <ActionLink href={`/admin/import/clientes/${linkedCustomer.id}`} variant="secondary">Ver ficha del cliente</ActionLink>
         </div>
-        <dl className={styles.detailList}>
-          <div><dt>Nombre</dt><dd>{linkedCustomer.full_name}</dd></div>
-          <div><dt>Teléfono</dt><dd>{linkedCustomer.phone || "—"}</dd></div>
-          <div><dt>Estado verificado</dt><dd>{importCustomerStatusLabel(linkedCustomer.verified_customer_status)}</dd></div>
-          <div>
-            <dt>Enlace</dt>
-            <dd>
-              <a href={`/admin/import/clientes/${linkedCustomer.id}`}>Ver cliente →</a>
-            </dd>
-          </div>
-        </dl>
-      </section>
+      </AdminSection>
     );
   }
 
+  if (readOnly) return null;
+
   return (
-    <section className={styles.section}>
-      <div className={styles.sectionTitle}>
-        <h2>Vinculación de cliente</h2>
-      </div>
-      <p style={{ fontSize: 13, color: "#5c574f", marginBottom: 12 }}>
-        Este pedido no tiene un cliente registrado. Puedes crear uno usando los datos del pedido
-        ({orderName || "Sin nombre"} · {orderPhone || "Sin teléfono"}).
+    <AdminSection
+      id="cliente-registrado"
+      title="Cliente registrado"
+      description="Este pedido todavía no está vinculado a un cliente registrado."
+    >
+      <p className={workspace.consequence}>
+        Al registrarlo se crea la ficha del cliente con los datos del pedido ({orderName || "Sin nombre"} · {orderPhone || "Sin teléfono"}) y se vincula a este pedido.
       </p>
       {state?.status === "success" ? (
-        <p className={styles.savedNote} role="status" aria-live="polite">{state.message}</p>
+        <p className={workspace.feedbackSuccess} role="status">✓ {state.message}</p>
       ) : state?.status === "error" ? (
-        <p className={styles.conflictBanner} role="alert">{state.message}</p>
+        <p className={workspace.feedbackError} role="alert">{state.message}</p>
       ) : null}
       <form action={formAction}>
-        <button
-          type="submit"
-          className={styles.primaryButton}
-          disabled={isPending}
-        >
-          {isPending ? "Procesando..." : "Registrar y vincular cliente"}
+        <button type="submit" className={adminButtonClass("secondary")} disabled={isPending}>
+          {isPending ? "Registrando…" : "Registrar y vincular cliente"}
         </button>
       </form>
-    </section>
+    </AdminSection>
   );
 }

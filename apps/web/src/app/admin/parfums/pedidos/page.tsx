@@ -1,37 +1,23 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getAdminSession } from "@/lib/auth/admin-session";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { AdminParfumsOrdersRepository } from "@/domains/admin-parfums/orders-repository";
-import { orderStatusLabel } from "@/domains/admin-parfums/order-status";
-import { OrderFilters, type OrderStatusOption } from "@/components/admin/order-filters";
 import { isOrderAgeBucket } from "@/domains/admin/order-age";
-import styles from "../productos/page.module.css";
+import {
+  formatLimaDateTime,
+  formatMoney,
+  formatRelativeLima,
+  orderStatusPresentation,
+} from "@/domains/admin/order-presentation";
+import { OrdersInbox } from "@/components/admin/orders-inbox";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = { title: "Pedidos" };
 
 const PAGE_SIZE = 20;
-
-const STATUS_OPTIONS: OrderStatusOption[] = [
-  { value: "pending_whatsapp_confirmation", label: "Pendiente" },
-  { value: "confirmed", label: "Confirmado" },
-  { value: "fulfilled", label: "Completado" },
-  { value: "cancelled", label: "Cancelado" },
-];
-
-function money(amount: number, currency: string): string {
-  return new Intl.NumberFormat("es-PE", { style: "currency", currency }).format(amount);
-}
-
-function formatDateTime(iso: string): string {
-  return new Date(iso).toLocaleString("es-PE", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  });
-}
+const BASE_PATH = "/admin/parfums/pedidos";
 
 export default async function AdminParfumsOrdersPage({
   searchParams,
@@ -52,115 +38,78 @@ export default async function AdminParfumsOrdersPage({
   if (!membership) redirect("/admin");
 
   const supabase = await createSupabaseServerClient();
-  if (!supabase) {
-    return (
-      <div className={styles.page}>
-        <main>
-          <p className={styles.notice}>
-            El backend de administración no está configurado en este entorno.
-          </p>
-        </main>
-      </div>
-    );
-  }
-
   const params = await searchParams;
   const search = typeof params.q === "string" ? params.q : "";
   const statusParam = typeof params.status === "string" ? params.status : "";
   const ageParam = typeof params.age === "string" ? params.age : "";
   const page = Math.max(1, Number(params.page) || 1);
+  const filters = { search, status: statusParam, age: ageParam };
+  const hrefForPage = (nextPage: number) => {
+    const next = new URLSearchParams();
+    for (const [key, value] of Object.entries(params)) if (typeof value === "string") next.set(key, value);
+    next.set("page", String(nextPage));
+    return `${BASE_PATH}?${next.toString()}`;
+  };
+  const isAdmin = membership.role === "admin";
 
-  const repository = new AdminParfumsOrdersRepository(supabase, membership.businessUnitId);
-  const listResult = await repository.list(
-    {
-      search,
-      status: statusParam || undefined,
-      age: isOrderAgeBucket(ageParam) ? ageParam : undefined,
-    },
-    { page, pageSize: PAGE_SIZE },
-  );
-
-  if (!listResult.ok) {
+  if (!supabase) {
     return (
-      <div className={styles.page}>
-        <main>
-          <p className={styles.notice} role="alert">
-            No se pudieron cargar los pedidos. Intenta de nuevo.
-          </p>
-        </main>
-      </div>
+      <OrdersInbox unitName="Cruzial Parfums" basePath={BASE_PATH} isAdmin={isAdmin} filters={filters}
+        counts={null} result={{ ok: false }} hrefForPage={hrefForPage} />
     );
   }
 
-  const { items, total, pageSize } = listResult.data;
-  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const repository = new AdminParfumsOrdersRepository(supabase, membership.businessUnitId);
+  const [listResult, counts] = await Promise.all([
+    repository.list(
+      {
+        search,
+        status: statusParam || undefined,
+        age: isOrderAgeBucket(ageParam) ? ageParam : undefined,
+      },
+      { page, pageSize: PAGE_SIZE },
+    ),
+    repository.countByStatus(),
+  ]);
+
+  const now = new Date();
+  const inbox = listResult.ok
+    ? {
+        ok: true as const,
+        total: listResult.data.total,
+        page,
+        totalPages: Math.max(1, Math.ceil(listResult.data.total / listResult.data.pageSize)),
+        rows: listResult.data.items.map((order) => {
+          const status = orderStatusPresentation("parfums", order.status);
+          return {
+            id: order.id,
+            href: `${BASE_PATH}/${order.id}`,
+            orderNumber: order.orderNumber,
+            customerName: order.customer.name,
+            customerPhone: order.customer.phone,
+            district: order.delivery.district,
+            createdRelative: formatRelativeLima(order.createdAt, now),
+            createdAbsolute: formatLimaDateTime(order.createdAt),
+            total: formatMoney(order.subtotalAmount, order.currency),
+            lineCount: order.lineCount,
+            statusLabel: status.label,
+            statusTone: status.tone,
+            situation: status.situation,
+            context: [],
+          };
+        }),
+      }
+    : { ok: false as const };
 
   return (
-    <div className={styles.page}>
-      <header className={styles.header}>
-        <div>
-          <h1>Pedidos</h1>
-          <p>{total} solicitud{total === 1 ? "" : "es"} registrada{total === 1 ? "" : "s"}.</p>
-        </div>
-      </header>
-
-      <main>
-        <OrderFilters statusOptions={STATUS_OPTIONS} initial={{ search, status: statusParam, age: ageParam }} />
-
-        {items.length === 0 ? (
-          <p className={styles.empty}>
-            {search || statusParam || ageParam
-              ? "No hay pedidos que coincidan con estos filtros."
-              : "No hay pedidos registrados todavía."}
-          </p>
-        ) : (
-          <>
-            <ul className={styles.list} aria-label="Lista de pedidos">
-              {items.map((order) => (
-                <li key={order.id} className={styles.row}>
-                  <Link href={`/admin/parfums/pedidos/${order.id}`} className={styles.rowLink}>
-                    <div className={styles.rowMain}>
-                      <strong>{order.orderNumber}</strong>
-                      <span className={styles.rowMeta}>
-                        {order.customer.name || "Sin nombre"} · {order.customer.phone || "Sin teléfono"}
-                        {order.delivery.district ? ` · ${order.delivery.district}` : ""}
-                      </span>
-                    </div>
-                    <div className={styles.rowBadges}>
-                      <span className={styles.badge}>{orderStatusLabel(order.status)}</span>
-                    </div>
-                    <div className={styles.rowStats}>
-                      <span>{formatDateTime(order.createdAt)}</span>
-                      <span>{order.lineCount} línea{order.lineCount === 1 ? "" : "s"}</span>
-                      <span>{money(order.subtotalAmount, order.currency)}</span>
-                    </div>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-
-            {totalPages > 1 ? (
-              <nav className={styles.pagination} aria-label="Paginación">
-                {page > 1 ? (
-                  <Link href={`?${new URLSearchParams({ ...(params as Record<string, string>), page: String(page - 1) }).toString()}`}>
-                    ← Anterior
-                  </Link>
-                ) : (
-                  <span aria-disabled="true">← Anterior</span>
-                )}
-                <span>Página {page} de {totalPages}</span>
-                {page < totalPages ? (
-                  <Link href={`?${new URLSearchParams({ ...(params as Record<string, string>), page: String(page + 1) }).toString()}`}>
-                    Siguiente →
-                  </Link>
-                ) : (
-                  <span aria-disabled="true">Siguiente →</span>
-                )}
-              </nav>
-            ) : null}
-          </>
-        )}
-      </main>
-    </div>
+    <OrdersInbox
+      unitName="Cruzial Parfums"
+      basePath={BASE_PATH}
+      isAdmin={isAdmin}
+      filters={filters}
+      counts={counts}
+      result={inbox}
+      hrefForPage={hrefForPage}
+    />
   );
 }

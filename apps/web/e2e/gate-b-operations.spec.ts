@@ -1,20 +1,23 @@
-import { existsSync } from "node:fs";
 import { expect,test } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
-const ADMIN_STATE="e2e/.auth/gate-b-admin.json";
+import { GATE_B_ADMIN_STATE as ADMIN_STATE, hasIdentity } from "./auth-state";
 const ids={parfumsOrder:"99003000-0000-4000-8000-000000000010",importOrder:"99003000-0000-4000-8000-000000000011",product:"99003000-0000-4000-8000-000000000020",campaign:"99003000-0000-4000-8000-000000000030",complaint:"99003000-0000-4000-8000-000000000040"};
 test.describe("Gate B local operations",()=>{
  test.describe.configure({mode:"serial"});
- test.skip(process.env.E2E_LOCAL_FIXTURES!=="1"||!existsSync(ADMIN_STATE),"requires disposable local fixtures and real AAL2 session");
+ test.skip(process.env.E2E_LOCAL_FIXTURES!=="1"||!hasIdentity("E2E_GATE_B_ADMIN"),"requires disposable local fixtures and the E2E_GATE_B_ADMIN_* identity (real password + TOTP sign-in in auth.setup.ts)");
  test.use({storageState:ADMIN_STATE});
  test("Parfums tracked reservation follows confirmation and fulfillment",async({page})=>{
-  await page.goto(`/admin/parfums/pedidos/${ids.parfumsOrder}`);await expect(page.getByText(/2 unidades · reserved/)).toBeVisible();
-  await page.getByRole("button",{name:"Confirmar por WhatsApp",exact:true}).click();await expect(page.getByRole("button",{name:"Marcar atendida",exact:true})).toBeVisible();
-  await page.getByRole("button",{name:"Marcar atendida",exact:true}).click();await expect(page.getByText(/2 unidades · consumed/)).toBeVisible();await page.reload();await expect(page.getByText(/2 unidades · consumed/)).toBeVisible();
+  // Automation evidence lives behind "Ver detalle técnico" (progressive disclosure, Phase B1).
+  const technical=page.getByText("Ver detalle técnico",{exact:true});
+  await page.goto(`/admin/parfums/pedidos/${ids.parfumsOrder}`);await technical.click();await expect(page.getByText(/2 unidades · reserved/)).toBeVisible();
+  await page.getByRole("button",{name:"Confirmar por WhatsApp",exact:true}).click();await expect(page.getByRole("button",{name:"Marcar como completado",exact:true})).toBeVisible();
+  await page.getByRole("button",{name:"Marcar como completado",exact:true}).click();await expect(page.getByText(/2 unidades · consumed/)).toBeVisible();await page.reload();await technical.click();await expect(page.getByText(/2 unidades · consumed/)).toBeVisible();
  });
  test("Import confirmation and cancellation retain independent workflow",async({page})=>{
-  await page.goto(`/admin/import/pedidos/${ids.importOrder}`);await page.getByRole("button",{name:"Confirmar coordinación",exact:true}).click();await expect(page.getByRole("button",{name:"Marcar completado",exact:true})).toBeVisible();
-  await page.getByPlaceholder("Razón de cancelación (requerida)").fill("LOCAL QA cancelación humana");await page.getByRole("button",{name:"Cancelar pedido",exact:true}).click();await expect(page.getByText("cancelled",{exact:false}).first()).toBeVisible();
+  await page.goto(`/admin/import/pedidos/${ids.importOrder}`);await page.getByRole("button",{name:"Confirmar coordinación",exact:true}).click();await expect(page.getByRole("button",{name:"Marcar como completado",exact:true})).toBeVisible();
+  // Cancellation is a two-step, reason-required confirmation.
+  await page.getByRole("button",{name:"Cancelar pedido",exact:true}).click();await page.getByPlaceholder("Razón de cancelación (requerida)").fill("LOCAL QA cancelación humana");await page.getByRole("button",{name:"Confirmar cancelación",exact:true}).click();
+  await expect(page.getByText(/Estado del pedido actualizado/)).toBeVisible();await page.getByText("Ver detalle técnico",{exact:true}).click();await expect(page.getByText("cancelled",{exact:false}).first()).toBeVisible();
  });
  test("catalog CSV dry run previews and explicitly applies categoryless factual edit",async({page})=>{
   await page.goto(`/admin/import/lotes?campaign=${ids.campaign}`);

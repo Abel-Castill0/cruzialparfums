@@ -1,0 +1,236 @@
+/* Consolidado workspace (Phase B1). Tokens follow the admin shell. */
+
+.headerActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 12px;
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  border: 1px solid var(--admin-line, rgba(23, 19, 15, 0.14));
+  border-top: 3px solid var(--admin-accent, #17130f);
+  border-radius: 8px;
+  background: var(--admin-surface, #fff);
+}
+
+.heroMain {
+  min-width: 0;
+  padding: clamp(18px, 2.6vw, 28px);
+  display: grid;
+  align-content: start;
+  gap: 12px;
+}
+
+.heroNext {
+  min-width: 0;
+  padding: clamp(14px, 2vw, 20px);
+  border-left: 1px solid var(--admin-line, rgba(23, 19, 15, 0.14));
+  background: var(--admin-accent-soft, rgba(23, 19, 15, 0.04));
+  display: grid;
+  align-content: start;
+}
+
+.heroNext a {
+  justify-self: start;
+}
+
+.heroEyebrow {
+  margin: 0;
+  color: var(--admin-muted, #5c574f);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.heroConsequence {
+  margin: 0;
+  font-size: clamp(17px, 1.8vw, 19px);
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.heroLine {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.heroNote {
+  margin: 0;
+  color: var(--admin-muted, #5c574f);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.dates {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.dates > div {
+  display: grid;
+  gap: 2px;
+  padding: 10px 12px;
+  border: 1px solid var(--admin-line, rgba(23, 19, 15, 0.14));
+  border-radius: 6px;
+}
+
+.dates dt {
+  color: var(--admin-muted, #5c574f);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.dates dd {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* List */
+
+.campaignList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--admin-line, rgba(23, 19, 15, 0.14));
+  border-radius: 8px;
+  background: var(--admin-surface, #fff);
+  overflow: hidden;
+}
+
+.campaignList > li + li {
+  border-top: 1px solid var(--admin-line, rgba(23, 19, 15, 0.14));
+}
+
+.campaignRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1.5fr) auto;
+  align-items: center;
+  gap: 10px 20px;
+  padding: 16px 18px;
+  color: var(--admin-text, #17130f);
+  text-decoration: none;
+}
+
+.campaignRow:hover {
+  background: var(--admin-accent-soft, rgba(23, 19, 15, 0.04));
+}
+
+.campaignRow:focus-visible {
+  outline: 2px solid var(--admin-text, #17130f);
+  outline-offset: -2px;
+}
+
+.campaignIdentity,
+.campaignState {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+  justify-items: start;
+}
+
+.campaignNumber {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.campaignName {
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
+.muted {
+  color: var(--admin-muted, #5c574f);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.campaignMeta {
+  display: grid;
+  justify-items: end;
+  gap: 2px;
+  text-align: right;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 10px 12px;
+}
+
+.filters label {
+  display: grid;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  flex: 1 1 200px;
+}
+
+.filters input:not([type="checkbox"]),
+.filters select {
+  min-height: 44px;
+  width: 100%;
+  padding: 0 12px;
+  border: 1px solid var(--admin-line-strong, rgba(23, 19, 15, 0.22));
+  border-radius: 6px;
+  background: var(--admin-surface, #fff);
+  color: var(--admin-text, #17130f);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 400;
+}
+
+.filters .checkbox {
+  flex: 0 1 auto;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+}
+
+.filters .checkbox input {
+  width: 20px;
+  height: 20px;
+}
+
+@media (max-width: 900px) {
+  .hero {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .heroNext {
+    border-left: 0;
+    border-top: 1px solid var(--admin-line, rgba(23, 19, 15, 0.14));
+  }
+}
+
+@media (max-width: 760px) {
+  .campaignRow {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 14px 16px;
+  }
+
+  .campaignMeta {
+    justify-items: start;
+    text-align: left;
+  }
+}
+
+@media (max-width: 480px) {
+  .dates {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

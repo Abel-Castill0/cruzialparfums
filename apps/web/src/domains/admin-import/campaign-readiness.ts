@@ -78,7 +78,7 @@ export const VISIBILITY_REASON_LABELS: Record<VisibilityReason, string> = {
 };
 
 export const AVAILABILITY_STATUS_LABELS: Record<"unconfirmed" | "available" | "out_of_stock", string> = {
-  unconfirmed: "Por confirmar",
+  unconfirmed: "Sin confirmar",
   available: "Disponible",
   out_of_stock: "Agotado",
 };

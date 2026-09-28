@@ -42,7 +42,7 @@ const STATUS_PRESENTATION: Record<CampaignStatus, Omit<CampaignStatusPresentatio
     tone: "neutral",
   },
   fulfilled: {
-    description: "El consolidado fue completado.",
+    description: "El consolidado fue completado y queda como historial.",
     publicConsequence: "Ya no se aceptan nuevas solicitudes.",
     tone: "neutral",
   },
@@ -116,6 +116,12 @@ function campaignHref(campaignId: string): string {
   return `/admin/import/consolidados/${campaignId}`;
 }
 
+/** The campaign's own products table, optionally pre-filtered by
+ * availability — where availability is actually edited (incl. in bulk). */
+export function campaignProductsHref(campaignId: string, availability?: "unconfirmed" | "available" | "out_of_stock"): string {
+  return `${campaignHref(campaignId)}${availability ? `?disponibilidad=${availability}` : ""}#productos`;
+}
+
 const LIMA_FORMAT: Intl.DateTimeFormatOptions = {
   timeZone: "America/Lima",
   dateStyle: "medium",
@@ -155,7 +161,7 @@ export function buildImportChecklist(input: ImportReadinessInput): ChecklistStep
   } else if (input.unconfirmedOfferCount === null || input.offerCount === null) {
     availability = { id: "availability", title: "Disponibilidad", nextTitle: "Disponibilidad", state: "unknown", detail: "No se pudo verificar en este momento.", href: null, actionLabel: null };
   } else if (input.unconfirmedOfferCount > 0) {
-    availability = { id: "availability", title: "Disponibilidad", nextTitle: "Confirmar disponibilidad", state: "attention", detail: `${plural(input.unconfirmedOfferCount, "oferta necesita", "ofertas necesitan")} confirmación de disponibilidad.`, href: publicationHref(campaignId, "offer_unconfirmed"), actionLabel: view("Confirmar disponibilidad") };
+    availability = { id: "availability", title: "Disponibilidad", nextTitle: "Confirmar disponibilidad", state: "attention", detail: `${plural(input.unconfirmedOfferCount, "oferta necesita", "ofertas necesitan")} confirmación de disponibilidad.`, href: campaignProductsHref(campaignId, "unconfirmed"), actionLabel: view("Confirmar disponibilidad") };
   } else {
     availability = { id: "availability", title: "Disponibilidad", nextTitle: "Disponibilidad", state: "complete", detail: "Todas las ofertas tienen disponibilidad confirmada.", href: null, actionLabel: null };
   }
@@ -222,6 +228,7 @@ export function buildImportChecklist(input: ImportReadinessInput): ChecklistStep
 }
 
 export type ImportNextAction = {
+  stepId: ChecklistStepId;
   title: string;
   detail: string;
   href: string;
@@ -240,7 +247,7 @@ export function selectImportNextAction(steps: readonly ChecklistStep[]): ImportN
       // Undated campaigns are valid in the current authority; missing dates
       // alone never outrank a real blocker, and are not a "next action".
       if (step.id === "schedule" && step.state === "not_started") continue;
-      return { title: step.nextTitle, detail: step.detail, href: step.href, actionLabel: step.actionLabel };
+      return { stepId: step.id, title: step.nextTitle, detail: step.detail, href: step.href, actionLabel: step.actionLabel };
     }
   }
   return null;
@@ -253,3 +260,144 @@ export const CHECKLIST_STATE_LABELS: Record<ChecklistState, string> = {
   blocked: "Aún no disponible",
   unknown: "Sin verificar",
 };
+
+// ---------------------------------------------------------------------------
+// Phase B1 — consolidado workspace
+// ---------------------------------------------------------------------------
+
+export type CustomerView =
+  | { kind: "unknown" }
+  | { kind: "this"; visibleProducts: number | null }
+  | { kind: "other"; number: number; name: string }
+  | { kind: "none"; reason: string | null };
+
+/** What customers see right now, from the SAME public selector the
+ * storefront uses. `publicCampaign === undefined` means the selector could
+ * not be read — reported as unknown, never as "not visible". */
+export function deriveCustomerView(input: {
+  campaign: { id: string; status: string; opens_at: string | null; closes_at: string | null } | null;
+  publicCampaign: { id: string; number: number; name: string } | null | undefined;
+  visibleProducts: number | null;
+  openCampaignCount: number | null;
+  now: Date;
+}): CustomerView {
+  const { campaign, publicCampaign, now } = input;
+  if (publicCampaign === undefined) return { kind: "unknown" };
+  if (!campaign) {
+    return publicCampaign ? { kind: "other", number: publicCampaign.number, name: publicCampaign.name } : { kind: "none", reason: null };
+  }
+  if (publicCampaign && publicCampaign.id === campaign.id) return { kind: "this", visibleProducts: input.visibleProducts };
+  if (publicCampaign) return { kind: "other", number: publicCampaign.number, name: publicCampaign.name };
+  let reason: string | null = null;
+  if (campaign.status === "open") {
+    if (campaign.opens_at && new Date(campaign.opens_at).getTime() > now.getTime()) {
+      reason = `Este consolidado está abierto, pero su apertura está fijada para el ${formatLimaDateTime(campaign.opens_at)}.`;
+    } else if (campaign.closes_at && new Date(campaign.closes_at).getTime() <= now.getTime()) {
+      reason = "Este consolidado está abierto, pero su fecha de cierre ya pasó.";
+    } else if (input.openCampaignCount !== null && input.openCampaignCount > 1) {
+      reason = `Hay ${input.openCampaignCount} consolidados abiertos a la vez. La tienda solo muestra uno cuando hay exactamente uno abierto.`;
+    }
+  }
+  return { kind: "none", reason };
+}
+
+export type DateWindow = {
+  state: "no_dates" | "before_open" | "inside" | "after_close";
+  opensLabel: string;
+  closesLabel: string;
+  /** Plain-language consequence of the dates for THIS status. */
+  explanation: string;
+};
+
+/** Explains the date window without ever implying that a date changes the
+ * status: dates only limit visibility while the status is "Abierto". */
+export function campaignDateWindow(input: { status: string; opensAt: string | null; closesAt: string | null; now: Date }): DateWindow {
+  const { status, opensAt, closesAt, now } = input;
+  const opensLabel = opensAt ? formatLimaDateTime(opensAt) : "Sin fecha — visible desde que lo abras";
+  const closesLabel = closesAt ? formatLimaDateTime(closesAt) : "Sin fecha — hasta que lo cierres";
+  let state: DateWindow["state"];
+  if (!opensAt && !closesAt) state = "no_dates";
+  else if (opensAt && new Date(opensAt).getTime() > now.getTime()) state = "before_open";
+  else if (closesAt && new Date(closesAt).getTime() <= now.getTime()) state = "after_close";
+  else state = "inside";
+
+  let explanation: string;
+  if (status === "open") {
+    explanation =
+      state === "before_open"
+        ? "Está abierto, pero todavía no llega la fecha de apertura pública: tus clientes aún no lo ven."
+        : state === "after_close"
+          ? "Está abierto, pero la fecha de cierre ya pasó: tus clientes ya no lo ven. Ciérralo o cambia la fecha."
+          : state === "no_dates"
+            ? "Está abierto y sin fechas: sigue visible hasta que lo cierres manualmente."
+            : "Está abierto y dentro de sus fechas.";
+  } else {
+    explanation =
+      "Las fechas no cambian el estado por sí solas. Solo limitan cuándo lo ven tus clientes mientras el consolidado esté “Abierto”.";
+  }
+  return { state, opensLabel, closesLabel, explanation };
+}
+
+export type LifecycleAction = {
+  target: CampaignStatus;
+  label: string;
+  consequence: string;
+  variant: "primary" | "secondary" | "danger";
+  /** True when opening although readiness is not confirmed — the UI must
+   * warn and ask for an explicit confirmation. There is NO server-side
+   * readiness block today; this is a warning, not a guarantee. */
+  warnNotReady: boolean;
+};
+
+/** Recommended status changes for the current status. Presentation only:
+ * every target is a status the existing admin_set_campaign_status RPC
+ * already accepts, and the manual control keeps every other option. */
+export function recommendedLifecycleActions(input: {
+  status: string;
+  archived: boolean;
+  readyForManualOpen: boolean | null;
+}): LifecycleAction[] {
+  if (input.archived || !isCampaignStatus(input.status)) return [];
+  const open = (label: string): LifecycleAction => ({
+    target: "open",
+    label,
+    consequence: `${campaignStatusPresentation("open").publicConsequence} Revisa las fechas de apertura y cierre antes de abrirlo.`,
+    variant: input.readyForManualOpen === true ? "primary" : "secondary",
+    warnNotReady: input.readyForManualOpen !== true,
+  });
+  const pause: LifecycleAction = {
+    target: "paused",
+    label: "Pausar consolidado",
+    consequence: `${campaignStatusPresentation("paused").publicConsequence} Podrás reanudarlo después.`,
+    variant: "secondary",
+    warnNotReady: false,
+  };
+  const close: LifecycleAction = {
+    target: "closed",
+    label: "Cerrar solicitudes",
+    consequence: `${campaignStatusPresentation("closed").publicConsequence} Los pedidos ya recibidos no cambian.`,
+    variant: "danger",
+    warnNotReady: false,
+  };
+  switch (input.status) {
+    case "draft":
+    case "scheduled":
+      return [open("Abrir consolidado")];
+    case "open":
+      return [pause, close];
+    case "paused":
+      return [open("Reanudar consolidado"), close];
+    case "closed":
+      return [
+        {
+          target: "fulfilled",
+          label: "Marcar como completado",
+          consequence: "Úsalo cuando todos los pedidos de este consolidado estén atendidos. Queda como historial.",
+          variant: "secondary",
+          warnNotReady: false,
+        },
+      ];
+    default:
+      return [];
+  }
+}

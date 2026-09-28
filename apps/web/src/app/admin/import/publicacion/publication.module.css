@@ -1,0 +1,212 @@
+/* "Revisión para publicar" (Phase B1). Tokens follow the admin shell. */
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.muted {
+  margin: 0;
+  color: var(--admin-muted, #5c574f);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 10px 12px;
+}
+
+.filters label {
+  flex: 1 1 220px;
+  display: grid;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.filters input,
+.filters select {
+  min-height: 44px;
+  width: 100%;
+  padding: 0 12px;
+  border: 1px solid var(--admin-line-strong, rgba(23, 19, 15, 0.22));
+  border-radius: 6px;
+  background: var(--admin-surface, #fff);
+  color: var(--admin-text, #17130f);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 400;
+}
+
+.filters input:focus-visible,
+.filters select:focus-visible {
+  outline: 2px solid var(--admin-text, #17130f);
+  outline-offset: 1px;
+}
+
+.overview {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+  border: 1px solid var(--admin-line, rgba(23, 19, 15, 0.14));
+  border-top: 3px solid var(--admin-accent, #17130f);
+  border-radius: 8px;
+  background: var(--admin-surface, #fff);
+}
+
+.overviewMain,
+.overviewVerdict {
+  min-width: 0;
+  padding: clamp(16px, 2.4vw, 24px);
+  display: grid;
+  align-content: start;
+  gap: 10px;
+}
+
+.overviewVerdict {
+  border-left: 1px solid var(--admin-line, rgba(23, 19, 15, 0.14));
+  background: var(--admin-accent-soft, rgba(23, 19, 15, 0.04));
+  justify-items: start;
+}
+
+.overviewVerdict p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.overviewTitle {
+  margin: 0;
+  display: grid;
+  gap: 2px;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: clamp(22px, 2.4vw, 26px);
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.overviewTitle span {
+  color: var(--admin-muted, #5c574f);
+  font-family: var(--font-body), system-ui, sans-serif;
+  font-size: 15px;
+}
+
+.overviewLine {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.blockerTable {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid var(--admin-line, rgba(23, 19, 15, 0.14));
+  background: var(--admin-surface, #fff);
+  font-size: 14px;
+}
+
+.blockerTable th,
+.blockerTable td {
+  padding: 12px 14px;
+  text-align: left;
+  vertical-align: middle;
+  border-bottom: 1px solid var(--admin-line, rgba(23, 19, 15, 0.14));
+}
+
+.blockerTable th {
+  color: var(--admin-muted, #5c574f);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.blockerTable td:last-child {
+  text-align: right;
+}
+
+.rowAction {
+  min-height: 44px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--admin-line-strong, rgba(23, 19, 15, 0.22));
+  border-radius: 6px;
+  color: var(--admin-text, #17130f);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.rowAction:hover {
+  border-color: var(--admin-text, #17130f);
+}
+
+.rowAction:focus-visible {
+  outline: 2px solid var(--admin-text, #17130f);
+  outline-offset: 2px;
+}
+
+@media (max-width: 900px) {
+  .overview {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .overviewVerdict {
+    border-left: 0;
+    border-top: 1px solid var(--admin-line, rgba(23, 19, 15, 0.14));
+  }
+}
+
+@media (max-width: 640px) {
+  .blockerTable thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+  }
+
+  .blockerTable,
+  .blockerTable tbody,
+  .blockerTable tr,
+  .blockerTable td {
+    display: block;
+    width: 100%;
+  }
+
+  .blockerTable tr {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--admin-line, rgba(23, 19, 15, 0.14));
+  }
+
+  .blockerTable td {
+    padding: 2px 0;
+    border: 0;
+  }
+
+  .blockerTable td[data-label="Presentación"]::before,
+  .blockerTable td[data-label="Problema"]::before {
+    content: attr(data-label) ": ";
+    color: var(--admin-muted, #5c574f);
+    font-size: 12px;
+  }
+
+  .blockerTable td:last-child {
+    padding-top: 8px;
+    text-align: left;
+  }
+}

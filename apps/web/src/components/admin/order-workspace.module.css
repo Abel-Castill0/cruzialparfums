@@ -1,0 +1,475 @@
+/* Order workspace (Phase B1) — list rows + detail layout shared by
+   Parfums and Import. Colors follow the admin shell tokens. */
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---------------------------------------------------------------- */
+/* List                                                              */
+/* ---------------------------------------------------------------- */
+
+.toolbar {
+  display: grid;
+  gap: 14px;
+}
+
+.resultCount {
+  margin: 0;
+  color: var(--admin-muted, #5c574f);
+  font-size: 13px;
+}
+
+.orderList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--admin-line, rgba(23, 19, 15, 0.14));
+  border-radius: 8px;
+  background: var(--admin-surface, #fff);
+  overflow: hidden;
+}
+
+.orderList > li + li {
+  border-top: 1px solid var(--admin-line, rgba(23, 19, 15, 0.14));
+}
+
+.orderRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1.4fr) 9.5rem;
+  align-items: center;
+  gap: 10px 20px;
+  padding: 14px 18px;
+  min-height: 64px;
+  color: var(--admin-text, #17130f);
+  text-decoration: none;
+}
+
+.orderRow:hover {
+  background: var(--admin-accent-soft, rgba(23, 19, 15, 0.04));
+}
+
+.orderRow:focus-visible {
+  outline: 2px solid var(--admin-text, #17130f);
+  outline-offset: -2px;
+}
+
+.orderIdentity,
+.orderState {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+  justify-items: start;
+}
+
+.orderNumber {
+  font-size: 15px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.orderCustomer {
+  font-size: 14px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.orderMuted {
+  color: var(--admin-muted, #5c574f);
+  font-size: 13px;
+}
+
+.orderSituation {
+  color: var(--admin-muted, #5c574f);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.orderContext {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.contextChip {
+  padding: 1px 8px;
+  border: 1px solid var(--admin-line, rgba(23, 19, 15, 0.14));
+  border-radius: 4px;
+  background: var(--admin-canvas, #faf9f7);
+  color: var(--admin-muted, #5c574f);
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.orderFigures {
+  display: grid;
+  gap: 2px;
+  justify-items: end;
+  text-align: right;
+}
+
+.orderTotal {
+  font-size: 15px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* ---------------------------------------------------------------- */
+/* Detail                                                            */
+/* ---------------------------------------------------------------- */
+
+.headerMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+.detailGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr);
+  gap: 32px;
+  align-items: start;
+}
+
+.detailMain,
+.detailAside {
+  display: grid;
+  gap: 32px;
+  min-width: 0;
+}
+
+.actionPanel {
+  display: grid;
+  gap: 16px;
+}
+
+.primaryAction {
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+}
+
+.consequence {
+  margin: 0;
+  max-width: 62ch;
+  color: var(--admin-muted, #5c574f);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.secondaryActions {
+  display: grid;
+  gap: 12px;
+  padding-top: 14px;
+  border-top: 1px solid var(--admin-line, rgba(23, 19, 15, 0.14));
+}
+
+.secondaryAction {
+  display: grid;
+  justify-items: start;
+}
+
+.dangerConfirm {
+  width: 100%;
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid #e4b6b6;
+  border-left-width: 4px;
+  border-radius: 6px;
+  background: #fbeeee;
+}
+
+.dangerTitle {
+  color: #8c1c1c;
+  font-size: 15px;
+}
+
+.dangerButtons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.field {
+  display: grid;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.field input {
+  min-height: 44px;
+  width: 100%;
+  padding: 0 12px;
+  border: 1px solid var(--admin-line-strong, rgba(23, 19, 15, 0.22));
+  border-radius: 6px;
+  background: var(--admin-surface, #fff);
+  color: var(--admin-text, #17130f);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 400;
+}
+
+.field input:focus-visible {
+  outline: 2px solid var(--admin-text, #17130f);
+  outline-offset: 1px;
+}
+
+.fieldHint {
+  color: var(--admin-muted, #5c574f);
+  font-size: 12.5px;
+  font-weight: 400;
+}
+
+.feedbackSuccess,
+.feedbackError {
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.feedbackSuccess {
+  border: 1px solid #b7d5c1;
+  background: #edf5ef;
+  color: #1d5a37;
+}
+
+.feedbackError {
+  border: 1px solid #e4b6b6;
+  background: #fbeeee;
+  color: #8c1c1c;
+}
+
+.contactActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.readOnlyNote {
+  margin: 0;
+  color: var(--admin-muted, #5c574f);
+  font-size: 13px;
+}
+
+/* Order lines: a real table on wide screens, stacked rows on phones. */
+
+.lines {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid var(--admin-line, rgba(23, 19, 15, 0.14));
+  border-radius: 8px;
+  background: var(--admin-surface, #fff);
+  font-size: 14px;
+}
+
+.lines th,
+.lines td {
+  padding: 12px 14px;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--admin-line, rgba(23, 19, 15, 0.14));
+}
+
+.lines th {
+  color: var(--admin-muted, #5c574f);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.lines .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.lines tfoot th,
+.lines tfoot td {
+  border-bottom: 0;
+  font-size: 15px;
+  color: var(--admin-text, #17130f);
+}
+
+.lineProduct {
+  display: grid;
+  gap: 2px;
+}
+
+.lineProduct span {
+  color: var(--admin-muted, #5c574f);
+  font-size: 13px;
+}
+
+@media (max-width: 1024px) {
+  .detailGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 760px) {
+  .orderRow {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "identity figures"
+      "state state";
+    padding: 14px 16px;
+  }
+
+  .orderIdentity {
+    grid-area: identity;
+  }
+
+  .orderState {
+    grid-area: state;
+  }
+
+  .orderFigures {
+    grid-area: figures;
+    align-self: start;
+  }
+}
+
+@media (max-width: 560px) {
+  .lines thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+  }
+
+  .lines,
+  .lines tbody,
+  .lines tr,
+  .lines td,
+  .lines tfoot,
+  .lines tfoot th {
+    display: block;
+    width: 100%;
+  }
+
+  .lines tbody tr {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 4px 12px;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--admin-line, rgba(23, 19, 15, 0.14));
+  }
+
+  .lines tbody td {
+    padding: 0;
+    border: 0;
+  }
+
+  .lines tbody td:first-child {
+    grid-column: 1 / -1;
+  }
+
+  .lines tbody td[data-label]::before {
+    content: attr(data-label) ": ";
+    color: var(--admin-muted, #5c574f);
+    font-size: 12px;
+  }
+
+  .lines .num {
+    text-align: left;
+  }
+
+  .lines tfoot tr {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 14px;
+  }
+
+  .lines tfoot th,
+  .lines tfoot td {
+    width: auto;
+    padding: 0;
+  }
+}
+
+/* ---------------------------------------------------------------- */
+/* Consolidado workspace (shared workspace controls)                 */
+/* ---------------------------------------------------------------- */
+
+.statusLine {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  color: var(--admin-muted, #5c574f);
+  font-size: 14px;
+}
+
+.pendingList {
+  margin: 4px 0 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 4px;
+}
+
+.checkboxField {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  min-height: 44px;
+  font-size: 14px;
+  line-height: 1.45;
+  cursor: pointer;
+}
+
+.checkboxField input {
+  width: 20px;
+  height: 20px;
+  margin-top: 1px;
+  flex: 0 0 auto;
+}
+
+.selectField {
+  display: grid;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  min-width: min(260px, 100%);
+}
+
+.selectField select {
+  min-height: 44px;
+  padding: 0 10px;
+  border: 1px solid var(--admin-line-strong, rgba(23, 19, 15, 0.22));
+  border-radius: 6px;
+  background: var(--admin-surface, #fff);
+  color: var(--admin-text, #17130f);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 400;
+}
+
+.contactActions {
+  align-items: flex-end;
+}
+
+.anchorTarget {
+  scroll-margin-top: 24px;
+  min-width: 0;
+}
+
+.nowrap {
+  white-space: nowrap;
+}
