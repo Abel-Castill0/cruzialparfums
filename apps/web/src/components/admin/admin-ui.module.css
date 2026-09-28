@@ -132,6 +132,7 @@
 
 .section {
   display: grid;
+  align-content: start;
   gap: 14px;
   min-width: 0;
 }

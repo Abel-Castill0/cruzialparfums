@@ -67,6 +67,8 @@ export type ChecklistStepId = "offers" | "availability" | "publication" | "sched
 export type ChecklistStep = {
   id: ChecklistStepId;
   title: string;
+  /** Role-independent wording for "Siguiente paso". */
+  nextTitle: string;
   state: ChecklistState;
   detail: string;
   href: string | null;
@@ -135,40 +137,40 @@ export function buildImportChecklist(input: ImportReadinessInput): ChecklistStep
   // 1. Productos y precios
   let offers: ChecklistStep;
   if (input.offerCount === null || input.missingOfferCount === null || input.invalidPriceCount === null) {
-    offers = { id: "offers", title: "Productos y precios", state: "unknown", detail: "No se pudo verificar en este momento.", href: campaignHref(campaignId), actionLabel: "Ver consolidado" };
+    offers = { id: "offers", title: "Productos y precios", nextTitle: "Productos y precios", state: "unknown", detail: "No se pudo verificar en este momento.", href: campaignHref(campaignId), actionLabel: "Ver consolidado" };
   } else if (input.offerCount === 0) {
-    offers = { id: "offers", title: "Productos y precios", state: "not_started", detail: "Este consolidado todavía no tiene productos con precio.", href: campaignHref(campaignId), actionLabel: view("Agregar productos") };
+    offers = { id: "offers", title: "Productos y precios", nextTitle: "Agregar productos y precios", state: "not_started", detail: "Este consolidado todavía no tiene productos con precio.", href: campaignHref(campaignId), actionLabel: view("Agregar productos") };
   } else if (input.invalidPriceCount > 0) {
-    offers = { id: "offers", title: "Productos y precios", state: "attention", detail: `${plural(input.invalidPriceCount, "oferta tiene", "ofertas tienen")} un precio inválido.`, href: publicationHref(campaignId, "offer_invalid_price"), actionLabel: view("Corregir precios") };
+    offers = { id: "offers", title: "Productos y precios", nextTitle: "Corregir precios", state: "attention", detail: `${plural(input.invalidPriceCount, "oferta tiene", "ofertas tienen")} un precio inválido.`, href: publicationHref(campaignId, "offer_invalid_price"), actionLabel: view("Corregir precios") };
   } else if (input.missingOfferCount > 0) {
-    offers = { id: "offers", title: "Productos y precios", state: "attention", detail: `${plural(input.missingOfferCount, "producto no tiene", "productos no tienen")} oferta en este consolidado.`, href: publicationHref(campaignId, "missing_offer"), actionLabel: view("Revisar productos") };
+    offers = { id: "offers", title: "Productos y precios", nextTitle: "Revisar productos sin oferta", state: "attention", detail: `${plural(input.missingOfferCount, "producto no tiene", "productos no tienen")} oferta en este consolidado.`, href: publicationHref(campaignId, "missing_offer"), actionLabel: view("Revisar productos") };
   } else {
-    offers = { id: "offers", title: "Productos y precios", state: "complete", detail: `${plural(input.offerCount, "oferta cargada", "ofertas cargadas")} con precio.`, href: campaignHref(campaignId), actionLabel: "Ver consolidado" };
+    offers = { id: "offers", title: "Productos y precios", nextTitle: "Productos y precios", state: "complete", detail: `${plural(input.offerCount, "oferta cargada", "ofertas cargadas")} con precio.`, href: campaignHref(campaignId), actionLabel: "Ver consolidado" };
   }
 
   // 2. Disponibilidad
   let availability: ChecklistStep;
   if (input.offerCount === 0) {
-    availability = { id: "availability", title: "Disponibilidad", state: "blocked", detail: "Primero agrega productos con precio al consolidado.", href: null, actionLabel: null };
+    availability = { id: "availability", title: "Disponibilidad", nextTitle: "Disponibilidad", state: "blocked", detail: "Primero agrega productos con precio al consolidado.", href: null, actionLabel: null };
   } else if (input.unconfirmedOfferCount === null || input.offerCount === null) {
-    availability = { id: "availability", title: "Disponibilidad", state: "unknown", detail: "No se pudo verificar en este momento.", href: null, actionLabel: null };
+    availability = { id: "availability", title: "Disponibilidad", nextTitle: "Disponibilidad", state: "unknown", detail: "No se pudo verificar en este momento.", href: null, actionLabel: null };
   } else if (input.unconfirmedOfferCount > 0) {
-    availability = { id: "availability", title: "Disponibilidad", state: "attention", detail: `${plural(input.unconfirmedOfferCount, "oferta necesita", "ofertas necesitan")} confirmación de disponibilidad.`, href: publicationHref(campaignId, "offer_unconfirmed"), actionLabel: view("Confirmar disponibilidad") };
+    availability = { id: "availability", title: "Disponibilidad", nextTitle: "Confirmar disponibilidad", state: "attention", detail: `${plural(input.unconfirmedOfferCount, "oferta necesita", "ofertas necesitan")} confirmación de disponibilidad.`, href: publicationHref(campaignId, "offer_unconfirmed"), actionLabel: view("Confirmar disponibilidad") };
   } else {
-    availability = { id: "availability", title: "Disponibilidad", state: "complete", detail: "Todas las ofertas tienen disponibilidad confirmada.", href: null, actionLabel: null };
+    availability = { id: "availability", title: "Disponibilidad", nextTitle: "Disponibilidad", state: "complete", detail: "Todas las ofertas tienen disponibilidad confirmada.", href: null, actionLabel: null };
   }
 
   // 3. Publicación e imágenes
   let publication: ChecklistStep;
   if (input.missingMediaCount === null || input.unpublishedProductCount === null || input.unpublishedPresentationCount === null) {
-    publication = { id: "publication", title: "Publicación e imágenes", state: "unknown", detail: "No se pudo verificar en este momento.", href: null, actionLabel: null };
+    publication = { id: "publication", title: "Publicación e imágenes", nextTitle: "Publicación e imágenes", state: "unknown", detail: "No se pudo verificar en este momento.", href: null, actionLabel: null };
   } else {
     const parts: string[] = [];
     if (input.unpublishedProductCount > 0) parts.push(plural(input.unpublishedProductCount, "producto sin publicar", "productos sin publicar"));
     if (input.unpublishedPresentationCount > 0) parts.push(plural(input.unpublishedPresentationCount, "presentación sin publicar", "presentaciones sin publicar"));
     if (input.missingMediaCount > 0) parts.push(plural(input.missingMediaCount, "producto sin imagen principal", "productos sin imagen principal"));
     if (parts.length === 0) {
-      publication = { id: "publication", title: "Publicación e imágenes", state: "complete", detail: "Productos publicados y con imagen principal.", href: null, actionLabel: null };
+      publication = { id: "publication", title: "Publicación e imágenes", nextTitle: "Publicación e imágenes", state: "complete", detail: "Productos publicados y con imagen principal.", href: null, actionLabel: null };
     } else {
       // A filtered link only when it shows exactly what the detail counts;
       // mixed blockers open the campaign's full blocker list instead.
@@ -180,40 +182,40 @@ export function buildImportChecklist(input: ImportReadinessInput): ChecklistStep
       const href = nonZero.length === 1
         ? publicationHref(campaignId, nonZero[0]![0])
         : `/admin/import/publicacion?campaign=${campaignId}`;
-      publication = { id: "publication", title: "Publicación e imágenes", state: "attention", detail: `${parts.join(" · ")}.`, href, actionLabel: view("Revisar publicación") };
+      publication = { id: "publication", title: "Publicación e imágenes", nextTitle: "Completar publicación e imágenes", state: "attention", detail: `${parts.join(" · ")}.`, href, actionLabel: view("Revisar publicación") };
     }
   }
 
   // 4. Apertura y cierre (dates are optional in the current authority)
   let schedule: ChecklistStep;
   if (input.closesAt !== null && isPast(input.closesAt, input.now)) {
-    schedule = { id: "schedule", title: "Apertura y cierre", state: "attention", detail: `La fecha de cierre (${formatLimaDateTime(input.closesAt)}) ya pasó. Con esa fecha, los clientes no verían el catálogo.`, href: campaignHref(campaignId), actionLabel: view("Revisar fechas") };
+    schedule = { id: "schedule", title: "Apertura y cierre", nextTitle: "Revisar fechas", state: "attention", detail: `La fecha de cierre (${formatLimaDateTime(input.closesAt)}) ya pasó. Con esa fecha, los clientes no verían el catálogo.`, href: campaignHref(campaignId), actionLabel: view("Revisar fechas") };
   } else if (input.opensAt === null && input.closesAt === null) {
-    schedule = { id: "schedule", title: "Apertura y cierre", state: "not_started", detail: "Sin fechas definidas. Si lo abres así, quedará visible hasta que lo cierres manualmente.", href: campaignHref(campaignId), actionLabel: view("Definir fechas") };
+    schedule = { id: "schedule", title: "Apertura y cierre", nextTitle: "Apertura y cierre", state: "not_started", detail: "Sin fechas definidas. Si lo abres así, quedará visible hasta que lo cierres manualmente.", href: campaignHref(campaignId), actionLabel: view("Definir fechas") };
   } else {
     const opens = input.opensAt ? `Apertura: ${formatLimaDateTime(input.opensAt)}` : "Apertura: al abrirlo";
     const closes = input.closesAt ? `Cierre: ${formatLimaDateTime(input.closesAt)}` : "Cierre: manual";
-    schedule = { id: "schedule", title: "Apertura y cierre", state: "complete", detail: `${opens} · ${closes}.`, href: campaignHref(campaignId), actionLabel: "Ver fechas" };
+    schedule = { id: "schedule", title: "Apertura y cierre", nextTitle: "Apertura y cierre", state: "complete", detail: `${opens} · ${closes}.`, href: campaignHref(campaignId), actionLabel: "Ver fechas" };
   }
 
   // 5. Abrir consolidado
   let open: ChecklistStep;
   if (input.status === "open") {
     if (input.isPublicNow === true) {
-      open = { id: "open", title: "Abrir consolidado", state: "complete", detail: "Abierto y visible para tus clientes.", href: null, actionLabel: null };
+      open = { id: "open", title: "Abrir consolidado", nextTitle: "Abrir consolidado", state: "complete", detail: "Abierto y visible para tus clientes.", href: null, actionLabel: null };
     } else if (input.isPublicNow === false) {
-      open = { id: "open", title: "Abrir consolidado", state: "attention", detail: "Está marcado como abierto, pero la tienda no lo muestra a tus clientes.", href: campaignHref(campaignId), actionLabel: "Revisar consolidado" };
+      open = { id: "open", title: "Abrir consolidado", nextTitle: "Revisar por qué no es visible", state: "attention", detail: "Está marcado como abierto, pero la tienda no lo muestra a tus clientes.", href: campaignHref(campaignId), actionLabel: "Revisar consolidado" };
     } else {
-      open = { id: "open", title: "Abrir consolidado", state: "unknown", detail: "No se pudo verificar qué ven tus clientes.", href: null, actionLabel: null };
+      open = { id: "open", title: "Abrir consolidado", nextTitle: "Abrir consolidado", state: "unknown", detail: "No se pudo verificar qué ven tus clientes.", href: null, actionLabel: null };
     }
   } else if (input.archived) {
-    open = { id: "open", title: "Abrir consolidado", state: "blocked", detail: "Un consolidado archivado no puede abrirse.", href: null, actionLabel: null };
+    open = { id: "open", title: "Abrir consolidado", nextTitle: "Abrir consolidado", state: "blocked", detail: "Un consolidado archivado no puede abrirse.", href: null, actionLabel: null };
   } else if (input.readyForManualOpen === null) {
-    open = { id: "open", title: "Abrir consolidado", state: "unknown", detail: "No se pudo verificar si está listo.", href: null, actionLabel: null };
+    open = { id: "open", title: "Abrir consolidado", nextTitle: "Abrir consolidado", state: "unknown", detail: "No se pudo verificar si está listo.", href: null, actionLabel: null };
   } else if (!input.readyForManualOpen) {
-    open = { id: "open", title: "Abrir consolidado", state: "blocked", detail: "Completa los pasos anteriores antes de abrirlo.", href: null, actionLabel: null };
+    open = { id: "open", title: "Abrir consolidado", nextTitle: "Abrir consolidado", state: "blocked", detail: "Completa los pasos anteriores antes de abrirlo.", href: null, actionLabel: null };
   } else {
-    open = { id: "open", title: "Abrir consolidado", state: "attention", detail: "Todo está listo. Al abrirlo, tus clientes podrán enviar solicitudes.", href: campaignHref(campaignId), actionLabel: canEdit ? "Abrir consolidado" : "Ver consolidado" };
+    open = { id: "open", title: "Abrir consolidado", nextTitle: "Abrir consolidado", state: "attention", detail: "Todo está listo. Al abrirlo, tus clientes podrán enviar solicitudes.", href: campaignHref(campaignId), actionLabel: canEdit ? "Abrir consolidado" : "Ver consolidado" };
   }
 
   return [offers, availability, publication, schedule, open];
@@ -238,7 +240,7 @@ export function selectImportNextAction(steps: readonly ChecklistStep[]): ImportN
       // Undated campaigns are valid in the current authority; missing dates
       // alone never outrank a real blocker, and are not a "next action".
       if (step.id === "schedule" && step.state === "not_started") continue;
-      return { title: step.actionLabel, detail: step.detail, href: step.href, actionLabel: step.actionLabel };
+      return { title: step.nextTitle, detail: step.detail, href: step.href, actionLabel: step.actionLabel };
     }
   }
   return null;

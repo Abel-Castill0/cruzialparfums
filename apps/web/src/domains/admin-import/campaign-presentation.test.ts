@@ -127,6 +127,12 @@ describe("selectImportNextAction", () => {
     expect(next?.detail).toContain("898");
   });
 
+  it("keeps a meaningful title for read-only members while the button stays read-only", () => {
+    const next = selectImportNextAction(buildImportChecklist(input({ canEdit: false })));
+    expect(next?.title).toBe("Confirmar disponibilidad");
+    expect(next?.actionLabel).toBe("Ver detalle");
+  });
+
   it("price problems come before availability", () => {
     const next = selectImportNextAction(buildImportChecklist(input({ invalidPriceCount: 3 })));
     expect(next?.title).toBe("Corregir precios");
