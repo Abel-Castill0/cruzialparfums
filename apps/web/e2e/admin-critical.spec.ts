@@ -1,6 +1,5 @@
-import { existsSync } from "node:fs";
 import { expect, test } from "@playwright/test";
-import { ADMIN_STATE, PARFUMS_ADMIN_STATE } from "./auth-state";
+import { ADMIN_STATE, PARFUMS_ADMIN_STATE, hasIdentity } from "./auth-state";
 
 // Authenticated Admin critical journeys. The storageState files are produced
 // by auth.setup.ts from environment-provided QA identities (never committed).
@@ -11,7 +10,7 @@ test.describe("dual admin (Parfums + Import)", () => {
   // Serial: every test shares one storageState and the last one logs out
   // globally (revoking the refresh token for all contexts built from it).
   test.describe.configure({ mode: "serial" });
-  test.skip(!existsSync(ADMIN_STATE), "no dual-admin session (E2E_ADMIN_* not set)");
+  test.skip(!hasIdentity("E2E_ADMIN"), "no dual-admin identity (E2E_ADMIN_* not set)");
   test.use({ storageState: ADMIN_STATE });
 
   test("shell shows both units and every module route renders", async ({ page }) => {
@@ -76,7 +75,7 @@ test.describe("dual admin (Parfums + Import)", () => {
 });
 
 test.describe("Parfums-only admin", () => {
-  test.skip(!existsSync(PARFUMS_ADMIN_STATE), "no parfums-only session (E2E_PARFUMS_ADMIN_* not set)");
+  test.skip(!hasIdentity("E2E_PARFUMS_ADMIN"), "no parfums-only identity (E2E_PARFUMS_ADMIN_* not set)");
   test.use({ storageState: PARFUMS_ADMIN_STATE });
 
   test("can administer Parfums but is denied Import (cross-unit boundary)", async ({ page }) => {

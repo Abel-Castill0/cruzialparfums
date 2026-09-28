@@ -1,11 +1,10 @@
-import { existsSync } from "node:fs";
 import { expect,test } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
-const ADMIN_STATE="e2e/.auth/gate-b-admin.json";
+import { GATE_B_ADMIN_STATE as ADMIN_STATE, hasIdentity } from "./auth-state";
 const ids={parfumsOrder:"99003000-0000-4000-8000-000000000010",importOrder:"99003000-0000-4000-8000-000000000011",product:"99003000-0000-4000-8000-000000000020",campaign:"99003000-0000-4000-8000-000000000030",complaint:"99003000-0000-4000-8000-000000000040"};
 test.describe("Gate B local operations",()=>{
  test.describe.configure({mode:"serial"});
- test.skip(process.env.E2E_LOCAL_FIXTURES!=="1"||!existsSync(ADMIN_STATE),"requires disposable local fixtures and real AAL2 session");
+ test.skip(process.env.E2E_LOCAL_FIXTURES!=="1"||!hasIdentity("E2E_GATE_B_ADMIN"),"requires disposable local fixtures and the E2E_GATE_B_ADMIN_* identity (real password + TOTP sign-in in auth.setup.ts)");
  test.use({storageState:ADMIN_STATE});
  test("Parfums tracked reservation follows confirmation and fulfillment",async({page})=>{
   // Automation evidence lives behind "Ver detalle técnico" (progressive disclosure, Phase B1).
