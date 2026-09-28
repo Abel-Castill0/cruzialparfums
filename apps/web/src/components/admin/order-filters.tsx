@@ -14,9 +14,12 @@ export type OrderStatusOption = { value: string; label: string };
 export function OrderFilters({
   statusOptions,
   initial,
+  showStatus = true,
 }: {
   statusOptions: readonly OrderStatusOption[];
   initial: { search: string; status: string; age: string };
+  /** False when the page renders status as tabs instead (Phase B1). */
+  showStatus?: boolean;
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -66,6 +69,7 @@ export function OrderFilters({
           onChange={(e) => handleSearchChange(e.target.value)}
         />
       </div>
+      {showStatus ? (
       <div className={styles.filterField}>
         <label htmlFor="order-status" className={styles.srOnly}>
           Estado
@@ -83,6 +87,7 @@ export function OrderFilters({
           ))}
         </select>
       </div>
+      ) : null}
       <div className={styles.filterField}>
         <label htmlFor="order-age" className={styles.srOnly}>
           Antigüedad

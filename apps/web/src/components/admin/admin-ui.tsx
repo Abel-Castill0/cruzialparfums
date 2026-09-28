@@ -242,3 +242,210 @@ export function FactList({ items }: { items: readonly { term: string; value: Rea
     </dl>
   );
 }
+
+/** Buttons for forms/client controls. Links use ActionLink instead. */
+export function adminButtonClass(variant: "primary" | "secondary" | "danger" | "quiet" = "secondary"): string {
+  const tone =
+    variant === "primary"
+      ? styles.buttonPrimary
+      : variant === "danger"
+        ? styles.buttonDanger
+        : variant === "quiet"
+          ? styles.buttonQuiet
+          : styles.buttonSecondary;
+  return `${styles.button} ${tone}`;
+}
+
+/** The one thing the owner should do next. Exactly one primary action
+ * belongs in `children`; anything else must be visually secondary. */
+export function NextStepCard({
+  eyebrow = "Siguiente paso",
+  title,
+  tone = "neutral",
+  children,
+  footer,
+}: {
+  eyebrow?: string;
+  title: string;
+  tone?: AdminTone;
+  children?: React.ReactNode;
+  footer?: React.ReactNode;
+}) {
+  return (
+    <div className={`${styles.nextStep} ${TONE_CLASS[tone]}`}>
+      <p className={styles.nextEyebrow}>
+        <span aria-hidden="true" className={styles.nextGlyph}>{TONE_GLYPH[tone]}</span>
+        {eyebrow}
+      </p>
+      <strong className={styles.nextTitle}>{title}</strong>
+      {children ? <div className={styles.nextBody}>{children}</div> : null}
+      {footer ? <div className={styles.nextFooter}>{footer}</div> : null}
+    </div>
+  );
+}
+
+export type ProgressStepState = "done" | "current" | "upcoming" | "stopped";
+
+export type ProgressStep = {
+  key: string;
+  title: string;
+  detail?: string;
+  state: ProgressStepState;
+};
+
+const PROGRESS_STATE_TEXT: Record<ProgressStepState, string> = {
+  done: "completado",
+  current: "paso actual",
+  upcoming: "pendiente",
+  stopped: "detenido aquí",
+};
+
+const PROGRESS_GLYPH: Record<ProgressStepState, string> = {
+  done: "✓",
+  current: "●",
+  upcoming: "○",
+  stopped: "×",
+};
+
+/** Honest progression: callers only mark a step done when the data proves
+ * it, and a terminal branch (e.g. cancelled) is a "stopped" step. */
+export function ProgressTracker({ steps, label }: { steps: readonly ProgressStep[]; label: string }) {
+  return (
+    <ol className={styles.progress} aria-label={label}>
+      {steps.map((step) => (
+        <li
+          key={step.key}
+          className={`${styles.progressStep} ${styles[`progress_${step.state}`] ?? ""}`}
+          aria-current={step.state === "current" ? "step" : undefined}
+        >
+          <span aria-hidden="true" className={styles.progressMarker}>{PROGRESS_GLYPH[step.state]}</span>
+          <div className={styles.progressText}>
+            <strong>
+              {step.title}
+              <span className={styles.srOnly}> ({PROGRESS_STATE_TEXT[step.state]})</span>
+            </strong>
+            {step.detail ? <span>{step.detail}</span> : null}
+          </div>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+/** Progressive disclosure for expert/technical evidence. Native
+ * <details> keeps it keyboard- and screen-reader-operable without JS. */
+export function Disclosure({
+  summary,
+  hint,
+  defaultOpen = false,
+  children,
+}: {
+  summary: string;
+  hint?: string;
+  defaultOpen?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <details className={styles.disclosure} open={defaultOpen || undefined}>
+      <summary>
+        <span className={styles.disclosureSummary}>{summary}</span>
+        {hint ? <span className={styles.disclosureHint}>{hint}</span> : null}
+      </summary>
+      <div className={styles.disclosureBody}>{children}</div>
+    </details>
+  );
+}
+
+export type FilterTab = {
+  key: string;
+  label: string;
+  href: string;
+  count?: number | null;
+  current: boolean;
+  tone?: AdminTone;
+};
+
+/** Link-based filter tabs: the URL stays the source of truth, so back,
+ * refresh and shared links keep the same view. */
+export function FilterTabs({ tabs, label }: { tabs: readonly FilterTab[]; label: string }) {
+  return (
+    <nav aria-label={label} className={styles.tabs}>
+      <ul>
+        {tabs.map((tab) => (
+          <li key={tab.key}>
+            <Link
+              href={tab.href as Route}
+              className={`${styles.tab} ${tab.current ? styles.tabCurrent : ""}`}
+              aria-current={tab.current ? "page" : undefined}
+            >
+              {tab.label}
+              {typeof tab.count === "number" ? (
+                <span className={`${styles.tabCount} ${tab.tone && tab.count > 0 ? TONE_CLASS[tab.tone] : ""}`}>
+                  {tab.count}
+                </span>
+              ) : null}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  );
+}
+
+export function Pagination({
+  page,
+  totalPages,
+  hrefFor,
+  label = "Paginación",
+}: {
+  page: number;
+  totalPages: number;
+  hrefFor: (page: number) => string;
+  label?: string;
+}) {
+  if (totalPages <= 1) return null;
+  return (
+    <nav className={styles.pagination} aria-label={label}>
+      {page > 1 ? (
+        <Link href={hrefFor(page - 1) as Route} className={styles.pageLink}>← Anterior</Link>
+      ) : (
+        <span className={`${styles.pageLink} ${styles.pageDisabled}`} aria-disabled="true">← Anterior</span>
+      )}
+      <span className={styles.pageStatus}>Página {page} de {totalPages}</span>
+      {page < totalPages ? (
+        <Link href={hrefFor(page + 1) as Route} className={styles.pageLink}>Siguiente →</Link>
+      ) : (
+        <span className={`${styles.pageLink} ${styles.pageDisabled}`} aria-disabled="true">Siguiente →</span>
+      )}
+    </nav>
+  );
+}
+
+export function BackLink({ href, children }: { href: string; children: React.ReactNode }) {
+  return (
+    <Link href={href as Route} className={styles.backLink}>
+      <span aria-hidden="true">←</span> {children}
+    </Link>
+  );
+}
+
+/** Compact count strip. Only verified numbers belong here — pass null to
+ * render "sin verificar" instead of a misleading zero. */
+export function MetricStrip({
+  items,
+  label,
+}: {
+  items: readonly { key: string; label: string; value: number | null; tone?: AdminTone }[];
+  label: string;
+}) {
+  return (
+    <dl className={styles.metrics} aria-label={label}>
+      {items.map((item) => (
+        <div key={item.key} className={item.tone ? TONE_CLASS[item.tone] : undefined} data-toned={item.tone ? "true" : undefined}>
+          <dt>{item.label}</dt>
+          <dd>{item.value === null ? <span className={styles.metricUnknown}>Sin verificar</span> : item.value}</dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
