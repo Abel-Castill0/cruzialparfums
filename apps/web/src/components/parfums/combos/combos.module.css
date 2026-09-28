@@ -71,7 +71,7 @@
 
 .heroNote {
   margin-top: 8px;
-  color: #918b81;
+  color: #6f6961;
   font-size: 11px;
   line-height: 1.6;
 }
@@ -507,7 +507,7 @@
 
 .resetFilters {
   margin-left: auto;
-  color: #918b81;
+  color: #6f6961;
   background: transparent;
   border-color: transparent !important;
   text-decoration: underline;
