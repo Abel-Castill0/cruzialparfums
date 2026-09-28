@@ -26,7 +26,7 @@ import {
   type ComboLine,
   type ComboSize,
 } from "@/domains/combos/combo-builder";
-import type { CatalogProduct } from "@/domains/catalog/types";
+import type { CatalogProduct, CatalogProductType } from "@/domains/catalog/types";
 import {
   buildCustomComboMessage,
   buildWhatsAppUrl,
@@ -36,6 +36,45 @@ import styles from "./combos.module.css";
 function money(value: number) {
   return `S/ ${value.toFixed(2)}`;
 }
+
+const TYPE_FILTERS: { value: "all" | CatalogProductType; label: string }[] = [
+  { value: "all", label: "Todas" },
+  { value: "arab", label: "Árabe" },
+  { value: "designer", label: "Designer" },
+  { value: "niche", label: "Nicho" },
+];
+
+const POST_BUILDER_TRUST = [
+  {
+    title: "Originalidad absoluta",
+    text: "Cada decant se prepara a partir de un frasco original de la casa oficial.",
+    icon: (
+      <>
+        <path d="M12 3l7 3v5c0 4.6-3 8.4-7 10-4-1.6-7-5.4-7-10V6l7-3z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
+        <path d="M8.7 12.2l2.2 2.2 4.4-4.6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+      </>
+    ),
+  },
+  {
+    title: "Selección curada",
+    text: "Menos volumen, más carácter: solo fragancias que pasan nuestro filtro entran al catálogo.",
+    icon: (
+      <path d="M12 3.5l2.5 5.3 5.8.7-4.3 4 1.1 5.8L12 16.6l-5.1 2.7 1.1-5.8-4.3-4 5.8-.7L12 3.5z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+    ),
+  },
+  {
+    title: "Atención humana",
+    text: "Tu combo termina en una conversación real por WhatsApp antes de confirmar cualquier pedido.",
+    icon: (
+      <path
+        d="M12 4a8 8 0 00-6.9 12l-1 3.5 3.6-1A8 8 0 1012 4z"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinejoin="round"
+      />
+    ),
+  },
+] as const;
 
 function ComboCard({ combo, onAdded, preload }: { combo: CatalogProduct; onAdded: (message: string) => void; preload: boolean }) {
   const sizes = availableComboSizes(combo);
@@ -77,14 +116,16 @@ function ComboCard({ combo, onAdded, preload }: { combo: CatalogProduct; onAdded
         {compositionConfirmed ? null : (
           <p className={styles.reconfirmation}>Composición pendiente de reconfirmación; se valida por WhatsApp antes de continuar.</p>
         )}
-        <div className={styles.comboSizes} aria-label={`Tamaño de ${combo.name}`}>
-          {sizes.map((value) => (
-            <button key={value} type="button" aria-pressed={size === value} className={size === value ? styles.selected : ""} onClick={() => setSize(value)}>{value} ml</button>
-          ))}
-        </div>
-        <div className={styles.comboBuy}>
-          <div><span>Total estimado</span><strong>{price === null ? "No disponible" : money(price)}</strong></div>
-          <button type="button" onClick={add} disabled={price === null}>Añadir set <span aria-hidden="true">→</span></button>
+        <div className={styles.comboFooter}>
+          <div className={styles.comboSizes} aria-label={`Tamaño de ${combo.name}`}>
+            {sizes.map((value) => (
+              <button key={value} type="button" aria-pressed={size === value} className={size === value ? styles.selected : ""} onClick={() => setSize(value)}>{value} ml</button>
+            ))}
+          </div>
+          <div className={styles.comboBuy}>
+            <div><span>Total estimado</span><strong>{price === null ? "No disponible" : money(price)}</strong></div>
+            <button type="button" onClick={add} disabled={price === null}>Añadir set <span aria-hidden="true">→</span></button>
+          </div>
         </div>
       </div>
     </article>
@@ -103,10 +144,25 @@ export function CombosExperience({
   storeName: string;
 }) {
   const eligible = useMemo(() => listComboEligibleProducts(products), [products]);
+  const families = useMemo(
+    () => Array.from(new Set(eligible.map((product) => product.family))).sort((a, b) => a.localeCompare(b, "es")),
+    [eligible],
+  );
   const [query, setQuery] = useState("");
+  const [typeFilter, setTypeFilter] = useState<"all" | CatalogProductType>("all");
+  const [familyFilter, setFamilyFilter] = useState("all");
   const [lines, setLines] = useState<ComboLine[]>([]);
   const [notice, setNotice] = useState("");
-  const visible = useMemo(() => filterComboProducts(eligible, query), [eligible, query]);
+
+  const scoped = useMemo(
+    () => eligible.filter((product) =>
+      (typeFilter === "all" || product.type === typeFilter)
+      && (familyFilter === "all" || product.family === familyFilter),
+    ),
+    [eligible, typeFilter, familyFilter],
+  );
+  const visible = useMemo(() => filterComboProducts(scoped, query), [scoped, query]);
+  const filtersActive = query.trim().length > 0 || typeFilter !== "all" || familyFilter !== "all";
   const resolved = useMemo(() => resolveComboLines(eligible, lines), [eligible, lines]);
   const total = useMemo(() => calculateComboLinesTotal(resolved), [resolved]);
   const ready = canSendCombo(resolved.length);
@@ -147,6 +203,12 @@ export function CombosExperience({
     setLines((current) => setComboLineSize(current, productId, size));
   }
 
+  function resetFilters() {
+    setQuery("");
+    setTypeFilter("all");
+    setFamilyFilter("all");
+  }
+
   return (
     <div className={styles.page}>
       <div className={styles.breadcrumbWrap}>
@@ -157,14 +219,60 @@ export function CombosExperience({
       </div>
 
       <header className={styles.hero}>
-        <p>Combos Cruzial</p>
-        <h1>Arma tu selección,<br /><em>tu regla.</em></h1>
-        <span>Elige un set Cruzial o combina de 3 a 6 fragancias. Stock y total final se confirman por WhatsApp.</span>
-        <div>
-          {combos.length > 0 ? <a href="#sets-armados">Ver sets <span aria-hidden="true">↓</span></a> : null}
-          <a href="#arma-combo">Armar mi combo <span aria-hidden="true">↓</span></a>
+        <div className={styles.heroCopy}>
+          <p className={styles.eyebrow}>Cruzial Parfums · Arma tu combo</p>
+          <h1>Arma tu selección,<br /><em>tu regla.</em></h1>
+          <p className={styles.heroText}>
+            Elige un set Cruzial o combina de {COMBO_MIN_ITEMS} a {COMBO_MAX_ITEMS} fragancias de nuestra colección. Tú decides.
+          </p>
+          <p className={styles.heroNote}>Stock y total final se confirman por WhatsApp.</p>
+          <div className={styles.heroActions}>
+            {combos.length > 0 ? <a href="#sets-armados" className={styles.heroCta}>Ver sets curados <span aria-hidden="true">→</span></a> : null}
+            <a href="#arma-combo" className={combos.length > 0 ? styles.heroCtaSecondary : styles.heroCta}>Armar mi combo <span aria-hidden="true">→</span></a>
+          </div>
+        </div>
+        <div className={styles.heroMedia}>
+          <Image
+            src="/images/parfums-combos/combo-hero.webp"
+            alt="Selección de fragancias Cruzial Parfums sobre piedra natural"
+            fill
+            sizes="(max-width: 900px) 100vw, 50vw"
+            preload
+            className={styles.heroImage}
+          />
         </div>
       </header>
+
+      <section className={styles.trustStrip} aria-label="Por qué armar tu combo en Cruzial">
+        <div>
+          <svg className={styles.trustIcon} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path
+              d="M12 3l7 3v5c0 4.6-3 8.4-7 10-4-1.6-7-5.4-7-10V6l7-3z"
+              stroke="currentColor"
+              strokeWidth="1.4"
+              strokeLinejoin="round"
+            />
+            <path d="M8.7 12.2l2.2 2.2 4.4-4.6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          <span><strong>Fragancias 100% originales</strong>Frascos auténticos de casas oficiales.</span>
+        </div>
+        <div>
+          <svg className={styles.trustIcon} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M9 3h3v3H9zM9.5 6h2l1 2.4v10.6a1 1 0 01-1 1h-2a1 1 0 01-1-1V8.4L9.5 6z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+            <path d="M15.5 9h1.6l.8 1.9v8.6a.8.8 0 01-.8.8h-1.6a.8.8 0 01-.8-.8v-8.6L15.5 9z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" />
+          </svg>
+          <span><strong>{eligible.length} fragancias disponibles</strong>Árabe, designer y nicho en un solo lugar.</span>
+        </div>
+        <div>
+          <svg className={styles.trustIcon} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M3 7h11v9H3z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
+            <path d="M14 10h4l3 3v3h-7z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
+            <circle cx="7.5" cy="17.5" r="1.6" stroke="currentColor" strokeWidth="1.3" />
+            <circle cx="17.5" cy="17.5" r="1.6" stroke="currentColor" strokeWidth="1.3" />
+          </svg>
+          <span><strong>Envíos a todo el Perú</strong>Por agencia Shalom, se confirman por WhatsApp.</span>
+        </div>
+      </section>
 
       {combos.length > 0 ? (
         <section className={styles.setsSection} id="sets-armados" aria-labelledby="sets-title">
@@ -187,14 +295,43 @@ export function CombosExperience({
         <div className={styles.builder} data-combo-builder>
           <div className={styles.pickerColumn}>
             <div className={styles.controls}>
-              <label className={styles.search}>
-                <span className={styles.srOnly}>Buscar perfume para tu combo</span>
-                <input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar perfume para añadir…" />
-              </label>
+              <div className={styles.controlsRow}>
+                <label className={styles.search}>
+                  <span className={styles.srOnly}>Buscar perfume para tu combo</span>
+                  <input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar fragancia, marca o familia…" />
+                </label>
+                <label className={styles.familySelect}>
+                  <span className={styles.srOnly}>Filtrar por familia olfativa</span>
+                  <select value={familyFilter} onChange={(event) => setFamilyFilter(event.target.value)}>
+                    <option value="all">Todas las familias</option>
+                    {families.map((family) => <option key={family} value={family}>{family}</option>)}
+                  </select>
+                </label>
+              </div>
+              <div className={styles.typeChips} role="group" aria-label="Filtrar por tipo de fragancia">
+                {TYPE_FILTERS.map((filter) => (
+                  <button
+                    key={filter.value}
+                    type="button"
+                    aria-pressed={typeFilter === filter.value}
+                    className={typeFilter === filter.value ? styles.selected : ""}
+                    onClick={() => setTypeFilter(filter.value)}
+                  >
+                    {filter.label}
+                  </button>
+                ))}
+                {filtersActive ? (
+                  <button type="button" className={styles.resetFilters} onClick={resetFilters}>
+                    Limpiar filtros ✕
+                  </button>
+                ) : null}
+              </div>
             </div>
 
             <div className={styles.picker} role="listbox" aria-label="Selecciona fragancias para tu combo" aria-multiselectable="true">
-              {visible.length === 0 ? <p className={styles.noResults}>No encontramos fragancias con ese nombre.</p> : null}
+              {visible.length === 0 ? (
+                <p className={styles.noResults}>No encontramos fragancias con estos criterios.</p>
+              ) : null}
               {visible.map((product) => {
                 const line = lines.find((candidate) => candidate.productId === cartIdentity(product));
                 const isSelected = Boolean(line);
@@ -212,13 +349,13 @@ export function CombosExperience({
                     onClick={() => toggle(product)}
                     data-combo-option={cartIdentity(product)}
                   >
-                    <span className={styles.check} aria-hidden="true">✓</span>
                     <span className={styles.thumb}>{product.imageUrl ? <Image src={product.imageUrl} alt="" fill sizes="58px" className={styles.thumbImage} /> : null}</span>
                     <span className={styles.itemInfo}>
                       <small>{product.brand}</small>
                       <strong>{product.name}</strong>
                       <em>{referencePrice === null ? "No disponible" : <>{isSelected ? `${referenceSize} ml · ` : "desde "}{money(referencePrice)}</>}</em>
                     </span>
+                    <span className={styles.pickerAction} aria-hidden="true">{isSelected ? "✓" : "+"}</span>
                   </button>
                 );
               })}
@@ -227,7 +364,15 @@ export function CombosExperience({
 
           <aside className={styles.summary} aria-label="Resumen de tu combo" aria-live="polite">
             <div className={styles.summaryHead}><strong>Tu combo</strong><span>{resolved.length}/{COMBO_MAX_ITEMS} fragancias</span></div>
-            {resolved.length === 0 ? <p className={styles.emptySummary}>Selecciona fragancias del listado para verlas aquí.</p> : (
+            {resolved.length === 0 ? (
+              <div className={styles.emptySummary}>
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M9.5 3h5v3l1.4 2.8V19a2 2 0 01-2 2h-3.8a2 2 0 01-2-2V8.8L9.5 6V3z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" />
+                  <path d="M8 13h8" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" />
+                </svg>
+                <p><strong>Aún no has agregado fragancias.</strong><br />Busca y selecciona entre {COMBO_MIN_ITEMS} y {COMBO_MAX_ITEMS} para armar tu combo.</p>
+              </div>
+            ) : (
               <ul>
                 {resolved.map((entry) => (
                   <li key={cartIdentity(entry.product)}>
@@ -265,6 +410,26 @@ export function CombosExperience({
           {ready ? <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">Continuar <span aria-hidden="true">↗</span></a> : <button type="button" disabled>Continuar</button>}
         </div>
       </section>
+
+      <section className={styles.postTrust} aria-label="Por qué elegir Cruzial Parfums">
+        {POST_BUILDER_TRUST.map((item) => (
+          <div key={item.title}>
+            <svg className={styles.trustIcon} viewBox="0 0 24 24" fill="none" aria-hidden="true">{item.icon}</svg>
+            <strong>{item.title}</strong>
+            <p>{item.text}</p>
+          </div>
+        ))}
+      </section>
+
+      <div className={styles.decorative} aria-hidden="true">
+        <Image
+          src="/images/parfums-combos/combo-stone-flower.webp"
+          alt=""
+          fill
+          sizes="100vw"
+          className={styles.decorativeImage}
+        />
+      </div>
 
       <div className={styles.catalogLink}><Link href={"/parfums/catalogo" as Route}>Seguir explorando el catálogo <span aria-hidden="true">→</span></Link></div>
       <div className={styles.toast} role="status" aria-live="polite">{notice}</div>
