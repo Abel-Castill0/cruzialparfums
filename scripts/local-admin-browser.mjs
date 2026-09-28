@@ -35,14 +35,14 @@ mkdirSync(`${web}e2e/.auth`, { recursive: true });
 const fixtureFile = `${web}e2e/.auth/local-fixtures.json`;
 const saved = existsSync(fixtureFile) ? JSON.parse(readFileSync(fixtureFile,"utf8")) : {};
 const units = assertResult(await admin.from("business_units").select("id,code"), "Read units");
-for (const [prefix, codes] of [["E2E_ADMIN",["parfums","import"]],["E2E_PARFUMS_ADMIN",["parfums"]],["E2E_GATE_B_ADMIN",["parfums","import"]]]) {
+for (const [prefix, codes, role = "admin"] of [["E2E_ADMIN",["parfums","import"]],["E2E_PARFUMS_ADMIN",["parfums"]],["E2E_GATE_B_ADMIN",["parfums","import"]],["E2E_PARFUMS_VIEWER",["parfums"],"viewer"]]) {
   let identity = saved[prefix];
   if (identity && (await admin.auth.admin.getUserById(identity.id)).error) identity = null;
   if (!identity) {
     const email = `local-${randomBytes(8).toString("hex")}@example.test`;
     const password = `${randomBytes(24).toString("base64url")}aA1!`;
     const user = assertResult(await admin.auth.admin.createUser({email,password,email_confirm:true}), "Create local user").user;
-    assertResult(await admin.from("admin_memberships").insert(units.filter(u=>codes.includes(u.code)).map(u=>({user_id:user.id,business_unit_id:u.id,role:"admin",is_active:true}))), "Grant local membership");
+    assertResult(await admin.from("admin_memberships").insert(units.filter(u=>codes.includes(u.code)).map(u=>({user_id:user.id,business_unit_id:u.id,role,is_active:true}))), "Grant local membership");
     const client = createClient(url.origin, config.ANON_KEY, {auth:{persistSession:false}});
     assertResult(await client.auth.signInWithPassword({email,password}), "Local sign-in");
     const factor = assertResult(await client.auth.mfa.enroll({factorType:"totp",friendlyName:"Local browser verification"}), "Enroll local TOTP");

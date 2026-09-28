@@ -2,10 +2,15 @@
 
 import { useRef, useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import type { PersistedCompositionVerificationStatus } from "@/domains/admin-parfums/combo-schema";
-import { VERIFICATION_STATUS_LABELS } from "@/domains/admin-parfums/combo-schema";
-import styles from "../productos/page.module.css";
+import {
+  PERSISTED_VERIFICATION_STATUSES,
+  type PersistedCompositionVerificationStatus,
+} from "@/domains/admin-parfums/combo-schema";
+import { COMBO_VERIFICATION_OWNER_LABELS } from "@/domains/admin-parfums/combo-presentation";
+import styles from "@/components/admin/catalog-workspace.module.css";
 
+/** URL-backed filters (q, verification, archived) — deep links keep working
+ * and any change resets pagination. */
 export function ComboFilters({
   initial,
 }: {
@@ -38,29 +43,29 @@ export function ComboFilters({
   }
 
   return (
-    <div className={styles.filters} role="search" aria-label="Filtrar combos">
-      <label className={styles.searchField}>
-        <span className={styles.srOnly}>Buscar por nombre o slug del producto</span>
+    <div className={styles.filterBar} role="search" aria-label="Filtrar combos">
+      <label className={`${styles.field} ${styles.fieldWide}`}>
+        <span>Buscar</span>
         <input
           type="search"
           value={search}
           onChange={(event) => changeSearch(event.target.value)}
-          placeholder="Buscar por nombre o slug del producto…"
+          placeholder="Nombre del combo o del producto…"
         />
       </label>
-      <label className={styles.filterField}>
-        <span className={styles.srOnly}>Estado de verificación</span>
+      <label className={styles.field}>
+        <span>Composición</span>
         <select
           value={initial.verificationStatus ?? ""}
           onChange={(event) => apply({ verification: event.target.value })}
         >
-          <option value="">Verificación: todas</option>
-          {Object.entries(VERIFICATION_STATUS_LABELS).map(([value, label]) => (
-            <option key={value} value={value}>{label}</option>
+          <option value="">Todas</option>
+          {PERSISTED_VERIFICATION_STATUSES.map((value) => (
+            <option key={value} value={value}>{COMBO_VERIFICATION_OWNER_LABELS[value]}</option>
           ))}
         </select>
       </label>
-      <label className={styles.checkboxField}>
+      <label className={styles.check}>
         <input
           type="checkbox"
           checked={initial.includeArchived}
@@ -68,7 +73,7 @@ export function ComboFilters({
         />
         Incluir archivados
       </label>
-      <span className={styles.filtersStatus} aria-live="polite">{pending ? "Actualizando…" : ""}</span>
+      <span className={styles.muted} aria-live="polite">{pending ? "Actualizando…" : ""}</span>
     </div>
   );
 }

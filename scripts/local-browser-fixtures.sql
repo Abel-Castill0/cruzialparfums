@@ -57,4 +57,36 @@ insert into public.combos(id,product_id,composition_verification_status)
 values ('99002000-0000-4000-8000-000000000014','99002000-0000-4000-8000-000000000011','client_confirmed') on conflict do nothing;
 insert into public.combo_items(id,combo_id,product_variant_id,combo_product_variant_id,quantity,sort_order)
 values ('99002000-0000-4000-8000-000000000015','99002000-0000-4000-8000-000000000014','99002000-0000-4000-8000-000000000002','99002000-0000-4000-8000-000000000012',1,0) on conflict do nothing;
+
+-- Phase B2B (synthetic, local stack only). All products are DRAFT so no
+-- public storefront surface changes; values are arbitrary QA numbers, never
+-- client prices. Wholesale policies come from the migrations as-is.
+-- (a) Read-only combo whose composition is official_pdf source authority,
+--     with two presentations so composition groups render.
+insert into public.products(id,business_unit_id,slug,name,brand,gender,sales_mode,publication_status)
+values ('99002000-0000-4000-8000-000000000021','11111111-1111-4111-8111-111111111111','local-qa-b2b-set-oficial','LOCAL QA — Set oficial','LOCAL QA','unisex','always_available','draft'),
+('99002000-0000-4000-8000-000000000031','11111111-1111-4111-8111-111111111111','local-qa-b2b-set-editable','LOCAL QA — Set editable','LOCAL QA','unisex','always_available','draft'),
+('99002000-0000-4000-8000-000000000041','11111111-1111-4111-8111-111111111111','local-qa-b2b-frasco-nicho','LOCAL QA — Frasco mayorista','LOCAL QA','unisex','always_available','draft'),
+('99002000-0000-4000-8000-000000000043','11111111-1111-4111-8111-111111111111','local-qa-b2b-frasco-sin-tipo','LOCAL QA — Frasco sin tipo','LOCAL QA','unisex','always_available','draft') on conflict do nothing;
+insert into public.product_variants(id,product_id,variant_kind,size_ml,label,price_amount,currency,publication_status,price_verification_status)
+values ('99002000-0000-4000-8000-000000000022','99002000-0000-4000-8000-000000000021','decant',3,'LOCAL QA Set 3 ml',20,'PEN','published','client_confirmed'),
+('99002000-0000-4000-8000-000000000023','99002000-0000-4000-8000-000000000021','decant',5,'LOCAL QA Set 5 ml',30,'PEN','published','client_confirmed'),
+('99002000-0000-4000-8000-000000000032','99002000-0000-4000-8000-000000000031','decant',5,'LOCAL QA Set editable 5 ml',30,'PEN','published','client_confirmed'),
+('99002000-0000-4000-8000-000000000042','99002000-0000-4000-8000-000000000041','bottle',100,'LOCAL QA 100 ml',100,'PEN','published','client_confirmed'),
+('99002000-0000-4000-8000-000000000044','99002000-0000-4000-8000-000000000043','bottle',100,'LOCAL QA sin tipo 100 ml',100,'PEN','published','client_confirmed') on conflict do nothing;
+insert into public.inventory(product_variant_id,inventory_mode,availability_status)
+values ('99002000-0000-4000-8000-000000000042','status_only','available'),
+('99002000-0000-4000-8000-000000000044','status_only','available') on conflict do nothing;
+insert into public.product_categories(product_id,category_id)
+values ('99002000-0000-4000-8000-000000000041','99002000-0000-4000-8000-000000000004') on conflict do nothing;
+insert into public.combos(id,product_id,composition_verification_status)
+values ('99002000-0000-4000-8000-000000000024','99002000-0000-4000-8000-000000000021','official_pdf'),
+-- (b) Disposable combo the authenticated E2E may edit (composition,
+--     verification, archive/restore) — never read-only assertions.
+('99002000-0000-4000-8000-000000000034','99002000-0000-4000-8000-000000000031','pending_reconfirmation') on conflict do nothing;
+insert into public.combo_items(id,combo_id,product_variant_id,combo_product_variant_id,quantity,sort_order)
+values ('99002000-0000-4000-8000-000000000025','99002000-0000-4000-8000-000000000024','99002000-0000-4000-8000-000000000002','99002000-0000-4000-8000-000000000022',1,0),
+('99002000-0000-4000-8000-000000000026','99002000-0000-4000-8000-000000000024','99002000-0000-4000-8000-000000000042','99002000-0000-4000-8000-000000000022',1,1),
+('99002000-0000-4000-8000-000000000027','99002000-0000-4000-8000-000000000024','99002000-0000-4000-8000-000000000002','99002000-0000-4000-8000-000000000023',2,0),
+('99002000-0000-4000-8000-000000000035','99002000-0000-4000-8000-000000000034','99002000-0000-4000-8000-000000000002','99002000-0000-4000-8000-000000000032',1,0) on conflict do nothing;
 commit;
