@@ -3,8 +3,11 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useRef, useState, useTransition } from "react";
 import type { AvailabilityStatus, ProductionStatus, PublicationStatus } from "@/domains/admin-parfums/product-schema";
-import styles from "./page.module.css";
+import styles from "@/components/admin/catalog-workspace.module.css";
 
+/** Search stays visible; the full set of existing URL filters lives under
+ * "Más filtros" so deep links (e.g. ?availability=out_of_stock) keep working
+ * and are always visible and clearable. */
 export function ProductFilters({
   initial,
 }: {
@@ -22,6 +25,9 @@ export function ProductFilters({
   const [search, setSearch] = useState(initial.search);
   const [isPending, startTransition] = useTransition();
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const advancedActive = Boolean(
+    initial.productionStatus || initial.featuredOnly || initial.includeArchived || initial.publicationStatus || initial.availabilityStatus,
+  );
 
   function apply(next: Partial<Record<"q" | "publication" | "production" | "availability" | "featured" | "archived", string>>) {
     const params = new URLSearchParams(searchParams.toString());
@@ -42,75 +48,79 @@ export function ProductFilters({
   }
 
   return (
-    <div className={styles.filters} role="search" aria-label="Filtrar productos">
-      <label className={styles.searchField}>
-        <span className={styles.srOnly}>Buscar por nombre, marca o slug</span>
-        <input
-          type="search"
-          value={search}
-          onChange={(event) => handleSearchChange(event.target.value)}
-          placeholder="Buscar por nombre, marca o slug…"
-        />
-      </label>
+    <div className={styles.toolbar} role="search" aria-label="Filtrar productos">
+      <div className={styles.filterBar}>
+        <label className={`${styles.field} ${styles.fieldWide}`}>
+          <span className={styles.srOnly}>Buscar por nombre, marca o identificador</span>
+          <input
+            type="search"
+            value={search}
+            onChange={(event) => handleSearchChange(event.target.value)}
+            placeholder="Buscar por nombre o marca…"
+          />
+        </label>
+        <span className={styles.muted} aria-live="polite">{isPending ? "Actualizando…" : ""}</span>
+      </div>
 
-      <label className={styles.filterField}>
-        <span className={styles.srOnly}>Estado de publicación</span>
-        <select
-          value={initial.publicationStatus ?? ""}
-          onChange={(event) => apply({ publication: event.target.value })}
-        >
-          <option value="">Publicación: todas</option>
-          <option value="draft">Borrador</option>
-          <option value="published">Publicado</option>
-          <option value="archived">Archivado</option>
-        </select>
-      </label>
+      <details className={styles.advanced} open={advancedActive || undefined}>
+        <summary>Más filtros{advancedActive ? " (activos)" : ""}</summary>
+        <div className={`${styles.advancedBody} ${styles.filterBar}`}>
+          <label className={styles.field}>
+            <span>Publicación</span>
+            <select
+              value={initial.publicationStatus ?? ""}
+              onChange={(event) => apply({ publication: event.target.value })}
+            >
+              <option value="">Todas</option>
+              <option value="draft">Borrador</option>
+              <option value="published">Publicado</option>
+              <option value="archived">Archivado</option>
+            </select>
+          </label>
 
-      <label className={styles.filterField}>
-        <span className={styles.srOnly}>Estado de producción</span>
-        <select
-          value={initial.productionStatus ?? ""}
-          onChange={(event) => apply({ production: event.target.value })}
-        >
-          <option value="">Producción: todas</option>
-          <option value="active">Activo</option>
-          <option value="discontinued">Descontinuado</option>
-        </select>
-      </label>
+          <label className={styles.field}>
+            <span>Disponibilidad</span>
+            <select
+              value={initial.availabilityStatus ?? ""}
+              onChange={(event) => apply({ availability: event.target.value })}
+            >
+              <option value="">Todas</option>
+              <option value="available">Disponible</option>
+              <option value="out_of_stock">Agotado</option>
+            </select>
+          </label>
 
-      <label className={styles.filterField}>
-        <span className={styles.srOnly}>Disponibilidad</span>
-        <select
-          value={initial.availabilityStatus ?? ""}
-          onChange={(event) => apply({ availability: event.target.value })}
-        >
-          <option value="">Disponibilidad: todas</option>
-          <option value="available">Disponible</option>
-          <option value="out_of_stock">Agotado</option>
-        </select>
-      </label>
+          <label className={styles.field}>
+            <span>Producción</span>
+            <select
+              value={initial.productionStatus ?? ""}
+              onChange={(event) => apply({ production: event.target.value })}
+            >
+              <option value="">Todas</option>
+              <option value="active">Activo</option>
+              <option value="discontinued">Descontinuado</option>
+            </select>
+          </label>
 
-      <label className={styles.checkboxField}>
-        <input
-          type="checkbox"
-          checked={initial.featuredOnly}
-          onChange={(event) => apply(event.target.checked ? { featured: "1" } : { featured: "" })}
-        />
-        Solo destacados
-      </label>
+          <label className={styles.check}>
+            <input
+              type="checkbox"
+              checked={initial.featuredOnly}
+              onChange={(event) => apply(event.target.checked ? { featured: "1" } : { featured: "" })}
+            />
+            Solo destacados
+          </label>
 
-      <label className={styles.checkboxField}>
-        <input
-          type="checkbox"
-          checked={initial.includeArchived}
-          onChange={(event) => apply(event.target.checked ? { archived: "1" } : { archived: "" })}
-        />
-        Incluir archivados
-      </label>
-
-      <span className={styles.filtersStatus} aria-live="polite">
-        {isPending ? "Actualizando…" : ""}
-      </span>
+          <label className={styles.check}>
+            <input
+              type="checkbox"
+              checked={initial.includeArchived}
+              onChange={(event) => apply(event.target.checked ? { archived: "1" } : { archived: "" })}
+            />
+            Incluir archivados
+          </label>
+        </div>
+      </details>
     </div>
   );
 }

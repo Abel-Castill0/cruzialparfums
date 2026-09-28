@@ -35,7 +35,7 @@ test.describe("dual admin (Parfums + Import)", () => {
 
   test("Parfums product editor opens from the list and shows variants and media", async ({ page }) => {
     await page.goto("/admin/parfums/productos");
-    const first = page.locator('a[href^="/admin/parfums/productos/"]').filter({ hasNot: page.getByText("Nuevo producto") }).first();
+    const first = page.getByRole("list", { name: "Lista de productos" }).getByRole("link").first();
     const href = await first.getAttribute("href");
     expect(href).toMatch(/\/admin\/parfums\/productos\/[0-9a-f-]{36}$/);
     await page.goto(href!);

@@ -12,6 +12,7 @@ import {
   updateMediaAction,
   type CloudinaryUploadResult,
 } from "./media-actions";
+import catalogStyles from "@/components/admin/catalog-workspace.module.css";
 import styles from "../page.module.css";
 
 type MediaRow = Database["public"]["Tables"]["product_media"]["Row"];
@@ -262,8 +263,11 @@ export function MediaManager({
   return (
     <section className={styles.section} aria-labelledby="media-title">
       <div className={styles.sectionTitle}>
-        <h2 id="media-title">Media ({active.length})</h2>
+        <h2 id="media-title">Fotos ({active.length})</h2>
       </div>
+      <p className={catalogStyles.muted}>
+        {hasActivePrimary ? "La foto marcada como “Principal” es la que aparece en la tienda y en los listados." : "Marca una foto como “Principal” para que sea la que ven tus clientes."}
+      </p>
 
       {!disabled ? (
         <div className={styles.mediaUploadBar}>
@@ -299,7 +303,7 @@ export function MediaManager({
       ) : null}
 
       {active.length === 0 ? (
-        <p className={styles.notice}>Este producto todavía no tiene imágenes.</p>
+        <p className={styles.notice}>Este producto todavía no tiene fotos. {disabled ? "Un administrador puede subirlas." : "Sube una foto real del producto con “Subir imagen” y márcala como principal: es la que ven tus clientes."}</p>
       ) : (
         <div className={styles.mediaGrid}>{active.map((row) => renderCard(row, false))}</div>
       )}
