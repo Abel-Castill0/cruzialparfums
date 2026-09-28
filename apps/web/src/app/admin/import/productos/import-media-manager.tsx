@@ -235,7 +235,7 @@ export function ImportMediaManager({
   return (
     <section className={styles.section} aria-labelledby="media-title">
       <div className={styles.sectionTitle}>
-        <h2 id="media-title">Media ({active.length})</h2>
+        <h2 id="media-title">Fotos ({active.length})</h2>
       </div>
 
       {!disabled ? (
@@ -272,7 +272,7 @@ export function ImportMediaManager({
       ) : null}
 
       {active.length === 0 ? (
-        <p className={styles.notice}>Este producto todavía no tiene imágenes.</p>
+        <p className={styles.notice}>Este producto todavía no tiene fotos. {disabled ? "Un administrador puede subirlas." : "Sube una foto real del producto y márcala como principal."}</p>
       ) : (
         <div className={styles.mediaGrid}>{active.map((row) => renderCard(row, false))}</div>
       )}

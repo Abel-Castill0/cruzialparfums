@@ -90,7 +90,7 @@ export function classifyProductReadiness(input: ProductReadinessInput): ProductR
   if (input.activePresentations === 0) blockers.push("Sin presentación activa");
   else if (input.publishedPresentations === 0) blockers.push("Sin presentación publicada");
   if (input.offerCount === 0) blockers.push("Sin oferta en consolidado");
-  else if (input.unconfirmedOfferCount > 0) blockers.push("Disponibilidad por confirmar");
+  else if (input.unconfirmedOfferCount > 0) blockers.push("Disponibilidad sin confirmar");
   if (input.campaignStatus !== "open") blockers.push("Consolidado no abierto");
   const structural = input.archived || input.activePresentations === 0 ? "blocked"
     : input.productStatus === "published" && input.publishedPresentations > 0 ? "published" : "structured";
