@@ -40,6 +40,7 @@ import { searchEligibleImportProductsAction, setCampaignProductsAction } from ".
 import formStyles from "@/components/admin/product-form-fields.module.css";
 import styles from "@/app/admin/parfums/productos/page.module.css";
 import bulkStyles from "./campaign-bulk.module.css";
+import { MetricStrip, Notice, StatusBadge, adminButtonClass } from "@/components/admin/admin-ui";
 
 const PICKER_PRODUCT_PUBLICATION_LABELS: Record<Exclude<ProductPublicationStatus, "archived">, string> = {
   published: "Publicado",
@@ -157,6 +158,7 @@ export function CampaignProductsManager({
   items,
   eligibleProducts,
   disabled,
+  initialAvailabilityFilter = "all",
 }: {
   campaignId: string;
   campaignUpdatedAt: string;
@@ -172,6 +174,9 @@ export function CampaignProductsManager({
    * searchEligibleImportProductsAction, never the whole catalog. */
   eligibleProducts: EligibleImportProduct[];
   disabled: boolean;
+  /** Deep-link filter (?disponibilidad=…) so "Confirmar disponibilidad"
+   * lands directly on the offers that need it. Client-side view only. */
+  initialAvailabilityFilter?: "all" | CampaignProductAvailability;
 }) {
   const [rows, setRows] = useState<Row[]>(() => items.map(toRow));
   const [baseline, setBaseline] = useState<Row[]>(() => items.map(toRow));
@@ -188,7 +193,7 @@ export function CampaignProductsManager({
   const [saved, setSaved] = useState(false);
   const [addError, setAddError] = useState<string | null>(null);
   const [tableQuery, setTableQuery] = useState("");
-  const [availabilityFilter, setAvailabilityFilter] = useState<"all" | CampaignProductAvailability>("all");
+  const [availabilityFilter, setAvailabilityFilter] = useState<"all" | CampaignProductAvailability>(initialAvailabilityFilter);
   const [tablePage, setTablePage] = useState(1);
   const searchDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -369,7 +374,9 @@ export function CampaignProductsManager({
     const visible = readiness.filter((r) => r.isPubliclyVisible).length;
     const outOfStock = readiness.filter((r) => r.availability === "out_of_stock").length;
     const unconfirmed = readiness.filter((r) => r.availability === "unconfirmed").length;
+    const available = readiness.filter((r) => r.availability === "available").length;
     return {
+      available,
       configured: rows.length,
       visible,
       blocked: rows.length - visible,
@@ -512,28 +519,44 @@ export function CampaignProductsManager({
   return (
     <section className={styles.section} aria-labelledby="campaign-products-title" aria-busy={isPending}>
       <div className={styles.sectionTitle}>
-        <h2 id="campaign-products-title">Productos del consolidado ({rows.length})</h2>
+        <h2 id="campaign-products-title">Productos, precios y disponibilidad</h2>
       </div>
-      <p className={styles.notice}>
+      <p className={bulkStyles.help}>
         Precio y disponibilidad pertenecen a este consolidado — no al producto base. Un mismo producto puede tener
         precios distintos en otro consolidado.
       </p>
 
       {/* --------------------------------------------------------------- */}
-      {/* Open-campaign summary — read-only counts, never an action that   */}
-      {/* publishes, opens, or changes availability by itself.             */}
+      {/* Summary — read-only counts from the rows loaded here, never an   */}
+      {/* action that publishes, opens, or changes availability by itself. */}
       {/* --------------------------------------------------------------- */}
-      <dl className={styles.rowStats} aria-label="Resumen de publicación">
-        <div><dt>Productos configurados</dt><dd>{summary.configured}</dd></div>
-        <div><dt>Visibles públicamente</dt><dd>{summary.visible}</dd></div>
-        <div><dt>Bloqueados por publicación</dt><dd>{summary.blocked}</dd></div>
-        <div><dt>Agotados</dt><dd>{summary.outOfStock}</dd></div>
-        <div><dt>Por confirmar</dt><dd>{summary.unconfirmed}</dd></div>
-      </dl>
+      <MetricStrip
+        label="Resumen de disponibilidad y publicación"
+        items={[
+          { key: "configured", label: "Ofertas en el consolidado", value: summary.configured },
+          { key: "unconfirmed", label: "Sin confirmar", value: summary.unconfirmed, ...(summary.unconfirmed > 0 ? { tone: "attention" as const } : {}) },
+          { key: "available", label: "Disponibles", value: summary.available },
+          { key: "out", label: "Agotadas", value: summary.outOfStock },
+          { key: "visible", label: "Visibles para clientes", value: summary.visible },
+        ]}
+      />
+      {summary.unconfirmed > 0 ? (
+        <Notice tone="attention" title={`${summary.unconfirmed} ${summary.unconfirmed === 1 ? "oferta sin confirmar" : "ofertas sin confirmar"}`}>
+          Estas ofertas no pueden aparecer en el catálogo hasta que confirmes si están disponibles o agotadas.
+          {!disabled ? " Filtra por “Sin confirmar”, selecciona las filas y usa “Cambiar disponibilidad”; luego guarda los productos." : ""}
+          {!disabled && availabilityFilter !== "unconfirmed" ? (
+            <>
+              {" "}
+              <button type="button" className={adminButtonClass("quiet")} onClick={() => { setAvailabilityFilter("unconfirmed"); setTablePage(1); }}>
+                Mostrar solo las ofertas sin confirmar
+              </button>
+            </>
+          ) : null}
+        </Notice>
+      ) : null}
       {campaignStatus !== "open" || campaignArchivedAt !== null ? (
-        <p className={styles.notice}>
-          Visibles públicamente = 0 posible aunque los productos estén publicados: el consolidado no está{" "}
-          <strong>Abierto</strong> ahora mismo.
+        <p className={bulkStyles.help}>
+          “Visibles para clientes” es 0 mientras el consolidado no esté <strong>Abierto</strong>, aunque los productos estén publicados.
         </p>
       ) : null}
 
@@ -552,7 +575,7 @@ export function CampaignProductsManager({
           <label className={styles.filterField}>
             <span className={styles.srOnly}>Filtrar disponibilidad</span>
             <select value={availabilityFilter} onChange={(event) => { setAvailabilityFilter(event.target.value as "all" | CampaignProductAvailability); setTablePage(1); }}>
-              <option value="all">Toda disponibilidad</option><option value="unconfirmed">Por confirmar</option><option value="available">Disponible</option><option value="out_of_stock">Agotado</option>
+              <option value="all">Toda disponibilidad</option><option value="unconfirmed">{AVAILABILITY_LABELS.unconfirmed}</option><option value="available">{AVAILABILITY_LABELS.available}</option><option value="out_of_stock">{AVAILABILITY_LABELS.out_of_stock}</option>
             </select>
           </label>
           <span className={styles.filtersStatus}>Mostrando {pageWindow.from}–{pageWindow.to} de {pageWindow.total} ({rows.length} totales)</span>
@@ -585,6 +608,15 @@ export function CampaignProductsManager({
         </div>
       ) : null}
 
+      {dirty && !disabled ? (
+        <div className={bulkStyles.unsavedBar} role="status">
+          <span><strong>Tienes cambios sin guardar.</strong> Tus clientes y el resto del sistema no los verán hasta que los guardes.</span>
+          <button type="button" className={adminButtonClass("primary")} onClick={handleSave} disabled={isPending}>
+            {isPending ? "Guardando…" : "Guardar cambios ahora"}
+          </button>
+        </div>
+      ) : null}
+
       {rows.length > 0 ? (
         <div className={bulkStyles.csvBar}>
           <button type="button" className={styles.secondaryButton} onClick={handleExportCsv}>
@@ -599,6 +631,8 @@ export function CampaignProductsManager({
                 ref={csvFileInputRef}
                 type="file"
                 accept=".csv,text/csv"
+                aria-label="Archivo CSV del consolidado"
+                tabIndex={-1}
                 className={styles.srOnly}
                 onChange={handleCsvFileSelected}
               />
@@ -711,7 +745,7 @@ export function CampaignProductsManager({
               const rowLabel = structureLabel ? `${row.productName} · ${structureLabel}` : row.productName;
               const rowReadiness = readiness[index];
               return (
-                <tr key={key}>
+                <tr key={key} data-unconfirmed={row.availabilityStatus === "unconfirmed" ? "true" : undefined} className={bulkStyles.offerRow}>
                   {!disabled ? (
                     <td data-label="Seleccionar">
                       <input
@@ -761,12 +795,12 @@ export function CampaignProductsManager({
                   <td data-label="Publicación">
                     {rowReadiness ? (
                       <div className={styles.rowBadges}>
-                        <span className={`${styles.badge} ${rowReadiness.isPubliclyVisible ? styles["status-published"] : styles.badgeArchived}`}>
+                        <StatusBadge tone={rowReadiness.isPubliclyVisible ? "healthy" : "neutral"}>
                           {VISIBILITY_REASON_LABELS[rowReadiness.visibilityReason]}
-                        </span>
-                        <span className={`${styles.badge} ${rowReadiness.availability === "available" ? styles["status-published"] : styles["status-draft"]}`}>
+                        </StatusBadge>
+                        <StatusBadge tone={rowReadiness.availability === "unconfirmed" ? "attention" : rowReadiness.availability === "available" ? "healthy" : "neutral"}>
                           {AVAILABILITY_STATUS_LABELS[rowReadiness.availability]}
-                        </span>
+                        </StatusBadge>
                       </div>
                     ) : null}
                   </td>

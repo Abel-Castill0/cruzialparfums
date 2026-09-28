@@ -4,7 +4,7 @@ const AVAILABILITY_STATUSES = ["unconfirmed", "available", "out_of_stock"] as co
 export type CampaignProductAvailability = (typeof AVAILABILITY_STATUSES)[number];
 
 export const AVAILABILITY_LABELS: Record<CampaignProductAvailability, string> = {
-  unconfirmed: "Por confirmar",
+  unconfirmed: "Sin confirmar",
   available: "Disponible",
   out_of_stock: "Agotado",
 };
@@ -135,7 +135,7 @@ export function validateCampaignProductItems(rawItems: unknown): ValidationResul
 
     // Fail-closed: missing/null/malformed values are validation errors.
     if (!isCampaignProductAvailability(item.availabilityStatus)) {
-      errors[`${key}.availabilityStatus`] = "Selecciona una disponibilidad válida (Por confirmar, Disponible o Agotado).";
+      errors[`${key}.availabilityStatus`] = "Selecciona una disponibilidad válida (Sin confirmar, Disponible o Agotado).";
       return;
     }
     const availabilityStatus = item.availabilityStatus;

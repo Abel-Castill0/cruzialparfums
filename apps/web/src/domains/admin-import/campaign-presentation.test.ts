@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
   buildImportChecklist,
+  campaignDateWindow,
+  campaignProductsHref,
   campaignStatusPresentation,
+  deriveCustomerView,
+  recommendedLifecycleActions,
   selectImportNextAction,
   type ImportReadinessInput,
 } from "./campaign-presentation";
@@ -62,7 +66,7 @@ describe("buildImportChecklist", () => {
     expect(state(steps, "offers").state).toBe("complete");
     expect(state(steps, "availability").state).toBe("attention");
     expect(state(steps, "availability").detail).toBe("898 ofertas necesitan confirmación de disponibilidad.");
-    expect(state(steps, "availability").href).toBe("/admin/import/publicacion?blocker=offer_unconfirmed&campaign=c1");
+    expect(state(steps, "availability").href).toBe("/admin/import/consolidados/c1?disponibilidad=unconfirmed#productos");
     expect(state(steps, "schedule").state).toBe("not_started");
     expect(state(steps, "open").state).toBe("blocked");
   });
@@ -157,5 +161,65 @@ describe("selectImportNextAction", () => {
       closesAt: "2026-10-30T00:00:00Z",
     })));
     expect(next).toBeNull();
+  });
+});
+
+describe("Phase B1 workspace helpers", () => {
+  const now = new Date("2026-09-28T17:00:00.000Z");
+
+  it("dates never claim to change the status", () => {
+    const draft = campaignDateWindow({ status: "draft", opensAt: null, closesAt: null, now });
+    expect(draft.state).toBe("no_dates");
+    expect(draft.explanation).toMatch(/no cambian el estado/);
+    expect(draft.opensLabel).toMatch(/Sin fecha/);
+  });
+
+  it("explains an open campaign outside its public window", () => {
+    expect(campaignDateWindow({ status: "open", opensAt: "2026-10-01T15:00:00.000Z", closesAt: null, now }).explanation).toMatch(/aún no lo ven/);
+    expect(campaignDateWindow({ status: "open", opensAt: null, closesAt: "2026-09-27T15:00:00.000Z", now }).state).toBe("after_close");
+    expect(campaignDateWindow({ status: "open", opensAt: "2026-09-20T15:00:00.000Z", closesAt: "2026-10-20T15:00:00.000Z", now }).explanation).toBe("Está abierto y dentro de sus fechas.");
+  });
+
+  it("customer view is unknown when the public selector could not be read", () => {
+    expect(deriveCustomerView({ campaign: null, publicCampaign: undefined, visibleProducts: null, openCampaignCount: null, now }).kind).toBe("unknown");
+  });
+
+  it("explains why an open campaign is not public", () => {
+    const view = deriveCustomerView({
+      campaign: { id: "c1", status: "open", opens_at: null, closes_at: null },
+      publicCampaign: null,
+      visibleProducts: null,
+      openCampaignCount: 2,
+      now,
+    });
+    expect(view).toEqual({ kind: "none", reason: expect.stringMatching(/2 consolidados abiertos/) });
+  });
+
+  it("recommends opening a draft but warns when readiness is not confirmed", () => {
+    const [openAction] = recommendedLifecycleActions({ status: "draft", archived: false, readyForManualOpen: false });
+    expect(openAction?.target).toBe("open");
+    expect(openAction?.warnNotReady).toBe(true);
+    expect(openAction?.variant).toBe("secondary");
+    const [unknown] = recommendedLifecycleActions({ status: "draft", archived: false, readyForManualOpen: null });
+    expect(unknown?.warnNotReady).toBe(true);
+    const [ready] = recommendedLifecycleActions({ status: "scheduled", archived: false, readyForManualOpen: true });
+    expect(ready?.warnNotReady).toBe(false);
+    expect(ready?.variant).toBe("primary");
+  });
+
+  it("offers pause/close for open, completion for closed, nothing for archived or completed", () => {
+    expect(recommendedLifecycleActions({ status: "open", archived: false, readyForManualOpen: true }).map((a) => a.target)).toEqual(["paused", "closed"]);
+    expect(recommendedLifecycleActions({ status: "closed", archived: false, readyForManualOpen: null }).map((a) => a.target)).toEqual(["fulfilled"]);
+    expect(recommendedLifecycleActions({ status: "fulfilled", archived: false, readyForManualOpen: null })).toEqual([]);
+    expect(recommendedLifecycleActions({ status: "open", archived: true, readyForManualOpen: true })).toEqual([]);
+  });
+
+  it("next action carries the step it came from", () => {
+    const steps = buildImportChecklist({ ...input(), unconfirmedOfferCount: 898 });
+    expect(selectImportNextAction(steps)?.stepId).toBeDefined();
+  });
+
+  it("links availability to the campaign's own products table", () => {
+    expect(campaignProductsHref("c1", "unconfirmed")).toBe("/admin/import/consolidados/c1?disponibilidad=unconfirmed#productos");
   });
 });

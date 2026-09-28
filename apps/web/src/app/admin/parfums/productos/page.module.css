@@ -115,7 +115,7 @@
 .filtersStatus {
   min-width: 80px;
   font-size: 11px;
-  color: #8a8378;
+  color: #5c574f;
 }
 
 .srOnly {
@@ -132,7 +132,7 @@
 
 .empty {
   margin: 40px clamp(20px, 4vw, 48px);
-  color: #8a8378;
+  color: #5c574f;
   font-size: 13px;
 }
 
@@ -171,7 +171,7 @@
 .rowMeta {
   display: block;
   margin-top: 2px;
-  color: #8a8378;
+  color: #5c574f;
   font-size: 11.5px;
 }
 
@@ -208,7 +208,7 @@
 
 .status-archived {
   border-color: #8a8378;
-  color: #8a8378;
+  color: #5c574f;
 }
 
 .badgeFeatured {
@@ -238,7 +238,7 @@
   grid-column: 1 / -1;
   display: flex;
   gap: 14px;
-  color: #8a8378;
+  color: #5c574f;
   font-size: 10.5px;
 }
 
@@ -401,7 +401,7 @@
 }
 
 .variantTable th {
-  color: #8a8378;
+  color: #5c574f;
   font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.06em;
@@ -441,7 +441,7 @@
     font-weight: 600;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: #8a8378;
+    color: #5c574f;
   }
 }
 
@@ -487,7 +487,7 @@
 }
 
 .detailList dt {
-  color: #8a8378;
+  color: #5c574f;
   font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.06em;
@@ -556,7 +556,7 @@
 
 .mediaMeta {
   font-size: 10px;
-  color: #8a8378;
+  color: #5c574f;
   letter-spacing: 0.02em;
 }
 
@@ -570,7 +570,7 @@
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #8a8378;
+  color: #5c574f;
 }
 
 .mediaField input,

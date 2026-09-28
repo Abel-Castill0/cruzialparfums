@@ -30,7 +30,7 @@
 }
 
 .bulkAction select {
-  min-height: 40px;
+  min-height: 44px;
   padding: 0 10px;
   border: 1px solid #cbd5e1;
 }
@@ -127,4 +127,40 @@
     flex-direction: column;
     align-items: stretch;
   }
+}
+
+/* Phase B1 — unsaved changes + "Sin confirmar" emphasis */
+
+.unsavedBar {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+  padding: 12px 16px;
+  border: 1px solid #e3cb95;
+  border-left-width: 4px;
+  border-radius: 6px;
+  background: #fbf3e3;
+  color: #17130f;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.offerRow[data-unconfirmed] > td:first-child {
+  box-shadow: inset 4px 0 0 #b57a14;
+}
+
+.offerRow[data-unconfirmed] {
+  background: #fffaf0;
+}
+
+.help {
+  margin: 0;
+  color: var(--admin-muted, #5c574f);
+  font-size: 14px;
+  line-height: 1.5;
 }

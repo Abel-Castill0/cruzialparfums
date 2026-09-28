@@ -68,7 +68,7 @@ export function CampaignFormFields({
         </label>
 
         <label className={styles.field}>
-          <span>Apertura (hora de Lima)</span>
+          <span>Apertura pública (hora de Lima)</span>
           <input
             name="opensAt"
             type="datetime-local"
@@ -80,13 +80,13 @@ export function CampaignFormFields({
             <p id="campaign-error-opensAt" className={styles.error} role="alert">{errors.opensAt}</p>
           ) : (
             <p id="campaign-hint-opensAt" className={styles.hint}>
-              Referencial: no abre el consolidado automáticamente. El estado lo cambia un administrador.
+              No cambia el estado. Mientras esté “Abierto”, tus clientes lo verán desde esta fecha. Vacío: desde que lo abras.
             </p>
           )}
         </label>
 
         <label className={styles.field}>
-          <span>Cierre (hora de Lima)</span>
+          <span>Cierre de solicitudes (hora de Lima)</span>
           <input
             name="closesAt"
             type="datetime-local"
@@ -98,7 +98,7 @@ export function CampaignFormFields({
             <p id="campaign-error-closesAt" className={styles.error} role="alert">{errors.closesAt}</p>
           ) : (
             <p id="campaign-hint-closesAt" className={styles.hint}>
-              Referencial: no cierra el consolidado automáticamente.
+              No cierra el consolidado. Mientras esté “Abierto”, tus clientes dejarán de verlo desde esta fecha. Vacío: hasta que lo cierres.
             </p>
           )}
         </label>
@@ -118,7 +118,7 @@ export function CampaignFormFields({
           <p id="campaign-error-publicMessage" className={styles.error} role="alert">{errors.publicMessage}</p>
         ) : (
           <p id="campaign-hint-publicMessage" className={styles.hint}>
-            Visible solo cuando exista una tienda pública de Import (aún no implementada).
+            Se muestra a tus clientes en la tienda de Import mientras este consolidado esté visible. Si lo dejas vacío, se muestra “Precios exclusivos de este consolidado.”
           </p>
         )}
       </label>

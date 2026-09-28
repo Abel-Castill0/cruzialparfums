@@ -21,26 +21,24 @@ import { AdminImportCustomersRepository } from "@/domains/admin-import/customers
 import { AdminComplaintsRepository } from "@/domains/complaints/complaint-repository";
 import {
   CHECKLIST_STATE_LABELS,
-  buildImportChecklist,
   campaignStatusPresentation,
+  deriveCustomerView,
   formatLimaDateTime,
   isPreparationRelevant,
   selectImportNextAction,
   type ChecklistStep,
+  type CustomerView,
 } from "@/domains/admin-import/campaign-presentation";
-import { selectPublicImportCampaign, type PublicImportCampaignRow } from "@/domains/import/public-import";
+import {
+  countOpenImportCampaigns,
+  fetchPublicImportCampaign,
+  loadCampaignPreparation,
+} from "@/domains/admin-import/campaign-workspace-loader";
 import styles from "../dashboard.module.css";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = { title: "Cruzial Import Admin" };
-
-type ReadinessJson = {
-  unconfirmed_offer_count?: number;
-  ready_for_manual_open?: boolean;
-};
-
-type BlockerRow = { total_count?: number | string };
 
 type CampaignRow = {
   id: string;
@@ -51,12 +49,6 @@ type CampaignRow = {
   closes_at: string | null;
   archived_at: string | null;
 };
-
-type CustomerView =
-  | { kind: "unknown" }
-  | { kind: "this"; visibleProducts: number | null }
-  | { kind: "other"; number: number; name: string }
-  | { kind: "none"; reason: string | null };
 
 function n(count: number, one: string, many: string) {
   return `${count} ${count === 1 ? one : many}`;
@@ -96,12 +88,8 @@ export default async function AdminImportPage({ searchParams }: { searchParams: 
     loadFailed = true;
   } else {
     const unitId = membership.businessUnitId;
-    const rpc = supabase.rpc.bind(supabase) as unknown as (
-      name: string,
-      args?: Record<string, unknown>,
-    ) => Promise<{ data: unknown; error: unknown }>;
 
-    const [campaignResult, orderCounts, pendingCustomers, contactSetting, complaintCounts, publicResult, openCampaigns] = await Promise.all([
+    const [campaignResult, orderCounts, pendingCustomers, contactSetting, complaintCounts, publicCampaign, openCampaignCount] = await Promise.all([
       supabase
         .from("campaigns")
         .select("id,number,name,status,opens_at,closes_at,archived_at")
@@ -115,13 +103,8 @@ export default async function AdminImportPage({ searchParams }: { searchParams: 
       new AdminImportCustomersRepository(supabase, unitId).countPendingVerification(),
       new AdminParfumsSettingsRepository(supabase, unitId, "import").getPublicContact(),
       new AdminComplaintsRepository(supabase, unitId).countByStatus(),
-      rpc("public_get_import_current_campaign"),
-      supabase
-        .from("campaigns")
-        .select("*", { count: "exact", head: true })
-        .eq("business_unit_id", unitId)
-        .eq("status", "open")
-        .is("archived_at", null),
+      fetchPublicImportCampaign(supabase),
+      countOpenImportCampaigns(supabase, unitId),
     ]);
 
     if (campaignResult.error || orderCounts === null || pendingCustomers === null || complaintCounts === null || !contactSetting.ok) {
@@ -129,82 +112,18 @@ export default async function AdminImportPage({ searchParams }: { searchParams: 
     }
     campaign = (campaignResult.data as CampaignRow | null) ?? null;
 
-    const publicCampaign = publicResult.error
-      ? undefined
-      : selectPublicImportCampaign((publicResult.data ?? []) as PublicImportCampaignRow[]);
-
     if (campaign) {
-      const campaignId = campaign.id;
-      const blockerTotal = async (blocker: string): Promise<number | null> => {
-        const response = await rpc("admin_list_import_publication_blockers", {
-          p_campaign_id: campaignId,
-          p_blocker: blocker,
-          p_page: 1,
-          p_page_size: 1,
-        });
-        if (response.error) return null;
-        return Number(((response.data ?? []) as BlockerRow[])[0]?.total_count ?? 0);
-      };
-
-      const [readinessResult, offerResult, missingOffer, invalidPrice, missingMedia, unpublishedProduct, unpublishedPresentation, visibleResult] = await Promise.all([
-        rpc("admin_get_import_publication_readiness", { p_campaign_id: campaignId }),
-        supabase.from("campaign_products").select("*", { count: "exact", head: true }).eq("campaign_id", campaignId),
-        blockerTotal("missing_offer"),
-        blockerTotal("offer_invalid_price"),
-        blockerTotal("missing_primary_media"),
-        blockerTotal("product_unpublished"),
-        blockerTotal("presentation_unpublished"),
-        publicCampaign && publicCampaign.id === campaignId
-          ? rpc("public_list_import_catalog", { p_page: 1, p_page_size: 1 })
-          : Promise.resolve(null),
-      ]);
-
-      const readiness = readinessResult.error ? null : ((readinessResult.data ?? {}) as ReadinessJson);
-      if (!readiness || offerResult.error) loadFailed = true;
-
-      steps = buildImportChecklist({
-        campaignId,
-        status: campaign.status,
-        archived: campaign.archived_at !== null,
-        opensAt: campaign.opens_at,
-        closesAt: campaign.closes_at,
-        now,
-        offerCount: offerResult.error ? null : offerResult.count ?? 0,
-        missingOfferCount: missingOffer,
-        invalidPriceCount: invalidPrice,
-        unconfirmedOfferCount: readiness ? readiness.unconfirmed_offer_count ?? null : null,
-        missingMediaCount: missingMedia,
-        unpublishedProductCount: unpublishedProduct,
-        unpublishedPresentationCount: unpublishedPresentation,
-        readyForManualOpen: readiness ? readiness.ready_for_manual_open ?? null : null,
-        isPublicNow: publicCampaign === undefined ? null : publicCampaign?.id === campaignId,
+      const preparation = await loadCampaignPreparation(supabase, campaign, {
         canEdit: isAdmin,
+        now,
+        publicCampaign,
+        openCampaignCount,
       });
-
-      if (publicCampaign === undefined) {
-        customerView = { kind: "unknown" };
-      } else if (publicCampaign && publicCampaign.id === campaignId) {
-        const visibleRows = visibleResult && !visibleResult.error ? ((visibleResult.data ?? []) as BlockerRow[]) : null;
-        customerView = { kind: "this", visibleProducts: visibleRows ? Number(visibleRows[0]?.total_count ?? 0) : null };
-      } else if (publicCampaign) {
-        customerView = { kind: "other", number: publicCampaign.number, name: publicCampaign.name };
-      } else {
-        let reason: string | null = null;
-        if (campaign.status === "open") {
-          if (campaign.opens_at && new Date(campaign.opens_at).getTime() > now.getTime()) {
-            reason = `Este consolidado está abierto, pero su apertura está fijada para el ${formatLimaDateTime(campaign.opens_at)}.`;
-          } else if (campaign.closes_at && new Date(campaign.closes_at).getTime() <= now.getTime()) {
-            reason = "Este consolidado está abierto, pero su fecha de cierre ya pasó.";
-          } else if (!openCampaigns.error && (openCampaigns.count ?? 0) > 1) {
-            reason = `Hay ${openCampaigns.count} consolidados abiertos a la vez. La tienda solo muestra uno cuando hay exactamente uno abierto.`;
-          }
-        }
-        customerView = { kind: "none", reason };
-      }
-    } else if (publicCampaign !== undefined) {
-      customerView = publicCampaign
-        ? { kind: "other", number: publicCampaign.number, name: publicCampaign.name }
-        : { kind: "none", reason: null };
+      if (preparation.loadFailed) loadFailed = true;
+      steps = preparation.steps;
+      customerView = preparation.customerView;
+    } else {
+      customerView = deriveCustomerView({ campaign: null, publicCampaign, visibleProducts: null, openCampaignCount, now });
     }
 
     const contactConfigured = contactSetting.ok && contactSetting.data !== null;
