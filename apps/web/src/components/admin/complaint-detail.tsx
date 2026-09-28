@@ -41,12 +41,27 @@ export function ComplaintDetail({ unitName, basePath, canWrite, entry, updateSta
             <StatusBadge tone={complaintStatusTone(entry.status)}>{COMPLAINT_STATUS_LABELS[entry.status]}</StatusBadge>
             {!resolved ? <StatusBadge tone={complaintUrgencyTone(urgency)}>{COMPLAINT_URGENCY_LABELS[urgency]}</StatusBadge> : null}
           </div>
+          {/* Resolved cases never show a response deadline as if it were
+           * still current — that would read as a pending obligation the
+           * owner already met. Prefer the authoritative resolvedAt; the
+           * database guarantees it is set whenever status is "resolved"
+           * (complaint_book_entries_resolved_provenance_check), but this
+           * never fabricates a timestamp if it were somehow missing. */}
           <p className={catalogStyles.consequence}>
-            {COMPLAINT_URGENCY_LABELS[urgency]} · Responder hasta {formatComplaintDateLong(entry.dueAt)} (hora de Lima).
+            {resolved
+              ? entry.resolvedAt
+                ? `Resuelto el ${formatComplaintDateLong(entry.resolvedAt)} (hora de Lima).`
+                : "Este reclamo está marcado como resuelto."
+              : `${COMPLAINT_URGENCY_LABELS[urgency]} · Responder hasta ${formatComplaintDateLong(entry.dueAt)} (hora de Lima).`}
           </p>
         </div>
         <div className={catalogStyles.summaryNext}>
           <p className={catalogStyles.eyebrow}>Siguiente paso</p>
+          {resolved ? (
+            <p className={catalogStyles.consequence}>
+              No requiere acción. Puedes reabrir el caso más abajo si hace falta revisarlo de nuevo.
+            </p>
+          ) : null}
           <ComplaintStatusPanel
             id={entry.id}
             expectedUpdatedAt={entry.updatedAt}

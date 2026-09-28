@@ -45,7 +45,7 @@ export function ComplaintsInbox({ unitName, basePath, canWrite, filters, counts,
     current: filters.status === tab.status,
     tone: tab.key === "received" ? ("attention" as const) : ("neutral" as const),
   }));
-  const empty = emptyComplaintsMessage(filters.status, filtered);
+  const empty = emptyComplaintsMessage(filters);
 
   return (
     <AdminPage>
@@ -87,7 +87,7 @@ export function ComplaintsInbox({ unitName, basePath, canWrite, filters, counts,
         <>
           <p className={catalogStyles.muted} aria-live="polite">
             {result.total} {result.total === 1 ? "reclamo" : "reclamos"}
-            {filters.status || filtered ? " en esta vista" : " en total"}
+            {filters.status || filters.urgency || filtered ? " en esta vista" : " en total"}
             {counts === null ? " · No pudimos verificar los totales por estado." : ""}
           </p>
           <ComplaintList rows={result.rows} />

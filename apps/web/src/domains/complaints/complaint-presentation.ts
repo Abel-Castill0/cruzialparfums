@@ -61,14 +61,35 @@ export function complaintListHref(basePath: string, search: string, status: stri
   return query ? `${basePath}?${query}` : basePath;
 }
 
-export function emptyComplaintsMessage(status: string, filtered: boolean): { title: string; detail: string | null } {
+/**
+ * `urgency` must be checked before `filtered`/`status`: "0 rows for
+ * urgency=overdue" only proves nothing is overdue right now — it says
+ * nothing about whether other, non-overdue cases are still unresolved.
+ * Claiming "Todo está atendido" there would be false whenever such cases
+ * exist, so that message is reserved for the true zero-complaints case.
+ */
+export function emptyComplaintsMessage(
+  filters: { status: string; search: string; urgency: string },
+): { title: string; detail: string | null } {
+  const filtered = Boolean(filters.search);
+  if (filters.urgency === "overdue") {
+    return filtered
+      ? {
+          title: "No hay reclamos con el plazo vencido que coincidan con esta búsqueda.",
+          detail: "Prueba con otro nombre, teléfono o documento, o quita el filtro de plazo vencido.",
+        }
+      : {
+          title: "No tienes reclamos con el plazo vencido.",
+          detail: "Puede haber otros reclamos sin resolver que todavía están dentro del plazo — revisa las demás pestañas.",
+        };
+  }
   if (filtered) {
     return {
       title: "No hay reclamos que coincidan con esta búsqueda.",
       detail: "Prueba con otro nombre, teléfono o documento.",
     };
   }
-  switch (status) {
+  switch (filters.status) {
     case "received":
       return { title: "No tienes reclamos nuevos.", detail: "Cuando llegue una nueva solicitud aparecerá aquí." };
     case "in_review":
