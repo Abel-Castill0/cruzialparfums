@@ -449,3 +449,27 @@ export function MetricStrip({
     </dl>
   );
 }
+
+export type SaveStatusState = "idle" | "dirty" | "saving" | "saved" | "error";
+
+/** Per-section save feedback. It only ever describes the section it sits
+ * in — independent mutations never share one "saved" message — and "saved"
+ * is only shown after the server confirmed the write. */
+export function SaveStatus({ state, message }: { state: SaveStatusState; message?: string | undefined }) {
+  if (state === "idle") return <span className={styles.saveStatus} aria-live="polite" />;
+  const text =
+    state === "dirty"
+      ? message ?? "Cambios sin guardar"
+      : state === "saving"
+        ? message ?? "Guardando…"
+        : state === "saved"
+          ? message ?? "Cambios guardados"
+          : message ?? "No se pudo guardar. Tus cambios siguen en pantalla; revisa e inténtalo otra vez.";
+  const tone = state === "saved" ? styles.saveSaved : state === "error" ? styles.saveError : state === "dirty" ? styles.saveDirty : "";
+  return (
+    <span className={`${styles.saveStatus} ${tone}`} role={state === "error" ? "alert" : undefined} aria-live={state === "error" ? undefined : "polite"}>
+      {state === "saved" ? "✓ " : state === "dirty" ? "● " : state === "error" ? "× " : ""}
+      {text}
+    </span>
+  );
+}

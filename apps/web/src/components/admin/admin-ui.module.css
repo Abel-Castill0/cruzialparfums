@@ -961,3 +961,26 @@
     transition: none;
   }
 }
+
+/* Save status (Phase B2A) */
+
+.saveStatus {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--admin-muted, #5c574f);
+}
+
+.saveDirty {
+  color: #734600;
+}
+
+.saveSaved {
+  color: #1d5a37;
+}
+
+.saveError {
+  color: #8c1c1c;
+}
