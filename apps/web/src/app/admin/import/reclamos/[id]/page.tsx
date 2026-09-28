@@ -3,17 +3,12 @@ import { redirect, notFound } from "next/navigation";
 import { getAdminSession } from "@/lib/auth/admin-session";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { AdminComplaintsRepository } from "@/domains/complaints/complaint-repository";
-import { COMPLAINT_DOCUMENT_LABELS, COMPLAINT_TYPE_LABELS } from "@/domains/complaints/complaint-schema";
-import { ComplaintStatusForm } from "./complaint-status-form";
-import { COMPLAINT_URGENCY_LABELS, classifyComplaintUrgency } from "@/domains/complaints/sla";
-import styles from "../../productos/page.module.css";
+import { ComplaintDetail } from "@/components/admin/complaint-detail";
+import { updateImportComplaintStatusAction } from "../actions";
+import { AdminPage, Notice } from "@/components/admin/admin-ui";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Detalle de reclamo" };
-
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleString("es-PE", { dateStyle: "long", timeStyle: "short", timeZone: "America/Lima" });
-}
 
 export default async function AdminImportComplaintDetailPage({
   params,
@@ -34,58 +29,23 @@ export default async function AdminImportComplaintDetailPage({
 
   const supabase = await createSupabaseServerClient();
   if (!supabase) {
-    return <div className={styles.page}><main><p className={styles.notice}>El backend de administración no está configurado.</p></main></div>;
+    return <AdminPage><Notice tone="danger" title="El backend de administración no está configurado." /></AdminPage>;
   }
 
   const repository = new AdminComplaintsRepository(supabase, membership.businessUnitId);
   const entryResult = await repository.getById(id);
   if (!entryResult.ok) {
     if (entryResult.error.type === "not_found") notFound();
-    return <div className={styles.page}><main><p className={styles.notice} role="alert">No se pudo cargar el reclamo.</p></main></div>;
+    return <AdminPage><Notice tone="danger" title="No se pudo cargar el reclamo." /></AdminPage>;
   }
 
-  const entry = entryResult.data;
-
   return (
-    <div className={styles.page}>
-      <header className={styles.header}>
-        <div>
-          <h1>{COMPLAINT_TYPE_LABELS[entry.complaintType]}</h1>
-          <p>Registrado el {formatDate(entry.createdAt)}</p>
-          <p>{COMPLAINT_URGENCY_LABELS[classifyComplaintUrgency(entry)]} · Responder hasta {formatDate(entry.dueAt)} (hora de Lima).</p>
-        </div>
-      </header>
-
-      <main>
-        <section className={styles.section}>
-          <div className={styles.sectionTitle}><h2>Consumidor</h2></div>
-          <dl className={styles.rowStats}>
-            <div><dt>Nombre</dt><dd>{entry.fullName}</dd></div>
-            <div><dt>Documento</dt><dd>{COMPLAINT_DOCUMENT_LABELS[entry.documentType]} {entry.documentNumber}</dd></div>
-            <div><dt>Dirección</dt><dd>{entry.address}</dd></div>
-            <div><dt>Teléfono</dt><dd>{entry.phone}</dd></div>
-            <div><dt>Correo</dt><dd>{entry.email}</dd></div>
-            {entry.isMinor ? (
-              <div><dt>Apoderado</dt><dd>{entry.guardianFullName} — {entry.guardianDocumentNumber}</dd></div>
-            ) : null}
-            {entry.orderReference ? <div><dt>Referencia de pedido</dt><dd>{entry.orderReference}</dd></div> : null}
-          </dl>
-        </section>
-
-        <section className={styles.section}>
-          <div className={styles.sectionTitle}><h2>Detalle</h2></div>
-          <p>{entry.detail}</p>
-          <div className={styles.sectionTitle}><h2>Solución solicitada</h2></div>
-          <p>{entry.consumerRequest}</p>
-        </section>
-
-        <ComplaintStatusForm
-          id={entry.id}
-          expectedUpdatedAt={entry.updatedAt}
-          currentStatus={entry.status}
-          currentNotes={entry.adminNotes ?? ""}
-        />
-      </main>
-    </div>
+    <ComplaintDetail
+      unitName="Cruzial Import"
+      basePath="/admin/import/reclamos"
+      canWrite={membership.role === "admin"}
+      entry={entryResult.data}
+      updateStatus={updateImportComplaintStatusAction}
+    />
   );
 }
