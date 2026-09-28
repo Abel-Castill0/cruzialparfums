@@ -3,6 +3,8 @@
 import type { FieldErrors } from "@/domains/admin-parfums/product-schema";
 import styles from "./product-form-fields.module.css";
 
+const STOREFRONT_GENDERS = new Set(["women", "men", "unisex"]);
+
 export type ProductFormDefaults = {
   slug: string;
   name: string;
@@ -67,7 +69,18 @@ export function ProductFormFields({
 
         <label className={styles.field}>
           <span>Género</span>
-          <input name="gender" defaultValue={defaults.gender} maxLength={40} placeholder="unisex, hombre, mujer…" />
+          {/* The storefront only recognizes women/men/unisex; any other stored
+              value stays selectable (never silently rewritten) but is flagged. */}
+          <select name="gender" defaultValue={defaults.gender}>
+            <option value="">Sin definir</option>
+            <option value="women">Mujer</option>
+            <option value="men">Hombre</option>
+            <option value="unisex">Unisex</option>
+            {defaults.gender && !STOREFRONT_GENDERS.has(defaults.gender) ? (
+              <option value={defaults.gender}>{`Valor actual no reconocido por la tienda: ${defaults.gender}`}</option>
+            ) : null}
+          </select>
+          <span className={styles.hint}>La tienda necesita Mujer, Hombre o Unisex para mostrar el producto.</span>
         </label>
 
         <label className={styles.field}>
