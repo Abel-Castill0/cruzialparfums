@@ -151,10 +151,11 @@ describe("admin import dashboard navigation", () => {
     expect(shell).toContain("Configuración");
   });
 
-  it("shared admin shell includes Auditoría link for Import", () => {
+  // The audit route keeps its URL; the shell presents it in plain language.
+  it("shared admin shell includes the audit (Historial de cambios) link for Import", () => {
     const shell = read("components/admin/admin-shell.tsx");
     expect(shell).toContain("/admin/import/auditoria");
-    expect(shell).toContain("Auditoría");
+    expect(shell).toContain("Historial de cambios");
   });
 
   // Task 4 replaced the raw "configured/missing" status card with an
