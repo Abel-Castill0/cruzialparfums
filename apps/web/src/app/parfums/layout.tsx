@@ -14,7 +14,7 @@ export const metadata: Metadata = {
     type: "website",
     locale: "es_PE",
     siteName: "Cruzial Parfums",
-    images: [{ url: PARFUMS_BRAND_MEDIA.heroUrl, width: 1672, height: 792, alt: "Cruzial Parfums" }],
+    images: [{ url: PARFUMS_BRAND_MEDIA.heroUrl, width: 1672, height: 941, alt: "Cruzial Parfums" }],
   },
 };
 

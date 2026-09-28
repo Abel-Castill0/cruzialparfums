@@ -24,5 +24,5 @@ export const PARFUMS_ATOMIZATIONS: Readonly<Record<string, string>> = {
  */
 export const PARFUMS_BRAND_MEDIA = {
   logoUrl: "/parfums/logo-mark.png",
-  heroUrl: "/parfums/hero/hero-crop.webp",
+  heroUrl: "/images/parfums-home/parfums-hero.webp",
 } as const;
