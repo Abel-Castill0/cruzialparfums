@@ -1,0 +1,159 @@
+/* Layout pieces specific to the two unit dashboards. Generic patterns live
+   in components/admin/admin-ui.module.css. */
+
+.twoColumn {
+  display: grid;
+  gap: 32px;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.quickActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.factWithAction {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+}
+
+/* Import consolidado hero */
+
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  border: 1px solid var(--admin-line, rgba(23, 19, 15, 0.14));
+  border-top: 3px solid var(--admin-accent, #17130f);
+  border-radius: 8px;
+  background: var(--admin-surface, #fff);
+}
+
+.heroMain,
+.nextStep {
+  min-width: 0;
+  padding: clamp(18px, 2.6vw, 28px);
+  display: grid;
+  align-content: start;
+  gap: 10px;
+}
+
+.nextStep {
+  border-top: 1px solid var(--admin-line, rgba(23, 19, 15, 0.14));
+  background: var(--admin-accent-soft, rgba(23, 19, 15, 0.05));
+}
+
+.nextStep p {
+  margin: 0;
+  color: var(--admin-muted, #5c574f);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.nextStep > a {
+  justify-self: start;
+  margin-top: 4px;
+}
+
+.heroEyebrow {
+  margin: 0;
+  color: var(--admin-muted, #5c574f);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.heroTitle {
+  margin: 0;
+  display: grid;
+  gap: 2px;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: clamp(24px, 2.8vw, 30px);
+  font-weight: 500;
+  line-height: 1.15;
+}
+
+.heroName {
+  color: var(--admin-muted, #5c574f);
+  font-family: var(--font-body), system-ui, sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.heroStatus {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  color: var(--admin-muted, #5c574f);
+  font-size: 14px;
+}
+
+.heroConsequence {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.heroDates {
+  margin: 0;
+  color: var(--admin-muted, #5c574f);
+  font-size: 13px;
+}
+
+.heroLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+}
+
+.nextTitle {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+/* Customer view */
+
+.customerView {
+  padding: 18px;
+  display: grid;
+  gap: 12px;
+  justify-items: start;
+  border: 1px solid var(--admin-line, rgba(23, 19, 15, 0.14));
+  border-radius: 8px;
+  background: var(--admin-surface, #fff);
+}
+
+.customerView p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.customerView p > span:first-child {
+  margin-right: 8px;
+}
+
+.customerDetail {
+  color: var(--admin-muted, #5c574f);
+}
+
+@media (min-width: 1100px) {
+  .twoColumn {
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  }
+
+  .hero {
+    grid-template-columns: minmax(0, 1.5fr) minmax(280px, 1fr);
+  }
+
+  .nextStep {
+    border-top: 0;
+    border-left: 1px solid var(--admin-line, rgba(23, 19, 15, 0.14));
+  }
+}
