@@ -447,7 +447,7 @@ export function CompositionManager({
                       : undefined
               }
             />
-            <span className={styles.actionsRow}>
+            <span className={`${styles.actionsRow} ${comboStyles.saveActions}`}>
               {dirty ? (
                 <button type="button" className={adminButtonClass("quiet")} onClick={handleDiscard} disabled={isPending}>
                   Descartar cambios

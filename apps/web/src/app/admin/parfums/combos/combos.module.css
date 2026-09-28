@@ -250,6 +250,11 @@
   box-shadow: 0 -4px 16px rgba(23, 19, 15, 0.08);
 }
 
+/* Keyboard focus must not land behind the pinned bar (WCAG 2.4.11). */
+:global(html):has(.saveBarDirty) {
+  scroll-padding-bottom: 96px;
+}
+
 @media (max-width: 640px) {
   .split {
     grid-template-columns: minmax(0, 1fr);
@@ -289,6 +294,27 @@
 
   .addRow > * {
     flex: 1 1 100%;
+  }
+
+  :global(html):has(.saveBarDirty) {
+    scroll-padding-bottom: 128px;
+  }
+
+  .saveBarDirty {
+    padding: 10px 12px;
+    gap: 8px;
+  }
+
+  /* Discard and save share one row so the pinned bar stays short. */
+  .saveActions {
+    flex-wrap: nowrap;
+    width: 100%;
+    gap: 8px;
+  }
+
+  .saveActions > button {
+    flex: 1 1 0;
+    min-width: 0;
   }
 }
 
