@@ -69,7 +69,10 @@ export type ComboListItem = ComboRow & {
   product_slug: string;
   product_brand: string | null;
   product_publication_status: string;
+  product_archived: boolean;
   item_count: number;
+  /** Same item-level archive check the detail page feeds computeComboReadiness. */
+  has_archived_item: boolean;
 };
 
 export type ComboListFilters = {
@@ -143,7 +146,13 @@ type ProductEmbed = {
   slug: string;
   brand: string | null;
   publication_status: string;
+  archived_at: string | null;
   business_unit_id: string;
+};
+
+type ListItemEmbed = {
+  id: string;
+  variant: { archived_at: string | null; product: { archived_at: string | null } | null } | null;
 };
 
 export class AdminParfumsCombosRepository {
@@ -164,7 +173,7 @@ export class AdminParfumsCombosRepository {
     let query = this.supabase
       .from("combos")
       .select(
-        "*, product:products!inner(name, slug, brand, publication_status, business_unit_id), combo_items(count)",
+        "*, product:products!inner(name, slug, brand, publication_status, archived_at, business_unit_id), combo_items(id, variant:product_variants!combo_items_product_variant_id_fkey(archived_at, product:products(archived_at)))",
         { count: "exact" },
       )
       .eq("product.business_unit_id", this.businessUnitId)
@@ -184,17 +193,22 @@ export class AdminParfumsCombosRepository {
     if (error) return { ok: false, error: mapPostgrestError(error) };
 
     const items: ComboListItem[] = (data ?? []).map((row) => {
-      const { product, combo_items, ...combo } = row as ComboRow & {
+      const { product, combo_items, ...combo } = row as unknown as ComboRow & {
         product: ProductEmbed;
-        combo_items: { count: number }[];
+        combo_items: ListItemEmbed[] | null;
       };
+      const comboItems = combo_items ?? [];
       return {
         ...combo,
         product_name: product.name,
         product_slug: product.slug,
         product_brand: product.brand,
         product_publication_status: product.publication_status,
-        item_count: combo_items?.[0]?.count ?? 0,
+        product_archived: product.archived_at !== null,
+        item_count: comboItems.length,
+        has_archived_item: comboItems.some(
+          (item) => item.variant?.archived_at !== null || item.variant?.product?.archived_at !== null,
+        ),
       };
     });
 

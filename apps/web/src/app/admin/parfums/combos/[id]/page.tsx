@@ -1,15 +1,15 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { getAdminSession } from "@/lib/auth/admin-session";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { AdminPage, AdminPageHeader, BackLink, Notice } from "@/components/admin/admin-ui";
 import { AdminParfumsCombosRepository } from "@/domains/admin-parfums/combos-repository";
-import { isValidUuid, PRODUCT_STATUS_LABELS } from "@/domains/admin-parfums/product-schema";
-import { computeComboReadiness, COMBO_READINESS_BLOCKER_LABELS } from "@/domains/admin-parfums/combo-schema";
+import { isValidUuid } from "@/domains/admin-parfums/product-schema";
 import { ComboWorkspace } from "./combo-workspace";
-import styles from "../../productos/page.module.css";
 
 export const dynamic = "force-dynamic";
+
+const LIST_HREF = "/admin/parfums/combos";
 
 export async function generateMetadata({
   params,
@@ -18,6 +18,18 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { id } = await params;
   return { title: isValidUuid(id) ? "Editar combo" : "Combo" };
+}
+
+function ProblemPage({ title }: { title: string }) {
+  return (
+    <AdminPage>
+      <div>
+        <BackLink href={LIST_HREF}>Combos</BackLink>
+        <AdminPageHeader eyebrow="Cruzial Parfums · Combo" title="Combo" />
+      </div>
+      <Notice tone="danger" title={title}>Recarga la página. No hagas cambios hasta que el combo cargue completo.</Notice>
+    </AdminPage>
+  );
 }
 
 export default async function EditComboPage({
@@ -42,28 +54,14 @@ export default async function EditComboPage({
   if (!membership) redirect("/admin");
 
   const supabase = await createSupabaseServerClient();
-  if (!supabase) {
-    return (
-      <div className={styles.page}>
-        <main>
-          <p className={styles.notice}>El backend de administración no está configurado en este entorno.</p>
-        </main>
-      </div>
-    );
-  }
+  if (!supabase) return <ProblemPage title="El backend de administración no está configurado en este entorno." />;
 
   const repository = new AdminParfumsCombosRepository(supabase, membership.businessUnitId);
   const detailResult = await repository.getById(id);
 
   if (!detailResult.ok) {
     if (detailResult.error.type === "not_found") notFound();
-    return (
-      <div className={styles.page}>
-        <main>
-          <p className={styles.notice} role="alert">No se pudo cargar el combo.</p>
-        </main>
-      </div>
-    );
+    return <ProblemPage title="No pudimos cargar el combo." />;
   }
 
   const { combo, product, comboProductVariants, items } = detailResult.data;
@@ -71,78 +69,18 @@ export default async function EditComboPage({
 
   // Eligible additions exclude this combo's own product (the DB rejects a
   // self-reference too — this is the UI never even offering the choice).
-  const eligibleVariantsResult = await repository.listEligibleVariants(combo.product_id);
-  const eligibleVariants = eligibleVariantsResult.ok ? eligibleVariantsResult.data : [];
-
-  const readinessBlockers = computeComboReadiness({
-    productPublicationStatus: product.publication_status,
-    productArchived: product.archived_at !== null,
-    comboArchived: combo.archived_at !== null,
-    compositionVerificationStatus: combo.composition_verification_status,
-    itemCount: items.length,
-    hasArchivedItem: items.some((item) => item.variantArchived || item.productArchived),
-  });
+  // Viewers never add items, so they skip the lookup entirely.
+  const eligibleVariantsResult = canWrite ? await repository.listEligibleVariants(combo.product_id) : null;
 
   return (
-    <div className={styles.page}>
-      <header className={styles.header}>
-        <div>
-          <Link href="/admin/parfums/combos" className={styles.back}>← Combos</Link>
-          <h1>Combo: {product.name}</h1>
-          <p>
-            Producto: {product.slug} ({PRODUCT_STATUS_LABELS[product.publication_status as keyof typeof PRODUCT_STATUS_LABELS] ?? product.publication_status}) · Combo actualizado{" "}
-            {new Date(combo.updated_at).toLocaleString("es-PE")}
-          </p>
-        </div>
-      </header>
-
-      <main className={styles.formWrapper}>
-        {!canWrite ? (
-          <p className={styles.notice} role="status">
-            Estás en modo solo lectura para Parfums. Puedes ver este combo pero no guardar cambios.
-          </p>
-        ) : null}
-
-        <section className={styles.section} aria-labelledby="readiness-heading">
-          <div className={styles.sectionTitle}>
-            <h2 id="readiness-heading">Estado de publicación</h2>
-          </div>
-          {readinessBlockers.length === 0 ? (
-            <p className={styles.savedNote} role="status">Este combo cumple todas las condiciones para mostrarse en el catálogo público.</p>
-          ) : (
-            <>
-              <p className={styles.notice} role="status">Este combo no es visible en el catálogo público por:</p>
-              <ul className={styles.notice}>
-                {readinessBlockers.map((blocker) => (
-                  <li key={blocker}>{COMBO_READINESS_BLOCKER_LABELS[blocker]}</li>
-                ))}
-              </ul>
-            </>
-          )}
-        </section>
-
-        <section className={styles.section}>
-          <div className={styles.sectionTitle}>
-            <h2>Datos del producto</h2>
-            <Link href={`/admin/parfums/productos/${product.id}`} className={styles.secondaryButton}>
-              Editar producto →
-            </Link>
-          </div>
-          <p className={styles.notice}>
-            Nombre, marca, slug, precio y publicación del combo se administran en el editor del producto — editar el
-            combo aquí nunca los cambia automáticamente.
-            {product.archived_at ? " Este producto está archivado." : ""}
-          </p>
-        </section>
-
-        <ComboWorkspace
-          combo={combo}
-          comboProductVariants={comboProductVariants}
-          items={items}
-          eligibleVariants={eligibleVariants}
-          disabled={!canWrite}
-        />
-      </main>
-    </div>
+    <ComboWorkspace
+      combo={combo}
+      product={product}
+      comboProductVariants={comboProductVariants}
+      items={items}
+      eligibleVariants={eligibleVariantsResult?.ok ? eligibleVariantsResult.data : []}
+      eligibleVariantsFailed={eligibleVariantsResult !== null && !eligibleVariantsResult.ok}
+      canWrite={canWrite}
+    />
   );
 }

@@ -3,148 +3,270 @@
 import { useState, useTransition } from "react";
 import type { ComboRow } from "@/domains/admin-parfums/combos-repository";
 import {
-  ADMIN_EDITABLE_VERIFICATION_STATUS_LABELS,
-  VERIFICATION_STATUS_LABELS,
+  ADMIN_EDITABLE_VERIFICATION_STATUSES,
   isAdminEditableVerificationStatus,
   type AdminEditableCompositionVerificationStatus,
 } from "@/domains/admin-parfums/combo-schema";
+import {
+  COMBO_VERIFICATION_EXPLANATIONS,
+  COMBO_VERIFICATION_OWNER_LABELS,
+  comboVerificationLabel,
+  comboVerificationTone,
+} from "@/domains/admin-parfums/combo-presentation";
+import {
+  AdminSection,
+  Notice,
+  SaveStatus,
+  StatusBadge,
+  adminButtonClass,
+  type SaveStatusState,
+} from "@/components/admin/admin-ui";
 import { archiveComboAction, restoreComboAction, updateVerificationAction } from "../actions";
-import formStyles from "@/components/admin/product-form-fields.module.css";
-import styles from "../../productos/page.module.css";
+import styles from "@/components/admin/catalog-workspace.module.css";
+import comboStyles from "../combos.module.css";
 
 /**
- * Verification status + archive/restore. Composition lives in
- * CompositionManager — kept as a separate component/section so the admin
+ * Composition verification. Kept apart from CompositionManager so the admin
  * never confuses "confirm this composition" with "edit these items".
  *
  * Controlled by the parent (ComboWorkspace): `combo` is the single shared
  * copy of the row, and every successful mutation here calls `onChange`
  * instead of keeping a private copy, so CompositionManager (which mutates
  * the same row's `updated_at`) always sees the current concurrency token too.
+ *
+ * - official_pdf is source authority: shown read-only, never a control.
+ * - client_confirmed is only ever chosen explicitly, and additionally needs
+ *   an explicit acknowledgement before it can be saved.
  */
-export function ComboEditor({
+export function ComboVerificationEditor({
   combo,
   onChange,
-  disabled,
+  canWrite,
+  compositionDirty,
 }: {
   combo: ComboRow;
   onChange: (next: ComboRow) => void;
-  disabled: boolean;
+  canWrite: boolean;
+  compositionDirty: boolean;
 }) {
-  const initialEditableStatus = isAdminEditableVerificationStatus(combo.composition_verification_status)
-    ? combo.composition_verification_status
-    : "pending_reconfirmation";
-  const [status, setStatus] = useState<AdminEditableCompositionVerificationStatus>(initialEditableStatus);
-  const [isPending, startTransition] = useTransition();
-  const [error, setError] = useState<string | null>(null);
-  const [saved, setSaved] = useState(false);
-  const [archivePending, setArchivePending] = useState(false);
-  const [archiveError, setArchiveError] = useState<string | null>(null);
-
-  const isOfficialPdf = combo.composition_verification_status === "official_pdf";
-  const dirty = !isOfficialPdf && status !== combo.composition_verification_status;
+  const current = combo.composition_verification_status;
+  const isOfficialPdf = current === "official_pdf";
   const isArchived = combo.archived_at !== null;
+  const [status, setStatus] = useState<AdminEditableCompositionVerificationStatus>(
+    isAdminEditableVerificationStatus(current) ? current : "pending_reconfirmation",
+  );
+  const [acknowledged, setAcknowledged] = useState(false);
+  // Follow the shared row: when the persisted status changes (this save, or a
+  // restore), reset the local choice to it without remounting, so the
+  // "saved" feedback below stays announced.
+  const [syncedStatus, setSyncedStatus] = useState(current);
+  if (syncedStatus !== current) {
+    setSyncedStatus(current);
+    setStatus(isAdminEditableVerificationStatus(current) ? current : "pending_reconfirmation");
+    setAcknowledged(false);
+  }
+  const [isPending, startTransition] = useTransition();
+  const [saveState, setSaveState] = useState<SaveStatusState>("idle");
+  const [errorMessage, setErrorMessage] = useState<string | undefined>(undefined);
 
-  function handleSaveVerification() {
-    setError(null);
-    setSaved(false);
+  const dirty = !isOfficialPdf && status !== current;
+  const needsAcknowledgement = dirty && status === "client_confirmed";
+  const blockedByComposition = dirty && compositionDirty;
+  const canSave = canWrite && !isArchived && dirty && !isPending && !blockedByComposition && (!needsAcknowledgement || acknowledged);
+
+  function choose(next: AdminEditableCompositionVerificationStatus) {
+    setStatus(next);
+    setAcknowledged(false);
+    setErrorMessage(undefined);
+    setSaveState(next === current ? "idle" : "dirty");
+  }
+
+  function handleSave() {
+    if (!canSave) return;
+    setSaveState("saving");
+    setErrorMessage(undefined);
     startTransition(async () => {
       const result = await updateVerificationAction(combo.id, combo.updated_at, status);
       if (result.status === "success") {
         onChange(result.data);
-        setSaved(true);
+        setSaveState("saved");
       } else if (result.status === "error") {
-        setError(result.message);
+        setErrorMessage(`Error — no se guardó. ${result.message}`);
+        setSaveState("error");
       } else if (result.status === "field_errors") {
-        setError(Object.values(result.errors)[0] ?? "Estado inválido.");
+        setErrorMessage(`Error — no se guardó. ${Object.values(result.errors)[0] ?? "Estado inválido."}`);
+        setSaveState("error");
       }
     });
   }
 
-  async function toggleArchive() {
-    setArchivePending(true);
-    setArchiveError(null);
-    const result = isArchived
-      ? await restoreComboAction(combo.id, combo.updated_at)
-      : await archiveComboAction(combo.id, combo.updated_at);
-    if (result.status === "success") {
-      onChange(result.data);
-      if (isAdminEditableVerificationStatus(result.data.composition_verification_status)) {
-        setStatus(result.data.composition_verification_status);
-      }
-    } else if (result.status === "error") {
-      setArchiveError(result.message);
-    }
-    setArchivePending(false);
-  }
-
-  const busy = isPending || archivePending;
-
   return (
-    <section className={styles.section} aria-labelledby="combo-title">
-      <div className={styles.sectionTitle}>
-        <h2 id="combo-title">Combo</h2>
-      </div>
+    <AdminSection
+      id="verificacion-seccion"
+      title="Verificación de la composición"
+      description="Indica si alguien con autoridad confirmó qué incluye este combo. Solo una composición verificada puede aparecer en la tienda."
+    >
+      <div className={styles.card}>
+        <div className={styles.cardHead}>
+          <p className={styles.cardTitle}>Estado actual</p>
+          <StatusBadge tone={comboVerificationTone(current)}>{comboVerificationLabel(current)}</StatusBadge>
+        </div>
 
-      {isArchived ? (
-        <p className={styles.notice} role="status">
-          Este combo está archivado. Restáuralo para volver a editar su verificación o composición.
-        </p>
-      ) : null}
-      {error ? <p className={formStyles.error} role="alert">{error}</p> : null}
-      {archiveError ? <p className={formStyles.error} role="alert">{archiveError}</p> : null}
-      {saved ? <p className={styles.savedNote} role="status">Guardado.</p> : null}
-
-      <div className={formStyles.grid}>
         {isOfficialPdf ? (
-          <div className={formStyles.field}>
-            <span>Estado de verificación de la composición</span>
-            <p className={styles.notice} role="status">
-              {VERIFICATION_STATUS_LABELS.official_pdf} — autoridad de fuente, no editable manualmente.
-            </p>
-          </div>
+          <Notice tone="healthy" title="Verificada por fuente oficial">
+            {COMBO_VERIFICATION_EXPLANATIONS.official_pdf}
+          </Notice>
         ) : (
-        <label className={formStyles.field}>
-          <span>Estado de verificación de la composición</span>
-          <select
-            value={status}
-            onChange={(event) => {
-              if (isAdminEditableVerificationStatus(event.target.value)) setStatus(event.target.value);
-              setSaved(false);
-            }}
-            disabled={disabled || busy || isArchived}
-          >
-            {Object.entries(ADMIN_EDITABLE_VERIFICATION_STATUS_LABELS).map(([value, label]) => (
-              <option key={value} value={value}>{label}</option>
-            ))}
-          </select>
-          <p className={formStyles.hint}>
-            Cambiar a &quot;Confirmado por cliente&quot; es una acción explícita del administrador — nunca se infiere
-            automáticamente por tener ítems en la composición.
-          </p>
-        </label>
+          <>
+            <p className={styles.muted}>
+              {isAdminEditableVerificationStatus(current) ? COMBO_VERIFICATION_EXPLANATIONS[current] : null}
+            </p>
+            {canWrite ? (
+              <>
+                {isArchived ? (
+                  <Notice tone="neutral" title="El combo está archivado">
+                    Restáuralo en “Opciones avanzadas” para cambiar su verificación.
+                  </Notice>
+                ) : null}
+                <fieldset className={comboStyles.choiceGroup} disabled={isArchived || isPending}>
+                  <legend>Cambiar estado</legend>
+                  {ADMIN_EDITABLE_VERIFICATION_STATUSES.map((value) => (
+                    <label key={value} className={comboStyles.choice}>
+                      <input
+                        type="radio"
+                        name={`verification-${combo.id}`}
+                        value={value}
+                        checked={status === value}
+                        onChange={() => choose(value)}
+                      />
+                      <span>
+                        <strong>{COMBO_VERIFICATION_OWNER_LABELS[value]}</strong>
+                        {value === current ? <span className={styles.muted}> (actual)</span> : null}
+                      </span>
+                    </label>
+                  ))}
+                </fieldset>
+
+                {needsAcknowledgement ? (
+                  <label className={`${styles.check} ${comboStyles.acknowledge}`}>
+                    <input
+                      type="checkbox"
+                      checked={acknowledged}
+                      onChange={(event) => setAcknowledged(event.target.checked)}
+                    />
+                    <span>
+                      Confirmo que el cliente revisó y aprobó exactamente la composición guardada de este combo.
+                    </span>
+                  </label>
+                ) : null}
+
+                {blockedByComposition ? (
+                  <Notice tone="attention" title="Guarda primero la composición">
+                    La verificación se aplica a la composición guardada. Guarda o descarta los cambios de la composición
+                    antes de cambiar su verificación.
+                  </Notice>
+                ) : null}
+
+                <div className={styles.actionsRow}>
+                  <button type="button" className={adminButtonClass("primary")} onClick={handleSave} disabled={!canSave}>
+                    {isPending ? "Guardando…" : "Guardar verificación"}
+                  </button>
+                  <SaveStatus
+                    state={saveState}
+                    message={saveState === "saved" ? "Verificación guardada" : saveState === "error" ? errorMessage : undefined}
+                  />
+                </div>
+              </>
+            ) : null}
+          </>
         )}
       </div>
+    </AdminSection>
+  );
+}
 
-      <div className={`${styles.formActions} ${styles.spacingTop}`}>
-        {!disabled && !isOfficialPdf ? (
-          <button
-            type="button"
-            className={styles.primaryButton}
-            onClick={handleSaveVerification}
-            disabled={busy || !dirty || isArchived}
-          >
-            {isPending ? "Guardando…" : "Guardar verificación"}
-          </button>
-        ) : null}
-        {!disabled ? (
-          <button type="button" className={styles.dangerButton} onClick={toggleArchive} disabled={busy}>
-            {isArchived
-              ? (archivePending ? "Restaurando…" : "Restaurar combo")
-              : (archivePending ? "Archivando…" : "Archivar combo")}
-          </button>
-        ) : null}
+/** Archive/restore. Archiving asks for an explicit second step and states
+ * the real consequence: only `combos.archived_at` changes — the product is
+ * never archived or deleted by this action. */
+export function ComboArchiveControl({
+  combo,
+  onChange,
+  canWrite,
+}: {
+  combo: ComboRow;
+  onChange: (next: ComboRow) => void;
+  canWrite: boolean;
+}) {
+  const isArchived = combo.archived_at !== null;
+  const [confirming, setConfirming] = useState(false);
+  const [pending, setPending] = useState(false);
+  const [saveState, setSaveState] = useState<SaveStatusState>("idle");
+  const [errorMessage, setErrorMessage] = useState<string | undefined>(undefined);
+
+  async function run(kind: "archive" | "restore") {
+    setPending(true);
+    setSaveState("saving");
+    setErrorMessage(undefined);
+    const result = kind === "archive"
+      ? await archiveComboAction(combo.id, combo.updated_at)
+      : await restoreComboAction(combo.id, combo.updated_at);
+    if (result.status === "success") {
+      onChange(result.data);
+      setConfirming(false);
+      setSaveState("saved");
+    } else if (result.status === "error") {
+      setErrorMessage(`Error — no se guardó. ${result.message}`);
+      setSaveState("error");
+    }
+    setPending(false);
+  }
+
+  const savedMessage = isArchived ? "Combo archivado" : "Combo restaurado";
+
+  return (
+    <div className={styles.card}>
+      <div className={styles.cardHead}>
+        <p className={styles.cardTitle}>{isArchived ? "Combo archivado" : "Archivar combo"}</p>
+        {isArchived ? <StatusBadge tone="neutral">Archivado</StatusBadge> : null}
       </div>
-    </section>
+      <p className={styles.muted}>
+        {isArchived
+          ? "Un combo archivado no puede mostrarse en la tienda y su composición no se puede editar. Al restaurarlo vuelve a evaluarse con las mismas condiciones."
+          : "Archiva el combo si ya no se vende. El combo dejará de poder mostrarse públicamente. El producto asociado no se elimina ni se archiva."}
+      </p>
+      {canWrite ? (
+        isArchived ? (
+          <div className={styles.actionsRow}>
+            <button type="button" className={adminButtonClass("secondary")} onClick={() => run("restore")} disabled={pending}>
+              {pending ? "Restaurando…" : "Restaurar combo"}
+            </button>
+            <SaveStatus state={saveState} message={saveState === "saved" ? savedMessage : saveState === "error" ? errorMessage : undefined} />
+          </div>
+        ) : confirming ? (
+          <div className={comboStyles.confirm} role="group" aria-label="Confirmar archivo del combo">
+            <p><strong>¿Archivar este combo?</strong></p>
+            <p className={styles.muted}>
+              Dejará de poder mostrarse en la tienda. El producto asociado no se elimina ni se archiva. Puedes restaurarlo después.
+            </p>
+            <div className={styles.actionsRow}>
+              <button type="button" className={adminButtonClass("danger")} onClick={() => run("archive")} disabled={pending}>
+                {pending ? "Archivando…" : "Sí, archivar combo"}
+              </button>
+              <button type="button" className={adminButtonClass("quiet")} onClick={() => setConfirming(false)} disabled={pending}>
+                Cancelar
+              </button>
+              <SaveStatus state={saveState === "error" ? "error" : "idle"} message={errorMessage} />
+            </div>
+          </div>
+        ) : (
+          <div className={styles.actionsRow}>
+            <button type="button" className={adminButtonClass("secondary")} onClick={() => { setConfirming(true); setSaveState("idle"); }}>
+              Archivar combo…
+            </button>
+            <SaveStatus state={saveState} message={saveState === "saved" ? savedMessage : undefined} />
+          </div>
+        )
+      ) : null}
+    </div>
   );
 }

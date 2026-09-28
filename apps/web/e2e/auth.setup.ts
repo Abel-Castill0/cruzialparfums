@@ -14,9 +14,11 @@ import { expect, test as setup } from "@playwright/test";
  *     dual-admin (Parfums + Import) -> e2e/.auth/admin.json
  *   E2E_PARFUMS_ADMIN_EMAIL / E2E_PARFUMS_ADMIN_PASSWORD / E2E_PARFUMS_ADMIN_TOTP_SECRET
  *     Parfums-only admin (cross-unit denial) -> e2e/.auth/parfums-admin.json
+ *   E2E_PARFUMS_VIEWER_EMAIL / E2E_PARFUMS_VIEWER_PASSWORD / E2E_PARFUMS_VIEWER_TOTP_SECRET
+ *     Parfums-only read-only viewer -> e2e/.auth/parfums-viewer.json
  */
 
-import { ADMIN_STATE, PARFUMS_ADMIN_STATE } from "./auth-state";
+import { ADMIN_STATE, PARFUMS_ADMIN_STATE, PARFUMS_VIEWER_STATE } from "./auth-state";
 
 function base32Decode(secret: string): Buffer {
   const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
@@ -76,4 +78,10 @@ setup("parfums-only admin session", async ({ page }) => {
 setup("Gate B independent dual admin session", async ({ page }) => {
  const identity=identityFromEnv("E2E_GATE_B_ADMIN");setup.skip(!identity,"E2E_GATE_B_ADMIN_* not set");
  await signIn(page,identity!,"e2e/.auth/gate-b-admin.json");
+});
+
+setup("parfums-only viewer session", async ({ page }) => {
+  const identity = identityFromEnv("E2E_PARFUMS_VIEWER");
+  setup.skip(!identity, "E2E_PARFUMS_VIEWER_* not set");
+  await signIn(page, identity!, PARFUMS_VIEWER_STATE);
 });

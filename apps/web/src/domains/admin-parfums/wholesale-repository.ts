@@ -35,7 +35,20 @@ export type WholesaleCatalogFilters = {
   search?: string;
   commercialType?: WholesaleCommercialType;
   eligibilityStatus?: WholesaleEligibilityStatus;
+  /** Presentation group over the view's existing statuses: every row whose
+   * eligibility_status is not "eligible". Ignored when eligibilityStatus is set. */
+  needsAttention?: boolean;
 };
+
+export type WholesaleEligibilityCounts = Record<WholesaleEligibilityStatus, number>;
+
+const ELIGIBILITY_STATUSES: readonly WholesaleEligibilityStatus[] = [
+  "eligible",
+  "missing_classification",
+  "ambiguous_classification",
+  "unsupported_classification",
+  "policy_disabled",
+];
 
 export type WholesaleCatalogPage = {
   items: WholesaleCatalogItem[];
@@ -97,6 +110,7 @@ export class AdminParfumsWholesaleRepository {
 
     if (filters.commercialType) query = query.eq("commercial_type", filters.commercialType);
     if (filters.eligibilityStatus) query = query.eq("eligibility_status", filters.eligibilityStatus);
+    else if (filters.needsAttention) query = query.neq("eligibility_status", "eligible");
     if (filters.search?.trim()) {
       const term = filters.search.trim().replace(/[%_]/g, (character) => `\\${character}`);
       query = query.or(`product_name.ilike.%${term}%,brand.ilike.%${term}%,variant_label.ilike.%${term}%`);
@@ -114,6 +128,28 @@ export class AdminParfumsWholesaleRepository {
         pageSize,
       },
     };
+  }
+
+  /** Exact per-status row counts for this unit (head-only count queries).
+   * Returns null when any count cannot be verified — callers show
+   * "sin verificar" instead of a guessed zero. */
+  async countByEligibility(): Promise<WholesaleEligibilityCounts | null> {
+    const results = await Promise.all(
+      ELIGIBILITY_STATUSES.map((status) =>
+        this.supabase
+          .from("admin_parfums_wholesale_catalog")
+          .select("variant_id", { count: "exact", head: true })
+          .eq("business_unit_id", this.businessUnitId)
+          .eq("eligibility_status", status),
+      ),
+    );
+    const counts = {} as WholesaleEligibilityCounts;
+    for (const [index, status] of ELIGIBILITY_STATUSES.entries()) {
+      const result = results[index];
+      if (!result || result.error || typeof result.count !== "number") return null;
+      counts[status] = result.count;
+    }
+    return counts;
   }
 
   async updatePolicy(

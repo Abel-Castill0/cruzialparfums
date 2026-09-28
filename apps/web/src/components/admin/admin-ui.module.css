@@ -894,8 +894,10 @@
 
 .metrics {
   margin: 0;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  /* Wrapping flex, not an auto-fit grid: a metric left alone on a wrapped
+     row stretches instead of leaving an empty cell showing the gap colour. */
+  display: flex;
+  flex-wrap: wrap;
   gap: 1px;
   border: 1px solid var(--admin-line, rgba(23, 19, 15, 0.14));
   border-radius: 8px;
@@ -904,6 +906,7 @@
 }
 
 .metrics > div {
+  flex: 1 1 140px;
   display: grid;
   gap: 2px;
   padding: 12px 16px;

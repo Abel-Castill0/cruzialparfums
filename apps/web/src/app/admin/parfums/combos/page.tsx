@@ -4,15 +4,33 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getAdminSession } from "@/lib/auth/admin-session";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import {
+  ActionLink,
+  AdminPage,
+  AdminPageHeader,
+  EmptyState,
+  Notice,
+  Pagination,
+  StatusBadge,
+} from "@/components/admin/admin-ui";
 import { AdminParfumsCombosRepository } from "@/domains/admin-parfums/combos-repository";
-import { isVerificationStatus, VERIFICATION_STATUS_LABELS } from "@/domains/admin-parfums/combo-schema";
-import { PRODUCT_STATUS_LABELS } from "@/domains/admin-parfums/product-schema";
+import { computeComboReadiness, isVerificationStatus } from "@/domains/admin-parfums/combo-schema";
+import {
+  COMBO_BLOCKER_OWNER_LABELS,
+  comboVerificationLabel,
+  comboVerificationTone,
+  comboVisibility,
+} from "@/domains/admin-parfums/combo-presentation";
+import { PRODUCT_STATUS_LABELS, type PublicationStatus } from "@/domains/admin-parfums/product-schema";
+import { formatRelativeLima } from "@/domains/admin/order-presentation";
 import { ComboFilters } from "./combo-filters";
-import styles from "../productos/page.module.css";
+import styles from "@/components/admin/catalog-workspace.module.css";
+import comboStyles from "./combos.module.css";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Combos" };
 const PAGE_SIZE = 20;
+const BASE_PATH = "/admin/parfums/combos";
 
 export default async function CombosPage({
   searchParams,
@@ -28,15 +46,25 @@ export default async function CombosPage({
   if (session.status === "signed_out") redirect("/admin/login");
   const membership = session.session.memberships.find((candidate) => candidate.businessUnitCode === "parfums");
   if (!membership) redirect("/admin");
+  const isAdmin = membership.role === "admin";
+
+  const header = (
+    <AdminPageHeader
+      eyebrow="Cruzial Parfums"
+      title="Combos"
+      description="Administra los sets que aparecen en Cruzial Parfums."
+      meta={isAdmin ? undefined : "Acceso de solo lectura: puedes consultar los combos y su composición, pero no modificarlos."}
+      actions={isAdmin ? <ActionLink href={`${BASE_PATH}/nuevo`} variant="primary">+ Crear combo</ActionLink> : undefined}
+    />
+  );
 
   const supabase = await createSupabaseServerClient();
   if (!supabase) {
     return (
-      <div className={styles.page}>
-        <main>
-          <p className={styles.notice}>El backend de administración no está configurado en este entorno.</p>
-        </main>
-      </div>
+      <AdminPage>
+        {header}
+        <Notice tone="danger" title="El backend de administración no está configurado en este entorno." />
+      </AdminPage>
     );
   }
 
@@ -56,86 +84,97 @@ export default async function CombosPage({
     { page, pageSize: PAGE_SIZE },
   );
 
-  if (!result.ok) {
-    return (
-      <div className={styles.page}>
-        <main>
-          <p className={styles.notice} role="alert">No se pudieron cargar los combos. Intenta de nuevo.</p>
-        </main>
-      </div>
-    );
-  }
-
-  const { items, total, pageSize } = result.data;
-  const totalPages = Math.max(1, Math.ceil(total / pageSize));
   const cleanParams = new URLSearchParams();
   for (const [key, value] of Object.entries(params)) if (typeof value === "string") cleanParams.set(key, value);
   const paginationHref = (nextPage: number) => {
     const next = new URLSearchParams(cleanParams);
     next.set("page", String(nextPage));
-    return `?${next.toString()}` as Route;
+    return `?${next.toString()}`;
   };
   const noFilters = !search && !verificationStatus && !includeArchived;
+  const now = new Date();
 
   return (
-    <div className={styles.page}>
-      <header className={styles.header}>
-        <div>
-          <h1>Combos</h1>
-          <p>{total} combo{total === 1 ? "" : "s"} en esta vista.</p>
-        </div>
-        {membership.role === "admin" ? (
-          <Link href="/admin/parfums/combos/nuevo" className={styles.createLink}>+ Nuevo combo</Link>
-        ) : null}
-      </header>
-      <main>
-        <ComboFilters initial={{ search, verificationStatus, includeArchived }} />
-        {items.length === 0 ? (
-          <p className={styles.empty}>
-            {noFilters
-              ? "Aún no hay combos. Crea uno sobre un producto Parfums existente."
-              : "No hay combos que coincidan con estos filtros."}
+    <AdminPage>
+      {header}
+
+      <p className={comboStyles.scopeNote}>
+        Cada combo se apoya en un producto Parfums: nombre, precio, fotos y publicación se editan en el producto; aquí
+        se administra qué incluye el combo y si esa composición está verificada.
+      </p>
+
+      <ComboFilters initial={{ search, verificationStatus, includeArchived }} />
+
+      {!result.ok ? (
+        <Notice tone="danger" title="No pudimos cargar los combos">
+          Recarga la página. No asumas que no hay combos.
+        </Notice>
+      ) : result.data.items.length === 0 ? (
+        <EmptyState title={noFilters ? "Todavía no hay combos." : "No hay combos que coincidan con estos filtros."}>
+          {noFilters
+            ? isAdmin ? "Crea uno sobre un producto Parfums existente con “Crear combo”." : null
+            : "Prueba con otra búsqueda o quita filtros."}
+        </EmptyState>
+      ) : (
+        <>
+          <p className={styles.muted} aria-live="polite">
+            {result.data.total} {result.data.total === 1 ? "combo" : "combos"} en esta vista.
           </p>
-        ) : (
-          <>
-            <ul className={styles.list} aria-label="Lista de combos">
-              {items.map((combo) => (
-                <li key={combo.id} className={styles.row}>
-                  <Link href={`/admin/parfums/combos/${combo.id}`} className={styles.rowLink}>
-                    <div className={styles.rowMain}>
-                      <strong>{combo.product_name}</strong>
-                      <span className={styles.rowMeta}>
-                        {combo.product_brand ? `${combo.product_brand} · ` : ""}{combo.product_slug}
+          <ul className={styles.list} aria-label="Lista de combos">
+            {result.data.items.map((combo) => {
+              const blockers = computeComboReadiness({
+                productPublicationStatus: combo.product_publication_status,
+                productArchived: combo.product_archived,
+                comboArchived: combo.archived_at !== null,
+                compositionVerificationStatus: combo.composition_verification_status,
+                itemCount: combo.item_count,
+                hasArchivedItem: combo.has_archived_item,
+              });
+              const visibility = comboVisibility(blockers);
+              const firstBlocker = blockers[0];
+              const publication = combo.product_publication_status as PublicationStatus;
+              return (
+                <li key={combo.id}>
+                  <Link href={`${BASE_PATH}/${combo.id}` as Route} className={`${styles.row} ${styles.rowNoThumb}`}>
+                    <span className={styles.identity}>
+                      <strong className={styles.name}>{combo.product_name}</strong>
+                      <span className={styles.muted}>
+                        {combo.product_brand ?? "Sin marca"} · Producto {(PRODUCT_STATUS_LABELS[publication] ?? "en estado desconocido").toLowerCase()}
                       </span>
-                    </div>
-                    <div className={styles.rowBadges}>
-                      <span className={`${styles.badge} ${styles[`status-${combo.product_publication_status}`] ?? ""}`}>
-                        {PRODUCT_STATUS_LABELS[combo.product_publication_status as keyof typeof PRODUCT_STATUS_LABELS] ?? combo.product_publication_status}
+                    </span>
+                    <span className={styles.state}>
+                      <span className={styles.badges}>
+                        <StatusBadge tone={visibility.tone}>{visibility.label}</StatusBadge>
+                        <StatusBadge tone={comboVerificationTone(combo.composition_verification_status)}>
+                          {comboVerificationLabel(combo.composition_verification_status, "short")}
+                        </StatusBadge>
                       </span>
-                      <span className={styles.badge}>
-                        {VERIFICATION_STATUS_LABELS[combo.composition_verification_status as keyof typeof VERIFICATION_STATUS_LABELS]
-                          ?? combo.composition_verification_status}
-                      </span>
-                      {combo.archived_at ? <span className={styles.badgeArchived}>Archivado</span> : null}
-                    </div>
-                    <div className={styles.rowStats}>
-                      <span>{combo.item_count} ítem{combo.item_count === 1 ? "" : "s"}</span>
-                      <span>Actualizado {new Date(combo.updated_at).toLocaleDateString("es-PE")}</span>
-                    </div>
+                      {firstBlocker && firstBlocker !== "combo_archived" ? (
+                        <span className={comboStyles.attention}>
+                          <span aria-hidden="true">! </span>
+                          <span className={styles.srOnly}>Requiere atención: </span>
+                          {COMBO_BLOCKER_OWNER_LABELS[firstBlocker]}
+                          {blockers.length > 1 ? ` (+${blockers.length - 1} más)` : ""}
+                        </span>
+                      ) : null}
+                    </span>
+                    <span className={styles.figures}>
+                      <span>{combo.item_count} {combo.item_count === 1 ? "producto incluido" : "productos incluidos"}</span>
+                      <span>Actualizado {formatRelativeLima(combo.updated_at, now).toLowerCase()}</span>
+                    </span>
                   </Link>
                 </li>
-              ))}
-            </ul>
-            {totalPages > 1 ? (
-              <nav className={styles.pagination} aria-label="Paginación">
-                {page > 1 ? <Link href={paginationHref(page - 1)}>← Anterior</Link> : <span aria-disabled="true">← Anterior</span>}
-                <span>Página {page} de {totalPages}</span>
-                {page < totalPages ? <Link href={paginationHref(page + 1)}>Siguiente →</Link> : <span aria-disabled="true">Siguiente →</span>}
-              </nav>
-            ) : null}
-          </>
-        )}
-      </main>
-    </div>
+              );
+            })}
+          </ul>
+          <Pagination
+            page={page}
+            totalPages={Math.max(1, Math.ceil(result.data.total / result.data.pageSize))}
+            hrefFor={paginationHref}
+            label="Paginación de combos"
+          />
+        </>
+      )}
+    </AdminPage>
   );
 }
