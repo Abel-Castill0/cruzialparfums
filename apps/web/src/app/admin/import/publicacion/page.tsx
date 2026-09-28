@@ -1,38 +1,17 @@
-import type { Metadata, Route } from "next";
-import Link from "next/link";
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getAdminSession } from "@/lib/auth/admin-session";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { ActionLink, AdminPage, Notice } from "@/components/admin/admin-ui";
 import { AdminImportCatalogRepository } from "@/domains/admin-import/catalog-repository";
-import { campaignStatusLabel } from "@/domains/admin-import/campaign-schema";
-import styles from "../productos/page.module.css";
+import { countCampaignBlockers, type ImportReadinessJson } from "@/domains/admin-import/campaign-workspace-loader";
+import { BLOCKER_PRIORITY, isBlockerCode } from "@/domains/admin-import/publication-blockers";
+import { CampaignPicker, PublicationHeader, PublicationReviewView, PAGE_SIZE, type PublicationBlockerRow } from "./view";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Publicación Import" };
 
-const BLOCKER_LABELS: Record<string, string> = {
-  product_unpublished: "Producto no publicado",
-  presentation_unpublished: "Presentación no publicada",
-  missing_primary_media: "Sin imagen principal",
-  missing_offer: "Sin oferta en consolidado",
-  offer_unconfirmed: "Disponibilidad por confirmar",
-  offer_invalid_price: "Precio inválido",
-  offer_invalid_availability: "Estado de disponibilidad inválido",
-  no_active_presentations: "Sin presentaciones activas",
-};
 
-type BlockerRow = {
-  product_id: string;
-  product_name: string;
-  brand: string | null;
-  slug: string;
-  presentation_id: string | null;
-  presentation_label: string | null;
-  offer_id: string | null;
-  blocker_code: string;
-  blocker_label: string;
-  total_count: number;
-};
 
 export default async function Page({
   searchParams,
@@ -49,6 +28,7 @@ export default async function Page({
   if (!member) redirect("/admin");
   const client = await createSupabaseServerClient();
   if (!client) redirect("/admin");
+  const isAdmin = member.role === "admin";
 
   const repo = new AdminImportCatalogRepository(client, member.businessUnitId);
   const rpc = client.rpc.bind(client) as unknown as (
@@ -71,335 +51,70 @@ export default async function Page({
     ? campaigns.find((c) => c.id === requestedCampaignId) ?? null
     : campaigns[0] ?? null;
 
-  const blockerQuery = params.blocker ?? "";
+  // Only filter values the RPC accepts are forwarded; anything else would be
+  // rejected server-side, so it is ignored here instead of erroring.
+  const blockerQuery = params.blocker && isBlockerCode(params.blocker) ? params.blocker : "";
   const searchQuery = params.q ?? "";
-  const page = Math.max(1, Number(params.page ?? 1));
+  const page = Math.max(1, Number(params.page ?? 1) || 1);
 
-  const [qaResult, readinessResult, blockersResult] = selectedCampaign
-    ? await Promise.all([
-        repo.qa(),
-        rpc("admin_get_import_publication_readiness", {
-          p_campaign_id: selectedCampaign.id,
-        }),
-        rpc("admin_list_import_publication_blockers", {
-          p_campaign_id: selectedCampaign.id,
-          p_query: searchQuery || null,
-          p_blocker: blockerQuery || null,
-          p_page: page,
-          p_page_size: 20,
-        }),
-      ])
-    : [
-        await repo.qa(),
-        { data: null, error: null } as { data: unknown; error: { message: string } | null },
-        { data: [], error: null } as { data: unknown; error: { message: string } | null },
-      ];
+  const header = <PublicationHeader />;
 
-  const rpcError = readinessResult.error;
-  const readiness = ((readinessResult.data ?? {}) as Record<string, unknown>) ?? {};
-  const campaignStatus = (readiness.campaign_status as string) ?? "unknown";
-  const campaignNumber = (readiness.campaign_number as number | undefined) ?? selectedCampaign?.number ?? null;
-  const campaignExists = (readiness.campaign_exists as boolean) ?? false;
-  const totalProducts = Number(readiness.total_products ?? 0);
-  const readyProducts = Number(readiness.ready_products ?? 0);
-  const commercialBlockers = Number(readiness.commercial_blockers ?? 0);
-  const mediaBlockers = Number(readiness.media_blockers ?? 0);
-  const publicationBlockers = Number(readiness.publication_blockers ?? 0);
-  const unconfirmedOfferCount = Number(readiness.unconfirmed_offer_count ?? 0);
-  const invalidPriceOfferCount = Number(readiness.invalid_price_offer_count ?? 0);
-  const readyForManualOpen = (readiness.ready_for_manual_open as boolean) ?? false;
+  if (campaignsResult.error) {
+    return (
+      <AdminPage>
+        {header}
+        <Notice tone="danger" title="No pudimos cargar los consolidados">Recarga la página e inténtalo otra vez.</Notice>
+      </AdminPage>
+    );
+  }
 
-  const blockers = (blockersResult.data ?? []) as BlockerRow[];
-  const blockerTotal = blockers[0]?.total_count ?? 0;
-  const totalPages = Math.max(1, Math.ceil(blockerTotal / 20));
-  const campaignParam = selectedCampaign ? `&campaign=${selectedCampaign.id}` : "";
+  if (!selectedCampaign) {
+    return (
+      <AdminPage>
+        {header}
+        {requestedCampaignId && campaigns.length > 0 ? (
+          <Notice tone="attention" title="No encontramos ese consolidado">
+            Puede estar archivado o no pertenecer a Cruzial Import. Elige otro consolidado.
+          </Notice>
+        ) : null}
+        {campaigns.length > 0 ? (
+          <CampaignPicker campaigns={campaigns} selectedId="" />
+        ) : (
+          <Notice
+            tone="attention"
+            title="Todavía no hay consolidados activos"
+            action={<ActionLink href={isAdmin ? "/admin/import/consolidados/nuevo" : "/admin/import/consolidados"} variant="primary">{isAdmin ? "Crear consolidado" : "Ver consolidados"}</ActionLink>}
+          >
+            Crea un consolidado para poder revisar qué le falta antes de publicarlo.
+          </Notice>
+        )}
+      </AdminPage>
+    );
+  }
+
+  const [qaResult, readinessResult, blockersResult, blockerCounts] = await Promise.all([
+    repo.qa(),
+    rpc("admin_get_import_publication_readiness", { p_campaign_id: selectedCampaign.id }),
+    rpc("admin_list_import_publication_blockers", {
+      p_campaign_id: selectedCampaign.id,
+      p_query: searchQuery || null,
+      p_blocker: blockerQuery || null,
+      p_page: page,
+      p_page_size: PAGE_SIZE,
+    }),
+    countCampaignBlockers(client, selectedCampaign.id, BLOCKER_PRIORITY),
+  ]);
 
   return (
-    <div className={styles.page}>
-      <header className={styles.header}>
-        <div>
-          <h1>Publicación</h1>
-          <p>Preparación de lanzamiento</p>
-        </div>
-      </header>
-      <main>
-        <section className={styles.panel}>
-          <h2>Consolidado evaluado</h2>
-          {campaigns.length > 0 ? (
-            <form method="get" className={styles.facts}>
-              <select
-                name="campaign"
-                defaultValue={selectedCampaign?.id}
-                className={styles.filterInput}
-                aria-label="Seleccionar consolidado"
-              >
-                {campaigns.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    #{c.number} — {c.name} ({campaignStatusLabel(c.status)})
-                  </option>
-                ))}
-              </select>
-              <button type="submit" className={styles.filterButton}>
-                Ver este consolidado
-              </button>
-            </form>
-          ) : (
-            <p className={styles.help}>
-              No hay consolidados activos (no archivados) para Cruzial
-              Import. Crea uno desde{" "}
-              <Link href="/admin/import/consolidados">Consolidados</Link>{" "}
-              para poder evaluar su preparación de lanzamiento.
-            </p>
-          )}
-        </section>
-
-        {!selectedCampaign ? null : rpcError ? (
-          <section className={`${styles.panel} ${styles.warning}`}>
-            <h2>Error de datos</h2>
-            <p className={styles.help}>
-              No se pudo obtener la información de preparación. Error:{" "}
-              {rpcError.message}. Intenta recargar la página.
-            </p>
-          </section>
-        ) : (
-          <>
-            <section className={styles.panel}>
-              <h2>Consolidado #{campaignNumber}</h2>
-              <dl className={styles.facts}>
-                <div>
-                  <dt>Estado</dt>
-                  <dd>{campaignStatusLabel(campaignStatus)}</dd>
-                </div>
-                <div>
-                  <dt>Existe</dt>
-                  <dd>{campaignExists ? "Sí" : "No"}</dd>
-                </div>
-              </dl>
-              {!campaignExists ? (
-                <p className={styles.help}>
-                  No se encontró este consolidado. Esto es un bloqueador.
-                </p>
-              ) : campaignStatus !== "open" ? (
-                <p className={styles.help}>
-                  El consolidado no está abierto. La apertura se realiza desde
-                  Consolidados.
-                </p>
-              ) : null}
-            </section>
-
-            <section className={styles.panel}>
-              <h2>Lanzamiento</h2>
-              <div className={styles.qaGrid}>
-                <div
-                  className={`${styles.qaCard} ${readyForManualOpen ? styles.good : styles.warning}`}
-                >
-                  <strong>
-                    {readyForManualOpen ? "LISTO" : "NO LISTO"}
-                  </strong>
-                  <span>
-                    {readyForManualOpen
-                      ? "Para apertura manual"
-                      : "Bloqueadores pendientes"}
-                  </span>
-                </div>
-              </div>
-            </section>
-
-            <section className={styles.panel}>
-              <h2>Resumen</h2>
-              <div className={styles.qaGrid}>
-                <div className={styles.qaCard}>
-                  <strong>{totalProducts}</strong>
-                  <span>productos activos</span>
-                </div>
-                <div
-                  className={`${styles.qaCard} ${readyProducts === totalProducts && totalProducts > 0 ? styles.good : ""}`}
-                >
-                  <strong>{readyProducts}</strong>
-                  <span>listos para publicar</span>
-                </div>
-                <div
-                  className={`${styles.qaCard} ${commercialBlockers > 0 ? styles.warning : ""}`}
-                >
-                  <strong>{commercialBlockers}</strong>
-                  <span>bloqueos comerciales</span>
-                </div>
-                <div
-                  className={`${styles.qaCard} ${mediaBlockers > 0 ? styles.warning : ""}`}
-                >
-                  <strong>{mediaBlockers}</strong>
-                  <span>bloqueados por media</span>
-                </div>
-                <div
-                  className={`${styles.qaCard} ${publicationBlockers > 0 ? styles.warning : ""}`}
-                >
-                  <strong>{publicationBlockers}</strong>
-                  <span>no publicados</span>
-                </div>
-                <div
-                  className={`${styles.qaCard} ${unconfirmedOfferCount > 0 ? styles.warning : ""}`}
-                >
-                  <strong>{unconfirmedOfferCount}</strong>
-                  <span>ofertas sin confirmar</span>
-                </div>
-                <div
-                  className={`${styles.qaCard} ${invalidPriceOfferCount > 0 ? styles.warning : ""}`}
-                >
-                  <strong>{invalidPriceOfferCount}</strong>
-                  <span>precios inválidos</span>
-                </div>
-              </div>
-            </section>
-
-            {qaResult.ok ? (
-              <section className={styles.panel}>
-                <h2>Cobertura de imágenes</h2>
-                <div className={styles.qaGrid}>
-                  <div
-                    className={`${styles.qaCard} ${Number(qaResult.data.products_without_primary_media) > 0 ? styles.warning : ""}`}
-                  >
-                    <strong>{qaResult.data.products_with_primary_media}</strong>
-                    <span>con imagen principal</span>
-                  </div>
-                  <div
-                    className={`${styles.qaCard} ${Number(qaResult.data.products_without_primary_media) > 0 ? styles.warning : ""}`}
-                  >
-                    <strong>
-                      {qaResult.data.products_without_primary_media}
-                    </strong>
-                    <span>sin imagen principal</span>
-                  </div>
-                  <div
-                    className={`${styles.qaCard} ${Number(qaResult.data.products_without_media) > 0 ? styles.warning : ""}`}
-                  >
-                    <strong>{qaResult.data.products_without_media}</strong>
-                    <span>sin ninguna imagen</span>
-                  </div>
-                  <div className={styles.qaCard}>
-                    <strong>{qaResult.data.total_active_media}</strong>
-                    <span>imágenes activas en total</span>
-                  </div>
-                </div>
-              </section>
-            ) : null}
-
-            <section className={styles.panel}>
-              <h2>Bloqueadores ({blockerTotal})</h2>
-              <form method="get" className={styles.facts}>
-                <input type="hidden" name="campaign" value={selectedCampaign.id} />
-                <input
-                  type="text"
-                  name="q"
-                  defaultValue={searchQuery}
-                  placeholder="Buscar producto..."
-                  className={styles.filterInput}
-                />
-                <select
-                  name="blocker"
-                  defaultValue={blockerQuery}
-                  className={styles.filterInput}
-                >
-                  <option value="">Todos los bloqueos</option>
-                  {Object.entries(BLOCKER_LABELS).map(([code, label]) => (
-                    <option key={code} value={code}>
-                      {label}
-                    </option>
-                  ))}
-                </select>
-                <button type="submit" className={styles.filterButton}>
-                  Filtrar
-                </button>
-                {(searchQuery || blockerQuery) && (
-                  <Link
-                    href={`/admin/import/publicacion?campaign=${selectedCampaign.id}`}
-                    className={styles.filterButton}
-                  >
-                    Limpiar
-                  </Link>
-                )}
-              </form>
-
-              {blockerTotal === 0 ? (
-                <p className={styles.help}>
-                  No hay bloqueadores. Todos los productos están listos.
-                </p>
-              ) : (
-                <>
-                  <table className={styles.blockerTable}>
-                    <thead>
-                      <tr>
-                        <th>Producto</th>
-                        <th>Presentación</th>
-                        <th>Problema</th>
-                        <th>Acción</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {blockers.map((b, i) => (
-                        <tr key={`${b.product_id}-${b.blocker_code}-${b.offer_id ?? "null"}-${i}`}>
-                          <td>
-                            <Link
-                              href={`/admin/import/productos/${b.product_id}?campaign=${selectedCampaign.id}`}
-                            >
-                              {b.product_name}
-                            </Link>
-                            {b.brand ? (
-                              <span className={styles.help}> ({b.brand})</span>
-                            ) : null}
-                          </td>
-                          <td>{b.presentation_label ?? "-"}</td>
-                          <td>{b.blocker_label}</td>
-                          <td>
-                            <Link
-                              href={`/admin/import/productos/${b.product_id}?campaign=${selectedCampaign.id}`}
-                            >
-                              Editar
-                            </Link>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-
-                  {totalPages > 1 && (
-                    <nav className={styles.facts}>
-                      {page > 1 && (
-                        <Link
-                          href={`/admin/import/publicacion?page=${page - 1}${campaignParam}${blockerQuery ? `&blocker=${blockerQuery}` : ""}${searchQuery ? `&q=${searchQuery}` : ""}`}
-                        >
-                          Anterior
-                        </Link>
-                      )}
-                      <span>
-                        Página {page} de {totalPages}
-                      </span>
-                      {page < totalPages && (
-                        <Link
-                          href={`/admin/import/publicacion?page=${page + 1}${campaignParam}${blockerQuery ? `&blocker=${blockerQuery}` : ""}${searchQuery ? `&q=${searchQuery}` : ""}`}
-                        >
-                          Siguiente
-                        </Link>
-                      )}
-                    </nav>
-                  )}
-                </>
-              )}
-            </section>
-
-            <section className={styles.panel}>
-              <h2>Acciones</h2>
-              <p className={styles.help}>
-                Esta pantalla muestra el estado de preparación. No ejecuta
-                publicaciones automáticas. Para publicar productos, edítalos
-                individualmente desde{" "}
-                <Link href={`/admin/import/productos?campaign=${selectedCampaign.id}` as Route}>Productos</Link>. Para
-                abrir el consolidado, ve a{" "}
-                <Link href="/admin/import/consolidados">Consolidados</Link>.
-              </p>
-            </section>
-          </>
-        )}
-      </main>
-    </div>
+    <PublicationReviewView
+      campaigns={campaigns}
+      selectedCampaign={selectedCampaign}
+      isAdmin={isAdmin}
+      readiness={readinessResult.error ? null : ((readinessResult.data ?? {}) as ImportReadinessJson)}
+      blockerCounts={blockerCounts}
+      blockers={blockersResult.error ? null : ((blockersResult.data ?? []) as PublicationBlockerRow[])}
+      qa={qaResult.ok ? qaResult.data : null}
+      filters={{ q: searchQuery, blocker: blockerQuery, page }}
+    />
   );
 }

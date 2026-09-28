@@ -44,11 +44,11 @@ test.describe("authenticated admin", () => {
     await expect(page.getByText("No hay bloqueadores")).toBeVisible();
 
     await page.goto("/admin/import/publicacion?q=staging-qa-import-no-media");
-    const mediaRow = page.getByRole("row", { name: /Sin imagen principal/ });
+    const mediaRow = page.getByRole("row", { name: /Falta imagen principal/ });
     await expect(mediaRow).toHaveCount(1);
 
     await page.goto("/admin/import/publicacion?q=staging-qa-import-no-offer");
-    const offerRow = page.getByRole("row", { name: /Sin oferta en consolidado/ });
+    const offerRow = page.getByRole("row", { name: /Sin precio en este consolidado/ });
     await expect(offerRow).toHaveCount(1);
   });
 
