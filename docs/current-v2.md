@@ -1715,6 +1715,35 @@ login, live HTTP) — not copied from earlier reports.
 - **Closed gates**: Gate B, final completion cutover (#13), Admin UX A–C1.
   No regression evidence found; closed capabilities were not re-audited.
 
+### Client-confirmation search (2026-10-01, after #27–#29)
+
+The owner reported that the client confirmed the pending data, but the
+confirmations themselves were not in the session. Searched without finding
+any: `docs/client-decisions.md` and `docs/release-blockers-legal.md` (both
+still list legal identity, price approval and Import data as unconfirmed),
+`docs/client-source/`, the untracked client PDFs/images in the checkout
+(nothing newer than 2026-09-08 for the catalog, nothing modified after
+2026-09-29 anywhere in the repo) and the owner's Downloads/Desktop. **Nothing
+was applied**: no legal data, no price approval (the 20 `provisional_market`
+prices stay blocked from publication), no Import data, and
+`CRUZIAL_PRODUCTION_CUTOVER_APPROVED` was not touched; `robots.txt` stays
+`Disallow: /` and `sitemap.xml` stays empty, which is the correct closed state.
+
+Verified in this pass: master `3b8a4fc` (docs-only head over code `3c016b0`),
+Production serves it (build log `Commit: 3b8a4fc`, aliases cruzial.pe /
+www.cruzial.pe), smoke routes 200, PRs #27/#28/#29 merged, open PRs #5/#10
+(incompatible, failing required checks) and #8 (dependabot asked to rebase).
+
+Media finding: the only listed product with a real client photo is
+`liquid-brun` — two untracked client files exist
+(`img/perfumes/FRENCH AVENEU - LIQUID BRUN.png`, bottle only, and
+`FRENCH AVENEU -LIQUID BRUN.png`, bottle plus three decant vials); the
+reconciliation marked it AMBIGUOUS only because both normalise to the same
+name. Needs one owner decision (which file is primary) and an upload through
+Admin → Productos → Medios or the controlled media migration. Lovely Cherry,
+Royal Blend Sequoia, Le Male Le Parfum and Sceptre Malachite have no client
+file anywhere.
+
 ### Not launchable yet — owner/business inputs required (not software gaps)
 
 1. **Legal identity** — `business_legal` is blank in BOTH units in Production
