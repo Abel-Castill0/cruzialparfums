@@ -15,6 +15,7 @@ import {
   StatusBadge,
   type AttentionItem,
 } from "@/components/admin/admin-ui";
+import { legalIdentityNotice, missingLegalIdentity } from "@/domains/admin-parfums/legal-readiness";
 import { AdminParfumsSettingsRepository } from "@/domains/admin-parfums/settings-repository";
 import { AdminImportOrdersRepository } from "@/domains/admin-import/orders-repository";
 import { AdminImportCustomersRepository } from "@/domains/admin-import/customers-repository";
@@ -89,7 +90,7 @@ export default async function AdminImportPage({ searchParams }: { searchParams: 
   } else {
     const unitId = membership.businessUnitId;
 
-    const [campaignResult, orderCounts, pendingCustomers, contactSetting, complaintCounts, publicCampaign, openCampaignCount] = await Promise.all([
+    const [campaignResult, orderCounts, pendingCustomers, contactSetting, complaintCounts, publicCampaign, openCampaignCount, legalSetting] = await Promise.all([
       supabase
         .from("campaigns")
         .select("id,number,name,status,opens_at,closes_at,archived_at")
@@ -105,9 +106,10 @@ export default async function AdminImportPage({ searchParams }: { searchParams: 
       new AdminComplaintsRepository(supabase, unitId).countByStatus(),
       fetchPublicImportCampaign(supabase),
       countOpenImportCampaigns(supabase, unitId),
+      new AdminParfumsSettingsRepository(supabase, unitId, "import").getBusinessLegal(),
     ]);
 
-    if (campaignResult.error || orderCounts === null || pendingCustomers === null || complaintCounts === null || !contactSetting.ok) {
+    if (campaignResult.error || orderCounts === null || pendingCustomers === null || complaintCounts === null || !contactSetting.ok || !legalSetting.ok) {
       loadFailed = true;
     }
     campaign = (campaignResult.data as CampaignRow | null) ?? null;
@@ -149,6 +151,17 @@ export default async function AdminImportPage({ searchParams }: { searchParams: 
         href: "/admin/import/configuracion",
         actionLabel: isAdmin ? "Configurar contacto" : "Ver configuración",
         tone: "danger",
+      });
+    }
+    const legalNotice = legalSetting.ok ? legalIdentityNotice(missingLegalIdentity(legalSetting.data?.value ?? null)) : null;
+    if (legalNotice) {
+      operational.push({
+        key: "legal",
+        title: legalNotice.title,
+        detail: legalNotice.detail,
+        href: "/admin/import/configuracion",
+        actionLabel: isAdmin ? "Completar datos" : "Ver configuración",
+        tone: "attention",
       });
     }
     if (pendingOrders > 0) {
