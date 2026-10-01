@@ -845,6 +845,23 @@ describe("4K2-B0.1: pre-publication readiness", () => {
     expect(result.blockers).toHaveLength(0);
   });
 
+  it("owner_selected_provisional (owner-delegated launch price) is sellable, provisional_market is not", () => {
+    const ready = classifyPrePublicationReadiness({
+      publication_status: "published",
+      archived_at: null,
+      variants: [{ publication_status: "published", price_verification_status: "owner_selected_provisional" }],
+    });
+    expect(ready.ready).toBe(true);
+    expect(ready.blockers).toHaveLength(0);
+    const blocked = classifyPrePublicationReadiness({
+      publication_status: "published",
+      archived_at: null,
+      variants: [{ publication_status: "published", price_verification_status: "provisional_market" }],
+    });
+    expect(blocked.ready).toBe(false);
+    expect(blocked.blockers).toContain("variant_price_not_ready");
+  });
+
   it("draft product with ready variants IS eligible for publication", () => {
     const result = classifyPrePublicationReadiness({
       publication_status: "draft",

@@ -3,6 +3,7 @@ export type CatalogVerificationStatus =
   | "client_confirmed"
   | "derived_validated"
   | "official_pdf"
+  | "owner_selected_provisional"
   | "unknown";
 /** @deprecated Fixture-only alias. Public catalog code uses CatalogVerificationStatus. */
 export type LegacyVerificationStatus = "legacy";

@@ -132,7 +132,8 @@ function asStringArray(value: Json | undefined): string[] {
 
 function verification(value: string): CatalogVerificationStatus {
   return value === "client_confirmed" || value === "derived_validated"
-    || value === "official_pdf" || value === "unknown" ? value : "legacy";
+    || value === "official_pdf" || value === "owner_selected_provisional"
+    || value === "unknown" ? value : "legacy";
 }
 
 function gender(value: string | null): CatalogGender | null {

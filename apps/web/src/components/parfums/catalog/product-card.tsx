@@ -2,6 +2,7 @@
 
 import type { Route } from "next";
 import Image from "next/image";
+import { MissingPhoto } from "../shared/missing-photo";
 import Link from "next/link";
 import { useState } from "react";
 import {
@@ -91,7 +92,7 @@ export function ProductCard({
                 className={styles.cardImage}
                 loading={eager ? "eager" : "lazy"}
               />
-            ) : null}
+            ) : <MissingPhoto />}
             <span className={`${styles.tag} ${styles.discontinuedTag}`}>Agotado</span>
           </div>
           <div className={styles.cardBody}>
@@ -137,7 +138,7 @@ export function ProductCard({
               className={styles.cardImage}
               loading={eager ? "eager" : "lazy"}
             />
-          ) : null}
+          ) : <MissingPhoto />}
         </Link>
         <span className={`${styles.tag} ${product.discontinued ? styles.discontinuedTag : ""}`}>
           {product.discontinued ? "Descontinuado" : product.tag}

@@ -110,6 +110,12 @@ export function VariantRow({
               <span className={formStyles.badge}>Precio referencial</span>
             </>
           ) : null}
+          {variant.price_verification_status === "owner_selected_provisional" ? (
+            <>
+              {" "}
+              <span className={formStyles.badge}>Precio inicial provisional</span>
+            </>
+          ) : null}
         </td>
         <td data-label="Disponibilidad">
           {inventory ? (
@@ -205,6 +211,20 @@ export function VariantRow({
               {variantErrors.sortOrder ? <p id={`${errorIdPrefix}-sort-error`} className={formStyles.error} role="alert">{variantErrors.sortOrder}</p> : null}
             </label>
           </div>
+
+          {variant.price_verification_status === "owner_selected_provisional" ? (
+            <div className={formStyles.featuredBlock}>
+              <p className={formStyles.hint}>
+                Precio inicial provisional (<span className={formStyles.badge}>Precio inicial provisional</span>): lo
+                eligió el dueño a partir de la investigación de mercado en Perú para poder abrir la venta. Es editable:
+                cambia el monto arriba cuando quieras. El origen queda registrado en Historial de cambios.
+              </p>
+              <label className={formStyles.checkboxLabel}>
+                <input type="checkbox" name="confirmClientPrice" defaultChecked={false} />
+                Precio confirmado por el cliente
+              </label>
+            </div>
+          ) : null}
 
           {variant.price_verification_status === "provisional_market" ? (
             <div className={formStyles.featuredBlock}>
