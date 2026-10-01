@@ -1669,6 +1669,50 @@ Local gate on the candidate: Vitest 1011, pgTAP 1308 (54 files, fresh reset),
 Playwright 92 passed / 4 skipped (staging-only hosted-session spec), axe +
 console/hydration guard on 13 public routes + 404, npm audit 0.
 
+## Status at a glance (2026-10-01) — two separate states
+
+### 1. Technical platform — COMPLETE
+
+Application `ab157dd` (later commits are docs/tests only) is on `master`, CI green, and
+Production serves it. Hosted migrations = repo migrations (79). Nothing below depends on
+Import having a real campaign or on pending legal/commercial data.
+
+- **Owner can operate everything from Admin** (proved by tests, not by assertion):
+  edit a provisional launch price and explicitly confirm it
+  (`admin-owner-editability.spec.ts` + pgTAP `54_…`: edit keeps `owner_selected_provisional`,
+  viewer denied, stale write `P2011`, only the explicit checkbox → `client_confirmed`, audited);
+  edit a product; complete the legal identity in Configuración (clears the dashboard warning,
+  reversible); upload/replace photos (`media-actions` + pgTAP media RPCs; Cloudinary env present
+  in Production, CSP allows it); create/edit/open Import consolidados (pgTAP 16/17/23 + B1 UI
+  tests); resolve complaints (Gate B test).
+- **Incomplete items degrade safely**: a product/variant that lacks a required fact stays
+  `draft` and appears under "Borradores" / dashboard attention items; it never blocks the
+  other products. A missing optional photo renders the neutral "Foto próximamente" panel
+  (never a bottle picture). Provisional launch prices carry visible provenance
+  (`owner_selected_provisional`, "Precio inicial provisional", evidence in Historial de cambios).
+- **Security/ops unchanged**: RLS, MFA/AAL2, grants, rollback SQL, backups (see below).
+- Gates: Vitest, pgTAP (56 files), Playwright (admin editability + public journeys), axe, CodeQL,
+  secret scan — all green on the last code commit.
+
+### 2. Content and operation per business unit
+
+**Cruzial Parfums — selling, content partly pending.** 98 products published; decants priced
+from the official 2026 PDF; 18 bottles with an owner-selected provisional price; combos official.
+Hidden until a fact is known: bir-intense and le-beau-le-parfum bottles (size), cedrat-boise-int
+and victory-elixir bottles (concentration/identity conflict), 1-million-lucky (price: one
+promotional source), by-the-fireplace (no credible price), le-male-le-parfum (brand/gender).
+Legal identity (razón social, RUC, dirección, claims contact, policy texts) is blank, so the
+public Libro de Reclamaciones shows its "identificación legal incompleta" notice.
+
+**Cruzial Import — platform ready, no campaign yet.** The consolidado workflow, readiness
+dashboard, orders, customers, complaints and settings all work; the storefront honestly shows
+"El próximo consolidado se está preparando". Content pending: real photos, availability, prices
+and closing date for the first consolidado (844 products without photos, 898 offers
+unconfirmed). Nothing is invented; this does not make the platform incomplete.
+
+**Indexing**: `CRUZIAL_PRODUCTION_CUTOVER_APPROVED` stays false and `robots.txt` stays
+`Disallow: /` until the real legal identity exists (and Import content for `public_launch_ready`).
+
 ## Current verified state (2026-10-01)
 
 Verified directly (GitHub, Supabase MCP, Vercel CLI under the `cruzial` team
@@ -1774,7 +1818,7 @@ PR #31 (merge `ab157dd`), Production serves `ab157dd` (build log + aliases).
 - **Launch readiness** (`public_launch_ready()`) remains false, correctly:
   legal identity blank and Import has no open campaign.
 
-### Not launchable yet — factual items only the owner/client can supply
+### Content/operation inputs only the owner/client can supply (not platform gaps)
 
 Everything else is done. These stay hidden/closed because the datum is unknown
 (CLAUDE.md delegation does not cover them):
