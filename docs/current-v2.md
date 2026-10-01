@@ -1778,7 +1778,11 @@ re-smoke `robots.txt`/`sitemap.xml`. Technical platform: COMPLETE.
 - Never modify master before explicit cutover/merge authorization.
 - Never weaken RLS/auth.
 - Migrations already applied (staging or Production) are append-only.
-- Never invent client prices, stock or commercial decisions.
+- Default: never invent client prices, stock or commercial decisions. The
+  owner-delegation exception in `CLAUDE.md` (2026-10-01) authorizes Claude to
+  choose auditable, provisional launch prices from documented market research
+  and reversible presentation defaults. It does not authorize guessing stock,
+  availability, legal identity, or unknown product identity/size/concentration.
 - Never touch client PNG/PDF assets in bulk.
 - Explicit git staging only.
 - Never use git add -A.
