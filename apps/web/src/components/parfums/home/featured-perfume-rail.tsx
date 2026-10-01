@@ -2,6 +2,7 @@
 
 import type { Route } from "next";
 import Image from "next/image";
+import { MissingPhoto } from "../shared/missing-photo";
 import Link from "next/link";
 import { useRef } from "react";
 import { minimumPrice } from "@/domains/catalog/catalog-query";
@@ -62,7 +63,7 @@ export function FeaturedPerfumeRail({ products }: { products: CatalogProduct[] }
                   className={styles.cardImage}
                   loading="lazy"
                 />
-              ) : null}
+              ) : <MissingPhoto />}
             </div>
             <div className={styles.cardBody}>
               <span className={styles.cardBrand}>{product.brand}</span>

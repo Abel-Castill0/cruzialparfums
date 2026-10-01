@@ -91,6 +91,15 @@ describe("assessParfumsProduct", () => {
     expect(result.checks.find((check) => check.key === "prices")?.state).toBe("attention");
   });
 
+  it("keeps an owner-selected provisional price visible as unconfirmed without blocking the store", () => {
+    const result = assessParfumsProduct(fixture({ variants: [{ price_verification_status: "owner_selected_provisional" }] }));
+    expect(result.visibleInStore).toBe(true);
+    const prices = result.checks.find((check) => check.key === "prices")!;
+    expect(prices.blocking).toBe(false);
+    expect(prices.state).toBe("attention");
+    expect(prices.detail).toMatch(/precio referencial sin confirmar/);
+  });
+
   it("never claims a reason it cannot identify", () => {
     const result = assessParfumsProduct(fixture({ product: { business_unit_id: "other-unit" } }));
     expect(result.visibleInStore).toBe(false);

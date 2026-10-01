@@ -40,7 +40,17 @@ Business data, catalogs, carts, orders, settings, and rules remain isolated.
 - Never modify master before explicit cutover.
 - Never weaken RLS or server authorization.
 - Applied migrations are append-only.
-- Never invent price, stock, discount, availability, or client decisions.
+- Default: never invent price, stock, discount, availability, or client decisions.
+- Owner delegation exception (2026-10-01): the owner has authorized Claude to
+  choose reversible, editable launch merchandising defaults for prices and
+  presentation, using documented market research and existing catalog/assets.
+  Record these as owner-selected/provisional, never as client-confirmed or
+  official. This exception does not authorize invented stock, real-time
+  availability, legal identity/RUC/address/contact details, or product identity,
+  size, or concentration. Use an honest unavailable/draft state where those
+  facts are unknown; a neutral missing-image fallback is allowed, but never a
+  misleading product image. Do not let missing optional merchandising fields
+  block the technical release when a truthful fallback exists.
 - Preserve client PNG/PDF assets.
 - Never expose secrets.
 - Never expose Cloudinary API secrets through NEXT_PUBLIC_*.

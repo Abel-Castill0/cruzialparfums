@@ -1,0 +1,18 @@
+.missing {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: #f3f1ec;
+  color: #6b655c;
+}
+
+.text {
+  padding: 6px 12px;
+  border: 1px dashed rgba(23, 19, 15, 0.28);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-align: center;
+}

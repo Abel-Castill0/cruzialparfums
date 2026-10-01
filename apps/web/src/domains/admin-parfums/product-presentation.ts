@@ -146,7 +146,7 @@ export function assessParfumsProduct(input: ParfumsProductDetailInput): ParfumsP
       Number.isFinite(variant.price_amount) &&
       variant.price_amount >= 0,
   );
-  const referencePrices = publishedVariants.filter((variant) => variant.price_verification_status === "provisional_market");
+  const referencePrices = publishedVariants.filter((variant) => variant.price_verification_status === "provisional_market" || variant.price_verification_status === "owner_selected_provisional");
   const zeroPrices = publishedVariants.filter((variant) => variant.price_amount <= 0);
   const liveCategories = input.categories
     .map((assignment) => assignment.category)
