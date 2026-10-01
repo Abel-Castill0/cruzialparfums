@@ -1,6 +1,6 @@
 # CRUZIAL V2 - CURRENT CHECKPOINT
 
-Updated: 2026-09-20
+Updated: 2026-10-01
 
 ## Scope
 
@@ -12,10 +12,13 @@ Active V2:
 Legacy root storefront is out of scope unless explicitly requested.
 
 Branch:
-codex/feature/cruzial-platform-v2
+master (all feature branches merged; work lands via PR with HEAD-guarded squash merge)
 
 Always derive exact HEAD from:
 git rev-parse HEAD
+
+> The sections below the "Current verified state (2026-10-01)" block are
+> historical gate records; where they conflict with that block, that block wins.
 
 ## Architecture
 
@@ -1665,6 +1668,73 @@ them (UUID-gated, no row data).
 Local gate on the candidate: Vitest 1011, pgTAP 1308 (54 files, fresh reset),
 Playwright 92 passed / 4 skipped (staging-only hosted-session spec), axe +
 console/hydration guard on 13 public routes + 404, npm audit 0.
+
+## Current verified state (2026-10-01)
+
+Verified directly (GitHub, Supabase MCP, Vercel CLI under the `cruzial` team
+login, live HTTP) — not copied from earlier reports.
+
+- **master**: `bf56db617b5c546082d5151808ae51abf897a047`. Admin UX program is
+  fully merged: Phase A foundation (#21), B1 orders/consolidado/publication
+  (#22), B2A catalog + Import customers (#23), B2B combos + Mayorista (#24),
+  C1 Configuración + Libro de Reclamaciones (#25, `2a0e2a65`). UI/presentation
+  only — **no migration** was added by any of them. Master CI on the final
+  HEAD: Web, Database (migrations · pgTAP), Browser E2E, CodeQL, Secret scan,
+  Vercel — all success.
+- **Dependabot**: merged #14 (supabase-js 2.117.1), #7 (vitest 5.0.1), #9
+  (@types/node 26), #4 (react/@types/react) — each had every required check
+  green. Left open on purpose: #5 eslint 10, #6 react-dom, #10 TypeScript 7
+  (required Web/E2E checks FAIL — incompatible, not integrated), #8
+  @supabase/ssr patch (merge conflict with the lockfile; dependabot must
+  rebase it).
+- **Production (Vercel)**: `cruzial.pe`, `www.cruzial.pe` and the git-master
+  alias serve deployment `cruzial-platform-v2-40x38dkdz-cruzial` built from
+  master `bf56db6` (Ready). Smoke (read-only, no data created): `/` 200,
+  `/parfums` 200, `/import` 200, `/parfums/catalogo` 200,
+  `/libro-de-reclamaciones` 200, unknown route 404, `www` → apex redirect,
+  `/admin` → `/admin/login`, protected `/admin/parfums/*` → 307 (no content
+  leak), CSP (nonce) + HSTS + X-Frame-Options present, runtime log window clean.
+  `robots.txt` = `Disallow: /` (indexing intentionally closed).
+- **Supabase** (`iyxidhglyqkzoziyewlc`, the only hosted project; Production
+  data lives here): hosted migrations **78 = repo 78**, latest
+  `20260926100000`; nothing pending, nothing applied in this pass. Row counts:
+  products 944 (94 published), orders 0, customers 0, complaints 0,
+  admin_memberships 2, open Import campaigns 0. Security advisors: no new
+  findings — INFO rls-no-policy on 4 service-role-only tables, WARN
+  SECURITY DEFINER executability (6 anon = public read-only catalog RPCs; 74
+  authenticated = the admin RPC surface, by design), WARN leaked-password
+  protection (Free-plan limitation, accepted above).
+- **Rollback reference**: `supabase/rollback/20260927_final_cutover_rollback.sql`
+  (see PR #13 section); previous Production deployment
+  `cruzial-platform-v2-8fzcxqape-cruzial` (master `2a0e2a6`) remains a valid
+  Vercel rollback target.
+- **Closed gates**: Gate B, final completion cutover (#13), Admin UX A–C1.
+  No regression evidence found; closed capabilities were not re-audited.
+
+### Not launchable yet — owner/business inputs required (not software gaps)
+
+1. **Legal identity** — `business_legal` is blank in BOTH units in Production
+   (razón social, RUC, dirección, claims email/phone, exchange/payment
+   policy text). Fill via Admin → Configuración. Until then the public Libro
+   de Reclamaciones shows the "identificación legal incompleta" notice.
+2. **Bottle prices** — 20 `provisional_market` variants need explicit client
+   confirmation (Admin "Precio confirmado por el cliente"); 4 stay unresolved
+   without client evidence: 1-million-lucky, by-the-fireplace,
+   le-beau-le-parfum (target size), bir-intense (size/concentration).
+   Bottles stay draft until confirmed (decants are live).
+3. **Draft products needing client assets/data**: le-male-le-parfum (brand,
+   gender, media), liquid-brun / lovely-cherry / royal-blend-sequoia (media),
+   sceptre-malachite (client asset missing).
+4. **Import**: no open campaign; 844 products have no media and 898 offers are
+   unconfirmed — needs client photos + availability, then Admin opens the
+   campaign.
+5. **Indexing/cutover**: `CRUZIAL_PRODUCTION_CUTOVER_APPROVED` stays false;
+   flip only after items 1–4 are genuinely resolved and the owner approves.
+6. **Owner TOTP enrollment/AAL2** on the real admin accounts (human step).
+
+**Next action**: owner supplies items 1–4; then verify with the existing
+readiness dashboards, flip the cutover flag in Production env, redeploy, and
+re-smoke `robots.txt`/`sitemap.xml`. Technical platform: COMPLETE.
 
 ## Important rules
 
