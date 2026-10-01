@@ -1744,30 +1744,58 @@ Admin → Productos → Medios or the controlled media migration. Lovely Cherry,
 Royal Blend Sequoia, Le Male Le Parfum and Sceptre Malachite have no client
 file anywhere.
 
-### Not launchable yet — owner/business inputs required (not software gaps)
+### Owner-delegated launch merchandising (2026-10-01) — APPLIED
 
-1. **Legal identity** — `business_legal` is blank in BOTH units in Production
-   (razón social, RUC, dirección, claims email/phone, exchange/payment
-   policy text). Fill via Admin → Configuración. Until then the public Libro
-   de Reclamaciones shows the "identificación legal incompleta" notice.
-2. **Bottle prices** — 20 `provisional_market` variants need explicit client
-   confirmation (Admin "Precio confirmado por el cliente"); 4 stay unresolved
-   without client evidence: 1-million-lucky, by-the-fireplace,
-   le-beau-le-parfum (target size), bir-intense (size/concentration).
-   Bottles stay draft until confirmed (decants are live).
-3. **Draft products needing client assets/data**: le-male-le-parfum (brand,
-   gender, media), liquid-brun / lovely-cherry / royal-blend-sequoia (media),
-   sceptre-malachite (client asset missing).
-4. **Import**: no open campaign; 844 products have no media and 898 offers are
-   unconfirmed — needs client photos + availability, then Admin opens the
-   campaign.
-5. **Indexing/cutover**: `CRUZIAL_PRODUCTION_CUTOVER_APPROVED` stays false;
-   flip only after items 1–4 are genuinely resolved and the owner approves.
+Authority: CLAUDE.md "Current owner delegation — reversible launch merchandising".
+PR #31 (merge `ab157dd`), Production serves `ab157dd` (build log + aliases).
+
+- **Migration `20261001010000`** applied to Production with the Supabase CLI
+  (`db push --linked`, exact repo version; hosted 78 → **79**). Adds price
+  authority `owner_selected_provisional`; `create_parfums_order_request_v2` and
+  `app.unit_launch_readiness` re-created with one logical change each (grants
+  unchanged: orders RPC service_role only). Pre-change schema+data dumps with
+  checksums were taken to a private path outside the repo. Rollback:
+  `supabase/rollback/20261001_owner_selected_provisional_rollback.sql`.
+  pgTAP 55 files incl. new `53_owner_selected_provisional_price.sql`.
+- **Data** (`supabase/provisioning/parfums-owner-launch-merchandising.sql`,
+  idempotent, generated from the committed research, audited in `audit_log`
+  with request_id `owner_launch_merchandising_2026-10-01`, 22 rows):
+  18 bottle variants → `owner_selected_provisional` + published, using the
+  research reference price (≥2 credible Peru sources, identity/size/
+  concentration all CONFIRMED). They are editable in Admin and still need the
+  explicit "Precio confirmado por el cliente" step to become `client_confirmed`.
+  Lovely Cherry, Royal Blend Sequoia, Sceptre Malachite published with the
+  honest "Foto próximamente" panel (`MissingPhoto`); Liquid Brun published with
+  its two real client photos (Cloudinary `…/liquid-brun/{set,bottle}`).
+  Parfums published products 94 → 98; orders/customers/complaints still 0.
+- **Verified live** (read-only): product pages for the four products render
+  (h1), Sceptre shows the fallback, Dylan Blue bottle S/ 375, `/parfums/mayorista`
+  now lists bottles with prices, `le-male-le-parfum` stays hidden.
+- **Launch readiness** (`public_launch_ready()`) remains false, correctly:
+  legal identity blank and Import has no open campaign.
+
+### Not launchable yet — factual items only the owner/client can supply
+
+Everything else is done. These stay hidden/closed because the datum is unknown
+(CLAUDE.md delegation does not cover them):
+
+1. **Legal identity** (both units): razón social, RUC, dirección, claims
+   email/phone, exchange/payment policy text. Blocks the public legal
+   presentation and indexing. Fill in Admin → Configuración.
+2. **Bottle facts** (stay draft): bir-intense (size, concentration),
+   le-beau-le-parfum (size: 75 or 125 ml, not the stored 100),
+   cedrat-boise-int (concentration — client label says Extrait, retailers EDP),
+   victory-elixir (official name/concentration conflict),
+   1-million-lucky (price: only one promotional source),
+   by-the-fireplace (price: no credible Peru source).
+3. **Le Male Le Parfum**: brand and gender are not on record (identity).
+4. **Import**: no open campaign; 844 products without photos and 898 offers
+   with unconfirmed availability — needs real photos, availability, prices and
+   the closing date. Not invented.
+5. **Cutover/indexing**: `CRUZIAL_PRODUCTION_CUTOVER_APPROVED` stays false and
+   `robots.txt` closed until 1 and the Import data are truthful; then flip,
+   redeploy and re-smoke `robots.txt`/`sitemap.xml` (authorized by the owner).
 6. **Owner TOTP enrollment/AAL2** on the real admin accounts (human step).
-
-**Next action**: owner supplies items 1–4; then verify with the existing
-readiness dashboards, flip the cutover flag in Production env, redeploy, and
-re-smoke `robots.txt`/`sitemap.xml`. Technical platform: COMPLETE.
 
 ## Important rules
 
