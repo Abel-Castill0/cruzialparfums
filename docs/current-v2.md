@@ -1674,22 +1674,26 @@ console/hydration guard on 13 public routes + 404, npm audit 0.
 Verified directly (GitHub, Supabase MCP, Vercel CLI under the `cruzial` team
 login, live HTTP) — not copied from earlier reports.
 
-- **master**: `bf56db617b5c546082d5151808ae51abf897a047`. Admin UX program is
-  fully merged: Phase A foundation (#21), B1 orders/consolidado/publication
-  (#22), B2A catalog + Import customers (#23), B2B combos + Mayorista (#24),
-  C1 Configuración + Libro de Reclamaciones (#25, `2a0e2a65`). UI/presentation
-  only — **no migration** was added by any of them. Master CI on the final
-  HEAD: Web, Database (migrations · pgTAP), Browser E2E, CodeQL, Secret scan,
-  Vercel — all success.
-- **Dependabot**: merged #14 (supabase-js 2.117.1), #7 (vitest 5.0.1), #9
-  (@types/node 26), #4 (react/@types/react) — each had every required check
-  green. Left open on purpose: #5 eslint 10, #6 react-dom, #10 TypeScript 7
-  (required Web/E2E checks FAIL — incompatible, not integrated), #8
-  @supabase/ssr patch (merge conflict with the lockfile; dependabot must
-  rebase it).
+- **master**: `3c016b0ee56b55a3f8ae0b9192c8ad18195b023c` (code HEAD; later
+  docs-only commits do not change the application). Admin UX program is fully
+  merged: Phase A foundation (#21), B1 (#22), B2A (#23), B2B (#24), C1 (#25).
+  UI/presentation only — **no migration** was added by any of them. Master CI
+  on the final code HEAD: Web, Database (migrations · pgTAP), Browser E2E,
+  CodeQL, Secret scan, Vercel — all success.
+- **Corrected 2026-10-01**: (1) merging dependabot #4 left `react` 19.3.0 with
+  `react-dom` 19.2.8 (mismatched); #27 pins react-dom 19.3.0 and supersedes #6
+  (closed). (2) Neither dashboard said that `business_legal` is blank; #28 adds
+  an attention item ("Faltan datos legales del negocio — Falta: razón social,
+  RUC, …") on both Parfums and Import dashboards linking to Configuración
+  (`legal-readiness.ts`, unit-tested; presentation only).
+- **Dependabot**: merged #14 (supabase-js), #7 (vitest), #9 (@types/node), #4
+  (react), and #27 replaces #6. Open on purpose: #5 eslint 10 and #10
+  TypeScript 7 (required Web/E2E checks fail — incompatible with the current
+  toolchain, not integrated), #8 @supabase/ssr patch (lockfile conflict;
+  needs a dependabot rebase, low priority).
 - **Production (Vercel)**: `cruzial.pe`, `www.cruzial.pe` and the git-master
-  alias serve deployment `cruzial-platform-v2-40x38dkdz-cruzial` built from
-  master `bf56db6` (Ready). Smoke (read-only, no data created): `/` 200,
+  alias serve deployment `cruzial-platform-v2-a4vr1fuvn-cruzial` built from
+  master `3c016b0` (Ready, verified via build log + aliases). Smoke (read-only, no data created): `/` 200,
   `/parfums` 200, `/import` 200, `/parfums/catalogo` 200,
   `/libro-de-reclamaciones` 200, unknown route 404, `www` → apex redirect,
   `/admin` → `/admin/login`, protected `/admin/parfums/*` → 307 (no content
@@ -1705,9 +1709,9 @@ login, live HTTP) — not copied from earlier reports.
   authenticated = the admin RPC surface, by design), WARN leaked-password
   protection (Free-plan limitation, accepted above).
 - **Rollback reference**: `supabase/rollback/20260927_final_cutover_rollback.sql`
-  (see PR #13 section); previous Production deployment
-  `cruzial-platform-v2-8fzcxqape-cruzial` (master `2a0e2a6`) remains a valid
-  Vercel rollback target.
+  (see PR #13 section); previous Production deployments
+  (`…-40x38dkdz` master `bf56db6`, `…-8fzcxqape` master `2a0e2a6`) remain valid
+  Vercel rollback targets.
 - **Closed gates**: Gate B, final completion cutover (#13), Admin UX A–C1.
   No regression evidence found; closed capabilities were not re-audited.
 
