@@ -1880,13 +1880,26 @@ anchors `#faq` `#catalogo` `#como-funciona`, `#campaign-title`,
   home at 1440 and 390; no horizontal overflow at 360–2560; CLS 0; marquee
   drift/pause/arrows/reduced-motion verified in Chromium.
 
-## Storefront homes and Import launch preparation (branch codex/home-polish-parfums-import — release candidate)
+## Storefront homes and Import launch preparation (Production release, PR #35)
 
-Second pass on `/parfums` and `/import`. Production has not been changed by
-this release candidate. The approved deploy plan adds read-only Import preview
-RPCs and prepares an editable Octavo Consolidado from the reviewed Sexto
-Consolidado price references; Production provisioning remains a separate,
-guarded step after the schema deploy.
+Merged to `master` as `0e85c030b9c84ae1bc07b48178882d42319ea66e` from PR #35
+(approved HEAD `adf2ef4261302bf7c382a527213d84aa1d76f83e`). Vercel Production
+deployment `dpl_5JH6KusvauCAxDuuwL2EJPdMf3Wp` is Ready and serves
+`cruzial.pe` and `www.cruzial.pe`. Supabase migration
+`20261002045724_import_octavo_preview_and_wholesale_transfer` is applied;
+Production has 80 migrations.
+
+The guarded Import data preparation is complete. Campaign 8 is `scheduled`,
+with an estimated opening on 2026-10-15 at 00:00 Lima time. It has 898 price
+reference offers for 830 distinct products copied from the reviewed Sixth
+Consolidado PDF; all availability remains `unconfirmed`. The public catalog is
+read-only and checkout remains disabled until the client confirms the final
+product list, prices and availability. No campaign opens automatically.
+Production smoke checks passed for `/`, `/parfums`, `/import`, a filtered Import
+view and `robots.txt`; the import views show the Octavo preview. Production
+runtime errors: none in the first 30 minutes after deploy. Master CI passed,
+including web/build/unit, migration/pgTAP, browser E2E, CodeQL, secret scan and
+pages build.
 
 - Both homes follow one order: 1 hero · 2 product rail · 3 category doors ·
   4 discovery (Parfums: recommender + real families/notes; Import: search, brands
@@ -1924,14 +1937,14 @@ guarded step after the schema deploy.
 - Import category doors are rendered after the product rail and before its
   searchable catalog in the read-only campaign preview. A closed or unavailable
   state has a clear notice and never exposes purchase actions.
-- The release plan creates Import campaign 8 as `scheduled`, with an estimated
+- Import campaign 8 is `scheduled`, with an estimated
   opening on 2026-10-15 Lima time. It copies 898 price-backed offers from the
   Sexto PDF (830 distinct products); every offer remains `unconfirmed` and the
   public preview cannot add items to a cart. The owner can change the campaign
   name, dates, products and prices from the Import dashboard before opening.
   Products with ambiguous or missing reference prices stay out until reviewed.
 - The loader no longer classifies every unknown Import segment as Arabic. Its
-  guarded Production data step removes 415 erroneous Arabic assignments and
+  guarded Production data step removed 415 erroneous Arabic assignments and
   preserves unclassified products until the client identifies their family.
 - Import: TikTok module embeds the public video
   `https://www.tiktok.com/@cruzialperu/video/7657015388252720402` (oEmbed title
@@ -1955,6 +1968,8 @@ OWNER FOLLOW-UP AFTER TECHNICAL RELEASE (not invented):
    Parfums image collection.
 4. Keep public indexing disabled until the legal identity and contact details
    are complete and a deliberate public launch is approved.
+5. `robots.txt` remains `Disallow: /`; indexing and the Production cutover flag
+   were not changed. The deployment only publishes the preview and UX updates.
 
 ## Important rules
 
