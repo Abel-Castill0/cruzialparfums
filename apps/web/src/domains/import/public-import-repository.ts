@@ -6,12 +6,15 @@ import {
   IMPORT_CATALOG_PAGE_SIZE,
   mapPublicImportProduct,
   mapPublicImportProducts,
+  mapPublicImportPreviewProduct,
   selectPublicImportCampaign,
   type PublicImportCampaign,
   type PublicImportCampaignRow,
   type PublicImportCategory,
   type PublicImportFilters,
   type PublicImportProduct,
+  type PublicImportPreviewProduct,
+  type PublicImportWholesaleRule,
 } from "./public-import";
 
 type RpcResult = Promise<{ data: unknown; error: PostgrestError | null }>;
@@ -31,6 +34,28 @@ type ProductRow = Parameters<typeof mapPublicImportProduct>[0] & {
 };
 
 type CategoryRow = { slug: string; name: string; product_count: number | string };
+type PreviewRow = {
+  campaign_id: string;
+  campaign_number: number;
+  product_id: string;
+  slug: string;
+  name: string;
+  brand: string | null;
+  category_slug: string | null;
+  category_name: string | null;
+  media_url: string | null;
+  media_alt: string | null;
+  presentations: Json;
+  total_count: number | string;
+};
+type PreviewCampaignRow = {
+  campaign_id: string;
+  campaign_number: number;
+  campaign_name: string;
+  opens_at: string | null;
+  closes_at: string | null;
+  public_message: string | null;
+};
 
 export type PublicImportPageResult =
   | { status: "closed" }
@@ -40,6 +65,14 @@ export type PublicImportPageResult =
       campaign: PublicImportCampaign;
       categories: PublicImportCategory[];
       products: PublicImportProduct[];
+      total: number;
+      totalPages: number;
+    }
+  | {
+      status: "upcoming";
+      campaign: PublicImportCampaign;
+      categories: PublicImportCategory[];
+      products: PublicImportPreviewProduct[];
       total: number;
       totalPages: number;
     };
@@ -67,10 +100,76 @@ export class PublicImportRepository {
    */
   async readCatalog(filters: PublicImportFilters): Promise<PublicImportPageResult> {
     const first = await this.attemptReadCatalog(filters);
-    if (first !== "mismatch") return first;
+    if (first !== "mismatch") {
+      if (first.status !== "closed") return first;
+      return this.readUpcomingCatalog(filters);
+    }
 
     const second = await this.attemptReadCatalog(filters);
-    return second === "mismatch" ? { status: "error" } : second;
+    if (second === "mismatch") return { status: "error" };
+    return second.status === "closed" ? this.readUpcomingCatalog(filters) : second;
+  }
+
+  async readWholesaleRules(): Promise<PublicImportWholesaleRule[]> {
+    const result = await this.rpc("public_get_import_wholesale_rules");
+    if (result.error || !Array.isArray(result.data)) return [];
+    return (result.data as Array<Record<string, unknown>>).flatMap((row) => {
+      const commercialType = row.commercial_type;
+      const minQuantity = Number(row.min_quantity);
+      if (
+        (commercialType !== "arabic" && commercialType !== "designer" && commercialType !== "niche") ||
+        !Number.isSafeInteger(minQuantity) || minQuantity < 1 ||
+        (typeof row.discount_amount !== "string" && typeof row.discount_amount !== "number") ||
+        row.currency !== "PEN"
+      ) return [];
+      return [{ commercialType, minQuantity, discountAmount: String(row.discount_amount), currency: "PEN" }];
+    });
+  }
+
+  private async readUpcomingCatalog(filters: PublicImportFilters): Promise<PublicImportPageResult> {
+    const campaignResult = await this.rpc("public_get_import_upcoming_campaign");
+    if (campaignResult.error) return { status: "error" };
+    const rows = (campaignResult.data ?? []) as PreviewCampaignRow[];
+    if (rows.length !== 1) return { status: "closed" };
+    const row = rows[0]!;
+    const campaign = selectPublicImportCampaign([{
+      id: row.campaign_id,
+      number: row.campaign_number,
+      name: row.campaign_name,
+      opens_at: row.opens_at,
+      closes_at: row.closes_at,
+      public_message: row.public_message,
+    }]);
+    if (!campaign || !campaign.opensAt) return { status: "closed" };
+
+    const [categoryResult, catalogResult] = await Promise.all([
+      this.rpc("public_list_import_preview_categories"),
+      this.rpc("public_list_import_campaign_preview", {
+        p_query: filters.query || null,
+        p_category_slug: filters.category || null,
+        p_page: filters.page,
+        p_page_size: IMPORT_CATALOG_PAGE_SIZE,
+      }),
+    ]);
+    if (categoryResult.error || catalogResult.error) return { status: "error" };
+    const categories = ((categoryResult.data ?? []) as CategoryRow[]).map((category) => ({
+      slug: category.slug,
+      name: category.name,
+      productCount: Number(category.product_count),
+    }));
+    const products = ((catalogResult.data ?? []) as PreviewRow[]).map(mapPublicImportPreviewProduct)
+      .filter((product): product is PublicImportPreviewProduct => product !== null);
+    const resultRows = (catalogResult.data ?? []) as PreviewRow[];
+    if (resultRows.some((product) => product.campaign_id !== campaign.id)) return { status: "error" };
+    const total = Number(resultRows[0]?.total_count ?? 0);
+    return {
+      status: "upcoming",
+      campaign,
+      categories,
+      products,
+      total,
+      totalPages: Math.max(1, Math.ceil(total / IMPORT_CATALOG_PAGE_SIZE)),
+    };
   }
 
   private async attemptReadCatalog(

@@ -45,6 +45,35 @@ export type PublicImportProduct = {
   presentations: PublicImportPresentation[];
 };
 
+/** Read-only preview data for a future scheduled campaign. It deliberately
+ * has no offer ids, version token, or availability that could enter a cart. */
+export type PublicImportPreviewProduct = {
+  id: string;
+  slug: string;
+  name: string;
+  brand: string | null;
+  categorySlug: string | null;
+  categoryName: string | null;
+  mediaUrl: string;
+  mediaAlt: string;
+  hasApprovedMedia: boolean;
+  presentations: Array<{
+    id: string;
+    label: string;
+    presentationClass: PublicImportPresentationClass;
+    capacityMl: number | null;
+    price: string;
+    currency: string;
+  }>;
+};
+
+export type PublicImportWholesaleRule = {
+  commercialType: "arabic" | "designer" | "niche";
+  minQuantity: number;
+  discountAmount: string;
+  currency: string;
+};
+
 export type PublicImportCategory = {
   slug: string;
   name: string;
@@ -164,6 +193,8 @@ type ProductRpcRow = {
   presentations: Json;
 };
 
+type PreviewProductRpcRow = Omit<ProductRpcRow, "presentations"> & { presentations: Json };
+
 export function mapPublicImportProduct(row: ProductRpcRow): PublicImportProduct | null {
   const presentations = mapPublicImportPresentations(row.presentations);
   if (!row.product_id || !row.slug || !row.name || presentations.length === 0) return null;
@@ -188,6 +219,41 @@ export function mapPublicImportProducts(rows: ProductRpcRow[]): PublicImportProd
   return rows
     .map(mapPublicImportProduct)
     .filter((product): product is PublicImportProduct => product !== null);
+}
+
+export function mapPublicImportPreviewProduct(row: PreviewProductRpcRow): PublicImportPreviewProduct | null {
+  if (!row.product_id || !row.slug || !row.name || !Array.isArray(row.presentations)) return null;
+  const presentations = row.presentations.flatMap((value) => {
+    if (!isRecord(value)) return [];
+    const presentationClass = value.class;
+    if (
+      typeof value.id !== "string" || typeof value.label !== "string" ||
+      typeof presentationClass !== "string" || !PRESENTATION_CLASSES.has(presentationClass as PublicImportPresentationClass) ||
+      typeof value.price !== "string" || typeof value.currency !== "string"
+    ) return [];
+    return [{
+      id: value.id,
+      label: value.label,
+      presentationClass: presentationClass as PublicImportPresentationClass,
+      capacityMl: typeof value.capacityMl === "number" ? value.capacityMl : null,
+      price: value.price,
+      currency: value.currency,
+    }];
+  });
+  if (presentations.length === 0) return null;
+  const hasApprovedMedia = Boolean(row.media_url);
+  return {
+    id: row.product_id,
+    slug: row.slug,
+    name: row.name,
+    brand: row.brand,
+    categorySlug: row.category_slug,
+    categoryName: row.category_name,
+    mediaUrl: row.media_url || IMPORT_FALLBACK_MEDIA,
+    mediaAlt: row.media_url ? row.media_alt?.trim() || `${row.brand ? `${row.brand} ` : ""}${row.name}` : "Imagen del producto pendiente",
+    hasApprovedMedia,
+    presentations,
+  };
 }
 
 export function availabilityLabel(value: PublicImportAvailability): string {

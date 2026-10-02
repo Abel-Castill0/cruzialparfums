@@ -90,7 +90,8 @@ describe("mayorista UI contracts", () => {
   const read = (relative: string) => readFileSync(fileURLToPath(new URL(relative, import.meta.url)), "utf8");
   const sources = [
     read("../../app/admin/parfums/mayorista/page.tsx"),
-    read("../../app/admin/parfums/mayorista/policy-editor.tsx"),
+    read("../../app/admin/import/mayorista/page.tsx"),
+    read("../../app/admin/import/mayorista/actions.ts"),
     read("./wholesale-presentation.ts"),
   ];
 
@@ -102,14 +103,14 @@ describe("mayorista UI contracts", () => {
     }
   });
 
-  it("never computes a wholesale price in React", () => {
-    const page = sources[0]!;
-    expect(page).toMatch(/item\.wholesale_price_amount === null/);
-    expect(page).not.toMatch(/base_price_amount\s*-/);
-    expect(page).not.toMatch(/discount_amount/);
+  it("keeps the Parfums admin route pointed at the Import workspace", () => {
+    expect(sources[0]).toMatch(/redirect\("\/admin\/import\/mayorista"/);
   });
 
-  it("keeps the policy action bound to the row's current updated_at", () => {
-    expect(sources[1]).toMatch(/updateWholesalePolicyAction\.bind\(null, current\.id, current\.updated_at\)/);
+  it("scopes changes to Import membership and checks the policy's current version", () => {
+    expect(sources[2]).toMatch(/requireUnitAdmin\("import"\)/);
+    expect(sources[2]).toMatch(/expectedUpdatedAt/);
+    expect(sources[2]).toMatch(/business_unit_id", auth\.membership\.businessUnitId/);
+    expect(sources[2]).toMatch(/admin_update_wholesale_policy/);
   });
 });

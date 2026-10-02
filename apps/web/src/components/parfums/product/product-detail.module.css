@@ -465,43 +465,6 @@
   margin-top: 13px;
 }
 
-.wholesaleLink {
-  order: 6;
-  margin-top: 28px;
-  padding: 18px;
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
-  gap: 14px;
-  border: 1px solid rgba(26, 22, 18, 0.12);
-}
-
-.wholesaleLink > span {
-  color: #0a0806;
-  font-size: 20px;
-}
-
-.wholesaleLink strong {
-  color: #2c2925;
-  font-family: var(--font-display), Georgia, serif;
-  font-size: 16px;
-  font-weight: 500;
-}
-
-.wholesaleLink p {
-  margin-top: 3px;
-  color: #756f66;
-  font-size: 11px;
-}
-
-.wholesaleLink a {
-  color: #5f594f;
-  font-size: 9px;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
 
 .relatedSection {
   padding-bottom: clamp(82px, 10vw, 140px);
@@ -547,7 +510,7 @@
 
 .toast {
   position: fixed;
-  z-index: 300;
+  z-index: 75; /* above page content and the WhatsApp button (70), below the header and every dialog in it (80) */
   right: 24px;
   bottom: 88px;
   max-width: min(390px, calc(100% - 32px));
@@ -633,9 +596,6 @@
     order: 5;
   }
 
-  .wholesaleLink {
-    order: 6;
-  }
 
   .detailActions {
     grid-template-columns: 1fr;
@@ -690,13 +650,6 @@
     font-size: 15px;
   }
 
-  .wholesaleLink {
-    grid-template-columns: auto 1fr;
-  }
-
-  .wholesaleLink a {
-    grid-column: 2;
-  }
 }
 
 @media (max-width: 359px) {

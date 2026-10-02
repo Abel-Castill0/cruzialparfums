@@ -2,12 +2,14 @@
 
 import type { Route } from "next";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   useCallback,
   useEffect,
   useMemo,
   useRef,
   useState,
+  type KeyboardEvent as ReactKeyboardEvent,
   type RefObject,
 } from "react";
 import {
@@ -73,10 +75,24 @@ function useDialogAccessibility(
       }
     };
     document.addEventListener("keydown", onKeyDown);
-    const preferred =
-      containerRef.current?.querySelector<HTMLElement>("[data-autofocus]");
-    preferred?.focus();
+    // Focus on the next frame: the dialog flips from visibility:hidden to
+    // visible in this same commit, and focusing a not-yet-visible element is
+    // silently ignored (typing then went nowhere).
+    let frame = 0;
+    let attempts = 0;
+    const focusWhenVisible = () => {
+      const target = containerRef.current?.querySelector<HTMLElement>("[data-autofocus]");
+      target?.focus();
+      // Under reduced motion the visibility flip can land a frame or two
+      // later; keep trying briefly until focus really moved inside.
+      if (target && document.activeElement !== target && attempts < 12) {
+        attempts += 1;
+        frame = requestAnimationFrame(focusWhenVisible);
+      }
+    };
+    frame = requestAnimationFrame(focusWhenVisible);
     return () => {
+      cancelAnimationFrame(frame);
       document.body.style.overflow = previousOverflow;
       document.removeEventListener("keydown", onKeyDown);
       if (previousFocus instanceof HTMLElement) previousFocus.focus();
@@ -118,6 +134,7 @@ export function CartTrigger({ onOpen, products }: { onOpen: () => void; products
 }
 
 function SearchPanel({ products, open, onClose }: { products: HeaderSearchProduct[]; open: boolean; onClose: () => void }) {
+  const router = useRouter();
   const [query, setQuery] = useState("");
   const panelRef = useRef<HTMLDivElement>(null);
   const closeAndReset = useCallback(() => {
@@ -126,35 +143,73 @@ function SearchPanel({ products, open, onClose }: { products: HeaderSearchProduc
   }, [onClose]);
   useDialogAccessibility(open, closeAndReset, panelRef);
 
+  const needle = query.trim();
   const results = useMemo(() => {
-    const needle = query.trim().toLocaleLowerCase("es");
-    if (!needle) return [];
+    const lowered = needle.toLocaleLowerCase("es");
+    if (!lowered) return [];
     return products
       .filter((product) =>
         `${product.brand} ${product.name} ${product.notes.join(" ")} ${product.family}`
           .toLocaleLowerCase("es")
-          .includes(needle),
+          .includes(lowered),
       )
       .slice(0, 8);
-  }, [products, query]);
+  }, [products, needle]);
+
+  const catalogHref = `/parfums/catalogo?search=${encodeURIComponent(needle)}` as Route;
+
+  function moveThroughResults(event: ReactKeyboardEvent<HTMLElement>) {
+    if (event.key !== "ArrowDown" && event.key !== "ArrowUp") return;
+    const items = Array.from(panelRef.current?.querySelectorAll<HTMLElement>("[data-search-result]") ?? []);
+    if (items.length === 0) return;
+    event.preventDefault();
+    const input = panelRef.current?.querySelector<HTMLElement>("[data-autofocus]");
+    const current = items.indexOf(document.activeElement as HTMLElement);
+    if (event.key === "ArrowDown") (items[current + 1] ?? items[0])?.focus();
+    else if (current <= 0) input?.focus();
+    else items[current - 1]?.focus();
+  }
 
   return (
-    <div ref={panelRef} className={`${styles.searchPanel} ${open ? styles.panelOpen : ""}`} role="dialog" aria-modal="true" aria-label="Buscar fragancias" aria-hidden={!open}>
+    <div
+      ref={panelRef}
+      className={`${styles.searchPanel} ${open ? styles.panelOpen : ""}`}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Buscar fragancias"
+      aria-hidden={!open}
+      inert={!open}
+      onKeyDown={moveThroughResults}
+    >
       <button type="button" className={styles.closePanel} onClick={closeAndReset} aria-label="Cerrar búsqueda">×</button>
-      <div className={styles.searchInner}>
+      <form
+        className={styles.searchInner}
+        role="search"
+        onSubmit={(event) => {
+          event.preventDefault();
+          if (!needle) return;
+          closeAndReset();
+          router.push(catalogHref);
+        }}
+      >
         <p className={styles.eyebrow}>Buscar en Cruzial</p>
-        <input data-autofocus className={styles.searchInput} type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Busca por marca, perfume o nota…" autoComplete="off" aria-label="Buscar fragancias" />
+        <input data-autofocus className={styles.searchInput} type="search" enterKeyHint="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Marca, perfume o nota…" autoComplete="off" aria-label="Buscar fragancias" />
         <div className={styles.searchResults} aria-live="polite">
-          {query && results.length === 0 ? <p>No encontramos coincidencias.</p> : null}
+          {needle && results.length === 0 ? <p>No encontramos coincidencias para “{needle}”. Prueba con otra marca o nota.</p> : null}
           {results.map((product) => (
-            <Link key={product.slug} href={`/parfums/productos/${product.slug}` as Route} onClick={closeAndReset}>
+            <Link key={product.slug} data-search-result href={`/parfums/productos/${product.slug}` as Route} onClick={closeAndReset}>
               <span>{product.brand}</span>
               <strong>{product.name}</strong>
               {product.discontinued ? <small>Descontinuado</small> : null}
             </Link>
           ))}
+          {needle && results.length > 0 ? (
+            <Link data-search-result className={styles.searchAll} href={catalogHref} onClick={closeAndReset}>
+              Ver todo en el catálogo <span aria-hidden="true">→</span>
+            </Link>
+          ) : null}
         </div>
-      </div>
+      </form>
     </div>
   );
 }
@@ -170,7 +225,7 @@ function CartDrawer({ open, onClose, products }: { open: boolean; onClose: () =>
   return (
     <>
       <button type="button" aria-label="Cerrar carrito" className={`${styles.drawerOverlay} ${open ? styles.drawerOpen : ""}`} onClick={onClose} />
-      <aside ref={drawerRef} className={`${styles.drawer} ${open ? styles.drawerOpen : ""}`} data-cart-drawer aria-label="Carrito de compras" aria-modal="true" role="dialog" aria-hidden={!open}>
+      <aside ref={drawerRef} className={`${styles.drawer} ${open ? styles.drawerOpen : ""}`} data-cart-drawer aria-label="Carrito de compras" aria-modal="true" role="dialog" aria-hidden={!open} inert={!open}>
         <div className={styles.drawerHead}>
           <strong>Tu selección</strong>
           <button data-autofocus type="button" onClick={onClose} aria-label="Cerrar carrito">×</button>
@@ -212,7 +267,7 @@ export function MobileMenu({ navItems, open, onClose }: { navItems: readonly Nav
   const menuRef = useRef<HTMLDivElement>(null);
   useDialogAccessibility(open, onClose, menuRef);
   return (
-    <div ref={menuRef} className={`${styles.mobileMenu} ${open ? styles.menuOpen : ""}`} role="dialog" aria-label="Menú de navegación" aria-modal="true" aria-hidden={!open}>
+    <div ref={menuRef} className={`${styles.mobileMenu} ${open ? styles.menuOpen : ""}`} role="dialog" aria-label="Menú de navegación" aria-modal="true" aria-hidden={!open} inert={!open}>
       <button data-autofocus type="button" className={styles.closeMobile} onClick={onClose} aria-label="Cerrar menú">×</button>
       {navItems.map((item) => <Link key={item.href} href={item.href as Route} onClick={onClose}>{item.label}</Link>)}
       <div className={styles.menuSeparator} aria-hidden="true" />

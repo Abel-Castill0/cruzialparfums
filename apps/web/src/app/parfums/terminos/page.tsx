@@ -30,7 +30,7 @@ export default async function TerminosPage() {
         <div className={styles.legalTop}>
           <p className={styles.eyebrow}>Legal</p>
           <h1>Términos y Condiciones</h1>
-          <p className={styles.legalUpdated}>Última actualización: 20 de septiembre de 2026</p>
+          <p className={styles.legalUpdated}>Última actualización: 1 de octubre de 2026</p>
         </div>
 
         <div className={styles.legalBody}>
@@ -44,7 +44,6 @@ export default async function TerminosPage() {
           <h2>3. Productos y Precios</h2>
           <ul>
             <li>Los precios mostrados en el catálogo son en Soles peruanos (S/).</li>
-            <li>Los precios de venta por mayor están sujetos a las condiciones de cantidad indicadas en la página de mayorista.</li>
             <li>Los precios del catálogo y los detalles finales de tu pedido se confirman antes de cerrar la venta por WhatsApp.</li>
             <li>Las imágenes del catálogo son representativas. El producto final puede variar ligeramente en color o diseño del frasco respecto a la imagen publicada.</li>
           </ul>
@@ -71,8 +70,7 @@ export default async function TerminosPage() {
           <h2>8. Regalo: Decant 2 ml</h2>
           <p>Con la compra de un frasco completo, el cliente puede solicitar un decant de 2 ml. Esta promoción:</p>
           <ul>
-            <li>Solo aplica con la compra de un frasco completo; no aplica a decants (3, 5 o 10 ml) por sí solos.</li>
-            <li>No aplica en pedidos mayoristas.</li>
+            <li>Aplica a pedidos minoristas de Cruzial Parfums que incluyan un frasco completo; no aplica a decants (3, 5 o 10 ml) comprados por sí solos.</li>
           </ul>
 
           <h2>9. Propiedad Intelectual</h2>

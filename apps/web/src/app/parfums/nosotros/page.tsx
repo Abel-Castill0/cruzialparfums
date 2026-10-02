@@ -71,10 +71,6 @@ const faqs = [
     q: "¿Qué presentación tienen los decants?",
     a: "La perfumería árabe se presenta en decant clásico. En diseñador y nicho, los formatos de 5 y 10 ml usan decant premium y el de 3 ml presentación clásica.",
   },
-  {
-    q: "¿Compran al por mayor?",
-    a: "Sí. Tenemos tarifas especiales para revendedores, tiendas, barberías y creadores. Escríbenos por WhatsApp o revisa nuestra sección Mayorista.",
-  },
 ];
 
 export default async function NosotrosPage() {
@@ -126,8 +122,8 @@ export default async function NosotrosPage() {
                 <Link className={styles.btnPrimary} href="/parfums/catalogo">
                   Conocer la colección <span aria-hidden="true">→</span>
                 </Link>
-                <Link className={styles.btnGhost} href="/parfums/mayorista">
-                  Venta por mayor <span aria-hidden="true">→</span>
+                <Link className={styles.btnGhost} href="/parfums/contacto">
+                  Escribirnos <span aria-hidden="true">→</span>
                 </Link>
               </div>
             </div>

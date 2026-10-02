@@ -145,11 +145,13 @@
     gap: 13px;
   }
 
+  /* The subtotal gets its own row under the actions. It used to be pulled up
+     with a negative margin, which collided with a wrapped "Eliminar". */
   .subtotal {
     grid-column: 2;
     grid-row: 2;
     justify-self: end;
-    margin-top: -34px;
+    margin-top: 0;
   }
 
   .compact {

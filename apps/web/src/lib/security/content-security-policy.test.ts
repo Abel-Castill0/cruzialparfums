@@ -28,11 +28,16 @@ describe("Content-Security-Policy", () => {
     expect(csp).toContain("font-src 'self'");
   });
 
-  it("adds no frame exception while no home video is configured", () => {
-    const csp = buildContentSecurityPolicy("n", { development: false });
+  it("adds no frame exception unless a home video needs it", () => {
+    const csp = buildContentSecurityPolicy("n", { development: false, tiktokEmbed: false });
     expect(csp).not.toContain("frame-src");
     expect(csp).not.toContain("tiktok");
     expect(csp).toContain("frame-ancestors 'none'");
+  });
+
+  it("follows the configured videos by default (Import has one)", () => {
+    const csp = buildContentSecurityPolicy("n", { development: false });
+    expect(csp).toContain("frame-src 'self' https://www.tiktok.com;");
   });
 
   it("allows only the TikTok player frame once a video is configured", () => {

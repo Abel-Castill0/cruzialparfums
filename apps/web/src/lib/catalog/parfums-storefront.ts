@@ -8,14 +8,6 @@ import { SupabasePublicCatalogRepository } from "@/domains/catalog/supabase-publ
 import type { PublicProductRow } from "@/domains/catalog/supabase-public-catalog-repository";
 import type { CatalogProduct, PublicCatalogRepository } from "@/domains/catalog/types";
 import { PARFUMS_SETTINGS, type BusinessUnitSettings } from "@/domains/platform/settings";
-import {
-  buildWholesaleOffers,
-  mapWholesalePolicies,
-  type WholesaleOffer,
-  type WholesalePolicy,
-  type WholesalePolicyRow,
-} from "@/domains/wholesale/wholesale-offer";
-import { PARFUMS_BUSINESS_UNIT_ID } from "@/domains/catalog/supabase-public-catalog-repository";
 import { createSupabasePublicServerClient } from "@/lib/supabase/server";
 import { PARFUMS_CATALOG_CACHE_TAG, PARFUMS_CATALOG_REVALIDATE_SECONDS } from "./parfums-storefront-cache";
 
@@ -49,7 +41,6 @@ export type ParfumsStorefront = {
   source: ParfumsStorefrontSource;
   catalog: PublicCatalogRepository;
   contact: BusinessUnitSettings;
-  wholesale: { offers: WholesaleOffer[]; policies: WholesalePolicy[] };
 };
 
 class EmptyCatalogRepository implements PublicCatalogRepository {
@@ -67,7 +58,6 @@ class EmptyCatalogRepository implements PublicCatalogRepository {
 type StorefrontData = {
   rows: PublicProductRow[];
   contact: BusinessUnitSettings | null;
-  policies: WholesalePolicyRow[];
 };
 
 /** Anonymous, cookie-free read: safe to share across requests and visitors. */
@@ -75,16 +65,11 @@ const readStorefrontData = unstable_cache(
   async (): Promise<StorefrontData> => {
     const supabase = createSupabasePublicServerClient();
     if (!supabase) throw new Error("Supabase is not configured");
-    const [rows, contact, policies] = await Promise.all([
+    const [rows, contact] = await Promise.all([
       SupabasePublicCatalogRepository.fetchPublicRows(supabase),
       readParfumsPublicContact(supabase).catch(() => null),
-      supabase
-        .from("wholesale_policies")
-        .select("scope, commercial_type, name, min_quantity, discount_amount, currency, is_active, archived_at")
-        .eq("business_unit_id", PARFUMS_BUSINESS_UNIT_ID)
-        .then(({ data, error }) => (error ? [] : data ?? [])),
     ]);
-    return { rows, contact, policies };
+    return { rows, contact };
   },
   ["parfums-storefront-data"],
   { revalidate: PARFUMS_CATALOG_REVALIDATE_SECONDS, tags: [PARFUMS_CATALOG_CACHE_TAG] },
@@ -94,17 +79,12 @@ async function loadFromSupabase(): Promise<ParfumsStorefront | null> {
   if (!createSupabasePublicServerClient()) return null;
 
   try {
-    const { rows, contact, policies } = await readStorefrontData();
+    const { rows, contact } = await readStorefrontData();
     const catalog = SupabasePublicCatalogRepository.fromPublicRows(rows);
-    const wholesalePolicies = mapWholesalePolicies(policies);
     return {
       source: "supabase",
       catalog,
       contact: contact ?? PARFUMS_SETTINGS,
-      wholesale: {
-        offers: buildWholesaleOffers(catalog.listFragrances(), wholesalePolicies),
-        policies: wholesalePolicies,
-      },
     };
   } catch (error) {
     // Operational signal only: no request data, no secrets, no PII.
@@ -115,7 +95,6 @@ async function loadFromSupabase(): Promise<ParfumsStorefront | null> {
       source: "unavailable",
       catalog: new EmptyCatalogRepository(),
       contact: PARFUMS_SETTINGS,
-      wholesale: { offers: [], policies: [] },
     };
   }
 }
@@ -126,9 +105,6 @@ function loadLegacyFixture(): ParfumsStorefront {
     source: "legacy_fixture",
     catalog,
     contact: PARFUMS_SETTINGS,
-    // Legacy `unit/m4/m12` tiers were never client-confirmed; the fixture
-    // fallback shows no wholesale offers rather than unverified prices.
-    wholesale: { offers: [], policies: [] },
   };
 }
 

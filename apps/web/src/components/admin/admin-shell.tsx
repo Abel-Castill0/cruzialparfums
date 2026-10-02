@@ -24,7 +24,6 @@ const NAV: Record<AdminShellUnit, { unitLabel: string; unitHint: string; groups:
           { label: "Productos", href: "/admin/parfums/productos" },
           { label: "Categorías", href: "/admin/parfums/categorias" },
           { label: "Combos", href: "/admin/parfums/combos" },
-          { label: "Mayorista", href: "/admin/parfums/mayorista" as Route },
         ],
       },
       { label: "Atención", items: [{ label: "Reclamos", href: "/admin/parfums/reclamos" as Route }] },
@@ -61,7 +60,7 @@ const NAV: Record<AdminShellUnit, { unitLabel: string; unitHint: string; groups:
           { label: "Clientes", href: "/admin/import/clientes" as Route },
         ],
       },
-      { label: "Catálogo", items: [{ label: "Productos", href: "/admin/import/productos" }] },
+      { label: "Catálogo", items: [{ label: "Productos", href: "/admin/import/productos" }, { label: "Mayorista", href: "/admin/import/mayorista" as Route }] },
       {
         label: "Gestión",
         items: [

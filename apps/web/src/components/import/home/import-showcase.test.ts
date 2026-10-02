@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { PublicImportProduct } from "@/domains/import/public-import";
-import { buildCategoryTiles, toImportShowcaseItems } from "./import-showcase";
+import { buildCategoryTiles, listBrands, toImportShowcaseItems } from "./import-showcase";
 
 function presentation(price: string, availability: "available" | "out_of_stock" = "available") {
   return {
@@ -84,5 +84,17 @@ describe("import home showcase", () => {
     );
     expect(tiles[0]?.image).toBe("/real.webp");
     expect(tiles[1]?.image).toBeNull();
+  });
+
+  it("lists each brand once, in first-seen order, ignoring blanks", () => {
+    const brands = listBrands([
+      product({ brand: "Armaf" }),
+      product({ id: "2", brand: "Lattafa" }),
+      product({ id: "3", brand: "Armaf" }),
+      product({ id: "4", brand: null }),
+      product({ id: "5", brand: "  " }),
+    ]);
+    expect(brands).toEqual(["Armaf", "Lattafa"]);
+    expect(listBrands([product({ brand: "A" }), product({ id: "2", brand: "B" }), product({ id: "3", brand: "C" })], 2)).toEqual(["A", "B"]);
   });
 });

@@ -25,7 +25,8 @@ export const dynamic = "force-dynamic";
 
 export default async function ParfumsLayout({
   children,
-}: Readonly<{ children: React.ReactNode }>) {
+  modal,
+}: Readonly<{ children: React.ReactNode; modal: React.ReactNode }>) {
   const { catalog, contact } = await loadParfumsStorefront();
   const { logoUrl } = PARFUMS_BRAND_MEDIA;
   const whatsappNumber = contact.whatsappNumber;
@@ -38,6 +39,7 @@ export default async function ParfumsLayout({
       <AnnouncementBar />
       <SiteHeader logoUrl={logoUrl} whatsappNumber={whatsappNumber} searchProducts={searchProducts} cartProducts={cartProducts} />
       {children}
+      {modal}
       <SiteFooter logoUrl={logoUrl} whatsappNumber={whatsappNumber} instagramUrl={instagramUrl} />
       <WhatsAppAction number={whatsappNumber} floating />
     </div>

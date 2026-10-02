@@ -2,6 +2,14 @@
 -- Invoked by local-admin-browser.mjs --seed through the loopback-only runner.
 -- Never represents client prices, availability, identity, or product imagery.
 begin;
+-- Import Mayorista editor fixtures: synthetic values on the disposable local
+-- stack only; production provisioning writes its own owner-reviewed policies.
+insert into public.wholesale_policies (business_unit_id,name,scope,commercial_type,min_quantity,discount_amount,currency,notes,is_active)
+select unit.id, rule.name, 'per_commercial_type', rule.commercial_type, rule.min_quantity, rule.discount_amount, 'PEN', 'LOCAL QA — synthetic editor fixture', true
+from public.business_units unit
+cross join (values ('LOCAL QA Mayorista Árabe','arabic',4,1.00::numeric),('LOCAL QA Mayorista Diseñador','designer',4,2.00::numeric),('LOCAL QA Mayorista Nicho','niche',4,3.00::numeric)) as rule(name,commercial_type,min_quantity,discount_amount)
+where unit.code='import'
+on conflict (business_unit_id,commercial_type) where scope='per_commercial_type' and archived_at is null do nothing;
 insert into public.categories(id,business_unit_id,kind,slug,name,publication_status)
 values ('99001000-0000-4000-8000-000000000001','22222222-2222-4222-8222-222222222222','import_category','local-qa','LOCAL QA','published') on conflict do nothing;
 insert into public.products(id,business_unit_id,slug,name,brand,publication_status)

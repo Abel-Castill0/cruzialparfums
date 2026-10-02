@@ -330,7 +330,7 @@ export function CombosExperience({
 
             <div className={styles.picker} role="listbox" aria-label="Selecciona fragancias para tu combo" aria-multiselectable="true">
               {visible.length === 0 ? (
-                <p className={styles.noResults}>No encontramos fragancias con estos criterios.</p>
+                <div className={styles.noResults} role="option" aria-selected="false" aria-disabled="true">No encontramos fragancias con estos criterios.</div>
               ) : null}
               {visible.map((product) => {
                 const line = lines.find((candidate) => candidate.productId === cartIdentity(product));

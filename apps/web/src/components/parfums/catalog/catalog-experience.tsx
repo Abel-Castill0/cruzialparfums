@@ -16,6 +16,9 @@ import {
 } from "@/domains/catalog/promotion-eligibility";
 import type { CatalogProduct } from "@/domains/catalog/types";
 import { SearchIcon } from "@/components/parfums/shell/shell-icons";
+import { RecommendationPanel } from "@/components/parfums/finder/recommendation-panel";
+import { finderAnswersToParams } from "@/domains/finder/finder-url";
+import type { FinderAnswers } from "@/domains/finder/finder-rules";
 import { ProductCard } from "./product-card";
 import styles from "./catalog.module.css";
 
@@ -77,8 +80,15 @@ function FilterSelect({ label, value, onChange, children }: { label: string; val
   );
 }
 
-export function CatalogExperience({ products, initialFilters }: { products: CatalogProduct[]; initialFilters: CatalogFilters }) {
+export function CatalogExperience({ products, initialFilters, initialRecommendation = null }: {
+  products: CatalogProduct[];
+  initialFilters: CatalogFilters;
+  /** Answers of a completed finder questionnaire, already validated. */
+  initialRecommendation?: FinderAnswers | null;
+}) {
   const [filters, setFilters] = useState(initialFilters);
+  const [recommendation, setRecommendation] = useState(initialRecommendation);
+  const recommendationRef = useRef<HTMLDivElement>(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [toast, setToast] = useState("");
   const filterPanelRef = useRef<HTMLDivElement>(null);
@@ -99,12 +109,26 @@ export function CatalogExperience({ products, initialFilters }: { products: Cata
       }
       if (filters.sort !== "featured") params.set("sort", filters.sort);
       if (filters.search.trim()) params.set("search", filters.search);
+      // A completed recommendation stays in the address so a refresh or a
+      // shared link shows the same view.
+      if (recommendation) {
+        for (const [key, value] of finderAnswersToParams(recommendation)) params.set(key, value);
+      }
       const query = params.toString();
       const url = query ? `${window.location.pathname}?${query}` : window.location.pathname;
       window.history.replaceState(null, "", url);
     }, 300);
     return () => clearTimeout(handle);
-  }, [filters]);
+  }, [filters, recommendation]);
+
+  // Arriving from the questionnaire: bring the recommendation into view and
+  // move focus to it so keyboard and screen-reader users land on the result.
+  useEffect(() => {
+    if (!initialRecommendation) return;
+    const panel = recommendationRef.current?.querySelector<HTMLElement>("#recomendacion");
+    panel?.scrollIntoView({ block: "start" });
+    panel?.focus({ preventScroll: true });
+  }, [initialRecommendation]);
 
   useEffect(() => {
     if (!filtersOpen) return;
@@ -154,6 +178,18 @@ export function CatalogExperience({ products, initialFilters }: { products: Cata
     setFilters(DEFAULT_CATALOG_FILTERS);
   }
 
+  // The questionnaire keeps whatever filters are active when it is opened.
+  const finderHref = useMemo(() => {
+    const params = new URLSearchParams();
+    for (const { key } of filterDefinitions) {
+      if (filters[key] !== "all") params.set(key, filters[key]);
+    }
+    if (filters.sort !== "featured") params.set("sort", filters.sort);
+    if (filters.search.trim()) params.set("search", filters.search);
+    const query = params.toString();
+    return (query ? `/parfums/finder?catalog=${encodeURIComponent(query)}` : "/parfums/finder") as Route;
+  }, [filters]);
+
   function announceAdded(message: string) {
     setToast(message);
     window.setTimeout(() => setToast(""), 2800);
@@ -179,11 +215,25 @@ export function CatalogExperience({ products, initialFilters }: { products: Cata
               <p className={styles.eyebrow}>Cruzial Parfums</p>
               <h1>Nuestra <em>Colección</em></h1>
               <p>Explora nuestra selección de decants y frascos completos. Filtra por estilo, familia olfativa o presupuesto.</p>
-              <Link href={"/parfums/finder" as Route} className={styles.finderCta}>Encontrar mi fragancia <span aria-hidden="true">→</span></Link>
+              <Link href={finderHref} className={styles.finderCta}>Encontrar mi fragancia <span aria-hidden="true">→</span></Link>
             </div>
           </div>
         </div>
       </section>
+
+      {recommendation ? (
+        <div className={styles.recommendationBand} ref={recommendationRef}>
+          <div className={styles.container}>
+            <RecommendationPanel
+              products={products}
+              answers={recommendation}
+              redoHref={finderHref}
+              onClear={() => setRecommendation(null)}
+              onNotice={announceAdded}
+            />
+          </div>
+        </div>
+      ) : null}
 
       <section className={styles.catalogLayout} aria-label="Catálogo de perfumes">
         <div className={styles.catalogToolbar}>
@@ -311,7 +361,7 @@ export function CatalogExperience({ products, initialFilters }: { products: Cata
               <p>Prueba ajustando los filtros o buscando otra familia olfativa.</p>
               <div className={styles.emptyStateActions}>
                 <button type="button" onClick={clearFilters}>Limpiar filtros</button>
-                <Link href={"/parfums/finder" as Route} className={styles.emptyStateFinder}>Usar el Finder <span aria-hidden="true">→</span></Link>
+                <Link href={finderHref} className={styles.emptyStateFinder}>Usar el Finder <span aria-hidden="true">→</span></Link>
               </div>
             </div>
           )}
@@ -333,7 +383,7 @@ export function CatalogExperience({ products, initialFilters }: { products: Cata
           <div className={styles.container}>
             <p className={styles.eyebrow}>Cruzial Parfums</p>
             <h2 id="catalog-footer-band-title">¿No encuentras tu <em>fragancia</em>?</h2>
-            <Link href={"/parfums/finder" as Route} className={styles.catalogFooterBandCta}>Usar el Finder <span aria-hidden="true">→</span></Link>
+            <Link href={finderHref} className={styles.catalogFooterBandCta}>Usar el Finder <span aria-hidden="true">→</span></Link>
           </div>
         </div>
       </section>

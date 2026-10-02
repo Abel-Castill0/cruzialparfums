@@ -29,7 +29,8 @@
   margin-inline: auto;
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(260px, 340px);
-  gap: clamp(40px, 8vw, 120px);
+  column-gap: clamp(40px, 8vw, 120px);
+  row-gap: 14px;
   align-items: center;
 }
 
@@ -81,6 +82,20 @@
 
 .link:hover {
   border-bottom-color: var(--vs-ink);
+}
+
+.fallback {
+  grid-column: 2;
+  margin-top: 12px;
+  color: var(--vs-muted);
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.fallback a {
+  color: var(--vs-ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .frame {
@@ -158,6 +173,11 @@
   .frame {
     width: min(78vw, 340px);
     justify-self: center;
+  }
+
+  .fallback {
+    grid-column: 1;
+    text-align: center;
   }
 }
 

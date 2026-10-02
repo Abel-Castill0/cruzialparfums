@@ -1880,6 +1880,82 @@ anchors `#faq` `#catalogo` `#como-funciona`, `#campaign-title`,
   home at 1440 and 390; no horizontal overflow at 360–2560; CLS 0; marquee
   drift/pause/arrows/reduced-motion verified in Chromium.
 
+## Storefront homes and Import launch preparation (branch codex/home-polish-parfums-import — release candidate)
+
+Second pass on `/parfums` and `/import`. Production has not been changed by
+this release candidate. The approved deploy plan adds read-only Import preview
+RPCs and prepares an editable Octavo Consolidado from the reviewed Sexto
+Consolidado price references; Production provisioning remains a separate,
+guarded step after the schema deploy.
+
+- Both homes follow one order: 1 hero · 2 product rail · 3 category doors ·
+  4 discovery (Parfums: recommender + real families/notes; Import: search, brands
+  and the catalog) · 5 brand/operation visuals · 6 TikTok, then FAQ/combos/contact.
+- Parfums hero is artwork only (no added text on it), 100svh minus the announcement bar,
+  slow pausable rotation using the existing `hero-crop.webp` and three GitHub
+  Pages promo images, with mobile focal positions; first image priority, the rest deferred to idle. The
+  header stays out of sight on `/parfums` until the hero scrolls away, the hero's
+  menu button is used or focus enters it; afterwards it never hides on scroll.
+  Other pages keep an always-visible header.
+- Root causes fixed: (1) `backdrop-filter` on the sticky header made it the
+  containing block of its fixed search / cart / menu dialogs, squashing them to
+  the header height with normal motion; the blur now lives on `::before`.
+  (2) Under reduced motion the search input never took focus (focus attempted
+  before the dialog became visible); focus now retries per frame. (3) The cart
+  line pulled the subtotal up with a negative margin that collided with a
+  wrapped "Eliminar" at 320px. (4) The add-to-cart toast sat above the drawer
+  and covered its total/CTA (z-index above the header's stacking context).
+- Recommender: `/parfums/finder` is an intercepted modal over the page it was
+  opened from (`app/parfums/@modal`). Close (X / outside / Escape) goes back to
+  the same page, scroll and focus; only completing it navigates to the catalog,
+  which shows the recommendation computed by the real finder rules from URL
+  params (`rw rf rm ri rn`, validated; partial/forged params are ignored) and
+  keeps the catalog filters. Direct visits close to `/parfums`.
+- Wholesale was removed from the public Parfums journey (page, nav, footer,
+  product detail, Nosotros, home, sitemap, storefront loader, WhatsApp builders,
+  `domains/wholesale`). `/parfums/mayorista` and `/mayorista.html` redirect (307)
+  to `/import`; `/perfumes-enteros.html` to `/parfums/catalogo?format=bottle`.
+  Parfums terms now state the retail gift conditions without wholesale copy.
+  The Import unit gets its own public rules and admin editor, copied from the
+  existing policy values (minimum 40 bottles; per-bottle S/5 Arabic, S/7
+  designer, S/10 niche). Parfums policies are archived in the guarded data
+  provisioning step, with audit history preserved. Import bulk requests remain
+  separately coordinated; the normal cart does not calculate wholesale prices.
+- Import category doors are rendered after the product rail and before its
+  searchable catalog in the read-only campaign preview. A closed or unavailable
+  state has a clear notice and never exposes purchase actions.
+- The release plan creates Import campaign 8 as `scheduled`, with an estimated
+  opening on 2026-10-15 Lima time. It copies 898 price-backed offers from the
+  Sexto PDF (830 distinct products); every offer remains `unconfirmed` and the
+  public preview cannot add items to a cart. The owner can change the campaign
+  name, dates, products and prices from the Import dashboard before opening.
+  Products with ambiguous or missing reference prices stay out until reviewed.
+- The loader no longer classifies every unknown Import segment as Arabic. Its
+  guarded Production data step removes 415 erroneous Arabic assignments and
+  preserves unclassified products until the client identifies their family.
+- Import: TikTok module embeds the public video
+  `https://www.tiktok.com/@cruzialperu/video/7657015388252720402` (oEmbed title
+  "TERCER CONSOLIDADO DE PERFUMERÍA") as Import content only, click-to-load,
+  with a visible "open in TikTok" fallback. CSP adds `frame-src 'self'
+  https://www.tiktok.com` only while a home video is configured. Closed /
+  unavailable states show an honest "catalog is published with each consolidado"
+  notice plus process, conditions, video, FAQ and contact — no products.
+- Parfums TikTok module: no retail-appropriate video was found on the public
+  profile, so it links to `@cruzialperu` (the Import video is NOT reused).
+
+OWNER FOLLOW-UP AFTER TECHNICAL RELEASE (not invented):
+1. The campaign opening stays closed until the client confirms final prices,
+   product list and stock/availability from the Import dashboard. The October 15
+   date is an editable estimate, not an automatic opening time.
+2. Wholesale bulk requests are shown separately; a dedicated wholesale checkout
+   is not implemented and the regular Import cart does not apply tier discounts.
+3. A Parfums-specific TikTok video (and a real poster) is missing; real photos of
+   orders/packing/community do not exist in the repo — brand renders and
+   campaign images are labelled as such. No product photo is inferred from the
+   Parfums image collection.
+4. Keep public indexing disabled until the legal identity and contact details
+   are complete and a deliberate public launch is approved.
+
 ## Important rules
 
 - Production is no longer untouchable by policy alone — see CLAUDE.md's

@@ -1,0 +1,126 @@
+.profile {
+  padding-block: clamp(64px, 9vw, 128px);
+}
+
+.parfums {
+  --tp-ink: #0a0908;
+  --tp-muted: #5f5952;
+  --tp-line: rgba(10, 9, 8, 0.3);
+  --tp-bg: #efe8da;
+  --tp-radius: 2px;
+  --tp-font: var(--font-display), Georgia, serif;
+  background: var(--tp-bg);
+  color: var(--tp-ink);
+}
+
+.import {
+  --tp-ink: #f4f7fb;
+  --tp-muted: #aebbc9;
+  --tp-line: rgba(244, 247, 251, 0.3);
+  --tp-bg: #061527;
+  --tp-radius: 18px;
+  --tp-font: var(--font-body), sans-serif;
+  background: var(--tp-bg);
+  color: var(--tp-ink);
+}
+
+.inner {
+  width: min(1100px, calc(100% - 48px));
+  margin-inline: auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(240px, 340px);
+  gap: clamp(40px, 8vw, 120px);
+  align-items: center;
+}
+
+.eyebrow {
+  color: var(--tp-muted);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+
+.copy h2 {
+  margin-top: 14px;
+  font-family: var(--tp-font);
+  font-size: clamp(2.1rem, 4.6vw, 3.6rem);
+  font-weight: 500;
+  line-height: 1.02;
+  text-wrap: balance;
+}
+
+.copy > p:not(.eyebrow) {
+  max-width: 44ch;
+  margin-top: 20px;
+  color: var(--tp-muted);
+  font-size: 1.02rem;
+  line-height: 1.65;
+}
+
+.action {
+  min-height: 44px;
+  margin-top: 32px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid var(--tp-line);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  transition: border-color 200ms ease;
+}
+
+.action:hover {
+  border-bottom-color: var(--tp-ink);
+}
+
+.card {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  border-radius: var(--tp-radius);
+  color: #fffdf8;
+  background: #0a0908;
+}
+
+.cardImage {
+  object-fit: cover;
+}
+
+.cardShade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(0deg, rgba(8, 6, 4, 0.78), rgba(8, 6, 4, 0) 55%);
+}
+
+.cardCopy {
+  position: absolute;
+  inset: auto 0 0;
+  padding: 22px;
+  display: grid;
+  gap: 2px;
+}
+
+.cardCopy strong {
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.cardCopy span {
+  color: rgba(255, 253, 248, 0.78);
+  font-size: 0.86rem;
+}
+
+@media (max-width: 767px) {
+  .inner {
+    grid-template-columns: 1fr;
+    gap: 36px;
+  }
+
+  .card {
+    width: min(78vw, 340px);
+    justify-self: center;
+  }
+}

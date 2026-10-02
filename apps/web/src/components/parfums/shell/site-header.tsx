@@ -1,8 +1,8 @@
 import type { Route } from "next";
 import Link from "next/link";
 import type { CatalogProduct } from "@/domains/catalog/types";
-import { ScrollAwareHeader } from "@/components/storefront/home/scroll-aware-header";
 import { ParfumsBrandLockup } from "./brand-lockup";
+import { HeroAwareHeader } from "./hero-aware-header";
 import { HeaderActions } from "./site-header-actions";
 import { WhatsAppAction } from "./whatsapp-action";
 import styles from "./parfums-shell.module.css";
@@ -15,7 +15,6 @@ export type HeaderSearchProduct = Pick<
 const navItems = [
   { href: "/parfums/catalogo", label: "Catálogo" },
   { href: "/parfums/combos", label: "Arma tu combo" },
-  { href: "/parfums/mayorista", label: "Mayorista" },
 ] as const;
 
 export function SiteHeader({
@@ -30,7 +29,11 @@ export function SiteHeader({
   cartProducts: CatalogProduct[];
 }) {
   return (
-    <ScrollAwareHeader className={styles.siteHeader} hiddenClassName={styles.siteHeaderHidden}>
+    <HeroAwareHeader
+      className={styles.siteHeader}
+      overHeroClassName={styles.siteHeaderOverHero}
+      hiddenClassName={styles.siteHeaderHidden}
+    >
       <div className={styles.headerInner}>
         <ParfumsBrandLockup logoUrl={logoUrl} />
         <nav className={styles.mainNav} aria-label="Navegación principal">
@@ -47,6 +50,6 @@ export function SiteHeader({
           <HeaderActions products={searchProducts} cartProducts={cartProducts} navItems={navItems} />
         </div>
       </div>
-    </ScrollAwareHeader>
+    </HeroAwareHeader>
   );
 }

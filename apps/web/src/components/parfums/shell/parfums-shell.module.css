@@ -4,7 +4,7 @@
 }
 
 .announcement {
-  min-height: 31px;
+  height: var(--announce-h, 36px);
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
@@ -66,14 +66,41 @@
   top: 0;
   height: 76px;
   border-bottom: 1px solid rgba(26, 22, 18, 0.1);
-  background: rgba(255, 255, 255, 0.96);
-  backdrop-filter: blur(18px);
-  transition: top 380ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/* Slides out of view while reading downwards (see ScrollAwareHeader). */
+/* The frosted surface lives on a pseudo-element. A backdrop-filter on the
+   header itself would make it the containing block of its fixed search,
+   cart and menu dialogs and squash them to the header's height. */
+.siteHeader::before {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  content: "";
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(18px);
+}
+
+/* On the Parfums home the hero owns the first screen: the header overlaps
+   it (negative margin) and stays out of sight until the hero scrolls away,
+   the visitor asks for it, or focus enters it. */
+.siteHeaderOverHero {
+  margin-bottom: -76px;
+  transition: opacity 320ms ease, visibility 0s;
+}
+
 .siteHeaderHidden {
-  top: -77px;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 240ms ease, visibility 0s linear 240ms;
+}
+
+@media (scripting: none) {
+  .siteHeaderHidden {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
 }
 
 .headerInner {
@@ -231,6 +258,8 @@
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   transition: opacity 280ms ease, visibility 0s linear 280ms;
 }
 
@@ -284,13 +313,36 @@
   color: #17130f;
   background: transparent;
   font-family: var(--font-display), Georgia, serif;
-  font-size: clamp(28px, 5vw, 48px);
+  font-size: clamp(22px, 6.2vw, 48px);
+}
+
+.searchInput::placeholder {
+  color: #8a847c;
+  opacity: 1;
 }
 
 .searchResults {
-  max-height: calc(100vh - 260px);
+  max-height: calc(100dvh - 260px);
   overflow: auto;
   display: grid;
+}
+
+.searchAll {
+  min-height: 48px;
+  margin-top: 8px;
+  padding-block: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #17130f;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.searchAll:hover {
+  text-decoration: underline;
 }
 
 .searchResults > p {
@@ -661,10 +713,19 @@
   }
 
   .announcement {
+    --announce-h: 34px;
     gap: 6px;
     padding-inline: 8px;
     font-size: 7px;
     letter-spacing: 0.12em;
+  }
+
+  .announcementExtra {
+    display: none;
+  }
+
+  .siteHeaderOverHero {
+    margin-bottom: -66px;
   }
 
   .announcementInfo {
@@ -769,7 +830,13 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .siteHeader {
+  .siteHeader::before,
+  .searchPanel {
     backdrop-filter: none;
+  }
+
+  .siteHeaderOverHero,
+  .siteHeaderHidden {
+    transition: none;
   }
 }

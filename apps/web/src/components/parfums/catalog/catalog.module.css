@@ -744,9 +744,15 @@
   text-transform: uppercase;
 }
 
+.recommendationBand {
+  padding: clamp(36px, 6vw, 72px) 0;
+  color: #f3eee5;
+  background: #17140f;
+}
+
 .toast {
   position: fixed;
-  z-index: 300;
+  z-index: 75; /* above page content and the WhatsApp button (70), below the header and every dialog in it (80) */
   right: 24px;
   bottom: 88px;
   max-width: min(380px, calc(100% - 32px));

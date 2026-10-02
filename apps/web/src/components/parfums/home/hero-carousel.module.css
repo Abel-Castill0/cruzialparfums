@@ -1,0 +1,194 @@
+/* Hero height = the screen minus the announcement bar. The header overlaps
+   the hero on the home (see HeroAwareHeader), so nothing else is subtracted.
+   36px / 34px mirror --announce-h in parfums-shell.module.css. */
+
+.hero {
+  position: relative;
+  isolation: isolate;
+  height: calc(100svh - 36px);
+  min-height: 480px;
+  max-height: 1200px;
+  overflow: hidden;
+  color: #fffdf8;
+  background: #0a0806;
+}
+
+.slides {
+  position: absolute;
+  inset: 0;
+}
+
+.slide {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 1600ms ease;
+}
+
+.slideActive {
+  opacity: 1;
+}
+
+.image {
+  object-fit: cover;
+  object-position: var(--pos, 50% 50%);
+}
+
+.shade {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  background:
+    linear-gradient(0deg, rgba(8, 6, 4, 0.55) 0%, rgba(8, 6, 4, 0) 26%),
+    linear-gradient(180deg, rgba(8, 6, 4, 0.35) 0%, rgba(8, 6, 4, 0) 18%);
+  pointer-events: none;
+}
+
+.navPeek {
+  position: absolute;
+  z-index: 3;
+  top: 18px;
+  right: 18px;
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255, 253, 248, 0.42);
+  border-radius: 50%;
+  color: #fffdf8;
+  background: rgba(10, 9, 8, 0.38);
+  backdrop-filter: blur(8px);
+  cursor: pointer;
+  transition: background-color 220ms ease, border-color 220ms ease;
+}
+
+.navPeek:hover {
+  border-color: rgba(255, 253, 248, 0.8);
+  background: rgba(10, 9, 8, 0.6);
+}
+
+.bar {
+  position: absolute;
+  z-index: 3;
+  right: clamp(20px, 4vw, 48px);
+  bottom: max(22px, env(safe-area-inset-bottom));
+  left: clamp(20px, 4vw, 48px);
+  /* Leaves the corner to the floating WhatsApp button. */
+  padding-right: 76px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.cta {
+  min-height: 44px;
+  padding: 0 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid rgba(255, 253, 248, 0.5);
+  color: #fffdf8;
+  background: rgba(10, 9, 8, 0.34);
+  backdrop-filter: blur(8px);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition: gap 320ms cubic-bezier(0.22, 1, 0.36, 1), background-color 220ms ease, color 220ms ease;
+}
+
+.cta:hover {
+  gap: 16px;
+  color: #0a0908;
+  background: #fffdf8;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.control {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  color: #fffdf8;
+  background: transparent;
+  cursor: pointer;
+}
+
+.control:hover {
+  background: rgba(255, 253, 248, 0.14);
+}
+
+.dots {
+  display: flex;
+}
+
+.dot {
+  width: 36px;
+  height: 44px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.dot::after {
+  width: 22px;
+  height: 2px;
+  content: "";
+  background: rgba(255, 253, 248, 0.45);
+  transition: background-color 240ms ease, width 240ms ease;
+}
+
+.dot:hover::after {
+  background: rgba(255, 253, 248, 0.8);
+}
+
+.dotActive::after {
+  width: 30px;
+  background: #fffdf8;
+}
+
+@media (max-width: 767px) {
+  .hero {
+    height: calc(100svh - 34px);
+    min-height: 460px;
+  }
+
+  .image {
+    object-position: var(--pos-mobile, 50% 50%);
+  }
+
+  .navPeek {
+    top: 12px;
+    right: 12px;
+  }
+
+  /* Phone: controls sit above the call to action, both clear of the WhatsApp
+     button, so nothing wraps or overlaps at 320px. */
+  .bar {
+    padding-right: 72px;
+    align-items: flex-start;
+    flex-direction: column-reverse;
+    gap: 6px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .slide,
+  .cta,
+  .navPeek,
+  .dot::after {
+    transition: none;
+  }
+}

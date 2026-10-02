@@ -13,8 +13,9 @@ const staticLegacyRoutes = new Map<string, string>([
   ["/catalog.html", "/parfums/catalogo"],
   ["/combos.html", "/parfums/combos"],
   ["/checkout.html", "/parfums/checkout"],
-  ["/mayorista.html", "/parfums/mayorista"],
-  ["/perfumes-enteros.html", "/parfums/mayorista"],
+  // Wholesale left the Parfums storefront; direct legacy links go to Import.
+  ["/mayorista.html", "/import"],
+  ["/perfumes-enteros.html", "/parfums/catalogo?format=bottle"],
   ["/nosotros.html", "/parfums/nosotros"],
   ["/contacto.html", "/parfums/contacto"],
   ["/privacidad.html", "/parfums/privacidad"],

@@ -73,6 +73,10 @@ export function VideoStory({ video, tone }: { video: HomeVideo; tone: "parfums" 
             </button>
           )}
         </div>
+        <p className={styles.fallback}>
+          Si el video no carga o TikTok bloquea la reproducción,{" "}
+          <a href={video.tiktokUrl} target="_blank" rel="noopener noreferrer">ábrelo en TikTok</a>.
+        </p>
       </div>
     </section>
   );
