@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import type { Route } from "next";
 import Link from "next/link";
 import {
@@ -11,15 +12,16 @@ import styles from "./video-story.module.css";
 
 /**
  * Video as a story: copy on one side, the official TikTok player on the other.
- * Lazy iframe loading avoids requesting the embed until the visitor reaches
- * this section, while leaving the video visible without an extra click.
+ * Import keeps an explicit play action to avoid loading a third-party player
+ * until requested; the Parfums launch video is visible immediately.
  */
-export function VideoStory({ video, tone }: { video: HomeVideo; tone: "parfums" | "import" }) {
+export function VideoStory({ video, tone, clickToPlay = false }: { video: HomeVideo; tone: "parfums" | "import"; clickToPlay?: boolean }) {
+  const [playing, setPlaying] = useState(!clickToPlay);
   const videoId = parseTikTokVideoId(video.tiktokUrl);
   if (!videoId) return null;
 
   return (
-    <section className={`${styles.story} ${styles[tone]}`} aria-labelledby="home-video-title">
+    <section className={`${styles.story} ${styles[tone]}`} aria-labelledby="home-video-title" data-home-video={tone}>
       <div className={styles.inner}>
         <div className={styles.copy}>
           <p className={styles.eyebrow}>{video.eyebrow}</p>
@@ -38,15 +40,23 @@ export function VideoStory({ video, tone }: { video: HomeVideo; tone: "parfums" 
         </div>
 
         <div className={styles.frame}>
-          <iframe
-            className={styles.player}
-            src={tiktokEmbedUrl(videoId)}
-            title={video.title}
-            allow="fullscreen; encrypted-media; picture-in-picture"
-            allowFullScreen
-            loading="lazy"
-            referrerPolicy="strict-origin-when-cross-origin"
-          />
+          {!playing ? (
+            <button className={styles.playGate} type="button" onClick={() => setPlaying(true)}>
+              <span aria-hidden="true">▶</span>
+              <strong>Reproducir video</strong>
+              <span>El video se cargará desde TikTok.</span>
+            </button>
+          ) : (
+            <iframe
+              className={styles.player}
+              src={tiktokEmbedUrl(videoId)}
+              title={video.title}
+              allow="fullscreen; encrypted-media; picture-in-picture"
+              allowFullScreen
+              loading="lazy"
+              referrerPolicy="strict-origin-when-cross-origin"
+            />
+          )}
         </div>
         <p className={styles.fallback}>
           Si el video no carga o TikTok bloquea la reproducción,{" "}

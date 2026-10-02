@@ -37,17 +37,21 @@ test.describe("parfums home hero and header", () => {
     await expect(header).toBeVisible();
   });
 
-  test("the hero menu button brings the navigation in and focuses it", async ({ page }) => {
+  test("the navigation stays hidden until the visitor leaves the hero", async ({ page }) => {
     await page.goto("/parfums");
-    await page.getByRole("button", { name: "Mostrar navegación" }).click();
+    const hero = page.locator("[data-home-hero]");
+    const height = (await hero.boundingBox())!.height;
+    await expect(page.locator("header").first()).toBeHidden();
+    await page.evaluate((y) => window.scrollTo(0, y), height + 100);
     await expect(page.locator("header").first()).toBeVisible();
-    await expect(page.locator("header a:focus")).toHaveCount(1);
   });
 
-  test("other Parfums pages keep an always-visible header", async ({ page }) => {
+  test("the catalog hero also hides the header until the visitor scrolls past it", async ({ page }) => {
     await page.goto("/parfums/catalogo");
-    await expect(page.locator("header").first()).toBeVisible();
-    await page.evaluate(() => window.scrollTo(0, 1200));
+    const hero = page.locator("[data-home-hero]");
+    const height = (await hero.boundingBox())!.height;
+    await expect(page.locator("header").first()).toBeHidden();
+    await page.evaluate((y) => window.scrollTo(0, y), height + 100);
     await expect(page.locator("header").first()).toBeVisible();
   });
 });
@@ -55,7 +59,9 @@ test.describe("parfums home hero and header", () => {
 test.describe("parfums search", () => {
   test("opens over the whole viewport, takes focus and typing, finds products and closes with Escape", async ({ page }) => {
     await page.goto("/parfums/catalogo");
-    await page.evaluate(() => window.scrollTo(0, 400));
+    const catalogHero = page.locator("[data-home-hero]");
+    const heroHeight = (await catalogHero.boundingBox())!.height;
+    await page.evaluate((y) => window.scrollTo(0, y), heroHeight + 100);
     const trigger = page.getByRole("button", { name: "Buscar fragancias" }).first();
     await trigger.click();
 
@@ -165,7 +171,7 @@ test.describe("parfums cart drawer", () => {
 });
 
 test.describe("import TikTok module", () => {
-  test("embeds the Import consolidado video only after play, with an accessible link", async ({ page }) => {
+  test("loads the Import consolidado video only after play, with an accessible link", async ({ page }) => {
     await page.goto("/import");
     const section = page.locator("section", { has: page.locator("#home-video-title") });
     await expect(section).toBeVisible();

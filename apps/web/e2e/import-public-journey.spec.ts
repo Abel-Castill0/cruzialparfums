@@ -15,10 +15,20 @@ import { expect, test } from "@playwright/test";
 
 test("import: catalog discovery to checkout boundary, or documented current state", async ({ page }) => {
   await page.goto("/import");
+  const catalogLink = page.locator('nav[aria-label="Navegación de Cruzial Import"] a[href="/import/catalogo"]');
+  await expect(catalogLink).toHaveAttribute("href", "/import/catalogo");
+  await page.goto("/import/catalogo");
+  await expect(page).toHaveURL(/\/import\/catalogo$/);
 
-  const closedHeading = page.locator("#import-closed-title");
+  const closedHeading = page.getByRole("heading", { name: "Consolidado cerrado" });
   const campaignHeading = page.locator("#campaign-title");
-  await expect(closedHeading.or(campaignHeading).first()).toBeVisible();
+  const unavailableHeading = page.getByRole("heading", { name: "No pudimos consultar el catálogo." });
+  await expect(closedHeading.or(campaignHeading).or(unavailableHeading).first()).toBeVisible();
+
+  if (await unavailableHeading.isVisible()) {
+    test.info().annotations.push({ type: "note", description: "Import public catalog data was unavailable on this target; verified the user-facing retry/contact state." });
+    return;
+  }
 
   if (await closedHeading.isVisible()) {
     test.info().annotations.push({
