@@ -28,7 +28,10 @@ for (const route of PUBLIC_ROUTES) {
     const runtimeErrors: string[] = [];
     page.on("pageerror", (error) => runtimeErrors.push(`pageerror: ${error.message}`));
     page.on("console", (message) => {
-      if (message.type() === "error" && !/Permissions policy violation: accelerometer is not allowed/.test(message.text())) {
+      // TikTok logs these known policy/cookie notices from its cross-origin
+      // player. The iframe is excluded from axe; our own runtime errors remain fatal.
+      const externalEmbedNotice = /Permissions policy violation: accelerometer is not allowed|Content Security Policy directive 'upgrade-insecure-requests' is ignored when delivered in a report-only policy|@tiktok-fe\/web-cookie-banner init failed/.test(message.text());
+      if (message.type() === "error" && !externalEmbedNotice) {
         runtimeErrors.push(`console: ${message.text()}`);
       }
     });
