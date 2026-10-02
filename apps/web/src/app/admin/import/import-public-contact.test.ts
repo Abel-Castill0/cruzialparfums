@@ -94,14 +94,21 @@ describe("import main page reads DB contact", () => {
     expect(page).not.toContain("IMPORT_SETTINGS");
   });
 
-  it("ClosedState accepts contact prop", () => {
-    const page = read("app/import/page.tsx");
-    expect(page).toContain("contact: { whatsappNumber: string } | null");
+  // The closed/unavailable/open states now render through ImportHomeView; the
+  // contact-null guarantees live in the hero and the contact call-to-action.
+  it("ImportHero accepts a nullable contact prop", () => {
+    const hero = read("components/import/home/import-hero.tsx");
+    expect(hero).toContain("contact: BusinessUnitSettings | null");
   });
 
-  it("ClosedState shows fallback message when contact is null", () => {
-    const page = read("app/import/page.tsx");
-    expect(page).toContain("El canal de contacto no está disponible temporalmente.");
+  it("ImportHero shows fallback message when contact is null", () => {
+    const hero = read("components/import/home/import-hero.tsx");
+    expect(hero).toContain("El canal de contacto no está disponible temporalmente.");
+  });
+
+  it("ImportContactCta shows fallback message when contact is null", () => {
+    const info = read("components/import/storefront/import-information.tsx");
+    expect(info).toContain("El canal de contacto no está disponible temporalmente.");
   });
 
   it("page uses Promise.all for parallel fetch", () => {

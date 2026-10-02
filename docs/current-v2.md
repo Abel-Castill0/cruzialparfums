@@ -1841,6 +1841,45 @@ Everything else is done. These stay hidden/closed because the datum is unknown
    redeploy and re-smoke `robots.txt`/`sitemap.xml` (authorized by the owner).
 6. **Owner TOTP enrollment/AAL2** on the real admin accounts (human step).
 
+## Storefront homes redesign (Parfums + Import) — merged to master 2026-10-01
+
+Both public homes (`/parfums`, `/import`) were rebuilt as editorial pages that
+keep every data path and URL contract (filters `?type=` / `?categoria=`,
+anchors `#faq` `#catalogo` `#como-funciona`, `#campaign-title`,
+`#import-closed-title`, "Agregar al carrito", the empty-catalog copy).
+
+- Shared pieces live in `apps/web/src/components/storefront/home/`:
+  `ProductMarquee` (drifting, scrollable, pausable product rail; static under
+  reduced motion or with fewer than 5 products), `Reveal`, `VideoStory`,
+  `ScrollAwareHeader` (hides on downward scroll by moving `top`, never
+  `transform`, so the header's fixed dialogs keep working).
+- Parfums rail = featured first, then the published catalog mixed across
+  brands (`components/parfums/home/showcase.ts`); category tiles show real
+  per-type counts. Import rail/tiles use only products with approved media.
+- Import home is `components/import/home/ImportHomeView` (pure view; the route
+  only loads data), so closed / unavailable / open / filtered / empty can be
+  reviewed without a database.
+- Video: `domains/platform/home-video.ts` holds `PARFUMS_HOME_VIDEO` and
+  `IMPORT_HOME_VIDEO`, both `null`. The section renders only when the owner
+  supplies a real TikTok video URL + a real poster image. The CSP adds
+  `frame-src 'self' https://www.tiktok.com` ONLY while one of those constants
+  is non-null (`homeVideoNeedsTikTokFrame()`); with none configured the
+  policy is unchanged.
+- Palette follows docs/client-decisions.md: Parfums black/white with restrained
+  gold, Import deep navy/white/silver. In the implemented homes gold appears
+  only inside the brand photography and logo (no gold UI colour), consistent
+  with the 2026-09-07 note in `app/globals.css`; no brand-direction change was
+  made. Import keeps its semantic red for "Agotado".
+- Import home order with an open campaign: hero, product rail ("Productos
+  disponibles ahora" — only products with an available presentation), catalog,
+  process, conditions, FAQ, contact.
+- EXTERNAL INPUTS STILL NEEDED: a published TikTok video URL per unit and a
+  real poster image (ideally real order-preparation / packing photos — none
+  exist in the repo; current home imagery is brand renders).
+- Visual/behaviour evidence: axe (WCAG 2.1 AA) clean on a data-rich Parfums
+  home at 1440 and 390; no horizontal overflow at 360–2560; CLS 0; marquee
+  drift/pause/arrows/reduced-motion verified in Chromium.
+
 ## Important rules
 
 - Production is no longer untouchable by policy alone — see CLAUDE.md's
