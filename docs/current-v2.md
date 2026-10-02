@@ -2000,6 +2000,13 @@ through the regular Git deployment after a guarded merge to `master`.
   production build pass. Six desktop/mobile E2E checks pass, plus responsive
   overflow checks at 320, 360, 390, 430, 768, 1024, 1280 and 1440 px.
 
+### Root storefront selector (2026-10-02)
+
+- `/` now contains only two full-screen entry links: Parfums and Import. On
+  desktop they sit side by side; on narrow screens they stack vertically,
+  together filling the viewport. The selector uses existing app imagery and
+  has no header, footer, or additional content.
+
 ## Important rules
 
 - Production is no longer untouchable by policy alone — see CLAUDE.md's
