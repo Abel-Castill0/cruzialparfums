@@ -5,7 +5,7 @@ import { WhatsAppIcon } from "./shell-icons";
 import styles from "./parfums-shell.module.css";
 
 const columns = [
-  { title: "Explorar", links: [["Catálogo", "/parfums/catalogo"], ["Arma tu combo", "/parfums/combos"], ["Mayorista", "/parfums/mayorista"]] },
+  { title: "Explorar", links: [["Catálogo", "/parfums/catalogo"], ["Arma tu combo", "/parfums/combos"]] },
   { title: "Ayuda", links: [["Nosotros", "/parfums/nosotros"], ["FAQ", "/parfums#faq"], ["Cómo comprar", "/parfums/nosotros#como-comprar"], ["Contacto", "/parfums/contacto"]] },
   { title: "Legal", links: [["Privacidad", "/parfums/privacidad"], ["Términos", "/parfums/terminos"], ["Libro de Reclamaciones", "/libro-de-reclamaciones"]] },
 ] as const;

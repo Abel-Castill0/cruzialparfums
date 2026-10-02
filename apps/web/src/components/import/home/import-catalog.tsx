@@ -13,7 +13,7 @@ import {
   type PublicImportProduct,
 } from "@/domains/import/public-import";
 import type { PublicImportPageResult } from "@/domains/import/public-import-repository";
-import { buildCategoryTiles } from "./import-showcase";
+import { buildCategoryTiles, listBrands } from "./import-showcase";
 import styles from "./import-home.module.css";
 
 type ActiveResult = Extract<PublicImportPageResult, { status: "active" }>;
@@ -115,7 +115,7 @@ export function ImportCatalog({
   });
   const invalidPage = filters.page > result.totalPages && result.total > 0;
   const unfiltered = !filters.category && !filters.query && filters.page === 1;
-  const tiles = buildCategoryTiles(result.categories, result.products);
+  const brands = listBrands(result.products);
 
   return (
     <section className={styles.catalog} id="catalogo" aria-labelledby="catalog-title">
@@ -128,38 +128,6 @@ export function ImportCatalog({
           <p>Productos agrupados con todas sus presentaciones públicas.</p>
         </div>
       </Reveal>
-
-      {unfiltered && tiles.length > 1 ? (
-        <ul className={styles.categoryTiles} aria-label="Explorar por categoría">
-          {tiles.map((tile) => (
-            <li key={tile.slug}>
-              <Link
-                href={`${buildImportCatalogHref(filters, { category: tile.slug, page: 1 })}#catalogo` as Route}
-                className={styles.categoryTile}
-              >
-                {tile.image ? (
-                  <Image
-                    src={tile.image}
-                    alt=""
-                    fill
-                    loading="lazy"
-                    sizes="(max-width: 767px) 64vw, (max-width: 1279px) 30vw, 300px"
-                    className={styles.categoryImage}
-                  />
-                ) : null}
-                <span className={styles.categoryScrim} aria-hidden="true" />
-                <span className={styles.categoryCopy}>
-                  <strong>{tile.name}</strong>
-                  <span>
-                    {tile.productCount} {tile.productCount === 1 ? "producto" : "productos"}
-                  </span>
-                </span>
-                <span className={styles.categoryArrow} aria-hidden="true">→</span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      ) : null}
 
       <form action="/import#catalogo" method="get" className={styles.searchForm}>
         <label htmlFor="import-search">Buscar por producto o marca</label>
@@ -176,6 +144,21 @@ export function ImportCatalog({
           <button type="submit">Buscar</button>
         </div>
       </form>
+
+      {unfiltered && brands.length > 1 ? (
+        <nav className={styles.brandShortcuts} aria-label="Buscar por marca">
+          <span>Por marca</span>
+          <ul>
+            {brands.map((brand) => (
+              <li key={brand}>
+                <Link href={`${buildImportCatalogHref(filters, { query: brand, category: "", page: 1 })}#catalogo` as Route}>
+                  {brand}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      ) : null}
 
       {!unfiltered ? (
         <nav className={styles.categoryFilters} aria-label="Filtrar por categoría">
@@ -233,6 +216,65 @@ export function ImportCatalog({
           )}
         </nav>
       ) : null}
+    </section>
+  );
+}
+
+/**
+ * Category doors: each real category of the open consolidado opens the
+ * catalog through the existing `?categoria=` filter. A category's photo is
+ * borrowed from one of its own approved product photos; with none, the tile
+ * is typographic rather than showing a stand-in image.
+ */
+export function ImportCategoryTiles({
+  result,
+  filters,
+}: {
+  result: ActiveResult;
+  filters: PublicImportFilters;
+}) {
+  const tiles = buildCategoryTiles(result.categories, result.products);
+  if (tiles.length === 0) return null;
+  return (
+    <section className={styles.categories} aria-labelledby="import-categories-title">
+      <Reveal>
+        <div className={styles.catalogHeading}>
+          <div>
+            <p className={styles.eyebrow}>Categorías</p>
+            <h2 id="import-categories-title">Explora por categoría</h2>
+          </div>
+          <p>Cada categoría abre el catálogo ya filtrado.</p>
+        </div>
+      </Reveal>
+      <ul className={styles.categoryTiles}>
+        {tiles.map((tile) => (
+          <li key={tile.slug}>
+            <Link
+              href={`${buildImportCatalogHref(filters, { category: tile.slug, page: 1 })}#catalogo` as Route}
+              className={styles.categoryTile}
+            >
+              {tile.image ? (
+                <Image
+                  src={tile.image}
+                  alt=""
+                  fill
+                  loading="lazy"
+                  sizes="(max-width: 767px) 64vw, (max-width: 1279px) 30vw, 300px"
+                  className={styles.categoryImage}
+                />
+              ) : null}
+              <span className={styles.categoryScrim} aria-hidden="true" />
+              <span className={styles.categoryCopy}>
+                <strong>{tile.name}</strong>
+                <span>
+                  {tile.productCount} {tile.productCount === 1 ? "producto" : "productos"}
+                </span>
+              </span>
+              <span className={styles.categoryArrow} aria-hidden="true">→</span>
+            </Link>
+          </li>
+        ))}
+      </ul>
     </section>
   );
 }

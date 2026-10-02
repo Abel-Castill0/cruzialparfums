@@ -12,7 +12,6 @@ const PUBLIC_ROUTES = [
   "/parfums",
   "/parfums/catalogo",
   "/parfums/combos",
-  "/parfums/mayorista",
   "/parfums/checkout",
   "/parfums/contacto",
   "/parfums/privacidad",

@@ -10,7 +10,6 @@ const PARFUMS_ROUTES: Array<{ path: string; priority: number; changeFrequency: "
   { path: "/parfums", priority: 1, changeFrequency: "weekly" },
   { path: "/parfums/catalogo", priority: 0.9, changeFrequency: "daily" },
   { path: "/parfums/combos", priority: 0.7, changeFrequency: "weekly" },
-  { path: "/parfums/mayorista", priority: 0.6, changeFrequency: "weekly" },
   { path: "/parfums/finder", priority: 0.4, changeFrequency: "monthly" },
   { path: "/parfums/nosotros", priority: 0.4, changeFrequency: "monthly" },
   { path: "/parfums/contacto", priority: 0.4, changeFrequency: "monthly" },

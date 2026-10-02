@@ -14,6 +14,18 @@
   background: var(--paper);
 }
 
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 .eyebrow {
   color: var(--quiet);
   font-size: 0.66rem;
@@ -33,7 +45,6 @@
 .sectionHead h2,
 .faqHead h2,
 .craftBody h2,
-.wholesaleInner h2,
 .showcase h2 {
   margin-top: 10px;
   font-family: var(--font-display), Georgia, serif;
@@ -46,7 +57,6 @@
 .sectionHead h2 em,
 .faqHead h2 em,
 .craftBody h2 em,
-.wholesaleInner h2 em,
 .showcase h2 em {
   color: var(--quiet);
   font-weight: 400;
@@ -74,112 +84,6 @@
 .textLink:hover {
   gap: 14px;
   border-bottom-color: var(--ink);
-}
-
-/* Hero — image first, then brand, then one sentence and one action. */
-
-.hero {
-  position: relative;
-  isolation: isolate;
-  min-height: clamp(540px, 84svh, 820px);
-  display: flex;
-  align-items: flex-end;
-  overflow: hidden;
-  color: #fffdf8;
-  background: #0a0806;
-}
-
-.heroImage {
-  object-fit: cover;
-  object-position: 62% 50%;
-}
-
-.heroScrim {
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(0deg, rgba(8, 6, 4, 0.82) 0%, rgba(8, 6, 4, 0.3) 36%, rgba(8, 6, 4, 0) 62%),
-    linear-gradient(90deg, rgba(8, 6, 4, 0.74) 0%, rgba(8, 6, 4, 0.38) 42%, rgba(8, 6, 4, 0) 68%);
-}
-
-.heroCopy {
-  position: relative;
-  width: var(--wrap);
-  margin-inline: auto;
-  padding-block: clamp(36px, 7vw, 96px);
-}
-
-.heroEyebrow {
-  color: rgba(255, 253, 248, 0.78);
-  font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.3em;
-  text-transform: uppercase;
-}
-
-.heroCopy h1 {
-  max-width: 15ch;
-  margin-top: 18px;
-  font-family: var(--font-display), Georgia, serif;
-  font-size: clamp(2.6rem, 8.2vw, 6.2rem);
-  font-weight: 500;
-  line-height: 0.94;
-  letter-spacing: -0.02em;
-  overflow-wrap: break-word;
-  text-wrap: balance;
-}
-
-.heroSummary {
-  max-width: 40ch;
-  margin-top: 22px;
-  color: rgba(255, 253, 248, 0.84);
-  font-size: clamp(0.98rem, 1.5vw, 1.12rem);
-  line-height: 1.55;
-}
-
-.heroActions {
-  margin-top: 34px;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px 32px;
-}
-
-.heroCta {
-  min-height: 52px;
-  padding: 0 30px;
-  display: inline-flex;
-  align-items: center;
-  gap: 12px;
-  color: var(--ink);
-  background: #fffdf8;
-  font-size: 0.74rem;
-  font-weight: 600;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  transition: gap 320ms var(--ease), background-color 220ms ease;
-}
-
-.heroCta:hover {
-  gap: 18px;
-  background: #fff;
-}
-
-.heroLink {
-  min-height: 44px;
-  display: inline-flex;
-  align-items: center;
-  border-bottom: 1px solid rgba(255, 253, 248, 0.4);
-  color: #fffdf8;
-  font-size: 0.74rem;
-  font-weight: 600;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  transition: border-color 220ms ease;
-}
-
-.heroLink:hover {
-  border-bottom-color: #fffdf8;
 }
 
 /* Showcase rail */
@@ -367,16 +271,39 @@
   line-height: 1.65;
 }
 
-.craftMedia {
+
+
+
+/* Brand campaign mosaic */
+
+.mosaic {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: 1.5fr 1fr;
+  gap: 10px;
+  aspect-ratio: 5 / 6;
+}
+
+.mosaicCell {
   position: relative;
-  aspect-ratio: 4 / 5;
   overflow: hidden;
   background: var(--sand);
 }
 
-.craftImage {
+.mosaicMain {
+  grid-column: 1 / -1;
+}
+
+.mosaicImage {
   object-fit: cover;
-  object-position: 100% 50%;
+}
+
+.mosaic figcaption {
+  grid-column: 1 / -1;
+  margin-top: -2px;
+  color: var(--quiet);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
 }
 
 .formats {
@@ -519,56 +446,6 @@
   border-bottom-color: #fffdf8;
 }
 
-/* Wholesale — a calm, ruled invitation rather than a second hero. */
-
-.wholesale {
-  width: var(--wrap);
-  margin-inline: auto;
-  padding-block: clamp(56px, 8vw, 104px) 0;
-}
-
-.wholesaleInner {
-  padding-block: clamp(28px, 4vw, 44px);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px 48px;
-  border-block: 1px solid var(--ink);
-}
-
-.wholesaleInner h2 {
-  font-size: clamp(1.8rem, 3.4vw, 2.7rem);
-}
-
-.wholesaleInner p:not(.eyebrow) {
-  margin-top: 10px;
-  color: var(--muted);
-  font-size: 0.96rem;
-}
-
-.outlineCta {
-  min-height: 52px;
-  padding: 0 28px;
-  display: inline-flex;
-  align-items: center;
-  gap: 12px;
-  flex: 0 0 auto;
-  border: 1px solid var(--ink);
-  color: var(--ink);
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  white-space: nowrap;
-  transition: gap 320ms var(--ease), color 220ms ease, background-color 220ms ease;
-}
-
-.outlineCta:hover {
-  gap: 18px;
-  color: var(--paper);
-  background: var(--ink);
-}
-
 /* FAQ */
 
 .faq {
@@ -656,8 +533,8 @@
     order: -1;
   }
 
-  .craftMedia {
-    aspect-ratio: 16 / 11;
+  .mosaic {
+    aspect-ratio: 4 / 3;
   }
 
   .formats {
@@ -672,19 +549,6 @@
 /* Phone — behaviour changes here, it is not a shrunken desktop. */
 
 @media (max-width: 767px) {
-  .hero {
-    min-height: clamp(520px, 80svh, 700px);
-  }
-
-  .heroImage {
-    object-position: 58% 50%;
-  }
-
-  .heroCta {
-    width: 100%;
-    justify-content: center;
-  }
-
   .sectionHead {
     align-items: flex-start;
     flex-direction: column;
@@ -724,10 +588,6 @@
     grid-template-columns: 1fr;
   }
 
-  .craftMedia {
-    aspect-ratio: 4 / 3;
-  }
-
   /* Three sizes read as one glance: numeral + sprays. The longer sentence per
      size is secondary and stays on tablet and desktop. */
   .formatList {
@@ -749,23 +609,16 @@
     display: none;
   }
 
-  .buildRow,
-  .wholesaleInner {
+  .buildRow {
     align-items: flex-start;
     flex-direction: column;
   }
 
-  .outlineCta {
-    width: 100%;
-    justify-content: center;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .tileImage,
   .tileArrow,
-  .heroCta,
-  .outlineCta,
   .textLink,
   .sectionHead > a,
   .buildLink,

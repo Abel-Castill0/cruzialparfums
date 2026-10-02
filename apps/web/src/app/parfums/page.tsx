@@ -4,6 +4,8 @@ import type { Route } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { ComboCarousel } from "@/components/parfums/home/combo-carousel";
+import { FinderDiscovery } from "@/components/parfums/home/finder-discovery";
+import { HeroCarousel, type HeroSlide } from "@/components/parfums/home/hero-carousel";
 import {
   countFragrancesByType,
   selectShowcaseProducts,
@@ -12,9 +14,10 @@ import {
 import { CatalogUnavailableNotice } from "@/components/parfums/catalog/catalog-unavailable-notice";
 import { ProductMarquee } from "@/components/storefront/home/product-marquee";
 import { Reveal } from "@/components/storefront/home/reveal";
+import { TikTokProfile } from "@/components/storefront/home/tiktok-profile";
 import { VideoStory } from "@/components/storefront/home/video-story";
 import { PARFUMS_HOME_VIDEO } from "@/domains/platform/home-video";
-import { PARFUMS_ATOMIZATIONS, PARFUMS_BRAND_MEDIA } from "@/domains/platform/parfums-storefront";
+import { PARFUMS_ATOMIZATIONS } from "@/domains/platform/parfums-storefront";
 import { loadParfumsStorefront } from "@/lib/catalog/parfums-storefront";
 import styles from "./page.module.css";
 
@@ -22,6 +25,36 @@ export const metadata: Metadata = {
   title: "Cruzial Parfums",
   description: "Decants, frascos y combos de perfumería árabe, designer y de nicho en Perú.",
 };
+
+// The hero rotates through the four real banner assets already used by the
+// brand's GitHub Pages storefront. Mobile focal points keep the perfume set
+// visible in the narrow crop. All messaging stays out of the image.
+const heroSlides: readonly HeroSlide[] = [
+  {
+    src: "/parfums/hero/hero-crop.webp",
+    alt: "Composición de Cruzial Parfums con frascos de diseñador y el nombre de la marca",
+    position: "50% 50%",
+    mobilePosition: "50% 50%",
+  },
+  {
+    src: "/parfums/hero/promo-cuarteto.webp",
+    alt: "Composición del Cuarteto Oriental con sus frascos y cajas sobre una superficie de mármol",
+    position: "64% 50%",
+    mobilePosition: "78% 50%",
+  },
+  {
+    src: "/parfums/hero/promo-vainilla.webp",
+    alt: "Composición de Vainilla Freak con frascos rosados, vainilla y flores",
+    position: "62% 50%",
+    mobilePosition: "78% 50%",
+  },
+  {
+    src: "/parfums/hero/promo-tulum.webp",
+    alt: "Composición del set Tulum con fragancias verdes y cítricos junto al mar",
+    position: "64% 50%",
+    mobilePosition: "72% 50%",
+  },
+];
 
 // Each tile enters the catalog through the filter architecture it already
 // has (`?type=`), so the URL stays shareable and the catalog opens filtered.
@@ -83,7 +116,7 @@ const decantSizes = [
 ] as const;
 
 // Same source as /parfums/nosotros#faq — this is a condensed teaser, not a
-// duplicate copy fork. Full FAQ (6 items) lives on Nosotros.
+// duplicate copy fork. The full FAQ lives on Nosotros.
 const homeFaqs = [
   {
     q: "¿Qué es un decant?",
@@ -97,10 +130,6 @@ const homeFaqs = [
     q: "¿Cómo hago mi pedido?",
     a: "Añade tus fragancias al carrito, completa tus datos y envía tu pedido por WhatsApp. Un asesor confirma stock, envío y forma de pago contigo antes de cerrar la venta.",
   },
-  {
-    q: "¿Compran al por mayor?",
-    a: "Sí. Tenemos tarifas especiales para revendedores, tiendas, barberías y creadores. Revisa nuestra sección Mayorista.",
-  },
 ];
 
 export default async function ParfumsHomePage() {
@@ -109,38 +138,12 @@ export default async function ParfumsHomePage() {
   const fragrances = catalog.listFragrances();
   const showcase = selectShowcaseProducts(catalog.listFeatured(), fragrances).map(toShowcaseItem);
   const typeCounts = countFragrancesByType(fragrances);
-  const { heroUrl } = PARFUMS_BRAND_MEDIA;
 
   return (
     <main className={styles.home}>
-      <section className={styles.hero} aria-labelledby="home-hero-title">
-        {heroUrl ? (
-          <Image
-            src={heroUrl}
-            alt="Cruzial Parfums — perfumería árabe, designer y de nicho"
-            fill
-            sizes="100vw"
-            preload
-            className={styles.heroImage}
-          />
-        ) : null}
-        <div className={styles.heroScrim} aria-hidden="true" />
-        <div className={styles.heroCopy}>
-          <p className={styles.heroEyebrow}>Cruzial Parfums</p>
-          <h1 id="home-hero-title">Perfumería de descubrimiento.</h1>
-          <p className={styles.heroSummary}>
-            Decants desde 3 ml y frascos completos, con envío por agencia Shalom.
-          </p>
-          <div className={styles.heroActions}>
-            <Link href="/parfums/catalogo" className={styles.heroCta}>
-              Explorar catálogo <span aria-hidden="true">→</span>
-            </Link>
-            <Link href="/parfums/finder" className={styles.heroLink}>
-              Encuentra tu fragancia
-            </Link>
-          </div>
-        </div>
-      </section>
+      <h1 className={styles.srOnly}>Perfumería de descubrimiento.</h1>
+
+      <HeroCarousel slides={heroSlides} ctaHref="/parfums/catalogo" ctaLabel="Explorar catálogo" />
 
       {source === "unavailable" ? <CatalogUnavailableNotice /> : null}
 
@@ -168,7 +171,7 @@ export default async function ParfumsHomePage() {
         <Reveal>
           <div className={styles.sectionHead}>
             <div>
-              <p className={styles.eyebrow}>Descubre</p>
+              <p className={styles.eyebrow}>Catálogo</p>
               <h2 id="discovery-title">
                 Encuentra tu <em>familia</em>.
               </h2>
@@ -214,16 +217,9 @@ export default async function ParfumsHomePage() {
             );
           })}
         </ul>
-        <Reveal>
-          <div className={styles.finderRow}>
-            <h3>¿No sabes por dónde empezar?</h3>
-            <p>Responde 5 preguntas y recibe opciones explicables del catálogo. Reglas deterministas, no inteligencia artificial.</p>
-            <Link href="/parfums/finder" className={styles.textLink}>
-              Iniciar Finder <span aria-hidden="true">→</span>
-            </Link>
-          </div>
-        </Reveal>
       </section>
+
+      <FinderDiscovery fragrances={fragrances} />
 
       <section className={styles.craft} aria-labelledby="craft-title">
         <div className={styles.craftGrid}>
@@ -248,16 +244,42 @@ export default async function ParfumsHomePage() {
             </Link>
           </Reveal>
           <Reveal className={styles.craftMediaWrap} delay={120}>
-            <div className={styles.craftMedia}>
-              <Image
-                src="/images/parfums-home/parfums-custom-combo.webp"
-                alt="Decants Cruzial de 3, 5 y 10 ml junto a su caja de presentación"
-                fill
-                sizes="(max-width: 899px) 100vw, 46vw"
-                className={styles.craftImage}
-                loading="lazy"
-              />
-            </div>
+            <figure className={styles.mosaic}>
+              <div className={`${styles.mosaicCell} ${styles.mosaicMain}`}>
+                <Image
+                  src="/parfums/hero/promo-cuarteto.webp"
+                  alt="Cuatro fragancias con sus cajas sobre una superficie de mármol dorado"
+                  fill
+                  sizes="(max-width: 899px) 100vw, 46vw"
+                  className={styles.mosaicImage}
+                  style={{ objectPosition: "60% 50%" }}
+                  loading="lazy"
+                />
+              </div>
+              <div className={styles.mosaicCell}>
+                <Image
+                  src="/parfums/hero/promo-tulum.webp"
+                  alt="Frascos verdes junto a coco, naranja y maracuyá en una escena de playa"
+                  fill
+                  sizes="(max-width: 899px) 50vw, 23vw"
+                  className={styles.mosaicImage}
+                  style={{ objectPosition: "40% 50%" }}
+                  loading="lazy"
+                />
+              </div>
+              <div className={styles.mosaicCell}>
+                <Image
+                  src="/parfums/hero/promo-vainilla.webp"
+                  alt="Frascos rosados entre vainilla, flores y merengues"
+                  fill
+                  sizes="(max-width: 899px) 50vw, 23vw"
+                  className={styles.mosaicImage}
+                  style={{ objectPosition: "72% 50%" }}
+                  loading="lazy"
+                />
+              </div>
+              <figcaption>Imágenes de campaña de Cruzial Parfums.</figcaption>
+            </figure>
           </Reveal>
         </div>
 
@@ -287,7 +309,18 @@ export default async function ParfumsHomePage() {
         </Reveal>
       </section>
 
-      {PARFUMS_HOME_VIDEO ? <VideoStory video={PARFUMS_HOME_VIDEO} tone="parfums" /> : null}
+      {PARFUMS_HOME_VIDEO ? (
+        <VideoStory video={PARFUMS_HOME_VIDEO} tone="parfums" />
+      ) : (
+        <TikTokProfile
+          tone="parfums"
+          eyebrow="TikTok"
+          title="Cruzial en TikTok"
+          text="Sigue el perfil oficial de Cruzial para ver sus publicaciones en video."
+          posterSrc="/images/parfums-home/parfums-final-cta.webp"
+          posterAlt="Frascos de perfume sobre roca con luz dorada, imagen de marca"
+        />
+      )}
 
       <section className={styles.combos} aria-labelledby="combos-title">
         <div className={styles.combosInner}>
@@ -314,23 +347,6 @@ export default async function ParfumsHomePage() {
             </Link>
           </div>
         </div>
-      </section>
-
-      <section className={styles.wholesale} aria-labelledby="wholesale-title">
-        <Reveal>
-          <div className={styles.wholesaleInner}>
-            <div>
-              <p className={styles.eyebrow}>Cruzial Business</p>
-              <h2 id="wholesale-title">
-                ¿Compras para <em>revender</em>?
-              </h2>
-              <p>Tarifas por volumen para tiendas, barberías, salones y creadores.</p>
-            </div>
-            <Link href="/parfums/mayorista" className={styles.outlineCta}>
-              Ver Mayorista <span aria-hidden="true">→</span>
-            </Link>
-          </div>
-        </Reveal>
       </section>
 
       <section className={styles.faq} aria-labelledby="faq-title" id="faq">

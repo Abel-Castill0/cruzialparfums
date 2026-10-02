@@ -3,8 +3,8 @@ import { expect, test } from "@playwright/test";
 // Layout sanity across the viewport widths the release is checked at: no
 // horizontal page overflow and the primary call to action stays reachable.
 
-const WIDTHS = [360, 390, 430, 768, 1024, 1280, 1440];
-const ROUTES = ["/parfums", "/parfums/catalogo", "/parfums/combos", "/parfums/mayorista", "/parfums/checkout", "/parfums/contacto", "/import", "/admin/login"];
+const WIDTHS = [320, 360, 390, 430, 768, 1024, 1280, 1440];
+const ROUTES = ["/parfums", "/parfums/catalogo", "/parfums/combos", "/parfums/checkout", "/parfums/contacto", "/import", "/admin/login"];
 
 test.describe("responsive layout", () => {
   for (const width of WIDTHS) {

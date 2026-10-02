@@ -174,73 +174,29 @@ test.describe("B2B combos and Mayorista (admin)", () => {
     }
   });
 
-  test("Mayorista explains rules, bottles and eligibility from runtime data", async ({ page }, testInfo) => {
+  test("Import Mayorista shows isolated rules and editable thresholds", async ({ page }, testInfo) => {
     await page.setViewportSize({ width: 1280, height: 900 });
-    await page.goto("/admin/parfums/mayorista");
+    await page.goto("/admin/import/mayorista");
     await expect(page.getByRole("heading", { level: 1, name: "Mayorista" })).toBeVisible();
-    await expect(page.getByText("Mayorista usa frascos completos. Los decants no cuentan para el mínimo", { exact: false })).toBeVisible();
-    await expect(page.getByText("Árabe, Diseñador y Nicho no se mezclan", { exact: false })).toBeVisible();
     for (const label of ["Árabe", "Diseñador", "Nicho"]) {
-      const card = page.getByRole("article", { name: label });
-      await expect(card.getByText("Pedido mínimo")).toBeVisible();
-      await expect(card.getByText(/^\d+ frascos$/)).toBeVisible();
-      await expect(card.getByText("Descuento por frasco")).toBeVisible();
+      const form = page.locator("form").filter({ has: page.getByRole("heading", { name: label }) });
+      await expect(form.getByLabel("Mínimo de frascos")).toBeEnabled();
+      await expect(form.getByLabel("Descuento por frasco (S/)")).toBeEnabled();
+      await expect(form.getByRole("button", { name: "Guardar regla" })).toBeVisible();
     }
-    await expect(page.getByRole("region", { name: "Qué ven tus clientes" }).getByRole("link", { name: /Ver Mayorista como cliente/ }))
-      .toHaveAttribute("href", "/parfums/mayorista");
-
-    const bottles = page.getByRole("list", { name: "Frascos y su estado mayorista" });
-    const eligible = bottles.getByRole("listitem").filter({ hasText: "LOCAL QA — Frasco mayorista" });
-    await expect(eligible).toContainText("Listo para Mayorista");
-    await expect(eligible).toContainText("Tipo: Nicho");
-    await expect(eligible).not.toContainText("Sin precio mayorista");
-    await expect(eligible).toContainText("No aparece en la tienda: producto sin publicar.");
-
-    await page.getByRole("link", { name: /Necesitan atención/ }).click();
-    await expect(page).toHaveURL(/eligibility=attention/);
-    const attention = page.getByRole("list", { name: "Frascos y su estado mayorista" });
-    const unclassified = attention.getByRole("listitem").filter({ hasText: "LOCAL QA — Frasco sin tipo" });
-    await expect(unclassified).toContainText("Falta tipo comercial");
-    await expect(unclassified).toContainText("Sin precio mayorista");
-    await expect(attention.getByRole("listitem").filter({ hasText: "LOCAL QA — Frasco mayorista" })).toHaveCount(0);
-    await expect(attention.getByText("Listo para Mayorista")).toHaveCount(0);
+    const designer = page.locator("form").filter({ has: page.getByRole("heading", { name: "Diseñador" }) });
+    const min = designer.getByLabel("Mínimo de frascos");
+    const original = await min.inputValue();
+    await min.fill(String(Number(original) + 1));
+    await designer.getByRole("button", { name: "Guardar regla" }).click();
+    await expect(min).toHaveValue(String(Number(original) + 1));
     await expectAccessibleAndContained(page, testInfo);
   });
 
-  test("policy edits are explicit, concurrency-protected, and disabling needs confirmation", async ({ page, context }) => {
+  test("Parfums Admin no longer exposes a Mayorista workspace", async ({ page }) => {
     await page.goto("/admin/parfums/mayorista");
-    const other = await context.newPage();
-    await other.goto("/admin/parfums/mayorista");
-
-    const card = page.getByRole("article", { name: "Árabe" });
-    await card.getByRole("button", { name: "Editar condiciones" }).click();
-    const discount = card.getByRole("textbox", { name: /Descuento por frasco/ });
-    const stored = await discount.inputValue();
-    expect(stored).toMatch(/^\d+\.\d{2}$/);
-    // Same amount, different spelling: a real save that changes no business value.
-    await discount.fill(stored.replace(/0$/, ""));
-    await expect(card.getByText("Cambios sin guardar")).toBeVisible();
-    await card.getByRole("button", { name: "Guardar" }).click();
-    await expect(card.getByText("Política guardada")).toBeVisible();
-    await expect(card.getByRole("textbox", { name: /Descuento por frasco/ })).toHaveCount(0);
-
-    // The other tab still holds the old updated_at.
-    const staleCard = other.getByRole("article", { name: "Árabe" });
-    await staleCard.getByRole("button", { name: "Editar condiciones" }).click();
-    await staleCard.getByRole("textbox", { name: /Descuento por frasco/ }).fill(stored.replace(/0$/, ""));
-    await staleCard.getByRole("button", { name: "Guardar" }).click();
-    await expect(staleCard.getByText("La política cambió en otra sesión. Recarga antes de continuar.").first()).toBeVisible();
-    await other.close();
-
-    // Disabling asks for an explicit acknowledgement; cancelled here.
-    await card.getByRole("button", { name: "Editar condiciones" }).click();
-    await card.getByRole("checkbox", { name: "Regla activa" }).uncheck();
-    await expect(card.getByText(/dejarán de ser elegibles para\s+Mayorista/)).toBeVisible();
-    await expect(card.getByRole("button", { name: "Desactivar regla" })).toBeDisabled();
-    await card.getByRole("checkbox", { name: "Entiendo y quiero desactivarla" }).check();
-    await expect(card.getByRole("button", { name: "Desactivar regla" })).toBeEnabled();
-    await card.getByRole("button", { name: "Cancelar" }).click();
-    await expect(card.getByText(/Activa$/)).toBeVisible();
+    await expect(page).toHaveURL(/\/admin\/import\/mayorista$/);
+    await expect(page.getByRole("heading", { level: 1, name: "Mayorista" })).toBeVisible();
   });
 });
 
@@ -248,7 +204,7 @@ test.describe("B2B combos and Mayorista (Parfums viewer)", () => {
   test.skip(LOCAL_ONLY || !hasIdentity("E2E_PARFUMS_VIEWER"), "requires disposable local fixtures and the E2E_PARFUMS_VIEWER_* identity");
   test.use({ storageState: PARFUMS_VIEWER_STATE });
 
-  test("viewer can inspect combos and Mayorista but gets no mutation controls", async ({ page }, testInfo) => {
+  test("Parfums viewer is denied access to Import Mayorista", async ({ page }, testInfo) => {
     await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto("/admin/parfums/combos");
     await expect(page.getByRole("heading", { level: 1, name: "Combos" })).toBeVisible();
@@ -270,10 +226,8 @@ test.describe("B2B combos and Mayorista (Parfums viewer)", () => {
     await page.goto("/admin/parfums/combos/nuevo");
     await expect(page).toHaveURL(/\/admin\/parfums\/combos$/);
 
-    await page.goto("/admin/parfums/mayorista");
-    await expect(page.getByRole("article", { name: "Nicho" }).getByText("Pedido mínimo")).toBeVisible();
-    await expect(page.getByRole("button", { name: "Editar condiciones" })).toHaveCount(0);
-    await expect(page.getByRole("list", { name: "Frascos y su estado mayorista" })).toBeVisible();
+    await page.goto("/admin/import/mayorista");
+    await expect(page).toHaveURL(/\/admin(?:\/login)?$/);
     await expectAccessibleAndContained(page, testInfo);
   });
 });

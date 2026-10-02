@@ -75,3 +75,14 @@ export function buildCategoryTiles(
     };
   });
 }
+
+/** Distinct brands present in the loaded products, in first-seen order. */
+export function listBrands(products: readonly PublicImportProduct[], limit = 10): string[] {
+  const seen = new Set<string>();
+  for (const product of products) {
+    const brand = product.brand?.trim();
+    if (brand) seen.add(brand);
+    if (seen.size >= limit) break;
+  }
+  return [...seen];
+}

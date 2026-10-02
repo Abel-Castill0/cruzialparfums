@@ -1,39 +1,24 @@
 "use client";
 
 import type { Route } from "next";
-import Image from "next/image";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
-import {
-  addParfumsCartLine,
-  PARFUMS_CART_UPDATED_EVENT,
-} from "@/domains/carts/parfums-cart";
-import { cartIdentity } from "@/domains/catalog/types";
 import type { CatalogProduct } from "@/domains/catalog/types";
-import { listProductPurchaseVariants } from "@/domains/catalog/product-purchase";
 import {
   EMPTY_FINDER_ANSWERS,
   FINDER_FEELING_LABELS,
   FINDER_INTENSITY_LABELS,
-  findPerfumes,
-  finderConfidence,
-  finderScoreLabel,
-  finderWhyText,
   listFinderFamilies,
   listFinderTopNotes,
   type FinderAnswers,
   type FinderFeeling,
   type FinderIntensity,
 } from "@/domains/finder/finder-rules";
+import { buildRecommendationHref } from "@/domains/finder/finder-url";
 import styles from "./finder.module.css";
 
 const steps = ["forWhom", "feelings", "families", "intensity", "notes"] as const;
 type FinderStep = (typeof steps)[number];
-
-function money(value: number) {
-  return `S/ ${value.toFixed(2)}`;
-}
 
 function toggleLimited<T>(values: readonly T[], value: T, limit?: number) {
   if (values.includes(value)) return values.filter((candidate) => candidate !== value);
@@ -41,129 +26,56 @@ function toggleLimited<T>(values: readonly T[], value: T, limit?: number) {
   return [...values, value];
 }
 
-function Results({ products, answers, onRestart, onNotice }: {
+/**
+ * The questionnaire only collects answers. Closing it (X, outside click or
+ * Escape) returns to the page it was opened from, with focus back on the
+ * control that opened it; only completing it navigates, to the catalog with
+ * the recommendation for those answers. Nothing is recorded as completed
+ * unless the last step is confirmed.
+ */
+export function FinderExperience({ products, catalogQuery = "", intercepted = false }: {
   products: CatalogProduct[];
-  answers: FinderAnswers;
-  onRestart: () => void;
-  onNotice: (message: string) => void;
+  /** Catalog filters to keep when handing the recommendation over. */
+  catalogQuery?: string;
+  /** True when rendered as a modal over the page it was opened from. */
+  intercepted?: boolean;
 }) {
-  const results = findPerfumes(products, answers);
-  const confidence = finderConfidence(results);
-  const heading = confidence === "weak"
-    ? "No encontramos una coincidencia perfecta"
-    : confidence === "close"
-      ? "Estas opciones encajan bien contigo"
-      : "Tu mejor coincidencia";
-  const intro = confidence === "weak"
-    ? "Estas son las opciones que más se acercan a lo que nos contaste. Compáralas antes de elegir."
-    : confidence === "close"
-      ? "Varias fragancias respondieron de forma similar a tus preferencias."
-      : "Resultado calculado con tus respuestas, datos del catálogo y una clasificación editorial de intensidad.";
-
-  function smallestOrderableDecant(product: CatalogProduct) {
-    // Never hardcode a size — today's catalog happens to have 3 ml on every
-    // eligible fragrance, but that's brittle. Pick whichever decant is
-    // actually smallest and has a price, per product.
-    return listProductPurchaseVariants(product)
-      .filter((variant) => variant.group === "decant")
-      .at(0);
-  }
-
-  function add(product: CatalogProduct) {
-    const decant = smallestOrderableDecant(product);
-    if (!decant) {
-      onNotice("Este perfume no tiene un decant disponible por ahora.");
-      return;
-    }
-    const mutation = addParfumsCartLine(localStorage, {
-      productId: cartIdentity(product),
-      variantId: decant.variantId,
-      quantity: 1,
-    });
-    if (!mutation.persisted) {
-      onNotice("No pudimos guardar la selección. Revisa el almacenamiento del navegador.");
-      return;
-    }
-    window.dispatchEvent(new Event(PARFUMS_CART_UPDATED_EVENT));
-    onNotice(`${product.brand} ${product.name} · ${decant.size} ml añadido`);
-  }
-
-  return (
-    <div className={styles.results} data-finder-results>
-      <p className={styles.resultEyebrow}>Tu selección Cruzial</p>
-      <h2 id="finder-title">{heading}</h2>
-      <p className={styles.resultIntro}>{intro}</p>
-      <p className={styles.methodNote}>La afinidad no mide rendimiento ni garantiza que una fragancia te guste; organiza coincidencias entre tus respuestas y el catálogo.</p>
-      <div className={styles.resultList}>
-        {results.map((result, index) => {
-          const decant = smallestOrderableDecant(result.product);
-          const decantSizes = Object.keys(result.product.decantPrices)
-            .map(Number)
-            .sort((a, b) => a - b);
-          return (
-            <article className={`${styles.resultCard} ${index === 0 ? styles.topResult : ""}`} key={result.product.legacyId}>
-              <Link className={styles.resultMedia} href={`/parfums/productos/${result.product.slug}` as Route}>
-                {result.product.imageUrl ? <Image src={result.product.imageUrl} alt={result.product.imageAlt} fill sizes="96px" className={styles.resultImage} /> : null}
-              </Link>
-              <div className={styles.resultBody}>
-                <span className={styles.score}>{finderScoreLabel(result.score)} <em>{result.score}/100</em></span>
-                <span className={styles.resultBrand}>{result.product.brand}</span>
-                <h3><Link href={`/parfums/productos/${result.product.slug}` as Route}>{result.product.name}</Link></h3>
-                <p>{finderWhyText(result.reasons)}</p>
-                <div className={styles.resultActions}>
-                  <Link href={`/parfums/productos/${result.product.slug}` as Route}>Ver perfume</Link>
-                  {decant ? (
-                    <button type="button" onClick={() => add(result.product)}>
-                      Probar {decant.size} ml <span aria-hidden="true">+</span>
-                    </button>
-                  ) : null}
-                </div>
-                {decantSizes.length > 0 ? (
-                  <small>
-                    Decants desde {money(Math.min(...Object.values(result.product.decantPrices)))} · {decantSizes.join(" / ")} ml
-                  </small>
-                ) : null}
-              </div>
-            </article>
-          );
-        })}
-      </div>
-      <div className={styles.resultFooter}>
-        <button type="button" data-finder-restart onClick={onRestart}>Empezar de nuevo</button>
-        <Link href={"/parfums/catalogo" as Route}>Ver todo el catálogo <span aria-hidden="true">→</span></Link>
-      </div>
-    </div>
-  );
-}
-
-export function FinderExperience({ products }: { products: CatalogProduct[] }) {
   const router = useRouter();
   const panelRef = useRef<HTMLDivElement>(null);
+  const openerRef = useRef<Element | null>(null);
   const [stepIndex, setStepIndex] = useState(0);
-  const [showResults, setShowResults] = useState(false);
   const [answers, setAnswers] = useState<FinderAnswers>(() => ({
     ...EMPTY_FINDER_ANSWERS,
     feelings: [],
     families: [],
     notes: [],
   }));
-  const [notice, setNotice] = useState("");
   const families = useMemo(() => listFinderFamilies(products), [products]);
   const notes = useMemo(() => listFinderTopNotes(products), [products]);
   const step = steps[stepIndex] as FinderStep;
 
   useEffect(() => {
     const priorOverflow = document.body.style.overflow;
+    openerRef.current = document.activeElement;
     document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = priorOverflow; };
+    return () => {
+      document.body.style.overflow = priorOverflow;
+      const opener = openerRef.current;
+      if (opener instanceof HTMLElement && opener.isConnected) opener.focus({ preventScroll: true });
+    };
   }, []);
 
   useEffect(() => {
-    panelRef.current?.querySelector<HTMLElement>("[data-step-option], [data-finder-restart]")?.focus();
-  }, [showResults, stepIndex]);
+    panelRef.current?.querySelector<HTMLElement>("[data-step-option]")?.focus({ preventScroll: true });
+  }, [stepIndex]);
 
   function close() {
-    router.push("/parfums/catalogo" as Route);
+    // Over a page: pop the modal entry and land exactly where the visitor was.
+    // Opened directly (a shared link, a refresh): there is no page behind it,
+    // so go to the home rather than a catalog nobody asked for.
+    const hasPageBehind = intercepted || (window.history.length > 1 && document.referrer.startsWith(window.location.origin));
+    if (hasPageBehind) router.back();
+    else router.push("/parfums" as Route);
   }
 
   function handleKeys(event: KeyboardEvent<HTMLDivElement>) {
@@ -197,19 +109,13 @@ export function FinderExperience({ products }: { products: CatalogProduct[] }) {
 
   function next() {
     if (!canAdvance()) return;
-    if (stepIndex === steps.length - 1) setShowResults(true);
-    else setStepIndex((current) => current + 1);
-  }
-
-  function restart() {
-    setAnswers({ ...EMPTY_FINDER_ANSWERS, feelings: [], families: [], notes: [] });
-    setStepIndex(0);
-    setShowResults(false);
-  }
-
-  function announce(message: string) {
-    setNotice(message);
-    window.setTimeout(() => setNotice(""), 2800);
+    if (stepIndex === steps.length - 1) {
+      // Completed: replace this entry so Back returns to the original page,
+      // not to a finished questionnaire.
+      router.replace(buildRecommendationHref(answers, catalogQuery) as Route);
+    } else {
+      setStepIndex((current) => current + 1);
+    }
   }
 
   let title = "";
@@ -262,10 +168,7 @@ export function FinderExperience({ products }: { products: CatalogProduct[] }) {
           <button type="button" onClick={close} aria-label="Cerrar buscador de fragancias">×</button>
         </header>
         <div className={styles.body}>
-          {showResults ? (
-            <Results products={products} answers={answers} onRestart={restart} onNotice={announce} />
-          ) : (
-            <>
+          <>
               <div className={styles.progress}><span>{String(stepIndex + 1).padStart(2, "0")} / {String(steps.length).padStart(2, "0")}</span><div><i style={{ width: `${((stepIndex + 1) / steps.length) * 100}%` }} /></div></div>
               <h1 id="finder-title">{title}</h1>
               <p className={styles.subtitle}>{subtitle}</p>
@@ -281,10 +184,8 @@ export function FinderExperience({ products }: { products: CatalogProduct[] }) {
                 <button type="button" className={styles.next} disabled={!canAdvance()} onClick={next}>{stepIndex === steps.length - 1 ? "Ver mi selección" : "Siguiente"} <span aria-hidden="true">→</span></button>
               </nav>
             </>
-          )}
         </div>
       </div>
-      <div className={styles.toast} role="status" aria-live="polite">{notice}</div>
     </div>
   );
 }

@@ -5,6 +5,7 @@ import styles from "./import-home.module.css";
 
 type HeroState =
   | { state: "campaign"; campaign: PublicImportCampaign }
+  | { state: "upcoming"; campaign: PublicImportCampaign }
   | { state: "closed" | "unavailable" };
 
 function whatsappUrl(whatsappNumber: string, message = "Hola Cruzial Import, quiero más información.") {
@@ -52,6 +53,7 @@ export function ImportHero({
   contact: BusinessUnitSettings | null;
 }) {
   const open = hero.state === "campaign";
+  const upcoming = hero.state === "upcoming";
   const titleId = open ? "campaign-title" : "import-closed-title";
 
   return (
@@ -80,14 +82,18 @@ export function ImportHero({
         <h1 id={titleId}>
           {open
             ? hero.campaign.name
-            : hero.state === "unavailable"
-              ? "Catálogo no disponible por ahora."
-              : "El próximo consolidado se está preparando."}
+            : upcoming
+              ? hero.campaign.name
+              : hero.state === "unavailable"
+                ? "Catálogo no disponible por ahora."
+                : "El próximo consolidado se está preparando."}
         </h1>
 
         <p className={styles.heroSummary}>
           {open
             ? hero.campaign.publicMessage || "Precios exclusivos de este consolidado."
+            : upcoming
+              ? `Vista previa de productos. Apertura estimada: ${hero.campaign.opensAt ? formatClosingDate(hero.campaign.opensAt) : "por confirmar"}. El consolidado sigue cerrado hasta que el cliente confirme precios y disponibilidad.`
             : hero.state === "unavailable"
               ? "No pudimos consultar el estado del consolidado. Inténtalo nuevamente o contáctanos."
               : "Los productos y precios aparecerán cuando el próximo consolidado abra."}
@@ -98,6 +104,8 @@ export function ImportHero({
             <a href="#catalogo" className={styles.primaryAction}>
               Ver catálogo <ArrowIcon />
             </a>
+          ) : upcoming ? (
+            <a href="#catalogo" className={styles.primaryAction}>Explorar vista previa <ArrowIcon /></a>
           ) : null}
           {contact ? (
             <a
@@ -132,6 +140,8 @@ export function ImportHero({
               <dd>WhatsApp {contact?.whatsappDisplay ?? "no disponible"}</dd>
             </div>
           </dl>
+        ) : upcoming ? (
+          <dl className={styles.heroFacts}><div><dt>Estado</dt><dd>Apertura estimada</dd></div><div><dt>Catálogo</dt><dd>Vista previa · compra deshabilitada</dd></div></dl>
         ) : (
           <ul className={styles.assurances}>
             {ASSURANCES.map((label) => (

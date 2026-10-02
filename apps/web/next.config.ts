@@ -21,6 +21,14 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  // Wholesale left the Parfums storefront. Keep legacy customer links within
+  // the correct business unit; Import handles current consolidated offers.
+  async redirects() {
+    return [
+      { source: "/parfums/mayorista", destination: "/import", permanent: false },
+      { source: "/parfums/mayorista/:path*", destination: "/import", permanent: false },
+    ];
+  },
   // Response headers for every route. The Content-Security-Policy is set
   // per request in src/proxy.ts because it carries a nonce; everything that
   // is static lives here so it also covers assets and error responses.

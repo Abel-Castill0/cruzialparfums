@@ -26,14 +26,17 @@ export default async function ImportHomePageRoute({ searchParams }: PageProps) {
         filters={filters}
         contact={null}
         depositPercentages={{ new: null, returning: null }}
+        wholesaleRules={[]}
       />
     );
   }
 
-  const [catalogResult, contact, depositPercentages] = await Promise.all([
-    new PublicImportRepository(supabase).readCatalog(filters),
+  const repository = new PublicImportRepository(supabase);
+  const [catalogResult, contact, depositPercentages, wholesaleRules] = await Promise.all([
+    repository.readCatalog(filters),
     readImportPublicContact(supabase),
     readImportDepositPercentages(supabase),
+    repository.readWholesaleRules(),
   ]);
 
   const page: ImportHomePage = catalogResult.status === "error" ? { status: "unavailable" } : catalogResult;
@@ -44,6 +47,7 @@ export default async function ImportHomePageRoute({ searchParams }: PageProps) {
       filters={filters}
       contact={contact}
       depositPercentages={depositPercentages}
+      wholesaleRules={wholesaleRules}
     />
   );
 }

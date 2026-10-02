@@ -70,11 +70,15 @@ test.describe("parfums storefront", () => {
     await expect(page.getByText(/legacy/i)).toHaveCount(0);
   });
 
-  test("wholesale page shows the confirmed per-category condition and a quote form", async ({ page }) => {
-    await page.goto("/parfums/mayorista");
-    await expect(page.getByRole("heading", { level: 1 })).toContainText(/Mayor/);
-    await expect(page.getByRole("button", { name: /Continuar en WhatsApp/ })).toBeVisible();
-    await expect(page.getByText(/4\+ uds|12\+ uds|paridad legacy/)).toHaveCount(0);
+  test("wholesale is gone from Parfums: the old URL redirects and no public page links to it", async ({ page, request }) => {
+    const response = await request.get("/parfums/mayorista", { maxRedirects: 0 });
+    expect(response.status()).toBe(307);
+    expect(response.headers()["location"]).toMatch(/\/import$/);
+
+    for (const path of ["/parfums", "/parfums/catalogo", "/parfums/combos", "/parfums/nosotros", "/parfums/contacto"]) {
+      await page.goto(path);
+      await expect(page.locator('a[href*="mayorista"]'), path).toHaveCount(0);
+    }
   });
 
   test("institutional and legal pages load with real contact data", async ({ page }) => {
@@ -97,7 +101,8 @@ test.describe("parfums storefront", () => {
     const cases: Array<[string, string]> = [
       ["/index.html", "/parfums"],
       ["/catalog.html", "/parfums/catalogo"],
-      ["/perfumes-enteros.html", "/parfums/mayorista"],
+      ["/perfumes-enteros.html", "/parfums/catalogo?format=bottle"],
+      ["/mayorista.html", "/import"],
       ["/product.html?id=missing-legacy-id", "/parfums/catalogo"],
     ];
     for (const [from, to] of cases) {

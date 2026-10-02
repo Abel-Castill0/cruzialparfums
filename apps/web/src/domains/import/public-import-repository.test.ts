@@ -83,17 +83,24 @@ function fakeSupabase(script: {
   campaign: RpcCall[];
   categories: RpcCall[];
   catalog: RpcCall[];
+  upcoming?: RpcCall[];
+  previewCategories?: RpcCall[];
+  previewCatalog?: RpcCall[];
 }): SupabaseClient<Database> {
-  const cursors = { campaign: 0, categories: 0, catalog: 0 };
-  const nameToKey: Record<string, keyof typeof script> = {
+  const queues = { ...script, upcoming: script.upcoming ?? [{ data: [], error: null }], previewCategories: script.previewCategories ?? [], previewCatalog: script.previewCatalog ?? [] };
+  const cursors: Record<keyof typeof queues, number> = { campaign: 0, categories: 0, catalog: 0, upcoming: 0, previewCategories: 0, previewCatalog: 0 };
+  const nameToKey: Record<string, keyof typeof queues> = {
     public_get_import_current_campaign: "campaign",
     public_list_import_categories: "categories",
     public_list_import_catalog: "catalog",
+    public_get_import_upcoming_campaign: "upcoming",
+    public_list_import_preview_categories: "previewCategories",
+    public_list_import_campaign_preview: "previewCatalog",
   };
   const rpc = (name: string) => {
     const key = nameToKey[name];
     if (!key) throw new Error(`unexpected rpc: ${name}`);
-    const queue = script[key];
+    const queue = queues[key];
     const index = cursors[key]++;
     const call = queue[index];
     if (!call) throw new Error(`rpc ${name} called more times (${index + 1}) than scripted (${queue.length})`);
@@ -213,5 +220,28 @@ describe("PublicImportRepository.readCatalog — campaign/offer identity race (C
     );
 
     await expect(repo.readCatalog(filters)).resolves.toEqual({ status: "error" });
+  });
+});
+
+describe("PublicImportRepository scheduled preview", () => {
+  it("shows reference products without offer identifiers or availability", async () => {
+    const scheduled = { ...campaignA, number: 8, name: "Octavo Consolidado", opens_at: "2026-10-15T05:00:00Z" };
+    const preview = {
+      campaign_id: scheduled.id, campaign_number: 8, product_id: "preview-product", slug: "preview-product", name: "Producto de referencia", brand: "Marca", category_slug: null, category_name: null, media_url: null, media_alt: null,
+      presentations: [{ id: "presentation-1", label: "100 ml", class: "single_fixed", capacityMl: 100, price: "112.00", currency: "PEN" }], total_count: 1,
+    };
+    const repo = new PublicImportRepository(fakeSupabase({
+      campaign: [{ data: [], error: null }], categories: [], catalog: [],
+      upcoming: [{ data: [{ campaign_id: scheduled.id, campaign_number: 8, campaign_name: scheduled.name, opens_at: scheduled.opens_at, closes_at: null, public_message: null }], error: null }],
+      previewCategories: [emptyCategories], previewCatalog: [{ data: [preview], error: null }],
+    }));
+    const result = await repo.readCatalog(filters);
+    expect(result.status).toBe("upcoming");
+    if (result.status === "upcoming") {
+      expect(result.total).toBe(1);
+      expect(result.products[0]?.presentations[0]).toEqual({ id: "presentation-1", label: "100 ml", presentationClass: "single_fixed", capacityMl: 100, price: "112.00", currency: "PEN" });
+      expect(result.products[0]?.presentations[0]).not.toHaveProperty("offerId");
+      expect(result.products[0]?.presentations[0]).not.toHaveProperty("availability");
+    }
   });
 });

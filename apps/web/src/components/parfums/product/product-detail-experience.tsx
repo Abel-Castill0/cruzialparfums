@@ -1,6 +1,5 @@
 "use client";
 
-import type { Route } from "next";
 import Image from "next/image";
 import { MissingPhoto } from "../shared/missing-photo";
 import Link from "next/link";
@@ -234,14 +233,6 @@ export function ProductDetailExperience({
             <p className={styles.sectionLabel}>Notas principales</p>
             <div className={styles.noteChips}>{product.notes.map((note) => <span key={note}>{note}</span>)}</div>
           </div>
-
-          {product.bottlePrices ? (
-            <div className={styles.wholesaleLink}>
-              <span aria-hidden="true">✦</span>
-              <div><strong>¿Necesitas varias unidades?</strong><p>Las compras por volumen se atienden desde Mayorista.</p></div>
-              <Link href={"/parfums/mayorista" as Route}>Ver Mayorista →</Link>
-            </div>
-          ) : null}
         </div>
       </section>
 
