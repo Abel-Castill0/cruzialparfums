@@ -1,6 +1,6 @@
 # CRUZIAL V2 - CURRENT CHECKPOINT
 
-Updated: 2026-09-20
+Updated: 2026-10-01
 
 ## Scope
 
@@ -12,10 +12,13 @@ Active V2:
 Legacy root storefront is out of scope unless explicitly requested.
 
 Branch:
-codex/feature/cruzial-platform-v2
+master (all feature branches merged; work lands via PR with HEAD-guarded squash merge)
 
 Always derive exact HEAD from:
 git rev-parse HEAD
+
+> The sections below the "Current verified state (2026-10-01)" block are
+> historical gate records; where they conflict with that block, that block wins.
 
 ## Architecture
 
@@ -1666,7 +1669,179 @@ Local gate on the candidate: Vitest 1011, pgTAP 1308 (54 files, fresh reset),
 Playwright 92 passed / 4 skipped (staging-only hosted-session spec), axe +
 console/hydration guard on 13 public routes + 404, npm audit 0.
 
-## Storefront homes redesign (Parfums + Import) — branch work, not yet released
+## Status at a glance (2026-10-01) — two separate states
+
+### 1. Technical platform — COMPLETE
+
+Application `ab157dd` (later commits are docs/tests only) is on `master`, CI green, and
+Production serves it. Hosted migrations = repo migrations (79). Nothing below depends on
+Import having a real campaign or on pending legal/commercial data.
+
+- **Owner can operate everything from Admin** (proved by tests, not by assertion):
+  edit a provisional launch price and explicitly confirm it
+  (`admin-owner-editability.spec.ts` + pgTAP `54_…`: edit keeps `owner_selected_provisional`,
+  viewer denied, stale write `P2011`, only the explicit checkbox → `client_confirmed`, audited);
+  edit a product; complete the legal identity in Configuración (clears the dashboard warning,
+  reversible); upload/replace photos (`media-actions` + pgTAP media RPCs; Cloudinary env present
+  in Production, CSP allows it); create/edit/open Import consolidados (pgTAP 16/17/23 + B1 UI
+  tests); resolve complaints (Gate B test).
+- **Incomplete items degrade safely**: a product/variant that lacks a required fact stays
+  `draft` and appears under "Borradores" / dashboard attention items; it never blocks the
+  other products. A missing optional photo renders the neutral "Foto próximamente" panel
+  (never a bottle picture). Provisional launch prices carry visible provenance
+  (`owner_selected_provisional`, "Precio inicial provisional", evidence in Historial de cambios).
+- **Security/ops unchanged**: RLS, MFA/AAL2, grants, rollback SQL, backups (see below).
+- Gates: Vitest, pgTAP (56 files), Playwright (admin editability + public journeys), axe, CodeQL,
+  secret scan — all green on the last code commit.
+
+### 2. Content and operation per business unit
+
+**Cruzial Parfums — selling, content partly pending.** 98 products published; decants priced
+from the official 2026 PDF; 18 bottles with an owner-selected provisional price; combos official.
+Hidden until a fact is known: bir-intense and le-beau-le-parfum bottles (size), cedrat-boise-int
+and victory-elixir bottles (concentration/identity conflict), 1-million-lucky (price: one
+promotional source), by-the-fireplace (no credible price), le-male-le-parfum (brand/gender).
+Legal identity (razón social, RUC, dirección, claims contact, policy texts) is blank, so the
+public Libro de Reclamaciones shows its "identificación legal incompleta" notice.
+
+**Cruzial Import — platform ready, no campaign yet.** The consolidado workflow, readiness
+dashboard, orders, customers, complaints and settings all work; the storefront honestly shows
+"El próximo consolidado se está preparando". Content pending: real photos, availability, prices
+and closing date for the first consolidado (844 products without photos, 898 offers
+unconfirmed). Nothing is invented; this does not make the platform incomplete.
+
+**Indexing**: `CRUZIAL_PRODUCTION_CUTOVER_APPROVED` stays false and `robots.txt` stays
+`Disallow: /` until the real legal identity exists (and Import content for `public_launch_ready`).
+
+## Current verified state (2026-10-01)
+
+Verified directly (GitHub, Supabase MCP, Vercel CLI under the `cruzial` team
+login, live HTTP) — not copied from earlier reports.
+
+- **master**: `3c016b0ee56b55a3f8ae0b9192c8ad18195b023c` (code HEAD; later
+  docs-only commits do not change the application). Admin UX program is fully
+  merged: Phase A foundation (#21), B1 (#22), B2A (#23), B2B (#24), C1 (#25).
+  UI/presentation only — **no migration** was added by any of them. Master CI
+  on the final code HEAD: Web, Database (migrations · pgTAP), Browser E2E,
+  CodeQL, Secret scan, Vercel — all success.
+- **Corrected 2026-10-01**: (1) merging dependabot #4 left `react` 19.3.0 with
+  `react-dom` 19.2.8 (mismatched); #27 pins react-dom 19.3.0 and supersedes #6
+  (closed). (2) Neither dashboard said that `business_legal` is blank; #28 adds
+  an attention item ("Faltan datos legales del negocio — Falta: razón social,
+  RUC, …") on both Parfums and Import dashboards linking to Configuración
+  (`legal-readiness.ts`, unit-tested; presentation only).
+- **Dependabot**: merged #14 (supabase-js), #7 (vitest), #9 (@types/node), #4
+  (react), and #27 replaces #6. Open on purpose: #5 eslint 10 and #10
+  TypeScript 7 (required Web/E2E checks fail — incompatible with the current
+  toolchain, not integrated), #8 @supabase/ssr patch (lockfile conflict;
+  needs a dependabot rebase, low priority).
+- **Production (Vercel)**: `cruzial.pe`, `www.cruzial.pe` and the git-master
+  alias serve deployment `cruzial-platform-v2-a4vr1fuvn-cruzial` built from
+  master `3c016b0` (Ready, verified via build log + aliases). Smoke (read-only, no data created): `/` 200,
+  `/parfums` 200, `/import` 200, `/parfums/catalogo` 200,
+  `/libro-de-reclamaciones` 200, unknown route 404, `www` → apex redirect,
+  `/admin` → `/admin/login`, protected `/admin/parfums/*` → 307 (no content
+  leak), CSP (nonce) + HSTS + X-Frame-Options present, runtime log window clean.
+  `robots.txt` = `Disallow: /` (indexing intentionally closed).
+- **Supabase** (`iyxidhglyqkzoziyewlc`, the only hosted project; Production
+  data lives here): hosted migrations **78 = repo 78**, latest
+  `20260926100000`; nothing pending, nothing applied in this pass. Row counts:
+  products 944 (94 published), orders 0, customers 0, complaints 0,
+  admin_memberships 2, open Import campaigns 0. Security advisors: no new
+  findings — INFO rls-no-policy on 4 service-role-only tables, WARN
+  SECURITY DEFINER executability (6 anon = public read-only catalog RPCs; 74
+  authenticated = the admin RPC surface, by design), WARN leaked-password
+  protection (Free-plan limitation, accepted above).
+- **Rollback reference**: `supabase/rollback/20260927_final_cutover_rollback.sql`
+  (see PR #13 section); previous Production deployments
+  (`…-40x38dkdz` master `bf56db6`, `…-8fzcxqape` master `2a0e2a6`) remain valid
+  Vercel rollback targets.
+- **Closed gates**: Gate B, final completion cutover (#13), Admin UX A–C1.
+  No regression evidence found; closed capabilities were not re-audited.
+
+### Client-confirmation search (2026-10-01, after #27–#29)
+
+The owner reported that the client confirmed the pending data, but the
+confirmations themselves were not in the session. Searched without finding
+any: `docs/client-decisions.md` and `docs/release-blockers-legal.md` (both
+still list legal identity, price approval and Import data as unconfirmed),
+`docs/client-source/`, the untracked client PDFs/images in the checkout
+(nothing newer than 2026-09-08 for the catalog, nothing modified after
+2026-09-29 anywhere in the repo) and the owner's Downloads/Desktop. **Nothing
+was applied**: no legal data, no price approval (the 20 `provisional_market`
+prices stay blocked from publication), no Import data, and
+`CRUZIAL_PRODUCTION_CUTOVER_APPROVED` was not touched; `robots.txt` stays
+`Disallow: /` and `sitemap.xml` stays empty, which is the correct closed state.
+
+Verified in this pass: master `3b8a4fc` (docs-only head over code `3c016b0`),
+Production serves it (build log `Commit: 3b8a4fc`, aliases cruzial.pe /
+www.cruzial.pe), smoke routes 200, PRs #27/#28/#29 merged, open PRs #5/#10
+(incompatible, failing required checks) and #8 (dependabot asked to rebase).
+
+Media finding: the only listed product with a real client photo is
+`liquid-brun` — two untracked client files exist
+(`img/perfumes/FRENCH AVENEU - LIQUID BRUN.png`, bottle only, and
+`FRENCH AVENEU -LIQUID BRUN.png`, bottle plus three decant vials); the
+reconciliation marked it AMBIGUOUS only because both normalise to the same
+name. Needs one owner decision (which file is primary) and an upload through
+Admin → Productos → Medios or the controlled media migration. Lovely Cherry,
+Royal Blend Sequoia, Le Male Le Parfum and Sceptre Malachite have no client
+file anywhere.
+
+### Owner-delegated launch merchandising (2026-10-01) — APPLIED
+
+Authority: CLAUDE.md "Current owner delegation — reversible launch merchandising".
+PR #31 (merge `ab157dd`), Production serves `ab157dd` (build log + aliases).
+
+- **Migration `20261001010000`** applied to Production with the Supabase CLI
+  (`db push --linked`, exact repo version; hosted 78 → **79**). Adds price
+  authority `owner_selected_provisional`; `create_parfums_order_request_v2` and
+  `app.unit_launch_readiness` re-created with one logical change each (grants
+  unchanged: orders RPC service_role only). Pre-change schema+data dumps with
+  checksums were taken to a private path outside the repo. Rollback:
+  `supabase/rollback/20261001_owner_selected_provisional_rollback.sql`.
+  pgTAP 55 files incl. new `53_owner_selected_provisional_price.sql`.
+- **Data** (`supabase/provisioning/parfums-owner-launch-merchandising.sql`,
+  idempotent, generated from the committed research, audited in `audit_log`
+  with request_id `owner_launch_merchandising_2026-10-01`, 22 rows):
+  18 bottle variants → `owner_selected_provisional` + published, using the
+  research reference price (≥2 credible Peru sources, identity/size/
+  concentration all CONFIRMED). They are editable in Admin and still need the
+  explicit "Precio confirmado por el cliente" step to become `client_confirmed`.
+  Lovely Cherry, Royal Blend Sequoia, Sceptre Malachite published with the
+  honest "Foto próximamente" panel (`MissingPhoto`); Liquid Brun published with
+  its two real client photos (Cloudinary `…/liquid-brun/{set,bottle}`).
+  Parfums published products 94 → 98; orders/customers/complaints still 0.
+- **Verified live** (read-only): product pages for the four products render
+  (h1), Sceptre shows the fallback, Dylan Blue bottle S/ 375, `/parfums/mayorista`
+  now lists bottles with prices, `le-male-le-parfum` stays hidden.
+- **Launch readiness** (`public_launch_ready()`) remains false, correctly:
+  legal identity blank and Import has no open campaign.
+
+### Content/operation inputs only the owner/client can supply (not platform gaps)
+
+Everything else is done. These stay hidden/closed because the datum is unknown
+(CLAUDE.md delegation does not cover them):
+
+1. **Legal identity** (both units): razón social, RUC, dirección, claims
+   email/phone, exchange/payment policy text. Blocks the public legal
+   presentation and indexing. Fill in Admin → Configuración.
+2. **Bottle facts** (stay draft): bir-intense (size, concentration),
+   le-beau-le-parfum (size: 75 or 125 ml, not the stored 100),
+   cedrat-boise-int (concentration — client label says Extrait, retailers EDP),
+   victory-elixir (official name/concentration conflict),
+   1-million-lucky (price: only one promotional source),
+   by-the-fireplace (price: no credible Peru source).
+3. **Le Male Le Parfum**: brand and gender are not on record (identity).
+4. **Import**: no open campaign; 844 products without photos and 898 offers
+   with unconfirmed availability — needs real photos, availability, prices and
+   the closing date. Not invented.
+5. **Cutover/indexing**: `CRUZIAL_PRODUCTION_CUTOVER_APPROVED` stays false and
+   `robots.txt` closed until 1 and the Import data are truthful; then flip,
+   redeploy and re-smoke `robots.txt`/`sitemap.xml` (authorized by the owner).
+6. **Owner TOTP enrollment/AAL2** on the real admin accounts (human step).
+
+## Storefront homes redesign (Parfums + Import) — merged to master 2026-10-01
 
 Both public homes (`/parfums`, `/import`) were rebuilt as editorial pages that
 keep every data path and URL contract (filters `?type=` / `?categoria=`,
@@ -1714,7 +1889,11 @@ anchors `#faq` `#catalogo` `#como-funciona`, `#campaign-title`,
 - Never modify master before explicit cutover/merge authorization.
 - Never weaken RLS/auth.
 - Migrations already applied (staging or Production) are append-only.
-- Never invent client prices, stock or commercial decisions.
+- Default: never invent client prices, stock or commercial decisions. The
+  owner-delegation exception in `CLAUDE.md` (2026-10-01) authorizes Claude to
+  choose auditable, provisional launch prices from documented market research
+  and reversible presentation defaults. It does not authorize guessing stock,
+  availability, legal identity, or unknown product identity/size/concentration.
 - Never touch client PNG/PDF assets in bulk.
 - Explicit git staging only.
 - Never use git add -A.

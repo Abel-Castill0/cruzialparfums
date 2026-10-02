@@ -49,6 +49,8 @@ export type PrePublicationReadiness = {
 const READY_VERIFICATION_STATUSES: ReadonlySet<CatalogVerificationStatus> = new Set([
   "official_pdf",
   "client_confirmed",
+  // Owner-delegated initial launch price (2026-10-01): sellable, provisional, editable in Admin.
+  "owner_selected_provisional",
 ]);
 
 /**
@@ -113,7 +115,8 @@ export function filterStorefrontReady(products: readonly CatalogProduct[]): Cata
  * - Product draft or published may be eligible
  * - Variant archived blocks publication
  * - Variant draft or published may be eligible
- * - Variant price authority must be client_confirmed or official_pdf
+ * - Variant price authority must be client_confirmed, official_pdf or
+ *   owner_selected_provisional
  *
  * Discontinued products are NOT blocked — they can still be published
  * and remain purchasable.

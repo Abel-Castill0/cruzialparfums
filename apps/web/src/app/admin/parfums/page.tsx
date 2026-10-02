@@ -15,6 +15,7 @@ import {
 import { getAdminSession } from "@/lib/auth/admin-session";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { AdminParfumsOrdersRepository } from "@/domains/admin-parfums/orders-repository";
+import { legalIdentityNotice, missingLegalIdentity } from "@/domains/admin-parfums/legal-readiness";
 import { AdminParfumsSettingsRepository } from "@/domains/admin-parfums/settings-repository";
 import { AdminComplaintsRepository } from "@/domains/complaints/complaint-repository";
 import styles from "../dashboard.module.css";
@@ -68,7 +69,7 @@ export default async function AdminParfumsPage() {
         .eq(column, value)
         .is("archived_at", null);
 
-    const [orderCounts, olderPending, draftProducts, publishedProducts, outOfStockProducts, complaintCounts, contact] = await Promise.all([
+    const [orderCounts, olderPending, draftProducts, publishedProducts, outOfStockProducts, complaintCounts, contact, legal] = await Promise.all([
       ordersRepository.countByStatus(),
       ordersRepository.countPendingOld(),
       productCount("publication_status", "draft"),
@@ -76,6 +77,7 @@ export default async function AdminParfumsPage() {
       productCount("availability_status", "out_of_stock"),
       complaintsRepository.countByStatus(),
       new AdminParfumsSettingsRepository(supabase, unitId, "parfums").getPublicContact(),
+      new AdminParfumsSettingsRepository(supabase, unitId, "parfums").getBusinessLegal(),
     ]);
 
     if (orderCounts === null || olderPending === null || complaintCounts === null) loadFailed = true;
@@ -83,6 +85,7 @@ export default async function AdminParfumsPage() {
 
     contactConfigured = contact.ok ? contact.data !== null : null;
     if (!contact.ok) loadFailed = true;
+    if (!legal.ok) loadFailed = true;
     publishedCount = publishedProducts.error ? null : publishedProducts.count ?? 0;
     draftCount = draftProducts.error ? null : draftProducts.count ?? 0;
 
@@ -101,6 +104,17 @@ export default async function AdminParfumsPage() {
         href: "/admin/parfums/reclamos?status=received",
         actionLabel: "Revisar reclamos",
         tone: "danger",
+      });
+    }
+    const legalNotice = legal.ok ? legalIdentityNotice(missingLegalIdentity(legal.data?.value ?? null)) : null;
+    if (legalNotice) {
+      items.push({
+        key: "legal",
+        title: legalNotice.title,
+        detail: legalNotice.detail,
+        href: "/admin/parfums/configuracion",
+        actionLabel: isAdmin ? "Completar datos" : "Ver configuración",
+        tone: "attention",
       });
     }
     if (older > 0) {

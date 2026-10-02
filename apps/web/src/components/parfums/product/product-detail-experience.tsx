@@ -2,6 +2,7 @@
 
 import type { Route } from "next";
 import Image from "next/image";
+import { MissingPhoto } from "../shared/missing-photo";
 import Link from "next/link";
 import { useState } from "react";
 import { ProductCard } from "@/components/parfums/catalog/product-card";
@@ -123,7 +124,11 @@ export function ProductDetailExperience({
                 loading="eager"
               />
             </div>
-          ) : null}
+          ) : (
+            <div className={styles.imageFrame}>
+              <MissingPhoto />
+            </div>
+          )}
           <span className={`${styles.tag} ${!purchasable ? styles.discontinuedTag : ""}`}>
             {!purchasable ? "Agotado" : product.discontinued ? "Descontinuado" : product.tag}
           </span>

@@ -43,7 +43,7 @@ export default defineConfig({
     { name: "mobile", testMatch: PUBLIC_SPECS, use: { ...devices["Pixel 7"] } },
     {
       name: "admin",
-      testMatch: /(admin-critical|admin-authenticated|gate-b-operations|admin-catalog-customers|admin-combos-wholesale)\.spec\.ts/,
+      testMatch: /(admin-critical|admin-authenticated|gate-b-operations|admin-catalog-customers|admin-combos-wholesale|admin-owner-editability)\.spec\.ts/,
       dependencies: ["setup"],
       use: { ...devices["Desktop Chrome"] },
     },
