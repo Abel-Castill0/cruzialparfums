@@ -1,6 +1,7 @@
 .carousel {
   position: relative;
-  aspect-ratio: 16 / 9;
+  aspect-ratio: 21 / 9;
+  min-height: 320px;
   overflow: hidden;
   background: var(--color-ink);
 }
@@ -176,6 +177,11 @@
     width: 44px;
     height: 44px;
     font-size: 0.95rem;
+  }
+
+  /* Leave the bottom strip to the pagination so it never strikes the CTA. */
+  .slideCopy {
+    padding-bottom: 3.6rem;
   }
 
   .dots {

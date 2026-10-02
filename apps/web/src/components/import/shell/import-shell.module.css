@@ -5,6 +5,12 @@
   border-bottom: 1px solid rgba(244, 247, 251, 0.12);
   background: var(--color-import-navy);
   color: var(--color-import-white);
+  transition: top 380ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Slides out of view while reading downwards (see ScrollAwareHeader). */
+.headerHidden {
+  top: -90px;
 }
 
 .headerInner {

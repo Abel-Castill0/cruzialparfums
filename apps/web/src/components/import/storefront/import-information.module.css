@@ -1,261 +1,363 @@
-.process,
-.conditions,
-.faq,
-.contact {
-  width: min(1280px, calc(100% - 48px));
-  margin-inline: auto;
-  padding-block: clamp(64px, 8vw, 112px);
-  border-top: 1px solid var(--import-line);
-}
+/* Sections inherit the Import palette from the home wrapper
+   (--import-* custom properties are declared on the page's <main>). */
 
-.processHeading,
-.faqHeading { max-width: 400px; }
+.inner {
+  width: min(1280px, calc(100% - (var(--import-gutter, 24px) * 2)));
+  margin-inline: auto;
+}
 
 .eyebrow {
   color: var(--import-muted);
   font-size: 0.7rem;
   font-weight: 700;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
 }
 
-.process h2,
-.conditions h2,
-.faq h2,
-.contact h2 {
+.heading h2,
+.conditionsBody h2,
+.contactBody h2 {
   margin-top: 14px;
   font-family: var(--font-body), sans-serif;
-  font-size: clamp(1.9rem, 4vw, 3.2rem);
+  font-size: clamp(1.9rem, 4vw, 3rem);
   font-weight: 520;
-  letter-spacing: -0.04em;
-  line-height: 1.06;
+  line-height: 1.04;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
 }
 
-.processHeading p,
-.conditionsBody > div > p,
-.faqHeading p,
-.contact p:not([role="status"]) {
-  max-width: 42ch;
-  margin-top: 14px;
+.heading > p:not(.eyebrow) {
+  max-width: 46ch;
+  margin-top: 16px;
   color: var(--import-muted);
   line-height: 1.65;
 }
 
-.process { display: grid; grid-template-columns: minmax(260px, 0.75fr) minmax(0, 1.6fr); gap: clamp(32px, 6vw, 64px); align-items: start; }
+/* Process — a rail with four moments. */
 
-.processList {
+.process {
+  padding-block: clamp(64px, 9vw, 120px);
+  border-top: 1px solid var(--import-line);
+}
+
+.steps {
+  margin-top: clamp(40px, 6vw, 72px);
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 14px;
+  gap: clamp(20px, 3vw, 40px);
   list-style: none;
 }
 
-.processList li {
+.steps li > div {
   position: relative;
-  min-height: 190px;
-  padding: 22px 18px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  border: 1px solid var(--import-line);
-  border-radius: 16px;
-  background: var(--import-surface);
-}
-
-.processList li:not(:last-child)::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  right: -11px;
-  width: 14px;
-  height: 14px;
-  border-top: 1px solid var(--import-line);
-  border-right: 1px solid var(--import-line);
-  transform: translateY(-50%) rotate(45deg);
-  background: var(--import-bg);
-}
-
-.processNumber {
-  color: var(--import-muted);
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  font-variant-numeric: tabular-nums;
-}
-
-.processIcon {
-  width: 42px;
-  height: 42px;
-  margin-top: 2px;
+  padding-top: 28px;
   display: grid;
-  place-items: center;
-  border: 1px solid var(--import-line);
-  border-radius: 50%;
-  color: var(--import-text);
+  gap: 10px;
+  border-top: 1px solid var(--import-line);
 }
 
-.processList strong { margin-top: 4px; font-size: 0.92rem; font-weight: 680; }
-.processList span:last-child { color: var(--import-muted); font-size: 0.82rem; line-height: 1.55; }
+/* The dot that sits on the rail. */
+.steps li > div::before {
+  position: absolute;
+  top: -5px;
+  left: 0;
+  width: 9px;
+  height: 9px;
+  content: "";
+  border-radius: 50%;
+  background: var(--import-text);
+  box-shadow: 0 0 0 5px var(--import-bg);
+}
+
+.stepNumber {
+  color: var(--import-muted);
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+}
+
+.steps strong {
+  font-size: clamp(1.25rem, 2vw, 1.55rem);
+  font-weight: 560;
+  letter-spacing: -0.02em;
+}
+
+.stepText {
+  max-width: 30ch;
+  color: var(--import-muted);
+  font-size: 0.92rem;
+  line-height: 1.6;
+}
+
+/* Conditions — numbers do the talking. */
 
 .conditions {
+  width: min(1280px, calc(100% - (var(--import-gutter, 24px) * 2)));
+  margin-inline: auto;
+  padding-block: clamp(24px, 4vw, 48px) clamp(64px, 9vw, 120px);
   display: grid;
-  grid-template-columns: minmax(0, 0.85fr) minmax(420px, 1.15fr);
-  gap: clamp(28px, 6vw, 64px);
-  align-items: stretch;
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+  gap: clamp(32px, 6vw, 96px);
+  align-items: center;
 }
 
 .conditionsVisual {
   position: relative;
-  min-height: 320px;
+  min-height: 480px;
   overflow: hidden;
   border-radius: 20px;
-  border: 1px solid var(--import-line);
-}
-
-.conditionsVisual img { object-fit: cover; }
-
-.conditionsBody {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 26px;
-}
-
-.conditionsBody dl {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
-}
-
-.conditionsBody dl > div {
-  min-height: 150px;
-  padding: 22px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  border: 1px solid var(--import-line);
-  border-radius: 16px;
   background: var(--import-surface);
 }
 
-.conditionsBody dl > .conditionDelivery {
-  grid-column: 1 / -1;
-  flex-direction: row;
-  align-items: center;
-  gap: 18px;
-  min-height: 96px;
-}
-.conditionDelivery dt { display: none; }
-
-.conditionIcon {
-  width: 42px;
-  height: 42px;
-  flex: 0 0 auto;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  background: var(--import-surface-strong);
-  color: var(--import-text);
+.conditionsVisual img {
+  object-fit: cover;
+  object-position: 30% 50%;
 }
 
-.conditionsBody dt { font-size: clamp(1.6rem, 3vw, 2.4rem); font-weight: 540; letter-spacing: -0.03em; }
-.conditionsBody dd { font-size: 0.86rem; font-weight: 650; line-height: 1.4; }
-.conditionsBody dd span { display: block; margin-top: 4px; color: var(--import-muted); font-size: 0.78rem; font-weight: 500; }
-
-.faq {
-  display: grid;
-  grid-template-columns: minmax(280px, 0.6fr) minmax(0, 1.4fr);
-  gap: clamp(32px, 6vw, 64px);
-}
-
-.faqList { border-top: 1px solid var(--import-line); }
-.faqList details { border-bottom: 1px solid var(--import-line); }
-.faqList summary {
-  min-height: 62px;
-  padding-block: 18px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  cursor: pointer;
-  list-style: none;
-  font-size: 0.94rem;
-  font-weight: 650;
-  line-height: 1.4;
-}
-.faqList summary::-webkit-details-marker { display: none; }
-.faqChevron {
-  flex: 0 0 auto;
-  display: grid;
-  place-items: center;
+.conditionsLead {
+  max-width: 46ch;
+  margin-top: 16px;
   color: var(--import-muted);
-  transition: transform 220ms ease;
-}
-.faqList details[open] .faqChevron { transform: rotate(180deg); }
-.faqList details p {
-  max-width: 60ch;
-  padding: 0 24px 22px 0;
-  color: var(--import-muted);
-  font-size: 0.9rem;
   line-height: 1.65;
 }
 
-.contact {
-  position: relative;
-  padding: clamp(40px, 6vw, 72px) clamp(24px, 5vw, 72px);
-  overflow: hidden;
+.terms {
+  margin-top: clamp(28px, 4vw, 44px);
+  border-top: 1px solid var(--import-line);
+}
+
+.terms > div {
+  padding-block: 20px;
+  display: grid;
+  grid-template-columns: minmax(104px, 0.4fr) minmax(0, 1fr);
+  gap: 16px;
+  align-items: center;
+  border-bottom: 1px solid var(--import-line);
+}
+
+.terms dt {
+  font-size: clamp(2.4rem, 5vw, 3.6rem);
+  font-weight: 460;
+  line-height: 1;
+  letter-spacing: -0.045em;
+  font-variant-numeric: tabular-nums;
+}
+
+.terms dt.termText {
+  font-size: clamp(1.5rem, 3vw, 2.1rem);
+  letter-spacing: -0.03em;
+}
+
+.terms dd {
+  display: grid;
+  gap: 4px;
+}
+
+.terms dd strong {
+  font-size: 0.98rem;
+  font-weight: 600;
+}
+
+.terms dd span {
+  color: var(--import-muted);
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
+/* FAQ */
+
+.faq {
+  padding-block: clamp(56px, 8vw, 104px);
+  border-top: 1px solid var(--import-line);
+}
+
+.faqGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.3fr);
+  gap: 32px clamp(32px, 7vw, 112px);
+  align-items: start;
+}
+
+.faqList {
+  border-top: 1px solid var(--import-line);
+}
+
+.faqList details {
+  border-bottom: 1px solid var(--import-line);
+}
+
+.faqList summary {
+  min-height: 64px;
+  padding-block: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  font-size: 1rem;
+  font-weight: 560;
+  line-height: 1.35;
+  cursor: pointer;
+  list-style: none;
+}
+
+.faqList summary::-webkit-details-marker {
+  display: none;
+}
+
+.faqChevron {
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
   border: 1px solid var(--import-line);
-  border-radius: 20px;
-  background: var(--import-surface-strong);
+  border-radius: 50%;
+  color: var(--import-muted);
+  transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1), color 200ms ease;
+}
+
+.faqList details[open] .faqChevron {
+  color: var(--import-text);
+  transform: rotate(180deg);
+}
+
+.faqList p {
+  max-width: 62ch;
+  padding-bottom: 22px;
+  color: var(--import-muted);
+  font-size: 0.94rem;
+  line-height: 1.7;
+}
+
+/* Contact */
+
+.contact {
+  width: min(1280px, calc(100% - (var(--import-gutter, 24px) * 2)));
+  margin-inline: auto;
+  padding-block: clamp(24px, 4vw, 40px) 0;
+}
+
+.contactPanel {
+  position: relative;
+  isolation: isolate;
+  min-height: 340px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--import-line);
+  border-radius: 24px;
+  background: var(--import-surface);
 }
 
 .contactImage {
+  z-index: -2;
   object-fit: cover;
-  object-position: right center;
-  opacity: 0.5;
-  mask-image: linear-gradient(90deg, transparent 0%, black 55%);
-  -webkit-mask-image: linear-gradient(90deg, transparent 0%, black 55%);
+  object-position: 85% 50%;
 }
 
-.contactBody { position: relative; max-width: 640px; }
-.contact h2 { font-size: clamp(1.7rem, 3.5vw, 2.6rem); }
-.contactBody a {
+.contactPanel::after {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  content: "";
+  background: linear-gradient(90deg, rgba(6, 21, 39, 0.96) 0%, rgba(6, 21, 39, 0.78) 45%, rgba(6, 21, 39, 0.1) 80%);
+}
+
+.contactBody {
+  position: relative;
+  max-width: 560px;
+  padding: clamp(28px, 5vw, 64px);
+}
+
+.contactBody > p:not(.eyebrow) {
+  margin-top: 14px;
+  color: var(--import-muted);
+  line-height: 1.65;
+}
+
+.contactAction {
   min-height: 48px;
-  margin-top: 26px;
-  padding: 13px 24px;
+  margin-top: 28px;
+  padding: 0 26px;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  border: 1px solid var(--import-accent, #f4f7fb);
+  gap: 10px;
   border-radius: 999px;
-  color: var(--import-accent-text, #0b1f3d);
-  background: var(--import-accent, #f4f7fb);
-  font-size: 0.82rem;
+  color: var(--import-accent-text);
+  background: var(--import-accent);
+  font-size: 0.86rem;
   font-weight: 650;
-  white-space: nowrap;
+  transition: gap 320ms cubic-bezier(0.22, 1, 0.36, 1), background-color 200ms ease;
 }
 
-@media (max-width: 900px) {
-  .process,
-  .conditions,
-  .faq { grid-template-columns: 1fr; }
-  .processList { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .processList li:nth-child(2)::after,
-  .processList li:last-child::after { display: none; }
+.contactAction:hover {
+  gap: 16px;
+  background: #dbe6f1;
 }
 
+@media (max-width: 1023px) {
+  .steps {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: 40px;
+  }
+
+  .conditions {
+    grid-template-columns: 1fr;
+  }
+
+  .conditionsVisual {
+    min-height: 0;
+    aspect-ratio: 16 / 10;
+  }
+
+  .faqGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Phone — the process becomes a vertical rail instead of stacked boxes. */
 @media (max-width: 767px) {
-  .process,
-  .conditions,
-  .faq,
-  .contact { width: min(100% - 32px, 1280px); }
-  .conditionsVisual { min-height: 220px; order: -1; }
+  .steps {
+    margin-top: 32px;
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .steps li > div {
+    padding: 0 0 28px 28px;
+    border-top: 0;
+    border-left: 1px solid var(--import-line);
+  }
+
+  .steps li:last-child > div {
+    padding-bottom: 0;
+  }
+
+  .steps li > div::before {
+    top: 4px;
+    left: -5px;
+  }
+
+  .stepText {
+    max-width: none;
+  }
+
+  .terms > div {
+    grid-template-columns: 112px minmax(0, 1fr);
+  }
+
+  .contactPanel {
+    min-height: 0;
+  }
+
+  .contactPanel::after {
+    background: linear-gradient(180deg, rgba(6, 21, 39, 0.94) 0%, rgba(6, 21, 39, 0.82) 60%, rgba(6, 21, 39, 0.5) 100%);
+  }
 }
 
-@media (max-width: 520px) {
-  .processList { grid-template-columns: 1fr; }
-  .processList li::after { display: none; }
-  .conditionsBody dl { grid-template-columns: 1fr; }
-  .conditionDelivery { grid-column: auto; }
-  .contactBody a { width: 100%; }
+@media (prefers-reduced-motion: reduce) {
+  .faqChevron,
+  .contactAction {
+    transition: none;
+  }
 }

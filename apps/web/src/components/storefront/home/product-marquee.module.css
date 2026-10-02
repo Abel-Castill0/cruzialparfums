@@ -1,0 +1,197 @@
+/* Shared discovery rail. Colour, radius and rhythm come from the tone class so
+   both storefronts keep their own personality over one structure. */
+
+.root {
+  --mq-gap: 18px;
+  --mq-card-w: clamp(210px, 21vw, 272px);
+}
+
+.parfums {
+  --mq-ink: #0a0908;
+  --mq-muted: #5f5952;
+  --mq-line: rgba(10, 9, 8, 0.14);
+  --mq-surface: #fff;
+  --mq-radius: 2px;
+  --mq-fit: contain;
+  --mq-pad: 5%;
+  --mq-fade: #f7f3ea;
+  --mq-title-font: var(--font-display), Georgia, serif;
+  --mq-title-size: 1.3rem;
+  --mq-title-weight: 500;
+}
+
+.import {
+  --mq-ink: #f4f7fb;
+  --mq-muted: #aebbc9;
+  --mq-line: rgba(244, 247, 251, 0.16);
+  --mq-surface: #0c223d;
+  --mq-radius: 14px;
+  --mq-fit: contain;
+  --mq-pad: 9%;
+  --mq-fade: #061527;
+  --mq-title-font: var(--font-body), sans-serif;
+  --mq-title-size: 0.98rem;
+  --mq-title-weight: 600;
+}
+
+.head {
+  width: min(1280px, calc(100% - 48px));
+  margin: 0 auto 28px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.controls {
+  flex: 0 0 auto;
+  display: flex;
+  gap: 8px;
+}
+
+.control {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--mq-line);
+  border-radius: 50%;
+  color: var(--mq-ink);
+  background: transparent;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 200ms ease, color 200ms ease, border-color 200ms ease;
+}
+
+.control:hover {
+  border-color: var(--mq-ink);
+  color: var(--mq-fade);
+  background: var(--mq-ink);
+}
+
+.viewport {
+  position: relative;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-block: 4px 10px;
+  scrollbar-width: none;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
+}
+
+.viewport::-webkit-scrollbar {
+  display: none;
+}
+
+/* Static rows (not enough products to loop) align to the page gutter. */
+.viewport:not([data-loop]) {
+  padding-inline: max(24px, calc((100% - 1280px) / 2));
+  scroll-snap-type: x proximity;
+}
+
+.track {
+  width: max-content;
+  display: flex;
+}
+
+.list {
+  padding-inline-end: var(--mq-gap);
+  display: flex;
+  gap: var(--mq-gap);
+  list-style: none;
+}
+
+.item {
+  flex: 0 0 var(--mq-card-w);
+  scroll-snap-align: start;
+}
+
+.card {
+  display: grid;
+  gap: 14px;
+  color: var(--mq-ink);
+}
+
+.media {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  border-radius: var(--mq-radius);
+  background: var(--mq-surface);
+}
+
+.image {
+  padding: var(--mq-pad);
+  object-fit: var(--mq-fit);
+  transition: transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.card:hover .image,
+.card:focus-visible .image {
+  transform: scale(1.045);
+}
+
+.body {
+  display: grid;
+  gap: 3px;
+}
+
+.kicker {
+  color: var(--mq-muted);
+  font-size: 0.64rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.title {
+  font-family: var(--mq-title-font);
+  font-size: var(--mq-title-size);
+  font-weight: var(--mq-title-weight);
+  line-height: 1.15;
+  text-wrap: balance;
+}
+
+.meta {
+  margin-top: 2px;
+  color: var(--mq-muted);
+  font-size: 0.8rem;
+}
+
+@media (max-width: 767px) {
+  .root {
+    --mq-gap: 14px;
+    --mq-card-w: 62vw;
+  }
+
+  .head {
+    width: calc(100% - 40px);
+    margin-bottom: 20px;
+  }
+
+  /* Touch users swipe; arrows are redundant noise at this size. */
+  .arrow {
+    display: none;
+  }
+
+  .viewport:not([data-loop]) {
+    padding-inline: 20px;
+  }
+
+  .viewport {
+    mask-image: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .image,
+  .control {
+    transition: none;
+  }
+
+  .card:hover .image,
+  .card:focus-visible .image {
+    transform: none;
+  }
+}

@@ -1,6 +1,7 @@
 import type { Route } from "next";
 import Link from "next/link";
 import type { CatalogProduct } from "@/domains/catalog/types";
+import { ScrollAwareHeader } from "@/components/storefront/home/scroll-aware-header";
 import { ParfumsBrandLockup } from "./brand-lockup";
 import { HeaderActions } from "./site-header-actions";
 import { WhatsAppAction } from "./whatsapp-action";
@@ -29,7 +30,7 @@ export function SiteHeader({
   cartProducts: CatalogProduct[];
 }) {
   return (
-    <header className={styles.siteHeader}>
+    <ScrollAwareHeader className={styles.siteHeader} hiddenClassName={styles.siteHeaderHidden}>
       <div className={styles.headerInner}>
         <ParfumsBrandLockup logoUrl={logoUrl} />
         <nav className={styles.mainNav} aria-label="Navegación principal">
@@ -46,6 +47,6 @@ export function SiteHeader({
           <HeaderActions products={searchProducts} cartProducts={cartProducts} navItems={navItems} />
         </div>
       </div>
-    </header>
+    </ScrollAwareHeader>
   );
 }

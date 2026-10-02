@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { ImportCartBadge } from "@/components/import/cart/import-cart-badge";
 import { useImportContact } from "@/components/import/import-contact-context";
+import { ScrollAwareHeader } from "@/components/storefront/home/scroll-aware-header";
 import styles from "./import-shell.module.css";
 
 const NAV_ITEMS = [
@@ -27,7 +28,7 @@ export function ImportHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <header className={styles.header}>
+    <ScrollAwareHeader className={styles.header} hiddenClassName={styles.headerHidden}>
       <div className={styles.headerInner}>
         <Link href="/import" className={styles.lockup} aria-label="Cruzial Import, ir al inicio">
           <span className={styles.mark} aria-hidden="true">C</span>
@@ -97,6 +98,6 @@ export function ImportHeader() {
           </Link>
         </nav>
       ) : null}
-    </header>
+    </ScrollAwareHeader>
   );
 }
