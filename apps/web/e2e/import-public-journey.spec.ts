@@ -21,7 +21,7 @@ test("import: catalog discovery to checkout boundary, or documented current stat
   await expect(page).toHaveURL(/\/import\/catalogo$/);
 
   const closedHeading = page.getByRole("heading", { name: "Consolidado cerrado" });
-  const catalogHeading = page.getByRole("heading", { name: "Catálogo del consolidado" });
+  const catalogHeading = page.locator("#catalog-title");
   const unavailableHeading = page.getByRole("heading", { name: "No pudimos consultar el catálogo." });
   await expect(closedHeading.or(catalogHeading).or(unavailableHeading).first()).toBeVisible();
 
