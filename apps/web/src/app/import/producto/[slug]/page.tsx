@@ -137,7 +137,7 @@ export default async function ImportProductPage({ params }: ProductPageProps) {
             ) : (
               <span role="status">El canal de contacto no está disponible temporalmente.</span>
             )}
-            <Link href={"/import#catalogo" as Route}>Volver al catálogo</Link>
+            <Link href={"/import/catalogo" as Route}>Volver al catálogo</Link>
           </div>
         </div>
       </article>

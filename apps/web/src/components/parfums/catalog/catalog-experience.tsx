@@ -197,7 +197,7 @@ export function CatalogExperience({ products, initialFilters, initialRecommendat
 
   return (
     <>
-      <section className={styles.catalogHero}>
+      <section className={styles.catalogHero} data-home-hero>
         <div className={styles.catalogHeroMedia}>
           <Image
             src="/images/parfums-catalog/catalog-hero.webp"
@@ -317,29 +317,6 @@ export function CatalogExperience({ products, initialFilters, initialRecommendat
                   </button>
                 </li>
               ))}
-              <li>
-                <Link href={"/parfums/combos" as Route} className={`${styles.discoveryTile} ${styles.discoveryTileFlat} ${styles.discoveryTileDark}`}>
-                  <span className={styles.discoveryTileBody}>
-                    <span className={styles.discoveryTileLabel}>Combos</span>
-                    <span className={styles.discoveryTileNote}>Sets ya armados</span>
-                    <span className={styles.discoveryTileArrow} aria-hidden="true">→</span>
-                  </span>
-                </Link>
-              </li>
-              <li>
-                <button
-                  type="button"
-                  className={`${styles.discoveryTile} ${styles.discoveryTileFlat} ${filters.format !== "bottle" ? styles.discoveryTileActive : ""}`}
-                  onClick={() => updateFilter("format", "all")}
-                  aria-pressed={filters.format !== "bottle"}
-                >
-                  <span className={styles.discoveryTileBody}>
-                    <span className={styles.discoveryTileLabel}>Decants</span>
-                    <span className={styles.discoveryTileNote}>3 · 5 · 10 ml</span>
-                    <span className={styles.discoveryTileArrow} aria-hidden="true">→</span>
-                  </span>
-                </button>
-              </li>
             </ul>
           </div>
         </nav>

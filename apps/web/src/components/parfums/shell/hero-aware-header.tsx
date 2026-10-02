@@ -3,10 +3,7 @@
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 
-/** Dispatched by the hero's navigation button to bring the header in. */
-export const SHOW_PARFUMS_HEADER_EVENT = "cruzial:show-parfums-header";
-
-const HOME_PATH = "/parfums";
+const HERO_PATHS = new Set(["/parfums", "/parfums/catalogo"]);
 // Tall enough to cover the sticky header, so it appears the moment the hero
 // no longer reaches the top of the viewport.
 const HEADER_REVEAL_MARGIN = "-80px 0px 0px 0px";
@@ -31,44 +28,41 @@ export function HeroAwareHeader({
   children: ReactNode;
 }) {
   const pathname = usePathname();
-  const overHero = pathname === HOME_PATH;
+  const overHero = HERO_PATHS.has(pathname);
   const headerRef = useRef<HTMLElement>(null);
-  const [heroGone, setHeroGone] = useState(false);
-  const [pinnedOn, setPinnedOn] = useState<string | null>(null);
-  const [focusInside, setFocusInside] = useState(false);
+  const [heroObservation, setHeroObservation] = useState({ pathname: "", heroGone: false });
+  const heroGone = heroObservation.pathname === pathname ? heroObservation.heroGone : false;
+  const [focusObservation, setFocusObservation] = useState({ pathname: "", focusInside: false });
+  const focusInside = focusObservation.pathname === pathname && focusObservation.focusInside;
 
   useEffect(() => {
     if (!overHero) return undefined;
     const hero = document.querySelector("[data-home-hero]");
     if (!hero) return undefined;
     const observer = new IntersectionObserver(
-      ([entry]) => setHeroGone(!entry?.isIntersecting),
+      ([entry]) => {
+        const heroIsVisible = Boolean(entry?.isIntersecting);
+        setHeroObservation({ pathname, heroGone: !heroIsVisible });
+        if (heroIsVisible && hero instanceof HTMLElement && headerRef.current?.contains(document.activeElement)) {
+          hero.setAttribute("tabindex", "-1");
+          hero.focus({ preventScroll: true });
+        }
+      },
       { rootMargin: HEADER_REVEAL_MARGIN, threshold: 0 },
     );
     observer.observe(hero);
     return () => observer.disconnect();
-  }, [overHero]);
+  }, [overHero, pathname]);
 
-  useEffect(() => {
-    const show = () => {
-      setPinnedOn(window.location.pathname);
-      requestAnimationFrame(() => {
-        headerRef.current?.querySelector<HTMLElement>("nav a, a[href]")?.focus();
-      });
-    };
-    window.addEventListener(SHOW_PARFUMS_HEADER_EVENT, show);
-    return () => window.removeEventListener(SHOW_PARFUMS_HEADER_EVENT, show);
-  }, []);
-
-  const hidden = overHero && !heroGone && pinnedOn !== pathname && !focusInside;
+  const hidden = overHero && !heroGone && !focusInside;
 
   return (
     <header
       ref={headerRef}
       className={[className, overHero ? overHeroClassName : "", hidden ? hiddenClassName : ""].join(" ")}
-      onFocusCapture={() => setFocusInside(true)}
+      onFocusCapture={() => setFocusObservation({ pathname, focusInside: true })}
       onBlurCapture={(event) => {
-        if (!event.currentTarget.contains(event.relatedTarget)) setFocusInside(false);
+        if (!event.currentTarget.contains(event.relatedTarget)) setFocusObservation({ pathname, focusInside: false });
       }}
     >
       {children}

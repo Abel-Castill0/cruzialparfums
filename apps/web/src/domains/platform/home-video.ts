@@ -7,39 +7,38 @@
  * - Import: the public "Tercer consolidado de perfumería" video (TikTok
  *   oEmbed title: "TERCER CONSOLIDADO DE PERFUMERÍA"), so it is presented as
  *   Import content only.
- * - Parfums: no retail-appropriate public video was found on the official
- *   profile, so it has no video; its TikTok module links to the profile. The
- *   Import video must never be reused as a Parfums piece.
+ * - Parfums: the owner supplied the exact public video and profile.
+ * - Import: the owner supplied a separate video for the Import audience.
  */
 
 export type HomeVideo = {
   /** Public video URL, e.g. https://www.tiktok.com/@cruzial_parfum/video/<id>. */
   tiktokUrl: string;
-  /** Existing image in /public used before the visitor chooses to play. */
-  posterSrc: string;
-  posterAlt: string;
   eyebrow: string;
   title: string;
   text: string;
   cta?: { label: string; href: string };
 };
 
-export const PARFUMS_HOME_VIDEO: HomeVideo | null = null;
+export const PARFUMS_HOME_VIDEO: HomeVideo | null = {
+  tiktokUrl: "https://www.tiktok.com/@cruzial.parfum/video/7683916686390496533",
+  eyebrow: "Detrás de cada pedido",
+  title: "Cada detalle cuenta",
+  text: "Conoce de cerca las fragancias y el cuidado detrás de cada pedido de Cruzial Parfums.",
+};
 
 export const IMPORT_HOME_VIDEO: HomeVideo | null = {
   tiktokUrl: "https://www.tiktok.com/@cruzialperu/video/7657015388252720402",
-  posterSrc: "/images/import-home/import-cta-boxes.webp",
-  posterAlt: "Cajas de Cruzial Import apiladas, imagen de marca antes de reproducir el video",
   eyebrow: "Consolidados anteriores",
   title: "Tercer consolidado de perfumería",
   text: "Mira cómo se presentó el tercer consolidado de perfumería de Cruzial Import, publicado en nuestro TikTok.",
 };
 
-/** Official public profile (oEmbed author: "Cruzial | Perú"). */
+/** Owner-provided public Parfums profile. */
 export const CRUZIAL_TIKTOK_PROFILE = {
-  url: "https://www.tiktok.com/@cruzialperu",
-  handle: "@cruzialperu",
-  name: "Cruzial | Perú",
+  url: "https://www.tiktok.com/@cruzial.parfum",
+  handle: "@cruzial.parfum",
+  name: "Cruzial Parfums",
 } as const;
 
 /** True only while at least one home actually has a video to frame. */
@@ -57,5 +56,5 @@ export const TIKTOK_EMBED_ORIGIN = "https://www.tiktok.com";
 
 /** Official embeddable player; only the numeric id ever reaches the URL. */
 export function tiktokEmbedUrl(videoId: string): string {
-  return `${TIKTOK_EMBED_ORIGIN}/player/v1/${videoId}?autoplay=1&rel=0&music_info=0&description=0`;
+  return `${TIKTOK_EMBED_ORIGIN}/player/v1/${videoId}?controls=1&autoplay=0&rel=0&music_info=0&description=0`;
 }

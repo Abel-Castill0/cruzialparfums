@@ -247,12 +247,12 @@ export default async function ParfumsHomePage() {
             <figure className={styles.mosaic}>
               <div className={`${styles.mosaicCell} ${styles.mosaicMain}`}>
                 <Image
-                  src="/parfums/hero/promo-cuarteto.webp"
-                  alt="Cuatro fragancias con sus cajas sobre una superficie de mármol dorado"
+                  src="/images/parfums-home/decants-real-orders.jpg"
+                  alt="Decants reales preparados para pedidos de Cruzial Parfums, junto a los frascos originales"
                   fill
                   sizes="(max-width: 899px) 100vw, 46vw"
                   className={styles.mosaicImage}
-                  style={{ objectPosition: "60% 50%" }}
+                  style={{ objectPosition: "50% 55%" }}
                   loading="lazy"
                 />
               </div>
@@ -278,7 +278,7 @@ export default async function ParfumsHomePage() {
                   loading="lazy"
                 />
               </div>
-              <figcaption>Imágenes de campaña de Cruzial Parfums.</figcaption>
+              <figcaption>Fragancias y decants preparados por Cruzial Parfums.</figcaption>
             </figure>
           </Reveal>
         </div>

@@ -1,9 +1,8 @@
 "use client";
 
-import type { Route } from "next";
-import Image from "next/image";
-import Link from "next/link";
 import { useState } from "react";
+import type { Route } from "next";
+import Link from "next/link";
 import {
   parseTikTokVideoId,
   tiktokEmbedUrl,
@@ -12,17 +11,17 @@ import {
 import styles from "./video-story.module.css";
 
 /**
- * Video as a story: copy on one side, the portrait video on the other. The
- * TikTok player is a third-party iframe, so it loads only after the visitor
- * presses play — the page ships a poster and a button, nothing else.
+ * Video as a story: copy on one side, the official TikTok player on the other.
+ * Import keeps an explicit play action to avoid loading a third-party player
+ * until requested; the Parfums launch video is visible immediately.
  */
-export function VideoStory({ video, tone }: { video: HomeVideo; tone: "parfums" | "import" }) {
-  const [playing, setPlaying] = useState(false);
+export function VideoStory({ video, tone, clickToPlay = false }: { video: HomeVideo; tone: "parfums" | "import"; clickToPlay?: boolean }) {
+  const [playing, setPlaying] = useState(!clickToPlay);
   const videoId = parseTikTokVideoId(video.tiktokUrl);
   if (!videoId) return null;
 
   return (
-    <section className={`${styles.story} ${styles[tone]}`} aria-labelledby="home-video-title">
+    <section className={`${styles.story} ${styles[tone]}`} aria-labelledby="home-video-title" data-home-video={tone}>
       <div className={styles.inner}>
         <div className={styles.copy}>
           <p className={styles.eyebrow}>{video.eyebrow}</p>
@@ -41,36 +40,22 @@ export function VideoStory({ video, tone }: { video: HomeVideo; tone: "parfums" 
         </div>
 
         <div className={styles.frame}>
-          {playing ? (
+          {!playing ? (
+            <button className={styles.playGate} type="button" onClick={() => setPlaying(true)}>
+              <span aria-hidden="true">▶</span>
+              <strong>Reproducir video</strong>
+              <span>El video se cargará desde TikTok.</span>
+            </button>
+          ) : (
             <iframe
               className={styles.player}
               src={tiktokEmbedUrl(videoId)}
               title={video.title}
-              allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
+              allow="fullscreen; encrypted-media; picture-in-picture"
               allowFullScreen
+              loading="lazy"
               referrerPolicy="strict-origin-when-cross-origin"
             />
-          ) : (
-            <button
-              type="button"
-              className={styles.poster}
-              onClick={() => setPlaying(true)}
-              aria-label={`Reproducir video: ${video.title}`}
-            >
-              <Image
-                src={video.posterSrc}
-                alt={video.posterAlt}
-                fill
-                sizes="(max-width: 767px) 78vw, 340px"
-                className={styles.posterImage}
-                loading="lazy"
-              />
-              <span className={styles.play} aria-hidden="true">
-                <svg width="22" height="22" viewBox="0 0 16 16" fill="currentColor">
-                  <path d="M5 3v10l8-5-8-5Z" />
-                </svg>
-              </span>
-            </button>
           )}
         </div>
         <p className={styles.fallback}>

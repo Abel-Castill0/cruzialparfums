@@ -79,7 +79,7 @@ export default function ImportCartPage() {
         {lines.length === 0 ? (
           <div className={styles.empty}>
             <p>Tu carrito de Import está vacío.</p>
-            <Link href={"/import#catalogo" as Route} className={styles.primaryAction}>
+            <Link href={"/import/catalogo" as Route} className={styles.primaryAction}>
               Ver catálogo
             </Link>
           </div>
@@ -108,7 +108,7 @@ export default function ImportCartPage() {
               <Link href={"/import/checkout" as Route} className={styles.primaryAction}>
                 Continuar al checkout
               </Link>
-              <Link href={"/import#catalogo" as Route} className={styles.secondaryAction}>
+              <Link href={"/import/catalogo" as Route} className={styles.secondaryAction}>
                 Seguir comprando
               </Link>
               </div>

@@ -11,9 +11,11 @@ import styles from "./import-home.module.css";
 export function ImportClosedNotice({
   contact,
   unavailable,
+  informationHref,
 }: {
   contact: BusinessUnitSettings | null;
   unavailable: boolean;
+  informationHref?: string;
 }) {
   const waUrl = contact
     ? `https://wa.me/${contact.whatsappNumber}?text=${encodeURIComponent("Hola Cruzial Import, quiero saber cuándo abre el próximo consolidado.")}`
@@ -36,7 +38,12 @@ export function ImportClosedNotice({
             </li>
             <li>
               <strong>Mientras tanto</strong>
-              <span>Revisa cómo funciona un consolidado y sus condiciones más abajo.</span>
+              <span>
+                {informationHref
+                  ? "Conoce las condiciones y cómo funciona un consolidado."
+                  : "Revisa cómo funciona un consolidado y sus condiciones más abajo."}
+                {informationHref ? <a href={informationHref}> Ver información de Cruzial Import</a> : null}
+              </span>
             </li>
           </ul>
           {waUrl ? (

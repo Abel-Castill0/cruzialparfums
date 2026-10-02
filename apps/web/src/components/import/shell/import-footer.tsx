@@ -2,6 +2,7 @@
 
 import type { Route } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { useImportContact } from "@/components/import/import-contact-context";
 import styles from "./import-shell.module.css";
 
@@ -15,17 +16,13 @@ export function ImportFooter() {
     <footer className={styles.footer}>
       <div className={styles.footerInner}>
         <div className={styles.footerTop}>
-          <div className={styles.footerLockup} aria-label="Cruzial Import">
-            <span className={styles.mark} aria-hidden="true">C</span>
-            <span>
-              <strong>CRUZIAL</strong>
-              <span>Import</span>
-            </span>
+          <div className={styles.footerLockup} role="img" aria-label="Cruzial Import">
+            <Image src="/images/import-home/cruzial-import-logo.png" alt="" width={164} height={82} />
           </div>
 
           <nav className={styles.footerNav} aria-label="Enlaces de Cruzial Import">
             <Link href="/import">Inicio</Link>
-            <Link href="/import#catalogo">Catálogo</Link>
+            <Link href={"/import/catalogo" as Route}>Catálogo</Link>
             <Link href="/import#como-funciona">Cómo funciona</Link>
             <Link href="/import#faq">FAQ</Link>
             {whatsappNumber ? (
@@ -49,6 +46,7 @@ export function ImportFooter() {
             <Link href={"/import/privacidad" as Route}>Privacidad</Link>
             <Link href={"/import/terminos" as Route}>Términos</Link>
             <Link href={"/libro-de-reclamaciones?unidad=import" as Route}>Libro de Reclamaciones</Link>
+            <a href="https://portafolio-henna-mu.vercel.app/" target="_blank" rel="noopener noreferrer">Diseñado y desarrollado por Abel ↗</a>
           </div>
         </div>
       </div>

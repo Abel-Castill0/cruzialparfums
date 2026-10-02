@@ -212,12 +212,12 @@
 
 .resultCard {
   min-width: 0;
-  padding: 13px;
+  padding: 16px;
   border: 1px solid rgba(255, 255, 255, 0.14);
   display: grid;
   grid-template-columns: 82px minmax(0, 1fr);
-  gap: 14px;
-  background: rgba(255, 255, 255, 0.035);
+  gap: 18px;
+  background: rgba(255, 255, 255, 0.045);
 }
 
 .topResult {
@@ -228,7 +228,7 @@
 
 .resultMedia {
   position: relative;
-  min-height: 112px;
+  min-height: 132px;
   overflow: hidden;
   background: #fff;
 }
@@ -264,7 +264,7 @@
   display: block;
   overflow: hidden;
   color: rgba(255, 255, 255, 0.44);
-  font-size: 7px;
+  font-size: 9px;
   letter-spacing: 0.14em;
   text-overflow: ellipsis;
   text-transform: uppercase;
@@ -275,7 +275,7 @@
   margin-top: 2px;
   overflow-wrap: anywhere;
   font-family: var(--font-display), Georgia, serif;
-  font-size: 19px;
+  font-size: clamp(20px, 2vw, 25px);
   font-weight: 500;
   line-height: 1;
 }
@@ -283,7 +283,7 @@
 .resultBody > p {
   margin-top: 7px;
   color: rgba(255, 255, 255, 0.55);
-  font-size: 10px;
+  font-size: 12px;
   line-height: 1.45;
 }
 
@@ -305,7 +305,7 @@
   gap: 6px;
   color: #eee8dd;
   background: transparent;
-  font-size: 8px;
+  font-size: 10px;
   cursor: pointer;
 }
 
@@ -318,7 +318,7 @@
   margin-top: 8px;
   display: block;
   color: rgba(255, 255, 255, 0.38);
-  font-size: 8px;
+  font-size: 10px;
 }
 
 .resultFooter {

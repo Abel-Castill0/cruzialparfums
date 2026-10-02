@@ -1,4 +1,6 @@
 import { ProductMarquee } from "@/components/storefront/home/product-marquee";
+import Link from "next/link";
+import type { Route } from "next";
 import Image from "next/image";
 import { Reveal } from "@/components/storefront/home/reveal";
 import { VideoStory } from "@/components/storefront/home/video-story";
@@ -8,7 +10,6 @@ import type { PublicImportPageResult } from "@/domains/import/public-import-repo
 import { IMPORT_HOME_VIDEO } from "@/domains/platform/home-video";
 import type { BusinessUnitSettings } from "@/domains/platform/settings";
 import { ImportConditions, ImportContactCta, ImportFaq, ImportProcess } from "@/components/import/storefront/import-information";
-import { ImportCatalog, ImportCategoryTiles } from "./import-catalog";
 import { ImportClosedNotice } from "./import-closed-notice";
 import { ImportHero } from "./import-hero";
 import { toImportShowcaseItems } from "./import-showcase";
@@ -29,7 +30,7 @@ export function ImportHomeView({ page, filters, contact, depositPercentages, who
   const showcase = active && unfiltered ? toImportShowcaseItems(active.products) : [];
   const preview = upcoming && unfiltered ? upcoming.products.slice(0, 8) : [];
   const previewItems = preview.map((product) => ({
-    id: product.id, href: "#catalogo", image: product.mediaUrl, alt: product.mediaAlt,
+    id: product.id, href: "/import/catalogo", image: product.mediaUrl, alt: product.mediaAlt,
     kicker: product.brand ?? "Cruzial Import", title: product.name,
     meta: product.presentations[0] ? `Referencia ${product.presentations[0].currency} ${product.presentations[0].price}` : "Precio por confirmar",
   }));
@@ -40,29 +41,34 @@ export function ImportHomeView({ page, filters, contact, depositPercentages, who
       {showcase.length >= 3 ? <section className={styles.showcase} aria-labelledby="import-showcase-title"><Reveal><ProductMarquee tone="import" label="Productos del consolidado" items={showcase} heading={<><p className={styles.eyebrow}>En este consolidado</p><h2 id="import-showcase-title">Productos disponibles ahora</h2></>} /></Reveal></section> : null}
       {previewItems.length >= 3 ? <section className={styles.showcase} aria-labelledby="import-preview-showcase-title"><Reveal><ProductMarquee tone="import" label="Productos de referencia del próximo consolidado" items={previewItems} heading={<><p className={styles.eyebrow}>Próximo consolidado · vista previa</p><h2 id="import-preview-showcase-title">Productos en preparación</h2></>} /></Reveal></section> : null}
 
-      {active ? <>{unfiltered ? <ImportCategoryTiles result={active} filters={filters} /> : null}<ImportCatalog result={active} filters={filters} /></> : upcoming ? <ImportPreviewCatalog result={upcoming} filters={filters} /> : <ImportClosedNotice contact={contact} unavailable={page.status === "unavailable"} />}
+      {(active || upcoming) ? (
+        <section className={styles.catalogDoor} aria-labelledby="import-catalog-door-title">
+          <div><p className={styles.eyebrow}>{active ? `Consolidado #${active.campaign.number}` : "Catálogo de referencia"}</p><h2 id="import-catalog-door-title">{active ? "Explora el consolidado" : "Conoce los productos"}</h2><p>{active ? "Revisa presentaciones, precios y disponibilidad en la vista completa del catálogo." : "Consulta la vista previa. Los productos aún no están habilitados para compra."}</p></div>
+          <Link href={"/import/catalogo" as Route}>{active ? "Abrir catálogo" : "Ver vista previa"}<span aria-hidden="true">→</span></Link>
+        </section>
+      ) : <ImportClosedNotice contact={contact} unavailable={page.status === "unavailable"} />}
 
       <ImportProcess />
       <ImportConditions depositPercentages={depositPercentages} />
       <ImportWholesale rules={wholesaleRules} contact={contact} />
-      {IMPORT_HOME_VIDEO ? <VideoStory video={{ ...IMPORT_HOME_VIDEO, cta: active || upcoming ? { label: "Ver el catálogo", href: "#catalogo" } : { label: "Ver cómo funciona", href: "#como-funciona" } }} tone="import" /> : null}
+      {IMPORT_HOME_VIDEO ? <VideoStory video={{ ...IMPORT_HOME_VIDEO, cta: active || upcoming ? { label: "Ver el catálogo", href: "/import/catalogo" } : { label: "Ver cómo funciona", href: "/import#como-funciona" } }} tone="import" clickToPlay /> : null}
       <ImportFaq depositPercentages={depositPercentages} />
       <ImportContactCta contact={contact} />
     </main>
   );
 }
 
-function ImportPreviewCatalog({ result, filters }: { result: Extract<PublicImportPageResult, { status: "upcoming" }>; filters: PublicImportFilters }) {
+export function ImportPreviewCatalog({ result, filters }: { result: Extract<PublicImportPageResult, { status: "upcoming" }>; filters: PublicImportFilters }) {
   const opening = result.campaign.opensAt ? new Intl.DateTimeFormat("es-PE", { dateStyle: "long", timeZone: "America/Lima" }).format(new Date(result.campaign.opensAt)) : "por confirmar";
   return <section className={styles.catalog} id="catalogo" aria-labelledby="import-preview-catalog-title">
     <Reveal><div className={styles.catalogHeading}><div><p className={styles.eyebrow}>Consolidado #{result.campaign.number}</p><h2 id="import-preview-catalog-title">Vista previa del catálogo</h2></div><p>Apertura estimada: {opening}. El consolidado permanece cerrado hasta confirmar fecha y precios.</p></div></Reveal>
     <div className={styles.previewNotice} role="status"><strong>Catálogo de referencia · compras deshabilitadas</strong><span>Productos y precios tomados del Sexto Consolidado. Se publicarán para compra cuando se confirmen las condiciones del Octavo Consolidado.</span></div>
-    {filters.page === 1 && !filters.category && !filters.query && result.categories.length ? <section className={styles.categories} aria-labelledby="import-preview-categories-title"><div className={styles.catalogHeading}><div><p className={styles.eyebrow}>Explora antes de la apertura</p><h2 id="import-preview-categories-title">Familias del catálogo</h2></div><p>Elige una familia para filtrar los productos de referencia.</p></div><ul className={styles.categoryTiles}>{result.categories.map((category) => <li key={category.slug}><a className={styles.categoryTile} href={`/import?categoria=${encodeURIComponent(category.slug)}#catalogo`}><span className={styles.categoryScrim} aria-hidden="true" /><span className={styles.categoryCopy}><strong>{category.name}</strong><span>{category.productCount} productos · precio por confirmar</span></span></a></li>)}</ul></section> : null}
-    <form action="/import#catalogo" method="get" className={styles.searchForm}><label htmlFor="import-search">Buscar por producto o marca</label><div><input id="import-search" type="search" name="q" defaultValue={filters.query} maxLength={120} placeholder="Ejemplo: Armaf" />{filters.category ? <input type="hidden" name="categoria" value={filters.category} /> : null}<button type="submit">Buscar</button></div></form>
-    {result.categories.length ? <nav className={styles.categoryFilters} aria-label="Filtrar vista previa"><a href="/import#catalogo">Todos <span>{result.total}</span></a>{result.categories.map((category) => <a key={category.slug} href={`/import?categoria=${encodeURIComponent(category.slug)}#catalogo`}>{category.name} <span>{category.productCount}</span></a>)}</nav> : null}
+    {filters.page === 1 && !filters.category && !filters.query && result.categories.length ? <section className={styles.categories} aria-labelledby="import-preview-categories-title"><div className={styles.catalogHeading}><div><p className={styles.eyebrow}>Explora antes de la apertura</p><h2 id="import-preview-categories-title">Familias del catálogo</h2></div><p>Elige una familia para filtrar los productos de referencia.</p></div><ul className={styles.categoryTiles}>{result.categories.map((category) => <li key={category.slug}><a className={styles.categoryTile} href={`/import/catalogo?categoria=${encodeURIComponent(category.slug)}`}><span className={styles.categoryScrim} aria-hidden="true" /><span className={styles.categoryCopy}><strong>{category.name}</strong><span>{category.productCount} productos · precio por confirmar</span></span></a></li>)}</ul></section> : null}
+    <form action="/import/catalogo" method="get" className={styles.searchForm}><label htmlFor="import-search">Buscar por producto o marca</label><div><input id="import-search" type="search" name="q" defaultValue={filters.query} maxLength={120} placeholder="Ejemplo: Armaf" />{filters.category ? <input type="hidden" name="categoria" value={filters.category} /> : null}<button type="submit">Buscar</button></div></form>
+    {result.categories.length ? <nav className={styles.categoryFilters} aria-label="Filtrar vista previa"><a href="/import/catalogo">Todos <span>{result.total}</span></a>{result.categories.map((category) => <a key={category.slug} href={`/import/catalogo?categoria=${encodeURIComponent(category.slug)}`}>{category.name} <span>{category.productCount}</span></a>)}</nav> : null}
     <p className={styles.resultCount}>{result.total} productos de referencia</p>
-    {result.products.length ? <div className={styles.productGrid}>{result.products.map((product) => <PreviewProductCard key={product.id} product={product} />)}</div> : <div className={styles.emptyCatalog}><h3>No encontramos productos con estos filtros.</h3><p>Prueba otra búsqueda o categoría.</p><a href="/import#catalogo">Limpiar filtros</a></div>}
-    {result.totalPages > 1 ? <nav className={styles.pagination} aria-label="Páginas de la vista previa">{filters.page > 1 ? <a href={`/import?${new URLSearchParams({ ...(filters.query ? { q: filters.query } : {}), ...(filters.category ? { categoria: filters.category } : {}), page: String(filters.page - 1) })}#catalogo`}>Anterior</a> : <span aria-disabled="true">Anterior</span>}<p>Página {filters.page} de {result.totalPages}</p>{filters.page < result.totalPages ? <a href={`/import?${new URLSearchParams({ ...(filters.query ? { q: filters.query } : {}), ...(filters.category ? { categoria: filters.category } : {}), page: String(filters.page + 1) })}#catalogo`}>Siguiente</a> : <span aria-disabled="true">Siguiente</span>}</nav> : null}
+    {result.products.length ? <div className={styles.productGrid}>{result.products.map((product) => <PreviewProductCard key={product.id} product={product} />)}</div> : <div className={styles.emptyCatalog}><h3>No encontramos productos con estos filtros.</h3><p>Prueba otra búsqueda o categoría.</p><a href="/import/catalogo">Limpiar filtros</a></div>}
+    {result.totalPages > 1 ? <nav className={styles.pagination} aria-label="Páginas de la vista previa">{filters.page > 1 ? <a href={`/import/catalogo?${new URLSearchParams({ ...(filters.query ? { q: filters.query } : {}), ...(filters.category ? { categoria: filters.category } : {}), page: String(filters.page - 1) })}`}>Anterior</a> : <span aria-disabled="true">Anterior</span>}<p>Página {filters.page} de {result.totalPages}</p>{filters.page < result.totalPages ? <a href={`/import/catalogo?${new URLSearchParams({ ...(filters.query ? { q: filters.query } : {}), ...(filters.category ? { categoria: filters.category } : {}), page: String(filters.page + 1) })}`}>Siguiente</a> : <span aria-disabled="true">Siguiente</span>}</nav> : null}
   </section>;
 }
 

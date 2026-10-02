@@ -145,7 +145,7 @@ test.describe("B2B combos and Mayorista (admin)", () => {
     await expect(page.getByText(/modificado por otra sesión/)).toHaveCount(0);
 
     // 3. Archive needs a second step and states the consequence; restore after.
-    await page.getByText("Opciones avanzadas").click();
+    await page.getByText("Opciones avanzadas", { exact: true }).click();
     await page.getByRole("button", { name: "Archivar combo…" }).click();
     const confirm = page.getByRole("group", { name: "Confirmar archivo del combo" });
     await expect(confirm).toContainText("El producto asociado no se elimina ni se archiva.");

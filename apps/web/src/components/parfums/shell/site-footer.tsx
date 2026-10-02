@@ -34,6 +34,7 @@ export function SiteFooter({ logoUrl, whatsappNumber, instagramUrl }: { logoUrl:
           <span>© 2026 Cruzial Parfums</span>
           <a href={`https://wa.me/${whatsappNumber}`} target="_blank" rel="noopener noreferrer">WhatsApp directo</a>
           <span>Hecho con carácter en Perú</span>
+          <a href="https://portafolio-henna-mu.vercel.app/" target="_blank" rel="noopener noreferrer">Diseñado y desarrollado por Abel ↗</a>
         </div>
       </div>
     </footer>

@@ -1971,6 +1971,35 @@ OWNER FOLLOW-UP AFTER TECHNICAL RELEASE (not invented):
 5. `robots.txt` remains `Disallow: /`; indexing and the Production cutover flag
    were not changed. The deployment only publishes the preview and UX updates.
 
+### Frontend UX follow-up (2026-10-02)
+
+Implementation branch: `codex/import-parfums-ux-followup`, based on
+`origin/master` `0affb831`. This is a presentation/routing update only: no
+database writes, migration, or campaign changes. It reaches Production only
+through the regular Git deployment after a guarded merge to `master`.
+
+- Import catalog moved to `/import/catalogo`; home and product discovery links
+  now lead to that view. Closed/upcoming campaign states remain read-only.
+- Both Import and Parfums heroes use the viewport height. Their navbars hide
+  while their hero is visible and return after scrolling; Parfums also hides
+  again when scrolling back to its home or catalog hero.
+- Parfums catalog exposes only Árabe, Nicho and Diseñador category doors.
+  Product recommendation cards are more legible, combo selections show bottle
+  images, and product detail navigation starts at the top.
+- Parfums uses the owner-supplied video
+  `https://www.tiktok.com/@cruzial.parfum/video/7683916686390496533`; the
+  official TikTok player is lazy-loaded when near view. CSP permits its frame
+  only while a home video is configured. The existing Import video remains
+  specific to Import. TikTok blocks direct inspection from the local QA
+  environment, so automated verification covers the exact player URL and CSP;
+  playback is not asserted by the local browser suite.
+- The supplied decants photo and Import logo are copied to the app's public
+  media folder. The originals and unrelated root assets stay untouched. The
+  site footer links to Abel's portfolio as the creator credit.
+- Local release gate: reconciliations, lint, typecheck, 1,141 Vitest tests and
+  production build pass. Six desktop/mobile E2E checks pass, plus responsive
+  overflow checks at 320, 360, 390, 430, 768, 1024, 1280 and 1440 px.
+
 ## Important rules
 
 - Production is no longer untouchable by policy alone — see CLAUDE.md's

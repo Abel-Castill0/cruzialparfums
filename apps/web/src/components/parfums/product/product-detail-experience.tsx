@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { MissingPhoto } from "../shared/missing-photo";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ProductCard } from "@/components/parfums/catalog/product-card";
 import {
   addParfumsCartLine,
@@ -61,6 +61,10 @@ export function ProductDetailExperience({
   whatsappNumber: string;
   storeName: string;
 }) {
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  }, [product.slug]);
+
   const variants = listProductPurchaseVariants(product);
   const [selected, setSelected] = useState(() =>
     resolveInitialProductVariant(product, initialVariant),

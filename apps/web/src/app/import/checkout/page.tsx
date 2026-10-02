@@ -300,7 +300,7 @@ export default function ImportCheckoutPage() {
           )}
           <div className={styles.empty}>
             <p>Tu carrito de Import está vacío.</p>
-            <Link href={"/import#catalogo" as Route} className={styles.primaryAction}>
+            <Link href={"/import/catalogo" as Route} className={styles.primaryAction}>
               Ver catálogo
             </Link>
           </div>

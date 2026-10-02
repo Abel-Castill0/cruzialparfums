@@ -334,10 +334,30 @@
 
 .summaryLineHead {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto 30px;
-  gap: 8px;
+  grid-template-columns: minmax(0, 1fr) auto 44px;
+  gap: 6px;
   align-items: center;
 }
+
+.summaryLineHead span { font-size: 11px; line-height: 1.4; }
+
+.summaryLine {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+}
+
+.summaryThumb {
+  position: relative;
+  width: 48px;
+  height: 54px;
+  display: block;
+  overflow: hidden;
+  background: #f2eee8;
+}
+
+.summaryThumb img { object-fit: contain; padding: 3px; }
 
 .summaryLineSizes {
   margin-top: 6px;
