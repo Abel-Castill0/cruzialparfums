@@ -30,16 +30,19 @@
 .hero {
   position: relative;
   isolation: isolate;
-  min-height: clamp(540px, 80svh, 720px);
+  height: 100svh;
+  min-height: 600px;
+  max-height: 1200px;
   display: flex;
-  align-items: center;
+  align-items: end;
+  padding-bottom: clamp(56px, 10vh, 120px);
 }
 
 .heroVisual {
   position: absolute;
   z-index: -1;
-  inset: 0 0 0 auto;
-  width: min(74%, 1180px);
+  inset: 0;
+  width: 100%;
 }
 
 .heroImage {
@@ -52,14 +55,14 @@
   inset: 0;
   content: "";
   background:
-    linear-gradient(90deg, var(--import-bg) 0%, rgba(6, 21, 39, 0.6) 26%, rgba(6, 21, 39, 0) 62%),
-    linear-gradient(0deg, var(--import-bg) 0%, rgba(6, 21, 39, 0) 24%);
+    linear-gradient(90deg, rgba(6, 21, 39, 0.78), rgba(6, 21, 39, 0.28) 52%, rgba(6, 21, 39, 0.04)),
+    linear-gradient(0deg, rgba(6, 21, 39, 0.9), rgba(6, 21, 39, 0.28) 45%, rgba(6, 21, 39, 0.1));
 }
 
 .heroCopy {
   width: var(--import-wrap);
   margin-inline: auto;
-  padding-block: clamp(48px, 7vw, 96px);
+  padding-block: clamp(32px, 6vw, 64px);
   display: grid;
   grid-template-columns: minmax(0, 640px);
   justify-items: start;
@@ -198,6 +201,73 @@
   content: "";
   border-radius: 50%;
   background: var(--import-text);
+}
+
+.catalogDoor {
+  width: var(--import-wrap);
+  margin: clamp(48px, 7vw, 96px) auto;
+  padding: clamp(26px, 4vw, 52px);
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 32px;
+  border: 1px solid var(--import-line);
+  background: linear-gradient(120deg, #0c223d, #091a2e);
+}
+
+.catalogDoor h2 {
+  margin-top: 12px;
+  font-size: clamp(1.8rem, 3.2vw, 3rem);
+  font-weight: 500;
+  letter-spacing: -0.035em;
+}
+
+.catalogDoor p:not(.eyebrow) {
+  max-width: 54ch;
+  margin-top: 12px;
+  color: var(--import-muted);
+  line-height: 1.7;
+}
+
+.catalogDoor > a {
+  min-height: 48px;
+  padding: 0 20px;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  border: 1px solid var(--import-muted);
+  color: var(--import-text);
+  transition: color 180ms ease, background-color 180ms ease;
+}
+
+.catalogDoor > a:hover { color: var(--import-bg); background: var(--import-text); }
+
+.catalogPage {
+  min-height: 70vh;
+  padding: clamp(48px, 7vw, 92px) 0 clamp(64px, 8vw, 112px);
+  color: var(--import-text);
+  background: var(--import-bg);
+}
+
+.catalogPageHeader {
+  width: var(--import-wrap);
+  margin: 0 auto clamp(40px, 6vw, 76px);
+}
+
+.catalogPageHeader h1 {
+  margin-top: 14px;
+  font-size: clamp(2.25rem, 5vw, 4.25rem);
+  font-weight: 500;
+  letter-spacing: -0.045em;
+  line-height: 1;
+}
+
+.catalogPageHeader > p:last-child {
+  max-width: 54ch;
+  margin-top: 18px;
+  color: var(--import-muted);
+  line-height: 1.7;
 }
 
 /* Showcase rail */
@@ -731,11 +801,13 @@
   }
 
   .hero {
-    min-height: clamp(520px, 78svh, 680px);
+    height: 100svh;
+    min-height: 600px;
+    max-height: none;
   }
 
   .heroVisual {
-    width: 86%;
+    width: 100%;
   }
 }
 
@@ -743,24 +815,28 @@
 
 @media (max-width: 767px) {
   .hero {
-    min-height: 0;
-    display: block;
+    height: 100svh;
+    min-height: 620px;
+    max-height: none;
+    display: flex;
+    align-items: end;
+    padding-bottom: max(38px, env(safe-area-inset-bottom));
   }
 
   .heroVisual {
-    position: relative;
-    inset: auto;
+    position: absolute;
+    inset: 0;
     width: 100%;
-    height: clamp(220px, 62vw, 340px);
+    height: 100%;
   }
 
   .heroVisual::after {
-    background: linear-gradient(0deg, var(--import-bg) 0%, rgba(6, 21, 39, 0.35) 40%, rgba(6, 21, 39, 0) 70%);
+    background: linear-gradient(0deg, rgba(6, 21, 39, 0.94), rgba(6, 21, 39, 0.38) 58%, rgba(6, 21, 39, 0.12));
   }
 
   .heroCopy {
-    margin-top: -56px;
-    padding-block: 0 48px;
+    margin-top: 0;
+    padding-block: 0;
     position: relative;
   }
 
@@ -776,6 +852,8 @@
     flex: 1 1 100%;
   }
 
+  .catalogDoor { align-items: start; flex-direction: column; gap: 22px; }
+
   .heroFacts {
     margin-top: 32px;
     display: grid;
@@ -786,6 +864,9 @@
   .heroFacts > div:last-child {
     grid-column: 1 / -1;
   }
+
+  .heroFacts,
+  .assurances { display: none; }
 
   .categoryTiles {
     margin-inline: calc(var(--import-gutter) * -1);
@@ -889,6 +970,13 @@
 .closedNoticeBody ul {
   list-style: none;
   border-top: 1px solid var(--import-line);
+}
+
+.closedNoticeBody li a {
+  margin-left: 4px;
+  color: var(--import-text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .closedNoticeBody li {

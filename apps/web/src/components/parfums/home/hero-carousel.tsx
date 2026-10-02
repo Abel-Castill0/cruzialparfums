@@ -3,8 +3,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
-import { SHOW_PARFUMS_HEADER_EVENT } from "@/components/parfums/shell/hero-aware-header";
-import { MenuIcon } from "@/components/parfums/shell/shell-icons";
 import styles from "./hero-carousel.module.css";
 
 export type HeroSlide = {
@@ -17,7 +15,7 @@ export type HeroSlide = {
   mobilePosition: string;
 };
 
-const SLIDE_MS = 8000;
+const SLIDE_MS = 6200;
 
 function subscribeReducedMotion(callback: () => void) {
   const query = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -52,7 +50,6 @@ export function HeroCarousel({ slides, ctaHref, ctaLabel }: {
   const [tabHidden, setTabHidden] = useState(false);
   const [onScreen, setOnScreen] = useState(true);
   const [rest, setRest] = useState(false);
-  const [navShown, setNavShown] = useState(false);
 
   const count = slides.length;
   const playing = count > 1 && !reducedMotion && !paused && !engaged && !tabHidden && onScreen;
@@ -91,11 +88,6 @@ export function HeroCarousel({ slides, ctaHref, ctaLabel }: {
     // A deliberate choice ends automatic rotation until it is resumed.
     setPaused(true);
   }, [count]);
-
-  const showNav = () => {
-    setNavShown(true);
-    window.dispatchEvent(new Event(SHOW_PARFUMS_HEADER_EVENT));
-  };
 
   return (
     <section
@@ -136,12 +128,6 @@ export function HeroCarousel({ slides, ctaHref, ctaLabel }: {
         })}
       </div>
       <div className={styles.shade} aria-hidden="true" />
-
-      {navShown ? null : (
-        <button type="button" className={styles.navPeek} onClick={showNav} aria-label="Mostrar navegación">
-          <MenuIcon />
-        </button>
-      )}
 
       <div className={styles.bar}>
         <Link href={ctaHref as never} className={styles.cta}>

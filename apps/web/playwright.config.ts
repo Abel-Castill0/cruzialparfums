@@ -23,7 +23,7 @@ process.env.E2E_RUN_TAG ??= String(Math.floor(Date.now() / 1000) % 1_000_000).pa
 const localPort = process.env.E2E_LOCAL_PORT || "3000";
 const baseURL = process.env.E2E_BASE_URL || `http://localhost:${localPort}`;
 const isLocalTarget = !process.env.E2E_BASE_URL;
-const PUBLIC_SPECS = /(public-hub|parfums-public-journey|parfums-storefront|parfums-shell|import-public-journey|attempt-lifecycle|admin-protection|accessibility)\.spec\.ts/;
+const PUBLIC_SPECS = /(public-hub|parfums-public-journey|parfums-storefront|parfums-shell|import-public-journey|import-catalog-view|attempt-lifecycle|admin-protection|accessibility)\.spec\.ts/;
 
 export default defineConfig({
   testDir: "./e2e",

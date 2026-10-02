@@ -1,4 +1,6 @@
 import Image from "next/image";
+import Link from "next/link";
+import type { Route } from "next";
 import type { BusinessUnitSettings } from "@/domains/platform/settings";
 import type { PublicImportCampaign } from "@/domains/import/public-import";
 import styles from "./import-home.module.css";
@@ -57,7 +59,7 @@ export function ImportHero({
   const titleId = open ? "campaign-title" : "import-closed-title";
 
   return (
-    <section className={styles.hero} aria-labelledby={titleId}>
+    <section className={styles.hero} data-import-home-hero aria-labelledby={titleId}>
       <div className={styles.heroVisual}>
         <Image
           src="/images/import-home/import-hero-container.webp"
@@ -101,11 +103,11 @@ export function ImportHero({
 
         <div className={styles.heroActions}>
           {open ? (
-            <a href="#catalogo" className={styles.primaryAction}>
+            <Link href={"/import/catalogo" as Route} className={styles.primaryAction}>
               Ver catálogo <ArrowIcon />
-            </a>
+            </Link>
           ) : upcoming ? (
-            <a href="#catalogo" className={styles.primaryAction}>Explorar vista previa <ArrowIcon /></a>
+            <Link href={"/import/catalogo" as Route} className={styles.primaryAction}>Explorar vista previa <ArrowIcon /></Link>
           ) : null}
           {contact ? (
             <a

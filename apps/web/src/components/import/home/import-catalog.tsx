@@ -18,6 +18,10 @@ import styles from "./import-home.module.css";
 
 type ActiveResult = Extract<PublicImportPageResult, { status: "active" }>;
 
+function catalogViewHref(href: string) {
+  return href.replace(/^\/import(?=[?#]|$)/, "/import/catalogo").replace(/#catalogo$/, "");
+}
+
 function ProductCard({
   product,
   campaign,
@@ -109,10 +113,10 @@ export function ImportCatalog({
   result: ActiveResult;
   filters: PublicImportFilters;
 }) {
-  const previousHref = buildImportCatalogHref(filters, { page: Math.max(1, filters.page - 1) });
-  const nextHref = buildImportCatalogHref(filters, {
+  const previousHref = catalogViewHref(buildImportCatalogHref(filters, { page: Math.max(1, filters.page - 1) }));
+  const nextHref = catalogViewHref(buildImportCatalogHref(filters, {
     page: Math.min(result.totalPages, filters.page + 1),
-  });
+  }));
   const invalidPage = filters.page > result.totalPages && result.total > 0;
   const unfiltered = !filters.category && !filters.query && filters.page === 1;
   const brands = listBrands(result.products);
@@ -129,7 +133,7 @@ export function ImportCatalog({
         </div>
       </Reveal>
 
-      <form action="/import#catalogo" method="get" className={styles.searchForm}>
+      <form action="/import/catalogo" method="get" className={styles.searchForm}>
         <label htmlFor="import-search">Buscar por producto o marca</label>
         <div>
           <input
@@ -151,7 +155,7 @@ export function ImportCatalog({
           <ul>
             {brands.map((brand) => (
               <li key={brand}>
-                <Link href={`${buildImportCatalogHref(filters, { query: brand, category: "", page: 1 })}#catalogo` as Route}>
+                <Link href={catalogViewHref(buildImportCatalogHref(filters, { query: brand, category: "", page: 1 })) as Route}>
                   {brand}
                 </Link>
               </li>
@@ -163,7 +167,7 @@ export function ImportCatalog({
       {!unfiltered ? (
         <nav className={styles.categoryFilters} aria-label="Filtrar por categoría">
           <Link
-            href={`${buildImportCatalogHref(filters, { category: "", page: 1 })}#catalogo` as Route}
+            href={catalogViewHref(buildImportCatalogHref(filters, { category: "", page: 1 })) as Route}
             aria-current={!filters.category ? "page" : undefined}
           >
             Todos
@@ -171,7 +175,7 @@ export function ImportCatalog({
           {result.categories.map((category) => (
             <Link
               key={category.slug}
-              href={`${buildImportCatalogHref(filters, { category: category.slug, page: 1 })}#catalogo` as Route}
+              href={catalogViewHref(buildImportCatalogHref(filters, { category: category.slug, page: 1 })) as Route}
               aria-current={filters.category === category.slug ? "page" : undefined}
             >
               {category.name} <span>{category.productCount}</span>
@@ -195,7 +199,7 @@ export function ImportCatalog({
         <div className={styles.emptyCatalog}>
           <h3>No encontramos productos con estos filtros.</h3>
           <p>Prueba otra búsqueda o vuelve a ver todo el consolidado.</p>
-          <Link href="/import#catalogo">Limpiar filtros</Link>
+          <Link href={"/import/catalogo" as Route}>Limpiar filtros</Link>
         </div>
       )}
 
@@ -250,7 +254,7 @@ export function ImportCategoryTiles({
         {tiles.map((tile) => (
           <li key={tile.slug}>
             <Link
-              href={`${buildImportCatalogHref(filters, { category: tile.slug, page: 1 })}#catalogo` as Route}
+              href={catalogViewHref(buildImportCatalogHref(filters, { category: tile.slug, page: 1 })) as Route}
               className={styles.categoryTile}
             >
               {tile.image ? (

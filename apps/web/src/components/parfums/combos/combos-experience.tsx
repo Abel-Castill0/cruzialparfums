@@ -376,23 +376,28 @@ export function CombosExperience({
               <ul>
                 {resolved.map((entry) => (
                   <li key={cartIdentity(entry.product)}>
-                    <div className={styles.summaryLineHead}>
-                      <span>{entry.product.name}</span>
-                      <strong>{money(entry.price)}</strong>
-                      <button type="button" onClick={() => toggle(entry.product)} aria-label={`Quitar ${entry.product.name} del combo`}>×</button>
-                    </div>
-                    <div className={styles.summaryLineSizes} role="group" aria-label={`Tamaño de ${entry.product.name}`}>
-                      {availableComboSizes(entry.product).map((value) => (
-                        <button
-                          key={value}
-                          type="button"
-                          aria-pressed={entry.line.size === value}
-                          className={entry.line.size === value ? styles.selected : ""}
-                          onClick={() => changeLineSize(cartIdentity(entry.product), value)}
-                        >
-                          {value} ml
-                        </button>
-                      ))}
+                    <div className={styles.summaryLine}>
+                      <span className={styles.summaryThumb}>{entry.product.imageUrl ? <Image src={entry.product.imageUrl} alt="" fill sizes="48px" /> : null}</span>
+                      <div>
+                        <div className={styles.summaryLineHead}>
+                          <span title={entry.product.name}>{entry.product.brand} · {entry.product.name}</span>
+                          <strong>{money(entry.price)}</strong>
+                          <button type="button" onClick={() => toggle(entry.product)} aria-label={`Quitar ${entry.product.name} del combo`}>×</button>
+                        </div>
+                        <div className={styles.summaryLineSizes} role="group" aria-label={`Tamaño de ${entry.product.name}`}>
+                          {availableComboSizes(entry.product).map((value) => (
+                            <button
+                              key={value}
+                              type="button"
+                              aria-pressed={entry.line.size === value}
+                              className={entry.line.size === value ? styles.selected : ""}
+                              onClick={() => changeLineSize(cartIdentity(entry.product), value)}
+                            >
+                              {value} ml
+                            </button>
+                          ))}
+                        </div>
+                      </div>
                     </div>
                   </li>
                 ))}

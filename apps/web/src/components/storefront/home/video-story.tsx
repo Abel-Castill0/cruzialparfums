@@ -1,9 +1,7 @@
 "use client";
 
 import type { Route } from "next";
-import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
 import {
   parseTikTokVideoId,
   tiktokEmbedUrl,
@@ -12,12 +10,11 @@ import {
 import styles from "./video-story.module.css";
 
 /**
- * Video as a story: copy on one side, the portrait video on the other. The
- * TikTok player is a third-party iframe, so it loads only after the visitor
- * presses play — the page ships a poster and a button, nothing else.
+ * Video as a story: copy on one side, the official TikTok player on the other.
+ * Lazy iframe loading avoids requesting the embed until the visitor reaches
+ * this section, while leaving the video visible without an extra click.
  */
 export function VideoStory({ video, tone }: { video: HomeVideo; tone: "parfums" | "import" }) {
-  const [playing, setPlaying] = useState(false);
   const videoId = parseTikTokVideoId(video.tiktokUrl);
   if (!videoId) return null;
 
@@ -41,37 +38,15 @@ export function VideoStory({ video, tone }: { video: HomeVideo; tone: "parfums" 
         </div>
 
         <div className={styles.frame}>
-          {playing ? (
-            <iframe
-              className={styles.player}
-              src={tiktokEmbedUrl(videoId)}
-              title={video.title}
-              allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
-              allowFullScreen
-              referrerPolicy="strict-origin-when-cross-origin"
-            />
-          ) : (
-            <button
-              type="button"
-              className={styles.poster}
-              onClick={() => setPlaying(true)}
-              aria-label={`Reproducir video: ${video.title}`}
-            >
-              <Image
-                src={video.posterSrc}
-                alt={video.posterAlt}
-                fill
-                sizes="(max-width: 767px) 78vw, 340px"
-                className={styles.posterImage}
-                loading="lazy"
-              />
-              <span className={styles.play} aria-hidden="true">
-                <svg width="22" height="22" viewBox="0 0 16 16" fill="currentColor">
-                  <path d="M5 3v10l8-5-8-5Z" />
-                </svg>
-              </span>
-            </button>
-          )}
+          <iframe
+            className={styles.player}
+            src={tiktokEmbedUrl(videoId)}
+            title={video.title}
+            allow="fullscreen; encrypted-media; picture-in-picture"
+            allowFullScreen
+            loading="lazy"
+            referrerPolicy="strict-origin-when-cross-origin"
+          />
         </div>
         <p className={styles.fallback}>
           Si el video no carga o TikTok bloquea la reproducción,{" "}
