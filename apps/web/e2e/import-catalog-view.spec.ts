@@ -50,7 +50,15 @@ test("Parfums catalog has exactly three discovery categories and hides the heade
 
 test("each home exposes its configured TikTok player through the allowed frame origin", async ({ page }) => {
   const parfumsResponse = await page.goto("/parfums");
-  const parfumsPlayer = page.locator('iframe[title="Cada detalle cuenta"]');
+  const parfumsVideo = page.locator('[data-home-video="parfums"]');
+  // The page ships a visible cover; the player is loaded as the section nears the
+  // viewport on fast desktops, or on tap everywhere else.
+  await expect(parfumsVideo.getByRole("button", { name: /Reproducir video/ }).or(parfumsVideo.locator("iframe"))).toBeVisible();
+  await parfumsVideo.scrollIntoViewIfNeeded();
+  const parfumsGate = parfumsVideo.getByRole("button", { name: /Reproducir video/ });
+  // On a fast desktop the section can swap the cover for the player while we look.
+  await parfumsGate.click({ timeout: 1_500 }).catch(() => undefined);
+  const parfumsPlayer = parfumsVideo.locator('iframe[title="Cada detalle cuenta"]');
   await expect(parfumsPlayer).toHaveAttribute("src", /^https:\/\/www\.tiktok\.com\/player\/v1\/7683916686390496533\?/);
   expect(parfumsResponse?.headers()["content-security-policy"]).toContain("frame-src 'self' https://www.tiktok.com");
 
