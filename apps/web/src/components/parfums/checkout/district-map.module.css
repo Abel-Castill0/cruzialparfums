@@ -1,0 +1,96 @@
+.map {
+  display: block;
+  width: 100%;
+  max-width: 400px;
+  height: auto;
+  margin-inline: auto;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.tile {
+  cursor: pointer;
+  outline: none;
+}
+
+.tileBase {
+  fill: #fff;
+  stroke: rgba(26, 22, 18, 0.2);
+  stroke-width: 1;
+  transition: fill 160ms ease, stroke 160ms ease;
+}
+
+.tileLabel {
+  fill: #2c2925;
+  font: 500 9.5px/1 var(--font-body), sans-serif;
+  pointer-events: none;
+  letter-spacing: 0;
+}
+
+.tileCount {
+  fill: #7a5d2a;
+  font: 600 8px/1 var(--font-body), sans-serif;
+  pointer-events: none;
+}
+
+.tileHas .tileBase {
+  fill: #f6efe0;
+  stroke: rgba(169, 134, 72, 0.7);
+}
+
+.tile:hover .tileBase {
+  stroke: #0a0806;
+}
+
+.tile:focus-visible .tileBase {
+  stroke: #0a0806;
+  stroke-width: 2.5;
+}
+
+.tileRestricted .tileBase {
+  stroke: #b0463d;
+}
+
+.tileRestricted .tileLabel {
+  fill: #6e1f19;
+  font-weight: 700;
+}
+
+.tileHatch {
+  pointer-events: none;
+  stroke: #b0463d;
+  stroke-width: 1;
+}
+
+.tileSelected .tileBase {
+  fill: #0a0806;
+  stroke: #0a0806;
+}
+
+.tileSelected .tileLabel,
+.tileSelected .tileCount {
+  fill: #fffdf8;
+}
+
+.tileDisabled {
+  cursor: default;
+}
+
+.tileDisabled .tileBase {
+  fill: #f3f1ec;
+  stroke: rgba(26, 22, 18, 0.1);
+}
+
+.tileDisabled .tileLabel {
+  fill: #8a847a;
+}
+
+.tileDisabled:hover .tileBase {
+  stroke: rgba(26, 22, 18, 0.1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tileBase {
+    transition: none;
+  }
+}

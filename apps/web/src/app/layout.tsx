@@ -33,7 +33,9 @@ const baseMetadata: Metadata = {
     type: "website",
     locale: "es_PE",
     siteName: "Cruzial",
+    images: [{ url: "/og/cruzial-og.jpg", width: 1200, height: 630, alt: "Cruzial: Parfums e Import" }],
   },
+  twitter: { card: "summary_large_image" },
 };
 
 export async function generateMetadata():Promise<Metadata>{return {...baseMetadata,robots:await getAuthoritativeIndexingPolicy()};}

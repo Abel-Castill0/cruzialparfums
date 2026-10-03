@@ -1,6 +1,10 @@
 import { expect, test, type Page } from "@playwright/test";
 import { LOCAL_DB_AVAILABLE, complaintSideEffects, orderSideEffects, testCustomerPhone } from "./local-db";
 
+// A submit is one or two server-action round trips; on a loaded server they exceed
+// the default 5 s assertion budget even when the behaviour is correct.
+const SERVER_ACTION_TIMEOUT = 15_000;
+
 // Anonymous attempt lifecycle for the Import order and Libro de Reclamaciones
 // flows (the Parfums flow is covered in parfums-storefront.spec.ts). Local
 // disposable stack only: every assertion is scoped to this test's own
@@ -36,7 +40,7 @@ test.describe("attempt lifecycle — Libro de Reclamaciones", () => {
       await route.abort("connectionreset");
     });
     await page.getByRole("button", { name: "Registrar solicitud" }).click();
-    await expect(page.getByRole("alert").filter({ hasText: /No se pudo confirmar el envío/ })).toBeVisible();
+    await expect(page.getByRole("alert").filter({ hasText: /No se pudo confirmar el envío/ })).toBeVisible({ timeout: SERVER_ACTION_TIMEOUT });
     expect(complaintSideEffects(phone).complaints).toBe(1);
 
     await page.unrouteAll();
@@ -44,12 +48,12 @@ test.describe("attempt lifecycle — Libro de Reclamaciones", () => {
     await fillComplaint(page, phone);
     await page.getByRole("button", { name: "Registrar solicitud" }).click();
     const held = page.locator('[data-attempt-held="replayed"]');
-    await expect(held).toContainText(/ya estaba registrada/);
+    await expect(held).toContainText(/ya estaba registrada/, { timeout: SERVER_ACTION_TIMEOUT });
     expect(complaintSideEffects(phone).complaints).toBe(1);
 
     await held.locator("[data-attempt-view]").click();
-    await expect(page.getByRole("heading", { name: "Tu solicitud fue registrada." })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Imprimir / Guardar copia" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Tu solicitud fue registrada." })).toBeVisible({ timeout: SERVER_ACTION_TIMEOUT });
+    await expect(page.getByRole("button", { name: "Imprimir / Guardar copia" })).toBeVisible({ timeout: SERVER_ACTION_TIMEOUT });
     expect(complaintSideEffects(phone).complaints).toBe(1);
   });
 
@@ -62,11 +66,11 @@ test.describe("attempt lifecycle — Libro de Reclamaciones", () => {
     await fillComplaint(page, phone);
     await page.getByRole("button", { name: "Registrar solicitud" }).click();
     const alert = page.getByRole("alert").filter({ hasText: /venció/ });
-    await expect(alert).toBeVisible();
+    await expect(alert).toBeVisible({ timeout: SERVER_ACTION_TIMEOUT });
     expect(complaintSideEffects(phone)).toEqual({ complaints: 0, outbox: 0 });
 
     await alert.locator("[data-attempt-new]").click();
-    await expect(page.getByRole("heading", { name: "Tu solicitud fue registrada." })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Tu solicitud fue registrada." })).toBeVisible({ timeout: SERVER_ACTION_TIMEOUT });
     expect(complaintSideEffects(phone).complaints).toBe(1);
   });
 });
@@ -98,7 +102,7 @@ test.describe("attempt lifecycle — Import order", () => {
       await route.abort("connectionreset");
     });
     await page.locator('form button[type="submit"]').click();
-    await expect(page.getByRole("alert").filter({ hasText: /No pudimos conectar/ })).toBeVisible();
+    await expect(page.getByRole("alert").filter({ hasText: /No pudimos conectar/ })).toBeVisible({ timeout: SERVER_ACTION_TIMEOUT });
     expect(committed).toMatch(IMPORT_ORDER);
     expect(orderSideEffects(phone).orders).toBe(1);
 
@@ -107,10 +111,10 @@ test.describe("attempt lifecycle — Import order", () => {
     await fill();
     await page.locator('form button[type="submit"]').click();
     const held = page.locator('[data-attempt-held="replayed"]');
-    await expect(held).toContainText(committed!);
+    await expect(held).toContainText(committed!, { timeout: SERVER_ACTION_TIMEOUT });
     expect(orderSideEffects(phone).orders).toBe(1);
     await held.locator("[data-attempt-view]").click();
-    await expect(page.locator("#success-title")).toBeVisible();
+    await expect(page.locator("#success-title")).toBeVisible({ timeout: SERVER_ACTION_TIMEOUT });
     expect(orderSideEffects(phone).orders).toBe(1);
   });
 });

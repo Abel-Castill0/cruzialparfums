@@ -219,3 +219,51 @@ test("text needed to decide or buy is at least 12px and combo size choices keep 
     expect(style.border).toBeGreaterThan(0);
   }
 });
+
+test("checkout shipping: pick a Shalom agency from the district map, by mouse and keyboard", async ({ page }) => {
+  await page.goto("/parfums/checkout");
+  const panel = page.locator("[data-shalom-panel]");
+  await expect(panel).toBeVisible();
+  // Nothing is listed until the customer narrows by district or search.
+  await expect(page.locator('input[name="shalom-agency"][value]:not([value="other"])')).toHaveCount(0);
+
+  const tile = page.locator('[data-district="Los Olivos"]');
+  await tile.focus();
+  await page.keyboard.press("Enter");
+  await expect(tile).toHaveAttribute("aria-pressed", "true");
+  const agencies = page.locator('input[name="shalom-agency"]:not([value="other"])');
+  expect(await agencies.count()).toBeGreaterThan(1);
+
+  // A real click (not forced) that is retried: it must reach the card, and a
+  // click that lands before React hydrates the form is reverted.
+  await expect(async () => {
+    await agencies.first().check({ timeout: 2_000 });
+    await expect(agencies.first()).toBeChecked({ timeout: 1_000 });
+  }).toPass({ timeout: 15_000 });
+  // An agency in the list is the selection: the free-text district is not asked for.
+  await expect(page.locator("#checkout-district")).toHaveCount(0);
+
+  await page.getByRole("searchbox", { name: "Buscar agencia Shalom" }).fill("zzzz-no-existe");
+  await expect(page.getByRole("status").filter({ hasText: "No encontramos agencias" })).toBeVisible();
+  // The earlier pick stays visible even when the list no longer shows it.
+  await expect(page.locator("[data-shalom-chosen]")).toBeVisible();
+});
+
+test("checkout shipping: motorizado flags restricted districts and offers Shalom instead", async ({ page }) => {
+  await page.goto("/parfums/checkout");
+  await page.getByRole("radio", { name: /Motorizado/ }).check({ force: true });
+  await expect(page.locator("[data-motorizado-panel]")).toBeVisible();
+
+  await page.locator('[data-district="Comas"]').click();
+  const callout = page.locator("[data-motorizado-panel] [role=status]");
+  await expect(callout).toContainText("Acceso restringido en Comas");
+  await expect(page.locator("#checkout-motorizado-district")).toHaveValue("Comas");
+
+  await page.locator('[data-district="Miraflores"]').click();
+  await expect(callout).not.toContainText("Acceso restringido");
+  await expect(callout).toContainText("Te cotizamos el motorizado por WhatsApp");
+
+  await page.locator('[data-district="Ate"]').click();
+  await page.getByRole("button", { name: "Prefiero recoger en Shalom" }).click();
+  await expect(page.locator("[data-shalom-panel]")).toBeVisible();
+});

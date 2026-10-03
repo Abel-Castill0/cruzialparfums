@@ -1,7 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { LegacyCatalogRepository } from "../catalog/legacy-catalog-repository";
 import { listProductPurchaseVariants } from "../catalog/product-purchase";
-import { PARFUMS_DELIVERY_OPTIONS, validateAndResolveParfumsOrder } from "./parfums-order-request";
+import {
+  PARFUMS_DELIVERY_OPTIONS,
+  PARFUMS_MOTORIZADO_DELIVERY,
+  PARFUMS_SHALOM_DELIVERY,
+  shalomAgencyDelivery,
+} from "./parfums-delivery";
+import { validateAndResolveParfumsOrder } from "./parfums-order-request";
+import { SHALOM_AGENCIES } from "./shalom-agencies";
 
 const repository = new LegacyCatalogRepository();
 const product = repository.list().find((item) => item.availabilityStatus === "available" && listProductPurchaseVariants(item).length > 0)!;
@@ -57,27 +64,44 @@ describe("Parfums public order revalidation", () => {
   });
 });
 
-describe("Parfums shipping business truth (Shalom only, client-confirmed)", () => {
-  it("offers exactly one confirmed delivery method: Shalom", () => {
-    expect(PARFUMS_DELIVERY_OPTIONS).toHaveLength(1);
-    expect(PARFUMS_DELIVERY_OPTIONS[0]).toMatch(/shalom/i);
+describe("Parfums shipping business truth (Shalom + motorizado quoted on WhatsApp, client-confirmed)", () => {
+  const withDelivery = (delivery: string) => ({ ...validInput(), customer: { ...customer, delivery } });
+
+  it("offers exactly the two confirmed delivery methods", () => {
+    expect(PARFUMS_DELIVERY_OPTIONS).toEqual([PARFUMS_SHALOM_DELIVERY, PARFUMS_MOTORIZADO_DELIVERY]);
   });
 
   it("never re-introduces an unconfirmed delivery method", () => {
     for (const option of PARFUMS_DELIVERY_OPTIONS) {
-      expect(option.toLowerCase()).not.toMatch(/línea 1|linea 1|motoriz|contraentrega|contra entrega/);
+      expect(option.toLowerCase()).not.toMatch(/línea 1|linea 1|contraentrega|contra entrega/);
     }
   });
 
-  it("resolves shippingMethodCode to shalom for the only confirmed option", () => {
+  it("resolves shippingMethodCode to shalom for the Shalom option", () => {
     const result = validateAndResolveParfumsOrder(validInput(), repository);
     expect(result.ok).toBe(true);
     if (!result.ok) return;
     expect(result.shippingMethodCode).toBe("shalom");
   });
 
-  it("rejects an unconfirmed delivery method even if forged by the client", () => {
-    const input = { ...validInput(), customer: { ...customer, delivery: "Lima Metropolitana — Motorizado" } };
-    expect(validateAndResolveParfumsOrder(input, repository)).toMatchObject({ ok: false, fieldErrors: { delivery: expect.any(String) } });
+  it("accepts a known Shalom agency and still resolves to shalom", () => {
+    const agency = SHALOM_AGENCIES[0]!;
+    const result = validateAndResolveParfumsOrder(withDelivery(shalomAgencyDelivery(agency)), repository);
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.shippingMethodCode).toBe("shalom");
+  });
+
+  it("accepts the motorizado with no shipping method code (fee agreed on WhatsApp)", () => {
+    const result = validateAndResolveParfumsOrder(withDelivery(PARFUMS_MOTORIZADO_DELIVERY), repository);
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.shippingMethodCode).toBeNull();
+  });
+
+  it.each([
+    "Lima Metropolitana — Motorizado",
+    "Agencia Shalom: Agencia Inventada (Miraflores)",
+    "Contraentrega",
+  ])("rejects a delivery value we never offered: %s", (delivery) => {
+    expect(validateAndResolveParfumsOrder(withDelivery(delivery), repository)).toMatchObject({ ok: false, fieldErrors: { delivery: expect.any(String) } });
   });
 });

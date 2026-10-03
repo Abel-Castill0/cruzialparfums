@@ -5,12 +5,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { Breadcrumbs } from "@/components/parfums/navigation/breadcrumbs";
-import { COMBO_ART, COMBO_SET_ART } from "@/components/parfums/shared/combo-art";
 import {
   addParfumsCartLine,
   PARFUMS_CART_UPDATED_EVENT,
 } from "@/domains/carts/parfums-cart";
 import { cartIdentity } from "@/domains/catalog/types";
+import { COMBO_ART, COMBO_SET_ART } from "@/components/parfums/shared/combo-art";
 import {
   addComboLine,
   availableComboSizes,
@@ -80,10 +80,11 @@ const POST_BUILDER_TRUST = [
 
 function ComboCard({ combo, products, onAdded, preload }: { combo: CatalogProduct; products: CatalogProduct[]; onAdded: (message: string) => void; preload: boolean }) {
   const sizes = availableComboSizes(combo);
-  const art = COMBO_SET_ART[combo.slug] ?? (combo.imageUrl ? undefined : COMBO_ART[combo.slug]);
+  // The sets' own artwork, exactly as supplied, wins over anything composed here.
+  const art = combo.imageUrl ? null : (COMBO_SET_ART[combo.slug] ?? COMBO_ART[combo.slug] ?? null);
   const memberPhotos = useMemo(
     () => (combo.imageUrl || art ? [] : resolveComboMemberPhotos(combo.comboContent?.perfumes ?? [], products)),
-    [art, combo, products],
+    [combo, products, art],
   );
   const [size, setSize] = useState<ComboSize | null>(defaultComboSize(combo));
   const price = size === null ? null : combo.decantPrices[String(size)] ?? null;
@@ -107,19 +108,11 @@ function ComboCard({ combo, products, onAdded, preload }: { combo: CatalogProduc
 
   return (
     <article className={styles.comboCard} id={combo.slug} data-combo-card>
-      <div className={`${styles.comboMedia} ${combo.imageUrl || art || memberPhotos.length ? "" : styles.comboMediaBare}`}>
-        {art ? (
-          <Image
-            src={art.src}
-            alt={art.alt}
-            fill
-            sizes="(max-width: 767px) calc(100vw - 32px), 33vw"
-            className={styles.comboImage}
-            style={{ objectPosition: art.position }}
-            preload={preload}
-          />
-        ) : combo.imageUrl ? (
+      <div className={`${styles.comboMedia} ${art && !combo.imageUrl ? styles.comboMediaArt : ""} ${combo.imageUrl || art || memberPhotos.length ? "" : styles.comboMediaBare}`}>
+        {combo.imageUrl ? (
           <Image src={combo.imageUrl} alt={combo.name} fill sizes="(max-width: 767px) calc(100vw - 32px), 33vw" className={styles.comboImage} preload={preload} />
+        ) : art ? (
+          <Image src={art.src} alt={art.alt} fill sizes="(max-width: 767px) calc(100vw - 32px), 33vw" className={styles.comboImage} style={{ objectPosition: art.position }} preload={preload} />
         ) : memberPhotos.length ? (
           <div className={styles.comboMosaic} data-count={memberPhotos.length}>
             {memberPhotos.map((photo) => (
@@ -247,7 +240,6 @@ export function CombosExperience({
 
       <header className={styles.hero}>
         <div className={styles.heroCopy}>
-          <p className={styles.eyebrow}>Cruzial Parfums · Arma tu combo</p>
           <h1>Arma tu selección,<br /><em>tu regla.</em></h1>
           <p className={styles.heroText}>
             Elige un set Cruzial o combina de {COMBO_MIN_ITEMS} a {COMBO_MAX_ITEMS} fragancias de nuestra colección. Tú decides.
@@ -304,7 +296,7 @@ export function CombosExperience({
       {combos.length > 0 ? (
         <section className={styles.setsSection} id="sets-armados" aria-labelledby="sets-title">
           <div className={styles.sectionHead}>
-            <div><p>Selecciones existentes</p><h2 id="sets-title">Sets <em>Cruzial.</em></h2></div>
+            <div><h2 id="sets-title">Sets <em>Cruzial.</em></h2></div>
             <span>Sets con composición y precio publicados del catálogo. Cada fragancia del set va en el tamaño elegido.</span>
           </div>
           <div className={styles.comboGrid}>
@@ -315,7 +307,7 @@ export function CombosExperience({
 
       <section className={styles.builderSection} id="arma-combo" aria-labelledby="builder-title">
         <div className={styles.sectionHead}>
-          <div><p>Hazlo a tu manera</p><h2 id="builder-title">Arma tu propio <em>combo.</em></h2></div>
+          <div><h2 id="builder-title">Arma tu propio <em>combo.</em></h2></div>
           <span>Selecciona entre {COMBO_MIN_ITEMS} y {COMBO_MAX_ITEMS} fragancias y elige el tamaño de cada una por separado. Cada precio se toma del catálogo actual.</span>
         </div>
 

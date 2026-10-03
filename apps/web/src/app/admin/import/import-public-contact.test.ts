@@ -103,7 +103,7 @@ describe("import main page reads DB contact", () => {
 
   it("ImportHero shows fallback message when contact is null", () => {
     const hero = read("components/import/home/import-hero.tsx");
-    expect(hero).toContain("El canal de contacto no está disponible temporalmente.");
+    expect(hero).toContain("Atención temporalmente no disponible.");
   });
 
   it("ImportContactCta shows fallback message when contact is null", () => {

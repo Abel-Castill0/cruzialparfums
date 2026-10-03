@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { Breadcrumbs, type BreadcrumbItem } from "@/components/parfums/navigation/breadcrumbs";
 import { InstitutionalContactForm } from "@/components/parfums/institutional/institutional-contact-form";
@@ -52,7 +53,6 @@ export default async function ContactoPage() {
       </div>
 
       <section className={styles.hero}>
-        <p className={styles.eyebrow}>Hablemos</p>
         <h1>
           Una consulta,
           <br />
@@ -76,8 +76,8 @@ export default async function ContactoPage() {
             <div className={styles.contactCard}>
               <div className={styles.contactIcon} aria-hidden="true"><TruckIcon /></div>
               <h3>Envíos</h3>
-              <p>Envío por agencia Shalom. Cobertura y costo se confirman por WhatsApp.</p>
-              <span className={styles.contactValue}>Agencia Shalom</span>
+              <p>Recoge en la agencia Shalom que elijas, o pide motorizado en Lima. El costo del motorizado se confirma por WhatsApp.</p>
+              <span className={styles.contactValue}>Shalom · Motorizado</span>
             </div>
             <div className={styles.contactCard}>
               <div className={styles.contactIcon} aria-hidden="true"><InstagramIcon /></div>
@@ -105,7 +105,6 @@ export default async function ContactoPage() {
         <div className={styles.wrap}>
           <div className={styles.formSplit}>
             <div>
-              <span className={styles.eyebrow}>Escríbenos</span>
               <h2>
                 Cuéntanos, <em>te asesoramos</em>.
               </h2>
@@ -120,7 +119,6 @@ export default async function ContactoPage() {
         <div className={styles.wrap}>
           <div className={styles.split}>
             <div className={styles.splitCopy}>
-              <span className={styles.eyebrow}>¿No sabes por dónde empezar?</span>
               <h2 className={styles.splitTitle}>
                 Empieza con un
                 <br />
@@ -141,8 +139,8 @@ export default async function ContactoPage() {
                 </a>
               </div>
             </div>
-            <div className={styles.splitArt} aria-hidden="true">
-              <span className={styles.artMark}>3</span>
+            <div className={styles.splitArt}>
+              <Image src="/images/parfums-home/parfums-decant-3ml.webp" alt="Decant Cruzial Parfums de 3 ml" fill sizes="(max-width: 899px) 100vw, 46vw" className={styles.artImage} />
               <span className={styles.artCaption}>Formatos 3 · 5 · 10 ml</span>
             </div>
           </div>
