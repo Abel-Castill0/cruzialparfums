@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { Breadcrumbs } from "@/components/parfums/navigation/breadcrumbs";
+import { COMBO_ART, COMBO_SET_ART } from "@/components/parfums/shared/combo-art";
 import {
   addParfumsCartLine,
   PARFUMS_CART_UPDATED_EVENT,
@@ -22,6 +23,7 @@ import {
   listComboEligibleProducts,
   removeComboLine,
   resolveComboLines,
+  resolveComboMemberPhotos,
   setComboLineSize,
   type ComboLine,
   type ComboSize,
@@ -76,8 +78,13 @@ const POST_BUILDER_TRUST = [
   },
 ] as const;
 
-function ComboCard({ combo, onAdded, preload }: { combo: CatalogProduct; onAdded: (message: string) => void; preload: boolean }) {
+function ComboCard({ combo, products, onAdded, preload }: { combo: CatalogProduct; products: CatalogProduct[]; onAdded: (message: string) => void; preload: boolean }) {
   const sizes = availableComboSizes(combo);
+  const art = COMBO_SET_ART[combo.slug] ?? (combo.imageUrl ? undefined : COMBO_ART[combo.slug]);
+  const memberPhotos = useMemo(
+    () => (combo.imageUrl || art ? [] : resolveComboMemberPhotos(combo.comboContent?.perfumes ?? [], products)),
+    [art, combo, products],
+  );
   const [size, setSize] = useState<ComboSize | null>(defaultComboSize(combo));
   const price = size === null ? null : combo.decantPrices[String(size)] ?? null;
   const compositionConfirmed = combo.comboContent?.verificationStatus === "official_pdf"
@@ -100,8 +107,28 @@ function ComboCard({ combo, onAdded, preload }: { combo: CatalogProduct; onAdded
 
   return (
     <article className={styles.comboCard} id={combo.slug} data-combo-card>
-      <div className={styles.comboMedia}>
-        {combo.imageUrl ? <Image src={combo.imageUrl} alt={combo.name} fill sizes="(max-width: 767px) calc(100vw - 32px), 33vw" className={styles.comboImage} preload={preload} /> : null}
+      <div className={`${styles.comboMedia} ${combo.imageUrl || art || memberPhotos.length ? "" : styles.comboMediaBare}`}>
+        {art ? (
+          <Image
+            src={art.src}
+            alt={art.alt}
+            fill
+            sizes="(max-width: 767px) calc(100vw - 32px), 33vw"
+            className={styles.comboImage}
+            style={{ objectPosition: art.position }}
+            preload={preload}
+          />
+        ) : combo.imageUrl ? (
+          <Image src={combo.imageUrl} alt={combo.name} fill sizes="(max-width: 767px) calc(100vw - 32px), 33vw" className={styles.comboImage} preload={preload} />
+        ) : memberPhotos.length ? (
+          <div className={styles.comboMosaic} data-count={memberPhotos.length}>
+            {memberPhotos.map((photo) => (
+              <span key={photo.id} className={styles.comboMosaicCell}>
+                <Image src={photo.url} alt="" fill sizes="(max-width: 767px) 45vw, 16vw" className={styles.comboMosaicImage} />
+              </span>
+            ))}
+          </div>
+        ) : null}
         <span>Set Cruzial</span>
       </div>
       <div className={styles.comboBody}>
@@ -117,7 +144,7 @@ function ComboCard({ combo, onAdded, preload }: { combo: CatalogProduct; onAdded
           <p className={styles.reconfirmation}>Composición pendiente de reconfirmación; se valida por WhatsApp antes de continuar.</p>
         )}
         <div className={styles.comboFooter}>
-          <div className={styles.comboSizes} aria-label={`Tamaño de ${combo.name}`}>
+          <div className={styles.comboSizes} role="group" aria-label={`Tamaño de ${combo.name}`}>
             {sizes.map((value) => (
               <button key={value} type="button" aria-pressed={size === value} className={size === value ? styles.selected : ""} onClick={() => setSize(value)}>{value} ml</button>
             ))}
@@ -281,7 +308,7 @@ export function CombosExperience({
             <span>Sets con composición y precio publicados del catálogo. Cada fragancia del set va en el tamaño elegido.</span>
           </div>
           <div className={styles.comboGrid}>
-            {combos.map((combo, index) => <ComboCard key={cartIdentity(combo)} combo={combo} onAdded={announce} preload={index === 0} />)}
+            {combos.map((combo, index) => <ComboCard key={cartIdentity(combo)} combo={combo} products={products} onAdded={announce} preload={index === 0} />)}
           </div>
         </section>
       ) : null}

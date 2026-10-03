@@ -29,7 +29,7 @@ export function CartLine({
 
   return (
     <article className={`${styles.line} ${compact ? styles.compact : ""}`} data-cart-line={line.key}>
-      <Link className={styles.media} href={`/parfums/productos/${product.slug}` as Route} aria-label={`Ver ${product.brand} ${product.name}`}>
+      <Link className={styles.media} data-combo={product.comboContent ? "" : undefined} href={`/parfums/productos/${product.slug}` as Route} aria-label={`Ver ${product.brand} ${product.name}`}>
         {imageUrl ? <Image src={imageUrl} alt="" fill sizes={compact ? "72px" : "96px"} className={styles.image} /> : null}
       </Link>
       <div className={styles.info}>

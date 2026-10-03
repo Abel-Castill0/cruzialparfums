@@ -13,6 +13,7 @@ import {
   listComboEligibleProducts,
   removeComboLine,
   resolveComboLines,
+  resolveComboMemberPhotos,
   setComboLineSize,
   type ComboLine,
 } from "./combo-builder";
@@ -254,5 +255,26 @@ describe("availableComboSizes / defaultComboSize", () => {
     });
     expect(message).not.toContain(product.name);
     expect(message).not.toContain("3 ml");
+  });
+});
+
+describe('resolveComboMemberPhotos', () => {
+  const products = [
+    fakeProduct({ slug: 'khamrah-qahwa', brand: 'Lattafa', name: 'Khamrah Qahwa', imageUrl: 'https://img.test/qahwa.png' }),
+    fakeProduct({ slug: 'eclaire', brand: 'Lattafa', name: 'Éclaire', imageUrl: 'https://img.test/eclaire.png' }),
+    fakeProduct({ slug: 'no-photo', brand: 'Rasasi', name: 'Hawas Tropical', imageUrl: null }),
+  ];
+
+  it('matches set labels to catalog products ignoring case and accents, in set order', () => {
+    const photos = resolveComboMemberPhotos(['Lattafa Eclaire', 'lattafa khamrah qahwa'], products);
+    expect(photos.map((photo) => photo.url)).toEqual(['https://img.test/eclaire.png', 'https://img.test/qahwa.png']);
+  });
+
+  it('skips members without a photo or without a catalog match and never invents one', () => {
+    expect(resolveComboMemberPhotos(['Rasasi Hawas Tropical', 'Unknown House Mystery'], products)).toEqual([]);
+  });
+
+  it('caps the mosaic', () => {
+    expect(resolveComboMemberPhotos(['Lattafa Eclaire', 'Lattafa Khamrah Qahwa'], products, 1)).toHaveLength(1);
   });
 });

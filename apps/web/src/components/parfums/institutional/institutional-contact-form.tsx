@@ -7,7 +7,6 @@ import styles from "./institutional.module.css";
 const topics = [
   "Recomendación de fragancia",
   "Consulta de pedido",
-  "Venta por mayor",
   "Otro",
 ] as const;
 

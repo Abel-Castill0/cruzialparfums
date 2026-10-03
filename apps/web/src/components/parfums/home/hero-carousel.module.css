@@ -13,22 +13,6 @@
   background: #0a0806;
 }
 
-.slides {
-  position: absolute;
-  inset: 0;
-}
-
-.slide {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  transition: opacity 1600ms ease;
-}
-
-.slideActive {
-  opacity: 1;
-}
-
 .image {
   object-fit: cover;
   object-position: var(--pos, 50% 50%);
@@ -64,9 +48,9 @@
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  border: 1px solid #d1b16f;
-  color: #17120a;
-  background: #d1b16f;
+  border: 1px solid rgba(255, 253, 248, 0.78);
+  color: #0a0806;
+  background: #fffdf8;
   backdrop-filter: blur(8px);
   font-size: 0.7rem;
   font-weight: 600;
@@ -78,67 +62,8 @@
 
 .cta:hover {
   gap: 16px;
-  color: #17120a;
-  background: #e1c78f;
-}
-
-.controls {
-  position: absolute;
-  right: 0;
-}
-
-.controls {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.control {
-  width: 44px;
-  height: 44px;
-  display: grid;
-  place-items: center;
-  border: 0;
-  border-radius: 50%;
-  color: #fffdf8;
-  background: transparent;
-  cursor: pointer;
-}
-
-.control:hover {
-  background: rgba(255, 253, 248, 0.14);
-}
-
-.dots {
-  display: flex;
-}
-
-.dot {
-  width: 36px;
-  height: 44px;
-  padding: 0;
-  display: grid;
-  place-items: center;
-  border: 0;
-  background: transparent;
-  cursor: pointer;
-}
-
-.dot::after {
-  width: 22px;
-  height: 2px;
-  content: "";
-  background: rgba(255, 253, 248, 0.45);
-  transition: background-color 240ms ease, width 240ms ease;
-}
-
-.dot:hover::after {
-  background: rgba(255, 253, 248, 0.8);
-}
-
-.dotActive::after {
-  width: 30px;
-  background: #fffdf8;
+  color: #0a0806;
+  background: #f1ede5;
 }
 
 @media (max-width: 767px) {
@@ -151,24 +76,77 @@
     object-position: var(--pos-mobile, 50% 50%);
   }
 
-  /* Phone: controls sit above the call to action, both clear of the WhatsApp
-     button, so nothing wraps or overlaps at 320px. */
+  /* Leave the lower-right corner clear of the floating WhatsApp action. */
   .bar {
-    padding-right: 0;
-    align-items: center;
-    flex-direction: column-reverse;
-    gap: 6px;
-  }
-
-  .controls {
-    position: static;
+    padding-right: 66px;
+    justify-content: flex-start;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .slide,
-  .cta,
-  .dot::after {
+  .cta {
+    transition: none;
+  }
+}
+
+/* Phones: the wordmark composition is shown whole (the tall crop used to cut
+ * the letters at both edges) on a dark ground, faded at top and bottom. */
+@media (max-width: 767px) {
+  .hero[data-fit="wordmark"] {
+    background: #0b0c0d;
+  }
+
+  .hero[data-fit="wordmark"] .image {
+    inset: auto !important;
+    top: 50% !important;
+    left: 50% !important;
+    width: 250% !important;
+    height: auto !important;
+    aspect-ratio: 1672 / 792;
+    transform: translate(-50%, -50%);
+    object-fit: contain !important;
+    -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 20%, #000 80%, transparent 100%);
+    mask-image: linear-gradient(180deg, transparent 0, #000 20%, #000 80%, transparent 100%);
+  }
+}
+
+/* The one orchestrated moment: the call to action arrives after the image. */
+.bar {
+  animation: heroArrive 1000ms 600ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes heroArrive {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+
+.cta {
+  position: relative;
+}
+
+.cta::after {
+  position: absolute;
+  inset: -6px;
+  content: "";
+  border: 1px solid rgba(255, 253, 248, 0.56);
+  transition: inset 350ms cubic-bezier(0.22, 1, 0.36, 1), border-color 350ms ease;
+  pointer-events: none;
+}
+
+.cta:hover::after,
+.cta:focus-visible::after {
+  inset: -10px;
+  border-color: rgba(255, 253, 248, 0.92);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bar {
+    animation: none;
+  }
+
+  .cta::after {
     transition: none;
   }
 }

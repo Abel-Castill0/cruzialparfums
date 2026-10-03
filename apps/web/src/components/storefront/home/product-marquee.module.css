@@ -195,3 +195,21 @@
     transform: none;
   }
 }
+
+/* Photographs dissolve into a plate of the unit's own tone instead of
+ * showing their white studio rectangles. */
+.parfums {
+  --mq-plate: radial-gradient(90% 80% at 50% 36%, #fff 0%, #f1ebdf 100%);
+}
+
+.import {
+  --mq-plate: radial-gradient(82% 72% at 50% 34%, #fbfcfe 0%, #d9e2ec 100%);
+}
+
+.media {
+  background: var(--mq-plate, var(--mq-surface));
+}
+
+.image {
+  mix-blend-mode: multiply;
+}

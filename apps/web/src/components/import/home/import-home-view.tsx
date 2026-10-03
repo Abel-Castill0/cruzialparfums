@@ -51,7 +51,7 @@ export function ImportHomeView({ page, filters, contact, depositPercentages, who
       <ImportProcess />
       <ImportConditions depositPercentages={depositPercentages} />
       <ImportWholesale rules={wholesaleRules} contact={contact} />
-      {IMPORT_HOME_VIDEO ? <VideoStory video={{ ...IMPORT_HOME_VIDEO, cta: active || upcoming ? { label: "Ver el catálogo", href: "/import/catalogo" } : { label: "Ver cómo funciona", href: "/import#como-funciona" } }} tone="import" clickToPlay /> : null}
+      {IMPORT_HOME_VIDEO ? <VideoStory video={{ ...IMPORT_HOME_VIDEO, cta: active || upcoming ? { label: "Ver el catálogo", href: "/import/catalogo" } : { label: "Ver cómo funciona", href: "/import#como-funciona" } }} tone="import" /> : null}
       <ImportFaq depositPercentages={depositPercentages} />
       <ImportContactCta contact={contact} />
     </main>

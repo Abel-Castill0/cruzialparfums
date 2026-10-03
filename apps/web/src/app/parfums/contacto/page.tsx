@@ -4,11 +4,30 @@ import { Breadcrumbs, type BreadcrumbItem } from "@/components/parfums/navigatio
 import { InstitutionalContactForm } from "@/components/parfums/institutional/institutional-contact-form";
 import { PARFUMS_INSTAGRAM_URL } from "@/domains/platform/parfums-storefront";
 import { loadParfumsStorefront } from "@/lib/catalog/parfums-storefront";
+import { WhatsAppIcon } from "@/components/parfums/shell/shell-icons";
 import styles from "@/components/parfums/institutional/institutional.module.css";
+
+function Glyph({ children }: { children: React.ReactNode }) {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      {children}
+    </svg>
+  );
+}
+
+const TruckIcon = () => (
+  <Glyph><path d="M3 6.5h11v9H3zM14 10h4l3 3v2.5h-7" /><circle cx="7" cy="17.5" r="1.8" /><circle cx="17" cy="17.5" r="1.8" /></Glyph>
+);
+const InstagramIcon = () => (
+  <Glyph><rect x="3.5" y="3.5" width="17" height="17" rx="5" /><circle cx="12" cy="12" r="4" /><circle cx="17" cy="7" r="0.6" fill="currentColor" /></Glyph>
+);
+const MailIcon = () => (
+  <Glyph><rect x="3" y="5.5" width="18" height="13" rx="2" /><path d="m3.5 7 8.5 6 8.5-6" /></Glyph>
+);
 
 export const metadata: Metadata = {
   title: "Contacto",
-  description: "WhatsApp directo, asesoría olfativa y atención personalizada para menor y mayor.",
+  description: "WhatsApp directo, asesoría olfativa y atención personalizada.",
 };
 
 const crumbs: BreadcrumbItem[] = [
@@ -46,7 +65,7 @@ export default async function ContactoPage() {
         <div className={styles.wrap}>
           <div className={styles.contactGrid}>
             <div className={styles.contactCard}>
-              <div className={styles.contactIcon} aria-hidden="true">✉</div>
+              <div className={styles.contactIcon} aria-hidden="true"><WhatsAppIcon size={20} /></div>
               <h3>WhatsApp</h3>
               <p>La vía más rápida para pedidos, consultas y cotizaciones.</p>
               <span className={styles.contactValue}>{phoneDisplay}</span>
@@ -55,13 +74,13 @@ export default async function ContactoPage() {
               </a>
             </div>
             <div className={styles.contactCard}>
-              <div className={styles.contactIcon} aria-hidden="true">✈</div>
+              <div className={styles.contactIcon} aria-hidden="true"><TruckIcon /></div>
               <h3>Envíos</h3>
               <p>Envío por agencia Shalom. Cobertura y costo se confirman por WhatsApp.</p>
               <span className={styles.contactValue}>Agencia Shalom</span>
             </div>
             <div className={styles.contactCard}>
-              <div className={styles.contactIcon} aria-hidden="true">◉</div>
+              <div className={styles.contactIcon} aria-hidden="true"><InstagramIcon /></div>
               <h3>Instagram</h3>
               <p>Lanzamientos, notas olfativas y detrás de escena de la casa.</p>
               <span className={styles.contactValue}>{instagramHandle}</span>
@@ -70,7 +89,7 @@ export default async function ContactoPage() {
               </a>
             </div>
             <div className={styles.contactCard}>
-              <div className={styles.contactIcon} aria-hidden="true">◷</div>
+              <div className={styles.contactIcon} aria-hidden="true"><MailIcon /></div>
               <h3>Correo</h3>
               <p>Para consultas por escrito, cotizaciones extensas o coordinación fuera de WhatsApp.</p>
               <span className={styles.contactValue}>{contactEmail}</span>
@@ -90,7 +109,7 @@ export default async function ContactoPage() {
               <h2>
                 Cuéntanos, <em>te asesoramos</em>.
               </h2>
-              <p>¿Buscas un aroma para una ocasión especial? ¿Quieres armar un regalo? ¿Necesitas tarifas por mayor? Este formulario llega directo a nuestro WhatsApp.</p>
+              <p>¿Buscas un aroma para una ocasión especial? ¿Quieres armar un regalo? Este formulario llega directo a nuestro WhatsApp.</p>
             </div>
             <InstitutionalContactForm storeName={storeName} whatsappNumber={whatsappNumber} />
           </div>

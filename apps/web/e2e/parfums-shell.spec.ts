@@ -19,10 +19,9 @@ test.describe("parfums home hero and header", () => {
     await page.goto("/parfums");
     const hero = page.locator("[data-home-hero]");
     await expect(hero).toBeVisible();
-    await expect(hero.locator('[aria-roledescription="slide"]')).toHaveCount(4);
-    for (const image of ["hero-crop.webp", "promo-cuarteto.webp", "promo-vainilla.webp", "promo-tulum.webp"]) {
-      await expect(hero.locator(`[aria-roledescription="slide"] img[src*="${image}"]`)).toHaveCount(1);
-    }
+    const artwork = hero.locator("img");
+    await expect(artwork).toHaveCount(1);
+    await expect(artwork).toHaveAttribute("src", /hero-crop\.webp/);
 
     const viewport = page.viewportSize()!;
     const box = (await hero.boundingBox())!;

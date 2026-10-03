@@ -30,7 +30,7 @@
 
 .brand {
   color: #756f66;
-  font-size: 8px;
+  font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.19em;
   text-transform: uppercase;
@@ -48,13 +48,13 @@
 .variant {
   margin-top: 7px;
   color: #756f66;
-  font-size: 10px;
+  font-size: 12px;
 }
 
 .contents {
   margin-top: 5px;
   color: #8a847c;
-  font-size: 9px;
+  font-size: 10px;
   line-height: 1.45;
 }
 
@@ -98,7 +98,7 @@
   border-bottom: 1px solid transparent;
   color: #756f66;
   background: transparent;
-  font-size: 9px;
+  font-size: 11px;
   letter-spacing: 0.11em;
   text-transform: uppercase;
   cursor: pointer;
@@ -157,4 +157,13 @@
   .compact {
     grid-template-columns: 64px minmax(0, 1fr);
   }
+}
+
+/* Fragrance photographs sit on the warm plate. Set photographs are left exactly as supplied. */
+.media:not([data-combo]) {
+  background: radial-gradient(90% 80% at 50% 36%, #fff 0%, #f1ebdf 100%);
+}
+
+.media:not([data-combo]) .image {
+  mix-blend-mode: multiply;
 }

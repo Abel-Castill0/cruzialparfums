@@ -6,6 +6,8 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { minimumPrice } from "@/domains/catalog/catalog-query";
 import type { CatalogProduct } from "@/domains/catalog/types";
+import type { ComboMemberPhoto } from "@/domains/combos/combo-builder";
+import { COMBO_ART, COMBO_SET_ART } from "@/components/parfums/shared/combo-art";
 import styles from "./combo-carousel.module.css";
 
 const AUTOPLAY_MS = 4800;
@@ -28,18 +30,18 @@ function usePrefersReducedMotion() {
   return useSyncExternalStore(subscribeReducedMotion, getReducedMotionSnapshot, () => false);
 }
 
-export function ComboCarousel({ combos }: { combos: CatalogProduct[] }) {
+export function ComboCarousel({ combos, photosBySlug = {} }: { combos: CatalogProduct[]; photosBySlug?: Record<string, ComboMemberPhoto[]> }) {
   const [index, setIndex] = useState(0);
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
-  const [interacted, setInteracted] = useState(false);
+  const [paused, setPaused] = useState(false);
   const [tabHidden, setTabHidden] = useState(false);
   const reducedMotion = usePrefersReducedMotion();
   const trackRef = useRef<HTMLDivElement>(null);
   const touchStartX = useRef<number | null>(null);
 
   const count = combos.length;
-  const canAutoplay = count > 1 && !reducedMotion && !hovered && !focused && !interacted && !tabHidden;
+  const canAutoplay = count > 1 && !reducedMotion && !hovered && !focused && !paused && !tabHidden;
 
   useEffect(() => {
     function handleVisibility() {
@@ -60,7 +62,7 @@ export function ComboCarousel({ combos }: { combos: CatalogProduct[] }) {
   const goTo = useCallback(
     (next: number, manual: boolean) => {
       setIndex(((next % count) + count) % count);
-      if (manual) setInteracted(true);
+      if (manual) setPaused(true);
     },
     [count],
   );
@@ -99,7 +101,10 @@ export function ComboCarousel({ combos }: { combos: CatalogProduct[] }) {
       >
         {combos.map((combo, slideIndex) => {
           const content = combo.comboContent;
+          const setArt = COMBO_SET_ART[combo.slug];
           const startingPrice = minimumPrice(combo.decantPrices);
+          const art = setArt ?? (content?.heroImageUrl ? undefined : COMBO_ART[combo.slug]);
+          const memberPhotos = content?.heroImageUrl || art ? [] : (photosBySlug[combo.slug] ?? []);
           return (
             <article
               key={combo.legacyId}
@@ -107,16 +112,36 @@ export function ComboCarousel({ combos }: { combos: CatalogProduct[] }) {
               aria-hidden={slideIndex !== index}
               data-active={slideIndex === index}
             >
-              {content?.heroImageUrl ? (
-                <Image
-                  src={content.heroImageUrl}
-                  alt={combo.name}
-                  fill
-                  sizes="(max-width: 767px) 100vw, 1200px"
-                  className={styles.slideImage}
-                  loading="lazy"
-                />
-              ) : null}
+              <div className={styles.slideMedia} aria-hidden="true">
+                {content?.heroImageUrl && !setArt ? (
+                  <Image
+                    src={content.heroImageUrl}
+                    alt=""
+                    fill
+                    sizes="(max-width: 767px) 100vw, 1200px"
+                    className={styles.slideImage}
+                    loading="lazy"
+                  />
+                ) : art ? (
+                  <Image
+                    src={art.src}
+                    alt=""
+                    fill
+                    sizes="(max-width: 767px) 100vw, 1200px"
+                    className={styles.slideImage}
+                    style={{ "--pos": art.position, "--pos-mobile": art.mobilePosition } as React.CSSProperties}
+                    loading="lazy"
+                  />
+                ) : memberPhotos.length ? (
+                  <div className={styles.slidePhotos} style={{ "--count": memberPhotos.length } as React.CSSProperties}>
+                    {memberPhotos.map((photo) => (
+                      <span key={photo.id} className={styles.slidePhoto}>
+                        <Image src={photo.url} alt="" fill sizes="(max-width: 640px) 22vw, 12vw" className={styles.slidePhotoImage} loading="lazy" />
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
               <div className={styles.scrim} aria-hidden="true" />
               <div className={styles.slideCopy}>
                 <p className={styles.eyebrow}>Combo Cruzial</p>
@@ -140,6 +165,17 @@ export function ComboCarousel({ combos }: { combos: CatalogProduct[] }) {
 
       {count > 1 ? (
         <>
+          {!reducedMotion ? (
+            <button
+              type="button"
+              className={styles.pause}
+              onClick={() => setPaused((value) => !value)}
+              aria-pressed={paused}
+              aria-label={paused ? "Reanudar la rotación automática de combos" : "Pausar la rotación automática de combos"}
+            >
+              <span aria-hidden="true">{paused ? "▶" : "❚❚"}</span>
+            </button>
+          ) : null}
           <button
             type="button"
             className={`${styles.arrow} ${styles.arrowPrev}`}

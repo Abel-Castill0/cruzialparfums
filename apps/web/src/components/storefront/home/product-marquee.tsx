@@ -37,7 +37,7 @@ type ProductMarqueeProps = {
 // an endless loop reads as a bug, not as abundance.
 const LOOP_MIN_ITEMS = 5;
 const DRIFT_PX_PER_SECOND = 26;
-const RESUME_DELAY_MS = 3200;
+const RESUME_DELAY_MS = 900;
 
 function subscribeReducedMotion(callback: () => void) {
   const query = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -112,7 +112,8 @@ export function ProductMarquee({ heading, label, items, tone }: ProductMarqueePr
   const reducedMotion = usePrefersReducedMotion();
   const loop = items.length >= LOOP_MIN_ITEMS;
   const viewportRef = useRef<HTMLDivElement>(null);
-  const holdRef = useRef(false);
+  const pointerInsideRef = useRef(false);
+  const keyboardFocusRef = useRef(false);
   const resumeAtRef = useRef(0);
   const [paused, setPaused] = useState(false);
   const [inView, setInView] = useState(false);
@@ -140,7 +141,7 @@ export function ProductMarquee({ heading, label, items, tone }: ProductMarqueePr
     const tick = (now: number) => {
       const elapsed = Math.min(now - last, 64);
       last = now;
-      if (holdRef.current || now < resumeAtRef.current || document.hidden) {
+      if (pointerInsideRef.current || keyboardFocusRef.current || now < resumeAtRef.current || document.hidden) {
         position = viewport.scrollLeft;
       } else {
         const half = viewport.scrollWidth / 2;
@@ -181,7 +182,21 @@ export function ProductMarquee({ heading, label, items, tone }: ProductMarqueePr
   if (items.length === 0) return null;
 
   return (
-    <div className={`${styles.root} ${styles[tone]}`}>
+    <div
+      className={`${styles.root} ${styles[tone]}`}
+      data-product-marquee
+      // Keyboard focus pauses the rail until focus leaves; pointer focus does
+      // not trap the animation after the visitor moves away.
+      onFocusCapture={() => {
+        const active = document.activeElement;
+        keyboardFocusRef.current = active instanceof HTMLElement && active.matches(":focus-visible");
+      }}
+      onBlurCapture={(event) => {
+        const next = event.relatedTarget;
+        keyboardFocusRef.current =
+          next instanceof HTMLElement && event.currentTarget.contains(next) && next.matches(":focus-visible");
+      }}
+    >
       <div className={styles.head}>
         <div className={styles.heading}>{heading}</div>
         <div className={styles.controls}>
@@ -217,20 +232,14 @@ export function ProductMarquee({ heading, label, items, tone }: ProductMarqueePr
         data-loop={loop || undefined}
         onScroll={handleScroll}
         onPointerEnter={(event) => {
-          if (event.pointerType === "mouse") holdRef.current = true;
+          if (event.pointerType === "mouse") pointerInsideRef.current = true;
         }}
         onPointerLeave={(event) => {
-          if (event.pointerType === "mouse") holdRef.current = false;
+          if (event.pointerType === "mouse") pointerInsideRef.current = false;
         }}
         onPointerDown={holdFor}
         onTouchStart={holdFor}
         onWheel={holdFor}
-        onFocusCapture={() => {
-          holdRef.current = true;
-        }}
-        onBlurCapture={() => {
-          holdRef.current = false;
-        }}
       >
         <div className={styles.track}>
           <ul className={styles.list}>

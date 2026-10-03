@@ -1,0 +1,674 @@
+/* Catalog controls — one family of pill controls (search, filters, order),
+ * chip groups in a popover/sheet, and the three category doors. */
+
+.toolbar {
+  --ink: #0a0806;
+  --paper: #fffdf8;
+  --line: rgba(26, 22, 18, 0.16);
+  --line-strong: rgba(26, 22, 18, 0.55);
+  --muted: #6c665d;
+  --brass: #a98648;
+  position: sticky;
+  z-index: 40;
+  top: 76px;
+  padding: 14px 0;
+  isolation: isolate;
+  color: var(--ink);
+}
+
+/* The veil lives on a pseudo-element: a backdrop-filter on the toolbar itself
+ * would make it the containing block of the fixed filter sheet. */
+.toolbar::before {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  content: "";
+  border-bottom: 1px solid var(--line);
+  background: rgba(255, 253, 248, 0.9);
+  backdrop-filter: blur(14px) saturate(1.2);
+}
+
+.container {
+  width: min(1200px, calc(100% - 48px));
+  margin-inline: auto;
+}
+
+.bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.search {
+  flex: 1 1 320px;
+  max-width: 440px;
+  height: 46px;
+  padding: 0 8px 0 18px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--muted);
+  transition: border-color 200ms ease, box-shadow 200ms ease;
+}
+
+.search:hover {
+  border-color: var(--line-strong);
+}
+
+.search:focus-within {
+  border-color: var(--ink);
+  box-shadow: 0 0 0 4px rgba(169, 134, 72, 0.2);
+  color: var(--ink);
+}
+
+.search input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 14px;
+}
+
+.search input::placeholder {
+  color: var(--muted);
+}
+
+.search input::-webkit-search-cancel-button {
+  display: none;
+}
+
+.searchClear {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.searchClear:hover {
+  background: rgba(26, 22, 18, 0.07);
+  color: var(--ink);
+}
+
+.actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.control {
+  position: relative;
+  height: 46px;
+  padding: 0 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: border-color 200ms ease, background-color 200ms ease;
+}
+
+.control:hover,
+.control[aria-expanded="true"] {
+  border-color: var(--ink);
+}
+
+.control:focus-visible,
+.chip:focus-visible,
+.door:focus-visible,
+.applyButton:focus-visible,
+.clearButton:focus-visible,
+.panelClose:focus-visible,
+.searchClear:focus-visible,
+.activeChip button:focus-visible,
+.clearAll:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+}
+
+.count {
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--ink);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+.sort {
+  padding-right: 42px;
+}
+
+.sort > span {
+  color: var(--muted);
+}
+
+.sort select {
+  height: 100%;
+  padding: 0;
+  appearance: none;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+}
+
+.sort:focus-within {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+}
+
+.sort::after {
+  position: absolute;
+  top: 50%;
+  right: 20px;
+  width: 7px;
+  height: 7px;
+  content: "";
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: translateY(-70%) rotate(45deg);
+  pointer-events: none;
+}
+
+/* Active filters */
+
+.active {
+  padding-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.activeChip {
+  height: 32px;
+  padding: 0 6px 0 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid var(--ink);
+  border-radius: 999px;
+  font-size: 12px;
+}
+
+.activeChip small {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.activeChip button {
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.activeChip button:hover {
+  background: rgba(26, 22, 18, 0.08);
+}
+
+.clearAll {
+  padding: 0 4px;
+  border: 0;
+  border-bottom: 1px solid currentColor;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.clearAll:hover {
+  color: var(--ink);
+}
+
+/* Filter panel: popover on large screens */
+
+.overlay {
+  position: fixed;
+  /* Under the toolbar (40) so the panel it hosts stays clickable. */
+  z-index: 39;
+  inset: 0;
+  border: 0;
+  background: transparent;
+  cursor: default;
+}
+
+.panel {
+  position: absolute;
+  z-index: 60;
+  top: calc(100% + 12px);
+  right: 0;
+  width: min(660px, 100%);
+  max-height: min(74svh, 660px);
+  padding: 30px 32px 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--paper);
+  box-shadow: 0 34px 70px -24px rgba(10, 8, 6, 0.34);
+  animation: panelIn 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes panelIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+
+.panelHead {
+  margin-bottom: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.panelHead strong {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 26px;
+  font-weight: 500;
+}
+
+.panelClose {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: #fff;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.groups {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 36px;
+}
+
+.group {
+  min-width: 0;
+  margin: 0 0 26px;
+  padding: 0;
+  border: 0;
+}
+
+.groupWide {
+  grid-column: 1 / -1;
+}
+
+.group legend {
+  margin-bottom: 12px;
+  padding: 0;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.sortGroup {
+  display: none;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  min-height: 40px;
+  padding: 0 18px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color 180ms ease, background-color 180ms ease, color 180ms ease;
+}
+
+.chip:hover {
+  border-color: var(--ink);
+}
+
+.chip[aria-pressed="true"] {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: #fff;
+}
+
+.panelFoot {
+  position: sticky;
+  bottom: 0;
+  margin: 0 -32px;
+  padding: 18px 32px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border-top: 1px solid var(--line);
+  background: var(--paper);
+}
+
+.clearButton {
+  padding: 8px 0;
+  border: 0;
+  border-bottom: 1px solid currentColor;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.clearButton:hover {
+  color: var(--ink);
+}
+
+.applyButton {
+  height: 48px;
+  padding: 0 30px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--ink);
+  color: #fff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: background-color 200ms ease;
+}
+
+.applyButton:hover {
+  background: #2c2925;
+}
+
+/* Category doors: the three buttons that set the type filter */
+
+.doors {
+  padding: 40px 0 8px;
+  background: #fff;
+}
+
+.doorList {
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  list-style: none;
+}
+
+.door {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  display: block;
+  overflow: hidden;
+  border: 0;
+  border-radius: 4px;
+  background: #0a0806;
+  color: #fffdf8;
+  text-align: left;
+  cursor: pointer;
+  isolation: isolate;
+}
+
+.doorImage {
+  z-index: -2;
+  object-fit: cover;
+  transition: transform 1100ms cubic-bezier(0.22, 1, 0.36, 1), filter 500ms ease;
+}
+
+.door::before {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  content: "";
+  background: linear-gradient(0deg, rgba(10, 8, 6, 0.84) 0%, rgba(10, 8, 6, 0.28) 46%, rgba(10, 8, 6, 0) 72%);
+}
+
+/* The chosen door gets an inner frame; the others step back. */
+.door::after {
+  position: absolute;
+  inset: 12px;
+  content: "";
+  border: 1px solid rgba(255, 253, 248, 0);
+  transition: border-color 300ms ease;
+  pointer-events: none;
+}
+
+.door:hover .doorImage {
+  transform: scale(1.045);
+}
+
+.door[aria-pressed="true"]::after {
+  border-color: rgba(255, 253, 248, 0.8);
+}
+
+.doorList:has(.door[aria-pressed="true"]) .door[aria-pressed="false"] .doorImage {
+  filter: saturate(0.55) brightness(0.8);
+}
+
+.doorBody {
+  position: absolute;
+  inset: auto 0 0;
+  padding: 26px 28px;
+  display: grid;
+  gap: 4px;
+}
+
+.doorLabel {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: clamp(26px, 2.6vw, 34px);
+  font-weight: 500;
+  line-height: 1.05;
+}
+
+.doorNote {
+  max-width: 28ch;
+  color: rgba(255, 253, 248, 0.82);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.doorCount {
+  margin-top: 6px;
+  color: rgba(255, 253, 248, 0.7);
+  font-size: 12px;
+}
+
+@media (min-width: 768px) and (max-width: 1024px) {
+  .search {
+    max-width: 320px;
+  }
+
+  .panel {
+    width: min(620px, 100%);
+  }
+}
+
+/* Phone: the panel becomes a bottom sheet */
+
+@media (max-width: 767px) {
+  .toolbar {
+    top: 66px;
+    padding: 10px 0;
+  }
+
+  .container {
+    width: min(100% - 32px, 1200px);
+  }
+
+  .bar {
+    flex-wrap: nowrap;
+    gap: 8px;
+  }
+
+  .search {
+    max-width: none;
+    padding-left: 16px;
+  }
+
+  .search input {
+    font-size: 16px;
+  }
+
+  .actions {
+    margin-left: 0;
+    flex: 0 0 auto;
+  }
+
+  .control {
+    padding: 0 16px;
+  }
+
+  /* Order moves into the sheet on phones. */
+  .sort {
+    display: none;
+  }
+
+  .sortGroup {
+    display: block;
+  }
+
+  .overlay {
+    background: rgba(10, 8, 6, 0.5);
+  }
+
+  .panel {
+    position: fixed;
+    top: auto;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: auto;
+    max-height: 88svh;
+    padding: 12px 20px 0;
+    border: 0;
+    border-radius: 24px 24px 0 0;
+    animation: sheetIn 320ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .panel::before {
+    display: block;
+    width: 40px;
+    height: 4px;
+    margin: 0 auto 14px;
+    content: "";
+    border-radius: 99px;
+    background: rgba(26, 22, 18, 0.2);
+  }
+
+  .groups {
+    grid-template-columns: 1fr;
+  }
+
+  .group {
+    margin-bottom: 22px;
+  }
+
+  .chip {
+    min-height: 44px;
+  }
+
+  .panelFoot {
+    margin: 0 -20px;
+    padding: 14px 20px max(18px, env(safe-area-inset-bottom));
+  }
+
+  .applyButton {
+    flex: 1;
+  }
+
+  .doors {
+    padding-top: 24px;
+  }
+
+  .doorList {
+    gap: 8px;
+  }
+
+  .door {
+    aspect-ratio: 3 / 4;
+  }
+
+  .door::after {
+    inset: 8px;
+  }
+
+  .doorBody {
+    padding: 14px 12px;
+  }
+
+  .doorLabel {
+    font-size: 20px;
+  }
+
+  .doorNote {
+    display: none;
+  }
+
+  .doorCount {
+    margin-top: 2px;
+  }
+}
+
+@keyframes sheetIn {
+  from {
+    transform: translateY(40px);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panel,
+  .doorImage,
+  .door::after {
+    animation: none;
+    transition: none;
+  }
+
+  .door:hover .doorImage {
+    transform: none;
+  }
+}

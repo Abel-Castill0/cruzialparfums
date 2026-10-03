@@ -12,7 +12,7 @@
   padding: 6px 20px;
   color: #f8f3e9;
   background: #0a0806;
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 500;
   letter-spacing: 0.2em;
   text-transform: uppercase;
@@ -157,7 +157,7 @@
 .brandWord small {
   margin-top: 4px;
   color: #756f66;
-  font-size: 8px;
+  font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.42em;
 }
@@ -233,7 +233,7 @@
   border-radius: 20px;
   color: #fff;
   background: #0a0806;
-  font-size: 8px;
+  font-size: 10px;
   font-weight: 600;
 }
 
@@ -452,7 +452,7 @@
   align-items: center;
   border: 1px solid rgba(26, 22, 18, 0.18);
   color: #17130f;
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -513,7 +513,7 @@
   margin-top: 12px;
   display: block;
   color: #756f66;
-  font-size: 9px;
+  font-size: 10px;
   line-height: 1.5;
   text-align: center;
 }
@@ -587,12 +587,13 @@
 .mobileMenu small {
   margin-top: 26px;
   color: rgba(247, 243, 234, 0.46);
-  font-size: 9px;
+  font-size: 10px;
   letter-spacing: 0.3em;
 }
 
 .footer {
-  padding: 78px 0 24px;
+  /* Bottom room keeps the last row clear of the floating WhatsApp button. */
+  padding: 78px 0 96px;
   color: #eee8dd;
   background: #0a0806;
 }
@@ -635,7 +636,7 @@
   place-items: center;
   border: 1px solid rgba(238, 232, 221, 0.2);
   border-radius: 50%;
-  font-size: 9px;
+  font-size: 10px;
 }
 
 .footerColumn {
@@ -648,7 +649,7 @@
 .footerColumn h2 {
   margin-bottom: 10px;
   color: #fffdf8;
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.2em;
   text-transform: uppercase;
@@ -692,6 +693,13 @@
   box-shadow: 0 8px 24px rgba(10, 8, 6, 0.22);
 }
 
+/* The catalog filter sheet owns the screen on phones: its apply button must not sit under the chat shortcut. */
+@media (max-width: 767px) {
+  :global(body):has(:global(#catalog-filters)) .whatsappFloat {
+    visibility: hidden;
+  }
+}
+
 @media (max-width: 1024px) {
   .mainNav {
     display: none;
@@ -716,7 +724,7 @@
     --announce-h: 34px;
     gap: 6px;
     padding-inline: 8px;
-    font-size: 7px;
+    font-size: 10px;
     letter-spacing: 0.12em;
   }
 

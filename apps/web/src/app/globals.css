@@ -94,3 +94,8 @@ textarea {
     transition-duration: 0.01ms !important;
   }
 }
+
+::selection {
+  background: #e6d9bd;
+  color: #0a0806;
+}

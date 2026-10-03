@@ -2,6 +2,10 @@ import { expect, test, type Page } from "@playwright/test";
 import { LOCAL_DB_AVAILABLE, orderSideEffects, provisionQaParfumsUnit, testCustomerPhone } from "./local-db";
 
 const ORDER_NUMBER = /CRP-\d{8}-[A-F0-9]{12}/;
+// A checkout submit is one or two server-action round trips. Measured on a
+// loaded server they take 3-6 s together, so the default 5 s assertion budget
+// was shorter than a correct run. 15 s is what the success path already uses.
+const SERVER_ACTION_TIMEOUT = 15_000;
 
 async function checkoutWithQaProduct(page: Page, phone: string) {
   // Self-provisioning: this test adds exactly the tracked unit it reserves,
@@ -159,7 +163,7 @@ test.describe("parfums storefront", () => {
       await route.abort("connectionreset");
     });
     await page.locator("[data-checkout-submit]").click();
-    await expect(page.locator("[data-checkout-form-panel] [role=alert]")).toContainText(/No pudimos conectar/);
+    await expect(page.locator("[data-checkout-form-panel] [role=alert]")).toContainText(/No pudimos conectar/, { timeout: SERVER_ACTION_TIMEOUT });
     expect(committed).toMatch(ORDER_NUMBER);
     expect(orderSideEffects(phone)).toEqual({ orders: 1, outbox: 1, reservations: 1 });
 
@@ -175,8 +179,8 @@ test.describe("parfums storefront", () => {
     // The retry resolves the unknown outcome truthfully: the ORIGINAL order,
     // explicitly labelled as already registered — never a new purchase.
     const held = page.locator('[data-attempt-held="replayed"]');
-    await expect(held).toContainText(committed!);
-    await expect(held).toContainText(/No se creó una solicitud nueva/);
+    await expect(held).toContainText(committed!, { timeout: SERVER_ACTION_TIMEOUT });
+    await expect(held).toContainText(/No se creó una solicitud nueva/, { timeout: SERVER_ACTION_TIMEOUT });
     expect(orderSideEffects(phone)).toEqual({ orders: 1, outbox: 1, reservations: 1 });
     await held.locator("[data-attempt-view]").click();
     await expect(page).toHaveURL(new RegExp(`/parfums/gracias/${committed}$`), { timeout: 15_000 });
@@ -208,7 +212,7 @@ test.describe("parfums storefront", () => {
     });
     await page.locator("[data-checkout-submit]").click();
 
-    await expect(page.locator("[data-checkout-form-panel] [role=alert]")).toContainText(/Activa las cookies/);
+    await expect(page.locator("[data-checkout-form-panel] [role=alert]")).toContainText(/Activa las cookies/, { timeout: SERVER_ACTION_TIMEOUT });
     await expect(page).toHaveURL(/\/parfums\/checkout$/);
     // First attempt issued a capability the browser could not retain; the
     // single automatic retry still carried none; nothing was persisted.
@@ -230,7 +234,7 @@ test.describe("parfums storefront", () => {
 
     for (let i = 0; i < 2; i++) {
       await page.locator("[data-checkout-submit]").click();
-      await expect(page.locator("[data-checkout-form-panel] [role=alert]")).toContainText(/venció/);
+      await expect(page.locator("[data-checkout-form-panel] [role=alert]")).toContainText(/venció/, { timeout: SERVER_ACTION_TIMEOUT });
     }
     expect(orderSideEffects(phone)).toEqual({ orders: 0, outbox: 0, reservations: 0 });
     // The expired capability is kept (not silently replaced by a fresh one).
@@ -268,7 +272,7 @@ test.describe("parfums storefront", () => {
     await page.locator("[data-checkout-submit]").click();
 
     const rotationFailed = page.locator('[data-attempt-held="rotation_failed"]');
-    await expect(rotationFailed).toContainText(ORDER_NUMBER);
+    await expect(rotationFailed).toContainText(ORDER_NUMBER, { timeout: SERVER_ACTION_TIMEOUT });
     const first = (await rotationFailed.textContent())!.match(ORDER_NUMBER)![0];
     await expect(page).toHaveURL(/\/parfums\/checkout$/);
     await expect(page.locator("[data-checkout-submit]")).toBeDisabled();
@@ -282,7 +286,7 @@ test.describe("parfums storefront", () => {
     await fillCheckoutForm(page, phone);
     await page.locator("[data-checkout-submit]").click();
     const replayed = page.locator('[data-attempt-held="replayed"]');
-    await expect(replayed).toContainText(first);
+    await expect(replayed).toContainText(first, { timeout: SERVER_ACTION_TIMEOUT });
     expect(orderSideEffects(phone)).toEqual({ orders: 1, outbox: 1, reservations: 1 });
 
     // Explicit new purchase once rotation works again: a different order

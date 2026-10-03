@@ -4,8 +4,9 @@ import type { Route } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { ComboCarousel } from "@/components/parfums/home/combo-carousel";
+import { resolveComboMemberPhotos } from "@/domains/combos/combo-builder";
 import { FinderDiscovery } from "@/components/parfums/home/finder-discovery";
-import { HeroCarousel, type HeroSlide } from "@/components/parfums/home/hero-carousel";
+import { HeroArtwork } from "@/components/parfums/home/hero-carousel";
 import {
   countFragrancesByType,
   selectShowcaseProducts,
@@ -26,35 +27,22 @@ export const metadata: Metadata = {
   description: "Decants, frascos y combos de perfumería árabe, designer y de nicho en Perú.",
 };
 
-// The hero rotates through the four real banner assets already used by the
-// brand's GitHub Pages storefront. Mobile focal points keep the perfume set
-// visible in the narrow crop. All messaging stays out of the image.
-const heroSlides: readonly HeroSlide[] = [
-  {
-    src: "/parfums/hero/hero-crop.webp",
-    alt: "Composición de Cruzial Parfums con frascos de diseñador y el nombre de la marca",
-    position: "50% 50%",
-    mobilePosition: "50% 50%",
-  },
-  {
-    src: "/parfums/hero/promo-cuarteto.webp",
-    alt: "Composición del Cuarteto Oriental con sus frascos y cajas sobre una superficie de mármol",
-    position: "64% 50%",
-    mobilePosition: "78% 50%",
-  },
-  {
-    src: "/parfums/hero/promo-vainilla.webp",
-    alt: "Composición de Vainilla Freak con frascos rosados, vainilla y flores",
-    position: "62% 50%",
-    mobilePosition: "78% 50%",
-  },
-  {
-    src: "/parfums/hero/promo-tulum.webp",
-    alt: "Composición del set Tulum con fragancias verdes y cítricos junto al mar",
-    position: "64% 50%",
-    mobilePosition: "72% 50%",
-  },
-];
+// A single established brand banner keeps the Parfums hero focused. The sets'
+// own photographs appear in their dedicated section further down the page.
+const assurances = [
+  { title: "100% originales", text: "Frascos auténticos de casas oficiales", icon: <path d="M12 3 4.5 6v5.5c0 4.4 3.1 8 7.5 9.5 4.4-1.5 7.5-5.1 7.5-9.5V6L12 3Zm-3 9 2.2 2.2L15.5 10" /> },
+  { title: "Decants desde 3 ml", text: "También en 5 y 10 ml", icon: <path d="M9.5 3h5v3l1.4 2.8V19a2 2 0 0 1-2 2h-3.8a2 2 0 0 1-2-2V8.8L9.5 6V3Zm-1.5 10h8" /> },
+  { title: "Envío por Shalom", text: "A todo el Perú", icon: <path d="M3 6.5h11v9H3zM14 10h4l3 3v2.5h-7M7 17.5a1.8 1.8 0 1 0 0 .01M17 17.5a1.8 1.8 0 1 0 0 .01" /> },
+  { title: "Atención por WhatsApp", text: "Stock y total final contigo", icon: <path d="M12 4a8 8 0 0 0-6.9 12l-1 3.5 3.6-1A8 8 0 1 0 12 4Z" /> },
+] as const;
+
+const heroArtwork = {
+  src: "/parfums/hero/hero-crop.webp",
+  alt: "Composición de Cruzial Parfums con frascos de diseñador y el nombre de la marca",
+  position: "50% 50%",
+  mobilePosition: "50% 50%",
+  mobileFit: "wordmark" as const,
+};
 
 // Each tile enters the catalog through the filter architecture it already
 // has (`?type=`), so the URL stays shareable and the catalog opens filtered.
@@ -136,6 +124,9 @@ export default async function ParfumsHomePage() {
   const { catalog, source } = await loadParfumsStorefront();
   const combos = catalog.listCombos();
   const fragrances = catalog.listFragrances();
+  const comboPhotos = Object.fromEntries(
+    combos.map((combo) => [combo.slug, resolveComboMemberPhotos(combo.comboContent?.perfumes ?? [], fragrances)]),
+  );
   const showcase = selectShowcaseProducts(catalog.listFeatured(), fragrances).map(toShowcaseItem);
   const typeCounts = countFragrancesByType(fragrances);
 
@@ -143,7 +134,16 @@ export default async function ParfumsHomePage() {
     <main className={styles.home}>
       <h1 className={styles.srOnly}>Perfumería de descubrimiento.</h1>
 
-      <HeroCarousel slides={heroSlides} ctaHref="/parfums/catalogo" ctaLabel="Explorar catálogo" />
+      <HeroArtwork {...heroArtwork} ctaHref="/parfums/catalogo" ctaLabel="Explorar catálogo" />
+
+      <ul className={styles.assurance} aria-label="Lo esencial">
+        {assurances.map((item) => (
+          <li key={item.title}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{item.icon}</svg>
+            <span><strong>{item.title}</strong>{item.text}</span>
+          </li>
+        ))}
+      </ul>
 
       {source === "unavailable" ? <CatalogUnavailableNotice /> : null}
 
@@ -231,7 +231,6 @@ export default async function ParfumsHomePage() {
             <ol className={styles.principles}>
               {principios.map((principio) => (
                 <li key={principio.num}>
-                  <span>{principio.num}</span>
                   <div>
                     <h3>{principio.title}</h3>
                     <p>{principio.text}</p>
@@ -258,23 +257,23 @@ export default async function ParfumsHomePage() {
               </div>
               <div className={styles.mosaicCell}>
                 <Image
-                  src="/parfums/hero/promo-tulum.webp"
-                  alt="Frascos verdes junto a coco, naranja y maracuyá en una escena de playa"
+                  src="/images/parfums-home/parfums-authenticity.webp"
+                  alt="Frasco Cruzial Parfums, negro y dorado"
                   fill
                   sizes="(max-width: 899px) 50vw, 23vw"
                   className={styles.mosaicImage}
-                  style={{ objectPosition: "40% 50%" }}
+                  style={{ objectPosition: "50% 50%" }}
                   loading="lazy"
                 />
               </div>
               <div className={styles.mosaicCell}>
                 <Image
-                  src="/parfums/hero/promo-vainilla.webp"
-                  alt="Frascos rosados entre vainilla, flores y merengues"
+                  src="/images/parfums-home/parfums-decant-5ml.webp"
+                  alt="Decant Cruzial Parfums de 5 ml"
                   fill
                   sizes="(max-width: 899px) 50vw, 23vw"
                   className={styles.mosaicImage}
-                  style={{ objectPosition: "72% 50%" }}
+                  style={{ objectPosition: "50% 50%" }}
                   loading="lazy"
                 />
               </div>
@@ -323,6 +322,7 @@ export default async function ParfumsHomePage() {
       )}
 
       <section className={styles.combos} aria-labelledby="combos-title">
+        <Image src="/images/parfums-home/parfums-combos-bg.webp" alt="" fill sizes="100vw" loading="lazy" className={styles.combosBg} />
         <div className={styles.combosInner}>
           <div className={styles.sectionHead}>
             <div>
@@ -337,7 +337,7 @@ export default async function ParfumsHomePage() {
               </Link>
             ) : null}
           </div>
-          {combos.length > 0 ? <ComboCarousel combos={combos} /> : null}
+          {combos.length > 0 ? <ComboCarousel combos={combos} photosBySlug={comboPhotos} /> : null}
           <div className={styles.buildRow}>
             <p>
               <strong>¿Prefieres elegir tú?</strong> Arma tu combo con 3 a 6 fragancias y define el tamaño de cada una — 3, 5 o 10 ml.
