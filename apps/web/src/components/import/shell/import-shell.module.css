@@ -296,7 +296,7 @@
 
 @media (max-width: 560px) {
   .headerHome { margin-bottom: -92px; }
-  .importLogo { width: 116px; height: 58px; }
+  .importLogo { width: 52px; height: 52px; }
   .footerLockup img { width: 142px; height: 72px; }
   .headerActions { gap: 10px; }
   .whatsapp,
@@ -311,4 +311,20 @@
   .navigation a,
   .whatsapp,
   .back { transition: none; }
+}
+
+/* The mark ships on its own navy square (not transparent), so it is presented
+ * as a deliberate badge: rounded, with a silver hairline, never a hard box. */
+.importLogo {
+  width: 60px;
+  height: 60px;
+  border-radius: 14px;
+  box-shadow: 0 0 0 1px rgba(244, 247, 251, 0.24);
+}
+
+@media (max-width: 767px) {
+  .importLogo {
+    width: 52px;
+    height: 52px;
+  }
 }

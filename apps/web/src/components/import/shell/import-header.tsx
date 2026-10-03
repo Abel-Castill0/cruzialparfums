@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
 import type { Route } from "next";
@@ -32,6 +32,19 @@ export function ImportHeader() {
   const contact = useImportContact();
   const whatsappNumber = contact?.whatsappNumber ?? "";
   const [menuOpen, setMenuOpen] = useState(false);
+  const toggleRef = useRef<HTMLButtonElement>(null);
+
+  // Escape closes the mobile menu and hands focus back to its toggle.
+  useEffect(() => {
+    if (!menuOpen) return undefined;
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key !== "Escape") return;
+      setMenuOpen(false);
+      toggleRef.current?.focus();
+    }
+    document.addEventListener("keydown", closeOnEscape);
+    return () => document.removeEventListener("keydown", closeOnEscape);
+  }, [menuOpen]);
 
   useEffect(() => {
     if (!isHome) return undefined;
@@ -78,6 +91,7 @@ export function ImportHeader() {
             <ArrowIcon />
           </Link>
           <button
+            ref={toggleRef}
             type="button"
             className={styles.menuToggle}
             aria-expanded={menuOpen}

@@ -38,10 +38,25 @@ export function ComboCarousel({ combos, photosBySlug = {} }: { combos: CatalogPr
   const [tabHidden, setTabHidden] = useState(false);
   const reducedMotion = usePrefersReducedMotion();
   const trackRef = useRef<HTMLDivElement>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
+  // Near the viewport: every set photo may load (a slide that rotates in must
+  // never arrive empty). In view: only then does it rotate by itself.
+  const [armed, setArmed] = useState(false);
+  const [inView, setInView] = useState(false);
   const touchStartX = useRef<number | null>(null);
 
   const count = combos.length;
-  const canAutoplay = count > 1 && !reducedMotion && !hovered && !focused && !paused && !tabHidden;
+  const canAutoplay = count > 1 && !reducedMotion && !hovered && !focused && !paused && !tabHidden && inView;
+
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root) return undefined;
+    const near = new IntersectionObserver(([entry]) => { if (entry?.isIntersecting) setArmed(true); }, { rootMargin: "900px 0px" });
+    const visible = new IntersectionObserver(([entry]) => setInView(Boolean(entry?.isIntersecting)), { threshold: 0.35 });
+    near.observe(root);
+    visible.observe(root);
+    return () => { near.disconnect(); visible.disconnect(); };
+  }, []);
 
   useEffect(() => {
     function handleVisibility() {
@@ -83,6 +98,7 @@ export function ComboCarousel({ combos, photosBySlug = {} }: { combos: CatalogPr
 
   return (
     <div
+      ref={rootRef}
       className={styles.carousel}
       role="region"
       aria-roledescription="carousel"
@@ -130,7 +146,7 @@ export function ComboCarousel({ combos, photosBySlug = {} }: { combos: CatalogPr
                     sizes="(max-width: 767px) 100vw, 1200px"
                     className={styles.slideImage}
                     style={{ "--pos": art.position, "--pos-mobile": art.mobilePosition } as React.CSSProperties}
-                    loading="lazy"
+                    loading={armed ? "eager" : "lazy"}
                   />
                 ) : memberPhotos.length ? (
                   <div className={styles.slidePhotos} style={{ "--count": memberPhotos.length } as React.CSSProperties}>
@@ -144,7 +160,6 @@ export function ComboCarousel({ combos, photosBySlug = {} }: { combos: CatalogPr
               </div>
               <div className={styles.scrim} aria-hidden="true" />
               <div className={styles.slideCopy}>
-                <p className={styles.eyebrow}>Combo Cruzial</p>
                 <h3>{combo.name}</h3>
                 <p className={styles.contents}>{content?.perfumes.join(" · ")}</p>
                 <div className={styles.slideActions}>

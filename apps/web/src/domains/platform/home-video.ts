@@ -14,7 +14,7 @@
 export type HomeVideo = {
   /** Public video URL, e.g. https://www.tiktok.com/@cruzial_parfum/video/<id>. */
   tiktokUrl: string;
-  eyebrow: string;
+  eyebrow?: string;
   title: string;
   text: string;
   cta?: { label: string; href: string };
@@ -22,7 +22,6 @@ export type HomeVideo = {
 
 export const PARFUMS_HOME_VIDEO: HomeVideo | null = {
   tiktokUrl: "https://www.tiktok.com/@cruzial.parfum/video/7683916686390496533",
-  eyebrow: "Detrás de cada pedido",
   title: "Cada detalle cuenta",
   text: "Conoce de cerca las fragancias y el cuidado detrás de cada pedido de Cruzial Parfums.",
 };

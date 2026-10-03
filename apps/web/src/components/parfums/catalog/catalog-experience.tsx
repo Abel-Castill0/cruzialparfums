@@ -185,7 +185,6 @@ export function CatalogExperience({ products, initialFilters, initialRecommendat
         <div className={styles.catalogHeroCopyWrap}>
           <div className={styles.container}>
             <div className={styles.catalogHeroCopy}>
-              <p className={styles.eyebrow}>Cruzial Parfums</p>
               <h1>Nuestra <em>Colección</em></h1>
               <p>Explora nuestra selección de decants y frascos completos. Filtra por estilo, familia olfativa o presupuesto.</p>
               <Link href={finderHref} className={styles.finderCta}>Encontrar mi fragancia <span aria-hidden="true">→</span></Link>
@@ -332,7 +331,6 @@ export function CatalogExperience({ products, initialFilters, initialRecommendat
         </div>
         <div className={styles.catalogFooterBandCopy}>
           <div className={styles.container}>
-            <p className={styles.eyebrow}>Cruzial Parfums</p>
             <h2 id="catalog-footer-band-title">¿No encuentras tu <em>fragancia</em>?</h2>
             <Link href={finderHref} className={styles.catalogFooterBandCta}>Usar el Finder <span aria-hidden="true">→</span></Link>
           </div>

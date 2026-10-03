@@ -1,4 +1,8 @@
+/* Gateway — two doors. One orchestrated moment (the curtain on load) and one
+ * response to the pointer (the other door steps back); everything else is still. */
+
 .page {
+  position: relative;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   min-height: 100svh;
@@ -7,22 +11,79 @@
   background: #090b10;
 }
 
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Transparent bar: the wordmark is the only thing on it. */
+.wordmark {
+  position: absolute;
+  z-index: 5;
+  top: clamp(1.5rem, 4.5vh, 2.75rem);
+  left: 50%;
+  margin: 0;
+  padding-inline: 1.6rem;
+  background: rgba(9, 11, 16, 0.0);
+  color: #fffdf8;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: clamp(1.05rem, 1.5vw, 1.35rem);
+  font-weight: 500;
+  letter-spacing: 0.5em;
+  text-indent: 0.5em;
+  text-transform: uppercase;
+  transform: translateX(-50%);
+  pointer-events: none;
+  animation: fadeIn 900ms 700ms both;
+}
+
+/* The seam between the two worlds, drawn from the wordmark down. */
+.seam {
+  position: absolute;
+  z-index: 4;
+  top: calc(clamp(1.5rem, 4.5vh, 2.75rem) + 2.4rem);
+  bottom: 0;
+  left: 50%;
+  width: 1px;
+  background: linear-gradient(180deg, rgba(255, 253, 248, 0.55), rgba(255, 253, 248, 0.12) 60%, rgba(255, 253, 248, 0.04));
+  transform-origin: top;
+  pointer-events: none;
+  animation: draw 1200ms 500ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
 .world {
   position: relative;
   display: grid;
   min-width: 0;
   min-height: 100svh;
   min-height: 100dvh;
-  place-items: end center;
+  align-items: end;
+  justify-items: center;
   overflow: hidden;
   isolation: isolate;
   color: #fffdf8;
   background: #0c1017;
+  text-decoration: none;
   -webkit-tap-highlight-color: transparent;
+  animation: curtain 1300ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-.world:first-child {
-  border-right: 1px solid rgba(255, 255, 255, 0.22);
+.world[data-unit="import"] {
+  animation-delay: 160ms;
+  background: #0b1f3d;
+}
+
+.world[data-unit="parfums"] {
+  background:
+    radial-gradient(ellipse at 50% 46%, rgba(125, 98, 61, 0.26), transparent 50%),
+    linear-gradient(155deg, #1b1a18 0%, #0c0c0b 68%, #070707 100%);
 }
 
 .world::before {
@@ -33,32 +94,12 @@
   transition: opacity 700ms ease;
 }
 
-.world[data-unit="parfums"] {
-  background:
-    radial-gradient(ellipse at 50% 48%, rgba(125, 98, 61, 0.23), transparent 48%),
-    linear-gradient(155deg, #1b1a18 0%, #0c0c0b 68%, #070707 100%);
-}
-
 .world[data-unit="parfums"]::before {
-  background: linear-gradient(
-    180deg,
-    rgba(8, 8, 8, 0.02) 15%,
-    rgba(8, 8, 8, 0.08) 48%,
-    rgba(6, 6, 6, 0.78) 100%
-  );
-}
-
-.world[data-unit="import"] {
-  background: #0b1f3d;
+  background: linear-gradient(180deg, rgba(8, 8, 8, 0.02) 15%, rgba(8, 8, 8, 0.1) 46%, rgba(6, 6, 6, 0.86) 100%);
 }
 
 .world[data-unit="import"]::before {
-  background: linear-gradient(
-    180deg,
-    rgba(3, 13, 29, 0.08) 0%,
-    rgba(5, 17, 35, 0.2) 45%,
-    rgba(4, 14, 29, 0.84) 100%
-  );
+  background: linear-gradient(180deg, rgba(3, 13, 29, 0.1) 0%, rgba(5, 17, 35, 0.22) 42%, rgba(4, 14, 29, 0.9) 100%);
 }
 
 .visual {
@@ -70,12 +111,12 @@
 }
 
 .parfumsVisual {
-  inset: 5% 2% 19%;
+  inset: 9% 2% 27%;
 }
 
 .parfumsImage,
 .importImage {
-  transition: transform 1100ms cubic-bezier(0.2, 0.7, 0.1, 1), filter 700ms ease;
+  transition: transform 1400ms cubic-bezier(0.2, 0.7, 0.1, 1), filter 700ms ease;
 }
 
 .parfumsImage {
@@ -90,84 +131,115 @@
   filter: saturate(0.82) brightness(0.82);
 }
 
-.action {
-  position: relative;
-  display: flex;
-  width: fit-content;
-  align-items: center;
-  justify-content: center;
-  gap: clamp(0.75rem, 1.5vw, 1.25rem);
-  margin-bottom: clamp(3.5rem, 8vh, 6rem);
-  padding: 0.9rem 1.15rem 0.9rem 1.3rem;
-  border: 1px solid rgba(255, 253, 248, 0.54);
-  background: rgba(8, 11, 16, 0.16);
-  color: #fffdf8;
-  backdrop-filter: blur(4px);
-  transition:
-    color 250ms ease,
-    background-color 250ms ease,
-    border-color 250ms ease,
-    transform 250ms ease;
+.copy {
+  display: grid;
+  width: min(30rem, calc(100% - 3rem));
+  justify-items: center;
+  gap: 0.9rem;
+  margin-bottom: clamp(2.5rem, 8vh, 5.5rem);
+  text-align: center;
+  animation: rise 900ms 650ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .label {
   font-family: var(--font-display), Georgia, serif;
-  font-size: clamp(1.65rem, 3.3vw, 3.1rem);
+  font-size: clamp(2.2rem, 4.4vw, 4rem);
   font-weight: 500;
-  letter-spacing: 0.005em;
+  letter-spacing: 0.01em;
   line-height: 0.95;
-  text-wrap: nowrap;
+  transition: transform 600ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.line {
+  max-width: 24rem;
+  text-wrap: balance;
+  color: rgba(255, 253, 248, 0.82);
+  font-size: clamp(0.9rem, 1.05vw, 1rem);
+  line-height: 1.55;
+}
+
+.enter {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.9rem;
+  margin-top: 0.7rem;
+  padding-bottom: 0.45rem;
+  position: relative;
+  font-size: 0.82rem;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+/* Hairline under "Entrar": complete at rest, redrawn on hover. */
+.enter::after {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 1px;
+  content: "";
+  background: rgba(255, 253, 248, 0.7);
+  transform-origin: left;
+  transition: transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .arrow {
   display: grid;
-  width: 2rem;
+  width: 1.9rem;
   aspect-ratio: 1;
   flex: 0 0 auto;
   place-items: center;
-  border: 1px solid rgba(255, 253, 248, 0.45);
+  border: 1px solid rgba(255, 253, 248, 0.5);
   border-radius: 50%;
-  font-size: 1rem;
+  font-size: 0.95rem;
+  letter-spacing: 0;
   line-height: 1;
-  transition: transform 250ms ease, background-color 250ms ease;
+  transition: transform 400ms ease, background-color 400ms ease, color 400ms ease;
 }
 
 .world:focus-visible {
   z-index: 1;
   outline: 3px solid #fffdf8;
   outline-offset: -8px;
-  box-shadow: none;
 }
 
 @media (hover: hover) and (pointer: fine) {
   .world:hover .parfumsImage {
-    transform: scale(1.035);
+    transform: scale(1.04);
   }
 
   .world:hover .importImage {
-    transform: scale(1.045);
-    filter: saturate(0.9) brightness(0.9);
+    transform: scale(1.05);
+    filter: saturate(0.95) brightness(0.92);
   }
 
-  .world:hover .action {
-    border-color: #fffdf8;
-    background: rgba(255, 253, 248, 0.94);
-    color: #11100e;
+  .world:hover .label {
+    transform: translateY(-0.35rem);
+  }
+
+  .world:hover .enter::after {
+    animation: redraw 800ms cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   .world:hover .arrow {
-    border-color: currentColor;
-    background: rgba(17, 16, 14, 0.06);
+    border-color: #fffdf8;
+    background: #fffdf8;
+    color: #0a0806;
     transform: translate(2px, -2px);
+  }
+
+  /* The door you are not looking at steps back. */
+  .page:has(.world:hover) .world:not(:hover) .parfumsImage,
+  .page:has(.world:hover) .world:not(:hover) .importImage {
+    filter: saturate(0.5) brightness(0.55);
   }
 }
 
 @media (max-width: 700px) {
   .page {
     grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: repeat(2, minmax(17rem, 1fr));
-    min-height: 100svh;
-    min-height: 100dvh;
+    grid-template-rows: repeat(2, minmax(19rem, 1fr));
   }
 
   .world {
@@ -175,31 +247,97 @@
     min-height: 50dvh;
   }
 
-  .world:first-child {
-    border-right: 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.28);
+  .seam {
+    top: 50%;
+    right: 0;
+    bottom: auto;
+    left: 0;
+    width: auto;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 253, 248, 0.5), transparent);
+    transform-origin: center;
+    animation-name: drawX;
   }
 
   .parfumsVisual {
-    inset: -8% 13% 26%;
+    inset: 19% 24% 43%;
   }
 
-  .importImage {
-    object-position: 58% 54%;
-  }
-
-  .action {
-    gap: 0.75rem;
-    margin-bottom: clamp(1.25rem, 4vh, 2.2rem);
-    padding: 0.65rem 0.8rem 0.65rem 1rem;
+  .copy {
+    gap: 0.6rem;
+    margin-bottom: 1.6rem;
   }
 
   .label {
-    font-size: clamp(1.7rem, 8vw, 2.4rem);
+    font-size: 2.1rem;
   }
 
+  .line {
+    max-width: 19rem;
+    font-size: 0.86rem;
+  }
+
+  .enter {
+    margin-top: 0.35rem;
+  }
+}
+
+@keyframes curtain {
+  from {
+    clip-path: inset(0 0 100% 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+
+@keyframes draw {
+  from {
+    transform: scaleY(0);
+  }
+}
+
+@keyframes drawX {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes redraw {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .world,
+  .copy,
+  .wordmark,
+  .seam {
+    animation: none;
+  }
+
+  .parfumsImage,
+  .importImage,
+  .label,
   .arrow {
-    width: 1.7rem;
-    font-size: 0.9rem;
+    transition: none;
+  }
+
+  .world:hover .enter::after {
+    animation: none;
   }
 }

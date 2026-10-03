@@ -120,7 +120,7 @@ export function ImportHero({
             </a>
           ) : (
             <p className={styles.primaryAction} role="status">
-              El canal de contacto no está disponible temporalmente.
+              Atención temporalmente no disponible.
             </p>
           )}
         </div>

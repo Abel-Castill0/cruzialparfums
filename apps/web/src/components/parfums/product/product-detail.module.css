@@ -706,3 +706,15 @@
 .productImage {
   mix-blend-mode: multiply;
 }
+
+/* Identity reads as one calm line under the name, not three stacked labels. */
+.subline {
+  color: #6c665d;
+  font-size: 14px;
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+
+.identityBlock h1 {
+  letter-spacing: -0.015em;
+}

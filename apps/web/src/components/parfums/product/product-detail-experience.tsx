@@ -139,10 +139,9 @@ export function ProductDetailExperience({
 
         <div className={styles.productInfo}>
           <div className={styles.identityBlock}>
-            <span className={styles.eyebrow}>{typeLabel(product.type)} · {product.concentration}</span>
             <span className={styles.brandLine}>{product.brand}</span>
             <h1>{product.name}</h1>
-            <p className={styles.subline}>{genderLabel(product.gender)} · {product.family}</p>
+            <p className={styles.subline}>{[typeLabel(product.type), product.concentration, genderLabel(product.gender), product.family].filter(Boolean).join(" · ")}</p>
           </div>
 
           {!purchasable ? (
@@ -242,7 +241,7 @@ export function ProductDetailExperience({
 
       <section className={styles.relatedSection} aria-labelledby="related-heading">
         <div className={styles.relatedHeading}>
-          <div><p className={styles.eyebrow}>Completa tu selección</p><h2 id="related-heading">También te <em>interesará</em></h2></div>
+          <div><h2 id="related-heading">También te <em>interesará</em></h2></div>
           <Link href="/parfums/catalogo">Ver catálogo completo <span aria-hidden="true">→</span></Link>
         </div>
         <div className={styles.relatedGrid}>

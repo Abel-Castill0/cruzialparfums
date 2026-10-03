@@ -150,3 +150,52 @@
     transition: none;
   }
 }
+
+/* Finish: a translucent call to action that fills on hover, a stronger floor
+ * so it reads on any artwork, and one slow settle of the image on arrival. */
+
+.shade {
+  background:
+    linear-gradient(0deg, rgba(8, 6, 4, 0.72) 0%, rgba(8, 6, 4, 0) 34%),
+    linear-gradient(180deg, rgba(8, 6, 4, 0.35) 0%, rgba(8, 6, 4, 0) 18%);
+}
+
+.cta {
+  min-height: 52px;
+  padding: 0 34px;
+  border-color: rgba(255, 253, 248, 0.62);
+  background: rgba(10, 8, 6, 0.34);
+  color: #fffdf8;
+  backdrop-filter: blur(10px);
+  font-size: 0.74rem;
+  letter-spacing: 0.24em;
+}
+
+.cta:hover,
+.cta:focus-visible {
+  border-color: #fffdf8;
+  background: #fffdf8;
+  color: #0a0806;
+}
+
+.cta::after {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .image {
+    animation: heroSettle 2800ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+}
+
+@keyframes heroSettle {
+  from {
+    transform: scale(1.07);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .image {
+    animation: none;
+  }
+}

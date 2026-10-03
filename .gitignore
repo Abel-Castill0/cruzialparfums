@@ -26,3 +26,6 @@ node_modules/
 
 # Local logical database backups (Gate A6) — never committed
 backups/
+
+# Playwright MCP snapshot/console output (written to cwd)
+.playwright-mcp/

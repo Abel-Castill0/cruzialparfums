@@ -179,3 +179,14 @@
   .actions { flex-direction: column; }
   .actions a { width: 100%; }
 }
+
+/* The photograph is shown whole, on a silver plate, never cropped. */
+.mediaFrame {
+  background: radial-gradient(85% 70% at 50% 36%, #ffffff 0%, #d9e2ec 100%);
+}
+
+.mediaFrame img {
+  padding: 28px;
+  object-fit: contain;
+  mix-blend-mode: multiply;
+}
