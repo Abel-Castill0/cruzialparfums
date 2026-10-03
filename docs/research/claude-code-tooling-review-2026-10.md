@@ -1,7 +1,7 @@
 # Auditoría de herramientas, referencias y prácticas para Cruzial
 
-Fecha de revisión: 2026-10-02  
-Proyecto: `apps/web` de Cruzial Platform V2  
+Fecha de revisión: 2026-10-02
+Proyecto: `apps/web` de Cruzial Platform V2
 Responsable de implementación: Claude Code; Codex: arquitectura, investigación y revisión independiente.
 
 ## Conclusión ejecutiva
