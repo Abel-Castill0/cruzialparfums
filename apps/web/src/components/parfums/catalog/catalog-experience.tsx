@@ -20,6 +20,8 @@ import { RecommendationPanel } from "@/components/parfums/finder/recommendation-
 import { finderAnswersToParams } from "@/domains/finder/finder-url";
 import type { FinderAnswers } from "@/domains/finder/finder-rules";
 import { ProductCard } from "./product-card";
+import { CatalogFilterPanel, FILTER_GROUPS, optionLabel, type FilterKey } from "./catalog-filter-panel";
+import toolbar from "./catalog-toolbar.module.css";
 import styles from "./catalog.module.css";
 
 const discoveryShortcuts = [
@@ -43,42 +45,7 @@ const discoveryShortcuts = [
   },
 ] as const;
 
-const filterDefinitions = [
-  { key: "gender", label: "Género" },
-  { key: "family", label: "Familia" },
-  { key: "type", label: "Tipo" },
-  { key: "format", label: "Formato" },
-  { key: "price", label: "Presupuesto" },
-] as const;
-
-const labels: Record<string, string> = {
-  women: "Mujer",
-  men: "Hombre",
-  unisex: "Unisex",
-  woody: "Amaderado",
-  floral: "Floral",
-  amber: "Ámbar",
-  citrus: "Cítrico",
-  fresh: "Fresco",
-  gourmand: "Gourmand",
-  spicy: "Especiado",
-  arab: "Árabe",
-  designer: "Designer",
-  niche: "Nicho",
-  bottle: "Frasco completo",
-  "15": "Hasta S/ 15",
-  "25": "S/ 16 – S/ 25",
-  "26+": "S/ 26 a más",
-};
-
-function FilterSelect({ label, value, onChange, children }: { label: string; value: string; onChange: (value: string) => void; children: React.ReactNode }) {
-  return (
-    <label className={styles.filterGroup}>
-      <span className={styles.srOnly}>{label}</span>
-      <select aria-label={label} value={value} onChange={(event) => onChange(event.target.value)}>{children}</select>
-    </label>
-  );
-}
+const filterDefinitions = FILTER_GROUPS.map(({ key, label }) => ({ key, label }));
 
 export function CatalogExperience({ products, initialFilters, initialRecommendation = null }: {
   products: CatalogProduct[];
@@ -95,6 +62,11 @@ export function CatalogExperience({ products, initialFilters, initialRecommendat
   const filterTriggerRef = useRef<HTMLButtonElement>(null);
   const results = useMemo(() => filterCatalogProducts(products, filters), [filters, products]);
   const activeFilters = filterDefinitions.filter(({ key }) => filters[key] !== "all");
+  const typeCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const product of products) counts[product.type] = (counts[product.type] ?? 0) + 1;
+    return counts;
+  }, [products]);
 
   // Keep the URL in sync with filter/search/sort changes so back/forward,
   // refresh, and sharing a link all preserve the same view — without a
@@ -134,7 +106,8 @@ export function CatalogExperience({ products, initialFilters, initialRecommendat
     if (!filtersOpen) return;
     const previousOverflow = document.body.style.overflow;
     const trigger = filterTriggerRef.current;
-    document.body.style.overflow = "hidden";
+    // Only the phone sheet is modal; on large screens it is a popover.
+    if (window.matchMedia("(max-width: 767px)").matches) document.body.style.overflow = "hidden";
     filterPanelRef.current
       ?.querySelector<HTMLElement>("[data-autofocus]")
       ?.focus();
@@ -236,87 +209,88 @@ export function CatalogExperience({ products, initialFilters, initialRecommendat
       ) : null}
 
       <section className={styles.catalogLayout} aria-label="Catálogo de perfumes">
-        <div className={styles.catalogToolbar}>
-          <div className={styles.container}>
-            <div className={styles.toolbarRow}>
-              <label className={styles.searchField}>
+        <div className={toolbar.toolbar}>
+          <div className={toolbar.container}>
+            <div className={toolbar.bar}>
+              <label className={toolbar.search}>
                 <span className={styles.srOnly}>Buscar fragancia</span>
                 <SearchIcon size={16} />
-                <input type="search" value={filters.search} onChange={(event) => updateFilter("search", event.target.value)} placeholder="Buscar fragancia, marca o nota…" />
+                <input type="search" value={filters.search} onChange={(event) => updateFilter("search", event.target.value)} placeholder="Buscar fragancia, marca o nota" />
+                {filters.search ? (
+                  <button type="button" className={toolbar.searchClear} onClick={() => updateFilter("search", "")} aria-label="Borrar búsqueda">
+                    <svg width="12" height="12" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="m2 2 10 10M12 2 2 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
+                  </button>
+                ) : null}
               </label>
-              <button ref={filterTriggerRef} type="button" className={styles.mobileFilterTrigger} onClick={() => setFiltersOpen(true)} aria-expanded={filtersOpen} aria-controls="catalog-filters">Filtrar y ordenar</button>
-              <div
-                ref={filterPanelRef}
-                id="catalog-filters"
-                className={`${styles.toolbarControls} ${filtersOpen ? styles.filtersOpen : ""}`}
-                role={filtersOpen ? "dialog" : undefined}
-                aria-modal={filtersOpen || undefined}
-                aria-labelledby={filtersOpen ? "catalog-filters-title" : undefined}
-              >
-                <div className={styles.filterSheetHead}>
-                  <strong id="catalog-filters-title">Filtrar y ordenar</strong>
-                  <button data-autofocus type="button" onClick={() => setFiltersOpen(false)} aria-label="Cerrar filtros">×</button>
-                </div>
-                <FilterSelect label="Género" value={filters.gender} onChange={(value) => updateFilter("gender", value)}>
-                  <option value="all">Todos</option><option value="women">Mujer</option><option value="men">Hombre</option><option value="unisex">Unisex</option>
-                </FilterSelect>
-                <FilterSelect label="Familia olfativa" value={filters.family} onChange={(value) => updateFilter("family", value)}>
-                  <option value="all">Todas las familias</option><option value="woody">Amaderado</option><option value="floral">Floral</option><option value="amber">Ámbar</option><option value="citrus">Cítrico</option><option value="fresh">Fresco</option><option value="gourmand">Gourmand</option><option value="spicy">Especiado</option>
-                </FilterSelect>
-                <FilterSelect label="Tipo" value={filters.type} onChange={(value) => updateFilter("type", value)}>
-                  <option value="all">Todos los tipos</option><option value="arab">Árabe</option><option value="designer">Designer</option><option value="niche">Nicho</option>
-                </FilterSelect>
-                <FilterSelect label="Formato" value={filters.format} onChange={(value) => updateFilter("format", value)}>
-                  <option value="all">Todos los formatos</option><option value="bottle">Frasco completo</option>
-                </FilterSelect>
-                <FilterSelect label="Presupuesto" value={filters.price} onChange={(value) => updateFilter("price", value)}>
-                  <option value="all">Todos los precios</option><option value="15">Hasta S/ 15</option><option value="25">S/ 16 – S/ 25</option><option value="26+">S/ 26 a más</option>
-                </FilterSelect>
-                <FilterSelect label="Ordenar resultados" value={filters.sort} onChange={(value) => updateFilter("sort", value as CatalogSort)}>
-                  <option value="featured">Destacados</option><option value="priceAsc">Precio: menor a mayor</option><option value="priceDesc">Precio: mayor a menor</option><option value="name">Nombre A–Z</option>
-                </FilterSelect>
-                <button type="button" className={styles.clearFilters} onClick={clearFilters}>Limpiar filtros</button>
-                <button type="button" className={styles.applyFilters} onClick={() => setFiltersOpen(false)}>Ver {results.length} resultados</button>
+              <div className={toolbar.actions}>
+                <button ref={filterTriggerRef} type="button" className={toolbar.control} onClick={() => setFiltersOpen((open) => !open)} aria-expanded={filtersOpen} aria-haspopup="dialog" aria-controls="catalog-filters">
+                  <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M2 5h8M14 5h2M2 13h2M8 13h8" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" /><circle cx="12" cy="5" r="2" stroke="currentColor" strokeWidth="1.4" /><circle cx="6" cy="13" r="2" stroke="currentColor" strokeWidth="1.4" /></svg>
+                  <span>Filtros</span>
+                  {activeFilters.length > 0 ? <b className={toolbar.count} aria-label={`${activeFilters.length} activos`}>{activeFilters.length}</b> : null}
+                </button>
+                <label className={`${toolbar.control} ${toolbar.sort}`}>
+                  <span>Orden</span>
+                  <select aria-label="Ordenar resultados" value={filters.sort} onChange={(event) => updateFilter("sort", event.target.value as CatalogSort)}>
+                    <option value="featured">Destacados</option>
+                    <option value="priceAsc">Precio: menor a mayor</option>
+                    <option value="priceDesc">Precio: mayor a menor</option>
+                    <option value="name">Nombre A–Z</option>
+                  </select>
+                </label>
               </div>
+              {filtersOpen ? (
+                <div ref={filterPanelRef} id="catalog-filters" className={toolbar.panel} role="dialog" aria-modal="true" aria-labelledby="catalog-filters-title">
+                  <CatalogFilterPanel
+                    filters={filters}
+                    resultCount={results.length}
+                    onChange={(key, value) => updateFilter(key, value)}
+                    onSort={(value) => updateFilter("sort", value)}
+                    onClear={clearFilters}
+                    onClose={() => setFiltersOpen(false)}
+                  />
+                </div>
+              ) : null}
             </div>
             {activeFilters.length > 0 ? (
-              <div className={styles.activeFilters} aria-live="polite">
+              <div className={toolbar.active} aria-live="polite">
                 {activeFilters.map(({ key, label }) => (
-                  <span className={styles.filterChip} key={key}><b>{label}:</b> {labels[filters[key]] ?? filters[key]}<button type="button" onClick={() => updateFilter(key, "all")} aria-label={`Quitar filtro ${label}`}>×</button></span>
+                  <span className={toolbar.activeChip} key={key}>
+                    <small>{label}</small> {optionLabel(key as FilterKey, filters[key])}
+                    <button type="button" onClick={() => updateFilter(key, "all")} aria-label={`Quitar filtro ${label}`}>
+                      <svg width="10" height="10" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="m2 2 10 10M12 2 2 12" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" /></svg>
+                    </button>
+                  </span>
                 ))}
+                <button type="button" className={toolbar.clearAll} onClick={clearFilters}>Limpiar todo</button>
               </div>
             ) : null}
           </div>
         </div>
-        <button type="button" aria-label="Cerrar filtros" className={`${styles.filterOverlay} ${filtersOpen ? styles.filterOverlayOpen : ""}`} onClick={() => setFiltersOpen(false)} />
+        {filtersOpen ? <button type="button" aria-label="Cerrar filtros" tabIndex={-1} className={toolbar.overlay} onClick={() => setFiltersOpen(false)} /> : null}
 
-        <nav className={styles.discoveryRail} aria-label="Explorar por categoría">
-          <div className={styles.container}>
-            <ul className={styles.discoveryList}>
-              {discoveryShortcuts.map((category) => (
-                <li key={category.key}>
-                  <button
-                    type="button"
-                    className={`${styles.discoveryTile} ${filters.type === category.key ? styles.discoveryTileActive : ""}`}
-                    onClick={() => updateFilter("type", category.key)}
-                    aria-pressed={filters.type === category.key}
-                  >
-                    <Image
-                      src={category.image}
-                      alt=""
-                      fill
-                      sizes="(max-width: 767px) 45vw, (max-width: 1100px) 33vw, 20vw"
-                      className={styles.discoveryTileImage}
-                    />
-                    <span className={styles.discoveryTileScrim} aria-hidden="true" />
-                    <span className={styles.discoveryTileBody}>
-                      <span className={styles.discoveryTileLabel}>{category.label}</span>
-                      <span className={styles.discoveryTileNote}>{category.note}</span>
-                      <span className={styles.discoveryTileArrow} aria-hidden="true">→</span>
-                    </span>
-                  </button>
-                </li>
-              ))}
+        <nav className={toolbar.doors} aria-label="Explorar por categoría">
+          <div className={toolbar.container}>
+            <ul className={toolbar.doorList}>
+              {discoveryShortcuts.map((category) => {
+                const selected = filters.type === category.key;
+                return (
+                  <li key={category.key}>
+                    <button
+                      type="button"
+                      className={toolbar.door}
+                      onClick={() => updateFilter("type", selected ? "all" : category.key)}
+                      aria-pressed={selected}
+                    >
+                      <Image src={category.image} alt="" fill sizes="(max-width: 1240px) 33vw, 400px" className={toolbar.doorImage} />
+                      <span className={toolbar.doorBody}>
+                        <span className={toolbar.doorLabel}>{category.label}</span>
+                        <span className={toolbar.doorNote}>{category.note}</span>
+                        <span className={toolbar.doorCount}>{typeCounts[category.key] ?? 0} fragancias</span>
+                      </span>
+                    </button>
+                  </li>
+                );
+              })}
             </ul>
           </div>
         </nav>

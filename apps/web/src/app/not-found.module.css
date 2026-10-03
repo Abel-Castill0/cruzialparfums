@@ -1,29 +1,95 @@
 .page {
   min-height: 100svh;
-  padding: clamp(1.25rem, 4vw, 4rem);
+  padding: clamp(1.5rem, 5vw, 4rem);
   display: grid;
   align-content: center;
-  justify-items: start;
-  gap: 1.5rem;
+  justify-items: center;
+  gap: 1.25rem;
+  text-align: center;
+  background: var(--color-ivory);
+  color: var(--color-ink);
 }
 
-.page p,
-.page a {
-  color: var(--color-gold-deep);
-  font-size: var(--text-label);
-  font-weight: 600;
-  letter-spacing: 0.16em;
+.mark {
+  margin: 0 0 1rem;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 1.1rem;
+  font-weight: 500;
+  letter-spacing: 0.5em;
+  text-indent: 0.5em;
   text-transform: uppercase;
 }
 
 .page h1 {
+  max-width: 14ch;
   font-family: var(--font-display), Georgia, serif;
-  font-size: clamp(3rem, 10vw, 8rem);
+  font-size: clamp(2.6rem, 8vw, 5.5rem);
   font-weight: 500;
-  letter-spacing: -0.045em;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
 }
 
-.page a {
-  border-bottom: 1px solid currentColor;
-  padding-bottom: 0.4rem;
+.text {
+  max-width: 34ch;
+  margin: 0;
+  color: var(--color-ink-muted);
+  line-height: 1.6;
+}
+
+.actions {
+  margin-top: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.actions a {
+  min-height: 48px;
+  padding: 0 1.8rem;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--color-ink);
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  transition: background-color 200ms ease, color 200ms ease;
+}
+
+.actions a:first-child {
+  background: var(--color-ink);
+  color: #fff;
+}
+
+.actions a:hover {
+  background: #2c2925;
+  color: #fff;
+}
+
+.actions a:first-child:hover {
+  background: #2c2925;
+}
+
+.actions a:not(:first-child):hover {
+  background: var(--color-ink);
+}
+
+.retry {
+  min-height: 48px;
+  padding: 0 1.8rem;
+  border: 1px solid var(--color-ink);
+  border-radius: 999px;
+  background: var(--color-ink);
+  color: #fff;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+}
+
+.retry:hover {
+  background: #2c2925;
 }

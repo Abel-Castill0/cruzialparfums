@@ -10,14 +10,21 @@ import {
 } from "@/domains/platform/home-video";
 import styles from "./video-story.module.css";
 
+function handleOf(url: string) {
+  return /tiktok\.com\/(@[\w.-]+)/.exec(url)?.[1] ?? "TikTok";
+}
+
 /**
  * Video as a story: copy on one side, the official TikTok player on the other.
- * Import keeps an explicit play action to avoid loading a third-party player
- * until requested; the Parfums launch video is visible immediately.
+ * The page always ships a visible cover with an evident play button. TikTok's
+ * cross-origin player is mounted only after an intentional tap, avoiding
+ * duplicate embed initialization during hydration/navigation and keeping its
+ * trackers and cookie UI off the initial page load.
  */
-export function VideoStory({ video, tone, clickToPlay = false }: { video: HomeVideo; tone: "parfums" | "import"; clickToPlay?: boolean }) {
-  const [playing, setPlaying] = useState(!clickToPlay);
+export function VideoStory({ video, tone }: { video: HomeVideo; tone: "parfums" | "import" }) {
+  const [playing, setPlaying] = useState(false);
   const videoId = parseTikTokVideoId(video.tiktokUrl);
+
   if (!videoId) return null;
 
   return (
@@ -42,9 +49,10 @@ export function VideoStory({ video, tone, clickToPlay = false }: { video: HomeVi
         <div className={styles.frame}>
           {!playing ? (
             <button className={styles.playGate} type="button" onClick={() => setPlaying(true)}>
+              <small>TikTok · {handleOf(video.tiktokUrl)}</small>
               <span aria-hidden="true">▶</span>
               <strong>Reproducir video</strong>
-              <span>El video se cargará desde TikTok.</span>
+              <span>{video.title}. El video se cargará desde TikTok al tocar.</span>
             </button>
           ) : (
             <iframe
@@ -54,6 +62,7 @@ export function VideoStory({ video, tone, clickToPlay = false }: { video: HomeVi
               allow="fullscreen; encrypted-media; picture-in-picture"
               allowFullScreen
               loading="lazy"
+              data-tiktok-player
               referrerPolicy="strict-origin-when-cross-origin"
             />
           )}

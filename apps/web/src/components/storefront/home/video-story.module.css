@@ -131,7 +131,7 @@
   cursor: pointer;
 }
 
-.playGate > span:first-child {
+.playGate > span:first-of-type {
   display: grid;
   width: 58px;
   aspect-ratio: 1;
@@ -141,7 +141,7 @@
   font-size: 1.25rem;
 }
 
-.playGate > span:last-child {
+.playGate > span:last-of-type {
   color: var(--vs-muted);
   font-size: 0.8rem;
 }
@@ -165,4 +165,34 @@
 
 @media (prefers-reduced-motion: reduce) {
   .link { transition: none; }
+}
+
+/* Cover: the unit's own palette, a clear play affordance and the source. */
+.playGate small {
+  color: var(--vs-muted);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.playGate strong {
+  font-size: 1.05rem;
+}
+
+.parfums .playGate {
+  background: radial-gradient(circle at 50% 44%, #3a2f21, #0a0806 72%);
+  color: #fffdf8;
+  --vs-muted: #d8cdb8;
+  --vs-line: rgba(255, 253, 248, 0.35);
+}
+
+.playGate:focus-visible {
+  outline: 3px solid #d1b16f;
+  outline-offset: -6px;
+}
+
+.playGate:hover > span:first-of-type,
+.playGate:focus-visible > span:first-of-type {
+  background: rgba(255, 253, 248, 0.14);
 }

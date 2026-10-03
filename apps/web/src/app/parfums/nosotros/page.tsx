@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { Breadcrumbs, type BreadcrumbItem } from "@/components/parfums/navigation/breadcrumbs";
 import { loadParfumsStorefront } from "@/lib/catalog/parfums-storefront";
@@ -97,7 +98,8 @@ export default async function NosotrosPage() {
         <div className={styles.wrap}>
           <div className={styles.split}>
             <div className={styles.splitArt} aria-hidden="true">
-              <span className={styles.artMark}>C</span>
+              <Image src="/images/parfums-home/parfums-authenticity.webp" alt="" fill sizes="(max-width: 899px) 100vw, 46vw" className={styles.artImage} />
+              <span className={styles.artShade} />
               <span className={styles.artCaption}>La casa · Fundada con criterio y carácter</span>
             </div>
             <div className={styles.splitCopy}>
