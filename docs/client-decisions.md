@@ -23,16 +23,7 @@ Contact:
 
 Shipping:
 
-- Shalom (customer picks any agency) and motorizado in Lima
-- motorizado is quoted and agreed over WhatsApp (no fee in the web); updated
-  2026-10-03 on the owner's relay of the client's request, replacing "Shalom only"
-- checkout shows districts where the motorizado does not reach every zone
-  ("acceso restringido"); the list in `domains/orders/lima-districts.ts` is
-  PROVISIONAL (derived from the 2025 emergency-district declarations) until the
-  client confirms it
-- the Shalom agency list in `domains/orders/shalom-agencies.ts` is transcribed
-  from an unofficial directory (see the file header) and is UNVERIFIED until the
-  owner checks it against Shalom; orders are confirmed over WhatsApp before dispatch
+- Shalom only
 
 Payments:
 

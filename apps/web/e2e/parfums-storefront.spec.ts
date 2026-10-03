@@ -173,7 +173,10 @@ test.describe("parfums storefront", () => {
     await checkoutWithQaProduct(page, testCustomerPhone(test.info()));
     await page.locator('[data-district="Los Olivos"]').click();
     const agency = page.locator('input[name="shalom-agency"]:not([value="other"])').first();
-    await agency.check({ force: true });
+    await expect(async () => {
+      await agency.check({ timeout: 2_000 });
+      await expect(agency).toBeChecked({ timeout: 1_000 });
+    }).toPass({ timeout: 15_000 });
     await page.locator("[data-checkout-submit]").click();
 
     await expect(page).toHaveURL(/\/parfums\/gracias\/CRP-\d{8}-[A-F0-9]{12}$/, { timeout: SERVER_ACTION_TIMEOUT });

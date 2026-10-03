@@ -1,7 +1,7 @@
 import { SHALOM_AGENCIES, type ShalomAgency } from "./shalom-agencies";
 
 /**
- * Delivery choices for Cruzial Parfums (docs/client-decisions.md — Shipping).
+ * Delivery choices for Cruzial Parfums (docs/parfums-shipping.md).
  * The order RPC accepts only `district`, `delivery` and `note` in the delivery
  * snapshot, so the chosen agency travels inside the `delivery` text and the
  * server re-derives every accepted value from this module.

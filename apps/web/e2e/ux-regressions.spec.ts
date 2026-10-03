@@ -234,8 +234,12 @@ test("checkout shipping: pick a Shalom agency from the district map, by mouse an
   const agencies = page.locator('input[name="shalom-agency"]:not([value="other"])');
   expect(await agencies.count()).toBeGreaterThan(1);
 
-  await agencies.first().check({ force: true });
-  await expect(agencies.first()).toBeChecked();
+  // A real click (not forced) that is retried: it must reach the card, and a
+  // click that lands before React hydrates the form is reverted.
+  await expect(async () => {
+    await agencies.first().check({ timeout: 2_000 });
+    await expect(agencies.first()).toBeChecked({ timeout: 1_000 });
+  }).toPass({ timeout: 15_000 });
   // An agency in the list is the selection: the free-text district is not asked for.
   await expect(page.locator("#checkout-district")).toHaveCount(0);
 
