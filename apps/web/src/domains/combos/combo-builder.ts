@@ -125,3 +125,39 @@ export function calculateComboLinesTotal(
 export function canSendCombo(count: number) {
   return count >= COMBO_MIN_ITEMS && count <= COMBO_MAX_ITEMS;
 }
+
+function comboLabelKey(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .toLocaleLowerCase("es")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+export type ComboMemberPhoto = { id: string; url: string };
+
+/**
+ * Real photos of the fragrances a published set is made of, matched by the
+ * "Brand Name" label the set lists. Used only when the set has no photo of
+ * its own, so the card shows what is actually inside instead of an empty
+ * panel. A member without a photo or without a catalog match is skipped —
+ * nothing is invented or substituted.
+ */
+export function resolveComboMemberPhotos(
+  perfumes: readonly string[],
+  products: readonly CatalogProduct[],
+  limit = 4,
+): ComboMemberPhoto[] {
+  const byLabel = new Map<string, CatalogProduct>();
+  for (const product of products) byLabel.set(comboLabelKey(`${product.brand} ${product.name}`), product);
+  const photos: ComboMemberPhoto[] = [];
+  for (const label of perfumes) {
+    const product = byLabel.get(comboLabelKey(label));
+    if (product?.imageUrl && !photos.some((photo) => photo.url === product.imageUrl)) {
+      photos.push({ id: product.slug, url: product.imageUrl });
+    }
+    if (photos.length >= limit) break;
+  }
+  return photos;
+}
