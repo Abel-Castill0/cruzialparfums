@@ -15,16 +15,17 @@ import { Breadcrumbs } from "@/components/parfums/navigation/breadcrumbs";
 import type { CatalogProduct } from "@/domains/catalog/types";
 import { cartIdentity } from "@/domains/catalog/types";
 import { handoffStorageKey } from "@/domains/orders/parfums-order-handoff";
-import { PARFUMS_DELIVERY_OPTIONS } from "@/domains/orders/parfums-order-request";
+import { PARFUMS_SHALOM_DELIVERY } from "@/domains/orders/parfums-delivery";
 import type { ParfumsCheckoutCustomer } from "@/domains/whatsapp/parfums-message-builder";
 import { ATTEMPT_EXPIRED, startNewAttempt, submitWithAttemptCapability } from "@/lib/attempt-client";
 import styles from "./checkout.module.css";
+import { ShippingSelector, type ShippingSelection } from "./shipping-selector";
 
 const emptyCustomer: ParfumsCheckoutCustomer = {
   name: "",
   phone: "",
   district: "",
-  delivery: PARFUMS_DELIVERY_OPTIONS[0],
+  delivery: PARFUMS_SHALOM_DELIVERY,
   note: "",
 };
 
@@ -55,6 +56,8 @@ export function CheckoutExperience({
   const [customer, setCustomer] = useState(emptyCustomer);
   const [result, setResult] = useState<CreateParfumsOrderResult | null>(null);
   const [held, setHeld] = useState<HeldOrder | null>(null);
+  const [shippingComplete, setShippingComplete] = useState(false);
+  const [shippingMissing, setShippingMissing] = useState(false);
   const [isPending, startTransition] = useTransition();
   const errorRef = useRef<HTMLDivElement>(null);
   const heldRef = useRef<HTMLDivElement>(null);
@@ -122,9 +125,20 @@ export function CheckoutExperience({
     });
   }
 
+  function applyShipping(selection: ShippingSelection) {
+    setCustomer((current) => ({ ...current, delivery: selection.delivery, district: selection.district }));
+    setShippingComplete(selection.complete);
+    resetAttempt();
+  }
+
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (lines.length === 0 || isPending || held) return;
+    if (!shippingComplete) {
+      setShippingMissing(true);
+      requestAnimationFrame(() => document.getElementById("checkout-shipping")?.focus());
+      return;
+    }
     setResult(null);
     startTransition(performSubmit);
   }
@@ -181,7 +195,6 @@ export function CheckoutExperience({
         { label: "Checkout" },
       ]} />
       <header className={styles.hero}>
-        <p>Continúa en WhatsApp</p>
         <h1>Tu selección,<br /><em>a un mensaje.</em></h1>
         <span>Revisa cantidades y completa tus datos. Luego abriremos WhatsApp para confirmar stock, envío y total final.</span>
       </header>
@@ -282,17 +295,14 @@ export function CheckoutExperience({
               <input id="checkout-phone" required maxLength={30} type="tel" inputMode="tel" autoComplete="tel" value={customer.phone} onChange={(event) => updateCustomer("phone", event.target.value)} placeholder="9XX XXX XXX" aria-invalid={Boolean(result?.status === "error" && result.fieldErrors?.phone)} aria-describedby={result?.status === "error" && result.fieldErrors?.phone ? "checkout-phone-error" : undefined} />
               {result?.status === "error" && result.fieldErrors?.phone ? <small id="checkout-phone-error" className={styles.fieldError}>{result.fieldErrors.phone}</small> : null}
             </label>
-            <label>
-              Distrito / Ciudad
-              <input id="checkout-district" required maxLength={120} autoComplete="address-level2" value={customer.district} onChange={(event) => updateCustomer("district", event.target.value)} placeholder="Ej. Miraflores, Lima" aria-invalid={Boolean(result?.status === "error" && result.fieldErrors?.district)} aria-describedby={result?.status === "error" && result.fieldErrors?.district ? "checkout-district-error" : undefined} />
-              {result?.status === "error" && result.fieldErrors?.district ? <small id="checkout-district-error" className={styles.fieldError}>{result.fieldErrors.district}</small> : null}
-            </label>
-            <label>
-              Entrega
-              <select id="checkout-delivery" value={customer.delivery} onChange={(event) => updateCustomer("delivery", event.target.value)} aria-invalid={Boolean(result?.status === "error" && result.fieldErrors?.delivery)}>
-                {PARFUMS_DELIVERY_OPTIONS.map((option) => <option key={option}>{option}</option>)}
-              </select>
-            </label>
+            <ShippingSelector
+              districtValue={customer.district}
+              onDistrictChange={(value) => updateCustomer("district", value)}
+              onChange={applyShipping}
+              showMissing={shippingMissing}
+              districtError={result?.status === "error" ? result.fieldErrors?.district : undefined}
+              deliveryError={result?.status === "error" ? result.fieldErrors?.delivery : undefined}
+            />
             <label>
               Nota <small>opcional</small>
               <textarea id="checkout-note" maxLength={500} rows={3} value={customer.note} onChange={(event) => updateCustomer("note", event.target.value)} placeholder="Horario, referencias o preferencias…" />

@@ -21,6 +21,15 @@ async function checkoutWithQaProduct(page: Page, phone: string) {
 async function fillCheckoutForm(page: Page, phone: string) {
   await page.locator("#checkout-name").fill("QA E2E Cruzial");
   await page.locator("#checkout-phone").fill(phone);
+  // Shipping is a required step: "my agency is not listed" keeps the free-text
+  // district this flow has always used.
+  // Retried because a click that lands before React hydrates the form (right
+  // after a reload) is reverted by the controlled radio.
+  const other = page.getByRole("radio", { name: /Mi agencia no aparece/ });
+  await expect(async () => {
+    await other.click({ force: true });
+    await expect(other).toBeChecked({ timeout: 1_000 });
+  }).toPass({ timeout: 10_000 });
   await page.locator("#checkout-district").fill("Miraflores");
   await page.locator("#checkout-note").fill("[QA E2E] no despachar");
 }
@@ -143,6 +152,33 @@ test.describe("parfums storefront", () => {
     await expect(whatsapp).toHaveAttribute("href", /https:\/\/wa\.me\/\d+\?text=/);
     const href = await whatsapp.getAttribute("href");
     expect(decodeURIComponent(href!)).toContain(reference);
+  });
+
+  test("order request with motorizado: stored without a shipping method code, quoted on WhatsApp", async ({ page }) => {
+    test.skip(process.env.E2E_ALLOW_ORDER_SUBMIT !== "1", "set E2E_ALLOW_ORDER_SUBMIT=1 against a disposable database");
+    await checkoutWithQaProduct(page, testCustomerPhone(test.info()));
+    await page.getByRole("radio", { name: /Motorizado/ }).check({ force: true });
+    await page.locator('[data-district="Miraflores"]').click();
+    await page.locator("[data-checkout-submit]").click();
+
+    await expect(page).toHaveURL(/\/parfums\/gracias\/CRP-\d{8}-[A-F0-9]{12}$/, { timeout: SERVER_ACTION_TIMEOUT });
+    const whatsapp = page.getByRole("link", { name: /Continuar por WhatsApp/ });
+    const message = decodeURIComponent((await whatsapp.getAttribute("href"))!);
+    expect(message).toContain("Motorizado (cotización por WhatsApp)");
+    expect(message).toContain("Miraflores");
+  });
+
+  test("order request with a chosen Shalom agency: the agency travels to the order and the message", async ({ page }) => {
+    test.skip(process.env.E2E_ALLOW_ORDER_SUBMIT !== "1", "set E2E_ALLOW_ORDER_SUBMIT=1 against a disposable database");
+    await checkoutWithQaProduct(page, testCustomerPhone(test.info()));
+    await page.locator('[data-district="Los Olivos"]').click();
+    const agency = page.locator('input[name="shalom-agency"]:not([value="other"])').first();
+    await agency.check({ force: true });
+    await page.locator("[data-checkout-submit]").click();
+
+    await expect(page).toHaveURL(/\/parfums\/gracias\/CRP-\d{8}-[A-F0-9]{12}$/, { timeout: SERVER_ACTION_TIMEOUT });
+    const message = decodeURIComponent((await page.getByRole("link", { name: /Continuar por WhatsApp/ }).getAttribute("href"))!);
+    expect(message).toMatch(/Entrega: Agencia Shalom: .+ \(Los Olivos\)/);
   });
 
   test("lost response, reload, retry: the same browser gets the original order back, never a duplicate", async ({ page }) => {
