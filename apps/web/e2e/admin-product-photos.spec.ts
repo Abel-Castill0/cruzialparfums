@@ -14,6 +14,10 @@ const VARIANT = "99002000-0000-4000-8000-0000000000a2";
 const CATEGORY = "99002000-0000-4000-8000-000000000004";
 const UNIT_PARFUMS = "11111111-1111-4111-8111-111111111111";
 const SLUG = "local-qa-photos";
+// The viewer test runs in its own describe, so Playwright may run it on another worker at the same
+// time as the management test. It therefore gets its own product: they must never share rows.
+const MAIN = { product: PRODUCT, variant: VARIANT, slug: SLUG };
+const VIEWER = { product: "99002000-0000-4000-8000-0000000000b1", variant: "99002000-0000-4000-8000-0000000000b2", slug: "local-qa-photos-viewer" };
 // A server action takes 3-6 s on a loaded CI runner; the default 5 s wait is shorter than a correct run.
 const SERVER_ACTION_TIMEOUT = 15_000;
 
@@ -22,22 +26,37 @@ const ONE_PIXEL_PNG = Buffer.from(
   "base64",
 );
 
-function provisionProduct(withPhotos: boolean) {
+function provisionProduct(withPhotos: boolean, qa = MAIN) {
   localSql(`
     insert into public.products(id,business_unit_id,slug,name,brand,gender,sales_mode,publication_status)
-    values ('${PRODUCT}','${UNIT_PARFUMS}','${SLUG}','LOCAL QA — Fotos','LOCAL QA','unisex','always_available','published')
+    values ('${qa.product}','${UNIT_PARFUMS}','${qa.slug}','LOCAL QA — Fotos','LOCAL QA','unisex','always_available','published')
     on conflict (id) do update set publication_status = 'published', archived_at = null;
-    insert into public.product_categories(product_id,category_id) values ('${PRODUCT}','${CATEGORY}') on conflict do nothing;
+    insert into public.product_categories(product_id,category_id) values ('${qa.product}','${CATEGORY}') on conflict do nothing;
     insert into public.product_variants(id,product_id,variant_kind,size_ml,label,price_amount,currency,publication_status,price_verification_status)
-    values ('${VARIANT}','${PRODUCT}','decant',5,'LOCAL QA fotos 5 ml',10,'PEN','published','client_confirmed') on conflict do nothing;
+    values ('${qa.variant}','${qa.product}','decant',5,'LOCAL QA fotos 5 ml',10,'PEN','published','client_confirmed') on conflict do nothing;
     insert into public.inventory(product_variant_id,inventory_mode,availability_status)
-    values ('${VARIANT}','status_only','available') on conflict do nothing;
-    delete from public.product_media where product_id = '${PRODUCT}';
+    values ('${qa.variant}','status_only','available') on conflict do nothing;
+    delete from public.product_media where product_id = '${qa.product}';
     ${withPhotos ? `insert into public.product_media(product_id,provider,secure_url,alt,is_primary,sort_order) values
-      ('${PRODUCT}','legacy_static','/icon.png','QA foto A',true,0),
-      ('${PRODUCT}','legacy_static','/images/parfums-home/parfums-decant-3ml.webp','QA foto B',false,1),
-      ('${PRODUCT}','legacy_static','/images/parfums-home/parfums-decant-5ml.webp','QA foto C',false,2);` : ""}
+      ('${qa.product}','legacy_static','/icon.png','QA foto A',true,0),
+      ('${qa.product}','legacy_static','/images/parfums-home/parfums-decant-3ml.webp','QA foto B',false,1),
+      ('${qa.product}','legacy_static','/images/parfums-home/parfums-decant-5ml.webp','QA foto C',false,2);` : ""}
   `);
+}
+
+/** React attaches its props to a DOM node when it hydrates it, so this is true
+ * only once the page can react to input. Without it a fast runner types and
+ * blurs before hydration and the event is lost (seen on CI, never locally). */
+async function waitForHydration(page: Page, selector: string) {
+  await page.waitForFunction((css) => {
+    const el = document.querySelector(css);
+    return !!el && Object.keys(el).some((key) => key.startsWith("__reactProps$"));
+  }, selector, { timeout: SERVER_ACTION_TIMEOUT });
+}
+
+async function openAdmin(page: Page) {
+  await page.goto(`/admin/parfums/productos/${PRODUCT}`);
+  await waitForHydration(page, '[data-archived="false"] input, [data-media-dropzone], [data-media-unconfigured]');
 }
 
 /** Photo alt texts in the order the public gallery shows them. */
@@ -49,6 +68,7 @@ async function publicOrder(page: Page): Promise<string[]> {
     const single = await page.locator("[data-product-stage] img").count();
     return single ? [(await page.locator("[data-product-stage] img").first().getAttribute("alt")) ?? ""] : [];
   }
+  await waitForHydration(page, "[data-gallery-thumbs] button");
   const alts: string[] = [];
   for (let i = 0; i < total; i += 1) {
     await thumbs.nth(i).click();
@@ -68,8 +88,10 @@ test.describe("Photo management from Admin", () => {
   test.describe.configure({ mode: "serial" });
 
   test("the owner orders, sets primary, edits alt text and archives photos; the storefront follows", async ({ page }) => {
+    // Many steps, each a server action plus a storefront page load: longer than the 30 s default on a slow runner.
+    test.setTimeout(90_000);
     provisionProduct(true);
-    await page.goto(`/admin/parfums/productos/${PRODUCT}`);
+    await openAdmin(page);
     await expect(page.getByRole("heading", { name: "Fotos (3)" })).toBeVisible({ timeout: SERVER_ACTION_TIMEOUT });
 
     // Alt text, saved on leaving the field. It is also the first Admin action
@@ -82,7 +104,7 @@ test.describe("Photo management from Admin", () => {
     expect(localSql(`select alt from public.product_media where product_id='${PRODUCT}' and sort_order=0`)).toBe("QA foto A editada");
     expect(await publicOrder(page)).toEqual(["QA foto A editada", "QA foto B", "QA foto C"]);
 
-    await page.goto(`/admin/parfums/productos/${PRODUCT}`);
+    await openAdmin(page);
     // The primary photo cannot be moved: the storefront always shows it first.
     await expect(card(page, "QA foto A editada").getByRole("button", { name: /Mover foto/ })).toHaveCount(0);
     await expect(card(page, "QA foto B").getByRole("button", { name: "Mover foto antes" })).toBeDisabled();
@@ -93,20 +115,20 @@ test.describe("Photo management from Admin", () => {
     expect(await publicOrder(page)).toEqual(["QA foto A editada", "QA foto C", "QA foto B"]);
 
     // Primary: B becomes the primary and is shown first.
-    await page.goto(`/admin/parfums/productos/${PRODUCT}`);
+    await openAdmin(page);
     await card(page, "QA foto B").getByRole("button", { name: "Marcar como principal" }).click();
     await expect(page.locator("[data-media-notice]")).toContainText("Foto principal actualizada", { timeout: SERVER_ACTION_TIMEOUT });
     expect((await publicOrder(page))[0]).toBe("QA foto B");
     expect(localSql(`select count(*) from public.product_media where product_id='${PRODUCT}' and is_primary and archived_at is null`)).toBe("1");
 
     // Archive hides it from the storefront; restore brings it back.
-    await page.goto(`/admin/parfums/productos/${PRODUCT}`);
+    await openAdmin(page);
     await card(page, "QA foto C").getByRole("button", { name: "Archivar" }).click();
     await expect(page.locator("[data-media-notice]")).toContainText("Foto archivada", { timeout: SERVER_ACTION_TIMEOUT });
     await expect(page.getByRole("heading", { name: "Fotos (2)" })).toBeVisible({ timeout: SERVER_ACTION_TIMEOUT });
     expect((await publicOrder(page)).length).toBe(2);
 
-    await page.goto(`/admin/parfums/productos/${PRODUCT}`);
+    await openAdmin(page);
     await page.getByText(/1 imagen archivada/).click();
     await page.getByRole("button", { name: "Restaurar" }).click();
     await expect(page.getByRole("heading", { name: "Fotos (3)" })).toBeVisible({ timeout: SERVER_ACTION_TIMEOUT });
@@ -138,7 +160,7 @@ test.describe("Photo management from Admin", () => {
     test("a product with no photos: the first upload becomes primary, a bad file fails alone", async ({ page }) => {
       provisionProduct(false);
       await fakeCloudinary(page);
-      await page.goto(`/admin/parfums/productos/${PRODUCT}`);
+      await openAdmin(page);
       await expect(page.locator("[data-media-dropzone]")).toBeVisible();
 
       await page.locator('input[type="file"]').setInputFiles([
@@ -161,7 +183,7 @@ test.describe("Photo management from Admin", () => {
     test("a product that already has a primary keeps it when more photos arrive", async ({ page }) => {
       provisionProduct(true);
       await fakeCloudinary(page);
-      await page.goto(`/admin/parfums/productos/${PRODUCT}`);
+      await openAdmin(page);
       await page.locator('input[type="file"]').setInputFiles([
         { name: "extra.png", mimeType: "image/png", buffer: ONE_PIXEL_PNG },
       ]);
@@ -177,8 +199,8 @@ test.describe("Photo management is read-only for a viewer", () => {
   test.use({ storageState: PARFUMS_VIEWER_STATE });
 
   test("a viewer sees the photos and an explicit reason, with no way to change them", async ({ page }) => {
-    provisionProduct(true);
-    await page.goto(`/admin/parfums/productos/${PRODUCT}`);
+    provisionProduct(true, VIEWER);
+    await page.goto(`/admin/parfums/productos/${VIEWER.product}`);
     await expect(page.getByRole("heading", { name: "Fotos (3)" })).toBeVisible({ timeout: SERVER_ACTION_TIMEOUT });
     await expect(page.locator("[data-media-readonly]")).toContainText("rol de administrador");
     await expect(page.locator("[data-media-dropzone]")).toHaveCount(0);
