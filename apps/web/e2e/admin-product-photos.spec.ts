@@ -14,6 +14,8 @@ const VARIANT = "99002000-0000-4000-8000-0000000000a2";
 const CATEGORY = "99002000-0000-4000-8000-000000000004";
 const UNIT_PARFUMS = "11111111-1111-4111-8111-111111111111";
 const SLUG = "local-qa-photos";
+// A server action takes 3-6 s on a loaded CI runner; the default 5 s wait is shorter than a correct run.
+const SERVER_ACTION_TIMEOUT = 15_000;
 
 const ONE_PIXEL_PNG = Buffer.from(
   "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==",
@@ -68,7 +70,7 @@ test.describe("Photo management from Admin", () => {
   test("the owner orders, sets primary, edits alt text and archives photos; the storefront follows", async ({ page }) => {
     provisionProduct(true);
     await page.goto(`/admin/parfums/productos/${PRODUCT}`);
-    await expect(page.getByRole("heading", { name: "Fotos (3)" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Fotos (3)" })).toBeVisible({ timeout: SERVER_ACTION_TIMEOUT });
 
     // Alt text, saved on leaving the field. It is also the first Admin action
     // on this product, which refreshes the storefront's 60 s catalog cache so
@@ -76,7 +78,7 @@ test.describe("Photo management from Admin", () => {
     const alt = card(page, "QA foto A").getByLabel("Texto alternativo");
     await alt.fill("QA foto A editada");
     await alt.blur();
-    await expect(page.locator("[data-media-notice]")).toContainText("Texto alternativo guardado");
+    await expect(page.locator("[data-media-notice]")).toContainText("Texto alternativo guardado", { timeout: SERVER_ACTION_TIMEOUT });
     expect(localSql(`select alt from public.product_media where product_id='${PRODUCT}' and sort_order=0`)).toBe("QA foto A editada");
     expect(await publicOrder(page)).toEqual(["QA foto A editada", "QA foto B", "QA foto C"]);
 
@@ -87,27 +89,27 @@ test.describe("Photo management from Admin", () => {
 
     // Reorder: C moves above B.
     await card(page, "QA foto C").getByRole("button", { name: "Mover foto antes" }).click();
-    await expect(page.locator("[data-media-notice]")).toContainText("Orden guardado");
+    await expect(page.locator("[data-media-notice]")).toContainText("Orden guardado", { timeout: SERVER_ACTION_TIMEOUT });
     expect(await publicOrder(page)).toEqual(["QA foto A editada", "QA foto C", "QA foto B"]);
 
     // Primary: B becomes the primary and is shown first.
     await page.goto(`/admin/parfums/productos/${PRODUCT}`);
     await card(page, "QA foto B").getByRole("button", { name: "Marcar como principal" }).click();
-    await expect(page.locator("[data-media-notice]")).toContainText("Foto principal actualizada");
+    await expect(page.locator("[data-media-notice]")).toContainText("Foto principal actualizada", { timeout: SERVER_ACTION_TIMEOUT });
     expect((await publicOrder(page))[0]).toBe("QA foto B");
     expect(localSql(`select count(*) from public.product_media where product_id='${PRODUCT}' and is_primary and archived_at is null`)).toBe("1");
 
     // Archive hides it from the storefront; restore brings it back.
     await page.goto(`/admin/parfums/productos/${PRODUCT}`);
     await card(page, "QA foto C").getByRole("button", { name: "Archivar" }).click();
-    await expect(page.locator("[data-media-notice]")).toContainText("Foto archivada");
-    await expect(page.getByRole("heading", { name: "Fotos (2)" })).toBeVisible();
+    await expect(page.locator("[data-media-notice]")).toContainText("Foto archivada", { timeout: SERVER_ACTION_TIMEOUT });
+    await expect(page.getByRole("heading", { name: "Fotos (2)" })).toBeVisible({ timeout: SERVER_ACTION_TIMEOUT });
     expect((await publicOrder(page)).length).toBe(2);
 
     await page.goto(`/admin/parfums/productos/${PRODUCT}`);
     await page.getByText(/1 imagen archivada/).click();
     await page.getByRole("button", { name: "Restaurar" }).click();
-    await expect(page.getByRole("heading", { name: "Fotos (3)" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Fotos (3)" })).toBeVisible({ timeout: SERVER_ACTION_TIMEOUT });
     expect((await publicOrder(page)).length).toBe(3);
   });
 
@@ -149,7 +151,7 @@ test.describe("Photo management from Admin", () => {
       await expect(queue.filter({ hasText: "uno.png" })).toContainText("Subida", { timeout: 20_000 });
       await expect(queue.filter({ hasText: "dos.png" })).toContainText("Subida", { timeout: 20_000 });
       await expect(queue.filter({ hasText: "nota.txt" })).toContainText("Solo se aceptan imágenes");
-      await expect(page.getByRole("heading", { name: "Fotos (2)" })).toBeVisible();
+      await expect(page.getByRole("heading", { name: "Fotos (2)" })).toBeVisible({ timeout: SERVER_ACTION_TIMEOUT });
 
       expect(localSql(`select count(*) from public.product_media where product_id='${PRODUCT}' and provider='cloudinary'`)).toBe("2");
       expect(localSql(`select count(*) from public.product_media where product_id='${PRODUCT}' and is_primary`)).toBe("1");
@@ -177,7 +179,7 @@ test.describe("Photo management is read-only for a viewer", () => {
   test("a viewer sees the photos and an explicit reason, with no way to change them", async ({ page }) => {
     provisionProduct(true);
     await page.goto(`/admin/parfums/productos/${PRODUCT}`);
-    await expect(page.getByRole("heading", { name: "Fotos (3)" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Fotos (3)" })).toBeVisible({ timeout: SERVER_ACTION_TIMEOUT });
     await expect(page.locator("[data-media-readonly]")).toContainText("rol de administrador");
     await expect(page.locator("[data-media-dropzone]")).toHaveCount(0);
     await expect(page.getByRole("button", { name: /Archivar|Marcar como principal|Mover foto/ })).toHaveCount(0);

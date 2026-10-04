@@ -14,10 +14,10 @@ test.describe("Gate B local operations",()=>{
   await page.getByRole("button",{name:"Marcar como completado",exact:true}).click();await expect(page.getByText(/2 unidades · consumed/)).toBeVisible();await page.reload();await technical.click();await expect(page.getByText(/2 unidades · consumed/)).toBeVisible();
  });
  test("Import confirmation and cancellation retain independent workflow",async({page})=>{
-  await page.goto(`/admin/import/pedidos/${ids.importOrder}`);await page.getByRole("button",{name:"Confirmar coordinación",exact:true}).click();await expect(page.getByRole("button",{name:"Marcar como completado",exact:true})).toBeVisible();
+  await page.goto(`/admin/import/pedidos/${ids.importOrder}`);await page.getByRole("button",{name:"Confirmar coordinación",exact:true}).click();await expect(page.getByRole("button",{name:"Marcar como completado",exact:true})).toBeVisible({timeout:15_000});
   // Cancellation is a two-step, reason-required confirmation.
   await page.getByRole("button",{name:"Cancelar pedido",exact:true}).click();await page.getByPlaceholder("Razón de cancelación (requerida)").fill("LOCAL QA cancelación humana");await page.getByRole("button",{name:"Confirmar cancelación",exact:true}).click();
-  await expect(page.getByText(/Estado del pedido actualizado/)).toBeVisible();await page.getByText("Ver detalle técnico",{exact:true}).click();await expect(page.getByText("cancelled",{exact:false}).first()).toBeVisible();
+  await expect(page.getByText(/Estado del pedido actualizado/)).toBeVisible({timeout:15_000});await page.getByText("Ver detalle técnico",{exact:true}).click();await expect(page.getByText("cancelled",{exact:false}).first()).toBeVisible();
  });
  test("catalog CSV dry run previews and explicitly applies categoryless factual edit",async({page})=>{
   await page.goto(`/admin/import/lotes?campaign=${ids.campaign}`);
