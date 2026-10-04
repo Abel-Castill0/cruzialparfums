@@ -3,7 +3,14 @@
 import Image from "next/image";
 import { MissingPhoto } from "../shared/missing-photo";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import {
+  GalleryArrows,
+  GalleryThumbs,
+  galleryImages,
+  useGallerySwipe,
+  useProductGallery,
+} from "./product-gallery";
 import { ProductCard } from "@/components/parfums/catalog/product-card";
 import {
   addParfumsCartLine,
@@ -72,10 +79,15 @@ export function ProductDetailExperience({
   const [quantity, setQuantity] = useState(1);
   const [toast, setToast] = useState("");
   const total = calculatePurchaseTotal(selected, quantity);
-  const stageImage =
+  const presentationImage =
     selected.group === "bottle"
       ? product.bottleImageUrl
       : product.decantImageUrl;
+  const images = useMemo(() => galleryImages(product, presentationImage ?? product.imageUrl), [product, presentationImage]);
+  const gallery = useProductGallery(images, presentationImage);
+  const swipe = useGallerySwipe(gallery.index, gallery.count, gallery.go);
+  const stageImage = gallery.active;
+  const stageAlt = images[gallery.index]?.alt ?? product.imageAlt;
   const consultation = buildProductConsultationMessage({
     storeName,
     brand: product.brand,
@@ -115,26 +127,37 @@ export function ProductDetailExperience({
   return (
     <>
       <section className={styles.productDetail} data-product-detail>
-        <div className={`${styles.productStage} ${!purchasable ? styles.stageDiscontinued : ""}`} data-product-stage>
-          {stageImage ? (
-            <div className={styles.imageFrame}>
-              <Image
-                src={stageImage}
-                alt={product.imageAlt}
-                fill
-                sizes="(max-width: 1024px) calc(100vw - 32px), 46vw"
-                className={styles.productImage}
-                loading="eager"
-              />
-            </div>
-          ) : (
-            <div className={styles.imageFrame}>
-              <MissingPhoto />
-            </div>
-          )}
-          <span className={`${styles.tag} ${!purchasable ? styles.discontinuedTag : ""}`}>
-            {!purchasable ? "Agotado" : product.discontinued ? "Descontinuado" : product.tag}
-          </span>
+        <div className={styles.gallery}>
+          <div
+            className={`${styles.productStage} ${!purchasable ? styles.stageDiscontinued : ""}`}
+            data-product-stage
+            tabIndex={gallery.count > 1 ? 0 : undefined}
+            aria-label={gallery.count > 1 ? `Fotos de ${product.name}` : undefined}
+            {...swipe}
+          >
+            {stageImage ? (
+              <div className={styles.imageFrame}>
+                <Image
+                  key={stageImage}
+                  src={stageImage}
+                  alt={stageAlt}
+                  fill
+                  sizes="(max-width: 1024px) calc(100vw - 32px), 46vw"
+                  className={styles.productImage}
+                  loading="eager"
+                />
+              </div>
+            ) : (
+              <div className={styles.imageFrame}>
+                <MissingPhoto />
+              </div>
+            )}
+            <span className={`${styles.tag} ${!purchasable ? styles.discontinuedTag : ""}`}>
+              {!purchasable ? "Agotado" : product.discontinued ? "Descontinuado" : product.tag}
+            </span>
+            <GalleryArrows index={gallery.index} count={gallery.count} go={gallery.go} />
+          </div>
+          <GalleryThumbs images={images} index={gallery.index} go={gallery.go} />
         </div>
 
         <div className={styles.productInfo}>

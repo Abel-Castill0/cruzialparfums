@@ -30,6 +30,7 @@ import { ProductCoreForm } from "./product-core-form";
 import { VariantManager } from "./variant-manager";
 import { CategoryPicker } from "./category-picker";
 import { MediaManager } from "./media-manager";
+import { readCloudinaryEnv } from "@/lib/media/cloudinary-env";
 import styles from "@/components/admin/catalog-workspace.module.css";
 
 export const dynamic = "force-dynamic";
@@ -211,7 +212,14 @@ export default async function EditProductPage({
 
       <div id="fotos" className={styles.anchor}>
         {mediaResult.ok ? (
-          <MediaManager productId={product.id} media={media} variants={variants} disabled={!canWrite} />
+          <MediaManager
+            productId={product.id}
+            media={media}
+            variants={variants}
+            disabled={!canWrite}
+            uploadsConfigured={readCloudinaryEnv() !== null}
+            productLabel={[product.brand, product.name].filter(Boolean).join(" ")}
+          />
         ) : (
           <Notice tone="attention" title="No pudimos cargar las fotos">Recarga la página antes de subir o cambiar fotos.</Notice>
         )}

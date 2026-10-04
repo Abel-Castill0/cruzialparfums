@@ -267,3 +267,36 @@ test("checkout shipping: motorizado flags restricted districts and offers Shalom
   await page.getByRole("button", { name: "Prefiero recoger en Shalom" }).click();
   await expect(page.locator("[data-shalom-panel]")).toBeVisible();
 });
+
+test("a product with several photos gets a gallery: thumbnails, arrows and keyboard", async ({ page }) => {
+  await page.goto("/parfums/productos/khamrah-clasico");
+  const thumbs = page.locator("[data-gallery-thumbs] button");
+  test.skip((await thumbs.count()) < 2, "this stack has no product with several photos");
+
+  const counter = page.locator("[data-product-stage] span[aria-live]");
+  const total = await thumbs.count();
+  await expect(counter).toHaveText(`1 / ${total}`);
+  await page.locator("[data-gallery-next]").click();
+  await expect(counter).toHaveText(`2 / ${total}`);
+  await thumbs.nth(total - 1).click();
+  await expect(counter).toHaveText(`${total} / ${total}`);
+  await page.locator("[data-product-stage]").focus();
+  await page.keyboard.press("ArrowRight");
+  await expect(counter).toHaveText(`1 / ${total}`);
+  await expect(thumbs.first()).toHaveAttribute("aria-current", "true");
+});
+
+test("a product with one photo shows no gallery controls", async ({ page }) => {
+  test.setTimeout(120_000);
+  await page.goto("/parfums/catalogo");
+  const hrefs = (await page.locator("[data-product-card] a[href^='/parfums/productos/']").evaluateAll(
+    (anchors) => anchors.map((anchor) => anchor.getAttribute("href") ?? ""),
+  )).filter(Boolean).slice(0, 8);
+  for (const href of hrefs) {
+    await page.goto(href);
+    const thumbs = await page.locator("[data-gallery-thumbs] button").count();
+    const arrows = await page.locator("[data-gallery-next]").count();
+    // Controls appear together or not at all.
+    expect(arrows > 0, href).toBe(thumbs > 1);
+  }
+});

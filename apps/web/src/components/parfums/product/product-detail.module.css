@@ -718,3 +718,28 @@
 .identityBlock h1 {
   letter-spacing: -0.015em;
 }
+
+/* The stage and its thumbnails travel together while the details scroll. */
+.gallery {
+  position: sticky;
+  top: 110px;
+  display: grid;
+  gap: 12px;
+}
+
+.productStage {
+  position: relative;
+  top: auto;
+}
+
+.productStage:focus-visible {
+  outline: 2px solid #0a0806;
+  outline-offset: 3px;
+}
+
+@media (max-width: 860px) {
+  .gallery {
+    position: relative;
+    top: auto;
+  }
+}

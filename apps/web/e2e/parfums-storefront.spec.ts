@@ -157,8 +157,15 @@ test.describe("parfums storefront", () => {
   test("order request with motorizado: stored without a shipping method code, quoted on WhatsApp", async ({ page }) => {
     test.skip(process.env.E2E_ALLOW_ORDER_SUBMIT !== "1", "set E2E_ALLOW_ORDER_SUBMIT=1 against a disposable database");
     await checkoutWithQaProduct(page, testCustomerPhone(test.info()));
-    await page.getByRole("radio", { name: /Motorizado/ }).check({ force: true });
-    await page.locator('[data-district="Miraflores"]').click();
+    const moto = page.getByRole("radio", { name: /Motorizado/ });
+    await expect(async () => {
+      await moto.check({ timeout: 2_000 });
+      await expect(moto).toBeChecked({ timeout: 1_000 });
+    }).toPass({ timeout: 15_000 });
+    await expect(async () => {
+      await page.locator('[data-district="Miraflores"]').click({ timeout: 2_000 });
+      await expect(page.locator("#checkout-motorizado-district")).toHaveValue("Miraflores", { timeout: 1_000 });
+    }).toPass({ timeout: 15_000 });
     await page.locator("[data-checkout-submit]").click();
 
     await expect(page).toHaveURL(/\/parfums\/gracias\/CRP-\d{8}-[A-F0-9]{12}$/, { timeout: SERVER_ACTION_TIMEOUT });
@@ -171,7 +178,10 @@ test.describe("parfums storefront", () => {
   test("order request with a chosen Shalom agency: the agency travels to the order and the message", async ({ page }) => {
     test.skip(process.env.E2E_ALLOW_ORDER_SUBMIT !== "1", "set E2E_ALLOW_ORDER_SUBMIT=1 against a disposable database");
     await checkoutWithQaProduct(page, testCustomerPhone(test.info()));
-    await page.locator('[data-district="Los Olivos"]').click();
+    await expect(async () => {
+      await page.locator('[data-district="Los Olivos"]').click({ timeout: 2_000 });
+      await expect(page.locator('[data-district="Los Olivos"]')).toHaveAttribute("aria-pressed", "true", { timeout: 1_000 });
+    }).toPass({ timeout: 15_000 });
     const agency = page.locator('input[name="shalom-agency"]:not([value="other"])').first();
     await expect(async () => {
       await agency.check({ timeout: 2_000 });
