@@ -26,6 +26,7 @@ import {
   ImportProductArchive,
   ImportProductDataForm,
 } from "../import-product-editor";
+import { readCloudinaryEnv } from "@/lib/media/cloudinary-env";
 import { ImportMediaManager } from "../import-media-manager";
 import styles from "@/components/admin/catalog-workspace.module.css";
 
@@ -185,7 +186,13 @@ export default async function Page({
 
       <div id="fotos" className={`${styles.anchor} ${styles.legacyReset}`}>
         {mr.ok ? (
-          <ImportMediaManager productId={d.product.id} media={media} disabled={readOnly} />
+          <ImportMediaManager
+            productId={d.product.id}
+            media={media}
+            disabled={readOnly}
+            uploadsConfigured={readCloudinaryEnv() !== null}
+            productLabel={[d.product.brand, d.product.name].filter(Boolean).join(" ")}
+          />
         ) : (
           <Notice tone="attention" title="No pudimos cargar las fotos">Recarga la página antes de subir o cambiar fotos.</Notice>
         )}

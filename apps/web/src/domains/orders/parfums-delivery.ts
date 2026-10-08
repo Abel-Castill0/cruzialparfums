@@ -25,3 +25,20 @@ export function parfumsDeliveryMethod(delivery: string): ParfumsDeliveryMethod |
   if (delivery === PARFUMS_SHALOM_DELIVERY || AGENCY_DELIVERIES.has(delivery)) return "shalom";
   return null;
 }
+
+const AGENCY_PREFIX = "Agencia Shalom: ";
+
+/**
+ * Operator-facing reading of a stored `delivery` text: method label and, for a
+ * specific Shalom agency, the agency. Derived, not stored, so it needs no
+ * migration; a text we never offered (legacy orders) yields a null method.
+ */
+export function describeParfumsDelivery(delivery: string): { method: ParfumsDeliveryMethod | null; methodLabel: string; agency: string | null } {
+  const method = parfumsDeliveryMethod(delivery);
+  if (method === "motorizado") return { method, methodLabel: "Motorizado (Lima) · se cotiza por WhatsApp", agency: null };
+  if (method === "shalom") {
+    const agency = delivery.startsWith(AGENCY_PREFIX) ? delivery.slice(AGENCY_PREFIX.length) : null;
+    return { method, methodLabel: "Agencia Shalom", agency };
+  }
+  return { method: null, methodLabel: delivery.trim() || "Sin indicar", agency: null };
+}

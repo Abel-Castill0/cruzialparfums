@@ -61,7 +61,7 @@ export default async function TerminosPage() {
 
           <h2>6. Envíos y Entregas</h2>
           <ul>
-            <li>El envío se realiza mediante agencia Shalom. Cobertura, costo y tiempo de entrega se confirman por WhatsApp al coordinar el pedido.</li>
+            <li>El envío se realiza mediante agencia Shalom o, en Lima, mediante motorizado. Cobertura, costo y tiempo de entrega se confirman por WhatsApp al coordinar el pedido.</li>
           </ul>
 
           <h2>7. Incidencias con tu pedido</h2>

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { describeParfumsDelivery } from "@/domains/orders/parfums-delivery";
 import { redirect } from "next/navigation";
 import { getAdminSession } from "@/lib/auth/admin-session";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -95,7 +96,7 @@ export default async function AdminParfumsOrdersPage({
             statusLabel: status.label,
             statusTone: status.tone,
             situation: status.situation,
-            context: [],
+            context: [describeParfumsDelivery(order.delivery.delivery).methodLabel],
           };
         }),
       }
