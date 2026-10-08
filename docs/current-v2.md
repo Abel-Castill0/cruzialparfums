@@ -46,16 +46,20 @@ Verified against Git, GitHub and Vercel on 2026-10-08 (not copied from older not
   artifact, compute the new `jsonb::text` hash in Postgres, add an append-only migration, apply it to
   Production. No operational benefit, so it waits for a block that already needs a migration.
   The current rule lives in `docs/parfums-shipping.md`.
-- **Preview Supabase binding (fixed 2026-10-08).** Preview had no `NEXT_PUBLIC_SUPABASE_URL` /
-  `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (only Production did), so the Preview `/import` showed "No pudimos
-  consultar el estado del consolidado". Both were added to the Preview target only, pointing at the
-  staging project `iyxidhglyqkzoziyewlc` (URL + publishable key; no Production credentials, no secret
-  key — `SUPABASE_SECRET_KEY` is read nowhere outside `src/lib/supabase/env.ts`). After a redeploy:
-  `/`, `/parfums`, `/parfums/catalogo`, `/parfums/combos`, `/import`, `/import/catalogo` render staging data,
-  Import stays closed ("compra deshabilitada", empty cart), `/admin*` redirects to `/admin/login`,
-  `robots.txt` is `Disallow: /` and pages are `noindex`. Not verifiable without an owner session: admin
-  login/MFA on Preview, a real Cloudinary upload, and the Supabase Auth redirect allowlist for the
-  per-deployment Preview hostnames (password sign-in does not need it; recovery links use `SITE_URL`).
+- **Preview has NO Supabase binding, on purpose (corrected 2026-10-08).** The only hosted Supabase
+  project, `iyxidhglyqkzoziyewlc`, *is* Production (80 migrations = repo, 944 products / 97 published,
+  0 orders, 0 customers, no QA fixtures, 2 admin memberships). An earlier note here called it "staging"
+  and Preview was briefly pointed at it; that was reverted the same day (the two Preview env vars were
+  removed and the two Preview deployments built with them were deleted) because Preview must never
+  hold Production credentials. Consequence: Preview renders the honest "backend not configured" state
+  and `/import` there shows the consolidado-status error. That is expected, not a defect. A real staging
+  project (second Supabase project + migrations + QA fixtures, then Preview vars) is an owner decision;
+  steps in `docs/owner-verification-runbook.md`.
+- **Production verified at `master` `c021853`** (PR #47 merged): deployment `dpl_HPHMg5ETk778ytsBxUCmnVAkNa87`
+  aliased to `cruzial.pe`/`www.cruzial.pe`; main Parfums and Import routes 200, `/admin` -> `/admin/login`,
+  `robots.txt` `Disallow: /`, pages `noindex`, `sitemap.xml` empty, Import "compra deshabilitada".
+  Conflicted bottle variants (1-million-lucky, by-the-fireplace, le-beau-le-parfum, cedrat-boise-int,
+  victory-elixir, bir-intense) are `draft`/archived; only `official_pdf` decants are published.
 - **Cloudinary (Preview)**: `vercel env ls` shows `CLOUDINARY_CLOUD_NAME/API_KEY/API_SECRET` attached to
   both Production and Preview (so the 2026-10-04 audit note that the secret was missing in Preview is
   not supported by the variable list). Whether the stored values are non-empty cannot be read from the
