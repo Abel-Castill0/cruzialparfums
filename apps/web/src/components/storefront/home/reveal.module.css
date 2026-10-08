@@ -1,12 +1,12 @@
 @media (scripting: enabled) and (prefers-reduced-motion: no-preference) {
   .reveal:not([data-in]) {
     opacity: 0;
-    transform: translateY(18px);
+    transform: translateY(6px);
   }
 
   .reveal {
     transition:
-      opacity 800ms cubic-bezier(0.22, 1, 0.36, 1) var(--reveal-delay, 0ms),
+      opacity 1000ms cubic-bezier(0.22, 1, 0.36, 1) var(--reveal-delay, 0ms),
       transform 800ms cubic-bezier(0.22, 1, 0.36, 1) var(--reveal-delay, 0ms);
   }
 }

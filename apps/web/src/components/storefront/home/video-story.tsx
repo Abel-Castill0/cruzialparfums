@@ -31,7 +31,7 @@ export function VideoStory({ video, tone }: { video: HomeVideo; tone: "parfums" 
     <section className={`${styles.story} ${styles[tone]}`} aria-labelledby="home-video-title" data-home-video={tone}>
       <div className={styles.inner}>
         <div className={styles.copy}>
-          <p className={styles.eyebrow}>{video.eyebrow}</p>
+          {video.eyebrow ? <p className={styles.eyebrow}>{video.eyebrow}</p> : null}
           <h2 id="home-video-title">{video.title}</h2>
           <p>{video.text}</p>
           <div className={styles.actions}>

@@ -23,7 +23,7 @@ process.env.E2E_RUN_TAG ??= String(Math.floor(Date.now() / 1000) % 1_000_000).pa
 const localPort = process.env.E2E_LOCAL_PORT || "3000";
 const baseURL = process.env.E2E_BASE_URL || `http://localhost:${localPort}`;
 const isLocalTarget = !process.env.E2E_BASE_URL;
-const PUBLIC_SPECS = /(public-hub|parfums-public-journey|parfums-storefront|parfums-shell|import-public-journey|import-catalog-view|attempt-lifecycle|admin-protection|accessibility)\.spec\.ts/;
+const PUBLIC_SPECS = /(public-hub|parfums-public-journey|parfums-storefront|parfums-shell|import-public-journey|import-catalog-view|attempt-lifecycle|admin-protection|accessibility|ux-regressions)\.spec\.ts/;
 
 export default defineConfig({
   testDir: "./e2e",
@@ -43,7 +43,7 @@ export default defineConfig({
     { name: "mobile", testMatch: PUBLIC_SPECS, use: { ...devices["Pixel 7"] } },
     {
       name: "admin",
-      testMatch: /(admin-critical|admin-authenticated|gate-b-operations|admin-catalog-customers|admin-combos-wholesale|admin-owner-editability)\.spec\.ts/,
+      testMatch: /(admin-critical|admin-authenticated|gate-b-operations|admin-catalog-customers|admin-combos-wholesale|admin-owner-editability|admin-product-photos)\.spec\.ts/,
       dependencies: ["setup"],
       use: { ...devices["Desktop Chrome"] },
     },

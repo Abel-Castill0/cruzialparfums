@@ -85,7 +85,6 @@ export default async function NosotrosPage() {
       </div>
 
       <section className={styles.hero}>
-        <p className={styles.eyebrow}>Nuestra Historia</p>
         <h1>
           Nacimos para que
           <br />
@@ -103,7 +102,6 @@ export default async function NosotrosPage() {
               <span className={styles.artCaption}>La casa · Fundada con criterio y carácter</span>
             </div>
             <div className={styles.splitCopy}>
-              <span className={styles.eyebrow}>La Casa</span>
               <h2 className={styles.splitTitle}>
                 No vendemos perfumes.
                 <br />
@@ -136,7 +134,6 @@ export default async function NosotrosPage() {
       <section className={`${styles.section} ${styles.band}`}>
         <div className={styles.wrap}>
           <div className={styles.centerBlock}>
-            <span className={styles.eyebrow}>Lo que nos define</span>
             <div className={styles.heading}>
               <h2>
                 Tres principios, <em>sin excepciones</em>.
@@ -146,7 +143,6 @@ export default async function NosotrosPage() {
           <div className={styles.cardGrid}>
             {principios.map((item) => (
               <article className={styles.card} key={item.num}>
-                <span className={styles.cardNum}>{item.num}</span>
                 <h3>{item.title}</h3>
                 <p>{item.text}</p>
               </article>
@@ -158,7 +154,6 @@ export default async function NosotrosPage() {
       <section className={styles.section} id="como-comprar">
         <div className={styles.wrap}>
           <div className={styles.centerBlock}>
-            <span className={styles.eyebrow}>Cómo Comprar</span>
             <div className={styles.heading}>
               <h2>
                 Tres pasos, <em>cero fricción</em>.
@@ -181,7 +176,6 @@ export default async function NosotrosPage() {
       <section className={`${styles.section} ${styles.band}`} id="faq">
         <div className={styles.wrap}>
           <div className={styles.centerBlock}>
-            <span className={styles.eyebrow}>Preguntas Frecuentes</span>
             <div className={styles.heading}>
               <h2>
                 Todo lo que <em>necesitas saber</em>.
@@ -203,7 +197,6 @@ export default async function NosotrosPage() {
         <div className={styles.wrap}>
           <div className={styles.split}>
             <div className={styles.splitCopy}>
-              <span className={styles.eyebrow}>¿Listo para tu siguiente paso?</span>
               <h2 className={styles.splitTitle}>
                 Descubre tu <em>firma olfativa</em> hoy.
               </h2>
@@ -222,8 +215,8 @@ export default async function NosotrosPage() {
                 </a>
               </div>
             </div>
-            <div className={styles.splitArt} aria-hidden="true">
-              <span className={styles.artMark}>✦</span>
+            <div className={styles.splitArt}>
+              <Image src="/images/parfums-home/parfums-decant-5ml.webp" alt="Decants Cruzial Parfums en formatos de 3, 5 y 10 ml" fill sizes="(max-width: 899px) 100vw, 46vw" className={styles.artImage} />
               <span className={styles.artCaption}>Decants 3 · 5 · 10 ml</span>
             </div>
           </div>

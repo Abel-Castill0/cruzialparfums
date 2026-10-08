@@ -174,8 +174,9 @@
 }
 
 .formPanel {
-  position: sticky;
-  top: 112px;
+  /* Not sticky: the shipping step (map and agency list) can be taller than the
+   * viewport, and a sticky panel that tall cannot be scrolled to its end. */
+  position: static;
   padding: 30px clamp(22px, 3vw, 36px) 34px;
   background: #faf9f6;
 }

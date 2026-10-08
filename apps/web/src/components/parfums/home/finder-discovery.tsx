@@ -33,7 +33,6 @@ export function FinderDiscovery({ fragrances }: { fragrances: readonly CatalogPr
     <section className={styles.discovery} aria-labelledby="finder-discovery-title">
       <Reveal className={styles.inner}>
         <div className={styles.lead}>
-          <p className={styles.eyebrow}>Encuentra tu fragancia</p>
           <h2 id="finder-discovery-title">
             ¿No sabes por dónde <em>empezar</em>?
           </h2>

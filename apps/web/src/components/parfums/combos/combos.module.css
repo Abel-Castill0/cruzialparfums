@@ -1180,3 +1180,18 @@ button.send:disabled,
     font-size: 16px;
   }
 }
+
+/* The sets' own artwork is 4:5 and carries its own title: show it whole, with
+ * no tag laid over the lettering. */
+.comboMediaArt {
+  height: auto;
+  aspect-ratio: 4 / 5;
+}
+
+.comboMediaArt > span {
+  display: none;
+}
+
+.comboMediaArt .comboImage {
+  object-fit: cover;
+}

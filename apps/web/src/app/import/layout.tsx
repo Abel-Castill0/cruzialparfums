@@ -8,6 +8,12 @@ import { createSupabasePublicServerClient } from "@/lib/supabase/server";
 export const metadata: Metadata = {
   title: { default: "Cruzial Import", template: "%s | Cruzial Import" },
   description: "Importaciones, consolidados y productos seleccionados.",
+  openGraph: {
+    type: "website",
+    locale: "es_PE",
+    siteName: "Cruzial Import",
+    images: [{ url: "/og/cruzial-og.jpg", width: 1200, height: 630, alt: "Cruzial Import" }],
+  },
 };
 
 export default async function ImportLayout({

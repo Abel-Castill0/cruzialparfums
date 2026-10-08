@@ -1,0 +1,113 @@
+.arrow {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(26, 22, 18, 0.14);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.92);
+  color: #17130f;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  transform: translateY(-50%);
+  opacity: 0;
+  transition: opacity 200ms ease, background-color 160ms ease;
+}
+
+.arrowPrev {
+  left: 12px;
+}
+
+.arrowNext {
+  right: 12px;
+}
+
+/* Arrows appear on hover/focus for pointers; touch devices always show them. */
+:global([data-product-stage]):hover .arrow,
+.arrow:focus-visible {
+  opacity: 1;
+}
+
+@media (hover: none) {
+  .arrow {
+    opacity: 1;
+  }
+}
+
+.arrow:hover {
+  background: #fff;
+}
+
+.arrow:focus-visible {
+  outline: 2px solid #0a0806;
+  outline-offset: 2px;
+}
+
+.counter {
+  position: absolute;
+  z-index: 2;
+  right: 14px;
+  bottom: 14px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #2c2925;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+}
+
+.thumbs {
+  margin: 0;
+  padding: 2px;
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  list-style: none;
+  scrollbar-width: thin;
+}
+
+.thumb {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  flex: none;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid rgba(26, 22, 18, 0.14);
+  background: radial-gradient(90% 80% at 50% 38%, #fff 0%, #f1ebdf 100%);
+  cursor: pointer;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.thumbImage {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 6px;
+  mix-blend-mode: multiply;
+}
+
+.thumb:hover {
+  border-color: rgba(26, 22, 18, 0.5);
+}
+
+.thumb[aria-current="true"] {
+  border-color: #0a0806;
+  box-shadow: inset 0 0 0 1px #0a0806;
+}
+
+.thumb:focus-visible {
+  outline: 2px solid #0a0806;
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .arrow,
+  .thumb {
+    transition: none;
+  }
+}

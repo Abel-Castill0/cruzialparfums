@@ -2,18 +2,12 @@ import { isProductPurchasable } from "../catalog/availability";
 import { listProductPurchaseVariants } from "../catalog/product-purchase";
 import type { PublicCatalogRepository } from "../catalog/types";
 import type { ParfumsCheckoutCustomer } from "../whatsapp/parfums-message-builder";
+import { parfumsDeliveryMethod } from "./parfums-delivery";
 
 export const PARFUMS_ORDER_MAX_LINES = 40;
 export const PARFUMS_ORDER_MAX_QUANTITY = 99;
 
-/**
- * Client-confirmed business rule (see docs/client-decisions.md — Parfums
- * Shipping): Cruzial Parfums ships via Shalom only. No other delivery
- * method (Línea 1, motorizado, contraentrega) is confirmed for Parfums.
- */
-export const PARFUMS_DELIVERY_OPTIONS = [
-  "Agencia Shalom (Lima y todo el Perú)",
-] as const;
+export { PARFUMS_DELIVERY_OPTIONS } from "./parfums-delivery";
 
 export type ParfumsOrderRequestInput = {
   requestId: string;
@@ -89,7 +83,7 @@ export function validateAndResolveParfumsOrder(
   const name = normalizeText(customer.name, 120);
   const phone = normalizeText(customer.phone, 30);
   const district = normalizeText(customer.district, 120);
-  const delivery = normalizeText(customer.delivery, 100);
+  const delivery = normalizeText(customer.delivery, 120);
   const note = normalizeText(customer.note ?? "", 500);
   const fieldErrors: ParfumsOrderValidationError["fieldErrors"] = {};
 
@@ -97,7 +91,8 @@ export function validateAndResolveParfumsOrder(
   const phoneDigits = phone.replace(/\D/g, "");
   if (phoneDigits.length < 9 || phoneDigits.length > 15) fieldErrors.phone = "Ingresa un número de WhatsApp válido.";
   if (district.length < 2 || district.length > 120) fieldErrors.district = "Ingresa un distrito o ciudad válido.";
-  if (!(PARFUMS_DELIVERY_OPTIONS as readonly string[]).includes(delivery)) fieldErrors.delivery = "Selecciona una opción de entrega válida.";
+  const deliveryMethod = parfumsDeliveryMethod(delivery);
+  if (!deliveryMethod) fieldErrors.delivery = "Selecciona una opción de entrega válida.";
   if (note.length > 500) fieldErrors.note = "La nota no puede superar 500 caracteres.";
   if (Object.keys(fieldErrors).length > 0) {
     return { ok: false, message: "Revisa los campos marcados.", fieldErrors };
@@ -162,7 +157,9 @@ export function validateAndResolveParfumsOrder(
     requestId: candidate.requestId,
     customerSnapshot: { name, phone },
     deliverySnapshot: { district, delivery, note },
-    shippingMethodCode: "shalom",
+    // The motorizado has no shipping_methods row: its fee and route are agreed
+    // over WhatsApp, so the order is stored without a method code.
+    shippingMethodCode: deliveryMethod === "shalom" ? "shalom" : null,
     lines: snapshots,
     subtotal,
     customer: { name, phone, district, delivery, note },

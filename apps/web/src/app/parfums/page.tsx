@@ -156,7 +156,6 @@ export default async function ParfumsHomePage() {
               items={showcase}
               heading={
                 <>
-                  <p className={styles.eyebrow}>Del catálogo</p>
                   <h2 id="showcase-title">
                     Fragancias para <em>descubrir</em>.
                   </h2>
@@ -171,7 +170,6 @@ export default async function ParfumsHomePage() {
         <Reveal>
           <div className={styles.sectionHead}>
             <div>
-              <p className={styles.eyebrow}>Catálogo</p>
               <h2 id="discovery-title">
                 Encuentra tu <em>familia</em>.
               </h2>
@@ -224,7 +222,6 @@ export default async function ParfumsHomePage() {
       <section className={styles.craft} aria-labelledby="craft-title">
         <div className={styles.craftGrid}>
           <Reveal className={styles.craftBody}>
-            <p className={styles.eyebrow}>Cómo trabajamos</p>
             <h2 id="craft-title">
               Del frasco original <em>a tu piel</em>.
             </h2>
@@ -285,7 +282,6 @@ export default async function ParfumsHomePage() {
         <Reveal>
           <div className={styles.formats}>
             <div className={styles.formatsHead}>
-              <p className={styles.eyebrow}>Prueba antes de invertir</p>
               <h3>Un decant no es una muestra.</h3>
             </div>
             <ul className={styles.formatList}>
@@ -326,7 +322,6 @@ export default async function ParfumsHomePage() {
         <div className={styles.combosInner}>
           <div className={styles.sectionHead}>
             <div>
-              <p className={styles.eyebrow}>Sets</p>
               <h2 id="combos-title">
                 Combos <em>Cruzial</em>.
               </h2>
@@ -353,7 +348,6 @@ export default async function ParfumsHomePage() {
         <Reveal>
           <div className={styles.faqGrid}>
             <div className={styles.faqHead}>
-              <p className={styles.eyebrow}>Preguntas frecuentes</p>
               <h2 id="faq-title">
                 Antes de <em>escribirnos</em>.
               </h2>

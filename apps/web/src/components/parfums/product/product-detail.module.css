@@ -706,3 +706,40 @@
 .productImage {
   mix-blend-mode: multiply;
 }
+
+/* Identity reads as one calm line under the name, not three stacked labels. */
+.subline {
+  color: #6c665d;
+  font-size: 14px;
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+
+.identityBlock h1 {
+  letter-spacing: -0.015em;
+}
+
+/* The stage and its thumbnails travel together while the details scroll. */
+.gallery {
+  position: sticky;
+  top: 110px;
+  display: grid;
+  gap: 12px;
+}
+
+.productStage {
+  position: relative;
+  top: auto;
+}
+
+.productStage:focus-visible {
+  outline: 2px solid #0a0806;
+  outline-offset: 3px;
+}
+
+@media (max-width: 860px) {
+  .gallery {
+    position: relative;
+    top: auto;
+  }
+}

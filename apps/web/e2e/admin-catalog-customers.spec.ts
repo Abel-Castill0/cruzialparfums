@@ -53,6 +53,9 @@ test.describe("B2A catalog and customer workspaces (admin)", () => {
     await expect(page.getByRole("heading", { name: "Preparación del producto" })).toBeVisible();
     await expect(page.getByRole("heading", { name: /Presentaciones y precios/ })).toBeVisible();
     await expect(page.getByRole("heading", { name: /^Fotos/ })).toBeVisible();
+    // An admin always sees either the upload area or the explicit reason it is
+    // unavailable (no Cloudinary credentials here); never a silent gap.
+    await expect(page.locator("[data-media-dropzone], [data-media-unconfigured]")).toHaveCount(1);
     await expect(page.getByRole("heading", { name: "Categorías" })).toBeVisible();
     await expectAccessibleAndContained(page, testInfo);
   });
