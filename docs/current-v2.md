@@ -46,6 +46,16 @@ Verified against Git, GitHub and Vercel on 2026-10-08 (not copied from older not
   artifact, compute the new `jsonb::text` hash in Postgres, add an append-only migration, apply it to
   Production. No operational benefit, so it waits for a block that already needs a migration.
   The current rule lives in `docs/parfums-shipping.md`.
+- **Preview Supabase binding (fixed 2026-10-08).** Preview had no `NEXT_PUBLIC_SUPABASE_URL` /
+  `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (only Production did), so the Preview `/import` showed "No pudimos
+  consultar el estado del consolidado". Both were added to the Preview target only, pointing at the
+  staging project `iyxidhglyqkzoziyewlc` (URL + publishable key; no Production credentials, no secret
+  key — `SUPABASE_SECRET_KEY` is read nowhere outside `src/lib/supabase/env.ts`). After a redeploy:
+  `/`, `/parfums`, `/parfums/catalogo`, `/parfums/combos`, `/import`, `/import/catalogo` render staging data,
+  Import stays closed ("compra deshabilitada", empty cart), `/admin*` redirects to `/admin/login`,
+  `robots.txt` is `Disallow: /` and pages are `noindex`. Not verifiable without an owner session: admin
+  login/MFA on Preview, a real Cloudinary upload, and the Supabase Auth redirect allowlist for the
+  per-deployment Preview hostnames (password sign-in does not need it; recovery links use `SITE_URL`).
 - **Cloudinary (Preview)**: `vercel env ls` shows `CLOUDINARY_CLOUD_NAME/API_KEY/API_SECRET` attached to
   both Production and Preview (so the 2026-10-04 audit note that the secret was missing in Preview is
   not supported by the variable list). Whether the stored values are non-empty cannot be read from the
