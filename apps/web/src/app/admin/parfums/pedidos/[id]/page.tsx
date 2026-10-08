@@ -9,6 +9,7 @@ import { getAdminSession } from "@/lib/auth/admin-session";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { AdminParfumsOrdersRepository } from "@/domains/admin-parfums/orders-repository";
 import { isValidUuid } from "@/domains/admin-parfums/product-schema";
+import { describeParfumsDelivery } from "@/domains/orders/parfums-delivery";
 import { normalizeParfumsCustomerPhoneForWhatsApp } from "@/domains/orders/customer-whatsapp-link";
 import { buildAdminOrderFollowUpMessage, buildWhatsAppUrl } from "@/domains/whatsapp/parfums-message-builder";
 import {
@@ -97,6 +98,7 @@ export default async function AdminParfumsOrderDetailPage({
   const { order, lines } = detailResult.data;
   const isAdmin = membership.role === "admin";
   const status = orderStatusPresentation("parfums", order.status);
+  const deliveryInfo = describeParfumsDelivery(order.delivery.delivery);
   const nextStep = orderNextStep("parfums", order.status);
   const progress = buildOrderProgress({ unit: "parfums", status: order.status, createdAt: order.createdAt, events });
   const normalizedPhone = order.customer.phone
@@ -190,7 +192,9 @@ export default async function AdminParfumsOrderDetailPage({
         <FactList
           items={[
             { term: "Distrito / Ciudad", value: order.delivery.district || "Sin indicar" },
-            { term: "Método de entrega", value: order.delivery.delivery || "Sin indicar" },
+            { term: "Método de entrega", value: deliveryInfo.methodLabel },
+            ...(deliveryInfo.agency ? [{ term: "Agencia Shalom elegida", value: deliveryInfo.agency }] : []),
+            ...(deliveryInfo.method === "motorizado" ? [{ term: "Acción pendiente", value: "Cotizar y acordar el envío por WhatsApp antes de despachar." }] : []),
             ...(order.delivery.note ? [{ term: "Nota del cliente", value: order.delivery.note }] : []),
           ]}
         />

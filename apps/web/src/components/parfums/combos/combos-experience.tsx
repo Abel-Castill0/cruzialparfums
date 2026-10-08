@@ -289,7 +289,7 @@ export function CombosExperience({
             <circle cx="7.5" cy="17.5" r="1.6" stroke="currentColor" strokeWidth="1.3" />
             <circle cx="17.5" cy="17.5" r="1.6" stroke="currentColor" strokeWidth="1.3" />
           </svg>
-          <span><strong>Envíos a todo el Perú</strong>Por agencia Shalom, se confirman por WhatsApp.</span>
+          <span><strong>Envíos a todo el Perú</strong>Por agencia Shalom o motorizado en Lima; se confirman por WhatsApp.</span>
         </div>
       </section>
 

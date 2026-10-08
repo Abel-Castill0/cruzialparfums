@@ -29,7 +29,16 @@ values derived from `domains/orders/parfums-delivery.ts`.
   unofficial directory (see the file header). UNVERIFIED until the owner checks
   them against Shalom. Orders are confirmed over WhatsApp before dispatch.
 
-## Not changed
+## Customer-facing texts (updated 2026-10-08)
 
-Legal pages (privacy still names only Shalom as carrier): proposal for legal
-review.
+Terms, privacy, "Nosotros", the announcement bar and the combos page now name both
+methods (Shalom nationwide, motorizado in Lima). The privacy and terms wording is
+a conservative factual alignment with what checkout already offers; it still
+needs the client's legal review, and no legal identity was added.
+
+## Admin presentation
+
+`describeParfumsDelivery` (`domains/orders/parfums-delivery.ts`) derives the
+method and the chosen Shalom agency from the stored `delivery` text for the
+order list and order detail. Nothing new is stored; a structured column would
+need a migration and a change to the order RPC and is not required to operate.

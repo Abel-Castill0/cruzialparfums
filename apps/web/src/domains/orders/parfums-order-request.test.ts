@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { LegacyCatalogRepository } from "../catalog/legacy-catalog-repository";
 import { listProductPurchaseVariants } from "../catalog/product-purchase";
 import {
+  describeParfumsDelivery,
   PARFUMS_DELIVERY_OPTIONS,
   PARFUMS_MOTORIZADO_DELIVERY,
   PARFUMS_SHALOM_DELIVERY,
@@ -103,5 +104,19 @@ describe("Parfums shipping business truth (Shalom + motorizado quoted on WhatsAp
     "Contraentrega",
   ])("rejects a delivery value we never offered: %s", (delivery) => {
     expect(validateAndResolveParfumsOrder(withDelivery(delivery), repository)).toMatchObject({ ok: false, fieldErrors: { delivery: expect.any(String) } });
+  });
+});
+
+describe("describeParfumsDelivery", () => {
+  it("reads the method and the chosen Shalom agency from the stored delivery text", () => {
+    const agency = SHALOM_AGENCIES[0]!;
+    expect(describeParfumsDelivery(shalomAgencyDelivery(agency))).toMatchObject({ method: "shalom", agency: `${agency.name} (${agency.district})` });
+    expect(describeParfumsDelivery(PARFUMS_SHALOM_DELIVERY)).toMatchObject({ method: "shalom", agency: null });
+    expect(describeParfumsDelivery(PARFUMS_MOTORIZADO_DELIVERY)).toMatchObject({ method: "motorizado", agency: null });
+  });
+
+  it("keeps a legacy or empty value readable without guessing a method", () => {
+    expect(describeParfumsDelivery("Delivery privado")).toEqual({ method: null, methodLabel: "Delivery privado", agency: null });
+    expect(describeParfumsDelivery("  ")).toMatchObject({ method: null, methodLabel: "Sin indicar" });
   });
 });

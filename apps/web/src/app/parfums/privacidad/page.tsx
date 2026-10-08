@@ -56,7 +56,7 @@ export default async function PrivacidadPage() {
           <h2>3. Uso Actual de tus Datos</h2>
           <p>La plataforma no implementa actualmente venta de datos ni uso de los datos de pedidos para publicidad de terceros. Tu información se comparte únicamente con:</p>
           <ul>
-            <li>Servicios de mensajería/transporte (Agencia Shalom) para la entrega de pedidos.</li>
+            <li>Servicios de mensajería/transporte (Agencia Shalom o un motorizado coordinado por WhatsApp en Lima) para la entrega de pedidos.</li>
             <li>Los proveedores técnicos que hacen funcionar esta web, descritos en la sección 5, y solo para prestar las funciones ahí descritas.</li>
           </ul>
 

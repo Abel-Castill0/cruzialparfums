@@ -1,6 +1,6 @@
 # CRUZIAL V2 - CURRENT CHECKPOINT
 
-Updated: 2026-10-01
+Updated: 2026-10-08
 
 ## Scope
 
@@ -19,6 +19,48 @@ git rev-parse HEAD
 
 > The sections below the "Current verified state (2026-10-01)" block are
 > historical gate records; where they conflict with that block, that block wins.
+
+## Live checkpoint (2026-10-08) — read this first
+
+Verified against Git, GitHub and Vercel on 2026-10-08 (not copied from older notes):
+
+- At the time of writing `master` = `0b29651` (PR #46: Next 16.4.0 + sharp/source-map-js security
+  patch, merged by another session; Production serves that SHA on `cruzial.pe`). PR #45 (luxury
+  storefront redesign, checkout shipping, multi-photo Parfums) was already merged and live at
+  `4ba1dfc`. Always re-derive the live SHA from Git/Vercel.
+- Open work: PR #47 (the changes below). Repo migrations: 80; this checkpoint adds none.
+- **Import admin photos** now use the same multi-upload manager as Parfums (several files at once,
+  drag and drop, per-file status, primary-first order, archive/restore, explicit "Cloudinary not
+  configured" and read-only states). The public Import product page still shows only the primary
+  photo: its data comes from SECURITY DEFINER RPCs that return a single `media_url`, and exposing
+  more would need a new migration; deferred on purpose (Import purchases are closed and 844
+  products still have no photo).
+- **Parfums shipping in the admin** is derived from the stored delivery text
+  (`describeParfumsDelivery`): method, chosen Shalom agency, and a "quote over WhatsApp" reminder
+  for motorizado. No schema change. A structured column remains optional; the order RPC still
+  accepts only `district`, `delivery`, `note`.
+- **Deferred deliberately — `docs/client-decisions.md` "Shalom only" line.** The file is fingerprinted
+  in `supabase/staging/commercial-reconciliation.json`, whose `jsonb::text` hash is pinned in
+  `app.commercial_reconciliation_source()` (migration `20260920040000_…`) and the file hash in
+  `scripts/prepare-commercial-reconciliation-test.mjs`. Correcting one line needs: regenerate the
+  artifact, compute the new `jsonb::text` hash in Postgres, add an append-only migration, apply it to
+  Production. No operational benefit, so it waits for a block that already needs a migration.
+  The current rule lives in `docs/parfums-shipping.md`.
+- **Preview Supabase binding (fixed 2026-10-08).** Preview had no `NEXT_PUBLIC_SUPABASE_URL` /
+  `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (only Production did), so the Preview `/import` showed "No pudimos
+  consultar el estado del consolidado". Both were added to the Preview target only, pointing at the
+  staging project `iyxidhglyqkzoziyewlc` (URL + publishable key; no Production credentials, no secret
+  key — `SUPABASE_SECRET_KEY` is read nowhere outside `src/lib/supabase/env.ts`). After a redeploy:
+  `/`, `/parfums`, `/parfums/catalogo`, `/parfums/combos`, `/import`, `/import/catalogo` render staging data,
+  Import stays closed ("compra deshabilitada", empty cart), `/admin*` redirects to `/admin/login`,
+  `robots.txt` is `Disallow: /` and pages are `noindex`. Not verifiable without an owner session: admin
+  login/MFA on Preview, a real Cloudinary upload, and the Supabase Auth redirect allowlist for the
+  per-deployment Preview hostnames (password sign-in does not need it; recovery links use `SITE_URL`).
+- **Cloudinary (Preview)**: `vercel env ls` shows `CLOUDINARY_CLOUD_NAME/API_KEY/API_SECRET` attached to
+  both Production and Preview (so the 2026-10-04 audit note that the secret was missing in Preview is
+  not supported by the variable list). Whether the stored values are non-empty cannot be read from the
+  CLI. A real upload was NOT tested (needs a live admin session with MFA and would write real media).
+  The admin now says explicitly when uploads are unconfigured (`data-media-unconfigured`).
 
 ## Architecture
 

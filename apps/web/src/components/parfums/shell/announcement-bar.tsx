@@ -15,7 +15,7 @@ export function AnnouncementBar() {
         <span className={styles.announcementBackLabel}>Cruzial.pe</span>
       </Link>
       <p className={styles.announcementInfo} role="status">
-        Envíos por Shalom <span aria-hidden="true">·</span> 100% Originales
+        Envíos por Shalom o motorizado <span aria-hidden="true">·</span> 100% Originales
         <span className={styles.announcementExtra}>
           {" "}
           <span aria-hidden="true">·</span> Decants Premium

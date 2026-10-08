@@ -78,6 +78,8 @@ test.describe("B2A catalog and customer workspaces (admin)", () => {
     await expect(page.getByRole("heading", { name: "Datos del producto" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "En Consolidado #9901" })).toBeVisible();
     await expect(page.getByText("Cambiar el precio o la disponibilidad aquí no modifica el producto ni otros consolidados.")).toBeVisible();
+    // Same multi-photo manager as Parfums: the upload area (multiple files) or the explicit reason it is unavailable.
+    await expect(page.locator("[data-media-dropzone], [data-media-unconfigured]")).toHaveCount(1);
     await expectAccessibleAndContained(page, testInfo);
   });
 

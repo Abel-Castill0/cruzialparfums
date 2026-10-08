@@ -66,7 +66,7 @@ const faqs = [
   },
   {
     q: "¿Cómo son los envíos?",
-    a: "Envíos por agencia Shalom. Cobertura, costo y destino se confirman por WhatsApp.",
+    a: "Envíos a todo el Perú por agencia Shalom, o por motorizado en Lima. Cobertura, costo y destino se confirman por WhatsApp.",
   },
   {
     q: "¿Qué presentación tienen los decants?",

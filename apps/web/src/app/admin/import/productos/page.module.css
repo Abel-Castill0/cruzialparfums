@@ -43,6 +43,12 @@
 .mediaActions{display:flex;flex-wrap:wrap;gap:6px}
 .mediaActions button{min-height:40px;padding:0 10px;font-size:11px}
 .mediaUploadBar{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.mediaDropzone{margin-top:12px;padding:16px;display:flex;flex-wrap:wrap;align-items:center;gap:12px;border:1px dashed #8fa3bb;color:#516176;font-size:13px;transition:border-color 160ms ease,background-color 160ms ease}
+.mediaDropzoneActive{border-color:#0b2d57;background:#eef3f9}
+.mediaQueue{margin:12px 0 0;padding:0;display:grid;gap:6px;list-style:none;font-size:13px}
+.mediaQueue li{display:flex;flex-wrap:wrap;gap:4px 12px;justify-content:space-between;padding:8px 12px;border:1px solid #c7d2df}
+.mediaQueue li[data-status="error"]{border-color:#b3382c;background:#fbefed;color:#6e1f19}
+.mediaQueue li[data-status="done"]{border-color:#4f7a52}
 .mediaEmptyPrimary{padding:10px 12px;border:1px solid #a56f16;background:rgba(165,111,22,0.08);color:#7d530d;font-size:12px}
 .filterInput{min-height:40px;padding:0 10px;border:1px solid #c7d2df;font-size:13px;background:#fff}
 .filterButton{min-height:40px;border:1px solid #0b2d57;background:#0b2d57;color:white;padding:0 14px;font-size:13px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center}
