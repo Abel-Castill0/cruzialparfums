@@ -24,11 +24,11 @@ git rev-parse HEAD
 
 Verified against Git, GitHub and Vercel on 2026-10-08 (not copied from older notes):
 
-- `master` = `4ba1dfc`; Production deployment `dpl_CHRYd57r5oxXdohgNdpqZSi8PcSd` (READY) serves
-  exactly that SHA on `cruzial.pe`. PR #45 (luxury storefront redesign, checkout shipping,
-  multi-photo Parfums) is merged and live. Production also includes #41/#42/#44 (dependency bumps).
-- Open work: PR #46 (Next 16.4.0 + sharp/source-map-js security patch) and the follow-up
-  branch described below. Repo migrations: 80; this checkpoint adds none.
+- At the time of writing `master` = `0b29651` (PR #46: Next 16.4.0 + sharp/source-map-js security
+  patch, merged by another session; Production serves that SHA on `cruzial.pe`). PR #45 (luxury
+  storefront redesign, checkout shipping, multi-photo Parfums) was already merged and live at
+  `4ba1dfc`. Always re-derive the live SHA from Git/Vercel.
+- Open work: PR #47 (the changes below). Repo migrations: 80; this checkpoint adds none.
 - **Import admin photos** now use the same multi-upload manager as Parfums (several files at once,
   drag and drop, per-file status, primary-first order, archive/restore, explicit "Cloudinary not
   configured" and read-only states). The public Import product page still shows only the primary
