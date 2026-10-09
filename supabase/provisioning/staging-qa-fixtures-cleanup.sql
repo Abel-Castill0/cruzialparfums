@@ -1,11 +1,18 @@
--- 4J5F-A cleanup. STAGING ONLY iyxidhglyqkzoziyewlc, after hosted QA.
--- Verify linked ref, pass --linked --project-ref iyxidhglyqkzoziyewlc explicitly.
+-- 4J5F-A cleanup. QA ONLY (iyxidhglyqkzoziyewlc is Production), after hosted QA.
+-- Verify linked ref, target the QA project ref explicitly.
 -- Exact unit + slug + name + brand; never a prefix or campaign-only selector.
 -- #6 and real offers are never deleted. Transaction/FKs reject unexpected references.
 -- 4J5G-A3 addition: removes ONLY the one deterministic campaign-9002 QA link
 -- added by staging-qa-fixtures-campaign-9002-link.sql, by its exact id.
 -- No wildcard/pattern selector. Campaign #6's offer for the same product
 -- is a distinct row (different id) and is untouched by this delete.
+-- GUARD (2026-10-09): iyxidhglyqkzoziyewlc is PRODUCTION (historically mislabelled "staging").
+-- This file runs only where the hand-made QA marker exists (scripts/lib/qa-target.mjs); it aborts elsewhere.
+do $qa_guard$ begin
+  if to_regclass('qa_env.marker') is null then
+    raise exception 'Refusing: qa_env.marker missing, this is not the QA database.';
+  end if;
+end $qa_guard$;
 begin;
 set local lock_timeout='5s';
 

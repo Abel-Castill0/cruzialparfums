@@ -1,5 +1,5 @@
--- 4J5G-A3: STAGING ONLY iyxidhglyqkzoziyewlc. Not a migration.
--- Caller MUST verify linked ref and pass --project-ref iyxidhglyqkzoziyewlc.
+-- 4J5G-A3: QA ONLY (iyxidhglyqkzoziyewlc is Production). Not a migration.
+-- Caller MUST verify linked ref and target the QA project ref explicitly.
 -- Extends staging-qa-fixtures.sql (run that first): links the existing
 -- synthetic product staging-qa-import-ready ([STAGING QA] Import Ready) to
 -- campaign 9002 ([STAGING QA] Open) as its ONE deterministic public QA
@@ -7,6 +7,13 @@
 -- cart -> checkout boundary) is exercisable against campaign 9002 without
 -- touching campaign #6 or inventing a second product.
 -- Cleanup: staging-qa-fixtures-cleanup.sql (same file, added section).
+-- GUARD (2026-10-09): iyxidhglyqkzoziyewlc is PRODUCTION (historically mislabelled "staging").
+-- This file runs only where the hand-made QA marker exists (scripts/lib/qa-target.mjs); it aborts elsewhere.
+do $qa_guard$ begin
+  if to_regclass('qa_env.marker') is null then
+    raise exception 'Refusing: qa_env.marker missing, this is not the QA database.';
+  end if;
+end $qa_guard$;
 begin;
 set local lock_timeout='5s';
 set local statement_timeout='30s';
