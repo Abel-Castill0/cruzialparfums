@@ -28,7 +28,9 @@ const PUBLIC_SPECS = /(public-hub|parfums-public-journey|parfums-storefront|parf
 
 export default defineConfig({
   testDir: "./e2e",
-  timeout: 30_000,
+  // Hosted QA (scripts/qa-hosted-browser.mjs): every request crosses to a remote database and each
+  // side-effect assertion spawns a throwaway psql container, so long journeys need a wider budget.
+  timeout: process.env.E2E_QA_PROJECT_REF ? 60_000 : 30_000,
   fullyParallel: true,
   retries: 0,
   reporter: [["list"]],
