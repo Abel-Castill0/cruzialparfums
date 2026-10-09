@@ -2213,7 +2213,11 @@ through the regular Git deployment after a guarded merge to `master`.
   authorization CLAUDE.md describes, not a blanket "never".
 - Never modify master before explicit cutover/merge authorization.
 - Never weaken RLS/auth.
-- Migrations already applied (staging or Production) are append-only.
+- Migrations already applied (QA or Production) are append-only.
+- Environments: Production = `iyxidhglyqkzoziyewlc` (despite its name); QA = `aqbhtmylqnpahynarnhm`. Vercel Preview
+  binds only to QA; never put Production credentials in Preview. Scripted QA writes go through
+  `scripts/qa-hosted-browser.mjs` (marker-guarded). Removing a Vercel variable shared by several targets with
+  `vercel env rm NAME <target>` deletes it from all of them: re-add and verify the remaining targets.
 - Default: never invent client prices, stock or commercial decisions. The
   owner-delegation exception in `CLAUDE.md` (2026-10-01) authorizes Claude to
   choose auditable, provisional launch prices from documented market research
