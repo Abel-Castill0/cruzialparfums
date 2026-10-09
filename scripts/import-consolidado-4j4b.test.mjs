@@ -28,9 +28,17 @@ test("routing requires an explicit supported target and exactly one mode", () =>
 test("staging never falls back to local and validates the hosted project identity", () => {
   assert.throws(() => resolveTarget("staging", {}), new RegExp(STAGING_DATABASE_URL_ENV));
   assert.throws(() => validateStagingDatabaseUrl("postgresql://postgres:secret@127.0.0.1:54322/postgres"), /Refusing to connect/u);
-  assert.throws(() => validateStagingDatabaseUrl("postgresql://postgres.iyxidhglyqkzoziyewlc:secret@example.com:6543/postgres"), /Refusing to connect/u);
-  const url = "postgresql://postgres.iyxidhglyqkzoziyewlc:secret@aws-0-us-east-1.pooler.supabase.com:6543/postgres";
-  assert.equal(validateStagingDatabaseUrl(url), url);
+  assert.throws(() => validateStagingDatabaseUrl("postgresql://postgres.aqbhtmylqnpahynarnhm:secret@example.com:6543/postgres"), /Refusing to connect/u);
+  // iyxidhglyqkzoziyewlc is PRODUCTION (historically named "staging"): never a valid target, even via the pooler.
+  assert.throws(() => validateStagingDatabaseUrl("postgresql://postgres.iyxidhglyqkzoziyewlc:secret@aws-0-us-west-2.pooler.supabase.com:6543/postgres"), /Production/u);
+  assert.throws(() => validateStagingDatabaseUrl("postgresql://postgres:secret@db.iyxidhglyqkzoziyewlc.supabase.co:5432/postgres"), /Production/u);
+  for (const user of ["postgres", "qa_runner"]) {
+    const url = `postgresql://${user}.aqbhtmylqnpahynarnhm:secret@aws-1-sa-east-1.pooler.supabase.com:5432/postgres`;
+    assert.equal(validateStagingDatabaseUrl(url), url);
+  }
+  // The old variable name (which on the owner's machine points at Production) is never read.
+  assert.equal(STAGING_DATABASE_URL_ENV, "CRUZIAL_QA_DATABASE_URL");
+  assert.throws(() => resolveTarget("staging", { CRUZIAL_STAGING_DATABASE_URL: "postgresql://postgres.iyxidhglyqkzoziyewlc:x@aws-0-us-west-2.pooler.supabase.com:5432/postgres" }), /CRUZIAL_QA_DATABASE_URL/u);
 });
 
 test("shared plan is deterministic, UUID-free, and preserves reviewed structure", async () => {
