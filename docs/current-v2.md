@@ -66,6 +66,49 @@ Verified against Git, GitHub and Vercel on 2026-10-08 (not copied from older not
   CLI. A real upload was NOT tested (needs a live admin session with MFA and would write real media).
   The admin now says explicitly when uploads are unconfigured (`data-media-unconfigured`).
 
+## Closure audit (2026-10-08) — evidence
+
+Base: `master` `868e493` (PR #47 -> `c021853` served by Production; PR #48 docs). Verified, not copied:
+
+- **Local gates on that base:** `npm ci`; `npm run check` PASS (101 files / 1163 Vitest tests, lint,
+  typecheck, build, commercial/catalog checks); `npm run db:gate` on local Supabase PASS (57 pgTAP
+  files / 1328 tests, from-scratch reset); local Playwright suite (`scripts/local-admin-browser.mjs`)
+  167 passed / 0 failed / 20 conditional skips; `npm audit --omit=dev --audit-level=high` = 0.
+  Dev-only audit: 6 high (brace-expansion, braces/micromatch/fast-glob via eslint-config-next) — build
+  tooling that only reads this repo's files, `braces`/`micromatch` are already at their latest
+  release, nothing ships to production; accepted, re-check when eslint-config-next moves.
+- **Database exposure (Production, read-only):** every table in `public/private/app` has RLS; no
+  SECURITY DEFINER function lacks a fixed `search_path`; all views are `security_invoker`; `anon` has
+  SELECT only on 16 public-catalog tables, each gated by a publication predicate
+  (`app.*_is_public`), and executes only 10 `public_*`/helper read RPCs; every admin RPC calls
+  `app.assert_admin_for(...)` (e.g. `transition_order_for_unit`: row lock, audit, idempotent replay).
+  Advisors: security = same 4 INFO (service-role-only tables) + definer-executable WARNs that match
+  this inventory + leaked-password protection (Free plan); performance = unused-index INFO (0 orders
+  yet) and multiple-permissive-policies WARN on low-traffic admin-readable tables (not touched:
+  rewriting RLS for a lint is riskier than the cost). No new actionable finding.
+- **Bottle prices reconciled from the live DB (Parfums):** 24 bottle variants = 18
+  `owner_selected_provisional` + published (owner delegation 2026-10-01), 2 `provisional_market` held in
+  draft (`cedrat-boise-int`, `victory-elixir`: concentration/identity conflict), 4 `legacy` held in draft
+  (`1-million-lucky`, `by-the-fireplace`, `le-beau-le-parfum`, `bir-intense` archived). Decants: 297
+  `official_pdf` published (288 + 9 combo variants) and 3 legacy draft (archived `invictus-elixir`).
+  Older notes saying "20 provisional_market / 4 legacy" describe the state before the 2026-10-01
+  promotion; the table above is current.
+- **Fixed in this pass:** (1) P2 fail-open: with Supabase unconfigured the Parfums storefront served the
+  legacy fixture, whose unverified prices (e.g. a S/ 380.00 bottle) would have been shown by any Vercel
+  deployment that lost its Supabase variables — `legacy-fixture-policy.ts` now allows the fixture only
+  when `VERCEL` is unset (local/unit tests); deployed builds render the honest "catálogo no disponible".
+  (2) P3 copy: Import's "unavailable" state no longer also claims "no hay un consolidado activo".
+  (3) New guard test `app/admin/admin-actions-authorization.test.ts`: every admin Server Action file
+  must import and call `requireUnitAdmin` (auth-flow files allow-listed explicitly). (4) Stale
+  `docs/ci-e2e-notes.md` rewritten (E2E has been a CI job for a while).
+- **Known, deliberately not changed:** `docs/client-decisions.md` still says "Shalom only" (superseded by
+  `docs/parfums-shipping.md`; changing it requires regenerating the fingerprinted reconciliation
+  artifact and an append-only Production migration — no operational benefit). Dependabot PRs #5
+  (eslint 10: E2E fails) and #10 (TypeScript 7: typecheck/unit fail) are incompatible with the current
+  toolchain.
+- **Write flows verified locally only** (no hosted staging exists): orders, duplicate/idempotency,
+  admin mutations, MFA/AAL2, uploads. Owner-session checks: `docs/owner-verification-runbook.md`.
+
 ## Architecture
 
 Next.js 16 + strict TypeScript
