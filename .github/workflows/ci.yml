@@ -26,9 +26,12 @@ jobs:
           cache-dependency-path: apps/web/package-lock.json
       - run: npm ci
       - run: npm audit --omit=dev --audit-level=high
+      # Dev + prod: fails on any high/critical advisory except the named, justified exception(s).
+      - run: npm run audit:dev
       - run: npm run catalog:check
       - run: npm run commercial:check
       - run: npm run test:4j4b
+      - run: npm run test:audit-gate
       - run: npm run lint
       - run: npm run typecheck
       - run: npm run test
