@@ -41,6 +41,9 @@ export default defineConfig({
     { name: "chromium", testMatch: PUBLIC_SPECS, use: { ...devices["Desktop Chrome"] } },
     { name: "responsive", testMatch: /responsive\.spec\.ts/, use: { ...devices["Desktop Chrome"] } },
     { name: "mobile", testMatch: PUBLIC_SPECS, use: { ...devices["Pixel 7"] } },
+    // Tablet portrait (touch, 820x1180) between the phone and desktop layouts. Chromium engine on purpose:
+    // the layout breakpoints are what is under test, not a second browser engine.
+    { name: "tablet", testMatch: PUBLIC_SPECS, use: { ...devices["Desktop Chrome"], viewport: { width: 820, height: 1180 }, hasTouch: true } },
     {
       name: "admin",
       testMatch: /(admin-critical|admin-authenticated|gate-b-operations|admin-catalog-customers|admin-combos-wholesale|admin-owner-editability|admin-product-photos)\.spec\.ts/,

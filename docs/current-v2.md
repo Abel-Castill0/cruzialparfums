@@ -109,6 +109,45 @@ Base: `master` `868e493` (PR #47 -> `c021853` served by Production; PR #48 docs)
 - **Write flows verified locally only** (no hosted staging exists): orders, duplicate/idempotency,
   admin mutations, MFA/AAL2, uploads. Owner-session checks: `docs/owner-verification-runbook.md`.
 
+## Exceptions closure (2026-10-08, second pass) — CURRENT; supersedes the dev-audit and E2E counts above
+
+Base `master` `c9f987e` (Production serves it). Branch `claude/fix/dev-dependency-advisories`.
+
+- **Dev dependency advisories:** was 6 high, now **5 high, all one chain** and not fixable today.
+  `brace-expansion` (3 advisories, GHSA-q2hr/qhr7/6j4f) **fixed** by a lockfile-only `npm audit fix`
+  (1.1.18->1.1.21, 5.0.9->5.0.12; no manifest change). Remaining: `braces` GHSA-vfj7-8cjw-p6xm
+  (stack-exhaustion DoS on deeply nested brace patterns, CVSS 7.5, published 2026-09-18) with **no patched
+  release in the registry** (`braces` latest 3.0.3 is the vulnerable ceiling), reached via
+  `eslint-config-next@16.4.0 (latest) -> @next/eslint-plugin-next -> fast-glob@3.3.1 -> micromatch@4.0.8 ->
+  braces`. `npm audit`'s suggested "fix" is a downgrade to `eslint-config-next@14.2.35` (rejected: major,
+  incompatible with Next 16). Real scope: lint tooling, devDependencies only, patterns come from the
+  plugin's own config, never from user input; not in the production bundle (`npm audit --omit=dev` = 0).
+  Residual risk: a CPU/stack DoS of a developer/CI lint run. What resolves it: a patched `braces`
+  (or fast-glob/micromatch dropping it). Control added: `npm run audit:dev` (CI step) fails on **any**
+  other high/critical advisory and prints this exception on every run; it also flags the exception as
+  stale once fixed (`scripts/audit-dev-gate.mjs`, 4 node tests).
+- **Supabase leaked-password protection:** not a code vulnerability. The org is on the **Free** plan and the
+  feature is Pro-and-above (Supabase docs), so the advisor WARN cannot be cleared without a plan change
+  (cost, owner decision). Compensating controls verified in code: AAL2 MFA for the whole admin panel;
+  password reset only from a recovery session (aal1 password sessions are rejected, so a stolen password
+  cannot change the account password) with a minimum length; sign-up disabled (local config). Hosted Auth
+  settings are not readable from here (needs a management token) — checklist in the owner runbook.
+  Production Auth config was not changed.
+- **Skipped E2E tests (20 -> 17):** each skip analysed in `docs/ci-e2e-notes.md`. Removed 8 that hid
+  coverage: Cloudinary-faked multi-upload (2; runner injects placeholder `CLOUDINARY_*`), Import order
+  lifecycle (2; stale selector), gallery (2; hard-coded production slug), rail/carousel (2; selector could
+  never match hashed CSS-module classes). Fixtures added (local, synthetic). New `tablet` project
+  (820x1180). Remaining 17 are by design or need a hosted identity (4 `admin-authenticated`: no hosted
+  staging exists; procedure documented).
+- **Results:** `npm run check` PASS (104 files / 1186 Vitest + 6 + 4 node tests, lint, typecheck, build);
+  local Playwright on a fresh stack **238 passed / 0 failed / 17 skipped** (previously 167/0/20, no tablet);
+  `npm audit --omit=dev --audit-level=high` 0; `audit:dev` PASS (1 documented exception). pgTAP/db untouched
+  by this pass (no migrations; last run 57 files / 1328 tests).
+- **Owner runbook** re-verified against deployed code (`/auth/callback`, `/admin/mfa/*`, `/admin/forgot-password`,
+  `data-media-unconfigured`, Cloudinary folder `cruzial/<unit>/products/<id>`); read-only Production
+  pre-checks recorded there. Log availability: DB `audit_log` has no time retention; Supabase Free dashboard
+  reports reach 24 h; Vercel retention depends on plan (not read). No new Production writes.
+
 ## Architecture
 
 Next.js 16 + strict TypeScript

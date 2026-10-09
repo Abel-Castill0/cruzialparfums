@@ -92,7 +92,9 @@ test("carousels hold their rotation while keyboard focus is on any of their cont
   const carousels = [
     { name: "hero", root: "[data-home-hero]", wait: 8_500, read: () => document.querySelector("[data-home-hero] [aria-current=true]")?.getAttribute("aria-label") ?? "" },
     { name: "combos", root: "[aria-label='Combos Cruzial'][role=region]", wait: 6_500, read: () => String([...document.querySelectorAll("[aria-label='Combos Cruzial'] article")].findIndex((slide) => (slide as HTMLElement).dataset.active === "true")) },
-    { name: "rail", root: "[class*=marquee]", wait: 2_500, read: () => String(Math.round(document.querySelector("[class*=marquee] [class*=viewport]")?.scrollLeft ?? -1)) },
+    // Data attributes, not class names: CSS-module classes are hashed in a production build, so a [class*=marquee]
+    // selector never matched and this rail was silently never exercised.
+    { name: "rail", root: "[data-product-marquee]", wait: 2_500, read: () => String(Math.round(document.querySelector("[data-product-marquee] [data-loop='true']")?.scrollLeft ?? -1)) },
   ];
   let exercised = 0;
   for (const carousel of carousels) {
@@ -269,7 +271,8 @@ test("checkout shipping: motorizado flags restricted districts and offers Shalom
 });
 
 test("a product with several photos gets a gallery: thumbnails, arrows and keyboard", async ({ page }) => {
-  await page.goto("/parfums/productos/khamrah-clasico");
+  // Hosted data: a real catalog product with several photos. Local stack: the synthetic two-photo product.
+  await page.goto(process.env.E2E_LOCAL_FIXTURES === "1" ? "/parfums/productos/local-qa-galeria" : "/parfums/productos/khamrah-clasico");
   const thumbs = page.locator("[data-gallery-thumbs] button");
   test.skip((await thumbs.count()) < 2, "this stack has no product with several photos");
 

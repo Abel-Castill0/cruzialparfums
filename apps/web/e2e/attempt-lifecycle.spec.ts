@@ -79,10 +79,13 @@ test.describe("attempt lifecycle — Import order", () => {
   test.skip(() => process.env.E2E_ALLOW_ORDER_SUBMIT !== "1" || !LOCAL_DB_AVAILABLE, "needs the disposable local stack");
 
   test("lost response + reload: the retry reports the SAME order as already registered", async ({ page }) => {
-    await page.goto("/import");
+    // The add-to-cart control lives on the product page (the Import home no longer carries one). The local
+    // fixture guarantees an open campaign offering this product, so its absence is a failure, not a skip.
+    await page.goto("/import/producto/local-qa-import");
     const add = page.getByRole("button", { name: "Agregar al carrito" }).first();
-    test.skip(!(await add.isVisible().catch(() => false)), "local fixture has no open Import campaign with products");
+    await expect(add).toBeVisible();
     await add.click();
+    await expect(page.getByRole("status").filter({ hasText: /agregado al carrito/i })).toBeAttached();
     await page.goto("/import/checkout");
     const phone = testCustomerPhone(test.info());
     const fill = async () => {

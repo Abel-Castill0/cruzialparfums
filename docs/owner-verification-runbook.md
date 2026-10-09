@@ -61,6 +61,34 @@ No uses un producto publicado.
 6. Opcional, imágenes varias: sube 2–3 a la vez y confirma que un archivo inválido (p. ej. un `.txt`) falla
    solo ese archivo sin detener los demás.
 
+## Ya comprobado automáticamente (solo lectura, 2026-10-08, sin tocar datos)
+
+Contra `https://cruzial.pe`, sin sesión: `/admin/forgot-password` 200; `/admin/reset-password` redirige a
+`/admin/forgot-password` (exige sesión de recuperación); `/admin/mfa/enroll`, `/admin/mfa/challenge` y
+`/admin/security` redirigen a `/admin/login`; `/auth/callback` sin código redirige a
+`/admin/login?error=missing_code` y con un código inválido a `?error=invalid_link` (la ruta llega a Supabase
+y rechaza). Cabeceras CSP (nonce), HSTS, `X-Frame-Options: DENY` y `nosniff` presentes. Esto prueba que las
+rutas están desplegadas y protegidas; **no** prueba el correo, el MFA ni Cloudinary, que siguen siendo manuales.
+La lógica MFA/AAL2 (denegación AAL1, viewer y entre unidades) está cubierta por pgTAP y por el E2E local.
+
+## Configuración en el panel de Supabase (no se puede leer desde el repositorio)
+
+*Authentication → URL Configuration:* `Site URL` = `https://cruzial.pe` y en *Redirect URLs*
+`https://cruzial.pe/auth/callback`. *Authentication → Providers → Email:* longitud mínima de contraseña
+(el código exige un mínimo al restablecer; local usa 12). *Protección contra contraseñas filtradas*
+(HaveIBeenPwned): **no disponible en el plan Free** (según la documentación de Supabase es de plan Pro o
+superior; la organización está en Free). No es una vulnerabilidad del código: control compensatorio = MFA
+AAL2 obligatorio para todo el panel y restablecimiento solo con sesión de recuperación. No cambies esto sin
+decidir el cambio de plan (coste).
+
+## Registros para investigar incidentes
+
+- *Base de datos:* `audit_log` (mutaciones de admin) y `order_status_events` no tienen retención por tiempo
+  (58 filas de auditoría entre 2026-09-13 y 2026-10-05).
+- *Supabase (plan Free):* los informes del panel llegan a 24 horas atrás; no hay historial largo de logs de API/Auth.
+- *Vercel:* los logs de ejecución se consultan con `vercel logs`; su retención depende del plan del equipo
+  (no leída desde aquí). Para investigaciones largas hace falta un drenaje de logs (coste/decisión del propietario).
+
 ## Qué reportar a Claude
 
 Una línea por prueba: `MFA: PASA`, `Recuperación: FALLA — el enlace apunta a …`, `Cloudinary: PASA`.
