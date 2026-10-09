@@ -150,6 +150,16 @@ describe("importGalleryPhotos", () => {
     ]);
   });
 
+  it("drops URLs that must never reach an <img> (same rule as Parfums)", () => {
+    expect(importGalleryPhotos([
+      { secure_url: "http://res.cloudinary.com/x/a.png", alt: "http", provider: "cloudinary" },
+      { secure_url: "//evil.example/a.png", alt: "protocol-relative", provider: "legacy_static" },
+      { secure_url: "data:image/png;base64,AAAA", alt: "data", provider: "cloudinary" },
+      { secure_url: "/icon.png", alt: "relative but not legacy", provider: "cloudinary" },
+      { secure_url: "/icon.png", alt: "Local", provider: "legacy_static" },
+    ], product)).toEqual([{ url: "/icon.png", alt: "Local" }]);
+  });
+
   it("falls back to the product's resolved photo when the read failed or found nothing", () => {
     const fallback = [{ url: product.mediaUrl, alt: product.mediaAlt }];
     expect(importGalleryPhotos(null, product)).toEqual(fallback);

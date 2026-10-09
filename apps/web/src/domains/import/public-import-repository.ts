@@ -94,7 +94,7 @@ export class PublicImportRepository {
   async readProductPhotos(productId: string): Promise<ImportMediaRow[] | null> {
     const result = await this.supabase
       .from("product_media")
-      .select("secure_url,alt")
+      .select("secure_url,alt,provider")
       .eq("product_id", productId)
       .is("archived_at", null)
       .order("is_primary", { ascending: false })

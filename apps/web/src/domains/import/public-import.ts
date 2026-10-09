@@ -297,7 +297,14 @@ export function buildImportCatalogHref(
 }
 
 export type ImportGalleryPhoto = { url: string; alt: string };
-export type ImportMediaRow = { secure_url: string | null; alt: string | null };
+export type ImportMediaRow = { secure_url: string | null; alt: string | null; provider?: string | null };
+
+/** Same rule as the Parfums public mapper: HTTPS, or a root-relative path to an asset this app hosts
+ * (provider `legacy_static`). http://, protocol-relative and data: URLs never reach an <img>. */
+function publicPhotoUrl(row: ImportMediaRow, url: string): boolean {
+  if (/^https:\/\//.test(url)) return true;
+  return row.provider === "legacy_static" && /^\/(?!\/)[^\s]+$/.test(url);
+}
 
 /**
  * Every public photo of an Import product, primary first, in the order the admin arranged them
@@ -312,7 +319,7 @@ export function importGalleryPhotos(rows: ImportMediaRow[] | null, product: Pick
   const photos: ImportGalleryPhoto[] = [];
   for (const row of rows ?? []) {
     const url = row.secure_url?.trim();
-    if (!url || seen.has(url)) continue;
+    if (!url || seen.has(url) || !publicPhotoUrl(row, url)) continue;
     seen.add(url);
     photos.push({ url, alt: row.alt?.trim() || base });
   }
