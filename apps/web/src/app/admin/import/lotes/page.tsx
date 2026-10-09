@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getAdminSession } from "@/lib/auth/admin-session";
@@ -5,6 +6,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { BulkCatalogRow } from "@/domains/admin-import/bulk-catalog";
 import { BulkManager } from "./bulk-manager";
 import styles from "../productos/page.module.css";
+export const metadata: Metadata = { title: "Operaciones por lote" };
 export const dynamic="force-dynamic";
 export default async function BulkPage({searchParams}:{searchParams:Promise<{campaign?:string}>}) {
  const session=await getAdminSession(); if(session.status!=="ok") redirect("/admin");

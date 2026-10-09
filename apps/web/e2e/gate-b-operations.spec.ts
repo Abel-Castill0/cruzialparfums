@@ -41,6 +41,7 @@ test.describe("Gate B local operations",()=>{
   await page.setViewportSize({width:390,height:844});await page.goto("/admin/import/operaciones");await expect(page.getByRole("heading",{name:"Operaciones · Cruzial Import"})).toBeVisible();
   const job=page.locator("li").filter({hasText:ids.importOrder}).filter({hasText:"Rechazado"}).first();await job.getByRole("button",{name:"Reintentar",exact:true}).click();await expect(page.getByText("Reintento registrado en la cola.")).toBeVisible();
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true);
+  await expect(page).toHaveTitle(/Operaciones Import/);
   const scan=await new AxeBuilder({page}).analyze();expect(scan.violations.filter(v=>["critical","serious"].includes(v.impact??""))).toEqual([]);
   await page.getByLabel("Móvil interno para alertas de reclamos").focus();await expect(page.getByLabel("Móvil interno para alertas de reclamos")).toBeFocused();
  });
