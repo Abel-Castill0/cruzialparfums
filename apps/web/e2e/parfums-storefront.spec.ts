@@ -28,10 +28,12 @@ async function fillCheckoutForm(page: Page, phone: string) {
   // Shipping is a required step: "my agency is not listed" keeps the free-text
   // district this flow has always used.
   // Retried because a click that lands before React hydrates the form (right
-  // after a reload) is reverted by the controlled radio.
+  // after a reload) is reverted by the controlled radio. Not forced: the input is
+  // an invisible overlay of its label, and a forced click right after scrolling
+  // could land on the sticky header; check() verifies the hit target first.
   const other = page.getByRole("radio", { name: /Mi agencia no aparece/ });
   await expect(async () => {
-    await other.click({ force: true });
+    await other.check({ timeout: 2_000 });
     await expect(other).toBeChecked({ timeout: 1_000 });
   }).toPass({ timeout: 10_000 });
   await page.locator("#checkout-district").fill("Miraflores");
