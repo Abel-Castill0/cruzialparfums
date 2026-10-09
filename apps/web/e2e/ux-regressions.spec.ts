@@ -163,9 +163,12 @@ test("a product with several photos gets a gallery: thumbnails, arrows and keybo
 
   const counter = page.locator("[data-product-stage] span[aria-live]");
   const total = await thumbs.count();
-  await expect(counter).toHaveText(`1 / ${total}`);
+  // The stage opens on the default presentation's own photo when it has one (not necessarily photo 1).
+  await expect(counter).toHaveText(new RegExp(`^\\d+ / ${total}$`));
+  const start = Number((await counter.textContent())!.split("/")[0]!.trim());
+  await expect(thumbs.nth(start - 1)).toHaveAttribute("aria-current", "true");
   await page.locator("[data-gallery-next]").click();
-  await expect(counter).toHaveText(`2 / ${total}`);
+  await expect(counter).toHaveText(`${(start % total) + 1} / ${total}`);
   await thumbs.nth(total - 1).click();
   await expect(counter).toHaveText(`${total} / ${total}`);
   await page.locator("[data-product-stage]").focus();
