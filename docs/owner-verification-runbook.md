@@ -4,10 +4,13 @@ Tres comprobaciones que solo puede hacer una persona con sesión real. Claude no
 contraseñas, códigos MFA ni secretos: el propietario las hace en su navegador y anota solo
 **PASA / FALLA** y, si falla, el mensaje de error visible (sin pegar códigos ni enlaces de recuperación).
 
-> **Aviso de entorno.** Hoy existe un único proyecto Supabase (`iyxidhglyqkzoziyewlc`) y es el de
-> **Producción** (80 migraciones = repo, 944 productos, 0 pedidos, 0 clientes, sin fixtures QA). No hay
-> staging separado, y Preview no tiene variables de Supabase a propósito. Por eso estas pruebas se hacen
-> en `https://cruzial.pe` con datos mínimos y reversibles. No crees pedidos, clientes ni reclamos de prueba.
+> **Aviso de entorno (actualizado 2026-10-09).** `iyxidhglyqkzoziyewlc` (nombre histórico
+> `cruzial-v2-staging`) **es Producción**. Desde el 2026-10-09 existe un staging real y aislado:
+> `cruzial-v2-qa` (`aqbhtmylqnpahynarnhm`, coste 0 USD/mes, plan Free), con las 80 migraciones del repo y
+> solo datos sintéticos; Preview de Vercel apunta **solo** a QA. Las pruebas de escritura (pedidos, admin,
+> MFA con identidades sintéticas) se automatizan allí (`scripts/qa-hosted-browser.mjs`). Lo que sigue
+> son comprobaciones que requieren **tu** cuenta real en Producción: hazlas en `https://cruzial.pe` con
+> datos mínimos y reversibles. No crees pedidos, clientes ni reclamos de prueba en Producción.
 
 ## 1. MFA del administrador (AAL2)
 
@@ -71,10 +74,13 @@ y rechaza). Cabeceras CSP (nonce), HSTS, `X-Frame-Options: DENY` y `nosniff` pre
 rutas están desplegadas y protegidas; **no** prueba el correo, el MFA ni Cloudinary, que siguen siendo manuales.
 La lógica MFA/AAL2 (denegación AAL1, viewer y entre unidades) está cubierta por pgTAP y por el E2E local.
 
-## Configuración en el panel de Supabase (no se puede leer desde el repositorio)
+## Configuración de Auth en Supabase (verificada con la CLI el 2026-10-09)
 
-*Authentication → URL Configuration:* `Site URL` = `https://cruzial.pe` y en *Redirect URLs*
-`https://cruzial.pe/auth/callback`. *Authentication → Providers → Email:* longitud mínima de contraseña
+Se lee sin modificar con `supabase config push` respondiendo **n** (muestra la diferencia con `config.toml`).
+Producción, corregido el 2026-10-09: `Site URL` era una URL de un despliegue antiguo de Vercel y ahora es
+`https://cruzial.pe`; *Redirect URLs* = `https://cruzial.pe/auth/callback`, `https://www.cruzial.pe/auth/callback`
+y los dos `localhost` (se quitaron dos URLs de despliegues antiguos). Registro público desactivado y
+contraseña mínima 12 coinciden con el repositorio. *Authentication → Providers → Email:* longitud mínima de contraseña
 (el código exige un mínimo al restablecer; local usa 12). *Protección contra contraseñas filtradas*
 (HaveIBeenPwned): **no disponible en el plan Free** (según la documentación de Supabase es de plan Pro o
 superior; la organización está en Free). No es una vulnerabilidad del código: control compensatorio = MFA
@@ -94,10 +100,13 @@ decidir el cambio de plan (coste).
 Una línea por prueba: `MFA: PASA`, `Recuperación: FALLA — el enlace apunta a …`, `Cloudinary: PASA`.
 Con eso se corrige la configuración y se actualiza `docs/current-v2.md`.
 
-## Pendiente estructural: staging real
+## Staging real (QA) — disponible desde 2026-10-09
 
-Para probar flujos de escritura sin tocar Producción hace falta un **segundo proyecto Supabase** (staging),
-con las migraciones del repo (`supabase link` + `supabase db push` sobre ese proyecto), las fixtures QA
-(`supabase/provisioning/staging-qa-fixtures*.sql`) y entonces sí `NEXT_PUBLIC_SUPABASE_URL` /
-`NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` en el target **Preview** de Vercel. Crear el proyecto implica coste
-y es decisión del propietario.
+- Proyecto Supabase `cruzial-v2-qa` (`aqbhtmylqnpahynarnhm`, sa-east-1, Free, 0 USD/mes). Marcador
+  `qa_env.marker` creado a mano (no es una migración, no puede existir en Producción); todo script que
+  escribe en QA lo comprueba antes (`scripts/lib/qa-target.mjs`).
+- Preview de Vercel: `NEXT_PUBLIC_SUPABASE_URL`/`NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`/`SUPABASE_SECRET_KEY`
+  de QA, `ORDER_ABUSE_HMAC_SECRET` propio, `CRUZIAL_PRODUCTION_CUTOVER_APPROVED=false`; **sin** Cloudinary
+  (la única cuenta es la de Producción) y sin WhatsApp.
+- Uso local (el archivo `.env.qa` está ignorado por git; nunca lo compartas):
+  `node scripts/qa-hosted-browser.mjs --check | --reset | --build | --seed`.
