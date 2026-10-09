@@ -34,7 +34,7 @@ function walk(dir: string, out: string[] = []): string[] {
 function serverActionFiles(): string[] {
   return [join(SRC, "app", "admin"), join(SRC, "components", "admin")]
     .flatMap((dir) => walk(dir))
-    .filter((file) => /^\s*(?:\/\/[^\n]*\n|\/\*[\s\S]*?\*\/\s*)*["']use server["']/.test(readFileSync(file, "utf8")))
+    .filter((file) => /^["']use server["'];?\s*$/m.test(readFileSync(file, "utf8")))
     .map((file) => relative(SRC, file).split(sep).join("/"));
 }
 
