@@ -84,7 +84,13 @@ deployment was never affected (env is bound at build); the redeploy above was bu
   (was 238/0/17; projects chromium, mobile, tablet, responsive, admin, isolated).
 - Hosted QA: pgTAP **52 files / 1289** PASS (= local minus the 5 dblink concurrency files, 39 tests, which
   hard-code the local container host and stay covered locally); Playwright **243 / 0 / 0** with real hosted
-  Auth (password + TOTP, AAL2) on synthetic identities.
+  Auth (password + TOTP, AAL2) on synthetic identities; QA runs use a 60 s per-test budget (remote DB +
+  a psql container per side-effect assertion). After the runs QA held 27 synthetic orders, 41 outbox rows, 0 sent.
+- **Production, read-only** (`E2E_BASE_URL=https://cruzial.pe`, chromium/mobile/tablet/responsive): **170 passed /
+  0 failed / 30 skipped**; the 30 skips are exactly the write journeys (orders, complaints, Import orders), which
+  refuse to run without the disposable fixture database. The first run found two stale specs (gallery assumed it
+  opens on photo 1; Import's preview-only consolidado state was unknown to the journey spec) — fixed in the specs,
+  not product defects.
 - `npm audit --omit=dev --audit-level=high` 0; `npm run audit:dev` PASS (1 documented exception: `braces`
   GHSA-vfj7-8cjw-p6xm, still no patched release — latest 3.0.3; lint tooling only).
 - Advisors (Production and QA identical): 4 INFO rls_enabled_no_policy (service-role-only tables), definer-executable
