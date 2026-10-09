@@ -1,4 +1,3 @@
-import { createHash } from "node:crypto";
 import { deflateSync } from "node:zlib";
 import { expect, test, type Page } from "@playwright/test";
 import { localSql } from "./local-db";
@@ -41,15 +40,16 @@ function cloudinaryAuth() {
   return { cloud, key, secret, basic: Buffer.from(`${key}:${secret}`).toString("base64") };
 }
 
-async function destroy(publicId: string): Promise<number> {
-  const { cloud, key, secret } = cloudinaryAuth();
-  const timestamp = Math.floor(Date.now() / 1000);
-  const signature = createHash("sha1").update(`public_id=${publicId}&timestamp=${timestamp}${secret}`).digest("hex");
-  const response = await fetch(`https://api.cloudinary.com/v1_1/${cloud}/image/destroy`, {
-    method: "POST",
-    body: new URLSearchParams({ public_id: publicId, api_key: key, timestamp: String(timestamp), signature }),
+/** Admin API delete (Basic auth over HTTPS): no request signature to compute. Returns the deleted status. */
+async function destroy(publicId: string): Promise<string | undefined> {
+  const { cloud, basic } = cloudinaryAuth();
+  const query = new URLSearchParams({ "public_ids[]": publicId, invalidate: "true" });
+  const response = await fetch(`https://api.cloudinary.com/v1_1/${cloud}/resources/image/upload?${query}`, {
+    method: "DELETE",
+    headers: { Authorization: `Basic ${basic}` },
   });
-  return response.status;
+  const body = (await response.json()) as { deleted?: Record<string, string> };
+  return body.deleted?.[publicId];
 }
 
 async function lookup(publicId: string): Promise<number> {
@@ -126,7 +126,7 @@ test("Admin uploads a real photo to Cloudinary, it is registered, served, archiv
   } finally {
     // Clean up: the asset lives in Production's Cloudinary account, so it must not survive the test.
     for (const publicId of new Set([...uploaded, ...(await assetsUnderProduct())])) {
-      expect(await destroy(publicId)).toBe(200);
+      expect(await destroy(publicId)).toBe("deleted");
       expect(await lookup(publicId)).toBe(404);
     }
     localSql(`delete from public.product_media where product_id='${PRODUCT}';`);
