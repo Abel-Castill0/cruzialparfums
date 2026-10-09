@@ -5,8 +5,9 @@
  */
 import { spawnSync } from "node:child_process";
 import { createRequire } from "node:module";
-import { randomBytes, createHmac } from "node:crypto";
-import { mkdirSync, readFileSync, writeFileSync, existsSync } from "node:fs";
+import { randomBytes } from "node:crypto";
+import { mkdirSync, readFileSync } from "node:fs";
+import { ensureIdentities } from "./lib/e2e-identities.mjs";
 import { fileURLToPath } from "node:url";
 const root = fileURLToPath(new URL("../", import.meta.url));
 const web = fileURLToPath(new URL("../apps/web/", import.meta.url));
@@ -22,39 +23,17 @@ const env = { ...process.env, NEXT_PUBLIC_SUPABASE_URL: url.origin,
   CRUZIAL_PRODUCTION_CUTOVER_APPROVED: "false", WHATSAPP_ACCESS_TOKEN: "", WHATSAPP_APP_SECRET: "", WHATSAPP_PARFUMS_PHONE_NUMBER_ID: "", WHATSAPP_IMPORT_PHONE_NUMBER_ID: "",
   ORDER_ABUSE_HMAC_SECRET: randomBytes(32).toString("hex"), SITE_URL: "http://localhost:3100", E2E_LOCAL_PORT: "3100" };
 delete env.E2E_BASE_URL;
+// Non-credential placeholders for the loopback-only server: the multi-photo upload specs intercept every
+// Cloudinary request in the browser, so the server only needs a *configured-looking* env to sign an
+// authorization. Overwritten unconditionally so a developer's real Cloudinary credentials can never be
+// used (or even read) by this disposable stack.
+env.CLOUDINARY_CLOUD_NAME = "e2e-local-cloud";
+env.CLOUDINARY_API_KEY = "000000000000000";
+env.CLOUDINARY_API_SECRET = "e2e-local-placeholder-not-a-credential";
 const admin = createClient(url.origin, config.SERVICE_ROLE_KEY, { auth: { persistSession: false } });
-function assertResult(result, label) { if (result.error) throw new Error(`${label} failed (${result.error.code ?? result.error.status ?? "unknown"}).`); return result.data; }
-function totp(secret) {
-  const bits = [...secret.replace(/=+$/, "")].map(c => "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567".indexOf(c).toString(2).padStart(5,"0")).join("");
-  const bytes = Buffer.from((bits.match(/.{8}/g) ?? []).map(b=>parseInt(b,2)));
-  const counter = Buffer.alloc(8); counter.writeBigUInt64BE(BigInt(Math.floor(Date.now()/30000)));
-  const digest = createHmac("sha1",bytes).update(counter).digest();
-  return String((digest.readUInt32BE(digest[19]&15)&0x7fffffff)%1000000).padStart(6,"0");
-}
 mkdirSync(`${web}e2e/.auth`, { recursive: true });
-const fixtureFile = `${web}e2e/.auth/local-fixtures.json`;
-const saved = existsSync(fixtureFile) ? JSON.parse(readFileSync(fixtureFile,"utf8")) : {};
-const units = assertResult(await admin.from("business_units").select("id,code"), "Read units");
-for (const [prefix, codes, role = "admin"] of [["E2E_ADMIN",["parfums","import"]],["E2E_PARFUMS_ADMIN",["parfums"]],["E2E_GATE_B_ADMIN",["parfums","import"]],["E2E_PARFUMS_VIEWER",["parfums"],"viewer"]]) {
-  let identity = saved[prefix];
-  if (identity && (await admin.auth.admin.getUserById(identity.id)).error) identity = null;
-  if (!identity) {
-    const email = `local-${randomBytes(8).toString("hex")}@example.test`;
-    const password = `${randomBytes(24).toString("base64url")}aA1!`;
-    const user = assertResult(await admin.auth.admin.createUser({email,password,email_confirm:true}), "Create local user").user;
-    assertResult(await admin.from("admin_memberships").insert(units.filter(u=>codes.includes(u.code)).map(u=>({user_id:user.id,business_unit_id:u.id,role,is_active:true}))), "Grant local membership");
-    const client = createClient(url.origin, config.ANON_KEY, {auth:{persistSession:false}});
-    assertResult(await client.auth.signInWithPassword({email,password}), "Local sign-in");
-    const factor = assertResult(await client.auth.mfa.enroll({factorType:"totp",friendlyName:"Local browser verification"}), "Enroll local TOTP");
-    assertResult(await client.auth.mfa.challengeAndVerify({factorId:factor.id,code:totp(factor.totp.secret)}), "Verify local TOTP");
-    identity = {id:user.id,email,password,secret:factor.totp.secret};
-    saved[prefix] = identity;
-    writeFileSync(fixtureFile, JSON.stringify(saved), {mode:0o600});
-  }
-  env[`${prefix}_EMAIL`]=identity.email;
-  env[`${prefix}_PASSWORD`]=identity.password;
-  env[`${prefix}_TOTP_SECRET`]=identity.secret;
-}
+await ensureIdentities({ createClient, apiUrl: url.origin, publishableKey: config.ANON_KEY, admin,
+  fixtureFile: `${web}e2e/.auth/local-fixtures.json`, env, label: "local" });
 const args = process.argv.slice(2);
 if (args.includes("--seed")) {
   args.splice(args.indexOf("--seed"),1);

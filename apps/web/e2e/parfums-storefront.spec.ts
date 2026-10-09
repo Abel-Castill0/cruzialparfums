@@ -19,15 +19,21 @@ async function checkoutWithQaProduct(page: Page, phone: string) {
 }
 
 async function fillCheckoutForm(page: Page, phone: string) {
+  // The cart total is computed client-side from storage, so a non-zero total means the form has
+  // hydrated. Waiting for it (not a fixed retry window) keeps this stable when the backend is remote
+  // and slower, e.g. scripts/qa-hosted-browser.mjs against the hosted QA project under full parallelism.
+  await expect(page.locator("[data-checkout-total]")).not.toHaveText("S/ 0.00", { timeout: SERVER_ACTION_TIMEOUT });
   await page.locator("#checkout-name").fill("QA E2E Cruzial");
   await page.locator("#checkout-phone").fill(phone);
   // Shipping is a required step: "my agency is not listed" keeps the free-text
   // district this flow has always used.
   // Retried because a click that lands before React hydrates the form (right
-  // after a reload) is reverted by the controlled radio.
+  // after a reload) is reverted by the controlled radio. Not forced: the input is
+  // an invisible overlay of its label, and a forced click right after scrolling
+  // could land on the sticky header; check() verifies the hit target first.
   const other = page.getByRole("radio", { name: /Mi agencia no aparece/ });
   await expect(async () => {
-    await other.click({ force: true });
+    await other.check({ timeout: 2_000 });
     await expect(other).toBeChecked({ timeout: 1_000 });
   }).toPass({ timeout: 10_000 });
   await page.locator("#checkout-district").fill("Miraflores");
@@ -297,6 +303,9 @@ test.describe("parfums storefront", () => {
 
   test("success whose rotation fails (storage blocked) keeps the success state; a later purchase is never a silent replay", async ({ page }) => {
     test.skip(process.env.E2E_ALLOW_ORDER_SUBMIT !== "1" || !LOCAL_DB_AVAILABLE, "needs the disposable local stack");
+    // Five server actions and three reloads in one journey: ~19 s alone against the hosted QA backend,
+    // more under full parallelism, so the default 30 s budget is too tight there.
+    test.setTimeout(60_000);
     const phone = testCustomerPhone(test.info());
     await checkoutWithQaProduct(page, phone);
     // Browser storage writes are blocked on checkout: correctness must not

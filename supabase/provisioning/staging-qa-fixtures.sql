@@ -1,5 +1,5 @@
--- 4J5F-A: STAGING ONLY iyxidhglyqkzoziyewlc. Not a migration.
--- Caller MUST verify linked ref and pass --project-ref iyxidhglyqkzoziyewlc.
+-- 4J5F-A: QA ONLY (iyxidhglyqkzoziyewlc is Production). Not a migration.
+-- Caller MUST verify linked ref and target the QA project ref explicitly.
 -- Reconciles exact owned fixtures. Two synthetic offers in #6 are authorized.
 -- No change to #6 itself or any existing non-QA row is permitted.
 -- 'Mapper Ready' means Parfums structural mapping succeeds. Its public mapper
@@ -7,6 +7,13 @@
 -- and Import readiness can use them. No public media cutover is claimed.
 -- Minimum synthetic offer: PEN 0.01; this is NOT client commercial evidence.
 -- Cleanup: staging-qa-fixtures-cleanup.sql (do not run before hosted QA).
+-- GUARD (2026-10-09): iyxidhglyqkzoziyewlc is PRODUCTION (historically mislabelled "staging").
+-- This file runs only where the hand-made QA marker exists (apps/web/e2e/qa-target.mjs); it aborts elsewhere.
+do $qa_guard$ begin
+  if to_regclass('qa_env.marker') is null then
+    raise exception 'Refusing: qa_env.marker missing, this is not the QA database.';
+  end if;
+end $qa_guard$;
 begin;
 set local lock_timeout='5s';
 set local statement_timeout='60s';
