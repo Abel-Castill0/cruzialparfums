@@ -131,4 +131,28 @@ values ('99003000-0000-4000-8000-000000000501','status_only','available') on con
 insert into public.product_media(id,product_id,provider,secure_url,alt,is_primary,sort_order)
 values ('99003000-0000-4000-8000-000000000502','99003000-0000-4000-8000-000000000500','legacy_static','/icon.png','LOCAL QA — foto principal',true,0),
 ('99003000-0000-4000-8000-000000000503','99003000-0000-4000-8000-000000000500','legacy_static','/parfums/logo-mark.png','LOCAL QA — foto secundaria',false,1) on conflict (id) do update set secure_url=excluded.secure_url;
+
+-- Import publication-readiness fixtures (admin-authenticated.spec.ts): three published products assessed
+-- against one DRAFT consolidado (number 9800, below every other fixture campaign, so it is never the
+-- admin's default selection and nothing here is ever public): ready / missing primary media / missing offer.
+insert into public.campaigns(id,business_unit_id,number,name,status)
+values ('99004000-0000-4000-8000-000000000001','22222222-2222-4222-8222-222222222222',9800,'LOCAL QA preparación','draft') on conflict do nothing;
+insert into public.products(id,business_unit_id,slug,name,brand,publication_status) values
+('99004000-0000-4000-8000-000000000010','22222222-2222-4222-8222-222222222222','local-qa-import-ready','LOCAL QA — Import listo','LOCAL QA','published'),
+('99004000-0000-4000-8000-000000000020','22222222-2222-4222-8222-222222222222','local-qa-import-no-media','LOCAL QA — Import sin imagen','LOCAL QA','published'),
+('99004000-0000-4000-8000-000000000030','22222222-2222-4222-8222-222222222222','local-qa-import-no-offer','LOCAL QA — Import sin oferta','LOCAL QA','published') on conflict do nothing;
+insert into public.product_categories(product_id,category_id) values
+('99004000-0000-4000-8000-000000000010','99001000-0000-4000-8000-000000000001'),
+('99004000-0000-4000-8000-000000000020','99001000-0000-4000-8000-000000000001'),
+('99004000-0000-4000-8000-000000000030','99001000-0000-4000-8000-000000000001') on conflict do nothing;
+insert into public.import_presentations(id,product_id,stable_key,label,presentation_class,capacity_ml,publication_status) values
+('99004000-0000-4000-8000-000000000011','99004000-0000-4000-8000-000000000010','local-qa-ready-100','QA 100 ml','single_fixed',100,'published'),
+('99004000-0000-4000-8000-000000000021','99004000-0000-4000-8000-000000000020','local-qa-no-media-100','QA 100 ml','single_fixed',100,'published'),
+('99004000-0000-4000-8000-000000000031','99004000-0000-4000-8000-000000000030','local-qa-no-offer-100','QA 100 ml','single_fixed',100,'published') on conflict do nothing;
+insert into public.campaign_products(id,campaign_id,product_id,import_presentation_id,price_amount,availability_status) values
+('99004000-0000-4000-8000-000000000012','99004000-0000-4000-8000-000000000001','99004000-0000-4000-8000-000000000010','99004000-0000-4000-8000-000000000011',10,'available'),
+('99004000-0000-4000-8000-000000000022','99004000-0000-4000-8000-000000000001','99004000-0000-4000-8000-000000000020','99004000-0000-4000-8000-000000000021',10,'available') on conflict do nothing;
+insert into public.product_media(id,product_id,provider,secure_url,alt,is_primary) values
+('99004000-0000-4000-8000-000000000013','99004000-0000-4000-8000-000000000010','legacy_static','/icon.png','LOCAL QA — imagen de prueba',true),
+('99004000-0000-4000-8000-000000000033','99004000-0000-4000-8000-000000000030','legacy_static','/icon.png','LOCAL QA — imagen de prueba',true) on conflict do nothing;
 commit;

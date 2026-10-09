@@ -14,6 +14,7 @@ import { defineConfig, devices } from "@playwright/test";
  *     (skips when unset; authenticated specs then skip themselves).
  *   - chromium / mobile: public journeys on Desktop Chrome and Pixel 7.
  *   - admin: authenticated journeys, desktop only.
+ *   - isolated: runs after all others; may change shared synthetic state (restores it).
  */
 
 // One tag per run, inherited by every worker: the prefix of deterministic
@@ -38,9 +39,9 @@ export default defineConfig({
   },
   projects: [
     { name: "setup", testMatch: /auth\.setup\.ts/ },
-    { name: "chromium", testMatch: PUBLIC_SPECS, use: { ...devices["Desktop Chrome"] } },
+    { name: "chromium", testMatch: [PUBLIC_SPECS, /ux-regressions-desktop\.spec\.ts/], use: { ...devices["Desktop Chrome"] } },
     { name: "responsive", testMatch: /responsive\.spec\.ts/, use: { ...devices["Desktop Chrome"] } },
-    { name: "mobile", testMatch: PUBLIC_SPECS, use: { ...devices["Pixel 7"] } },
+    { name: "mobile", testMatch: [PUBLIC_SPECS, /ux-regressions-phone\.spec\.ts/], use: { ...devices["Pixel 7"] } },
     // Tablet portrait (touch, 820x1180) between the phone and desktop layouts. Chromium engine on purpose:
     // the layout breakpoints are what is under test, not a second browser engine.
     { name: "tablet", testMatch: PUBLIC_SPECS, use: { ...devices["Desktop Chrome"], viewport: { width: 820, height: 1180 }, hasTouch: true } },
@@ -49,6 +50,13 @@ export default defineConfig({
       testMatch: /(admin-critical|admin-authenticated|gate-b-operations|admin-catalog-customers|admin-combos-wholesale|admin-owner-editability|admin-product-photos)\.spec\.ts/,
       dependencies: ["setup"],
       use: { ...devices["Desktop Chrome"] },
+    },
+    // Runs last (depends on every other project): specs here change shared synthetic state on purpose.
+    {
+      name: "isolated",
+      testMatch: /isolated-.*\.spec\.ts/,
+      dependencies: ["chromium", "responsive", "mobile", "tablet", "admin"],
+      use: { ...devices["Pixel 7"] },
     },
   ],
   ...(isLocalTarget

@@ -19,6 +19,10 @@ async function checkoutWithQaProduct(page: Page, phone: string) {
 }
 
 async function fillCheckoutForm(page: Page, phone: string) {
+  // The cart total is computed client-side from storage, so a non-zero total means the form has
+  // hydrated. Waiting for it (not a fixed retry window) keeps this stable when the backend is remote
+  // and slower, e.g. scripts/qa-hosted-browser.mjs against the hosted QA project under full parallelism.
+  await expect(page.locator("[data-checkout-total]")).not.toHaveText("S/ 0.00", { timeout: SERVER_ACTION_TIMEOUT });
   await page.locator("#checkout-name").fill("QA E2E Cruzial");
   await page.locator("#checkout-phone").fill(phone);
   // Shipping is a required step: "my agency is not listed" keeps the free-text
@@ -297,6 +301,9 @@ test.describe("parfums storefront", () => {
 
   test("success whose rotation fails (storage blocked) keeps the success state; a later purchase is never a silent replay", async ({ page }) => {
     test.skip(process.env.E2E_ALLOW_ORDER_SUBMIT !== "1" || !LOCAL_DB_AVAILABLE, "needs the disposable local stack");
+    // Five server actions and three reloads in one journey: ~19 s alone against the hosted QA backend,
+    // more under full parallelism, so the default 30 s budget is too tight there.
+    test.setTimeout(60_000);
     const phone = testCustomerPhone(test.info());
     await checkoutWithQaProduct(page, phone);
     // Browser storage writes are blocked on checkout: correctness must not
