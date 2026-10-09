@@ -9,7 +9,7 @@
  *
  * Configuration comes only from a git-ignored env file (CRUZIAL_QA_ENV_FILE, default `.env.qa`):
  *   QA_PROJECT_REF, NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY, SUPABASE_SECRET_KEY,
- *   QA_DATABASE_URL (a least-privilege `qa_runner` login of the QA project, via the pooler).
+ *   QA_DATABASE_URL (the QA-only `qa_runner` login, via the pooler: table grants + BYPASSRLS in QA, no `auth` rights).
  * Every write is preceded by the qa_env.marker guard (apps/web/e2e/qa-target.mjs). Production refs are
  * refused before any network call. Synthetic data only; no WhatsApp credential is ever passed through;
  * Cloudinary is replaced by the same non-credential placeholders as the local runner (specs intercept it).
@@ -64,7 +64,7 @@ function cliQuery(dir, sql) {
   return result.stdout;
 }
 
-/** Owner-level QA bootstrap (re-run after a reset): marker + least-privilege runner grants. */
+/** Owner-level QA bootstrap (re-run after a reset): marker + qa_runner table grants. */
 function bootstrapSql(ref) {
   return `create schema if not exists qa_env;
 revoke all on schema qa_env from public, anon, authenticated, service_role;

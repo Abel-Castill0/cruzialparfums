@@ -33,7 +33,7 @@ Verified directly (Git, GitHub, Vercel CLI, Supabase CLI/MCP, logs), not copied 
   **0 USD/month** via the Supabase API before creation). 80 repo migrations applied with `supabase db push`
   from a throwaway workdir linked to QA (exact versions, dry-run list checked first). Synthetic data only.
   Marker `qa_env.marker(project_ref)` created by hand (never a migration, so it cannot exist in Production);
-  least-privilege login `qa_runner` (pooler) for scripted SQL. Auth contract pushed from `config.toml`
+  a dedicated QA-only login `qa_runner` (pooler; table grants + BYPASSRLS in QA, no `auth` or owner rights) for scripted SQL. Auth contract pushed from `config.toml`
   (sign-up off, password min 12 + classes, TOTP); redirect allowlist adds `localhost:3200` and
   `https://*-cruzial.vercel.app/auth/callback`.
 - **Vercel Preview → QA only:** `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`,
