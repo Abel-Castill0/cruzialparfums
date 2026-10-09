@@ -9,6 +9,7 @@ import type { PublicProductRow } from "@/domains/catalog/supabase-public-catalog
 import type { CatalogProduct, PublicCatalogRepository } from "@/domains/catalog/types";
 import { PARFUMS_SETTINGS, type BusinessUnitSettings } from "@/domains/platform/settings";
 import { createSupabasePublicServerClient } from "@/lib/supabase/server";
+import { mayServeLegacyFixture } from "./legacy-fixture-policy";
 import { PARFUMS_CATALOG_CACHE_TAG, PARFUMS_CATALOG_REVALIDATE_SECONDS } from "./parfums-storefront-cache";
 
 /**
@@ -26,7 +27,8 @@ import { PARFUMS_CATALOG_CACHE_TAG, PARFUMS_CATALOG_REVALIDATE_SECONDS } from ".
  * - `legacy_fixture`: Supabase is NOT configured at all (local development
  *   or unit tests without an environment). The legacy `assets/data.js`
  *   fixture keeps the UI renderable; it is never used when an environment
- *   exists, so it cannot leak into a deployed build by accident.
+ *   exists, and never on a Vercel deployment (see legacy-fixture-policy.ts):
+ *   a deployed build that lost its Supabase variables renders `unavailable`.
  *
  * Freshness: the raw rows are held in the Next data cache for
  * PARFUMS_CATALOG_REVALIDATE_SECONDS (tag PARFUMS_CATALOG_CACHE_TAG, so an
@@ -100,6 +102,10 @@ async function loadFromSupabase(): Promise<ParfumsStorefront | null> {
 }
 
 function loadLegacyFixture(): ParfumsStorefront {
+  if (!mayServeLegacyFixture(process.env)) {
+    console.error("[parfums-storefront] Supabase is not configured on a deployed build; refusing the legacy fixture");
+    return { source: "unavailable", catalog: new EmptyCatalogRepository(), contact: PARFUMS_SETTINGS };
+  }
   const catalog = new LegacyCatalogRepository();
   return {
     source: "legacy_fixture",

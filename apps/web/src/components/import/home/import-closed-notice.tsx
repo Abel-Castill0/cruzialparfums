@@ -34,7 +34,11 @@ export function ImportClosedNotice({
           <ul>
             <li>
               <strong>Productos y precios</strong>
-              <span>No hay un consolidado activo en este momento y no se pueden realizar compras. El catálogo volverá a mostrarse cuando el próximo consolidado se confirme y abra.</span>
+              <span>
+                {unavailable
+                  ? "No pudimos consultar el estado del consolidado y por eso no se pueden realizar compras ahora. Inténtalo de nuevo en unos minutos o escríbenos por WhatsApp."
+                  : "No hay un consolidado activo en este momento y no se pueden realizar compras. El catálogo volverá a mostrarse cuando el próximo consolidado se confirme y abra."}
+              </span>
             </li>
             <li>
               <strong>Mientras tanto</strong>

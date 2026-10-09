@@ -1,61 +1,37 @@
-# Why the Playwright suite is not in CI (release review)
+# Browser E2E in CI and locally
 
-CI already runs, per `.github/workflows/ci.yml`: catalog check, commercial
-check, lint, typecheck, unit tests, build, and (in a separate job) a fresh
-`supabase db reset` + full pgTAP suite. This note explains why a Playwright
-smoke job was evaluated for this release and deliberately not added, rather
-than adding one that would be flaky or misleading.
+Updated 2026-10-08. An earlier version of this note said the Playwright suite was deliberately
+not in CI because it lacked seeded data. That is no longer true: CI job **Browser E2E (public ·
+responsive · MFA admin)** (`.github/workflows/ci.yml`, job `e2e`) runs it on every PR.
 
-## What would be needed
+## How it runs
 
-`apps/web/playwright.config.ts` already supports a fully local target
-(`E2E_BASE_URL` unset → `http://localhost:3000` against `next start`), and
-`e2e/auth.setup.ts` derives real TOTP codes from an env-supplied secret
-locally (no external TOTP service, no committed password) — so credentials
-are not the blocker.
+1. `supabase start` brings up a fresh, disposable **local** stack on the runner.
+2. `node scripts/local-admin-browser.mjs --build` builds the production bundle against that stack.
+3. `node scripts/local-admin-browser.mjs --seed` loads the synthetic fixtures
+   (`scripts/local-browser-fixtures.sql`), mints random local identities, a random TOTP-capable
+   admin and a random HMAC secret for the run, then executes the whole Playwright suite itself.
 
-The actual blocker is **seeded data**, and it is missing by deliberate
-design, not oversight:
+`scripts/local-admin-browser.mjs` refuses any Supabase URL that is not loopback, so this can never
+touch a hosted project. No Supabase key, password, TOTP secret or HMAC secret is stored anywhere.
 
-- `supabase/seed.sql` intentionally seeds **no products, variants, prices,
-  or combos** — every legacy price is
-  `CLIENT_PROVIDED_PENDING_RECONFIRMATION` and the seed file explicitly
-  refuses to promote that into stated commercial fact (see its own header
-  comment). The public journey specs (catalog → cart → checkout) need real
-  published products to click through; a fresh `supabase db reset` in CI
-  has zero.
-- `supabase/seed.sql` also intentionally seeds **no `auth.users` rows** —
-  the first administrator's credentials are operator-provisioned
-  (`supabase/provisioning/grant-admin-membership.sql`), by design, because a
-  password does not belong in git. Running the `admin` Playwright project
-  needs a signed-up user with a verified TOTP factor and an
-  `admin_memberships` row; none of that exists after a bare reset.
+## Run it locally
 
-Building CI-only fixtures for both (a synthetic published catalog + a
-synthetic admin user enrolled in TOTP entirely through SQL, bypassing
-GoTrue's real signup/enroll flow) is real new infrastructure, not a small
-addition — and doing it hastily risks producing a green check that doesn't
-actually exercise the real signup/enroll code paths, which is worse than no
-E2E gate at all.
+```bash
+npx supabase start -x studio,imgproxy,edge-runtime,logflare,vector
+node scripts/local-admin-browser.mjs --build
+node scripts/local-admin-browser.mjs --seed
+```
 
-## What already covers the same ground
+Last full local run (2026-10-08, master `868e493` + closure branch): **167 passed, 0 failed, 20
+skipped**. Skips are conditional by design: staging-storageState-only specs
+(`admin-authenticated.spec.ts`), mobile-only or desktop-only viewport checks, and specs that need
+identities that exist only in another environment.
 
-- **Admin auth/MFA gate, cross-unit denial:** covered by pgTAP, not E2E —
-  `supabase/tests/32_admin_mfa_aal2_enforcement.sql`,
-  `supabase/tests/33_admin_parfums_order_status.sql`, and
-  `supabase/tests/26_import_admin_operations.sql` all assert AAL1-denied,
-  viewer-denied and cross-unit-denied directly against the RPCs, which is a
-  stronger and faster signal than driving a browser through a login form.
-- **Public journey, responsive smoke:** manually via
-  `E2E_BASE_URL=<preview-or-staging-url> npm run test:e2e`, which is how
-  this suite has been run to date (see `docs/current-v2.md`), against a
-  deployment that actually has real catalog data.
+## What E2E does not replace
 
-## Recommendation, not implemented here
-
-If/when a seeded local catalog fixture and a CI-only test-admin
-provisioning script are built (tracked separately — out of scope for this
-release), add a CI job scoped to `--project=chromium --project=responsive
---project=mobile` first (no MFA needed), and only add `--project=admin`
-once the CI-only admin+TOTP fixture exists and has been reviewed on its own
-merits.
+- Admin auth/MFA (AAL2), viewer-denied and cross-unit denial are asserted directly against the RPCs
+  in pgTAP (`supabase/tests/26`, `32`, `33`, …); that is the stronger signal.
+- There is **no hosted staging**: the only hosted Supabase project is Production, so write flows
+  (orders, uploads, admin mutations) are verified locally only. See `docs/owner-verification-runbook.md`
+  for the owner-session checks that cannot be automated.
