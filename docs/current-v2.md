@@ -105,8 +105,8 @@ deployment was never affected (env is bound at build); the redeploy above was bu
   Permissions policies; checkout capability cookie HttpOnly + Secure + SameSite=Strict.
 - **Gate (round 2):** hosted QA Playwright 246 / 0 / 0; `npm run check` PASS (104 files / 1189 Vitest, node 6 + 4 + 7, lint, typecheck, build); local
   Playwright on a fresh stack 246 passed / 0 failed / 0 skipped.
-- **Dependabot:** #10 (TypeScript 7) stays blocked upstream (`typescript-eslint does not support TS 7.0`); #5 (ESLint 10)
-  is green and is refreshed/merged separately.
+- **Dependabot:** #10 (TypeScript 7) stays blocked upstream (`typescript-eslint does not support TS 7.0`); #5 (ESLint 9.39.5 -> 10.12.0)
+  merged as `f733e00` after a full green run on current master (lint clean under ESLint 10; audits unchanged).
 
 **Gate 2026-10-09 (branch `claude/qa-hosted-staging`):**
 - Local, fresh stack: `npm run db:gate` 57 pgTAP files / **1328** PASS; `npm run check` PASS (104 files / **1187**
