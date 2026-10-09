@@ -191,3 +191,20 @@ test("a product with one photo shows no gallery controls", async ({ page }) => {
     expect(arrows > 0, href).toBe(thumbs > 1);
   }
 });
+
+test("an Import product with several photos gets the same gallery as Parfums, primary first", async ({ page }) => {
+  test.skip(process.env.E2E_LOCAL_FIXTURES !== "1", "needs the synthetic two-photo Import product");
+  await page.goto("/import/producto/local-qa-import");
+  const thumbs = page.locator("[data-gallery-thumbs] button");
+  await expect(thumbs).toHaveCount(2);
+  const counter = page.locator("[data-product-stage] span[aria-live]");
+  await expect(counter).toHaveText("1 / 2");
+  await expect(page.locator("[data-product-stage] img")).toHaveAttribute("alt", "LOCAL QA — imagen de prueba");
+  await page.locator("[data-gallery-next]").click();
+  await expect(counter).toHaveText("2 / 2");
+  await expect(page.locator("[data-product-stage] img")).toHaveAttribute("alt", "LOCAL QA — segunda imagen");
+  await page.locator("[data-product-stage]").focus();
+  await page.keyboard.press("ArrowRight");
+  await expect(counter).toHaveText("1 / 2");
+  await expect(thumbs.first()).toHaveAttribute("aria-current", "true");
+});

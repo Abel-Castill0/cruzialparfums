@@ -295,3 +295,26 @@ export function buildImportCatalogHref(
   const query = params.toString();
   return query ? `/import?${query}` : "/import";
 }
+
+export type ImportGalleryPhoto = { url: string; alt: string };
+export type ImportMediaRow = { secure_url: string | null; alt: string | null };
+
+/**
+ * Every public photo of an Import product, primary first, in the order the admin arranged them
+ * (rows arrive already ordered by is_primary desc, sort_order, id; public RLS keeps only non-archived
+ * photos of published products). Duplicates are dropped. With no usable row — or when the photo read
+ * failed and the caller passes null — the product's single resolved photo (or the neutral fallback)
+ * is kept, so the page never renders an empty stage.
+ */
+export function importGalleryPhotos(rows: ImportMediaRow[] | null, product: Pick<PublicImportProduct, "brand" | "name" | "mediaUrl" | "mediaAlt">): ImportGalleryPhoto[] {
+  const base = [product.brand, product.name].filter(Boolean).join(" ");
+  const seen = new Set<string>();
+  const photos: ImportGalleryPhoto[] = [];
+  for (const row of rows ?? []) {
+    const url = row.secure_url?.trim();
+    if (!url || seen.has(url)) continue;
+    seen.add(url);
+    photos.push({ url, alt: row.alt?.trim() || base });
+  }
+  return photos.length ? photos : [{ url: product.mediaUrl, alt: product.mediaAlt }];
+}

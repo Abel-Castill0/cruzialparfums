@@ -27,6 +27,9 @@ values ('99001000-0000-4000-8000-000000000006','99001000-0000-4000-8000-00000000
 -- A generic brand mark labels synthetic QA data; never a substituted perfume.
 insert into public.product_media(id,product_id,provider,secure_url,alt,is_primary)
 values ('99001000-0000-4000-8000-000000000008','99001000-0000-4000-8000-000000000002','legacy_static','/icon.png','LOCAL QA — imagen de prueba',true) on conflict do nothing;
+-- A second synthetic photo so the Import product page gallery (thumbnails, arrows) has something to show.
+insert into public.product_media(id,product_id,provider,secure_url,alt,is_primary,sort_order)
+values ('99001000-0000-4000-8000-000000000018','99001000-0000-4000-8000-000000000002','legacy_static','/parfums/logo-mark.png','LOCAL QA — segunda imagen',false,1) on conflict do nothing;
 
 -- Parfums QA product: one published, always-available decant so the admin
 -- product/variant/media/inventory journeys have something real to open.

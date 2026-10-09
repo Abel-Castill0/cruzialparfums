@@ -4,10 +4,13 @@ import type { PostgrestError, SupabaseClient } from "@supabase/supabase-js";
 import type { Database, Json } from "@/lib/supabase/database.types";
 import {
   IMPORT_CATALOG_PAGE_SIZE,
+  importGalleryPhotos,
   mapPublicImportProduct,
   mapPublicImportProducts,
   mapPublicImportPreviewProduct,
   selectPublicImportCampaign,
+  type ImportGalleryPhoto,
+  type ImportMediaRow,
   type PublicImportCampaign,
   type PublicImportCampaignRow,
   type PublicImportCategory,
@@ -79,9 +82,26 @@ export type PublicImportPageResult =
 
 export class PublicImportRepository {
   private readonly rpc: Rpc;
+  private readonly supabase: SupabaseClient<Database>;
 
   constructor(supabase: SupabaseClient<Database>) {
+    this.supabase = supabase;
     this.rpc = supabase.rpc.bind(supabase) as unknown as Rpc;
+  }
+
+  /** Ordered public photos of one product (public RLS: published product, non-archived photo).
+   * Returns null on a read error so the page falls back to the single photo the product RPC resolved. */
+  async readProductPhotos(productId: string): Promise<ImportMediaRow[] | null> {
+    const result = await this.supabase
+      .from("product_media")
+      .select("secure_url,alt")
+      .eq("product_id", productId)
+      .is("archived_at", null)
+      .order("is_primary", { ascending: false })
+      .order("sort_order", { ascending: true })
+      .order("id", { ascending: true })
+      .limit(12);
+    return result.error ? null : (result.data ?? []);
   }
 
   /**
@@ -223,6 +243,7 @@ export class PublicImportRepository {
 
   async readProduct(slug: string): Promise<{
     product: PublicImportProduct;
+    photos: ImportGalleryPhoto[];
     campaign: Pick<PublicImportCampaign, "id" | "number" | "name" | "closesAt">;
   } | null> {
     const result = await this.rpc("public_get_import_product", { p_slug: slug.slice(0, 180) });
@@ -231,8 +252,10 @@ export class PublicImportRepository {
     if (!row) return null;
     const product = mapPublicImportProduct({ ...row, presentations: row.presentations as Json });
     if (!product) return null;
+    const photos = importGalleryPhotos(await this.readProductPhotos(product.id), product);
     return {
       product,
+      photos,
       campaign: {
         id: row.campaign_id,
         number: row.campaign_number,
