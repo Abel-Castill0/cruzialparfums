@@ -1,8 +1,15 @@
 -- 4K-C3A-R1: STAGING QA compatibility bridge for the C1A historical backfill.
--- STAGING ONLY iyxidhglyqkzoziyewlc. This is provisioning, not a migration.
+-- QA ONLY (iyxidhglyqkzoziyewlc is Production). This is provisioning, not a migration.
 -- Run only before 20260914010000_combo_variant_composition_contract.sql.
 -- It establishes one owning presentation per exact QA combo and deliberately
 -- leaves combo_items untouched so C1A itself performs the historical backfill.
+-- GUARD (2026-10-09): iyxidhglyqkzoziyewlc is PRODUCTION (historically mislabelled "staging").
+-- This file runs only where the hand-made QA marker exists (apps/web/e2e/qa-target.mjs); it aborts elsewhere.
+do $qa_guard$ begin
+  if to_regclass('qa_env.marker') is null then
+    raise exception 'Refusing: qa_env.marker missing, this is not the QA database.';
+  end if;
+end $qa_guard$;
 begin;
 set local lock_timeout='5s';
 set local statement_timeout='60s';

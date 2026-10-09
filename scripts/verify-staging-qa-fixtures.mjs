@@ -1,3 +1,5 @@
+// HISTORICAL (2026-10-09): iyxidhglyqkzoziyewlc is PRODUCTION, not staging; its QA fixtures were removed.
+// This read-only check is kept for the audit trail. The QA project is driven by scripts/qa-hosted-browser.mjs.
 // Targeted 4J5F-A read-only verification. Run from repository root:
 // node scripts/verify-staging-qa-fixtures.mjs
 // Uses installed TypeScript/Next runtime; no new dependencies or testing framework.

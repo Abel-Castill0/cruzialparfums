@@ -17,6 +17,18 @@ function fakeClient(invalidLease = false, authorized: Record<string, unknown> = 
   return { rpc, client: client as unknown as SupabaseClient<Database> };
 }
 describe("notification worker", () => {
+  it("logs why it could not start (e.g. a rejected server key) and touches nothing else", async () => {
+    const rpc = vi.fn(async () => ({ data: null, error: { code: "PGRST301", message: "Invalid API key" } }));
+    const client = { rpc, from: vi.fn() } as unknown as SupabaseClient<Database>;
+    const log = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      await expect(processNotificationBatch(client)).resolves.toEqual({ ok: false, processed: 0 });
+      expect(rpc).toHaveBeenCalledTimes(1);
+      expect(log).toHaveBeenCalledWith("[automation] %s failed: %s %s", "worker_record_health", "PGRST301", "Invalid API key");
+    } finally {
+      log.mockRestore();
+    }
+  });
   it("uses a claimed lease, records intent and persists provider proof", async () => {
     const { client, rpc } = fakeClient();
     const provider = { ready: () => true, send: vi.fn(async () => ({ status: "sent" as const, providerMessageId: "fixture-provider-id" })) };

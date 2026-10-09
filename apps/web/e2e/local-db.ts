@@ -2,6 +2,7 @@ import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import type { TestInfo } from "@playwright/test";
+import { dockerPsqlArgs, isProductionRef, qaMarkerGuardSql } from "./qa-target.mjs";
 
 /**
  * Direct SQL against the DISPOSABLE local Supabase stack only — used to make
@@ -22,6 +23,20 @@ function projectId() {
 
 export function localSql(sql: string): string {
   if (!LOCAL_DB_AVAILABLE) throw new Error("localSql is restricted to the disposable local fixture stack.");
+  const qaRef = process.env.E2E_QA_PROJECT_REF;
+  const qaUrl = process.env.E2E_QA_DATABASE_URL;
+  if (qaRef || qaUrl) {
+    // Hosted QA (scripts/qa-hosted-browser.mjs): same guarded channel as the runner — every statement is
+    // preceded by the qa_env.marker check, Production refs are refused, the URL never enters argv.
+    if (!qaRef || !qaUrl || isProductionRef(qaRef)) throw new Error("Hosted QA SQL channel is misconfigured.");
+    const result = spawnSync("docker", dockerPsqlArgs(), {
+      input: qaMarkerGuardSql(qaRef) + sql,
+      encoding: "utf8",
+      env: { ...process.env, QA_DATABASE_URL: qaUrl },
+    });
+    if (result.status !== 0) throw new Error(`QA SQL failed: ${(result.stderr ?? "").replaceAll(qaUrl, "<qa-db>")}`);
+    return result.stdout.trim();
+  }
   const result = spawnSync(
     "docker",
     ["exec", "-i", `supabase_db_${projectId()}`, "psql", "-U", "postgres", "-d", "postgres", "-At", "-v", "ON_ERROR_STOP=1"],

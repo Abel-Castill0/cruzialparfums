@@ -23,7 +23,15 @@ test("import: catalog discovery to checkout boundary, or documented current stat
   const closedHeading = page.getByRole("heading", { name: "Consolidado cerrado" });
   const catalogHeading = page.locator("#catalog-title");
   const unavailableHeading = page.getByRole("heading", { name: "No pudimos consultar el catálogo." });
-  await expect(closedHeading.or(catalogHeading).or(unavailableHeading).first()).toBeVisible();
+  const previewHeading = page.getByRole("heading", { name: "Vista previa del catálogo" });
+  await expect(closedHeading.or(catalogHeading).or(unavailableHeading).or(previewHeading).first()).toBeVisible();
+
+  if (await previewHeading.isVisible()) {
+    // Preview-only consolidado (purchases closed): products are visible, nothing can be added to a cart.
+    await expect(page.getByRole("button", { name: "Agregar al carrito" })).toHaveCount(0);
+    test.info().annotations.push({ type: "note", description: "Import shows a preview-only consolidado on this target; verified that no purchase control is offered." });
+    return;
+  }
 
   if (await unavailableHeading.isVisible()) {
     test.info().annotations.push({ type: "note", description: "Import public catalog data was unavailable on this target; verified the user-facing retry/contact state." });

@@ -20,7 +20,83 @@ git rev-parse HEAD
 > The sections below the "Current verified state (2026-10-01)" block are
 > historical gate records; where they conflict with that block, that block wins.
 
-## Live checkpoint (2026-10-08) — read this first
+## Live checkpoint (2026-10-09) — read this first; supersedes 2026-10-08 where they conflict
+
+Verified directly (Git, GitHub, Vercel CLI, Supabase CLI/MCP, logs), not copied from older notes.
+
+**Environments (corrected):**
+- **Production** Supabase = `iyxidhglyqkzoziyewlc` (historical name `cruzial-v2-staging`). 80 migrations = repo,
+  97 published products, 0 orders, 0 outbox rows, `public_launch_ready() = false`. Root `.env`
+  `CRUZIAL_STAGING_DATABASE_URL` and the repo's default `supabase/.temp` link also point to Production
+  despite the names.
+- **QA (new)** Supabase = `cruzial-v2-qa` / `aqbhtmylqnpahynarnhm` (sa-east-1, Free plan; quoted cost
+  **0 USD/month** via the Supabase API before creation). 80 repo migrations applied with `supabase db push`
+  from a throwaway workdir linked to QA (exact versions, dry-run list checked first). Synthetic data only.
+  Marker `qa_env.marker(project_ref)` created by hand (never a migration, so it cannot exist in Production);
+  a dedicated QA-only login `qa_runner` (pooler; table grants + BYPASSRLS in QA, no `auth` or owner rights) for scripted SQL. Auth contract pushed from `config.toml`
+  (sign-up off, password min 12 + classes, TOTP); redirect allowlist adds `localhost:3200` and
+  `https://*-cruzial.vercel.app/auth/callback`.
+- **Vercel Preview → QA only:** `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`,
+  `SUPABASE_SECRET_KEY` (sensitive), own random `ORDER_ABUSE_HMAC_SECRET`, `CRUZIAL_PRODUCTION_CUTOVER_APPROVED=false`,
+  `SITE_URL`. **No Cloudinary in Preview** (the only Cloudinary account is Production's; Preview admin shows its
+  honest "not configured" state) and no WhatsApp. Production keeps its own separate records.
+
+**Defects found and fixed this pass:**
+- **P1 (Production, fixed + verified):** Vercel Production `SUPABASE_SECRET_KEY` was rejected by Supabase
+  (`401 Invalid API key` on `/rest/v1/rpc/worker_record_health`, Supabase edge logs 2026-10-08T13:17Z = daily
+  cron, and 2026-10-09T02:49Z). The server admin client backs Parfums checkout, Import checkout, the Libro de
+  Reclamaciones, the worker, health and the WhatsApp webhook, so those Production writes would have failed
+  (none was attempted in the log window: 0 orders). Fix: replaced with the project's current secret key
+  (validated read-only first: `worker_claim_notifications(0)` → 200 `[]`), stored as sensitive; Production
+  redeployed at the same SHA `3c1f3b4` → `dpl_HT2To5gbJLZi9PhzrYxBexU6N2WE` (aliased `cruzial.pe`). Evidence:
+  cron run → 200; `automation_worker_health` = `ok` at 2026-10-09T02:58:15Z, 0 processed, outbox empty.
+  Rollback reference: previous deployment `dpl_4b39VWhHrrsZQvBbTaHwTB6RMy7e` (same SHA, old key).
+  Root cause of the silence: the failing call was the health write itself, so nothing was recorded; worker and
+  health now log the Supabase error code/message (regression test in `worker.test.ts`).
+- **P3 (Production Auth, fixed):** `site_url` pointed to an old Vercel deployment and the redirect allowlist
+  held two deployment URLs. Now `site_url = https://cruzial.pe`; allowlist = cruzial.pe, www, two localhost.
+  Admin recovery was not affected (it passes an explicit `redirectTo` from `SITE_URL`).
+- **Guard:** the historical `supabase/provisioning/staging-qa-*.sql` (written for "staging" = Production) now
+  abort without `qa_env.marker`.
+- **CodeQL:** 2 `js/tainted-format-string` fixed (media upload logs). Remaining: 2 `js/weak-cryptographic-algorithm`
+  = SHA-1 required by Cloudinary's upload-signature protocol (our own tokens use HMAC-SHA256; accepted), 2 in the
+  out-of-scope legacy `assets/app.js`. GitHub secret scanning and Dependabot alerts are **disabled** on the repo
+  (owner setting); a local scan of all local secret values against tracked files, git history and the client
+  bundle found none.
+
+**Incident during this pass (resolved):** `vercel env rm CLOUDINARY_* preview` removed the shared
+Production+Preview records from **both** targets. Production values were restored within minutes from the
+local source (same cloud: all 196 Production Cloudinary media URLs use it; credential validated). The live
+deployment was never affected (env is bound at build); the redeploy above was built with the restored values.
+
+**Integrations:**
+- **Cloudinary:** credential valid (Admin API usage 200, Free plan). Signed-upload contract probed with a synthetic
+  8x8 PNG in an isolated folder: valid → 200; tampered `public_id` → 401; GIF → 400 (format not allowed);
+  destroy → 200; lookup → 404; 0 leftovers.
+- **WhatsApp Cloud API:** no Meta credential exists locally or in Vercel → external blocker. Code fails closed
+  (webhook 503 `not_configured`; worker never starts a send without provider configuration). Manual `wa.me`
+  coordination is unaffected.
+- **Cron/worker:** `0 13 * * *` on `/api/automation/process`; `CRON_SECRET` valid (authorized, not 401).
+
+**Gate 2026-10-09 (branch `claude/qa-hosted-staging`):**
+- Local, fresh stack: `npm run db:gate` 57 pgTAP files / **1328** PASS; `npm run check` PASS (104 files / **1187**
+  Vitest + node tests 6 + 4 + 7, lint, typecheck, build); Playwright **243 passed / 0 failed / 0 skipped**
+  (was 238/0/17; projects chromium, mobile, tablet, responsive, admin, isolated).
+- Hosted QA: pgTAP **52 files / 1289** PASS (= local minus the 5 dblink concurrency files, 39 tests, which
+  hard-code the local container host and stay covered locally); Playwright **243 / 0 / 0** with real hosted
+  Auth (password + TOTP, AAL2) on synthetic identities; QA runs use a 60 s per-test budget (remote DB +
+  a psql container per side-effect assertion). After the runs QA held 27 synthetic orders, 41 outbox rows, 0 sent.
+- **Production, read-only** (`E2E_BASE_URL=https://cruzial.pe`, chromium/mobile/tablet/responsive): **170 passed /
+  0 failed / 30 skipped**; the 30 skips are exactly the write journeys (orders, complaints, Import orders), which
+  refuse to run without the disposable fixture database. The first run found two stale specs (gallery assumed it
+  opens on photo 1; Import's preview-only consolidado state was unknown to the journey spec) — fixed in the specs,
+  not product defects.
+- `npm audit --omit=dev --audit-level=high` 0; `npm run audit:dev` PASS (1 documented exception: `braces`
+  GHSA-vfj7-8cjw-p6xm, still no patched release — latest 3.0.3; lint tooling only).
+- Advisors (Production and QA identical): 4 INFO rls_enabled_no_policy (service-role-only tables), definer-executable
+  WARNs matching the documented inventory, leaked-password protection (Free plan). No new finding.
+
+## Live checkpoint (2026-10-08) — superseded where it conflicts with 2026-10-09
 
 Verified against Git, GitHub and Vercel on 2026-10-08 (not copied from older notes):
 
@@ -2143,7 +2219,11 @@ through the regular Git deployment after a guarded merge to `master`.
   authorization CLAUDE.md describes, not a blanket "never".
 - Never modify master before explicit cutover/merge authorization.
 - Never weaken RLS/auth.
-- Migrations already applied (staging or Production) are append-only.
+- Migrations already applied (QA or Production) are append-only.
+- Environments: Production = `iyxidhglyqkzoziyewlc` (despite its name); QA = `aqbhtmylqnpahynarnhm`. Vercel Preview
+  binds only to QA; never put Production credentials in Preview. Scripted QA writes go through
+  `scripts/qa-hosted-browser.mjs` (marker-guarded). Removing a Vercel variable shared by several targets with
+  `vercel env rm NAME <target>` deletes it from all of them: re-add and verify the remaining targets.
 - Default: never invent client prices, stock or commercial decisions. The
   owner-delegation exception in `CLAUDE.md` (2026-10-01) authorizes Claude to
   choose auditable, provisional launch prices from documented market research

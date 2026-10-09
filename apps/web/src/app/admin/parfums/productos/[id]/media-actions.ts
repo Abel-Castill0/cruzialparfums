@@ -216,7 +216,9 @@ export async function registerMediaAction(
     // more destructive mistake. Report the failure explicitly; admin_
     // register_media is safe to retry (it only ever inserts a new row).
     console.error(
-      `[admin-parfums:media] upload persisted at Cloudinary but DB registration failed (public_id=${uploadResult.publicId}):`,
+      // Constant format string: the client-reported public_id is an argument, never part of the format.
+      "[admin-parfums:media] upload persisted at Cloudinary but DB registration failed (public_id=%s):",
+      uploadResult.publicId,
       result.error,
     );
     return { status: "error", message: friendlyError(result.error) };
