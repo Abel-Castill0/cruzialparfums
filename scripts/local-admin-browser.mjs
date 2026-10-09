@@ -22,6 +22,13 @@ const env = { ...process.env, NEXT_PUBLIC_SUPABASE_URL: url.origin,
   CRUZIAL_PRODUCTION_CUTOVER_APPROVED: "false", WHATSAPP_ACCESS_TOKEN: "", WHATSAPP_APP_SECRET: "", WHATSAPP_PARFUMS_PHONE_NUMBER_ID: "", WHATSAPP_IMPORT_PHONE_NUMBER_ID: "",
   ORDER_ABUSE_HMAC_SECRET: randomBytes(32).toString("hex"), SITE_URL: "http://localhost:3100", E2E_LOCAL_PORT: "3100" };
 delete env.E2E_BASE_URL;
+// Non-credential placeholders for the loopback-only server: the multi-photo upload specs intercept every
+// Cloudinary request in the browser, so the server only needs a *configured-looking* env to sign an
+// authorization. Overwritten unconditionally so a developer's real Cloudinary credentials can never be
+// used (or even read) by this disposable stack.
+env.CLOUDINARY_CLOUD_NAME = "e2e-local-cloud";
+env.CLOUDINARY_API_KEY = "000000000000000";
+env.CLOUDINARY_API_SECRET = "e2e-local-placeholder-not-a-credential";
 const admin = createClient(url.origin, config.SERVICE_ROLE_KEY, { auth: { persistSession: false } });
 function assertResult(result, label) { if (result.error) throw new Error(`${label} failed (${result.error.code ?? result.error.status ?? "unknown"}).`); return result.data; }
 function totp(secret) {

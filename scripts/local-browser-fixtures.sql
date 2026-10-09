@@ -97,4 +97,38 @@ values ('99002000-0000-4000-8000-000000000025','99002000-0000-4000-8000-00000000
 ('99002000-0000-4000-8000-000000000026','99002000-0000-4000-8000-000000000024','99002000-0000-4000-8000-000000000042','99002000-0000-4000-8000-000000000022',1,1),
 ('99002000-0000-4000-8000-000000000027','99002000-0000-4000-8000-000000000024','99002000-0000-4000-8000-000000000002','99002000-0000-4000-8000-000000000023',2,0),
 ('99002000-0000-4000-8000-000000000035','99002000-0000-4000-8000-000000000034','99002000-0000-4000-8000-000000000002','99002000-0000-4000-8000-000000000032',1,0) on conflict do nothing;
+
+-- Coverage fixtures (synthetic, local stack only; never client data). Several Playwright specs used to
+-- skip on a one-product stack: the featured rail needs >= 5 items to loop/auto-rotate, and the gallery
+-- needs a product with more than one photo. These are real published products so the same code paths run.
+insert into public.products(id,business_unit_id,slug,name,brand,gender,sales_mode,publication_status,is_featured,featured_rank)
+select ('99003000-0000-4000-8000-'||lpad((100+n)::text,12,'0'))::uuid,'11111111-1111-4111-8111-111111111111',
+  'local-qa-destacado-'||n,'LOCAL QA — Destacado '||n,'LOCAL QA','unisex','always_available','published',true,n
+from generate_series(1,6) as n on conflict do nothing;
+insert into public.product_categories(product_id,category_id)
+select ('99003000-0000-4000-8000-'||lpad((100+n)::text,12,'0'))::uuid,'99002000-0000-4000-8000-000000000004'
+from generate_series(1,6) as n on conflict do nothing;
+insert into public.product_variants(id,product_id,variant_kind,size_ml,label,price_amount,currency,publication_status,price_verification_status)
+select ('99003000-0000-4000-8000-'||lpad((200+n)::text,12,'0'))::uuid,('99003000-0000-4000-8000-'||lpad((100+n)::text,12,'0'))::uuid,
+  'decant',5,'LOCAL QA Destacado '||n||' 5 ml',10+n,'PEN','published','client_confirmed'
+from generate_series(1,6) as n on conflict do nothing;
+insert into public.inventory(product_variant_id,inventory_mode,availability_status)
+select ('99003000-0000-4000-8000-'||lpad((200+n)::text,12,'0'))::uuid,'status_only','available'
+from generate_series(1,6) as n on conflict do nothing;
+insert into public.product_media(id,product_id,provider,secure_url,alt,is_primary)
+select ('99003000-0000-4000-8000-'||lpad((300+n)::text,12,'0'))::uuid,('99003000-0000-4000-8000-'||lpad((100+n)::text,12,'0'))::uuid,
+  'legacy_static','/icon.png','LOCAL QA — imagen de prueba',true
+from generate_series(1,6) as n on conflict do nothing;
+-- Product with two photos (distinct URLs: the gallery de-duplicates by URL): drives the gallery (thumbnails, arrows, keyboard) spec.
+insert into public.products(id,business_unit_id,slug,name,brand,gender,sales_mode,publication_status)
+values ('99003000-0000-4000-8000-000000000500','11111111-1111-4111-8111-111111111111','local-qa-galeria','LOCAL QA — Galería','LOCAL QA','unisex','always_available','published') on conflict do nothing;
+insert into public.product_categories(product_id,category_id)
+values ('99003000-0000-4000-8000-000000000500','99002000-0000-4000-8000-000000000004') on conflict do nothing;
+insert into public.product_variants(id,product_id,variant_kind,size_ml,label,price_amount,currency,publication_status,price_verification_status)
+values ('99003000-0000-4000-8000-000000000501','99003000-0000-4000-8000-000000000500','decant',5,'LOCAL QA Galería 5 ml',10,'PEN','published','client_confirmed') on conflict do nothing;
+insert into public.inventory(product_variant_id,inventory_mode,availability_status)
+values ('99003000-0000-4000-8000-000000000501','status_only','available') on conflict do nothing;
+insert into public.product_media(id,product_id,provider,secure_url,alt,is_primary,sort_order)
+values ('99003000-0000-4000-8000-000000000502','99003000-0000-4000-8000-000000000500','legacy_static','/icon.png','LOCAL QA — foto principal',true,0),
+('99003000-0000-4000-8000-000000000503','99003000-0000-4000-8000-000000000500','legacy_static','/parfums/logo-mark.png','LOCAL QA — foto secundaria',false,1) on conflict (id) do update set secure_url=excluded.secure_url;
 commit;
