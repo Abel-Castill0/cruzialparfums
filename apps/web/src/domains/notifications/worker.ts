@@ -3,17 +3,28 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/database.types";
 import { DisabledEmailProvider, WhatsAppCloudProvider, readWhatsAppConfig, type NotificationProvider, type NotificationUnit } from "./provider";
 
+/** Logs a failed Supabase call by code and message only (never a key, payload or recipient). */
+export function logRpcFailure(step: string, error: { code?: string | null; message?: string | null } | null | undefined): void {
+  console.error("[automation] %s failed: %s %s", step, error?.code ?? "no-code", (error?.message ?? "unknown").slice(0, 200));
+}
+
 export async function processNotificationBatch(
   client: SupabaseClient<Database>,
   resolveProvider: (unit: NotificationUnit, channel: string) => NotificationProvider = (unit, channel) =>
     channel === "whatsapp" ? new WhatsAppCloudProvider(readWhatsAppConfig(unit)) : new DisabledEmailProvider(),
 ) {
   const started = await client.rpc("worker_record_health", { p_status: "running", p_processed: 0 });
-  if (started.error) return { ok: false, processed: 0 };
+  if (started.error) {
+    // Nothing is recorded in the database in this case (the health write itself failed), so the log line
+    // is the only trace: e.g. a rejected server key shows up here as "Invalid API key".
+    logRpcFailure("worker_record_health", started.error);
+    return { ok: false, processed: 0 };
+  }
   const milestones = await client.rpc("worker_enqueue_complaint_milestones");
   const units = await client.from("business_units").select("id,code");
   const claimed = await client.rpc("worker_claim_notifications", { p_batch: 5 });
   if (milestones.error || units.error || claimed.error) {
+    logRpcFailure("worker batch setup", milestones.error ?? units.error ?? claimed.error);
     await client.rpc("worker_record_health", { p_status: "failed", p_processed: 0 });
     return { ok: false, processed: 0 };
   }

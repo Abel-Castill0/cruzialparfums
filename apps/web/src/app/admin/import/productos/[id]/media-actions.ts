@@ -181,7 +181,9 @@ export async function registerMediaAction(
 
   if (!result.ok) {
     console.error(
-      `[admin-import:media] upload persisted at Cloudinary but DB registration failed (public_id=${uploadResult.publicId}):`,
+      // Constant format string: the client-reported public_id is an argument, never part of the format.
+      "[admin-import:media] upload persisted at Cloudinary but DB registration failed (public_id=%s):",
+      uploadResult.publicId,
       result.error,
     );
     return { status: "error", message: friendlyError(result.error) };
