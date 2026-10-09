@@ -6,6 +6,7 @@
  *   node scripts/qa-hosted-browser.mjs --build            build apps/web against QA
  *   node scripts/qa-hosted-browser.mjs --seed [pw args]   load synthetic fixtures, then run Playwright
  *   node scripts/qa-hosted-browser.mjs [pw args]          run Playwright against a local server + QA backend
+ *   node scripts/qa-hosted-browser.mjs --real-cloudinary --project=real-cloudinary   opt-in real upload (cleans up)
  *
  * Configuration comes only from a git-ignored env file (CRUZIAL_QA_ENV_FILE, default `.env.qa`):
  *   QA_PROJECT_REF, NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY, SUPABASE_SECRET_KEY,
@@ -128,6 +129,19 @@ if (args.includes("--seed")) {
   args.splice(args.indexOf("--seed"), 1);
   qaSql(readFileSync(`${root}scripts/local-browser-fixtures.sql`, "utf8") + "\n" + readFileSync(`${root}scripts/local-gate-b-browser-fixtures.sql`, "utf8"));
   console.log(`Synthetic browser fixtures loaded into QA ${target.ref}.`);
+}
+
+if (args.includes("--real-cloudinary")) {
+  // Opt-in: replaces the placeholders with the real (Production) Cloudinary credential from the local,
+  // git-ignored apps/web/.env.local and enables the "real-cloudinary" project, which uploads one synthetic
+  // image to a synthetic QA product and destroys every asset under that product's folder afterwards.
+  args.splice(args.indexOf("--real-cloudinary"), 1);
+  const local = parseEnvFile(readFileSync(`${web}.env.local`, "utf8"));
+  for (const key of ["CLOUDINARY_CLOUD_NAME", "CLOUDINARY_API_KEY", "CLOUDINARY_API_SECRET"]) {
+    if (!local[key]) throw new Error(`${key} missing in apps/web/.env.local`);
+    env[key] = local[key];
+  }
+  env.E2E_REAL_CLOUDINARY = "1";
 }
 
 // e2e/local-db.ts reaches the QA database only through this guarded channel.

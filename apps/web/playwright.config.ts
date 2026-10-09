@@ -53,6 +53,10 @@ export default defineConfig({
       dependencies: ["setup"],
       use: { ...devices["Desktop Chrome"] },
     },
+    // Opt-in, hosted QA only (scripts/qa-hosted-browser.mjs --real-cloudinary): a real upload to Cloudinary.
+    ...(process.env.E2E_REAL_CLOUDINARY === "1" && process.env.E2E_QA_PROJECT_REF
+      ? [{ name: "real-cloudinary", testMatch: /real-cloudinary\.spec\.ts/, dependencies: ["setup"], use: { ...devices["Desktop Chrome"], storageState: "e2e/.auth/gate-b-admin.json" } }]
+      : []),
     // Runs last (depends on every other project): specs here change shared synthetic state on purpose.
     {
       name: "isolated",
