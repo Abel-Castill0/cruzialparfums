@@ -13,8 +13,9 @@ docker exec -i supabase_db_cruzialparfums \
   < supabase/tests-manual/21_override_resolution_correctness.sql
 ```
 
-Never point `--apply` at `--target staging` outside the documented staging
-population procedure — staging is never repopulated from local sessions.
+Never point `--apply` at `--target staging` outside the documented population procedure. Since
+2026-10-09 `--target staging` means the hosted QA project (`aqbhtmylqnpahynarnhm`, env
+`CRUZIAL_QA_DATABASE_URL`, marker-guarded); it never targets Production (`iyxidhglyqkzoziyewlc`).
 
 The named-case regressions this file also proves (Accento/Arabia Heroes
 split identity, GOS Rouge/Black XS/Miss Dior presentation splits, Infrared

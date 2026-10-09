@@ -1,9 +1,9 @@
 import type { Metadata, Route } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cache } from "react";
 import { ImportAddToCartButton } from "@/components/import/cart/import-add-to-cart";
+import { ImportProductGallery } from "@/components/import/product/import-product-gallery";
 import {
   availabilityLabel,
   formatCampaignPrice,
@@ -50,7 +50,7 @@ export default async function ImportProductPage({ params }: ProductPageProps) {
   const { slug } = await params;
   const result = await readProduct(slug);
   if (!result) notFound();
-  const { product, campaign, contact } = result;
+  const { product, photos, campaign, contact } = result;
   const waUrl = contact
     ? `https://wa.me/${contact.whatsappNumber}?text=${encodeURIComponent("Hola Cruzial Import, quiero información sobre el consolidado vigente.")}`
     : "";
@@ -63,15 +63,7 @@ export default async function ImportProductPage({ params }: ProductPageProps) {
 
       <article className={styles.product}>
         <div className={styles.media}>
-          <div className={styles.mediaFrame}>
-            <Image
-              src={product.mediaUrl}
-              alt={product.mediaAlt}
-              fill
-              loading="eager"
-              sizes="(max-width: 767px) 100vw, 48vw"
-            />
-          </div>
+          <ImportProductGallery photos={photos} name={product.name} frameClassName={styles.mediaFrame} />
         </div>
         <div className={styles.content}>
           <p className={styles.campaign}>Consolidado #{campaign.number}</p>

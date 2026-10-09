@@ -3,6 +3,7 @@ import {
   IMPORT_CATALOG_MAX_PAGE,
   IMPORT_FALLBACK_MEDIA,
   availabilityLabel,
+  importGalleryPhotos,
   buildImportCatalogHref,
   formatCampaignPrice,
   mapPublicImportProduct,
@@ -131,5 +132,39 @@ describe("public Import presentation display", () => {
 
   it("formats campaign prices without changing their numeric value", () => {
     expect(formatCampaignPrice("210.00", "PEN")).toContain("210.00");
+  });
+});
+
+describe("importGalleryPhotos", () => {
+  const product = { brand: "Lattafa", name: "Asad", mediaUrl: "https://res.cloudinary.com/x/a.png", mediaAlt: "Asad" };
+
+  it("keeps every photo in the given order, drops duplicates and blanks, fills missing alt text", () => {
+    expect(importGalleryPhotos([
+      { secure_url: "https://res.cloudinary.com/x/a.png", alt: "Frente" },
+      { secure_url: " ", alt: "vacía" },
+      { secure_url: "https://res.cloudinary.com/x/b.png", alt: null },
+      { secure_url: "https://res.cloudinary.com/x/a.png", alt: "repetida" },
+    ], product)).toEqual([
+      { url: "https://res.cloudinary.com/x/a.png", alt: "Frente" },
+      { url: "https://res.cloudinary.com/x/b.png", alt: "Lattafa Asad" },
+    ]);
+  });
+
+  it("drops URLs that must never reach an <img> (same rule as Parfums)", () => {
+    expect(importGalleryPhotos([
+      { secure_url: "http://res.cloudinary.com/x/a.png", alt: "http", provider: "cloudinary" },
+      { secure_url: "//evil.example/a.png", alt: "protocol-relative", provider: "legacy_static" },
+      { secure_url: "data:image/png;base64,AAAA", alt: "data", provider: "cloudinary" },
+      { secure_url: "/icon.png", alt: "relative but not legacy", provider: "cloudinary" },
+      { secure_url: "/icon.png", alt: "Local", provider: "legacy_static" },
+    ], product)).toEqual([{ url: "/icon.png", alt: "Local" }]);
+  });
+
+  it("falls back to the product's resolved photo when the read failed or found nothing", () => {
+    const fallback = [{ url: product.mediaUrl, alt: product.mediaAlt }];
+    expect(importGalleryPhotos(null, product)).toEqual(fallback);
+    expect(importGalleryPhotos([], product)).toEqual(fallback);
+    expect(importGalleryPhotos([], { ...product, mediaUrl: IMPORT_FALLBACK_MEDIA, mediaAlt: "Composición" }))
+      .toEqual([{ url: IMPORT_FALLBACK_MEDIA, alt: "Composición" }]);
   });
 });

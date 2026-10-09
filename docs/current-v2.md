@@ -28,7 +28,9 @@ Verified directly (Git, GitHub, Vercel CLI, Supabase CLI/MCP, logs), not copied 
 - **Production** Supabase = `iyxidhglyqkzoziyewlc` (historical name `cruzial-v2-staging`). 80 migrations = repo,
   97 published products, 0 orders, 0 outbox rows, `public_launch_ready() = false`. Root `.env`
   `CRUZIAL_STAGING_DATABASE_URL` and the repo's default `supabase/.temp` link also point to Production
-  despite the names.
+  despite the names. No script reads that variable any more: `scripts/load-import-consolidado.mjs
+  --target staging` (which used to accept the Production ref as "staging") now targets QA through
+  `CRUZIAL_QA_DATABASE_URL`, refuses Production refs and runs the marker guard first (P2, fixed).
 - **QA (new)** Supabase = `cruzial-v2-qa` / `aqbhtmylqnpahynarnhm` (sa-east-1, Free plan; quoted cost
   **0 USD/month** via the Supabase API before creation). 80 repo migrations applied with `supabase db push`
   from a throwaway workdir linked to QA (exact versions, dry-run list checked first). Synthetic data only.
@@ -78,6 +80,34 @@ deployment was never affected (env is bound at build); the redeploy above was bu
   coordination is unaffected.
 - **Cron/worker:** `0 13 * * *` on `/api/automation/process`; `CRON_SECRET` valid (authorized, not 401).
 
+**Closure round 2 (2026-10-09, branch `claude/closure-round-2`):**
+- **P2 fixed — Import loader targeted Production as "staging":** `scripts/load-import-consolidado.mjs --target staging`
+  accepted `iyxidhglyqkzoziyewlc`, so `--apply` would have written Production while reporting a staging run (and
+  passed the DB URL, password included, in docker argv). Now: hosted target = QA via `CRUZIAL_QA_DATABASE_URL`
+  (the old variable is never read), Production refs refused before connecting, `qa_env.marker` guard first, URL via
+  the environment. Verified: `--precheck` on QA → 0 conflicts; the Production URL → refused.
+- **Import product gallery (documented gap, closed):** the page now shows every public photo, primary first, with
+  the same arrows/thumbnails/keyboard/swipe as Parfums. No migration: the existing `product_media_public_read`
+  policy and `anon` SELECT grant already expose non-archived photos of published products (verified in
+  Production). On a read error the page falls back to the single photo the product RPC resolved. Unit tests +
+  E2E (desktop/mobile/tablet) + screenshots.
+- **Backup and restore, proven:** `scripts/backup-production-db.mjs` → `C:\cruzial-private-backups\cruzial-iyxidhglyqkzoziyewlc-2026-10-09T04-01-15-088Z`
+  (outside the repo and OneDrive; roles + schema 522.6 KiB + data 1393.6 KiB + SHA-256 manifest). Restored into an empty
+  disposable local stack with `scripts/restore-validate-backup.mjs`: products 944, campaigns 2, orders 0, customers 0,
+  complaints 0, admin memberships 2 (= Production); RLS, key RPCs and constraints present. The dump does not include
+  the migration-history table (restore relies on the repo migrations' schema), Cloudinary media or Vercel config.
+  Still an owner decision: Free plan has no managed backups (Pro) or an encrypted off-site copy (docs/backup-runbook.md).
+- **Real Cloudinary through the Admin, on QA:** `qa-hosted-browser.mjs --real-cloudinary --project=real-cloudinary`
+  uploads a synthetic PNG via the Admin UI → registered (cloudinary, primary, product folder) → served as image →
+  archived → every asset under the product folder destroyed (404). Passed; 0 leftovers; account back to 260 resources.
+- **Production HTTP hardening re-verified:** HSTS (1 y, subdomains), CSP with per-request nonce + `strict-dynamic`,
+  `object-src 'none'`, `frame-ancestors 'none'`, `form-action 'self'`, `base-uri 'self'`, nosniff, DENY, Referrer and
+  Permissions policies; checkout capability cookie HttpOnly + Secure + SameSite=Strict.
+- **Gate (round 2):** hosted QA Playwright 246 / 0 / 0; `npm run check` PASS (104 files / 1189 Vitest, node 6 + 4 + 7, lint, typecheck, build); local
+  Playwright on a fresh stack 246 passed / 0 failed / 0 skipped.
+- **Dependabot:** #10 (TypeScript 7) stays blocked upstream (`typescript-eslint does not support TS 7.0`); #5 (ESLint 9.39.5 -> 10.12.0)
+  merged as `f733e00` after a full green run on current master (lint clean under ESLint 10; audits unchanged).
+
 **Gate 2026-10-09 (branch `claude/qa-hosted-staging`):**
 - Local, fresh stack: `npm run db:gate` 57 pgTAP files / **1328** PASS; `npm run check` PASS (104 files / **1187**
   Vitest + node tests 6 + 4 + 7, lint, typecheck, build); Playwright **243 passed / 0 failed / 0 skipped**
@@ -107,10 +137,8 @@ Verified against Git, GitHub and Vercel on 2026-10-08 (not copied from older not
 - Open work: PR #47 (the changes below). Repo migrations: 80; this checkpoint adds none.
 - **Import admin photos** now use the same multi-upload manager as Parfums (several files at once,
   drag and drop, per-file status, primary-first order, archive/restore, explicit "Cloudinary not
-  configured" and read-only states). The public Import product page still shows only the primary
-  photo: its data comes from SECURITY DEFINER RPCs that return a single `media_url`, and exposing
-  more would need a new migration; deferred on purpose (Import purchases are closed and 844
-  products still have no photo).
+  configured" and read-only states). *(Superseded 2026-10-09: the public Import product page now shows
+  every photo — no migration was needed; see "Closure round 2".)*
 - **Parfums shipping in the admin** is derived from the stored delivery text
   (`describeParfumsDelivery`): method, chosen Shalom agency, and a "quote over WhatsApp" reminder
   for motorizado. No schema change. A structured column remains optional; the order RPC still

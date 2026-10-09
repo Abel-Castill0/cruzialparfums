@@ -1,11 +1,14 @@
 /**
  * Cruzial Platform V2 — deterministic, fail-closed Sexto population operator.
  *
- * Local uses the local Supabase PostgreSQL container. Hosted staging requires
- * CRUZIAL_STAGING_DATABASE_URL and verifies that the connection identity names
- * project iyxidhglyqkzoziyewlc. The credential is never printed and there is no
+ * Local uses the local Supabase PostgreSQL container. "--target staging" is the hosted QA project
+ * (cruzial-v2-qa, aqbhtmylqnpahynarnhm): it requires CRUZIAL_QA_DATABASE_URL, verifies that the URL
+ * names that project, refuses Production refs, and every run starts with the qa_env.marker guard.
+ * (Until 2026-10-09 this pointed at iyxidhglyqkzoziyewlc, which is PRODUCTION despite its old
+ * "staging" name.) The credential is never printed, never placed in argv, and there is no
  * staging-to-local fallback. Production is not a supported target.
  */
+import { PRODUCTION_PROJECT_REFS, qaMarkerGuardSql } from "../apps/web/e2e/qa-target.mjs";
 import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
@@ -14,8 +17,8 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { buildCanonicalManifest, buildPopulationPlan, CAMPAIGN_NAME, CAMPAIGN_NUMBER, PLAN_VERSION } from "./lib/import-consolidado-plan.mjs";
 
-export const STAGING_PROJECT_ID = "iyxidhglyqkzoziyewlc";
-export const STAGING_DATABASE_URL_ENV = "CRUZIAL_STAGING_DATABASE_URL";
+export const STAGING_PROJECT_ID = "aqbhtmylqnpahynarnhm";
+export const STAGING_DATABASE_URL_ENV = "CRUZIAL_QA_DATABASE_URL";
 const scriptPath = fileURLToPath(import.meta.url);
 const repoRoot = resolve(dirname(scriptPath), "..");
 const reviewedPath = resolve(repoRoot, "supabase/staging/import/sexto-consolidado-reviewed.json");
@@ -47,7 +50,11 @@ export function validateStagingDatabaseUrl(rawUrl) {
   const hostname = parsed.hostname.toLowerCase();
   const username = decodeURIComponent(parsed.username).toLowerCase();
   const isDirect = hostname === `db.${STAGING_PROJECT_ID}.supabase.co`;
-  const isPooler = hostname.endsWith(".pooler.supabase.com") && username === `postgres.${STAGING_PROJECT_ID}`;
+  const isPooler = hostname.endsWith(".pooler.supabase.com")
+    && [`postgres.${STAGING_PROJECT_ID}`, `qa_runner.${STAGING_PROJECT_ID}`].includes(username);
+  if (PRODUCTION_PROJECT_REFS.some((ref) => rawUrl.includes(ref))) {
+    throw new Error(`${STAGING_DATABASE_URL_ENV} references a Production project. Refusing to connect.`);
+  }
   if (!isDirect && !isPooler) {
     throw new Error(`${STAGING_DATABASE_URL_ENV} does not identify hosted staging project ${STAGING_PROJECT_ID}. Refusing to connect.`);
   }
@@ -59,11 +66,12 @@ export function resolveTarget(target, env = process.env) {
     const container = localContainer();
     return { target, container, label: `local Supabase Docker (${container})` };
   }
-  return { target, databaseUrl: validateStagingDatabaseUrl(env[STAGING_DATABASE_URL_ENV]), label: `hosted Supabase staging (${STAGING_PROJECT_ID})` };
+  return { target, databaseUrl: validateStagingDatabaseUrl(env[STAGING_DATABASE_URL_ENV]), label: `hosted Supabase QA (${STAGING_PROJECT_ID})` };
 }
 
-function run(command, args, input) {
-  const result = spawnSync(command, args, { cwd: repoRoot, encoding: "utf8", input, maxBuffer: 64 * 1024 * 1024, windowsHide: true });
+function run(command, args, input, extraEnv) {
+  const result = spawnSync(command, args, { cwd: repoRoot, encoding: "utf8", input, maxBuffer: 64 * 1024 * 1024, windowsHide: true,
+    env: extraEnv ? { ...process.env, ...extraEnv } : process.env });
   if (result.error) throw result.error;
   if (result.status !== 0) {
     const message = (result.stderr || result.stdout || `${command} exited ${result.status}`).trim();
@@ -78,7 +86,10 @@ function executeSql(target, sql) {
     if (run("docker", ["inspect", "--format={{.State.Running}}", target.container]) !== "true") throw new Error(`Local database container is not running: ${target.container}`);
     return run("docker", ["exec", "-i", target.container, ...psqlArgs], sql);
   }
-  return run("docker", ["run", "--rm", "-i", "postgres:17-alpine", "psql", target.databaseUrl, "--quiet", "--no-align", "--tuples-only", "--set=ON_ERROR_STOP=1"], sql);
+  // Hosted QA: the URL travels in the environment (never argv) and the marker guard runs first.
+  return run("docker", ["run", "--rm", "-i", "-e", "QA_DATABASE_URL", "postgres:17-alpine", "sh", "-c",
+    'exec psql "$QA_DATABASE_URL" --quiet --no-align --tuples-only --set=ON_ERROR_STOP=1'],
+  qaMarkerGuardSql(STAGING_PROJECT_ID) + sql, { QA_DATABASE_URL: target.databaseUrl });
 }
 
 function sqlLiteral(value) { return `'${String(value).replaceAll("'", "''")}'`; }
