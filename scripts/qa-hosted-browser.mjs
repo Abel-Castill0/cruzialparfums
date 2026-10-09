@@ -10,7 +10,7 @@
  * Configuration comes only from a git-ignored env file (CRUZIAL_QA_ENV_FILE, default `.env.qa`):
  *   QA_PROJECT_REF, NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY, SUPABASE_SECRET_KEY,
  *   QA_DATABASE_URL (a least-privilege `qa_runner` login of the QA project, via the pooler).
- * Every write is preceded by the qa_env.marker guard (scripts/lib/qa-target.mjs). Production refs are
+ * Every write is preceded by the qa_env.marker guard (apps/web/e2e/qa-target.mjs). Production refs are
  * refused before any network call. Synthetic data only; no WhatsApp credential is ever passed through;
  * Cloudinary is replaced by the same non-credential placeholders as the local runner (specs intercept it).
  */
@@ -21,7 +21,7 @@ import { mkdirSync, readFileSync, cpSync, rmSync, existsSync, mkdtempSync, write
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { parseEnvFile, validateQaTarget, qaMarkerGuardSql, dockerPsqlArgs, isProductionRef } from "./lib/qa-target.mjs";
+import { parseEnvFile, validateQaTarget, qaMarkerGuardSql, dockerPsqlArgs, isProductionRef } from "../apps/web/e2e/qa-target.mjs";
 import { ensureIdentities } from "./lib/e2e-identities.mjs";
 
 const root = fileURLToPath(new URL("../", import.meta.url));

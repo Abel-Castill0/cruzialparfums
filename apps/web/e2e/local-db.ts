@@ -2,7 +2,7 @@ import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import type { TestInfo } from "@playwright/test";
-import { dockerPsqlArgs, isProductionRef, qaMarkerGuardSql } from "../../../scripts/lib/qa-target.mjs";
+import { dockerPsqlArgs, isProductionRef, qaMarkerGuardSql } from "./qa-target.mjs";
 
 /**
  * Direct SQL against the DISPOSABLE local Supabase stack only — used to make

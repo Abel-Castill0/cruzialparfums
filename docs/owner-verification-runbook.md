@@ -104,7 +104,7 @@ Con eso se corrige la configuración y se actualiza `docs/current-v2.md`.
 
 - Proyecto Supabase `cruzial-v2-qa` (`aqbhtmylqnpahynarnhm`, sa-east-1, Free, 0 USD/mes). Marcador
   `qa_env.marker` creado a mano (no es una migración, no puede existir en Producción); todo script que
-  escribe en QA lo comprueba antes (`scripts/lib/qa-target.mjs`).
+  escribe en QA lo comprueba antes (`apps/web/e2e/qa-target.mjs`).
 - Preview de Vercel: `NEXT_PUBLIC_SUPABASE_URL`/`NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`/`SUPABASE_SECRET_KEY`
   de QA, `ORDER_ABUSE_HMAC_SECRET` propio, `CRUZIAL_PRODUCTION_CUTOVER_APPROVED=false`; **sin** Cloudinary
   (la única cuenta es la de Producción) y sin WhatsApp.

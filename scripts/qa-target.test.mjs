@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { parseEnvFile, validateQaTarget, qaMarkerGuardSql, isProductionRef, dockerPsqlArgs } from "./lib/qa-target.mjs";
+import { parseEnvFile, validateQaTarget, qaMarkerGuardSql, isProductionRef, dockerPsqlArgs } from "../apps/web/e2e/qa-target.mjs";
 
 const QA = "aqbhtmylqnpahynarnhm";
 const PROD = "iyxidhglyqkzoziyewlc";

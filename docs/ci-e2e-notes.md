@@ -45,7 +45,7 @@ node scripts/qa-hosted-browser.mjs --seed      # synthetic fixtures + identities
 ```
 
 Configuration lives only in the git-ignored `.env.qa` (QA ref, URL, publishable/secret keys, and a
-least-privilege `qa_runner` pooler login). `scripts/lib/qa-target.mjs` refuses Production refs, URLs/keys of
+least-privilege `qa_runner` pooler login). `apps/web/e2e/qa-target.mjs` refuses Production refs, URLs/keys of
 another project and masked keys; every SQL statement (fixtures and `e2e/local-db.ts`) is preceded by the
 `qa_env.marker` guard, which aborts on any database without the marker (verified against the local stack).
 
