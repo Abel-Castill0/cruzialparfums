@@ -20,7 +20,35 @@ git rev-parse HEAD
 > The sections below the "Current verified state (2026-10-01)" block are
 > historical gate records; where they conflict with that block, that block wins.
 
-## Operational closure (2026-10-11, sixth phase) — HS256 revoked, secrets prepared — READ THIS FIRST
+## Functional certification (2026-10-11, seventh phase) — can the client use the platform? — READ THIS FIRST
+
+Master `5cb5656` = Production (CI, CodeQL, secret scan green). No code defect was found in this pass, so no code changed.
+Evidence (all re-run on the day, not reused):
+- `npm run check` PASS (107 files / 1214 Vitest, node suites, lint, typecheck, build). Local pgTAP `db:gate`: 61 files / **1377** PASS.
+- **Hosted QA, full suite** (`qa-hosted-browser.mjs --reset`, `--build`, `--seed`): **271 passed / 0 failed / 0 skipped** — chromium 72,
+  mobile 75, tablet 71, responsive 9, admin 39 (real password + TOTP/AAL2 on synthetic identities, writes + persistence), isolated 1,
+  setup 4. The 39 tests that skip without identities (admin CRUD, photos, combos, wholesale, operations, orders) therefore all ran.
+- **Production, read-only** (`E2E_BASE_URL=https://cruzial.pe`, chromium/mobile/tablet/responsive): 188 passed / 0 failed / 39 skipped
+  (exactly the write journeys — orders, complaints, Import orders — which refuse to run without a disposable database).
+- Production error logs: none in the last 24 h (Vercel CLI); recent requests all 200. Mobile screenshots (Pixel 7) of the home pages,
+  catalogs, combos and checkout: no horizontal overflow, 0 console/page errors.
+
+Definitions (Production, read from the database):
+- **Published Parfums** = 97 (`publication_status='published'`, not archived) = **94 individual perfumes in /parfums/catalogo + 3 combos**
+  (`/parfums/combos`). Not a discrepancy. 1 draft + 2 archived Parfums products are not public.
+- **Purchasable** = published product with a published variant that has an available inventory row; all 97 qualify. 3 published products
+  have no photo (Lovely Cherry, Royal Blend Sequoia, Sceptre Malachite — all Maison Alhambra, discontinued line): the page shows
+  "FOTO PRÓXIMAMENTE" and stays buyable through the WhatsApp checkout. Nothing was made buyable or invented.
+- **Import**: campaign 8 is `scheduled` (898 offers, all `unconfirmed`) and campaign 6 `draft` (898 offers `unconfirmed`); 844 Import
+  products are `draft`. The public site shows a preview catalog (830 reference products, "Referencia … Por confirmar", purchases
+  disabled) with a WhatsApp consultation path; no purchase can be placed on unconfirmed offers.
+- WhatsApp Cloud API remains unconfigured: customer flows use the manual WhatsApp message; the admin sees the order and can follow up.
+
+What the client still must provide (not code): RUC / legal data, confirmed Import campaign 8 prices and availability, photos for the 3
+products above, the indexing decision (kept OFF), and an SMTP provider or org-member admin address so the admin's password-recovery
+e-mail can be delivered (see the sixth phase). Credential rotations stay as documented in docs/credential-rotation-plan.md §7.
+
+## Operational closure (2026-10-11, sixth phase) — HS256 revoked, secrets prepared
 
 State: master `c38d8e0` = Production `dpl_An6rgcSef2fVyA3XaSTeAec88XTT`; CI, CodeQL and secret scan green; 85 migrations in Production and
 QA; no open PRs or issues; indexing OFF. The authoritative per-credential table is **docs/credential-rotation-plan.md §7**.
