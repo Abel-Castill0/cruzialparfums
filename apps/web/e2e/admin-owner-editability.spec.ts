@@ -95,4 +95,33 @@ test.describe("Owner operability with incomplete data (admin)", () => {
     await page.goto("/admin/parfums");
     await expect(page.getByText("Faltan datos legales del negocio")).toBeVisible();
   });
+
+  test("search indexing is an explicit, persisted owner switch, independent from incomplete content", async ({ page }) => {
+    const read = () => localSql("select value->>'enabled' from public.settings where business_unit_id is null and key = 'search_indexing';");
+    const original = read();
+    localSql("update public.settings set value = '{\"enabled\": false}' where business_unit_id is null and key = 'search_indexing';");
+    try {
+      await page.goto("/admin/parfums/operaciones");
+      const section = page.locator("section").filter({ has: page.getByRole("heading", { name: "Preparación para lanzamiento" }) });
+      await expect(section).toContainText("Permitir indexación en buscadores: desactivada");
+      // The completeness report is a warning next to the switch, never a lock on it.
+      await section.getByRole("button", { name: "Permitir indexación en buscadores" }).click();
+      await section.getByRole("button", { name: "Sí, permitir" }).click();
+      await expect(section.getByRole("status")).toContainText("Indexación permitida");
+      await page.reload();
+      await expect(section).toContainText("Permitir indexación en buscadores: activada");
+      expect(read()).toBe("true");
+      // Non-production deployments stay closed to crawlers whatever the switch says.
+      const robots = await page.request.get("/robots.txt");
+      expect(await robots.text()).toMatch(/Disallow: \//);
+      await section.getByRole("button", { name: "Desactivar indexación en buscadores" }).click();
+      await section.getByRole("button", { name: "Sí, desactivar" }).click();
+      await expect(section.getByRole("status")).toContainText("Indexación desactivada");
+      expect(read()).toBe("false");
+    } finally {
+      if (original === "true" || original === "false") {
+        localSql(`update public.settings set value = jsonb_build_object('enabled', ${original}) where business_unit_id is null and key = 'search_indexing';`);
+      }
+    }
+  });
 });

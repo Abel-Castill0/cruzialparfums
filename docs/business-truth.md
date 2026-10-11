@@ -121,6 +121,10 @@ Verify:
 - real media;
 - real commercial readiness.
 
-`CRUZIAL_PRODUCTION_CUTOVER_APPROVED` remains false until factual launch readiness is satisfied.
+Indexing (2026-10-11): an explicit owner decision through the admin switch "Permitir indexación en buscadores"
+(Operaciones; `public.admin_set_search_indexing`, AAL2 admin of every unit, audited, default OFF). It is independent from
+content completeness: `public_launch_ready()` remains the factual readiness report and is shown next to the switch as a
+warning. Agents never turn indexing on and never fake readiness data. `CRUZIAL_PRODUCTION_CUTOVER_APPROVED` is retired;
+`CRUZIAL_INDEXING_FORCE_OFF=true` is an emergency override that closes everything.
 
-Do not bypass DB-backed readiness checks.
+Do not bypass DB-backed readiness checks for commercial availability (prices, offers, campaigns).

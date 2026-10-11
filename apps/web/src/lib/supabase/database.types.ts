@@ -1122,6 +1122,9 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"admin_get_search_indexing":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
 "admin_get_audit_log_entry":
 { Args: { "p_business_unit_code": string,"p_entry_id": string }; Returns: {
               "action": string,"actor_email": string,"actor_user_id": string,"after": Json,"before": Json,"business_unit_id": string,"created_at": string,"entity_id": string,"entity_type": string,"id": string
@@ -1965,6 +1968,23 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"admin_set_search_indexing":
+{ Args: { "p_enabled": boolean,"p_expected_updated_at": string }; Returns: {
+              "business_unit_id": string | null,
+"created_at": string,
+"id": string,
+"is_public": boolean,
+"key": string,
+"updated_at": string,
+"updated_by": string | null,
+"value": NonNullable<Json>
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "settings"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
 "admin_update_variant":
 { Args: { "p_confirm_client_price"?: boolean,"p_currency": string,"p_expected_updated_at": string,"p_label": string,"p_price_amount": number,"p_publication_status": string,"p_size_ml": number,"p_sku": string,"p_sort_order": number,"p_variant_id": string,"p_variant_kind": string }; Returns: {
               "archived_at": string | null,
@@ -2053,6 +2073,9 @@ isOneToOne: false
             }[]
                            },
 "public_launch_ready":
+{ Args: Record<PropertyKey, never>; Returns: boolean
+                           },
+"public_search_indexing_enabled":
 { Args: Record<PropertyKey, never>; Returns: boolean
                            },
 "public_list_import_catalog":
