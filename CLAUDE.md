@@ -97,11 +97,11 @@ Context is a HARD budget; aim for maximum confidence per token.
 
 ## Where the full rules live
 
-| File | Original sections |
+| File | Sections |
 | --- | --- |
-| `docs/token-budget.md` | §3-6, §27, §28 (context, ledger, reading, output, compaction) |
-| `docs/security-rules.md` | §10, §12-15 (Production, migrations, DB, environments, security) |
-| `docs/git-and-release.md` | §8, §9, §11 (git, merge/`master`, release sequencing) |
-| `docs/business-truth.md` | §16 (incl. owner delegation), §17, §21 (blockers, SEO) |
-| `docs/testing-and-quality.md` | §7, §18-20, §22, §23, §25, §26 (tests, bugs, UI, DoD, reporting) |
+| `docs/token-budget.md` | §3-6, §27, §28 |
+| `docs/security-rules.md` | §10, §12-15 |
+| `docs/git-and-release.md` | §8, §9, §11 |
+| `docs/business-truth.md` | §16 (incl. owner delegation), §17, §21 |
+| `docs/testing-and-quality.md` | §7, §18-20, §22, §23, §25, §26 |
 | `docs/execution-philosophy.md` | §0, §1 (full text), §2, §24, §29 |
