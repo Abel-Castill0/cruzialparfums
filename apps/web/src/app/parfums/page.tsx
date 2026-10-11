@@ -23,7 +23,8 @@ import { loadParfumsStorefront } from "@/lib/catalog/parfums-storefront";
 import styles from "./page.module.css";
 
 export const metadata: Metadata = {
-  title: "Cruzial Parfums",
+  // Absolute: the unit layout template would otherwise repeat the brand.
+  title: { absolute: "Cruzial Parfums — Decants, frascos y combos" },
   description: "Decants, frascos y combos de perfumería árabe, designer y de nicho en Perú.",
 };
 

@@ -6,6 +6,7 @@ import { Reveal } from "@/components/storefront/home/reveal";
 import { VideoStory } from "@/components/storefront/home/video-story";
 import type { ImportDepositPercentages } from "@/domains/import/import-deposit-policies";
 import type { PublicImportFilters, PublicImportPreviewProduct, PublicImportWholesaleRule } from "@/domains/import/public-import";
+import { estimatedOpeningLabel } from "@/domains/import/public-import";
 import type { PublicImportPageResult } from "@/domains/import/public-import-repository";
 import { IMPORT_HOME_VIDEO } from "@/domains/platform/home-video";
 import type { BusinessUnitSettings } from "@/domains/platform/settings";
@@ -59,7 +60,7 @@ export function ImportHomeView({ page, filters, contact, depositPercentages, who
 }
 
 export function ImportPreviewCatalog({ result, filters }: { result: Extract<PublicImportPageResult, { status: "upcoming" }>; filters: PublicImportFilters }) {
-  const opening = result.campaign.opensAt ? new Intl.DateTimeFormat("es-PE", { dateStyle: "long", timeZone: "America/Lima" }).format(new Date(result.campaign.opensAt)) : "por confirmar";
+  const opening = estimatedOpeningLabel(result.campaign.opensAt);
   return <section className={styles.catalog} id="catalogo" aria-labelledby="import-preview-catalog-title">
     <Reveal><div className={styles.catalogHeading}><div><p className={styles.eyebrow}>Consolidado #{result.campaign.number}</p><h2 id="import-preview-catalog-title">Vista previa del catálogo</h2></div><p>Apertura estimada: {opening}. El consolidado permanece cerrado hasta confirmar fecha y precios.</p></div></Reveal>
     <div className={styles.previewNotice} role="status"><strong>Catálogo de referencia · compras deshabilitadas</strong><span>Productos y precios tomados del Sexto Consolidado. Se publicarán para compra cuando se confirmen las condiciones del Octavo Consolidado.</span></div>

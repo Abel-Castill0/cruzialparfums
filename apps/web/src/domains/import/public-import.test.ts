@@ -6,6 +6,7 @@ import {
   importGalleryPhotos,
   buildImportCatalogHref,
   formatCampaignPrice,
+  estimatedOpeningLabel,
   mapPublicImportProduct,
   mapPublicImportProducts,
   parsePublicImportFilters,
@@ -166,5 +167,21 @@ describe("importGalleryPhotos", () => {
     expect(importGalleryPhotos([], product)).toEqual(fallback);
     expect(importGalleryPhotos([], { ...product, mediaUrl: IMPORT_FALLBACK_MEDIA, mediaAlt: "Composición" }))
       .toEqual([{ url: IMPORT_FALLBACK_MEDIA, alt: "Composición" }]);
+  });
+});
+
+describe("estimatedOpeningLabel", () => {
+  const now = new Date("2026-10-10T20:00:00Z");
+  it("formats a future opening in Lima time", () => {
+    // 05:00Z on the 15th is midnight of the 15th in Lima.
+    expect(estimatedOpeningLabel("2026-10-15T05:00:00Z", now)).toBe("15 de octubre de 2026");
+  });
+  it("never shows a past or current date as the estimated opening", () => {
+    expect(estimatedOpeningLabel("2026-10-10T20:00:00Z", now)).toBe("por confirmar");
+    expect(estimatedOpeningLabel("2026-10-09T05:00:00Z", now)).toBe("por confirmar");
+  });
+  it("falls back for a missing or invalid date", () => {
+    expect(estimatedOpeningLabel(null, now)).toBe("por confirmar");
+    expect(estimatedOpeningLabel("not-a-date", now)).toBe("por confirmar");
   });
 });

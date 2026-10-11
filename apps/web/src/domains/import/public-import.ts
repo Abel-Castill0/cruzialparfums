@@ -325,3 +325,15 @@ export function importGalleryPhotos(rows: ImportMediaRow[] | null, product: Pick
   }
   return photos.length ? photos : [{ url: product.mediaUrl, alt: product.mediaAlt }];
 }
+
+/**
+ * Public label for a scheduled consolidado's estimated opening. A date that has
+ * already passed while the campaign is still not open is no longer an estimate
+ * the customer can rely on, so it reads "por confirmar" instead of a past date.
+ */
+export function estimatedOpeningLabel(opensAt: string | null, now: Date = new Date()): string {
+  if (!opensAt) return "por confirmar";
+  const at = new Date(opensAt);
+  if (Number.isNaN(at.getTime()) || at.getTime() <= now.getTime()) return "por confirmar";
+  return new Intl.DateTimeFormat("es-PE", { dateStyle: "long", timeZone: "America/Lima" }).format(at);
+}
