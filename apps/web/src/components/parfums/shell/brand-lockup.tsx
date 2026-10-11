@@ -4,7 +4,7 @@ import styles from "./parfums-shell.module.css";
 
 export function ParfumsBrandLockup({ logoUrl }: { logoUrl: string | null }) {
   return (
-    <Link href="/parfums" className={styles.brand} aria-label="CRUZIAL PARFUMS — inicio">
+    <Link href="/parfums" className={styles.brand}>
       <span className={styles.brandMark}>
         {logoUrl ? (
           <Image
