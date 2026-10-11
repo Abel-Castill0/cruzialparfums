@@ -1,0 +1,73 @@
+name: Monitor Vercel Production
+
+# Hourly, READ-ONLY check of the latest Production deployments (see scripts/monitor-vercel.mjs and docs/monitoring.md).
+# Needs the repository secrets VERCEL_TOKEN and DISCORD_WEBHOOK_URL. Until VERCEL_TOKEN exists the job only emits a
+# visible warning and does nothing. Scheduled workflows run from the default branch only and never receive secrets from
+# fork pull requests.
+
+on:
+  schedule:
+    - cron: "17 * * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Inspect deployments and print the alert instead of sending it to Discord"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: monitor-vercel
+  cancel-in-progress: false
+
+jobs:
+  monitor:
+    name: Vercel deployment errors
+    if: github.repository == 'Abel-Castill0/cruzialparfums'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+      # Lockfile-verified install without lifecycle scripts, so no package script runs while the secrets are around.
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+        working-directory: apps/web
+      - name: Check configuration
+        id: config
+        env:
+          HAS_TOKEN: ${{ secrets.VERCEL_TOKEN != '' }}
+        run: |
+          if [ "$HAS_TOKEN" != "true" ]; then
+            echo "::warning title=Vercel monitor NOT running::The VERCEL_TOKEN repository secret is not set, so no Production check was made."
+            echo "### Vercel monitor is not configured" >> "$GITHUB_STEP_SUMMARY"
+            echo "Set the \`VERCEL_TOKEN\` and \`DISCORD_WEBHOOK_URL\` repository secrets (see docs/monitoring.md)." >> "$GITHUB_STEP_SUMMARY"
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Monitor
+        if: steps.config.outputs.configured == 'true'
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          # IDs, not secrets: they already appear in every Vercel comment on the public pull requests.
+          VERCEL_PROJECT_ID: prj_u2ZX24IO9akHdN0qlzveQNwte59l
+          VERCEL_TEAM_ID: team_OPJLunXDFXq0o9kKQK6VOt8Z
+          MONITOR_DEPLOYMENTS: "5"
+          MONITOR_THRESHOLD: "10"
+          MONITOR_TARGET: production
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          if [ "$DRY_RUN" = "true" ]; then
+            node scripts/monitor-vercel.mjs --dry-run
+          else
+            node scripts/monitor-vercel.mjs
+          fi
