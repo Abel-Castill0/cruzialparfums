@@ -20,6 +20,43 @@ git rev-parse HEAD
 > The sections below the "Current verified state (2026-10-01)" block are
 > historical gate records; where they conflict with that block, that block wins.
 
+## Operational closure (2026-10-11, third phase)
+
+State: master = Production `a8ced07` (`dpl_B1JB46r2eYMfCPbxkYaAfBcSfESU`, READY); 85 migrations in Production and QA;
+0 open PRs; only open issue #81.
+
+**TERMINADO Y VERIFICADO**
+- Supabase Auth redirect allow-list: `localhost`/`127.0.0.1` removed (owner-authorized, read back via the Management
+  API: only the two `https://cruzial.pe` callbacks remain). `/auth/callback` without a code → 307 `missing_code`;
+  login/forgot pages 200; recovery links are built from `SITE_URL` (`https://cruzial.pe/auth/callback`). Revert in
+  docs/rollback-runbook.md §3c.
+- Vercel token found in the local, git-ignored `.env` as `TOKEN_VERCEL`: valid against the monitor's own calls
+  (`GET /v7/deployments` 200, `GET /v3/deployments/{id}/events` 200); metadata: manual token "CRUZIAL", team scope,
+  **no expiry**, created 2026-09-07. The repository secret `VERCEL_TOKEN` still holds a rejected value (403).
+- Monitor crons registered again (#88): scheduled runs observed (Supabase 14:22 UTC success; Vercel 14:00 UTC → 403,
+  issue #81 throttled, 0 extra comments). Env files were never committed (`git log --all` empty) and are ignored.
+- Metadata location investigated (async root `generateMetadata` + streaming); fix documented in rollback-runbook §3b.
+
+**PENDIENTE DE INTERVENCIÓN DEL PROPIETARIO**
+- Store the valid token as the `VERCEL_TOKEN` secret (command in the owner checklist; agents never store
+  credentials), then a monitor run closes #81. Recommended afterwards: create a fresh token with an expiry (90 days) or
+  a project-scoped one (`vercel tokens add --project`), store it the same way and revoke "CRUZIAL" (no expiry, team-wide).
+- Recovery e-mail delivery: the admin mailbox is not among the open sessions; Auth uses Supabase's built-in mailer
+  (no custom SMTP), which is rate-limited and typically delivers only to team-member addresses. Delivery NOT verified.
+- Cloudinary SHA-256 upload + delete on a **draft** product from an AAL2 admin session (signature already accepted by
+  Cloudinary in a non-mutating probe).
+- Secrets synced by OneDrive: the repository lives under `OneDrive\Desktop`, so the git-ignored `.env` files (DB
+  password, service-role key, Cloudinary secret) are uploaded to OneDrive. Consider moving the working copy outside
+  OneDrive or excluding the folder from sync.
+- Business data (not engineering blockers): legal identity/RUC, Import campaign 8 prices/availability, 4 Parfums
+  products without photo, indexing decision.
+
+**BLOQUEADO POR UN PROVEEDOR / RIESGO RESIDUAL**
+- GitHub scheduled workflows are best-effort: hourly crons ran with ~45 min delay and some slots were dropped. If
+  hourly precision matters, trigger the monitors from an external scheduler.
+- Next.js 2026-10-14 out-of-band release not published yet (`latest` 16.4.0); a one-off check is scheduled for
+  2026-10-14 12:00 Lima.
+
 ## Operational closure (2026-10-11, second phase) — read with the checkpoint below
 
 - **GitHub Pages** no longer publishes the legacy storefront (it advertised old prices and a different WhatsApp
