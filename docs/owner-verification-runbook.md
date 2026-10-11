@@ -110,3 +110,6 @@ Con eso se corrige la configuración y se actualiza `docs/current-v2.md`.
   (la única cuenta es la de Producción) y sin WhatsApp.
 - Uso local (el archivo `.env.qa` está ignorado por git; nunca lo compartas):
   `node scripts/qa-hosted-browser.mjs --check | --reset | --build | --seed`.
+- Corrida limpia completa: `--reset`, luego `--seed` (ejecuta Playwright). Los specs serie de Gate B mutan
+  pedidos/inventario, así que una segunda pasada **sin** `--reset` falla con un estado ya consumido (visto el
+  2026-10-10). Las ventanas de campañas de prueba se renuevan en cada `--seed`, pero el estado de pedidos no.

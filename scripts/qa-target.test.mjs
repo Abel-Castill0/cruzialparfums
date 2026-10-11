@@ -1,5 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { parseEnvFile, validateQaTarget, qaMarkerGuardSql, isProductionRef, dockerPsqlArgs } from "../apps/web/e2e/qa-target.mjs";
 
 const QA = "aqbhtmylqnpahynarnhm";
@@ -53,4 +54,15 @@ test("marker guard is a real psql meta-command prelude (QUIET on/off)", () => {
   const lines = qaMarkerGuardSql(QA).split("\n");
   assert.equal(lines[0], "\\set QUIET on");
   assert.ok(lines.includes("\\set QUIET off"));
+});
+
+// Regression (2026-10-10): the fixture campaign windows are relative to now(). With `on conflict do nothing` the
+// hosted QA project (which persists between days) kept an expired 'LOCAL QA activo', and every Import purchase
+// journey failed with "Producto no disponible" two days after the first seed.
+test("the browser fixtures renew the fixture campaign windows on every seed", () => {
+  const sql = readFileSync(new URL("./local-browser-fixtures.sql", import.meta.url), "utf8");
+  const campaigns = sql.slice(sql.indexOf("insert into public.campaigns"), sql.indexOf("insert into public.campaign_products"));
+  assert.ok(campaigns.includes("on conflict (id) do update set"), "campaign upsert must update on conflict");
+  assert.ok(/opens_at=excluded.opens_at/.test(campaigns) && /closes_at=excluded.closes_at/.test(campaigns), "both window ends must be renewed");
+  assert.doesNotMatch(campaigns, /on conflict do nothing/);
 });
