@@ -93,3 +93,18 @@ test("keyboard: product card 'Añadir' is reachable and announces the cart updat
   await page.keyboard.press("Enter");
   await expect(page.getByRole("button", { name: /Abrir carrito, 1 producto/ })).toBeVisible();
 });
+
+// WCAG 2.5.3 Label in Name. axe ships this rule as experimental, so the tag-based
+// runs above never evaluate it. Regression (2026-10-10): the footer brand link and
+// the photo links of products without a photo had an aria-label that omitted their
+// visible text.
+for (const route of ["/parfums", "/parfums/catalogo", "/import", "/import/catalogo"]) {
+  test(`axe: visible link/button text is part of the accessible name on ${route}`, async ({ page }) => {
+    await page.goto(route);
+    await page.waitForLoadState("networkidle");
+    const results = await new AxeBuilder({ page }).exclude("iframe").withRules(["label-content-name-mismatch"]).analyze();
+    expect(
+      results.violations.flatMap((v) => v.nodes.map((n) => n.target.join(" "))),
+    ).toEqual([]);
+  });
+}

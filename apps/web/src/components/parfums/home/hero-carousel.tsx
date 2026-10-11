@@ -31,6 +31,7 @@ export function HeroArtwork({
         className={styles.image}
         style={{ "--pos": position, "--pos-mobile": mobilePosition } as React.CSSProperties}
         preload
+        fetchPriority="high"
       />
       <div className={styles.shade} aria-hidden="true" />
       <div className={styles.bar}>
