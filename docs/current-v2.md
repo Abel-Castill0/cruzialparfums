@@ -1,6 +1,6 @@
 # CRUZIAL V2 - CURRENT CHECKPOINT
 
-Updated: 2026-10-10
+Updated: 2026-10-11
 
 ## Scope
 
@@ -20,7 +20,53 @@ git rev-parse HEAD
 > The sections below the "Current verified state (2026-10-01)" block are
 > historical gate records; where they conflict with that block, that block wins.
 
-## Live checkpoint (2026-10-10) — read this first; supersedes 2026-10-09 where they conflict
+## Live checkpoint (2026-10-11) — read this first; supersedes 2026-10-10 where they conflict
+
+Production serves `488eaa9` (deployment `dpl_4CYCP8EKkURTZDjHHgP7bSjyGQh2`, READY; the app code was released with
+`19ffcec` #77, `dpl_EY8XCufNZ41r2XbxmCxS5DZZUKow`; #83 only changed the monitor baseline). Supabase Production = QA = repo: **85 migrations**, latest
+`20261011130000`. Production: 0 orders, 0 complaints, 0 outbox, `public_launch_ready() = false`, search indexing
+**OFF** (owner switch, default).
+
+Merged today (HEAD-guarded squash, all checks green): #74 monitors → GitHub Issues (job token, `issues: write` on the
+job only, DRY_RUN env, blind-monitor alert, retries, self-test), #75 codeql-action init+analyze v4.38.3 together (closed
+#65/#66 as superseded; Dependabot group added), #82 hosted MCP `query_logs` parsing + no Vercel error bodies, #76 the
+preserved Codex certification fixes (7 P2; migrations `20261011120000/120100/120200`), #77 owner-controlled indexing
+switch (migration `20261011130000`), #83 health baseline for the intentional indexing RPCs.
+
+Production DB release (2026-10-11 ~07:20 UTC): fresh backup `C:\cruzial-private-backups\cruzial-iyxidhglyqkzoziyewlc-
+2026-10-11T07-13-47-671Z` (SHA-256 OK, restore-validated into a disposable empty stack: 944 products / 2 campaigns /
+0 orders, RLS + key functions present); dry-run listed exactly the 4 expected versions; `db push` applied them; verified
+count 85, ACLs (`*_v2` service-only, admin RPCs not anon), `search_path=""` on every new function, advisors: only the
+intentional +1 anon / +3 authenticated SECURITY DEFINER entries (baseline raised in #83). QA was reset to the same 85
+migrations first: hosted QA browser suite **268 passed / 0 failed**; local pgTAP **61 files / 1377 passed**. Rollbacks:
+`supabase/rollback/20261011_codex_certification_integration_rollback.sql` (app first, then DB); the indexing switch
+needs no rollback (default OFF; `CRUZIAL_INDEXING_FORCE_OFF=true` closes everything).
+
+Other changes: `www.cruzial.pe` → apex is now **308** (was 307; Vercel project domain `redirectStatusCode`). Monitors
+re-enabled (both workflows were disabled manually earlier today). Local work preserved before any change: verified git
+bundle of all 121 refs + stash at `C:\Users\ABEL\cruzial-preservation\2026-10-11` (CHECKPOINT.md inside).
+
+### Findings matrix (2026-10-11)
+
+| Finding | Sev. | Status | Evidence / fix | Next owner |
+| --- | --- | --- | --- | --- |
+| Codex certification fixes (complaint replay, legacy dispatch, milestone backlog, order recovery, CSV, focus) only on an unpushed local branch | P2 | CORREGIDO | #76, migrations applied, QA 268/0 | — |
+| Supabase health could not parse hosted `query_logs` (double-wrapped JSON) | P2 | CORREGIDO | #82; real run 38121551389 success | — |
+| Monitors needed `issues: write`/job token; DRY_RUN only as shell flag; blind monitor silent | P2 | CORREGIDO | #74; self-test issues #78/#80 created→closed by the job token | — |
+| Vercel monitor token rejected (403 invalidToken) | P2 | BLOQUEADO POR DEPENDENCIA EXTERNA | open issue #81 (alert works as designed) | Owner: new token, see docs/monitoring.md |
+| Indexing implicitly locked by `public_launch_ready()` | P2 | CORREGIDO | #77; admin switch, pgTAP 59 (22), E2E | Owner decides when to switch on |
+| CodeQL init/analyze bumps could never pass alone | P3 | CORREGIDO | #75 | — |
+| `www` redirect 307 | P3 | CORREGIDO | 308 verified with curl | — |
+| Supabase CLI CI 2.117.0 vs operator 2.120.0 | P3 | CORREGIDO | CI pinned to 2.120.0 (this PR) | — |
+| Legacy root storefront still published on GitHub Pages (old data; CodeQL #1/#6 live there) | P2 | REQUIERE DECISIÓN | `abel-castill0.github.io/cruzialparfums/`, rebuilt on every master push | Owner: unpublish Pages (recommended) |
+| CodeQL #4/#5 SHA-1 Cloudinary request signature | P3 | VERIFICADO (accepted) | API-mandated signing, not password hashing | Optional: switch Cloudinary account to SHA-256 first |
+| Next.js out-of-band security release | P1-ext | PENDIENTE DE VERIFICACIÓN | announced for 2026-10-14 | Engineering on/after 2026-10-14 |
+| Legal identity, RUC, Import prices/availability, photos | — | CONTENIDO INCOMPLETO (not a technical blocker) | readiness: Parfums 5 commercial + 1 unpublished + legal; Import 1810 / 844 / campaign #8 scheduled | Owner/client via Admin |
+
+Gmail (2 signed-in accounts, Cruzial searches): no client decision or legal fact found (only registrar/OAuth notices),
+so docs/client-decisions.md is unchanged in substance.
+
+## Live checkpoint (2026-10-10) — superseded by 2026-10-11 where they conflict
 
 Evidence: docs/closure-report-2026-10-10.md (branch `claude/closure-audit-2026-10-10`).
 - Production serves `6d2ebc4` = origin/master (Vercel API `githubCommitSha`). Migrations repo = Production = QA (80,

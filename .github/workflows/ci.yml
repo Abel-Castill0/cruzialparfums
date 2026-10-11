@@ -60,7 +60,7 @@ jobs:
           node-version: 24
       - uses: supabase/setup-cli@45a513f8c64c0bc8e0e3dfe572b5c95be85f6359 # v3.0.1
         with:
-          version: 2.117.0
+          version: 2.120.0
       # Fresh local stack: applies the whole migration chain from zero, then
       # the exact committed C2 fixture the reconciliation pgTAP needs.
       - run: supabase start -x studio,imgproxy,edge-runtime,logflare,vector
@@ -82,7 +82,7 @@ jobs:
           cache-dependency-path: apps/web/package-lock.json
       - uses: supabase/setup-cli@45a513f8c64c0bc8e0e3dfe572b5c95be85f6359 # v3.0.1
         with:
-          version: 2.117.0
+          version: 2.120.0
       # Fresh, disposable local stack. The runner (scripts/local-admin-browser.mjs)
       # refuses anything but a loopback Supabase URL, so this can never touch
       # a hosted project. No Supabase/password/TOTP/HMAC secret is used: the
