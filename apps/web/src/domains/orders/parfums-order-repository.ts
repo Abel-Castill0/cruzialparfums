@@ -27,6 +27,19 @@ function stripV2ClientFields(lines: ParfumsOrderLineSnapshot[]) {
 export class ParfumsOrderRepository {
   constructor(private readonly supabase: SupabaseClient<Database>) {}
 
+  /** Only call with the server-derived capability identity. A submitted UUID
+   * is never authority to read an order. The unit predicate is mandatory. */
+  async findByRequestId(requestId: string): Promise<
+    { ok: true; data: PersistedParfumsOrder | null } | { ok: false; message: string }
+  > {
+    const { data, error } = await this.supabase.from("orders")
+      .select("id,order_number")
+      .eq("business_unit_id", "11111111-1111-4111-8111-111111111111")
+      .eq("request_id", requestId).maybeSingle();
+    if (error) return { ok: false, message: "No pudimos verificar la solicitud anterior. Tu carrito se conserva." };
+    return { ok: true, data: data ? { orderId: data.id, orderNumber: data.order_number, created: false } : null };
+  }
+
   async create(request: ValidatedParfumsOrderRequest): Promise<
     { ok: true; data: PersistedParfumsOrder } | { ok: false; message: string }
   > {
@@ -56,7 +69,7 @@ export class ParfumsOrderRepository {
         },
       );
       if (error || !data?.[0]) {
-        // Operational signal: request id (a client UUID, not PII) + the
+        // Operational signal: server-derived request id (not PII) + the
         // Postgres code so a failed persistence is findable in the logs.
         console.error("[parfums-order] v2 persistence failed", {
           requestId: request.requestId,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { startNewComplaintAttempt, submitComplaintAction, type SubmitComplaintResult } from "./actions";
 import { COMPLAINT_DETAIL_MAX_LENGTH, COMPLAINT_REQUEST_MAX_LENGTH } from "@/domains/complaints/complaint-schema";
 import type { BusinessLegalIdentity } from "@/domains/complaints/business-legal-identity";
@@ -44,7 +44,14 @@ export function ComplaintForm({
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [isMinor, setIsMinor] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
+  const outcomeRef = useRef<HTMLDivElement>(null);
   const [attemptBusy, setAttemptBusy] = useState(false);
+  useEffect(() => {
+    if (state.phase === "error" || state.phase === "held") {
+      outcomeRef.current?.focus({ preventScroll: true });
+      outcomeRef.current?.scrollIntoView({ block: "start" });
+    }
+  }, [state]);
 
   const handleSubmit = useCallback(
     async (event: React.FormEvent<HTMLFormElement>) => {
@@ -170,7 +177,7 @@ export function ComplaintForm({
   return (
     <form ref={formRef} onSubmit={handleSubmit} noValidate className={styles.form}>
       {state.phase === "error" ? (
-        <div className={styles.errorBanner} role="alert">
+        <div ref={outcomeRef} tabIndex={-1} className={styles.errorBanner} role="alert">
           <p>{state.message}</p>
           {state.code === ATTEMPT_EXPIRED ? (
             <button type="button" className={styles.secondaryAction} data-attempt-new
@@ -181,7 +188,7 @@ export function ComplaintForm({
         </div>
       ) : null}
       {state.phase === "held" ? (
-        <div className={styles.errorBanner} data-attempt-held={state.kind}
+        <div ref={outcomeRef} tabIndex={-1} className={styles.errorBanner} data-attempt-held={state.kind}
           role={state.kind === "rotation_failed" ? "alert" : "status"}>
           {state.kind === "replayed" ? (
             <>

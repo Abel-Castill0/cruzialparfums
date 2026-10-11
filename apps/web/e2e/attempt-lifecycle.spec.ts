@@ -1,5 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { LOCAL_DB_AVAILABLE, complaintSideEffects, orderSideEffects, testCustomerPhone } from "./local-db";
+import { expectActionablePanelFocus } from "./focused-panel";
 
 // A submit is one or two server-action round trips; on a loaded server they exceed
 // the default 5 s assertion budget even when the behaviour is correct.
@@ -49,6 +50,7 @@ test.describe("attempt lifecycle — Libro de Reclamaciones", () => {
     await page.getByRole("button", { name: "Registrar solicitud" }).click();
     const held = page.locator('[data-attempt-held="replayed"]');
     await expect(held).toContainText(/ya estaba registrada/, { timeout: SERVER_ACTION_TIMEOUT });
+    await expectActionablePanelFocus(held);
     expect(complaintSideEffects(phone).complaints).toBe(1);
 
     await held.locator("[data-attempt-view]").click();
@@ -67,6 +69,7 @@ test.describe("attempt lifecycle — Libro de Reclamaciones", () => {
     await page.getByRole("button", { name: "Registrar solicitud" }).click();
     const alert = page.getByRole("alert").filter({ hasText: /venció/ });
     await expect(alert).toBeVisible({ timeout: SERVER_ACTION_TIMEOUT });
+    await expectActionablePanelFocus(alert);
     expect(complaintSideEffects(phone)).toEqual({ complaints: 0, outbox: 0 });
 
     await alert.locator("[data-attempt-new]").click();
@@ -78,12 +81,46 @@ test.describe("attempt lifecycle — Libro de Reclamaciones", () => {
 test.describe("attempt lifecycle — Import order", () => {
   test.skip(() => process.env.E2E_ALLOW_ORDER_SUBMIT !== "1" || !LOCAL_DB_AVAILABLE, "needs the disposable local stack");
 
+  test("lost response with an empty Import cart recovers the accepted order without another mutation", async ({ page }) => {
+    // Same entry as the test below: the add-to-cart control lives on the product page, not the Import home.
+    await page.goto("/import/producto/local-qa-import");
+    const add = page.getByRole("button", { name: "Agregar al carrito" }).first();
+    await expect(add, "required local open Import campaign fixture").toBeVisible();
+    await add.click();
+    await expect(page.getByRole("status").filter({ hasText: /agregado al carrito/i })).toBeAttached();
+    await page.goto("/import/checkout");
+    const phone = testCustomerPhone(test.info());
+    await page.locator("#checkout-name").fill("QA E2E Import");
+    await page.locator("#checkout-phone").fill(phone);
+    await page.locator("#checkout-district").fill("Miraflores");
+    await page.locator("#checkout-address").fill("[QA E2E] no despachar");
+    let committed: string | null = null;
+    await page.route("**/import/checkout", async route => {
+      if (route.request().method() !== "POST" || !(await route.request().headerValue("cookie"))?.includes("cz_attempt_import_order=") || committed) return route.continue();
+      const response = await route.fetch();
+      committed = (await response.text()).match(IMPORT_ORDER)?.[0] ?? null;
+      await route.abort("connectionreset");
+    });
+    await page.locator('form button[type="submit"]').click();
+    await expect(page.getByRole("alert").filter({ hasText: /No pudimos conectar/ })).toBeVisible();
+    expect(committed).toMatch(IMPORT_ORDER);
+    await page.unrouteAll();
+    await page.evaluate(() => { localStorage.clear(); sessionStorage.clear(); });
+    await page.reload();
+    await expect(page.getByText("Tu carrito de Import está vacío.")).toBeVisible();
+    await page.locator("[data-attempt-recover]").click();
+    const held = page.locator('[data-attempt-held="replayed"]');
+    await expect(held).toContainText(committed!);
+    await expectActionablePanelFocus(held);
+    expect(orderSideEffects(phone)).toEqual({ orders: 1, outbox: 1, reservations: 0 });
+  });
+
   test("lost response + reload: the retry reports the SAME order as already registered", async ({ page }) => {
     // The add-to-cart control lives on the product page (the Import home no longer carries one). The local
     // fixture guarantees an open campaign offering this product, so its absence is a failure, not a skip.
     await page.goto("/import/producto/local-qa-import");
     const add = page.getByRole("button", { name: "Agregar al carrito" }).first();
-    await expect(add).toBeVisible();
+    await expect(add, "required local open Import campaign fixture").toBeVisible();
     await add.click();
     await expect(page.getByRole("status").filter({ hasText: /agregado al carrito/i })).toBeAttached();
     await page.goto("/import/checkout");
@@ -105,7 +142,9 @@ test.describe("attempt lifecycle — Import order", () => {
       await route.abort("connectionreset");
     });
     await page.locator('form button[type="submit"]').click();
-    await expect(page.getByRole("alert").filter({ hasText: /No pudimos conectar/ })).toBeVisible({ timeout: SERVER_ACTION_TIMEOUT });
+    const error = page.getByRole("alert").filter({ hasText: /No pudimos conectar/ });
+    await expect(error).toBeVisible({ timeout: SERVER_ACTION_TIMEOUT });
+    await expectActionablePanelFocus(error);
     expect(committed).toMatch(IMPORT_ORDER);
     expect(orderSideEffects(phone).orders).toBe(1);
 

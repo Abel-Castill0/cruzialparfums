@@ -2100,9 +2100,13 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"public_submit_complaint_entry_v2":
+{ Args: { "p_address": string,"p_business_unit_code": string,"p_complaint_type": string,"p_consumer_request": string,"p_detail": string,"p_document_number": string,"p_document_type": string,"p_email": string,"p_full_name": string,"p_guardian_document_number": string,"p_guardian_full_name": string,"p_is_minor": boolean,"p_order_reference": string,"p_phone": string,"p_request_id": string }; Returns: { entry: Json; created: boolean }[] },
 "worker_automation_health":
 { Args: Record<PropertyKey, never>; Returns: Json
                            },
+"worker_begin_notification_v2":
+{ Args: { "p_id": string,"p_lease_token": string }; Returns: Database["public"]["Tables"]["notification_outbox"]["Row"] },
 "worker_begin_notification":
 { Args: { "p_id": string,"p_lease_token": string }; Returns: {
               "attempts": number,

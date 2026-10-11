@@ -33,11 +33,11 @@ create function pg_temp.resolve_sql(p_id text) returns text language sql as $f$
    (select updated_at from public.complaint_book_entries where id=%L),'resolved','Dispatch race')) t$q$,
    p_id,p_id) $f$;
 create function pg_temp.begin_sql(p_n integer) returns text language sql as $f$
- select format('select status,coalesce(last_error_safe,''-'') from public.worker_begin_notification(%L,%L)',
+ select format('select status,coalesce(last_error_safe,''-'') from public.worker_begin_notification_v2(%L,%L)',
    '51000000-0000-4000-8000-00000000006'||p_n,'51000000-0000-4000-8000-00000000007'||p_n) $f$;
 
 begin;
-select plan(22);
+select plan(24);
 
 select extensions.dblink_connect('f5_worker','host=supabase_db_cruzialparfums port=5432 dbname=postgres user=postgres password=postgres');
 select extensions.dblink_connect('f5_resolver','host=supabase_db_cruzialparfums port=5432 dbname=postgres user=postgres password=postgres');
@@ -102,7 +102,7 @@ select throws_ok(format('select * from extensions.dblink(%L,%L) q(status text,re
 select is((select status from public.notification_outbox where id='51000000-0000-4000-8000-000000000065'),'claimed',
  'the expired claim is left for the claim-time sweep, not dispatched');
 select throws_ok($$select * from extensions.dblink('f5_worker',
- 'select status from public.worker_begin_notification(''51000000-0000-4000-8000-000000000066'',''00000000-0000-4000-8000-000000000000'')') q(status text)$$,
+ 'select status from public.worker_begin_notification_v2(''51000000-0000-4000-8000-000000000066'',''00000000-0000-4000-8000-000000000000'')') q(status text)$$,
  null,null,'a wrong lease cannot authorize a dispatch');
 
 -- 3. Provider failure after resolution: the attempt returns to retry, but the
@@ -145,9 +145,15 @@ select is((select status from extensions.dblink_get_result('f5_worker') q(status
 select * from extensions.dblink_get_result('f5_worker') q(status text,reason text);
 
 -- 7. ACL: only service_role may reach the commit point.
-select ok(not has_function_privilege('authenticated','public.worker_begin_notification(uuid,uuid)','EXECUTE')
- and not has_function_privilege('anon','public.worker_begin_notification(uuid,uuid)','EXECUTE'),
+select ok(not has_function_privilege('authenticated','public.worker_begin_notification_v2(uuid,uuid)','EXECUTE')
+ and not has_function_privilege('anon','public.worker_begin_notification_v2(uuid,uuid)','EXECUTE'),
  'public roles cannot invoke the dispatch commit point');
+
+select throws_ok($$select public.worker_begin_notification('51000000-0000-4000-8000-000000000061','51000000-0000-4000-8000-000000000071')$$,
+ 'P2037','notification dispatch was cancelled','the old application receives an error and cannot send a cancelled reminder');
+select ok(not has_function_privilege('anon','public.worker_begin_notification(uuid,uuid)','EXECUTE')
+ and not has_function_privilege('authenticated','public.worker_begin_notification(uuid,uuid)','EXECUTE'),
+ 'the legacy compatibility boundary also remains service-only');
 
 select extensions.dblink_disconnect('f5_worker');
 select extensions.dblink_disconnect('f5_resolver');
