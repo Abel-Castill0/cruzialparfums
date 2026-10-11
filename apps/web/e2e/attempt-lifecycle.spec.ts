@@ -82,8 +82,12 @@ test.describe("attempt lifecycle — Import order", () => {
   test.skip(() => process.env.E2E_ALLOW_ORDER_SUBMIT !== "1" || !LOCAL_DB_AVAILABLE, "needs the disposable local stack");
 
   test("lost response with an empty Import cart recovers the accepted order without another mutation", async ({ page }) => {
-    await page.goto("/import");
-    await page.getByRole("button", { name: "Agregar al carrito" }).first().click();
+    // Same entry as the test below: the add-to-cart control lives on the product page, not the Import home.
+    await page.goto("/import/producto/local-qa-import");
+    const add = page.getByRole("button", { name: "Agregar al carrito" }).first();
+    await expect(add, "required local open Import campaign fixture").toBeVisible();
+    await add.click();
+    await expect(page.getByRole("status").filter({ hasText: /agregado al carrito/i })).toBeAttached();
     await page.goto("/import/checkout");
     const phone = testCustomerPhone(test.info());
     await page.locator("#checkout-name").fill("QA E2E Import");
