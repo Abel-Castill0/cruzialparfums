@@ -23,6 +23,12 @@ const DISCORD_HOSTS = new Set(["discord.com", "discordapp.com", "ptb.discord.com
 const REPOSITORY_PATTERN = /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/;
 const MAX_ISSUE_BODY = 60_000;
 const MAX_PAGES = 3;
+/** GitHub calls are tried at most this many times; only network errors, 429 and 5xx are retried, never other 4xx. */
+export const MAX_ATTEMPTS = 3;
+/** Mutable so tests do not wait; production waits retryDelayMs * attempt between tries. */
+export const retryPolicy = { retryDelayMs: 1_000 };
+/** A "monitor cannot run" issue is commented at most once per this many hours (an hourly cron would otherwise spam). */
+export const FAILURE_REPEAT_HOURS = 24;
 
 export function readChannel(env) {
   const raw = (env.MONITOR_CHANNEL ?? "").trim().toLowerCase();
@@ -77,18 +83,32 @@ function githubHeaders(token) {
   };
 }
 
+const retryable = (status) => status === 429 || status >= 500;
+
 async function github(fetchImpl, token, method, path, body) {
-  const response = await fetchImpl(`${GITHUB_API}${path}`, {
-    method,
-    headers: githubHeaders(token),
-    ...(body === undefined ? {} : { body: JSON.stringify(body) }),
-    signal: AbortSignal.timeout(10_000),
-  });
-  if (!response.ok) {
+  const shownPath = path.split("?")[0].replace(/\/\d+(?=\/|$)/g, "/{n}");
+  for (let attempt = 1; ; attempt++) {
+    let response;
+    try {
+      response = await fetchImpl(`${GITHUB_API}${path}`, {
+        method,
+        headers: githubHeaders(token),
+        ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+        signal: AbortSignal.timeout(10_000),
+      });
+    } catch (error) {
+      if (attempt >= MAX_ATTEMPTS) throw new Error(`GitHub API ${method} ${shownPath} failed after ${attempt} attempts (${error?.name ?? "network error"}).`);
+      await new Promise((r) => setTimeout(r, retryPolicy.retryDelayMs * attempt));
+      continue;
+    }
+    if (response.ok) return response.status === 204 ? null : response.json();
+    if (retryable(response.status) && attempt < MAX_ATTEMPTS) {
+      await new Promise((r) => setTimeout(r, retryPolicy.retryDelayMs * attempt));
+      continue;
+    }
     const hint = response.status === 403 || response.status === 404 ? " (does the token have `issues: write` on this repository?)" : "";
-    throw new Error(`GitHub API ${method} ${path.split("?")[0].replace(/\/\d+(?=\/|$)/g, "/{n}")} answered HTTP ${response.status}${hint}.`);
+    throw new Error(`GitHub API ${method} ${shownPath} answered HTTP ${response.status}${hint}.`);
   }
-  return response.status === 204 ? null : response.json();
 }
 
 /** Finds the lowest-numbered OPEN issue (not a pull request) whose title is exactly `title`. */
@@ -105,18 +125,35 @@ export async function findOpenIssue({ fetchImpl = fetch, token, repository, titl
   return null;
 }
 
-/** Creates the issue, or comments on the open one with the same title. Returns { action, number, url }. */
-export async function upsertGitHubIssue({ fetchImpl = fetch, token, repository, title, body, labels = [ISSUE_LABEL] }) {
+/**
+ * Creates the issue, or comments on the open one with the same title. Returns { action, number, url }.
+ * With minIntervalHours > 0 an open issue updated less than that long ago is left alone (action "skipped").
+ */
+export async function upsertGitHubIssue({ fetchImpl = fetch, token, repository, title, body, labels = [ISSUE_LABEL], minIntervalHours = 0, now = new Date() }) {
   if (!token) throw new Error("GITHUB_TOKEN is not set.");
   assertRepository(repository);
   const text = body.length > MAX_ISSUE_BODY ? `${body.slice(0, MAX_ISSUE_BODY)}\n\n_(truncated)_` : body;
   const existing = await findOpenIssue({ fetchImpl, token, repository, title });
   if (existing) {
+    const updated = Date.parse(existing.updated_at ?? "");
+    if (minIntervalHours > 0 && Number.isFinite(updated) && now.getTime() - updated < minIntervalHours * 3_600_000) {
+      return { action: "skipped", number: existing.number, url: existing.html_url };
+    }
     const comment = await github(fetchImpl, token, "POST", `/repos/${repository}/issues/${existing.number}/comments`, { body: text });
     return { action: "commented", number: existing.number, url: comment?.html_url ?? existing.html_url };
   }
   const created = await github(fetchImpl, token, "POST", `/repos/${repository}/issues`, { title, body: text, labels });
   return { action: "created", number: created.number, url: created.html_url };
+}
+
+/** Adds a comment and closes the issue (state_reason "completed"). Used by the delivery self-test. */
+export async function closeGitHubIssue({ fetchImpl = fetch, token, repository, number, comment }) {
+  if (!token) throw new Error("GITHUB_TOKEN is not set.");
+  assertRepository(repository);
+  if (!Number.isInteger(number) || number < 1) throw new Error("Invalid issue number.");
+  if (comment) await github(fetchImpl, token, "POST", `/repos/${repository}/issues/${number}/comments`, { body: comment });
+  const closed = await github(fetchImpl, token, "PATCH", `/repos/${repository}/issues/${number}`, { state: "closed", state_reason: "completed" });
+  return { action: "closed", number, url: closed?.html_url };
 }
 
 /* ----------------------------------------------------------------- dispatch */
@@ -147,7 +184,7 @@ export async function deliverAlert({ channel, env, alert, fetchImpl = fetch, log
     }
     const results = [];
     for (const issue of alert.issues) {
-      const r = await upsertGitHubIssue({ fetchImpl, token: env.GITHUB_TOKEN, repository: env.GITHUB_REPOSITORY, title: issue.title, body: issue.body });
+      const r = await upsertGitHubIssue({ fetchImpl, token: env.GITHUB_TOKEN, repository: env.GITHUB_REPOSITORY, title: issue.title, body: issue.body, minIntervalHours: issue.minIntervalHours ?? 0 });
       results.push(r);
       log(`${prefix} GitHub issue #${r.number} ${r.action}: ${r.url}`);
     }
@@ -161,4 +198,35 @@ export async function deliverAlert({ channel, env, alert, fetchImpl = fetch, log
 /** Standard issue title: "[Monitor] <type>: <summary>". Keep <summary> free of changing numbers. */
 export function issueTitle(type, summary) {
   return `[Monitor] ${type}: ${summary}`;
+}
+
+/** `--dry-run` on the command line or DRY_RUN=true in the environment: no remote write of any kind. */
+export function isDryRun(argv, env) {
+  return argv.includes("--dry-run") || String(env.DRY_RUN ?? "").trim().toLowerCase() === "true";
+}
+
+export function runUrlFrom(env) {
+  return env.GITHUB_SERVER_URL && env.GITHUB_REPOSITORY && env.GITHUB_RUN_ID ? `${env.GITHUB_SERVER_URL}/${env.GITHUB_REPOSITORY}/actions/runs/${env.GITHUB_RUN_ID}` : undefined;
+}
+
+/**
+ * The monitor itself could not run (rejected credential, API outage): being blind is an alert too. `reason` must be a
+ * sanitized one-line message (status codes, no response bodies, no secrets). Throttled to one comment per
+ * FAILURE_REPEAT_HOURS so an hourly cron with a revoked token does not spam the issue.
+ */
+export function buildFailureAlert({ type, service, reason, runUrl, fix }) {
+  const lines = [
+    `The ${service} monitor could not complete its check, so problems would go unnoticed until this is fixed.`,
+    "",
+    `- Reason: ${reason}`,
+    ...(fix ? [`- Fix: ${fix}`] : []),
+    ...(runUrl ? [`- Run: ${runUrl}`] : []),
+    "",
+    `Close this issue once a run succeeds. While it stays open, a reminder is added at most every ${FAILURE_REPEAT_HOURS} h.`,
+  ];
+  const body = lines.join("\n");
+  return {
+    issues: [{ title: issueTitle(type, "monitor cannot run"), body, minIntervalHours: FAILURE_REPEAT_HOURS }],
+    discord: { content: `**${service} monitor cannot run.** ${reason}${runUrl ? `\n${runUrl}` : ""}`, allowed_mentions: { parse: [] } },
+  };
 }

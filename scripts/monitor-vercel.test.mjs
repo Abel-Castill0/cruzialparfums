@@ -252,3 +252,26 @@ test("run (github): below the threshold makes no GitHub call; missing token/repo
   assert.match(logs.join("\n"), /--dry-run: alert NOT sent \(channel: github\)/);
   assert.match(logs.join("\n"), /\[Monitor\] vercel-production/);
 });
+
+test("run (github): a Vercel API failure raises the throttled 'monitor cannot run' issue and still exits 1", async () => {
+  const failing = { deployments: { getDeployments: async () => { throw new Error("403 invalidToken\nstack..."); }, getDeploymentEvents: async () => [] } };
+  const gh = fakeGithub();
+  const logs = [];
+  assert.equal(await run({ env: { ...baseEnv, ...ghEnv }, argv: [], sdkFactory: async () => failing, fetchImpl: gh.fetchImpl, log: (m) => logs.push(m) }), 1);
+  const created = gh.calls.find((c) => c.method === "POST");
+  assert.equal(created.body.title, "[Monitor] vercel-production: monitor cannot run");
+  assert.match(created.body.body, /403 invalidToken/);
+  assert.ok(!created.body.body.includes("stack...") && !created.body.body.includes("tok_test"));
+  assert.ok(!logs.join("\n").includes(GH_TOKEN));
+
+  // DRY_RUN=true (how the workflow passes it) or --dry-run: no GitHub call at all.
+  for (const opts of [{ env: { ...baseEnv, ...ghEnv, DRY_RUN: "true" }, argv: [] }, { env: { ...baseEnv, ...ghEnv }, argv: ["--dry-run"] }]) {
+    assert.equal(await run({ ...opts, sdkFactory: async () => failing, fetchImpl: async () => { throw new Error("must not be called"); }, log: () => {} }), 1);
+  }
+});
+
+test("run: DRY_RUN=true in the environment prevents delivery of a real threshold alert", async () => {
+  const logs = [];
+  assert.equal(await run({ env: { ...baseEnv, ...ghEnv, DRY_RUN: "true" }, argv: [], sdkFactory: async () => hotSdk(), fetchImpl: async () => { throw new Error("must not be called"); }, log: (m) => logs.push(m) }), 0);
+  assert.match(logs.join("\n"), /--dry-run: alert NOT sent \(channel: github\)/);
+});

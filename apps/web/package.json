@@ -22,7 +22,7 @@
     "test:4j4b": "node --test ../../scripts/import-consolidado-4j4b.test.mjs",
     "test:audit-gate": "node --test ../../scripts/audit-dev-gate.test.mjs",
     "test:backup-crypt": "node --test ../../scripts/backup-crypt.test.mjs",
-    "test:monitor-vercel": "node --test ../../scripts/monitor-vercel.test.mjs ../../scripts/lib/alert-channels.test.mjs",
+    "test:monitor-vercel": "node --test ../../scripts/monitor-vercel.test.mjs ../../scripts/lib/alert-channels.test.mjs ../../scripts/monitor-alert-selftest.test.mjs ../../scripts/monitor-workflows.test.mjs",
     "test:supabase-health": "node --test ../../scripts/supabase-health.test.mjs",
     "test:qa-target": "node --test ../../scripts/qa-target.test.mjs",
     "test:media-migration": "node --test ../../scripts/migrate-client-media.test.mjs",

@@ -5,13 +5,21 @@ import assert from "node:assert/strict";
 import {
   assertDiscordWebhook,
   assertRepository,
+  buildFailureAlert,
+  closeGitHubIssue,
   deliverAlert,
+  FAILURE_REPEAT_HOURS,
+  isDryRun,
   findOpenIssue,
   issueTitle,
   postDiscord,
   readChannel,
+  retryPolicy,
+  runUrlFrom,
   upsertGitHubIssue,
 } from "./alert-channels.mjs";
+
+retryPolicy.retryDelayMs = 0;
 
 const REPO = "Abel-Castill0/cruzialparfums";
 const TOKEN = "ghs_test_token_value";
@@ -20,14 +28,20 @@ const TITLE = issueTitle("vercel-production", "deployment error events above thr
 const json = (body, status = 200) => ({ ok: true, status, json: async () => body });
 
 /** Fake GitHub REST API. `open` is the list of open issues/PRs the "repository" holds. */
-function fakeGithub({ open = [], forced = {} } = {}) {
+function fakeGithub({ open = [], forced = {}, flaky = {} } = {}) {
   const calls = [];
   let next = 100;
   const fetchImpl = async (url, init = {}) => {
     const u = new URL(String(url));
     const method = init.method ?? "GET";
     calls.push({ method, host: u.host, path: u.pathname, query: u.search, headers: init.headers, body: init.body ? JSON.parse(init.body) : undefined });
-    const status = forced[`${method} ${u.pathname}`];
+    const key = `${method} ${u.pathname}`;
+    if (flaky[key]?.length) {
+      const next = flaky[key].shift();
+      if (next === "network") throw new TypeError("fetch failed");
+      return { ok: false, status: next, json: async () => ({ message: "BODY-THAT-MUST-NOT-LEAK" }) };
+    }
+    const status = forced[key];
     if (status) return { ok: false, status, json: async () => ({ message: "BODY-THAT-MUST-NOT-LEAK" }) };
     if (method === "GET" && u.pathname.endsWith("/issues")) {
       const page = Number(u.searchParams.get("page") ?? 1);
@@ -35,6 +49,8 @@ function fakeGithub({ open = [], forced = {} } = {}) {
     }
     const comment = u.pathname.match(/\/issues\/(\d+)\/comments$/);
     if (method === "POST" && comment) return json({ html_url: `https://github.com/${REPO}/issues/${comment[1]}#issuecomment-1` }, 201);
+    const patch = u.pathname.match(/\/issues\/(\d+)$/);
+    if (method === "PATCH" && patch) return json({ html_url: `https://github.com/${REPO}/issues/${patch[1]}` });
     if (method === "POST" && u.pathname.endsWith("/issues")) {
       const number = next++;
       return json({ number, html_url: `https://github.com/${REPO}/issues/${number}` }, 201);
@@ -177,4 +193,59 @@ test("deliverAlert --dry-run prints the channel's payload and never calls fetch"
     assert.match(logs.join("\n"), new RegExp(`channel: ${channel}`));
     assert.ok(logs.join("\n").includes(needle));
   }
+});
+
+test("retries network errors, 429 and 5xx up to 3 attempts, but never other 4xx", async () => {
+  const ok = fakeGithub({ flaky: { [`GET /repos/${REPO}/issues`]: ["network", 502] } });
+  const r = await upsertGitHubIssue({ fetchImpl: ok.fetchImpl, token: TOKEN, repository: REPO, title: TITLE, body: "b" });
+  assert.equal(r.action, "created");
+  assert.equal(ok.calls.filter((c) => c.method === "GET").length, 3);
+
+  const down = fakeGithub({ flaky: { [`GET /repos/${REPO}/issues`]: [503, 503, 503, 503] } });
+  await assert.rejects(() => upsertGitHubIssue({ fetchImpl: down.fetchImpl, token: TOKEN, repository: REPO, title: TITLE, body: "b" }), /HTTP 503/);
+  assert.equal(down.calls.length, 3, "gives up after MAX_ATTEMPTS");
+
+  const denied = fakeGithub({ flaky: { [`POST /repos/${REPO}/issues`]: [403] } });
+  await assert.rejects(() => upsertGitHubIssue({ fetchImpl: denied.fetchImpl, token: TOKEN, repository: REPO, title: TITLE, body: "b" }), /HTTP 403/);
+  assert.equal(denied.calls.filter((c) => c.method === "POST").length, 1, "a 403 is not retried");
+});
+
+test("minIntervalHours: an open issue updated recently is left alone; an older one gets the comment", async () => {
+  const now = new Date("2026-10-11T12:00:00Z");
+  const fresh = fakeGithub({ open: [issue(7, TITLE, { updated_at: "2026-10-11T02:00:00Z" })] });
+  const skipped = await upsertGitHubIssue({ fetchImpl: fresh.fetchImpl, token: TOKEN, repository: REPO, title: TITLE, body: "b", minIntervalHours: 24, now });
+  assert.deepEqual([skipped.action, skipped.number], ["skipped", 7]);
+  assert.equal(fresh.calls.filter((c) => c.method !== "GET").length, 0, "no write at all");
+
+  const stale = fakeGithub({ open: [issue(7, TITLE, { updated_at: "2026-10-10T02:00:00Z" })] });
+  const commented = await upsertGitHubIssue({ fetchImpl: stale.fetchImpl, token: TOKEN, repository: REPO, title: TITLE, body: "b", minIntervalHours: 24, now });
+  assert.equal(commented.action, "commented");
+});
+
+test("closeGitHubIssue comments then closes as completed", async () => {
+  const gh = fakeGithub();
+  const r = await closeGitHubIssue({ fetchImpl: gh.fetchImpl, token: TOKEN, repository: REPO, number: 9, comment: "done" });
+  assert.equal(r.action, "closed");
+  assert.deepEqual(gh.calls.map((c) => `${c.method} ${c.path}`), [`POST /repos/${REPO}/issues/9/comments`, `PATCH /repos/${REPO}/issues/9`]);
+  assert.deepEqual(gh.calls[1].body, { state: "closed", state_reason: "completed" });
+  await assert.rejects(() => closeGitHubIssue({ fetchImpl: gh.fetchImpl, token: TOKEN, repository: REPO, number: 0 }), /Invalid issue number/);
+});
+
+test("buildFailureAlert: stable 'monitor cannot run' title, throttled, no secrets, no mentions", () => {
+  const a = buildFailureAlert({ type: "vercel-production", service: "Vercel Production", reason: "Vercel API failure: HTTP 403", runUrl: "https://github.com/x/y/actions/runs/1", fix: "rotate it" });
+  assert.equal(a.issues[0].title, "[Monitor] vercel-production: monitor cannot run");
+  assert.equal(a.issues[0].minIntervalHours, FAILURE_REPEAT_HOURS);
+  assert.match(a.issues[0].body, /HTTP 403/);
+  assert.deepEqual(a.discord.allowed_mentions, { parse: [] });
+});
+
+test("isDryRun: --dry-run or DRY_RUN=true; runUrlFrom needs the three Actions variables", () => {
+  assert.equal(isDryRun(["--dry-run"], {}), true);
+  assert.equal(isDryRun([], { DRY_RUN: "true" }), true);
+  assert.equal(isDryRun([], { DRY_RUN: " TRUE " }), true);
+  assert.equal(isDryRun([], { DRY_RUN: "false" }), false);
+  assert.equal(isDryRun([], { DRY_RUN: "" }), false, "a scheduled run has no input -> real run");
+  assert.equal(isDryRun([], {}), false);
+  assert.equal(runUrlFrom({ GITHUB_SERVER_URL: "https://github.com", GITHUB_REPOSITORY: REPO, GITHUB_RUN_ID: "5" }), `https://github.com/${REPO}/actions/runs/5`);
+  assert.equal(runUrlFrom({ GITHUB_REPOSITORY: REPO }), undefined);
 });

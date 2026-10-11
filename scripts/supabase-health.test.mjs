@@ -357,3 +357,15 @@ test("run (github): a calm hour makes no GitHub call; missing token or API failu
   assert.match(dry.logs, /--dry-run: alert NOT sent \(channel: github\)/);
   assert.match(dry.logs, /\[Monitor\] supabase-api/);
 });
+
+test("run (github): an MCP failure (rejected token) raises 'supabase-health: monitor cannot run'; DRY_RUN=true writes nothing", async () => {
+  const broken = async () => ({ initialize: async () => { throw new Error("MCP server answered HTTP 401.\nstack"); } });
+  const gh = fakeGithub();
+  assert.equal(await run({ env: { ...env, ...ghEnv }, now: NOW, baseline: quietBaseline, log: () => {}, fetchImpl: gh.fetchImpl, clientFactory: broken }), 1);
+  const created = gh.calls.find((c) => c.method === "POST");
+  assert.equal(created.body.title, "[Monitor] supabase-health: monitor cannot run");
+  assert.match(created.body.body, /HTTP 401/);
+  assert.ok(!created.body.body.includes("stack") && !created.body.body.includes("sbp_test_token"));
+  const never = async () => { throw new Error("must not be called"); };
+  assert.equal(await run({ env: { ...env, ...ghEnv, DRY_RUN: "true" }, now: NOW, baseline: quietBaseline, log: () => {}, fetchImpl: never, clientFactory: broken }), 1);
+});

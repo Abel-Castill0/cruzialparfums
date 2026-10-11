@@ -30,12 +30,17 @@
  *     paths, variable names or other sensitive details. The issue title is fixed (numbers live in the body) so repeated
  *     runs comment on one open issue instead of opening a new one each hour; close the issue when the problem is solved.
  *
+ * Dry run: `--dry-run` or DRY_RUN=true. Vercel is still read, but nothing is written anywhere (no issue, comment or webhook).
+ *
+ * When Vercel rejects the token or fails, the monitor is blind: it raises "[Monitor] vercel-production: monitor cannot run"
+ * (at most one comment per 24 h on the open issue) and still exits 1.
+ *
  * Exit codes: 0 = below threshold, or alert delivered (or --dry-run); 1 = configuration or API failure;
  *             2 = threshold exceeded but the alert could not be delivered (missing token/webhook, GitHub or Discord error).
  */
 import { createRequire } from "node:module";
 import { pathToFileURL } from "node:url";
-import { assertDiscordWebhook, deliverAlert, issueTitle, postDiscord, readChannel } from "./lib/alert-channels.mjs";
+import { assertDiscordWebhook, buildFailureAlert, deliverAlert, isDryRun, issueTitle, postDiscord, readChannel, runUrlFrom } from "./lib/alert-channels.mjs";
 
 // Kept as re-exports: the Discord helpers moved to ./lib/alert-channels.mjs.
 export { assertDiscordWebhook, postDiscord };
@@ -150,7 +155,7 @@ export async function createSdk(token) {
 }
 
 export async function run({ env = process.env, argv = process.argv.slice(2), sdkFactory = createSdk, fetchImpl = fetch, log = console.log } = {}) {
-  const dryRun = argv.includes("--dry-run");
+  const dryRun = isDryRun(argv, env);
   let config;
   try {
     config = readConfig(env);
@@ -163,7 +168,10 @@ export async function run({ env = process.env, argv = process.argv.slice(2), sdk
     const sdk = await sdkFactory(config.token);
     rows = await collectDeployments({ sdk, projectId: config.projectId, teamId: config.teamId, limit: config.deployments, target: config.target });
   } catch (error) {
-    log(`[monitor] Vercel API failure: ${String(error?.message ?? error).split("\n")[0]}`);
+    const reason = `Vercel API failure: ${String(error?.message ?? error).split("\n")[0].slice(0, 300)}`;
+    log(`[monitor] ${reason}`);
+    const alert = buildFailureAlert({ type: "vercel-production", service: "Vercel Production", reason, runUrl: runUrlFrom(env), fix: "check the VERCEL_TOKEN repository secret (see docs/monitoring.md)" });
+    await deliverAlert({ channel: config.channel, env, alert, fetchImpl, log, dryRun, prefix: "[monitor]" });
     return 1;
   }
   const { total, deployments } = summarize(rows);
@@ -171,7 +179,7 @@ export async function run({ env = process.env, argv = process.argv.slice(2), sdk
   for (const r of rows) log(`[monitor]   ${r.id} ${r.state} errors=${r.errors}`);
   if (!shouldAlert(total, config.threshold)) return 0;
 
-  const runUrl = env.GITHUB_SERVER_URL && env.GITHUB_REPOSITORY && env.GITHUB_RUN_ID ? `${env.GITHUB_SERVER_URL}/${env.GITHUB_REPOSITORY}/actions/runs/${env.GITHUB_RUN_ID}` : undefined;
+  const runUrl = runUrlFrom(env);
   const args = { total, threshold: config.threshold, rows, runUrl };
   const alert = { discord: buildDiscordPayload(args), issues: [buildIssue(args)] };
   const { ok } = await deliverAlert({ channel: config.channel, env, alert, fetchImpl, log, dryRun, prefix: "[monitor]" });

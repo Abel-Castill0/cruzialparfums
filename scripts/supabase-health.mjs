@@ -31,12 +31,16 @@
  * (`edge_logs`). Production traffic is small (~25 API requests per hour), so the minimum volume/error guards prevent
  * "1 error out of 2 requests" from paging anyone; below them the service is reported as "not enough traffic".
  *
+ * Dry run: `--dry-run` or DRY_RUN=true. The project is still read, but nothing is written anywhere (no issue, comment or webhook).
+ * When the MCP call fails (e.g. the token is rejected) the agent is blind: it raises "[Monitor] supabase-health: monitor cannot
+ * run" (at most one comment per 24 h on the open issue) and still exits 1.
+ *
  * Exit codes: 0 = nothing to report / alert delivered / dry run; 1 = configuration, MCP or parsing failure;
  *             2 = something to report but the alert could not be delivered.
  */
 import { readFileSync } from "node:fs";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { deliverAlert, issueTitle, readChannel } from "./lib/alert-channels.mjs";
+import { buildFailureAlert, deliverAlert, isDryRun, issueTitle, readChannel, runUrlFrom } from "./lib/alert-channels.mjs";
 
 export const MCP_ORIGIN = "https://mcp.supabase.com";
 export const ALLOWED_TOOLS = Object.freeze(["get_advisors", "query_logs"]);
@@ -281,7 +285,7 @@ export function buildIssues({ projectRef, services, advisorRegressions, runUrl }
 /* -------------------------------------------------------------------- main */
 
 export async function run({ env = process.env, argv = process.argv.slice(2), clientFactory, fetchImpl = fetch, now = new Date(), log = console.log, baseline } = {}) {
-  const dryRun = argv.includes("--dry-run");
+  const dryRun = isDryRun(argv, env);
   let config;
   try {
     config = readConfig(env);
@@ -309,7 +313,10 @@ export async function run({ env = process.env, argv = process.argv.slice(2), cli
       improved.push(...better.map((n) => `${kind}:${n}`));
     }
   } catch (error) {
-    log(`[health] failure: ${String(error?.message ?? error).split("\n")[0]}`);
+    const reason = String(error?.message ?? error).split("\n")[0].slice(0, 300);
+    log(`[health] failure: ${reason}`);
+    const alert = buildFailureAlert({ type: "supabase-health", service: "Supabase health", reason, runUrl: runUrlFrom(env), fix: "check the SUPABASE_ACCESS_TOKEN repository secret (see docs/supabase-health-agent.md)" });
+    await deliverAlert({ channel: config.channel, env, alert, fetchImpl, log, dryRun, prefix: "[health]" });
     return 1;
   }
   for (const s of services) {
@@ -320,7 +327,7 @@ export async function run({ env = process.env, argv = process.argv.slice(2), cli
   const anyAlert = services.some((s) => s.alert) || advisorRegressions.length > 0;
   if (!anyAlert) return 0;
 
-  const runUrl = env.GITHUB_SERVER_URL && env.GITHUB_REPOSITORY && env.GITHUB_RUN_ID ? `${env.GITHUB_SERVER_URL}/${env.GITHUB_REPOSITORY}/actions/runs/${env.GITHUB_RUN_ID}` : undefined;
+  const runUrl = runUrlFrom(env);
   const args = { projectRef: config.projectRef, services, advisorRegressions, runUrl };
   const alert = { discord: buildAlert(args), issues: buildIssues(args) };
   const { ok } = await deliverAlert({ channel: config.channel, env, alert, fetchImpl, log, dryRun, prefix: "[health]" });

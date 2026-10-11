@@ -32,8 +32,10 @@ It is read-only: it never changes Vercel project settings, variables or deployme
 
 ## One-time setup (owner; never paste the values in chat, PRs or commits)
 
-1. Vercel → Account Settings → Tokens: create a token named `cruzial-monitor`, scope = team `cruzial`, short expiry.
-   Vercel tokens cannot be limited to read-only, so treat it as sensitive and rotate it on a schedule.
+1. Vercel → Account Settings → Tokens: create a token named `cruzial-monitor` with the **narrowest scope offered** —
+   the project `cruzial-platform-v2` if the dialog lets you pick a project, otherwise the team — and an expiry (90 days).
+   The monitor only calls `GET /v7/deployments` and `GET /v3/deployments/{id}/events`. Vercel tokens have no read-only
+   permission level, so treat it as sensitive and rotate it before it expires.
 2. Store it as a repository secret from your own terminal (the CLI prompts for the value, nothing is echoed):
 
 ```bash
@@ -44,13 +46,22 @@ gh secret set VERCEL_TOKEN --repo Abel-Castill0/cruzialparfums
    `MONITOR_CHANNEL=discord`: create the webhook (Channel → Edit → Integrations → Webhooks) and run
    `gh secret set DISCORD_WEBHOOK_URL --repo Abel-Castill0/cruzialparfums`.
 
-> **Workflow change still pending (deliberately not made together with this code change).** The default channel needs
-> `permissions: issues: write` and `GITHUB_TOKEN: ${{ github.token }}` (`GITHUB_REPOSITORY` is set by Actions) on the monitor step
-> of the workflow. Until that is added, a threshold breach cannot be delivered on the default channel and the run ends with exit
-> code 2; set `MONITOR_CHANNEL=discord` and `DISCORD_WEBHOOK_URL` in the step environment to keep using Discord meanwhile.
+The workflow job has `permissions: issues: write` (the workflow default stays `contents: read`) and passes the job's own
+short-lived `GITHUB_TOKEN` only to the monitor step and the self-test step; no personal token is used for issues. Discord is
+chosen with the repository **variable** `MONITOR_CHANNEL=discord`; only then is `DISCORD_WEBHOOK_URL` handed to the scripts.
 
+**Blind monitor = alert.** If the API rejects the token or fails, the run raises `[Monitor] <type>: monitor cannot run`
+(one comment at most every 24 h while the issue stays open) and still ends red (exit 1). GitHub calls are retried at most
+3 times, only for network errors, 429 and 5xx.
 
-4. Test without sending anything: Actions → "Monitor Vercel Production" → Run workflow (the `dry_run` box is checked by
+**Dry run.** A manual run is a dry run by default (`dry_run` ticked → `DRY_RUN=true`): the service is read, nothing is
+written anywhere (no issue, comment or webhook). Scheduled runs have no inputs and are real runs.
+
+**Delivery self-test.** Run workflow with `alert_selftest` ticked **and** `dry_run` unticked: the job creates (or reuses)
+`[Monitor] selftest: alert delivery check (<source>)`, comments on it and closes it — proof that the job token can write
+issues, with no customer data and nothing left open. With `dry_run` ticked it only prints what it would send.
+
+3. Test without sending anything: Actions → "Monitor Vercel Production" → Run workflow (the `dry_run` box is checked by
    default). The log lists the 5 deployments and their error counts. Untick `dry_run` for a real run: it creates or comments on the issue (or posts to Discord) only if the
    total exceeds the threshold, which is the normal behaviour.
 
@@ -85,10 +96,12 @@ Discord error).
 
 ## Tests
 
-`npm run test:monitor-vercel` (36 tests: 20 for the monitor and 16 for the shared alert channels; no network, the SDK and
-`fetch` are injected and GitHub/Discord are faked) runs inside `npm run check` and CI. They cover both destinations: issue
-created, comment on the open issue with the same title, pull requests and look-alike titles ignored, token only sent to
-`api.github.com`, no secrets in logs, exit codes and `--dry-run`.
+`npm run test:monitor-vercel` (56 tests: 22 monitor, 21 shared alert channels, 5 delivery self-test, 8 workflow contract;
+no network, the SDK and `fetch` are injected and GitHub/Discord are faked) runs inside `npm run check` and CI. They cover
+both destinations: issue created, comment on the open issue with the same title, pull requests and look-alike titles
+ignored, token only sent to `api.github.com`, retries (network/429/5xx only, max 3), the 24 h throttle of "monitor cannot
+run", self-test create→comment→close, no secrets in logs, exit codes, `--dry-run` and `DRY_RUN=true`, and that the
+workflows keep least privilege (`issues: write` on the job only, SHA-pinned actions, no pull-request trigger).
 The collection logic was also exercised once against the real Production data through the authenticated Vercel CLI in
 `--dry-run`: 5 deployments, all READY, 0 error events. Not yet exercised: the SDK with a real token and a real alert
 delivery (a GitHub issue needs the pending workflow permission, Discord needs its webhook) — use the dry-run dispatch for the first.
