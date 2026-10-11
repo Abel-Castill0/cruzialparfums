@@ -36,7 +36,7 @@ for (const w of WORKFLOWS) {
     assert.match(s, /dry_run:\n {8}description: [^\n]+\n {8}type: boolean\n {8}default: true/);
     assert.ok(s.includes(`run: ${w.script}\n`), "the script decides dry-run from DRY_RUN; no shell branching");
     assert.ok(!s.includes("--dry-run"), "one mechanism only");
-    assert.match(s, /schedule:\n    - cron: "\d+ \* \* \* \*"/, "the hourly schedule stays enabled in the file");
+    assert.match(s, /schedule:\n(?:    #[^\n]*\n)*    - cron: "\d+(,\d+)* \* \* \* \*"/, "the schedule stays enabled in the file (one or more slots per hour)");
   });
 
   test(`${w.file}: alert self-test step, opt-in`, () => {

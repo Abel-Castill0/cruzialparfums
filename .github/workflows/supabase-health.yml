@@ -1,17 +1,19 @@
 name: Supabase health
 
-# Hourly, READ-ONLY health check of the Production Supabase project through the hosted Supabase MCP server
+# Twice-hourly (redundant slots), READ-ONLY health check of the Production Supabase project through the hosted Supabase MCP server
 # (get_advisors + query_logs only; see scripts/supabase-health.mjs and docs/supabase-health-agent.md).
 # Needs the repository secret SUPABASE_ACCESS_TOKEN. Alerts go to GitHub Issues with the job's own short-lived
 # GITHUB_TOKEN (issues: write on this job only); Discord is opt-in with the repository variable MONITOR_CHANNEL=discord plus
 # the DISCORD_WEBHOOK_URL secret. Until SUPABASE_ACCESS_TOKEN exists the job only emits a visible warning. Scheduled
 # workflows run from the default branch only and fork pull requests never receive secrets.
 
-# Hourly at minute 43 UTC (GitHub may delay scheduled runs under load). GitHub registers a schedule when this file
+# Two slots per hour at minutes 23 and 53 UTC (GitHub delays or drops scheduled runs under load). GitHub registers a schedule when this file
 # changes on the default branch; after disabling/re-enabling the workflow, verify that "schedule" runs appear again.
 on:
   schedule:
-    - cron: "43 * * * *"
+    # Two off-peak slots per hour: GitHub delays or drops scheduled runs under load (observed 2026-10-11: 40-95 min
+    # late and whole hours missing). The 24 h-window rate comparison is stateless, so duplicate runs are harmless.
+    - cron: "23,53 * * * *"
   workflow_dispatch:
     inputs:
       dry_run:
