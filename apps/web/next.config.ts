@@ -2,6 +2,11 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   typedRoutes: true,
+  // Next 16 streams async generateMetadata into <body> for non-bot user agents (documented "streaming metadata").
+  // The root layout's metadata is async (it reads the owner's indexing switch), so on fast routes the <title>,
+  // description and robots tags landed in <body> for browsers and for tools such as Lighthouse. Treating every user
+  // agent as an HTML-limited bot makes metadata block the first byte and stay in <head>. Cost: slightly higher TTFB.
+  htmlLimitedBots: /.*/,
   poweredByHeader: false,
   images: {
     remotePatterns: [

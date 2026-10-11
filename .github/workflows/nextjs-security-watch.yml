@@ -1,0 +1,50 @@
+name: Next.js security watch
+
+# Read-only check twice a day (see scripts/nextjs-security-watch.mjs): compares the Next.js version installed in apps/web
+# with the published GitHub security advisories of vercel/next.js and opens or comments a GitHub issue
+# "[Monitor] nextjs-security: <GHSA> affects installed next" when one affects it. Covers the announced out-of-band release of
+# 2026-10-14. Never installs or changes anything. Uses the job's own short-lived GITHUB_TOKEN (issues: write on the job only).
+
+on:
+  schedule:
+    - cron: "23 7,15 * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Read and print findings but write nothing (no issue, comment or webhook)"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nextjs-security-watch
+  cancel-in-progress: false
+
+jobs:
+  watch:
+    name: Advisories vs installed Next.js
+    if: github.repository == 'Abel-Castill0/cruzialparfums'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      issues: write
+    env:
+      MONITOR_CHANNEL: ${{ vars.MONITOR_CHANNEL || 'github' }}
+      DISCORD_WEBHOOK_URL: ${{ vars.MONITOR_CHANNEL == 'discord' && secrets.DISCORD_WEBHOOK_URL || '' }}
+      # A scheduled run has no inputs, so it is a real run; a manual run is a dry run unless unticked.
+      DRY_RUN: ${{ inputs.dry_run == true }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+      # No dependency install: the script only uses Node built-ins and reads apps/web/package-lock.json.
+      - name: Check advisories
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/nextjs-security-watch.mjs
