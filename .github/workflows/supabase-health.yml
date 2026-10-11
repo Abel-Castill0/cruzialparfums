@@ -1,0 +1,66 @@
+name: Supabase health
+
+# Hourly, READ-ONLY health check of the Production Supabase project through the hosted Supabase MCP server
+# (get_advisors + query_logs only; see scripts/supabase-health.mjs and docs/supabase-health-agent.md).
+# Needs the repository secrets SUPABASE_ACCESS_TOKEN and DISCORD_WEBHOOK_URL. Until SUPABASE_ACCESS_TOKEN exists the job
+# only emits a visible warning. Scheduled workflows run from the default branch only and fork pull requests never
+# receive secrets.
+
+on:
+  schedule:
+    - cron: "43 * * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Evaluate and print the alert instead of sending it to Discord"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: supabase-health
+  cancel-in-progress: false
+
+jobs:
+  health:
+    name: API/Auth error rate and advisors
+    if: github.repository == 'Abel-Castill0/cruzialparfums'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+      # No dependency install on purpose: the script only uses Node built-ins and fetch.
+      - name: Check configuration
+        id: config
+        env:
+          HAS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN != '' }}
+        run: |
+          if [ "$HAS_TOKEN" != "true" ]; then
+            echo "::warning title=Supabase health check NOT running::The SUPABASE_ACCESS_TOKEN repository secret is not set, so no check was made."
+            echo "### Supabase health check is not configured" >> "$GITHUB_STEP_SUMMARY"
+            echo "Set the \`SUPABASE_ACCESS_TOKEN\` and \`DISCORD_WEBHOOK_URL\` repository secrets (see docs/supabase-health-agent.md)." >> "$GITHUB_STEP_SUMMARY"
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Health check
+        if: steps.config.outputs.configured == 'true'
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          # Not a secret: the Production project ref already appears in the public docs.
+          SUPABASE_PROJECT_REF: iyxidhglyqkzoziyewlc
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          if [ "$DRY_RUN" = "true" ]; then
+            node scripts/supabase-health.mjs --dry-run
+          else
+            node scripts/supabase-health.mjs
+          fi
