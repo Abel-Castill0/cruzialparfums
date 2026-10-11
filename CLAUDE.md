@@ -105,4 +105,3 @@ Context is a HARD budget; aim for maximum confidence per token.
 | `docs/business-truth.md` | §16 (incl. owner delegation), §17, §21 (blockers, SEO) |
 | `docs/testing-and-quality.md` | §7, §18-20, §22, §23, §25, §26 (tests, bugs, UI, DoD, reporting) |
 | `docs/execution-philosophy.md` | §0, §1 (full text), §2, §24, §29 |
-
