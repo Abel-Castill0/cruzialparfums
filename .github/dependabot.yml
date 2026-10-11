@@ -23,3 +23,9 @@ updates:
       interval: weekly
     labels:
       - dependencies
+    groups:
+      # init and analyze (and any other sub-action) must move together: the Analyze job fails when the
+      # github/codeql-action steps use different versions, so one-at-a-time bumps can never pass CI.
+      codeql-action:
+        patterns:
+          - "github/codeql-action*"
