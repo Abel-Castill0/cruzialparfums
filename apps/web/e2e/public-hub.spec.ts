@@ -21,3 +21,21 @@ test("public hub exposes Parfums and Import and both load", async ({ page }) => 
   expect(importResponse?.ok()).toBeTruthy();
   await expect(page).toHaveURL(/\/import$/);
 });
+
+// Regression (2026-10-10): the Parfums home rendered "Cruzial Parfums — Cruzial
+// Parfums", the Import home lost its unit brand, and the Import cart/checkout
+// (client pages without metadata) both rendered "Cruzial Import — Cruzial".
+test("unit pages have distinct, branded titles without a repeated brand", async ({ page }) => {
+  const expected: Array<[string, RegExp]> = [
+    ["/parfums", /^Cruzial Parfums — /],
+    ["/import", /\| Cruzial Import$/],
+    ["/import/carrito", /^Carrito \| Cruzial Import$/],
+    ["/import/checkout", /^Solicitud de pedido \| Cruzial Import$/],
+  ];
+  for (const [path, pattern] of expected) {
+    await page.goto(path);
+    const title = await page.title();
+    expect(title, path).toMatch(pattern);
+    expect(title.match(/Cruzial (Parfums|Import)/g)?.length ?? 0, path).toBe(1);
+  }
+});
