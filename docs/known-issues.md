@@ -60,6 +60,18 @@ holds the evidence for this pass.
 - Dependabot #10 (TypeScript 7) cannot be installed: typescript-eslint supports TypeScript < 6.1. PR #59 moves to
   TypeScript ~6.0.3 and Dependabot ignores >= 6.1.0 until typescript-eslint supports 7 (remove the ignore then).
 - `braces` GHSA-vfj7-8cjw-p6xm: dev-only lint tooling, no patched release.
+- **Password-recovery e-mail is NOT deliverable today (2026-10-11).** Supabase Auth has no custom SMTP; the built-in
+  mailer sends only to **members of the Supabase organization** (rate limit 2/hour), and the organization has a single member
+  who is not the admin's login address (checked by hash comparison, no addresses recorded). `/recover` itself answers 200
+  (generic message by design) and builds the link from `https://cruzial.pe/auth/callback`, but delivery to the admin cannot
+  happen until an SMTP provider is configured (Dashboard → Authentication → SMTP; needs the provider's credentials — external
+  requirement) or the admin address is added as an organization member. Do not report recovery as verified before a real
+  e-mail arrives.
+- Supabase Auth `uri_allow_list` no longer contains `localhost`/`127.0.0.1` (2026-10-11).
+- Supabase legacy API keys disabled 2026-10-11 (re-enable path in docs/credential-rotation-plan.md §7); the legacy HS256
+  signing key is still "previously used" until the owner revokes it.
+- GitHub scheduled workflows are best effort: today runs were 40-95 min late and most hourly slots were dropped; the
+  monitors now have two off-peak slots per hour. A strict cadence needs an external scheduler.
 - Owner-session checks still pending (docs/owner-verification-runbook.md):
   admin MFA, password recovery email, Cloudinary upload in Production.
 

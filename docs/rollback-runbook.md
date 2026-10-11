@@ -96,6 +96,23 @@ Production `uri_allow_list` is `https://cruzial.pe/auth/callback,https://www.cru
 with its own `supabase/config.toml` redirects; Preview uses QA; only the email provider is enabled, no OAuth).
 Revert: add them back in the same screen ("Add URL").
 
+### 3d. Supabase API keys and JWT signing keys (changed 2026-10-11)
+
+- Legacy `anon`/`service_role` API keys: **disabled** (`GET /v1/projects/<ref>/api-keys/legacy` → `enabled:false`). Revert:
+  Dashboard → Settings → API Keys → Legacy → re-enable. The app uses only the publishable and secret keys (7-day log
+  evidence in docs/credential-rotation-plan.md).
+- JWT signing keys: ES256 `in_use`, legacy HS256 `previously_used`. Revoking HS256 is **irreversible** and is pending the
+  owner (Dashboard → Settings → JWT Keys → ⋯ → Revoke key). A rollback after that would mean creating a new standby key; there
+  is no way back to the old HS256 secret (nothing uses it).
+- Emergency check that the app still reaches the database after any key change: `curl -s https://cruzial.pe/parfums/catalogo |
+  grep -c '/parfums/productos/'` (≈94) and the gateway-log query by key class in the credential plan.
+
+### 3e. Monitors and Vercel token
+Monitors: `monitor-vercel.yml` (slots :07/:37 UTC), `supabase-health.yml` (:23/:53), `nextjs-security-watch.yml` (07:23 and
+15:23); manual runs are dry runs by default (`dry_run` unticked = real; `alert_selftest` proves issue delivery). The
+`VERCEL_TOKEN` secret currently holds a temporary team-wide token (see the credential plan, pending step 1). If a monitor
+reports "cannot run", the cause is almost always its token: check the issue text (HTTP status only is logged).
+
 ## 4. Database restore (disaster recovery)
 
 Latest verified backups (private disk, outside the repository and OneDrive; contain PII):

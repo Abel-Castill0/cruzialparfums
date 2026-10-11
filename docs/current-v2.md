@@ -20,6 +20,42 @@ git rev-parse HEAD
 > The sections below the "Current verified state (2026-10-01)" block are
 > historical gate records; where they conflict with that block, that block wins.
 
+## Operational closure (2026-10-11, fifth phase) — rotations started, metadata fixed, watchers added
+
+State at the end of the session: Production serves the master commit of PR #92 (`4366d41`, `dpl_6QWHn9sjnHW1LPZXfVfKxP7NCAbJ`);
+85 migrations in Production and QA; indexing OFF (robots.txt `Disallow: /`, `noindex, nofollow`).
+
+**TERMINADO Y VERIFICADO**
+- Issue #81 closed with run links (secret replaced 16:47:32 UTC; dry run, real run and Supabase health green). A later
+  *scheduled* Vercel run also succeeded (18:51 UTC, ~94 min after its slot — see cron note).
+- Worktrees repaired to `C:\dev\cruzialparfums` (`git worktree repair`; both Codex worktrees keep branch, HEAD and clean
+  state). Duplicate under OneDrive removed after a byte-level comparison (empty folder may remain until VS Code's Playwright
+  server is closed). **OneDrive finding:** no registered account syncs that path; cloud-side history cannot be checked or
+  cleaned without a signed-in Microsoft session (owner).
+- Supabase **legacy API keys disabled** (7-day gateway-log evidence + structural checks; all routes 200; only `sb_*` keys after).
+- Metadata fix (#91): `htmlLimitedBots: /.*/`. Root cause: async root `generateMetadata` + Next 16 streaming; reproduced only with
+  `VERCEL_ENV=production`. Verified on the deployed site: title/description/robots in `<head>` for curl and browser user agents on
+  `/`, `/parfums`, `/import`, `/parfums/catalogo`; Production Playwright (read-only) **185 passed / 0 failed / 39 skipped by design**
+  plus the new head test 3/3. Lighthouse 13.5 (Playwright Chromium, 2026-10-11 ~19:10 UTC; the first run was before the fix):
+  `/` mobile/desktop perf 97/99 (was 95/99), SEO 63 (was 54); `/parfums` 92/98, SEO 66 (was 58 desktop); `/import` 96/99, SEO 66;
+  a11y 100, best-practices 100, CLS 0; the only failing SEO audit is the intentional `is-crawlable`. TTFB `/parfums` ≈ 0.9 s.
+- Next.js security watch workflow (#92): installed 16.4.0, 50 advisories, 0 affecting (live), 10 tests. `latest` is still 16.4.0.
+- Monitors: two off-peak cron slots per hour each (#93); Supabase health green; local Supabase stack repaired (stray line in the
+  root `.env`); `.env`, `.env.qa`, `apps/web/.env.local` and `e2e/.auth` restricted to the Windows user; consumer-less secrets removed.
+- Backups re-verified after all changes: 3/3 SHA-256 each (private folder `C:\cruzial-private-backups`, outside OneDrive).
+
+**PENDIENTE DE INTERVENCIÓN DEL PROPIETARIO** (details and exact commands: docs/credential-rotation-plan.md §7)
+1. Create the project-scoped Vercel token and store it in `VERCEL_TOKEN`; then revoke the old team-wide "CRUZIAL" token.
+2. Revoke the Supabase HS256 signing key (irreversible; no consumer; kills the leaked legacy secret).
+3. Rotate the DB password, `sb_secret`, Cloudinary pair and the Supabase PAT (create-new → switch → verify → delete-old).
+4. SMTP provider for Supabase Auth: **recovery e-mail to the admin is not deliverable** with the built-in mailer (org has one
+   member, not the admin address).
+5. Cloudinary upload+delete on a draft product from the admin session; check the Personal OneDrive in the browser for old copies.
+
+**BLOQUEADO POR UN PROVEEDOR / RIESGO RESIDUAL**
+- GitHub scheduled workflows are best effort (late/dropped slots); a strict cadence needs an external scheduler.
+- Next.js out-of-band release of 2026-10-14 not published yet; the watcher and the one-off scheduled check will pick it up.
+
 ## Operational closure (2026-10-11, fourth phase) — monitor repaired, working copy moved, credential plan
 
 - **Vercel monitor repaired.** The owner replaced the `VERCEL_TOKEN` secret (new token `cruzial-monitor`, expires
