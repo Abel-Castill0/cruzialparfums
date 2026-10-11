@@ -20,6 +20,17 @@ git rev-parse HEAD
 > The sections below the "Current verified state (2026-10-01)" block are
 > historical gate records; where they conflict with that block, that block wins.
 
+## Operational closure (2026-10-11, fourth phase) — monitor repaired, working copy moved, credential plan
+
+- **Vercel monitor repaired.** The owner replaced the `VERCEL_TOKEN` secret (new token `cruzial-monitor`, expires
+  2027-01-09). Dry run 38156949861 and real run 38157014418 succeeded (5 Production deployments, 0 error events);
+  Supabase health 38157017223 succeeded. Issue #81 stays open until a **scheduled** run also succeeds.
+- **Working copy moved out of OneDrive** to `C:devcruzialparfums` (2098/2098 files byte-identical, refs and stash
+  identical, `npm ci` + full `npm run check` pass there). Original kept until the owner accepts the new location.
+- **Credential inventory + rotation plan (nothing rotated):** docs/credential-rotation-plan.md. Key finding: the root
+  `.env` held Production secrets, including the Supabase **legacy JWT secret** (still valid; legacy API keys enabled)
+  with no live consumer in the last 24 h of gateway logs.
+
 ## Operational closure (2026-10-11, third phase)
 
 State: master = Production `a8ced07` (`dpl_B1JB46r2eYMfCPbxkYaAfBcSfESU`, READY); 85 migrations in Production and QA;
