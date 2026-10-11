@@ -156,9 +156,9 @@
   justify-self: center;
   min-height: 44px;
   padding: 0 16px;
-  border: 1px solid var(--ds-hairline);
+  border: 0;
   border-radius: 999px;
-  background: var(--ds-white);
+  background: var(--ds-gray-50);
   color: var(--ds-ink);
   font: 500 13px/1 var(--font-body), sans-serif;
   cursor: pointer;
@@ -170,9 +170,8 @@
 }
 
 .regionChip[aria-pressed="true"] {
-  border-color: var(--ds-accent);
-  background: var(--ds-ink);
-  color: var(--ds-on-photo);
+  background: var(--ds-accent);
+  color: var(--ds-white);
 }
 
 .regionChip:focus-visible,
@@ -300,11 +299,12 @@
   display: grid;
   gap: 8px;
   padding: 16px 16px;
-  border: 1px solid var(--ds-hairline);
+  border: 0;
   border-radius: var(--ds-radius-md);
   background: var(--ds-white);
   font-size: 13.5px;
   line-height: 1.5;
+  box-shadow: var(--ds-shadow-1);
 }
 
 .callout p {

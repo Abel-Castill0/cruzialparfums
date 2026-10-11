@@ -26,10 +26,11 @@
 
 .empty {
   padding: clamp(36px, 6vw, 72px);
-  border: 1px solid var(--ds-hairline);
+  border: 0;
   border-radius: var(--ds-radius-lg);
   background: var(--import-surface);
   text-align: center;
+  box-shadow: var(--ds-shadow-1);
 }
 
 .empty p {
@@ -159,13 +160,14 @@
 
 .noticeBanner {
   padding: 16px 16px;
-  border: 1px solid var(--ds-hairline);
+  border: 0;
   border-radius: var(--ds-radius-md);
   background: var(--ds-gray-50);
   color: var(--ds-ink);
   font-size: 0.85rem;
   font-weight: 600;
   line-height: 1.5;
+  box-shadow: var(--ds-shadow-1);
 }
 
 .primaryAction {
@@ -174,12 +176,12 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid var(--ds-hairline);
-  border-radius: var(--ds-radius-md);
-  color: var(--ds-on-photo);
-  background: var(--import-accent);
-  font-size: 0.82rem;
-  font-weight: 600;
+  border: 0;
+  border-radius: var(--ds-radius-pill);
+  color: var(--ds-white);
+  background: var(--ds-accent);
+  font-size: 0.9375rem;
+  font-weight: 500;
   white-space: nowrap;
   cursor: pointer;
   transition: transform var(--ds-dur-fast) var(--ds-ease-spring), background-color var(--ds-dur-fast) var(--ds-ease-spring);
@@ -201,12 +203,12 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid var(--ds-hairline);
-  border-radius: var(--ds-radius-md);
+  border: 0;
+  border-radius: var(--ds-radius-pill);
   color: var(--import-text);
-  background: var(--import-surface);
-  font-size: 0.82rem;
-  font-weight: 600;
+  background: var(--ds-gray-50);
+  font-size: 0.9375rem;
+  font-weight: 500;
   white-space: nowrap;
   cursor: pointer;
   transition: border-color var(--ds-dur-fast) var(--ds-ease-spring);

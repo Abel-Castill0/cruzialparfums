@@ -5,7 +5,7 @@
   }
 
   .reveal {
-    transition:
+    transition: 
       opacity var(--ds-dur-slow) var(--ds-ease-enter) var(--reveal-delay, 0ms),
       transform var(--ds-dur-slow) var(--ds-ease-enter) var(--reveal-delay, 0ms);
   }

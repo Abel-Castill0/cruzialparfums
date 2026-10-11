@@ -11,8 +11,9 @@
   top: 110px;
   aspect-ratio: 1 / 1.08;
   overflow: hidden;
-  border: 1px solid var(--ds-hairline);
-  background: var(--ds-white);
+  border: 0;
+  background: var(--ds-gray-50);
+  border-radius: var(--ds-radius-pill);
 }
 
 .imageFrame {
@@ -35,15 +36,16 @@
   max-width: calc(100% - 40px);
   padding: 8px 16px;
   overflow: hidden;
-  border: 1px solid var(--ds-hairline);
+  border: 0;
   color: var(--ds-ink);
-  background: rgba(255, 255, 255, 0.92);
+  background: var(--ds-gray-50);
   backdrop-filter: blur(8px);
   font-size: 0.75rem;
 
   text-overflow: ellipsis;
 
   white-space: nowrap;
+  border-radius: var(--ds-radius-pill);
 }
 
 .stageDiscontinued {
@@ -171,12 +173,13 @@
 
 .noteChips span {
   padding: 8px 16px;
-  border: 1px solid var(--ds-hairline);
+  border: 0;
   color: var(--ds-ink);
-  background: var(--ds-white);
+  background: var(--ds-gray-50);
   font-family: var(--ds-font);
   letter-spacing: -0.01em;
   font-size: 15px;
+  border-radius: var(--ds-radius-pill);
 }
 
 .purchaseBlock,
@@ -201,12 +204,13 @@
   position: relative;
   min-height: 68px;
   padding: 8px 8px;
-  border: 1px solid var(--ds-hairline);
+  border: 0;
   color: var(--ds-ink);
-  background: var(--ds-white);
+  background: var(--ds-gray-50);
   text-align: center;
   cursor: pointer;
   transition: border-color var(--ds-dur-fast) var(--ds-ease-spring), background var(--ds-dur-fast) var(--ds-ease-spring), transform var(--ds-dur-fast) var(--ds-ease-spring);
+  border-radius: var(--ds-radius-pill);
 }
 
 .sizeButton:hover {
@@ -396,7 +400,7 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  border: 1px solid var(--ds-hairline);
+  border: 0;
   font-size: 12px;
   font-weight: 600;
 
@@ -404,11 +408,14 @@
   text-align: center;
 
   cursor: pointer;
+  background: var(--ds-gray-50);
+  border-radius: var(--ds-radius-pill);
 }
 
 .primaryAction {
-  color: var(--ds-on-photo);
-  background: var(--ds-ink);
+  color: var(--ds-white);
+  background: var(--ds-accent);
+  border-radius: var(--ds-radius-pill);
 }
 
 .secondaryAction {
@@ -417,7 +424,7 @@
 }
 
 .primaryAction:hover {
-  background: var(--ds-ink);
+  background: var(--ds-accent-press);
 }
 
 .secondaryAction:hover {
@@ -442,8 +449,10 @@
 
 .discontinuedNotice {
   padding: 16px 24px;
-  border: 1px solid var(--ds-hairline);
+  border: 0;
   background: var(--ds-gray-50);
+  border-radius: var(--ds-radius-md);
+  box-shadow: var(--ds-shadow-1);
 }
 
 .discontinuedNotice strong {

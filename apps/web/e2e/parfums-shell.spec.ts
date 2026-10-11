@@ -15,7 +15,7 @@ async function firstPurchasableCardAdd(page: Page) {
 }
 
 test.describe("parfums home hero and header", () => {
-  test("the hero owns the first screen with no text on it; the header appears after it", async ({ page }) => {
+  test("the hero owns the first screen with one headline and two actions; the header appears after it", async ({ page }) => {
     await page.goto("/parfums");
     const hero = page.locator("[data-home-hero]");
     await expect(hero).toBeVisible();
@@ -26,8 +26,11 @@ test.describe("parfums home hero and header", () => {
     const viewport = page.viewportSize()!;
     const box = (await hero.boundingBox())!;
     expect(box.height).toBeGreaterThan(viewport.height * 0.8);
-    // Artwork only: no headline or paragraph sits on the image.
-    await expect(hero.locator("h1, h2, h3, p")).toHaveCount(0);
+    // One headline and two actions sit on the image; no other copy does.
+    await expect(hero.getByRole("heading", { level: 1 })).toHaveText(/Perfumería de descubrimiento/);
+    await expect(hero.locator("h2, h3, p")).toHaveCount(0);
+    await expect(hero.getByRole("link", { name: "Explorar catálogo" })).toBeVisible();
+    await expect(hero.getByRole("link", { name: "Arma tu combo" })).toBeVisible();
 
     const header = page.locator("header").first();
     await expect(header).toBeHidden();

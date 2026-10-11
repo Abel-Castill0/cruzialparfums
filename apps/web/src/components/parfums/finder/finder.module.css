@@ -6,14 +6,14 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--ds-on-photo);
+  color: var(--ds-ink);
 }
 
 .overlay {
   position: absolute;
   inset: 0;
   border: 0;
-  background: rgba(4, 3, 2, 0.68);
+  background: rgba(0, 0, 0, 0.4);
   backdrop-filter: blur(8px);
   cursor: default;
 }
@@ -23,11 +23,11 @@
   width: min(680px, 100%);
   max-height: min(760px, calc(100dvh - 40px));
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.17);
+  border-radius: var(--ds-radius-lg);
   display: flex;
   flex-direction: column;
-  background: var(--ds-ink);
-  box-shadow: var(--ds-shadow-1);
+  background: var(--ds-white);
+  box-shadow: var(--ds-shadow-3);
 }
 
 .head {
@@ -37,11 +37,11 @@
   align-items: center;
   justify-content: space-between;
   gap: 24px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+  border-bottom: 1px solid var(--ds-hairline);
 }
 
 .head > span {
-  color: rgba(255, 253, 248, 0.7);
+  color: var(--ds-ink-muted);
   font-family: var(--ds-font);
   letter-spacing: -0.01em;
   font-size: 17px;
@@ -49,11 +49,12 @@
 }
 
 .head > button {
-  width: 44px;
-  height: 44px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  width: var(--ds-touch);
+  height: var(--ds-touch);
+  border: 0;
   border-radius: 50%;
-  color: rgba(255, 255, 255, 0.72);
+  background: var(--ds-gray-50);
+  color: var(--ds-ink-muted);
   background: transparent;
   font-size: 21px;
   cursor: pointer;
@@ -74,22 +75,26 @@
 
 .progress > span {
   flex: 0 0 auto;
-  color: rgba(255, 255, 255, 0.42);
+  color: var(--ds-ink-muted);
   font-size: 0.75rem;
 
 }
 
 .progress > div {
   width: 100%;
-  height: 1px;
-  background: rgba(255, 255, 255, 0.16);
+  height: 4px;
+  overflow: hidden;
+  border-radius: 2px;
+  background: var(--ds-gray-100);
 }
 
 .progress i {
+  width: 100%;
   height: 100%;
   display: block;
-  background: var(--ds-white);
-  transition: width var(--ds-dur-fast) var(--ds-ease-spring);
+  background: var(--ds-accent);
+  transform-origin: left center;
+  transition: transform var(--ds-dur-slow) var(--ds-ease-spring);
 }
 
 .body > h1,
@@ -105,9 +110,9 @@
 .resultIntro {
   max-width: 55ch;
   margin-top: 8px;
-  color: rgba(255, 255, 255, 0.57);
-  font-size: 13px;
-  line-height: 1.55;
+  color: var(--ds-ink-muted);
+  font-size: var(--ds-text-body);
+  line-height: 1.5;
 }
 
 .options {
@@ -124,31 +129,39 @@
 .options button {
   min-height: 52px;
   padding: 16px 16px;
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  border: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  color: rgba(255, 255, 255, 0.65);
-  background: transparent;
-  font: 400 12px/1.35 var(--font-body), sans-serif;
+  color: var(--ds-ink-muted);
+  background: var(--ds-gray-50);
+  font: 500 0.9375rem/1.35 var(--ds-font);
   text-align: left;
   cursor: pointer;
+  border-radius: var(--ds-radius-pill);
+}
+
+.options button {
+  color: var(--ds-ink);
+  transition: background-color var(--ds-dur-fast) var(--ds-ease-spring), color var(--ds-dur-fast) var(--ds-ease-spring);
 }
 
 .options button:hover {
-  border-color: rgba(255, 255, 255, 0.34);
-  color: var(--ds-on-photo);
+  background: var(--ds-gray-100);
 }
 
 .options button.selected {
-  border-color: var(--ds-white);
-  color: var(--ds-on-photo);
-  background: rgba(255, 253, 248, 0.14);
+  color: var(--ds-white);
+  background: var(--ds-accent);
 }
 
 .options button span {
-  color: rgba(255, 253, 248, 0.7);
+  color: var(--ds-ink-muted);
+}
+
+.options button.selected span {
+  color: var(--ds-on-photo-muted);
 }
 
 .nav {
@@ -161,25 +174,28 @@
 .nav button,
 .resultFooter button,
 .resultFooter a {
-  min-height: 46px;
-  padding: 0 16px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  min-height: var(--ds-touch);
+  padding: 0 var(--ds-space-3);
+  border: 0;
+  border-radius: var(--ds-radius-pill);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  color: rgba(255, 255, 255, 0.72);
-  background: transparent;
-  font-size: 0.75rem;
-  font-weight: 600;
-
+  color: var(--ds-ink);
+  background: var(--ds-gray-50);
+  font-size: 0.9375rem;
+  font-weight: 500;
   cursor: pointer;
 }
 
 .nav button.next {
-  border-color: var(--ds-white);
-  color: var(--ds-ink);
-  background: var(--ds-white);
+  color: var(--ds-white);
+  background: var(--ds-accent);
+}
+
+.nav button.next:hover:not(:disabled) {
+  background: var(--ds-accent-press);
 }
 
 .nav button:disabled {
@@ -189,7 +205,7 @@
 
 .resultEyebrow {
   margin-bottom: 8px;
-  color: rgba(255, 253, 248, 0.7);
+  color: var(--ds-ink-muted);
   font-size: 0.75rem;
 
 }
@@ -197,8 +213,8 @@
 .methodNote {
   margin-top: 8px;
   padding-left: 16px;
-  border-left: 1px solid rgba(255, 255, 255, 0.5);
-  color: rgba(255, 255, 255, 0.43);
+  border-left: 1px solid var(--ds-hairline);
+  color: var(--ds-ink-muted);
   font-size: 0.75rem;
   line-height: 1.5;
 }
@@ -212,24 +228,24 @@
 
 .resultCard {
   min-width: 0;
-  padding: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  padding: var(--ds-space-2);
+  border-radius: var(--ds-radius-md);
   display: grid;
   grid-template-columns: 82px minmax(0, 1fr);
-  gap: 16px;
-  background: rgba(255, 255, 255, 0.045);
+  gap: var(--ds-space-2);
+  background: var(--ds-gray-50);
 }
 
 .topResult {
   grid-column: 1 / -1;
   grid-template-columns: 104px minmax(0, 1fr);
-  border-color: rgba(255, 255, 255, 0.4);
 }
 
 .resultMedia {
   position: relative;
   min-height: 132px;
   overflow: hidden;
+  border-radius: var(--ds-radius-sm);
   background: var(--ds-white);
 }
 
@@ -243,12 +259,13 @@
 }
 
 .score {
-  padding: 4px 8px;
+  padding: 4px var(--ds-space-1);
   display: inline-flex;
   gap: 4px;
+  border-radius: var(--ds-radius-pill);
   color: var(--ds-ink);
   background: var(--ds-white);
-  font-size: 0.75rem;
+  font-size: var(--ds-text-micro);
   font-weight: 600;
 
 }
@@ -262,7 +279,7 @@
   margin-top: 8px;
   display: block;
   overflow: hidden;
-  color: rgba(255, 255, 255, 0.44);
+  color: var(--ds-ink-muted);
   font-size: 0.75rem;
 
   text-overflow: ellipsis;
@@ -282,7 +299,7 @@
 
 .resultBody > p {
   margin-top: 8px;
-  color: rgba(255, 255, 255, 0.55);
+  color: var(--ds-ink-muted);
   font-size: 12px;
   line-height: 1.45;
 }
@@ -296,28 +313,34 @@
 
 .resultActions a,
 .resultActions button {
-  min-height: 36px;
-  padding: 0 8px;
-  border: 1px solid rgba(255, 255, 255, 0.19);
+  min-height: var(--ds-touch);
+  padding: 0 var(--ds-space-2);
+  border: 0;
+  border-radius: var(--ds-radius-pill);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  color: var(--ds-gray-100);
-  background: transparent;
-  font-size: 0.75rem;
+  color: var(--ds-link);
+  background: var(--ds-white);
+  font-size: var(--ds-text-small);
+  font-weight: 500;
   cursor: pointer;
 }
 
 .resultActions button {
-  color: var(--ds-ink);
-  background: var(--ds-white);
+  color: var(--ds-white);
+  background: var(--ds-accent);
+}
+
+.resultActions button:hover {
+  background: var(--ds-accent-press);
 }
 
 .resultBody > small {
   margin-top: 8px;
   display: block;
-  color: rgba(255, 255, 255, 0.38);
+  color: var(--ds-ink-muted);
   font-size: 0.75rem;
 }
 
@@ -327,13 +350,12 @@
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  border-top: 1px solid rgba(255, 255, 255, 0.14);
+  border-top: 1px solid var(--ds-hairline);
 }
 
 .resultFooter button:first-child {
-  border-color: var(--ds-white);
-  color: var(--ds-ink);
-  background: var(--ds-white);
+  color: var(--ds-white);
+  background: var(--ds-accent);
 }
 
 .toast {
@@ -342,10 +364,12 @@
   bottom: 22px;
   left: 50%;
   max-width: calc(100% - 32px);
-  padding: 16px 16px;
-  color: var(--ds-ink);
-  background: var(--ds-white);
-  font-size: 0.75rem;
+  padding: var(--ds-space-2);
+  border-radius: var(--ds-radius-md);
+  color: var(--ds-on-photo);
+  background: var(--ds-ink);
+  box-shadow: var(--ds-shadow-3);
+  font-size: var(--ds-text-small);
   text-align: center;
   opacity: 0;
   transform: translate(-50%, 10px);
@@ -365,8 +389,31 @@
 .resultCard button:focus-visible,
 .resultFooter a:focus-visible,
 .resultFooter button:focus-visible {
-  outline: 2px solid var(--ds-white);
+  outline: 2px solid var(--ds-accent);
   outline-offset: 2px;
+}
+
+/* Results arrive with a fade and a short rise (ease-out, 400ms). */
+@media (prefers-reduced-motion: no-preference) {
+  .results,
+  .resultCard {
+    animation: resultsIn var(--ds-dur-slow) var(--ds-ease-enter) both;
+  }
+
+  .resultCard:nth-child(2) {
+    animation-delay: 60ms;
+  }
+
+  .resultCard:nth-child(3) {
+    animation-delay: 120ms;
+  }
+}
+
+@keyframes resultsIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
 }
 
 @media (max-width: 640px) {

@@ -46,12 +46,14 @@
   height: 44px;
   display: grid;
   place-items: center;
-  border: 1px solid var(--ds-hairline);
+  border: 0;
   color: var(--ds-ink);
   background: var(--ds-white);
   font-size: 15px;
   cursor: pointer;
   transition: background-color var(--ds-dur-fast) var(--ds-ease-spring);
+  border-radius: var(--ds-radius-md);
+  box-shadow: var(--ds-shadow-1);
 }
 
 .arrows button:hover {
@@ -78,9 +80,11 @@
   scroll-snap-align: start;
   display: block;
   color: inherit;
-  border: 1px solid var(--ds-hairline);
+  border: 0;
   background: var(--ds-white);
   transition: border-color var(--ds-dur-fast) var(--ds-ease-spring), transform var(--ds-dur-fast) var(--ds-ease-spring);
+  border-radius: var(--ds-radius-md);
+  box-shadow: var(--ds-shadow-1);
 }
 
 .card:hover {

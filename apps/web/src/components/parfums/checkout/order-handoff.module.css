@@ -9,9 +9,11 @@
   max-width: 680px;
   margin: 64px auto 0;
   padding: clamp(34px, 7vw, 72px);
-  border: 1px solid var(--ds-hairline);
+  border: 0;
   background: var(--ds-white);
   text-align: center;
+  border-radius: var(--ds-radius-md);
+  box-shadow: var(--ds-shadow-1);
 }
 
 .eyebrow,
@@ -72,12 +74,13 @@
 }
 
 .primary {
-  color: var(--ds-on-photo);
-  background: var(--ds-ink);
+  color: var(--ds-white);
+  background: var(--ds-accent);
+  border-radius: var(--ds-radius-pill);
 }
 
 .primary:hover {
-  background: var(--ds-ink);
+  background: var(--ds-accent-press);
 }
 
 .secondary {

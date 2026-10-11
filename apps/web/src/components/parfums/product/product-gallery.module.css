@@ -6,7 +6,7 @@
   height: 44px;
   display: grid;
   place-items: center;
-  border: 1px solid var(--ds-hairline);
+  border: 0;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.92);
   color: var(--ds-ink);
@@ -16,6 +16,7 @@
   transform: translateY(-50%);
   opacity: 0;
   transition: opacity var(--ds-dur-fast) var(--ds-ease-spring), background-color var(--ds-dur-fast) var(--ds-ease-spring);
+  box-shadow: var(--ds-shadow-1);
 }
 
 .arrowPrev {

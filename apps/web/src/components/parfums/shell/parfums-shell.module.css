@@ -676,6 +676,7 @@
 }
 
 .footerColumn a {
+  min-width: var(--ds-touch);
   min-height: var(--ds-touch);
   display: inline-flex;
   align-items: center;
@@ -686,6 +687,12 @@
 
 .footerColumn a:hover {
   color: var(--ds-ink);
+}
+
+.footerBottom a {
+  min-height: var(--ds-touch);
+  display: inline-flex;
+  align-items: center;
 }
 
 .footerBottom {

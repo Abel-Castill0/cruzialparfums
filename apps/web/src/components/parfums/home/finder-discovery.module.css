@@ -37,6 +37,27 @@
   line-height: 1.5;
 }
 
+.steps {
+  margin-top: var(--ds-space-4);
+  display: grid;
+  gap: var(--ds-space-2);
+  list-style: none;
+}
+
+.steps li {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  color: var(--ds-ink);
+  font-size: var(--ds-text-card);
+  font-weight: 500;
+}
+
+.steps svg {
+  flex: 0 0 auto;
+  color: var(--ds-ink-muted);
+}
+
 .cta {
   min-height: 48px;
   margin-top: var(--ds-space-4);

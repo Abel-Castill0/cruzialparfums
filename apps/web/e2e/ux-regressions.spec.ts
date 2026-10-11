@@ -96,14 +96,16 @@ test("text needed to decide or buy is at least 12px and combo size choices keep 
     await option.click();
     const size = page.locator("#arma-combo [class*=summaryLineSizes] button").first();
     await expect(size).toBeVisible();
-    // A leaked "× remove" rule once made these 18px with no border.
+    // A leaked "× remove" rule once made these 18px and unstyled. They are borderless pills now (DESIGN.md):
+    // their own style is a filled background, not a border.
     const style = await size.evaluate((element) => {
       const computed = getComputedStyle(element);
-      return { font: parseFloat(computed.fontSize), border: parseFloat(computed.borderTopWidth) };
+      const fill = computed.backgroundColor.match(/[\d.]+/g)?.map(Number) ?? [0, 0, 0, 0];
+      return { font: parseFloat(computed.fontSize), alpha: fill.length > 3 ? fill[3] : 1 };
     });
     expect(style.font).toBeGreaterThanOrEqual(12);
     expect(style.font).toBeLessThanOrEqual(14);
-    expect(style.border).toBeGreaterThan(0);
+    expect(style.alpha).toBeGreaterThan(0);
   }
 });
 

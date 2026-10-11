@@ -5,27 +5,21 @@
 .button {
   min-height: 44px;
   width: 100%;
-  padding: 8px 16px;
+  padding: 8px var(--ds-space-3);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid var(--ds-hairline);
-  border-radius: var(--ds-radius-md);
-  color: var(--ds-on-photo);
-  background: var(--import-accent, var(--ds-accent));
-  font-size: 0.78rem;
-  font-weight: 600;
+  border: 0;
+  border-radius: var(--ds-radius-pill);
+  color: var(--ds-white);
+  background: var(--ds-accent);
+  font-size: 0.9375rem;
+  font-weight: 500;
   cursor: pointer;
-  transition: background-color var(--ds-dur-fast) var(--ds-ease-spring), transform var(--ds-dur-fast) var(--ds-ease-spring);
 }
 
 .button:hover:not(:disabled) {
-  background: var(--ds-accent);
-  transform: translateY(-1px);
-}
-
-.button:active:not(:disabled) {
-  transform: translateY(0);
+  background: var(--ds-accent-press);
 }
 
 .button:disabled {

@@ -8,9 +8,8 @@
 
 .eyebrow {
   color: var(--import-muted);
-  font-size: 0.75rem;
-  font-weight: 600;
-
+  font-size: var(--ds-text-small);
+  font-weight: 500;
 }
 
 .heading h2,
@@ -18,10 +17,10 @@
 .contactBody h2 {
   margin-top: 16px;
   font-family: var(--ds-font);
-  font-size: clamp(1.9rem, 4vw, 3rem);
-  font-weight: 500;
-  line-height: 1.04;
-  letter-spacing: -0.035em;
+  font-size: var(--ds-text-h2);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
   text-wrap: balance;
 }
 
@@ -243,9 +242,10 @@
   overflow: hidden;
   display: flex;
   align-items: center;
-  border: 1px solid var(--ds-hairline);
+  border: 0;
   border-radius: var(--ds-radius-lg);
   background: var(--import-surface);
+  box-shadow: var(--ds-shadow-1);
 }
 
 .contactImage {

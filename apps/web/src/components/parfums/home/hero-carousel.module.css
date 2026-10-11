@@ -33,7 +33,7 @@
   position: absolute;
   z-index: 1;
   inset: 0;
-  background:
+  background: 
     linear-gradient(0deg, rgba(0, 0, 0, 0.72) 0%, rgba(0, 0, 0, 0.28) 34%, rgba(0, 0, 0, 0) 58%),
     var(--ds-overlay);
   opacity: 0.9;

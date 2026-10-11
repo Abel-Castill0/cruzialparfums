@@ -51,8 +51,10 @@
 
 .cartPanel,
 .formPanel {
-  border: 1px solid var(--ds-hairline);
+  border: 0;
   background: var(--ds-white);
+  border-radius: var(--ds-radius-md);
+  box-shadow: var(--ds-shadow-1);
 }
 
 .cartPanel {
@@ -128,11 +130,11 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  color: var(--ds-on-photo);
-  background: var(--ds-ink);
+  color: var(--ds-white);
+  background: var(--ds-accent);
   font-size: 0.75rem;
   font-weight: 600;
-
+  border-radius: var(--ds-radius-pill);
 }
 
 .total {
@@ -250,16 +252,17 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  color: var(--ds-on-photo);
-  background: var(--ds-ink);
+  color: var(--ds-white);
+  background: var(--ds-accent);
   font-size: 12px;
   font-weight: 600;
 
   cursor: pointer;
+  border-radius: var(--ds-radius-pill);
 }
 
 .submit:hover {
-  background: var(--ds-ink);
+  background: var(--ds-accent-press);
 }
 
 .submit:active {
@@ -380,12 +383,13 @@
   min-height: 44px;
   margin-top: 8px;
   padding: 8px 16px;
-  border: 1px solid var(--ds-hairline);
-  background: transparent;
+  border: 0;
+  background: var(--ds-gray-50);
   color: var(--ds-danger);
   font: inherit;
   font-weight: 600;
   cursor: pointer;
+  border-radius: var(--ds-radius-pill);
 }
 
 .submitErrorAction:focus-visible {
@@ -463,7 +467,7 @@
 
 .submit:hover:not(:disabled) {
   gap: 16px;
-  background: var(--ds-ink);
+  background: var(--ds-accent-press);
 }
 
 @media (max-width: 767px), (pointer: coarse) {

@@ -91,16 +91,19 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  border: 1px solid var(--ds-hairline);
+  border: 0;
   font-size: 0.75rem;
   font-weight: 600;
 
   transition: background-color var(--ds-dur-fast) var(--ds-ease-spring), color var(--ds-dur-fast) var(--ds-ease-spring);
+  background: var(--ds-gray-50);
+  border-radius: var(--ds-radius-pill);
 }
 
 .heroCta {
-  color: var(--ds-on-photo);
-  background: var(--ds-ink);
+  color: var(--ds-white);
+  background: var(--ds-accent);
+  border-radius: var(--ds-radius-pill);
 }
 
 .heroCta:hover {
@@ -115,7 +118,7 @@
 
 .heroCtaSecondary:hover {
   color: var(--ds-on-photo);
-  background: var(--ds-ink);
+  background: var(--ds-accent-press);
 }
 
 .heroMedia {
@@ -211,9 +214,11 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  border: 1px solid var(--ds-hairline);
+  border: 0;
   background: var(--ds-white);
   transition: border-color var(--ds-dur-fast) var(--ds-ease-spring), box-shadow var(--ds-dur-fast) var(--ds-ease-spring);
+  border-radius: var(--ds-radius-md);
+  box-shadow: var(--ds-shadow-1);
 }
 
 .comboCard:hover {
@@ -309,12 +314,13 @@
   min-width: 58px;
   min-height: 44px;
   padding: 0 16px;
-  border: 1px solid var(--ds-hairline);
+  border: 0;
   color: var(--ds-ink-muted);
-  background: var(--ds-white);
+  background: var(--ds-gray-50);
   font-size: 12px;
   cursor: pointer;
   transition: border-color var(--ds-dur-fast) var(--ds-ease-spring);
+  border-radius: var(--ds-radius-pill);
 }
 
 .comboSizes button:hover {
@@ -322,9 +328,8 @@
 }
 
 .comboSizes button.selected {
-  border-color: var(--ds-accent);
-  color: var(--ds-on-photo);
-  background: var(--ds-ink);
+  color: var(--ds-white);
+  background: var(--ds-accent);
 }
 
 .summaryLineHead {
@@ -334,8 +339,13 @@
   align-items: center;
 }
 
-.summaryLineHead span { font-size: 12px; line-height: 1.4; }
-.summaryLineHead strong { font-size: 13px; }
+.summaryLineHead span {
+  font-size: 12px;
+  line-height: 1.4;
+}
+.summaryLineHead strong {
+  font-size: 13px;
+}
 
 .summaryLine {
   display: grid;
@@ -353,7 +363,10 @@
   background: var(--ds-gray-100);
 }
 
-.summaryThumb img { object-fit: contain; padding: 3px; }
+.summaryThumb img {
+  object-fit: contain;
+  padding: 4px;
+}
 
 .summaryLineSizes {
   margin-top: 8px;
@@ -365,17 +378,18 @@
   min-width: 44px;
   min-height: 44px;
   padding: 0 8px;
-  border: 1px solid var(--ds-hairline);
+  border: 0;
   color: var(--ds-ink-muted);
   background: var(--ds-white);
   font-size: 12px;
   cursor: pointer;
+  border-radius: var(--ds-radius-md);
+  box-shadow: var(--ds-shadow-1);
 }
 
 .summaryLineSizes button.selected {
-  border-color: var(--ds-accent);
-  color: var(--ds-on-photo);
-  background: var(--ds-ink);
+  color: var(--ds-white);
+  background: var(--ds-accent);
 }
 
 .comboBuy {
@@ -419,17 +433,18 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  color: var(--ds-on-photo);
-  background: var(--ds-ink);
+  color: var(--ds-white);
+  background: var(--ds-accent);
   font-size: 12px;
   font-weight: 600;
 
   cursor: pointer;
   transition: background-color var(--ds-dur-fast) var(--ds-ease-spring);
+  border-radius: var(--ds-radius-pill);
 }
 
 .comboBuy > button:hover:not(:disabled) {
-  background: var(--ds-ink);
+  background: var(--ds-accent-press);
 }
 
 .builderSection {
@@ -445,8 +460,10 @@
 
 .pickerColumn,
 .summary {
-  border: 1px solid var(--ds-hairline);
+  border: 0;
   background: var(--ds-white);
+  border-radius: var(--ds-radius-md);
+  box-shadow: var(--ds-shadow-1);
 }
 
 .pickerColumn {
@@ -499,14 +516,15 @@
 .typeChips button {
   min-height: 34px;
   padding: 0 16px;
-  border: 1px solid var(--ds-hairline);
+  border: 0;
   color: var(--ds-ink-muted);
-  background: var(--ds-white);
+  background: var(--ds-gray-50);
   font-size: 0.75rem;
   font-weight: 600;
 
   cursor: pointer;
   transition: border-color var(--ds-dur-fast) var(--ds-ease-spring);
+  border-radius: var(--ds-radius-pill);
 }
 
 .typeChips button:hover {
@@ -514,9 +532,8 @@
 }
 
 .typeChips button.selected {
-  border-color: var(--ds-accent);
-  color: var(--ds-on-photo);
-  background: var(--ds-ink);
+  color: var(--ds-white);
+  background: var(--ds-accent);
 }
 
 .resetFilters {
@@ -547,7 +564,7 @@
   min-width: 0;
   min-height: 78px;
   padding: 8px;
-  border: 1px solid var(--ds-hairline);
+  border: 0;
   display: grid;
   grid-template-columns: 52px minmax(0, 1fr) 30px;
   gap: 8px;
@@ -556,6 +573,8 @@
   background: var(--ds-white);
   text-align: left;
   cursor: pointer;
+  border-radius: var(--ds-radius-md);
+  box-shadow: var(--ds-shadow-1);
 }
 
 .pickerItem:hover {
@@ -589,8 +608,9 @@
 
 .pickerSelected .pickerAction {
   border-color: var(--ds-accent);
-  color: var(--ds-on-photo);
-  background: var(--ds-ink);
+  color: var(--ds-white);
+  background: var(--ds-accent);
+  border-radius: var(--ds-radius-pill);
 }
 
 .thumb {

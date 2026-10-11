@@ -174,7 +174,7 @@
   content: "";
   width: 24px;
   height: 4px;
-  border-radius: 2px;
+  border-radius: var(--ds-radius-sm);
   background: var(--ds-gray-100);
   transform-origin: left center;
   transition: background-color var(--ds-dur-base) var(--ds-ease-spring), transform var(--ds-dur-base) var(--ds-ease-spring);

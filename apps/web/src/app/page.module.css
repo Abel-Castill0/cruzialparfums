@@ -2,6 +2,7 @@
  * response to the pointer (the other door steps back); everything else is still. */
 
 .page {
+  font-family: var(--ds-font);
   position: relative;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -42,7 +43,7 @@
 
   transform: translateX(-50%);
   pointer-events: none;
-  animation: fadeIn 900ms 700ms both;
+  animation: fadeIn 600ms 700ms both;
 }
 
 /* The seam between the two worlds, drawn from the wordmark down. */
@@ -56,7 +57,7 @@
   background: linear-gradient(180deg, rgba(255, 253, 248, 0.55), rgba(255, 253, 248, 0.12) 60%, rgba(255, 253, 248, 0.04));
   transform-origin: top;
   pointer-events: none;
-  animation: draw 1200ms 500ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: draw 600ms 500ms var(--ds-ease-enter) both;
 }
 
 .world {
@@ -73,7 +74,7 @@
   background: var(--ds-ink);
   text-decoration: none;
   -webkit-tap-highlight-color: transparent;
-  animation: curtain 1300ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: curtain 1300ms var(--ds-ease-enter) both;
 }
 
 .world[data-unit="import"] {
@@ -117,7 +118,7 @@
 
 .parfumsImage,
 .importImage {
-  transition: transform 1400ms var(--ds-ease-spring), filter 700ms var(--ds-ease-spring);
+  transition: transform var(--ds-dur-hero) var(--ds-ease-spring), filter var(--ds-dur-slow) var(--ds-ease-spring);
 }
 
 .parfumsImage {
@@ -139,7 +140,7 @@
   gap: 1rem;
   margin-bottom: clamp(2.5rem, 8vh, 5.5rem);
   text-align: center;
-  animation: rise 900ms 650ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: rise 600ms 650ms var(--ds-ease-enter) both;
 }
 
 .label {
@@ -149,7 +150,7 @@
   font-weight: 600;
 
   line-height: 0.95;
-  transition: transform 600ms var(--ds-ease-spring);
+  transition: transform var(--ds-dur-base) var(--ds-ease-spring);
 }
 
 .line {
@@ -161,28 +162,20 @@
 }
 
 .enter {
+  position: relative;
+  min-height: 48px;
+  margin-top: var(--ds-space-2);
+  padding: 0 var(--ds-space-3);
   display: inline-flex;
   align-items: center;
-  gap: 1rem;
-  margin-top: 1rem;
-  padding-bottom: 0.5rem;
-  position: relative;
-  font-size: 0.82rem;
+  gap: var(--ds-space-1);
+  border-radius: var(--ds-radius-pill);
+  background: rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(14px) saturate(160%);
+  font-size: var(--ds-text-card);
   font-weight: 500;
-
-}
-
-/* Hairline under "Entrar": complete at rest, redrawn on hover. */
-.enter::after {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  height: 1px;
-  content: "";
-  background: rgba(255, 253, 248, 0.7);
-  transform-origin: left;
-  transition: transform 700ms var(--ds-ease-spring);
+  letter-spacing: -0.01em;
+  transition: background-color var(--ds-dur-base) var(--ds-ease-spring);
 }
 
 .arrow {
@@ -191,7 +184,6 @@
   aspect-ratio: 1;
   flex: 0 0 auto;
   place-items: center;
-  border: 1px solid rgba(255, 253, 248, 0.5);
   border-radius: 50%;
   font-size: 0.95rem;
   letter-spacing: 0;
@@ -219,14 +211,11 @@
     transform: translateY(-0.35rem);
   }
 
-  .world:hover .enter::after {
-    animation: redraw 800ms cubic-bezier(0.22, 1, 0.36, 1);
+  .world:hover .enter {
+    background: rgba(255, 255, 255, 0.28);
   }
 
   .world:hover .arrow {
-    border-color: var(--ds-white);
-    background: var(--ds-white);
-    color: var(--ds-ink);
     transform: translate(2px, -2px);
   }
 
@@ -338,7 +327,4 @@
     transition: none;
   }
 
-  .world:hover .enter::after {
-    animation: none;
-  }
 }

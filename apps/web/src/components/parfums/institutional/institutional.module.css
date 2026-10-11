@@ -137,10 +137,12 @@
 
 .miniStat {
   padding: 16px 16px;
-  border: 1px solid var(--ds-hairline);
+  border: 0;
   background: var(--ds-white);
   display: grid;
   gap: 4px;
+  border-radius: var(--ds-radius-md);
+  box-shadow: var(--ds-shadow-1);
 }
 
 .miniStat strong {
@@ -179,14 +181,15 @@
 }
 
 .btnPrimary {
-  border: 1px solid var(--ds-hairline);
-  color: var(--ds-on-photo);
-  background: var(--ds-ink);
+  border: 0;
+  color: var(--ds-white);
+  background: var(--ds-accent);
+  border-radius: var(--ds-radius-pill);
 }
 
 .btnPrimary:hover {
   border-color: rgba(0, 0, 0, 0.2);
-  background: var(--ds-ink);
+  background: var(--ds-accent-press);
 }
 
 .btnGhost {
@@ -235,8 +238,10 @@
 
 .card {
   padding: 32px 24px;
-  border: 1px solid var(--ds-hairline);
+  border: 0;
   background: var(--ds-white);
+  border-radius: var(--ds-radius-md);
+  box-shadow: var(--ds-shadow-1);
 }
 
 .cardNum {
@@ -269,10 +274,12 @@
 
 .contactCard {
   padding: 24px 24px;
-  border: 1px solid var(--ds-hairline);
+  border: 0;
   background: var(--ds-white);
   display: flex;
   flex-direction: column;
+  border-radius: var(--ds-radius-md);
+  box-shadow: var(--ds-shadow-1);
 }
 
 .contactIcon {
@@ -500,18 +507,19 @@
 .submitBtn {
   min-height: 50px;
   margin-top: 2px;
-  border: 1px solid var(--ds-hairline);
-  color: var(--ds-on-photo);
-  background: var(--ds-ink);
+  border: 0;
+  color: var(--ds-white);
+  background: var(--ds-accent);
   font-size: 0.75rem;
   font-weight: 600;
 
   cursor: pointer;
+  border-radius: var(--ds-radius-pill);
 }
 
 .submitBtn:hover {
   border-color: rgba(0, 0, 0, 0.2);
-  background: var(--ds-ink);
+  background: var(--ds-accent-press);
 }
 
 .formNote {
