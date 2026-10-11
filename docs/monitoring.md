@@ -105,3 +105,16 @@ workflows keep least privilege (`issues: write` on the job only, SHA-pinned acti
 The collection logic was also exercised once against the real Production data through the authenticated Vercel CLI in
 `--dry-run`: 5 deployments, all READY, 0 error events. Not yet exercised: the SDK with a real token and a real alert
 delivery (a GitHub issue needs the pending workflow permission, Discord needs its webhook) — use the dry-run dispatch for the first.
+
+## Next.js security watch (added 2026-10-11)
+
+`.github/workflows/nextjs-security-watch.yml` (07:23 and 15:23 UTC, plus manual dispatch; manual runs are dry runs by default)
+runs `scripts/nextjs-security-watch.mjs`: it reads the installed Next.js version from `apps/web/package-lock.json`, fetches
+the published GitHub security advisories of `vercel/next.js` and the npm `latest` tag, and opens (or comments on) the issue
+`[Monitor] nextjs-security: <GHSA> affects installed next` when an advisory's range includes the installed version and the
+installed version is not already at or beyond its patched version (wildcard patches such as `16.3.?` are handled; unparseable
+entries are flagged "review manually"). It never installs anything and never invents a version: patched versions come from the
+advisory. The announced out-of-band release of 2026-10-14 is therefore picked up automatically (Dependabot security updates
+remain enabled in parallel). Failures to reach the APIs raise the throttled "monitor cannot run" issue like the other
+monitors. Verified on 2026-10-11 against the live APIs: installed 16.4.0, 50 advisories, 0 affecting. Tests: 10, part of
+`npm run test:monitor-vercel`.
