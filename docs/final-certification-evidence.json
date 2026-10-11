@@ -1,0 +1,235 @@
+{
+  "dateUtc": "2026-09-26T16:42:19.855Z",
+  "auditedCandidate": "fe5d5f9871d3a08fb815b24ecbd024328110db99",
+  "testedCodeHead": "02310bc24a7be35d6085238435fc4ee525d431aa",
+  "branch": "codex/final/cruzial-certification-fixes",
+  "productionMaster": "0ba18017ecc8e075cfac3debf1eefdc6f81cd38c",
+  "productionReadOnly": {
+    "migrations": 70,
+    "latestMigration": "20260926020600",
+    "publicLaunchReady": false,
+    "orders": 0,
+    "complaints": 0
+  },
+  "candidateVerdict": "BLOCKED",
+  "confirmedP2Findings": 7,
+  "correctedKnownDefects": {
+    "P0": 0,
+    "P1": 0,
+    "P2": 0
+  },
+  "gates": {
+    "productionDependencyVulnerabilities": 0,
+    "fourJFourB": {
+      "passed": 6,
+      "total": 6
+    },
+    "vitest": {
+      "passed": 1025,
+      "files": 86
+    },
+    "lint": "PASS",
+    "strictTypescript": "PASS",
+    "catalogCheck": "PASS",
+    "commercialCheck": "PASS",
+    "productionBuild": "PASS",
+    "database": {
+      "passed": 1327,
+      "files": 56,
+      "migrations": 81
+    },
+    "browser": {
+      "passed": 104,
+      "skipped": 4,
+      "workers": 4,
+      "coldSessionStates": true,
+      "skippedScope": "staging-only",
+      "localAdminJourneysPassed": 13,
+      "realPasswordTotpSetupPassed": 3
+    },
+    "axeSeriousCritical": 0,
+    "responsiveWidths": [
+      360,
+      390,
+      430,
+      768,
+      1024,
+      1280,
+      1440
+    ]
+  },
+  "orderedMutatingReruns": [
+    {
+      "run": 1,
+      "project": "chromium",
+      "passed": 10,
+      "sameStack": true,
+      "reset": false,
+      "reseed": false,
+      "logSha256": "4048a15afb2808b09801befd10c4da4e55f471d03e971e6ec6cc593f04aca535"
+    },
+    {
+      "run": 2,
+      "project": "mobile",
+      "passed": 10,
+      "sameStack": true,
+      "reset": false,
+      "reseed": false,
+      "logSha256": "65c983e820cad9ee8ce0e3baaba7d5cf10da19b37cb9f550d3cb4af89688eb62"
+    },
+    {
+      "run": 3,
+      "project": "mobile",
+      "passed": 10,
+      "sameStack": true,
+      "reset": false,
+      "reseed": false,
+      "logSha256": "0383db6ba1475617c8c5e3f37f0563de26489a2b712a9b6613dde0de59ac3eb2"
+    },
+    {
+      "run": 4,
+      "project": "chromium",
+      "passed": 10,
+      "sameStack": true,
+      "reset": false,
+      "reseed": false,
+      "logSha256": "e93eb139a0b6cd4d6ee1402079e1eb9c4c4e83a7c00cd1b5d78be50756394992"
+    }
+  ],
+  "runtimeSecurity": {
+    "functions": 153,
+    "definersWithoutControlledPath": [],
+    "tablesWithoutRls": [],
+    "anonWritableTables": [],
+    "anonPublicFunctions": [
+      "public_get_import_current_campaign",
+      "public_launch_ready",
+      "calculate_parfums_wholesale_quote",
+      "public_list_import_categories",
+      "variant_effective_availability",
+      "public_get_import_product",
+      "public_list_import_catalog"
+    ]
+  },
+  "anonymousAvailabilityMatrix": {
+    "published": true,
+    "draft_variant": true,
+    "archived_variant": true,
+    "draft_parent": true,
+    "archived_parent": true,
+    "import_variant": true,
+    "unknown_uuid": true,
+    "raw_inventory_not_granted": true
+  },
+  "postDbGateConcurrencyFixtures": {
+    "orders": 0,
+    "complaints": 0,
+    "outbox": 0,
+    "products": 0,
+    "migrations": 81
+  },
+  "migrationRehearsal": {
+    "files": [
+      "20260926030000_gate_b_fk_covering_indexes.sql",
+      "20260926040000_gate_b_status_only_availability_enforcement.sql",
+      "20260926050000_gate_b_complaint_milestone_race.sql",
+      "20260926060000_gate_b_public_variant_availability.sql",
+      "20260926070000_gate_b_complaint_milestone_claim_boundary.sql",
+      "20260926080000_gate_b_variant_availability_visibility.sql",
+      "20260926090000_gate_b_notification_dispatch_authorization.sql",
+      "20260926100000_gate_b_order_inventory_lock_order.sql",
+      "20260926152816_complaint_submission_atomic_result.sql",
+      "20260926153536_notification_legacy_dispatch_guard.sql",
+      "20260926153749_complaint_milestone_backlog_progress.sql"
+    ],
+    "elapsedMs": 645,
+    "before": {
+      "orders": 0,
+      "order_lines": 0,
+      "customers": 0,
+      "complaints": 0,
+      "outbox": 0,
+      "inventory": 2,
+      "products": 1
+    },
+    "after": {
+      "orders": 0,
+      "order_lines": 0,
+      "customers": 0,
+      "complaints": 0,
+      "outbox": 0,
+      "inventory": 2,
+      "products": 1
+    },
+    "businessCountsUnchanged": true,
+    "legacySignatureAndAclChanges": [],
+    "newFunctions": [
+      "public.variant_effective_availability(v product_variants)",
+      "public.public_submit_complaint_entry_v2(p_business_unit_code text, p_request_id uuid, p_complaint_type text, p_full_name text, p_document_type text, p_document_number text, p_address text, p_phone text, p_email text, p_is_minor boolean, p_guardian_full_name text, p_guardian_document_number text, p_order_reference text, p_detail text, p_consumer_request text)",
+      "public.worker_begin_notification_v2(p_id uuid, p_lease_token uuid)"
+    ]
+  },
+  "originalRemoteCi": {
+    "url": "https://github.com/Abel-Castill0/cruzialparfums/actions/runs/36251136093",
+    "webTests": 1011,
+    "databaseTests": 1308,
+    "databaseFiles": 54,
+    "browserPassed": 87,
+    "browserSkipped": 17,
+    "requiredAdminJourneysSilentlySkipped": 13
+  },
+  "implementationCommits": [
+    {
+      "sha": "4b593d1864bce211d3afe979b093fa5f9cda72de",
+      "subject": "fix(csv): reject ambiguous campaign columns and preserve CR text"
+    },
+    {
+      "sha": "93090c0a39b0e967ca68a6527a3b76abd04ba030",
+      "subject": "fix(complaints): serialize concurrent submission and replay outcome"
+    },
+    {
+      "sha": "e093b5f5bea257d78f655b2b70ed0430abb202f8",
+      "subject": "fix(notifications): fail closed for legacy dispatch callers"
+    },
+    {
+      "sha": "c9cab908283a9b909fdcca8d451e96afaf37afb9",
+      "subject": "fix(notifications): advance complaint milestones beyond first batch"
+    },
+    {
+      "sha": "89278aac86ee5cfd6846afb2af9daa6894a88411",
+      "subject": "fix(a11y): focus actionable complaint and Import error panels"
+    },
+    {
+      "sha": "594504e5e217a7b55dc38962ac55e1ccea596bf5",
+      "subject": "fix(ci): require admin journeys after fixture setup instead of skipping"
+    },
+    {
+      "sha": "f264d8f39494095b5a622a5d3ea47988f10b04a7",
+      "subject": "fix(checkout): recover accepted orders independently of cart state"
+    },
+    {
+      "sha": "54343a8a3c0c266172655ef5c5e87c2c675b20eb",
+      "subject": "test(certification): verify dispatch failure and visible outcome focus"
+    },
+    {
+      "sha": "8640ef6581ef1137e32e0cf511921596ee32aa6b",
+      "subject": "fix(import): recover accepted orders when the cart is lost"
+    },
+    {
+      "sha": "02310bc24a7be35d6085238435fc4ee525d431aa",
+      "subject": "fix(checkout): focus outcomes after the transition commits"
+    }
+  ],
+  "limitations": [
+    "Local fixture/provider-double evidence; no real outbound delivery",
+    "Production was inspected read-only; no deployment, merge, production writes or launch flag change",
+    "Fixes remain isolated; reconcile and run remote CI on the resulting release SHA"
+  ],
+  "logDigests": {
+    "final-web-gate.log": "05b0091500adf74d043b6304f0de68d8162ae81d86c1b83b546d1086131bea89",
+    "final-db-gate.log": "c6ca2c3a05fc587f8a1179bc08ded29a99d02d6cc855619974268c14e50dca6a",
+    "final-browser-gate.log": "e9fb15693df4fb0dd829d17c676a2682fb3a01348c0539e03abeff9dcc55d947",
+    "recovery-both-units.log": "020d648875470481551f3dea1303c5232036c80801b84f921dd6119d959ec4fd",
+    "migration-rehearsal.log": "cce06621edccf94b1f882f4f15610b47c790b7796a8a8d90ff8c10bb5d84d393"
+  }
+}

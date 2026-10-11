@@ -19,8 +19,11 @@ vi.mock("@/domains/orders/import-order-request", () => ({
 }));
 
 const repositoryCreate = vi.fn();
+const repositoryFind = vi.fn();
+beforeEach(() => repositoryFind.mockResolvedValue({ ok: true, data: null }));
 vi.mock("@/domains/orders/import-order-repository", () => ({
   ImportOrderRepository: class {
+    findByRequestId(...args: unknown[]) { return repositoryFind(...args); }
     create(...args: unknown[]) {
       return repositoryCreate(...args);
     }
@@ -121,6 +124,24 @@ describe("createImportOrderRequest — Gate 2B rate limit integration", () => {
 });
 
 describe("createImportOrderRequest — anonymous attempt capability", () => {
+  it("recovers persisted authority despite an empty cart without a fresh mutation", async () => {
+    cookieJar.set(COOKIE, { value: mintAttemptToken() });
+    repositoryFind.mockResolvedValue({ ok: true, data: { orderId: "old", orderNumber: "CRI-OLD", created: false,
+      subtotal: 120, depositPercentage: 30, depositAmount: 36, campaignNumber: 7 } });
+    validateAndResolveImportOrder.mockReturnValue({ ok: false, message: "Tu carrito está vacío." });
+    expect(await createImportOrderRequest({ lines: [] } as never)).toMatchObject({ status: "success", orderNumber: "CRI-OLD",
+      created: false, subtotal: 120, depositPercentage: 30, depositAmount: 36, campaignNumber: 7 });
+    expect(repositoryCreate).not.toHaveBeenCalled();
+    expect(checkOrderRequestRateLimit).not.toHaveBeenCalled();
+    expect(repositoryFind).toHaveBeenCalledWith(expect.stringMatching(/^[0-9a-f-]{36}$/));
+  });
+
+  it("cannot turn a failed receipt lookup into a new mutation", async () => {
+    cookieJar.set(COOKIE, { value: mintAttemptToken() });
+    repositoryFind.mockResolvedValue({ ok: false, error: { type: "unknown", message: "Lookup unavailable" } });
+    expect(await createImportOrderRequest({} as never)).toMatchObject({ status: "error" });
+    expect(repositoryCreate).not.toHaveBeenCalled();
+  });
   const derivedIds = () => validateAndResolveImportOrder.mock.calls.map((call) => (call[0] as { requestId: string }).requestId);
 
   beforeEach(() => {

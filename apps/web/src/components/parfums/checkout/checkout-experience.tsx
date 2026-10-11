@@ -3,7 +3,7 @@
 import type { Route } from "next";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useRef, useState, useTransition, type FormEvent } from "react";
+import { useEffect, useRef, useState, useTransition, type FormEvent } from "react";
 import {
   createParfumsOrderRequest,
   startNewParfumsCheckoutAttempt,
@@ -61,6 +61,11 @@ export function CheckoutExperience({
   const [isPending, startTransition] = useTransition();
   const errorRef = useRef<HTMLDivElement>(null);
   const heldRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const panel = result?.status === "error" ? errorRef.current : held ? heldRef.current : null;
+    panel?.focus({ preventScroll: true });
+    panel?.scrollIntoView({ block: "start" });
+  }, [result, held]);
 
   function resetAttempt() {
     setResult(null);
@@ -73,7 +78,6 @@ export function CheckoutExperience({
 
   function showError(message: string) {
     setResult({ status: "error", message });
-    requestAnimationFrame(() => errorRef.current?.focus());
   }
 
   /** The acknowledged order becomes the success page; the cart it consumed
@@ -168,14 +172,12 @@ export function CheckoutExperience({
     }
     if (actionResult.status !== "success") {
       setResult(actionResult);
-      requestAnimationFrame(() => errorRef.current?.focus());
       return;
     }
     if (!actionResult.created) {
       // An order registered EARLIER under this attempt came back. Never
       // present it as a new purchase and never clear this cart for it.
       setHeld({ kind: "replayed", order: actionResult });
-      requestAnimationFrame(() => heldRef.current?.focus());
       return;
     }
     // Resolved and received: the next checkout must be a new attempt. Only a
@@ -185,7 +187,6 @@ export function CheckoutExperience({
       return;
     }
     setHeld({ kind: "rotation_failed", order: actionResult });
-    requestAnimationFrame(() => heldRef.current?.focus());
   }
 
   return (
@@ -212,6 +213,10 @@ export function CheckoutExperience({
             <div className={styles.empty}>
               <strong>Aún no hay productos en tu selección.</strong>
               <p>Vuelve al catálogo, elige una presentación y regresa para continuar.</p>
+              <button type="button" data-attempt-recover className={styles.submitErrorAction}
+                disabled={isPending || Boolean(held)} onClick={() => { resetAttempt(); startTransition(performSubmit); }}>
+                Comprobar solicitud registrada en esta sesión
+              </button>
               <Link href={"/parfums/catalogo" as Route}>Explorar catálogo <span aria-hidden="true">→</span></Link>
             </div>
           ) : (

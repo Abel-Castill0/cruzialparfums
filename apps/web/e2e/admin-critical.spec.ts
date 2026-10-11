@@ -46,7 +46,8 @@ test.describe("dual admin (Parfums + Import)", () => {
   test("Parfums orders list opens an order detail with customer snapshot", async ({ page }) => {
     await page.goto("/admin/parfums/pedidos");
     const link = page.locator('a[href^="/admin/parfums/pedidos/"]').first();
-    test.skip((await link.count()) === 0, "no orders in this environment");
+    if (process.env.E2E_LOCAL_FIXTURES === "1") await expect(link, "required local order fixture").toBeVisible();
+    else test.skip((await link.count()) === 0, "no orders in this environment");
     await link.click();
     await expect(page.getByRole("heading", { level: 1 })).toContainText(/Pedido CRP-/);
   });

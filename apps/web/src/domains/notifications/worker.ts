@@ -47,7 +47,7 @@ export async function processNotificationBatch(
     // authoritative row, never from the (possibly stale) claimed job. A
     // complaint resolved before this point comes back 'cancelled' and is
     // never sent.
-    const begun = await client.rpc("worker_begin_notification", { p_id: job.id, p_lease_token: job.lease_token });
+    const begun = await client.rpc("worker_begin_notification_v2", { p_id: job.id, p_lease_token: job.lease_token });
     if (begun.error || !begun.data) { ok = false; continue; }
     const authorized = begun.data;
     if (authorized.status !== "sending") { processed++; continue; }

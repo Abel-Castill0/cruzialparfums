@@ -25,8 +25,11 @@ vi.mock("@/domains/orders/parfums-order-request", () => ({
 }));
 
 const repositoryCreate = vi.fn();
+const repositoryFind = vi.fn();
+beforeEach(() => repositoryFind.mockResolvedValue({ ok: true, data: null }));
 vi.mock("@/domains/orders/parfums-order-repository", () => ({
   ParfumsOrderRepository: class {
+    findByRequestId(...args: unknown[]) { return repositoryFind(...args); }
     create(...args: unknown[]) {
       return repositoryCreate(...args);
     }
@@ -103,6 +106,24 @@ describe("createParfumsOrderRequest — Gate 2B rate limit integration", () => {
     expect(result.status).toBe("error");
     expect(checkOrderRequestRateLimit).not.toHaveBeenCalled();
     expect(repositoryCreate).not.toHaveBeenCalled();
+  });
+
+  it("recovers an accepted order before validating a now-withdrawn cart", async () => {
+    repositoryFind.mockResolvedValue({ ok: true, data: { orderId: "order-1", orderNumber: "CRP-1", created: false } });
+    validateAndResolveParfumsOrder.mockReturnValue({ ok: false, message: "Product is no longer public" });
+    const result = await createParfumsOrderRequest({ lines: [], customer: {} } as never);
+    expect(result).toMatchObject({ status: "success", orderNumber: "CRP-1", created: false });
+    expect(validateAndResolveParfumsOrder).not.toHaveBeenCalled();
+    expect(repositoryCreate).not.toHaveBeenCalled();
+    expect(checkOrderRequestRateLimit).not.toHaveBeenCalled();
+    expect(repositoryFind).toHaveBeenCalledWith(expect.stringMatching(UUID_V4));
+  });
+
+  it("never creates a fresh mutation when prior-attempt lookup fails", async () => {
+    repositoryFind.mockResolvedValue({ ok: false, message: "Prior attempt unavailable" });
+    expect(await createParfumsOrderRequest({} as never)).toMatchObject({ status: "error" });
+    expect(repositoryCreate).not.toHaveBeenCalled();
+    expect(validateAndResolveParfumsOrder).not.toHaveBeenCalled();
   });
 
   it("revalidates the cart against the storefront catalog, not a client-supplied one", async () => {
