@@ -1,6 +1,6 @@
 # CRUZIAL V2 - CURRENT CHECKPOINT
 
-Updated: 2026-10-10
+Updated: 2026-10-11
 
 ## Scope
 
@@ -20,7 +20,65 @@ git rev-parse HEAD
 > The sections below the "Current verified state (2026-10-01)" block are
 > historical gate records; where they conflict with that block, that block wins.
 
-## Live checkpoint (2026-10-10) — read this first; supersedes 2026-10-09 where they conflict
+## Live checkpoint (2026-10-11) — read this first; supersedes 2026-10-10 where they conflict
+
+Verified directly on 2026-10-11 (Git, GitHub API, Vercel API, Supabase read-only), not copied from older notes.
+
+**Code and deployment**
+- `master` = `d349047c5a6366c39b4122115488fd4f411810b5`. Production serves the same SHA: `dpl_A8njRWysXNYdV7MfoCFTQpBC9LBi`,
+  READY (Vercel API `meta.githubCommitSha`). `master` is protected (PR + 5 required checks); every merge deploys Production.
+- Merged by squash, with the master SHA after each: #63 `ace8c30`, #61 `35f862c`, #59 `3d28c3c`, #60 `4345fd8`,
+  #62 `401711e`, #58 `5f62079`, #67 `b39fee2`, #68 `88a144d`, #70 `dc3eea5`, #69 `0bb1c12`, #71 `d349047`.
+  Each Production deployment reached READY. Details of the audit and its fixes: `docs/closure-report-2026-10-10.md`.
+
+**Database**
+- Production (`iyxidhglyqkzoziyewlc`): **81 migrations** = repository. Last: `20261010120000_launch_readiness_status_archived`,
+  applied 2026-10-11 with `supabase db push` (dry-run listed only that version). The previous 80 versions keep hash
+  `44ba716a520c23793bd7ec88b0a431c0`. Procedure used: `docs/migration-apply-20261010120000.md`.
+- QA (`aqbhtmylqnpahynarnhm`) has 80 (the new migration is function-only and was not applied there); run
+  `node scripts/qa-hosted-browser.mjs --reset` for parity before the next full hosted run.
+- Production data unchanged: 0 orders, 0 outbox rows, 0 complaints, 97 published products.
+
+**Backup (most recent)**
+- `C:\cruzial-private-backups\cruzial-iyxidhglyqkzoziyewlc-2026-10-11T03-42-42-919Z` (outside the repository and OneDrive),
+  taken immediately before the migration; `sha256sum -c` = 3/3 OK on 2026-10-11:
+  `roles.sql` `168a95a9c745af5ed4679751f90419ac9dc434240a213b03e32a06d5664c2308`,
+  `schema.sql` `661615f5e0993ff0616626bb449aab54a747c5753904fa4c8790026ed8443655`,
+  `data.sql` `d4f9e53b8de66e6dcc253495e50d58fc9e7164d5fc55262a1bcf6d5ac184b089`.
+  Previous dump: `...2026-10-09T04-01-15-088Z` (restore-validated 2026-10-09). Encrypted copy tool: `scripts/backup-crypt.mjs`.
+  Rollback of the migration: `supabase/rollback/20261010_launch_readiness_status_archived_rollback.sql` (as a new migration).
+
+**Monitors (merged, not yet working)**
+- Vercel: `scripts/monitor-vercel.mjs` + `.github/workflows/monitor-vercel.yml` (hourly, minute 17). Supabase:
+  `scripts/supabase-health.mjs` (+ `scripts/supabase-health-baseline.json`) + `.github/workflows/supabase-health.yml`
+  (hourly, minute 43). Docs: `docs/monitoring.md`, `docs/supabase-health-agent.md`. Both read-only; both have a `dry_run` dispatch.
+- Required repository secrets: `VERCEL_TOKEN`, `SUPABASE_ACCESS_TOKEN`, `DISCORD_WEBHOOK_URL`. State at 2026-10-11 05:13 UTC:
+  `VERCEL_TOKEN` and `SUPABASE_ACCESS_TOKEN` exist (created 05:09-05:10 UTC); **`DISCORD_WEBHOOK_URL` is not configured**.
+- First real dry-run dispatches (05:14 UTC, runs 38114122018 and 38114124193) **failed because the servers rejected the
+  tokens**: Vercel API `403 Not authorized, invalidToken: true`; Supabase MCP `HTTP 401`. Both scripts failed closed (exit 1,
+  no false "all clear", no secret in the log). Until both secrets are replaced with valid tokens the hourly runs fail every hour,
+  and without the webhook a threshold breach would end in exit 2 (alert not delivered). Fix: create a valid Vercel token
+  (team scope) and Supabase personal access token (`sbp_...`), `gh secret set <NAME>`, add the webhook, then run each workflow
+  with `dry_run` ticked.
+
+**Launch state (unchanged)**
+- `public_launch_ready() = false`. Parfums: 1 unpublished product, 5 commercial blockers (legacy/unconfirmed variants),
+  4 products without a primary photo, and the empty legal facts. Import: 1810 commercial blockers, 844 unpublished, 844 without
+  a photo; campaign #8 `scheduled` (estimated opening 2026-10-15 00:00 Lima, 898 offers `unconfirmed`). Purchases stay disabled.
+- Indexing is closed: robots `Disallow: /`, empty sitemap, `noindex` on every page. `CRUZIAL_PRODUCTION_CUTOVER_APPROVED` stays false.
+  Owner/client inputs still required: `docs/known-issues.md` and section 5 of the closure report.
+
+**Open technical debt** (audit of `master` 88a144d; details by file and line in the session report)
+- **P2** E2E coverage for the admin creation forms (`/admin/parfums/productos/nuevo`, `/admin/parfums/categorias/nueva`,
+  `/admin/import/consolidados/nuevo`) and for the password-recovery pages (`/admin/forgot-password`, `/admin/reset-password`;
+  they depend on e-mail, so the owner-session check in `docs/owner-verification-runbook.md` remains the evidence).
+- **P3** `/import/privacidad` and `/import/terminos` without E2E; no single source for the Node version (CI and Vercel 24, no
+  `.nvmrc`/`engines`, local 22); Supabase CLI 2.117.0 in CI vs 2.120.0 local; 21 tooling environment variables not in
+  `apps/web/.env.example` (none is a runtime variable of the app); Dependabot PRs #64, #65, #66 and #72 pending review.
+- Closed today: `@types/node` aligned to Node 24 (#71), TypeScript 7 bump replaced by `~6.0.3` (#59). Next.js: out-of-band
+  security release announced for 2026-10-14; 16.4.0 is the latest published at the time of writing.
+
+## Live checkpoint (2026-10-10) — superseded where it conflicts with 2026-10-11
 
 Evidence: docs/closure-report-2026-10-10.md (branch `claude/closure-audit-2026-10-10`).
 - Production serves `6d2ebc4` = origin/master (Vercel API `githubCommitSha`). Migrations repo = Production = QA (80,
