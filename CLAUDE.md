@@ -1,6 +1,6 @@
 # CRUZIAL V2 — CLAUDE CODE OPERATING CONTRACT
 
-Condensed 2026-10-11: original text, same section numbers, lives in `docs/`. Read the matching file BEFORE the work it covers.
+Condensed 2026-10-11; original text and section numbers live in `docs/`. Read the matching file BEFORE the work it covers.
 
 ## 0. Role
 
@@ -26,10 +26,10 @@ Context is a HARD budget; aim for maximum confidence per token.
   PR follow-ups: review `previous_verified_head..current_head` only.
 - Do not re-read unchanged verified files, rerun unchanged green suites, regenerate reports with unchanged inputs, or
   re-audit closed gates without evidence of regression.
-- Do not scan the whole repo, full-read all migrations/docs, dump manifests or huge JSON, print full passing
-  test/build/pgTAP logs or full diffs, inspect `node_modules`, or spawn agents for trivial work.
+- Do not scan the whole repo, full-read all migrations/docs, dump huge JSON, print full passing logs or full diffs,
+  inspect `node_modules`, or spawn agents for trivial work.
 - Keep only exit status, counts, warnings, failures, SHAs and deployment IDs from command output.
-- Targeted tests while iterating; ONE complete gate once the work stabilizes; docs-only changes do not rerun suites.
+- Targeted tests while iterating; ONE complete gate when stable; docs-only changes do not rerun suites.
 - Keep a compact evidence ledger (branch, HEAD, base, changed files, migrations, defects, gate results, deployment SHA,
   rollback ref); do not restate it.
 - Before an expensive read/test/query ask: will it materially change a decision? If not, skip it.
@@ -99,11 +99,10 @@ Context is a HARD budget; aim for maximum confidence per token.
 
 | File | Original sections |
 | --- | --- |
-| `docs/token-budget.md` | §3 context budget, §4 evidence ledger, §5 reading strategy, §6 command output, §27 compaction, §28 token rule |
-| `docs/security-rules.md` | §10 Production safety, §12 migrations, §13 database, §14 environments, §15 security |
-| `docs/git-and-release.md` | §8 Git discipline, §9 merge and `master`, §11 release sequencing |
-| `docs/business-truth.md` | §16 business truth (incl. owner delegation), §17 external blockers, §21 public release / SEO |
-| `docs/testing-and-quality.md` | §7 testing, §18 bugs, §19 root cause, §20 UI, §22 monitoring, §23 reviewers, §25 Definition of Done, §26 reporting |
-| `docs/execution-philosophy.md` | §0 role, §1 scope (full text), §2 execution, §24 full-product mode, §29 final principle |
+| `docs/token-budget.md` | §3-6, §27, §28 (context, ledger, reading, output, compaction) |
+| `docs/security-rules.md` | §10, §12-15 (Production, migrations, DB, environments, security) |
+| `docs/git-and-release.md` | §8, §9, §11 (git, merge/`master`, release sequencing) |
+| `docs/business-truth.md` | §16 (incl. owner delegation), §17, §21 (blockers, SEO) |
+| `docs/testing-and-quality.md` | §7, §18-20, §22, §23, §25, §26 (tests, bugs, UI, DoD, reporting) |
+| `docs/execution-philosophy.md` | §0, §1 (full text), §2, §24, §29 |
 
-See also: `AGENTS.md`, `docs/current-v2.md`, `docs/client-decisions.md`, `docs/known-issues.md`.
