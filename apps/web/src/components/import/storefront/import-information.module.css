@@ -284,14 +284,13 @@
   border-radius: 999px;
   color: var(--import-accent-text);
   background: var(--import-accent);
-  font-size: 0.86rem;
-  font-weight: 600;
-  transition: gap var(--ds-dur-base) var(--ds-ease-spring), background-color var(--ds-dur-fast) var(--ds-ease-spring);
+  font-size: var(--ds-text-card);
+  font-weight: 500;
+  transition: background-color var(--ds-dur-base) var(--ds-ease-spring);
 }
 
 .contactAction:hover {
-  gap: 16px;
-  background: var(--ds-gray-50);
+  background: var(--ds-accent-press);
 }
 
 @media (max-width: 1023px) {

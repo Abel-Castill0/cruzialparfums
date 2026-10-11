@@ -81,3 +81,34 @@ sistema propio. No hay degradados morados ni glassmorphism, pero sí:
    mayúsculas/tracking fuera, sombras → escala) y revisión manual de héroe, tarjetas, filtros, recomendador.
 3. Sistema de movimiento (curvas/duraciones/Reveal) aplicado a Parfums e Import.
 4. QA: axe, 44 px, 390/768/1440, `npm run lint`, `typecheck`, vitest, e2e del storefront.
+
+## Resultado tras la implementación (misma fecha)
+
+Comparativa medida con los mismos scripts (axe WCAG 2 A/AA, objetivos táctiles en `a/button/input/select/summary`,
+detector de impeccable) sobre el build de producción local.
+
+| Métrica | Antes | Después |
+|---|---|---|
+| Violaciones axe de contraste (6 rutas × 2 viewports) | 1 (`/parfums/finder`) | 0 |
+| Objetivos < 44 px en `/parfums` móvil | 29 | 1 (enlace en línea dentro de una frase, exento) |
+| Objetivos < 44 px en `/parfums/catalogo` móvil | 12 | 0 |
+| Objetivos < 44 px en `/parfums/combos` móvil | 17 | 0 |
+| Scroll horizontal (320–1440 px) | ninguno | ninguno |
+| Detector impeccable (patrones prohibidos) | 4 avisos (borde lateral, 2 `transition: width`, `<img>`) | 0 |
+| `border: 1px solid` opaco / con `currentColor` | 241 | 3 (chevron del selector y subrayado de un enlace legal) |
+| Hex literales fuera de `globals.css` | ~240 | 0 (sólo `#000` en máscaras) |
+| Declaraciones `uppercase` / tracking positivo | 95 | 0 |
+| Tamaños < 12 px | 113 | 0 |
+| Pesos de fuente distintos | 10 | 3 (400 / 500 / 600) |
+| Familias tipográficas en el storefront | 2 + 3 locales | 1 (Geist) |
+| Valores de espaciado fuera de la escala de 8 | ~60 | 0 |
+| Transiciones de propiedades de layout | 4 | 0 |
+
+Puntuación estimada con la misma rúbrica: Accesibilidad 4/4 · Rendimiento 3/4 · Responsive 4/4 · Theming 4/4 ·
+Anti-patrones 4/4 → **19/20**. El punto que falta es rendimiento: no se midió Lighthouse/Web Vitals y las imágenes
+de catálogo siguen dependiendo de Cloudinary + `next/image` (AVIF activado en `next.config.ts`).
+
+Verificación: `tsc`, `eslint`, vitest (1214), build de producción y Playwright público
+(chromium + mobile + tablet + responsive: 188 passed, 0 failed, 39 skipped que requieren fixtures de BD).
+Dos especificaciones se actualizaron porque describían el diseño anterior (héroe sin texto; botones de talla con
+borde). Una ejecución aislada falló una vez en `axe /parfums/combos` y no se reprodujo en 4 repeticiones.

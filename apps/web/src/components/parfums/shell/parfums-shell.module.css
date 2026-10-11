@@ -35,12 +35,14 @@
   position: relative;
   grid-column: 1;
   justify-self: start;
+  min-width: var(--ds-touch);
+  min-height: var(--ds-touch);
+  /* The bar is 36px: the 44px target spills 4px above and below it. */
+  margin-block: -4px;
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 4px 2px;
-  color: rgba(248, 243, 233, 0.72);
-
+  color: var(--ds-on-photo-muted);
   white-space: nowrap;
   transition: color var(--ds-dur-fast) var(--ds-ease-spring);
 }
@@ -48,13 +50,6 @@
 .announcementBack:hover,
 .announcementBack:focus-visible {
   color: var(--ds-on-photo);
-}
-
-/* Keeps the 36px bar slim while the tap area reaches 44px. */
-.announcementBack::after {
-  position: absolute;
-  inset: -8px -12px;
-  content: "";
 }
 
 .announcementBackArrow {
@@ -239,10 +234,10 @@
   padding-inline: 4px;
   display: none;
   place-items: center;
-  border: 1px solid var(--ds-white);
-  border-radius: var(--ds-radius-lg);
+  border-radius: var(--ds-radius-pill);
   color: var(--ds-on-photo);
   background: var(--ds-ink);
+  box-shadow: 0 0 0 2px var(--ds-white);
   font-size: 0.75rem;
   font-weight: 600;
 }
@@ -307,8 +302,8 @@
 .eyebrow {
   margin-bottom: 24px;
   color: var(--ds-ink-muted);
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: var(--ds-text-small);
+  font-weight: 500;
 
 }
 

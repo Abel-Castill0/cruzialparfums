@@ -140,6 +140,16 @@
   align-items: stretch;
 }
 
+.revealCell {
+  min-width: 0;
+  display: flex;
+}
+
+.revealCell > * {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
 .productCard {
   min-width: 0;
   display: flex;
@@ -353,7 +363,7 @@
   justify-content: space-between;
   gap: var(--ds-space-1);
   color: var(--ds-link);
-  font-size: var(--ds-text-small);
+  font-size: 0.875rem;
   line-height: 1.4;
 }
 
@@ -589,7 +599,7 @@
 
   .bottleLink {
     align-items: flex-start;
-    font-size: 0.75rem;
+    font-size: 0.875rem;
 
   }
 }
@@ -616,7 +626,7 @@
 
   .cardMeta span,
   .bottleLink {
-    font-size: 0.75rem;
+    font-size: 0.875rem;
   }
 
   .cardMeta strong {

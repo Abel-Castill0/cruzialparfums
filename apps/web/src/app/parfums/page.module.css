@@ -34,8 +34,8 @@
 
 .eyebrow {
   color: var(--quiet);
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: var(--ds-text-small);
+  font-weight: 500;
 
 }
 

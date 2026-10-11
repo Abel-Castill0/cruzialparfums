@@ -624,6 +624,16 @@
   gap: 24px;
 }
 
+.revealCell {
+  min-width: 0;
+  display: flex;
+}
+
+.revealCell > * {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
 .productCard {
   --import-accent: var(--ds-accent);
   overflow: hidden;

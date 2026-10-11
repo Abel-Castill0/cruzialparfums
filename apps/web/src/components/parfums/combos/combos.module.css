@@ -32,8 +32,8 @@
 
 .eyebrow {
   color: var(--ds-ink-muted);
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: var(--ds-text-small);
+  font-weight: 500;
 
 }
 
@@ -92,8 +92,8 @@
   justify-content: center;
   gap: 8px;
   border: 0;
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: 0.9375rem;
+  font-weight: 500;
 
   transition: background-color var(--ds-dur-fast) var(--ds-ease-spring), color var(--ds-dur-fast) var(--ds-ease-spring);
   background: var(--ds-gray-50);
@@ -317,7 +317,7 @@
   border: 0;
   color: var(--ds-ink-muted);
   background: var(--ds-gray-50);
-  font-size: 12px;
+  font-size: 0.875rem;
   cursor: pointer;
   transition: border-color var(--ds-dur-fast) var(--ds-ease-spring);
   border-radius: var(--ds-radius-pill);
@@ -381,7 +381,7 @@
   border: 0;
   color: var(--ds-ink-muted);
   background: var(--ds-white);
-  font-size: 12px;
+  font-size: 0.875rem;
   cursor: pointer;
   border-radius: var(--ds-radius-md);
   box-shadow: var(--ds-shadow-1);
@@ -435,8 +435,8 @@
   gap: 8px;
   color: var(--ds-white);
   background: var(--ds-accent);
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 0.9375rem;
+  font-weight: 500;
 
   cursor: pointer;
   transition: background-color var(--ds-dur-fast) var(--ds-ease-spring);
@@ -514,13 +514,13 @@
 }
 
 .typeChips button {
-  min-height: 34px;
+  min-height: var(--ds-touch);
   padding: 0 16px;
   border: 0;
   color: var(--ds-ink-muted);
   background: var(--ds-gray-50);
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: 0.875rem;
+  font-weight: 500;
 
   cursor: pointer;
   transition: border-color var(--ds-dur-fast) var(--ds-ease-spring);
@@ -601,7 +601,7 @@
   border-radius: 50%;
   color: var(--ds-ink);
   background: var(--ds-white);
-  font-size: 14px;
+  font-size: 0.875rem;
   line-height: 1;
   transition: background-color var(--ds-dur-fast) var(--ds-ease-spring), color var(--ds-dur-fast) var(--ds-ease-spring), border-color var(--ds-dur-fast) var(--ds-ease-spring);
 }
@@ -803,8 +803,9 @@ button.send:disabled,
 
 .postTrust > div {
   padding: 24px 24px;
-  border: 1px solid var(--ds-hairline);
+  border: 0;
   background: var(--ds-white);
+  border-radius: var(--ds-radius-md);
 }
 
 .postTrust .trustIcon {
@@ -1005,7 +1006,7 @@ button.send:disabled,
 
   .mobileSticky span {
     color: var(--ds-ink-muted);
-    font-size: 0.75rem;
+    font-size: 0.9375rem;
   }
 
   .mobileSticky > a,
@@ -1165,17 +1166,17 @@ button.send:disabled,
 .familySelect select {
   padding-right: 48px;
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none' stroke='%230a0806' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m1 1.5 5 5 5-5'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none' stroke='%231d1d1f' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m1 1.5 5 5 5-5'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 18px center;
 }
 
 .typeChips button {
-  min-height: 40px;
+  min-height: var(--ds-touch);
   padding: 0 16px;
   border-radius: 999px;
   background: var(--ds-white);
-  font-size: 12px;
+  font-size: 0.875rem;
 
   text-transform: none;
 }

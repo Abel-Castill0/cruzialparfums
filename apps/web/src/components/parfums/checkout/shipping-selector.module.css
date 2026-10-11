@@ -186,7 +186,7 @@
   display: grid;
   gap: 2px;
   padding: 16px 16px;
-  border: 1px solid var(--ds-hairline);
+  border: 0;
   border-radius: var(--ds-radius-md);
   background: var(--ds-gray-50);
 }
@@ -256,7 +256,7 @@
 .missing {
   margin: 0;
   padding: 8px 16px;
-  border: 1px solid var(--ds-hairline);
+  border: 0;
   border-radius: var(--ds-radius-md);
   background: rgba(180, 35, 24, 0.08);
 }

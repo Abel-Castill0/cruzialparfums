@@ -106,9 +106,9 @@ prohibidos como icono.
 
 ## 7. Componentes
 
-**Header.** Blanco translúcido (`rgba(255,255,255,.8)` + `backdrop-filter: saturate(180%) blur(20px)`) sólo aquí, 56 px;
-sin borde, `--ds-shadow-1` tras hacer scroll. Enlaces 14 px / 500, subrayado animado (§8). Sobre el héroe es
-transparente con texto blanco (`hero-aware-header`).
+**Header.** Blanco translúcido (`rgba(255,255,255,.82)` + `backdrop-filter: saturate(180%) blur(20px)`), 72 px de alto,
+`--ds-hairline` inferior. Enlaces 14 px / 500 con subrayado animado (§8). En la home de Parfums el héroe ocupa la
+primera pantalla y el header aparece al salir de él (`hero-aware-header`). Menú móvil y cajón del carrito en blanco.
 
 **Botón primario.** Fondo `--ds-accent`, texto blanco, 17 px / 500, alto 48 px (mín. 44), padding 0 24 px, radio pill.
 Hover: fondo más oscuro (`--ds-accent-press`) y `scale(1.02)`. Active: `scale(1)`.
@@ -118,12 +118,17 @@ Hover: fondo más oscuro (`--ds-accent-press`) y `scale(1.02)`. Active: `scale(1
 **Chip de filtro.** Pill, alto 44 px, fondo `--ds-gray-50`, texto `--ds-ink` 15 px / 500, sin borde. Seleccionado:
 fondo `--ds-accent`, texto blanco; transición de color 200 ms.
 
-**Tarjeta de producto.** Sin borde; fondo `--ds-gray-50`, radio 14 px, padding 24 px. Imagen con `--ds-shadow-product`,
-sobre fondo `--ds-gray-50`. Marca (14 px, `--ds-ink-muted`), nombre (`--ds-text-card`), precio (14 px,
-`--ds-ink-muted`, tabular). Hover: `--ds-shadow-2`, `translateY(-4px)` y zoom de imagen ≤ 1.05.
+**Tarjeta de producto.** Sin borde; fondo `--ds-gray-50`, radio 14 px, padding 24 px. Las fotos son tomas de estudio
+sobre blanco: se mezclan con `mix-blend-mode: multiply` y llevan una *sombra de contacto* difusa detrás del frasco
+(`::before` radial, blur 6 px) en lugar de `drop-shadow` (que dibujaría un rectángulo). Marca (14 px,
+`--ds-ink-muted`), nombre (`--ds-text-card` 500), precio (14 px, `--ds-ink-muted`, tabular). Hover: `--ds-shadow-2`,
+`translateY(-4px)`; zoom de imagen 1.05 en el carrusel y 1.03 en el catálogo. Botón «Añadir» = acento, pill.
 
-**Hero.** Foto de alta calidad a pantalla casi completa (`min-height: min(100svh, 880px)`), `--ds-overlay` + gradiente
-inferior; titular `--ds-text-hero` blanco, subtítulo `--ds-text-lead`; CTA primario + secundario pill.
+**Hero.** Foto de alta calidad a pantalla casi completa (`100svh − barra de anuncio`), `--ds-overlay` + gradiente
+inferior; titular blanco 600 con tracking −0.035em, CTA primario (acento) + secundario (blanco translúcido con blur),
+ambos pill de 48 px. Home Parfums: la arte lleva el wordmark, así que se reserva una franja inferior
+(`--hero-foot`) para titular y botones (titular ≤ 3.5rem, una línea desde 1100 px). Home Import: `--ds-text-hero`.
+Entrada: imagen `scale(1.05→1)` + titular y botones con `fade-up`, ≤ 600 ms.
 
 **Carrusel.** Scroll-snap horizontal, controles circulares de 44 px (blanco translúcido), puntos de paginación de 8 px.
 
@@ -174,3 +179,21 @@ Reglas:
 - [ ] Mayúsculas con tracking / kickers · [ ] Tamaño < 12 px · [ ] Cormorant, Jost o cualquier segunda familia
 - [ ] Crema/beige · [ ] Dorado en UI · [ ] Sombra con alfa > .2 · [ ] Animar `width`/`height`
 - [ ] Valor de espaciado fuera de la escala · [ ] Objetivo táctil < 44 px · [ ] Hex literal fuera de `globals.css`
+
+## 11. Decisiones y excepciones (2026-10-11)
+
+- **Una sola marca visual.** Import adopta este mismo sistema (antes navy a pantalla completa). Conserva su
+  identidad en la fotografía del héroe (contenedor azul) y en su logotipo, no en la pintura de la interfaz.
+- **Superficies oscuras permitidas (únicas):** héroes fotográficos con velo, mosaicos de categoría con foto y
+  scrim, barra de anuncio de Parfums (`--ds-ink`), toasts, el panel de arte del carrusel de combos y la
+  pasarela `/` (dos puertas fotográficas). Todo lo demás es blanco o `#F5F5F7`.
+- **Dorado:** retirado de la UI; sólo vive en el logotipo y la fotografía. El token heredado `--color-gold` sigue
+  existiendo (valor negro) únicamente para el admin.
+- **Tokens heredados** (`--color-*`, `--font-display`, `--font-body`): sólo los usa `/admin/**`. El storefront
+  usa `--ds-*` y `--font-sans` (Geist).
+- **Sin modo oscuro de página.** Se eliminaron los bloques `prefers-color-scheme: dark` del storefront.
+- **Radios de input:** 8 px (`--ds-radius-sm`) con `--ds-hairline`; foco con anillo de acento.
+- **Pie:** `#F5F5F7` con texto muted; los enlaces miden ≥ 44 px de alto.
+- **Pendiente de datos:** el recomendador y el carrusel de combos dependen del catálogo cargado; la verificación
+  visual se hizo con el catálogo comercial local (99 productos, 190 fotos) y un consolidado de Import de prueba
+  (sólo en la base local, nunca en Producción).

@@ -1,9 +1,8 @@
 .breadcrumbs {
-  padding: 16px 0;
+  padding: var(--ds-space-1) 0;
   color: var(--ds-ink-muted);
-  font-size: 0.75rem;
+  font-size: var(--ds-text-small);
   font-weight: 500;
-
 }
 
 .breadcrumbs ol,
@@ -25,11 +24,14 @@
 }
 
 .breadcrumbs a {
+  min-height: var(--ds-touch);
+  display: inline-flex;
+  align-items: center;
   transition: color var(--ds-dur-fast) var(--ds-ease-spring);
 }
 
 .breadcrumbs a:hover {
-  color: var(--ds-ink-muted);
+  color: var(--ds-ink);
 }
 
 .breadcrumbs [aria-current="page"] {

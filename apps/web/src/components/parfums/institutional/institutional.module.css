@@ -20,8 +20,8 @@
 
 .eyebrow {
   color: var(--ds-ink);
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: var(--ds-text-small);
+  font-weight: 500;
 
 }
 
@@ -169,14 +169,14 @@
 
 .btnPrimary,
 .btnGhost {
-  min-height: 49px;
+  min-height: 48px;
   padding: 0 24px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: 0.9375rem;
+  font-weight: 500;
 
 }
 
@@ -193,14 +193,15 @@
 }
 
 .btnGhost {
-  border: 1px solid var(--ds-hairline);
+  border: 0;
+  border-radius: var(--ds-radius-pill);
   color: var(--ds-ink);
-  background: transparent;
+  background: var(--ds-gray-50);
 }
 
 .btnGhost:hover {
-  border-color: rgba(0, 0, 0, 0.2);
   color: var(--ds-ink);
+  background: var(--ds-gray-100);
 }
 
 .centerBlock {
@@ -318,16 +319,20 @@
 
 .textLink {
   margin-top: 16px;
-  font-size: 0.75rem;
-  font-weight: 600;
-
-  border-bottom: 1px solid var(--ds-hairline);
-  padding-bottom: 4px;
+  min-height: var(--ds-touch);
+  display: inline-flex;
+  align-items: center;
+  color: var(--ds-link);
+  font-size: var(--ds-text-card);
+  font-weight: 500;
   width: fit-content;
+  text-decoration: underline transparent;
+  text-underline-offset: 4px;
+  transition: text-decoration-color var(--ds-dur-base) var(--ds-ease-spring);
 }
 
 .textLink:hover {
-  color: var(--ds-ink);
+  text-decoration-color: currentColor;
 }
 
 .steps {
@@ -447,10 +452,11 @@
 
 .form {
   padding: 32px 24px;
-  border: 1px solid var(--ds-hairline);
+  border: 0;
   background: var(--ds-white);
   display: grid;
   gap: 16px;
+  border-radius: var(--ds-radius-md);
 }
 
 .form h3 {
@@ -510,8 +516,8 @@
   border: 0;
   color: var(--ds-white);
   background: var(--ds-accent);
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: 0.9375rem;
+  font-weight: 500;
 
   cursor: pointer;
   border-radius: var(--ds-radius-pill);

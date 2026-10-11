@@ -7,6 +7,7 @@ import { PARFUMS_INSTAGRAM_URL } from "@/domains/platform/parfums-storefront";
 import { loadParfumsStorefront } from "@/lib/catalog/parfums-storefront";
 import { WhatsAppIcon } from "@/components/parfums/shell/shell-icons";
 import styles from "@/components/parfums/institutional/institutional.module.css";
+import { Reveal } from "@/components/storefront/home/reveal";
 
 function Glyph({ children }: { children: React.ReactNode }) {
   return (
@@ -62,7 +63,7 @@ export default async function ContactoPage() {
       </section>
 
       <section className={styles.section} style={{ paddingTop: 0 }}>
-        <div className={styles.wrap}>
+        <Reveal className={styles.wrap}>
           <div className={styles.contactGrid}>
             <div className={styles.contactCard}>
               <div className={styles.contactIcon} aria-hidden="true"><WhatsAppIcon size={20} /></div>
@@ -98,11 +99,11 @@ export default async function ContactoPage() {
               </a>
             </div>
           </div>
-        </div>
+        </Reveal>
       </section>
 
       <section className={`${styles.section} ${styles.band}`}>
-        <div className={styles.wrap}>
+        <Reveal className={styles.wrap}>
           <div className={styles.formSplit}>
             <div>
               <h2>
@@ -112,11 +113,11 @@ export default async function ContactoPage() {
             </div>
             <InstitutionalContactForm storeName={storeName} whatsappNumber={whatsappNumber} />
           </div>
-        </div>
+        </Reveal>
       </section>
 
       <section className={`${styles.section} ${styles.sectionTop}`}>
-        <div className={styles.wrap}>
+        <Reveal className={styles.wrap}>
           <div className={styles.split}>
             <div className={styles.splitCopy}>
               <h2 className={styles.splitTitle}>
@@ -144,7 +145,7 @@ export default async function ContactoPage() {
               <span className={styles.artCaption}>Formatos 3 · 5 · 10 ml</span>
             </div>
           </div>
-        </div>
+        </Reveal>
       </section>
     </main>
   );

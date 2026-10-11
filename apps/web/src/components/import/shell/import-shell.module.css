@@ -54,6 +54,29 @@
   transition: color var(--ds-dur-fast) var(--ds-ease-spring);
 }
 
+.navigation a {
+  position: relative;
+}
+
+/* Underline grows from 0 to 100% on hover (transform only, ease-out). */
+.navigation a::after {
+  position: absolute;
+  right: 0;
+  bottom: 10px;
+  left: 0;
+  height: 1px;
+  content: "";
+  background: var(--ds-ink);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform var(--ds-dur-base) var(--ds-ease-enter);
+}
+
+.navigation a:hover::after,
+.navigation a:focus-visible::after {
+  transform: scaleX(1);
+}
+
 .navigation a:hover {
   color: var(--ds-ink);
 }
@@ -344,6 +367,7 @@
   .headerHome,
   .headerHidden,
   .navigation a,
+  .navigation a::after,
   .whatsapp,
   .back {
     transition: none;

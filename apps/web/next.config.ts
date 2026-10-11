@@ -9,6 +9,8 @@ const nextConfig: NextConfig = {
   htmlLimitedBots: /.*/,
   poweredByHeader: false,
   images: {
+    // AVIF first, WebP fallback: smaller product photography at the same quality.
+    formats: ["image/avif", "image/webp"],
     remotePatterns: [
       {
         protocol: "https",
