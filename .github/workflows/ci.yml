@@ -32,6 +32,7 @@ jobs:
       - run: npm run commercial:check
       - run: npm run test:4j4b
       - run: npm run test:audit-gate
+      - run: npm run test:backup-crypt
       - run: npm run lint
       - run: npm run typecheck
       - run: npm run test
