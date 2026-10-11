@@ -116,10 +116,7 @@ Consolidados:
 - whether the client meant a separate base “One Million” product; none exists now
 - whether the “Précieux” or “Amber Gold Elixir es E.” notes imply any further
   correction beyond the confirmed rows above
-- Production cutover window (indexing is now an explicit owner switch in Admin, default OFF — 2026-10-11)
-
-Gmail search 2026-10-11 (both signed-in accounts, Cruzial terms, RUC/legal/WhatsApp/prices): no client decision
-found; nothing above changed.
+- Production cutover window
 
 ## 2026-09-20 note — Parfums order status lifecycle
 
