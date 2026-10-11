@@ -10,7 +10,7 @@ import { resolveIndexingPolicy, type DeploymentEnvironment } from "./indexing-po
  *
  * SITE_URL is the trusted canonical origin (server env, never a request
  * header). Indexing is allowed only on the Vercel production environment
- * AND after the explicit cutover approval flag — previews and staging are
+ * AND when the owner switched it on in the admin — previews and staging are
  * always noindex, and robots.txt disallows everything there.
  */
 export function getSiteUrl(): URL | null {
@@ -29,21 +29,28 @@ export function getDeploymentEnvironment(): DeploymentEnvironment {
   return env === "production" || env === "preview" ? env : "development";
 }
 
-export function isProductionCutoverApproved(): boolean {
-  return process.env.CRUZIAL_PRODUCTION_CUTOVER_APPROVED === "true";
+/** Emergency, deployment-level override: CRUZIAL_INDEXING_FORCE_OFF=true closes every page to crawlers. */
+export function isIndexingForcedOff(): boolean {
+  return process.env.CRUZIAL_INDEXING_FORCE_OFF === "true";
 }
 
-export function getIndexingPolicy() {
-  return resolveIndexingPolicy({
-    deploymentEnvironment: getDeploymentEnvironment(),
-    cutoverApproved: isProductionCutoverApproved(),
-  });
-}
+const CLOSED = { index: false, follow: false } as const;
 
-/** An incorrect approval flag cannot bypass missing factual business data. */
+/**
+ * The owner's persisted switch (public_search_indexing_enabled(), default false) decides indexing on Production.
+ * Content completeness (public_launch_ready()) is deliberately NOT consulted: missing data is an admin warning, not
+ * an indexing lock. Any read failure fails closed.
+ */
 export const getAuthoritativeIndexingPolicy = cache(async () => {
- const policy=getIndexingPolicy(); if(!policy.index)return policy;
- const db=createSupabasePublicServerClient();if(!db)return {index:false,follow:false} as const;
- try{const result=await db.rpc("public_launch_ready");return !result.error&&result.data===true?policy:{index:false,follow:false} as const;}
- catch{return {index:false,follow:false} as const;}
+  const deploymentEnvironment = getDeploymentEnvironment();
+  const forceOff = isIndexingForcedOff();
+  if (deploymentEnvironment !== "production" || forceOff) return CLOSED;
+  const db = createSupabasePublicServerClient();
+  if (!db) return CLOSED;
+  try {
+    const result = await db.rpc("public_search_indexing_enabled");
+    return resolveIndexingPolicy({ deploymentEnvironment, ownerEnabled: !result.error && result.data === true, forceOff });
+  } catch {
+    return CLOSED;
+  }
 });

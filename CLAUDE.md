@@ -83,8 +83,8 @@ Context is a HARD budget; aim for maximum confidence per token.
   what §16 states; everything else fails closed.
 - External blockers: finish all internal work first, then give ONE list separating TECHNICAL GAP from EXTERNAL
   FACT/CREDENTIAL. Never ask for a secret in chat; give the secure CLI/dashboard action.
-- Do not open indexing because a build is green: `CRUZIAL_PRODUCTION_CUTOVER_APPROVED` stays false until factual launch
-  readiness is satisfied; do not bypass DB-backed readiness checks.
+- Indexing is the owner's decision: the audited admin switch (`admin_set_search_indexing`, default OFF). Never turn it
+  on yourself; `public_launch_ready()` stays a factual report shown as a warning, never faked and never an implicit lock.
 
 **Quality** (docs/testing-and-quality.md, §7, §18-20, §22, §23, §25, §26)
 - Fix verified internal defects at the root cause (reproduce, find the failing layer, fix, add a regression test, verify

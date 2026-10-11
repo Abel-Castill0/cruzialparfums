@@ -5,10 +5,10 @@ Actualizado 2026-10-04. Este documento NO contiene datos legales inventados.
 **Principio:** un dato que solo el negocio conoce (RUC, razón social, dirección,
 políticas) **no bloquea la ingeniería**. Se construye todo lo demás, el sitio
 muestra un estado seguro mientras el dato falta, y el cliente lo completa o
-actualiza desde el panel cuando quiera. Lo único que sigue cerrado hasta
-entonces es la indexación pública (`CRUZIAL_PRODUCTION_CUTOVER_APPROVED`),
-porque publicar una identidad legal falsa o vacía sería un riesgo para el
-negocio.
+actualiza desde el panel cuando quiera. La indexación pública es una decisión
+explícita del propietario en el panel (Operaciones → "Permitir indexación en
+buscadores", desactivada por defecto); el panel avisa si faltan datos, pero
+no la bloquea.
 
 ## Ya implementado (evidencia en el repositorio)
 
@@ -48,9 +48,9 @@ negocio.
 - No colocar RUC, dirección ni razón social de relleno en producción. Mientras
   falten, las páginas legales mantienen su redacción conservadora y no
   afirman una identidad legal específica.
-- `CRUZIAL_PRODUCTION_CUTOVER_APPROVED` se activa por decisión explícita del
-  negocio cuando considere completos sus datos. Es una decisión de lanzamiento,
-  no una tarea pendiente de desarrollo.
+- La indexación se activa por decisión explícita del negocio desde el panel
+  (requiere ser administrador de Parfums e Import con MFA; queda auditada). Es
+  una decisión de lanzamiento, no una tarea pendiente de desarrollo.
 - Lo que el cliente decida o corrija se registra en `docs/client-decisions.md`
   (junto con su huella de conciliación) o, para cambios que no deban tocar ese
   archivo, en una nota dedicada como `docs/parfums-shipping.md`.

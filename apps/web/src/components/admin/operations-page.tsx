@@ -6,20 +6,21 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { notificationProviderReadiness,type NotificationUnit } from "@/domains/notifications/provider";
 import { workerState,WORKER_LABELS,NOTIFICATION_LABELS,launchBlockerLabel,type WorkerHealth } from "@/domains/operations/classifiers";
 import { OperationsSettingsForm,RetryNotification } from "./operations-controls";
-import { isProductionCutoverApproved } from "@/lib/seo/site";
+import { SearchIndexingControl } from "./search-indexing-control";
 import styles from "./operations.module.css";
 function record(value:unknown):Record<string,unknown>{return value&&typeof value==="object"&&!Array.isArray(value)?value as Record<string,unknown>:{};}
 export async function OperationsPage({unit}:{unit:NotificationUnit}){
  const session=await getAdminSession();if(session.status!=="ok")redirect("/admin");
  const membership=session.session.memberships.find(m=>m.businessUnitCode===unit);if(!membership)redirect("/admin");
  const db=await createSupabaseServerClient();if(!db)return <p>Backend no configurado.</p>;
- const [summary,jobs,settings,stock]=await Promise.all([
+ const [summary,jobs,settings,stock,indexing]=await Promise.all([
   db.rpc("admin_operations_summary",{p_unit_code:unit}),db.rpc("admin_list_notifications",{p_business_unit_code:unit}),
   db.from("settings").select("value,updated_at").eq("business_unit_id",membership.businessUnitId).eq("key","operations_automation").maybeSingle(),
   db.from("inventory").select("product_variant_id,quantity_on_hand,reserved_quantity,product_variants!inner(product_id,label,products!inner(name,business_unit_id))").eq("product_variants.products.business_unit_id",membership.businessUnitId).eq("inventory_mode","tracked_quantity").order("quantity_on_hand").limit(50),
+  db.rpc("admin_get_search_indexing"),
  ]);
  if(summary.error||jobs.error||settings.error||stock.error)return <p role="alert">No se pudieron comprobar las operaciones. Recarga; el estado no está confirmado.</p>;
- const data=record(summary.data);const launch=record(data.launch);const worker=record(data.worker) as WorkerHealth;const config=record(settings.data?.value);
+ const data=record(summary.data);const launch=record(data.launch);const worker=record(data.worker) as WorkerHealth;const config=record(settings.data?.value);const indexingState=indexing.error?null:record(indexing.data);
  const provider=notificationProviderReadiness(unit);const isAdmin=membership.role==="admin";
  const metrics=[
   ["pending_orders","Pedidos por confirmar","pedidos"],["stale_orders","Pendientes por más de 24 horas","pedidos"],
@@ -40,9 +41,10 @@ export async function OperationsPage({unit}:{unit:NotificationUnit}){
  {isAdmin&&["blocked","failed","retry","uncertain"].includes(job.status)?<RetryNotification unit={unit} id={job.id} version={job.updated_at} uncertain={job.status==="uncertain"}/>:null}</li>)}</ul></section>
  <section className={styles.section} id="inventory"><h2>Inventario rastreado</h2><p>El saldo libre es stock físico menos reservas. Los productos con disponibilidad por estado no tienen cantidades inventadas.</p><ul>{stock.data.map(row=><li key={row.product_variant_id}><Link href={`/admin/${unit}/productos/${row.product_variants.product_id}` as Route}>{row.product_variants.products.name} · {row.product_variants.label}</Link>: físico {row.quantity_on_hand}, reservado {row.reserved_quantity}, libre {Number(row.quantity_on_hand)-row.reserved_quantity}</li>)}</ul></section>
  <section className={styles.section}><h2>Recordatorios internos</h2>{isAdmin&&settings.data?<OperationsSettingsForm unit={unit} version={settings.data.updated_at} initialPhone={String(config.operationsPhone??"")} initialDays={Number(config.complaintReminderBusinessDays??3)} />:<p>Solo el administrador modifica la configuración.</p>}</section>
- <section className={styles.section}><h2>Preparación para lanzamiento</h2><p>{launch.factual_ready===true?"Datos factuales completos. Falta la autorización expresa del operador para cutover.":"Lanzamiento bloqueado por datos pendientes."}</p>
- <p>Indexación aprobada: {isProductionCutoverApproved()?"sí; también requiere hechos completos y entorno de producción":"no"}.</p><ul>{Array.isArray(launch.blockers)?launch.blockers.map(key=><li key={String(key)}>{launchBlockerLabel(String(key))}</li>):null}</ul>
+ <section className={styles.section}><h2>Preparación para lanzamiento</h2><p>{launch.factual_ready===true?"Datos factuales completos.":"Contenido incompleto: la tienda y el panel funcionan; los productos u ofertas sin precio o disponibilidad confirmados no se pueden comprar hasta completarlos."}</p>
+ <ul>{Array.isArray(launch.blockers)?launch.blockers.map(key=><li key={String(key)}>{launchBlockerLabel(String(key))}</li>):null}</ul>
  <p>Sin imagen principal: {Number(launch.missing_primary_media)} · Bloqueos comerciales: {Number(launch.commercial_blockers)} · Productos sin publicar: {Number(launch.unpublished_products)}.</p>
+ {indexingState&&typeof indexingState.updatedAt==="string"?<SearchIndexingControl unit={unit} enabled={indexingState.enabled===true} version={indexingState.updatedAt} canChange={indexingState.canChange===true} contentComplete={launch.factual_ready===true}/>:<p role="alert">No se pudo leer el estado de indexación; se mantiene sin cambios.</p>}
  {unit==="import"?<p>Consolidado {String(launch.campaign_number??"sin registro")}: {String(launch.campaign_status??"sin registro")} · <Link href="/admin/import/lotes">Resolver por lote</Link> · <Link href="/admin/import/publicacion">Ver bloqueos detallados</Link></p>:null}
  <Link href={`/admin/${unit}/configuracion` as Route}>Editar contacto, identidad legal y políticas</Link></section></main>;
 }
