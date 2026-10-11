@@ -147,6 +147,20 @@ export function buildIssue({ total, threshold, rows, runUrl }) {
   return { title: issueTitle("vercel-production", "deployment error events above threshold"), body };
 }
 
+/**
+ * One line for logs and alerts: the HTTP status and, for a rejected token, that fact — never the response body (the
+ * SDK copies the whole body into error.message).
+ */
+export function describeVercelError(error) {
+  const message = String(error?.message ?? error);
+  const status = Number(error?.statusCode ?? message.match(/Status (\d{3})/)?.[1]);
+  if (Number.isInteger(status) && status >= 100) {
+    const rejected = /invalidToken/.test(`${error?.body ?? ""}${message}`) ? " (token rejected: invalidToken)" : "";
+    return `HTTP ${status}${rejected}`;
+  }
+  return message.split("\n")[0].replace(/\s*Body:[\s\S]*$/, "").slice(0, 200);
+}
+
 export async function createSdk(token) {
   // Loaded lazily so the pure functions above can be imported (and unit-tested) without the SDK installed.
   const require = createRequire(new URL("../apps/web/package.json", import.meta.url));
@@ -168,7 +182,7 @@ export async function run({ env = process.env, argv = process.argv.slice(2), sdk
     const sdk = await sdkFactory(config.token);
     rows = await collectDeployments({ sdk, projectId: config.projectId, teamId: config.teamId, limit: config.deployments, target: config.target });
   } catch (error) {
-    const reason = `Vercel API failure: ${String(error?.message ?? error).split("\n")[0].slice(0, 300)}`;
+    const reason = `Vercel API failure: ${describeVercelError(error)}`;
     log(`[monitor] ${reason}`);
     const alert = buildFailureAlert({ type: "vercel-production", service: "Vercel Production", reason, runUrl: runUrlFrom(env), fix: "check the VERCEL_TOKEN repository secret (see docs/monitoring.md)" });
     await deliverAlert({ channel: config.channel, env, alert, fetchImpl, log, dryRun, prefix: "[monitor]" });

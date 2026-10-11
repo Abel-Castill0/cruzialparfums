@@ -260,7 +260,7 @@ test("run (github): a Vercel API failure raises the throttled 'monitor cannot ru
   assert.equal(await run({ env: { ...baseEnv, ...ghEnv }, argv: [], sdkFactory: async () => failing, fetchImpl: gh.fetchImpl, log: (m) => logs.push(m) }), 1);
   const created = gh.calls.find((c) => c.method === "POST");
   assert.equal(created.body.title, "[Monitor] vercel-production: monitor cannot run");
-  assert.match(created.body.body, /403 invalidToken/);
+  assert.match(created.body.body, /Vercel API failure/);
   assert.ok(!created.body.body.includes("stack...") && !created.body.body.includes("tok_test"));
   assert.ok(!logs.join("\n").includes(GH_TOKEN));
 
@@ -274,4 +274,14 @@ test("run: DRY_RUN=true in the environment prevents delivery of a real threshold
   const logs = [];
   assert.equal(await run({ env: { ...baseEnv, ...ghEnv, DRY_RUN: "true" }, argv: [], sdkFactory: async () => hotSdk(), fetchImpl: async () => { throw new Error("must not be called"); }, log: (m) => logs.push(m) }), 0);
   assert.match(logs.join("\n"), /--dry-run: alert NOT sent \(channel: github\)/);
+});
+
+test("describeVercelError: status and token rejection only, never the response body", async () => {
+  const { describeVercelError } = await import("./monitor-vercel.mjs");
+  const body = '{"error":{"code":"forbidden","message":"Not authorized","invalidToken":true}}';
+  const sdkError = Object.assign(new Error(`API error occurred: Status 403 Content-Type "application/json". Body: ${body}`), { statusCode: 403, body });
+  assert.equal(describeVercelError(sdkError), "HTTP 403 (token rejected: invalidToken)");
+  assert.equal(describeVercelError(new Error("API error occurred: Status 500 Content-Type \"text/plain\". Body: internal")), "HTTP 500");
+  assert.equal(describeVercelError(new Error("getaddrinfo ENOTFOUND api.vercel.com\nstack")), "getaddrinfo ENOTFOUND api.vercel.com");
+  assert.equal(describeVercelError(new Error("weird failure Body: {leak}")), "weird failure");
 });

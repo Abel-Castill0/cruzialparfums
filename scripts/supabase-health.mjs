@@ -81,16 +81,36 @@ export function mcpEndpoint(projectRef) {
 
 /* ------------------------------------------------------------- tool output */
 
-/** Tool text may be bare JSON or wrapped as "...<untrusted-data-UUID>{json}</untrusted-data-UUID>...". */
+/**
+ * Tool text may be bare JSON, wrapped as "...<untrusted-data-UUID>{json}</untrusted-data-UUID>...", or — as the hosted
+ * server answers query_logs since 2026-10 — JSON whose `result` is a STRING holding that wrapper:
+ *   {"result":"Below is the result ... <untrusted-data-UUID>\n{\"result\":[...]}\n</untrusted-data-UUID> ..."}
+ * The outer JSON must be decoded first; matching the wrapper inside the still-escaped text yields invalid JSON.
+ */
 export function parseToolText(text) {
   if (typeof text !== "string") throw new Error("Tool result has no text.");
-  const wrapped = text.match(/<untrusted-data-[^>]+>\s*([\s\S]*?)\s*<\/untrusted-data-[^>]+>/);
-  const raw = (wrapped ? wrapped[1] : text).trim();
-  try {
-    return JSON.parse(raw);
-  } catch {
-    throw new Error("Tool result is not valid JSON.");
+  let current = text;
+  for (let depth = 0; depth < 4; depth++) {
+    let parsed;
+    try {
+      parsed = JSON.parse(current.trim());
+    } catch {
+      // The tag name also appears in the preamble sentence, so the content may not contain another opening tag.
+      const wrapped = current.match(/<untrusted-data-([0-9a-f-]+)>((?:(?!<untrusted-data-)[\s\S])*?)<\/untrusted-data-\1>/);
+      if (!wrapped) throw new Error("Tool result is not valid JSON.");
+      try {
+        parsed = JSON.parse(wrapped[2].trim());
+      } catch {
+        throw new Error("Tool result is not valid JSON.");
+      }
+    }
+    if (parsed && typeof parsed === "object" && !Array.isArray(parsed) && typeof parsed.result === "string") {
+      current = parsed.result;
+      continue;
+    }
+    return parsed;
   }
+  throw new Error("Tool result is nested too deeply.");
 }
 
 /* ---------------------------------------------------------------- MCP client */
