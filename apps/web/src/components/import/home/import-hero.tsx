@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { Route } from "next";
 import type { BusinessUnitSettings } from "@/domains/platform/settings";
 import type { PublicImportCampaign } from "@/domains/import/public-import";
+import { estimatedOpeningLabel } from "@/domains/import/public-import";
 import styles from "./import-home.module.css";
 
 type HeroState =
@@ -95,7 +96,7 @@ export function ImportHero({
           {open
             ? hero.campaign.publicMessage || "Precios exclusivos de este consolidado."
             : upcoming
-              ? `Vista previa de productos. Apertura estimada: ${hero.campaign.opensAt ? formatClosingDate(hero.campaign.opensAt) : "por confirmar"}. El consolidado sigue cerrado hasta que el cliente confirme precios y disponibilidad.`
+              ? `Vista previa de productos. Apertura estimada: ${estimatedOpeningLabel(hero.campaign.opensAt)}. El consolidado sigue cerrado hasta que el cliente confirme precios y disponibilidad.`
             : hero.state === "unavailable"
               ? "No pudimos consultar el estado del consolidado. Inténtalo nuevamente o contáctanos."
               : "Los productos y precios aparecerán cuando el próximo consolidado abra."}
