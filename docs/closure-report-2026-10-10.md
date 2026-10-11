@@ -67,7 +67,8 @@ Rejected as non-defects: definer WARNs (documented inventory, each authorized); 
 | Production read-only Playwright (chromium, mobile, tablet, responsive) | 170 passed / 3 failed (only the new title test, expected until deploy) / 33 skipped (write journeys + Import gallery) |
 | `npm audit --omit=dev --audit-level=high` | 0 |
 | `npm run audit:dev` | PASS (1 documented exception) |
-| Final `npm run check` + `db:gate` on the branch | see the PR description |
+| Final `npm run check` on the branch | PASS — Vitest 104 files / 1193, node 6 + 4 + 7, lint, typecheck, build |
+| Final `npm run db:gate` on the branch (fresh local stack, 81 migrations) | PASS — 58 files / 1334 |
 
 ## 5. Human actions required (consolidated)
 
