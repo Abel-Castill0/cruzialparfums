@@ -12,6 +12,10 @@ updates:
       # without bypassing the peer contract. Remove this entry once typescript-eslint publishes TS 7 support.
       - dependency-name: typescript
         versions: [">=6.1.0"]
+      # @types/node must match the runtime Node major: Vercel (project setting 24.x) and CI run Node 24, so types for
+      # newer majors would accept APIs that do not exist in production. Remove this entry when the runtime moves up.
+      - dependency-name: "@types/node"
+        versions: [">=25.0.0"]
 
   - package-ecosystem: github-actions
     directory: /
