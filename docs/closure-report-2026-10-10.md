@@ -52,6 +52,9 @@ Legend: **V** verified · **F** fixed in this branch · **B** blocked by a busin
 | D3 | P2 | Prod campaign #8 `scheduled`, `opens_at` 2026-10-15 05:00Z; `public_import_upcoming_campaign_id()` has no `opens_at > now()` filter | After that instant the hero/preview would show a past date as "Apertura estimada" | `estimatedOpeningLabel()` shows "por confirmar" for a passed/invalid estimate | Vitest with fixed clocks |
 | D4 | P3 | `ci.yml` had no `permissions:`; CI never ran `test:qa-target` | Relied on repo default; guard tests only in local `npm run check` | `permissions: contents: read`; added `npm run test:qa-target` | CI on this PR |
 | D5 | P3 | `docs/known-issues.md` said the storefront uses the legacy catalog, listed resolved items | Not updated after the Supabase cutover | Rewritten from today's evidence | — |
+| D6 | P2 | `scripts/migrate-client-media.mjs db-apply --target=staging` ran `supabase db query --linked`; the repo default link (`supabase/.temp/project-ref`) is Production | The flag name, not the real project, decided the environment (same class as the 10-09 Import loader fix) | `assertHostedDbTarget` refuses the Production ref and any unreadable link before any query | `migrate-client-media.test.mjs` (11/11; 2 new) now wired into `npm run check` and CI (it was in neither) |
+
+Other scripts reviewed for a silent Production target: `qa-hosted-browser.mjs` (throwaway linked workdir, Production-ref refusal, marker before reset), `load-import-consolidado.mjs` (fixed 10-09), `load-commercial-catalog.mjs`, `prepare-commercial-reconciliation-test.mjs`, `concurrency-customer-conflict-repro.mjs` (Docker-local only), `restore-validate-backup.mjs` (loopback only), `verify-staging-qa-fixtures.mjs` (historical, read-only, fixed ref), `backup-production-db.mjs` (intentional read-only Production dump). Phase `cloudinary-apply` uploads to the single (Production) Cloudinary account by design.
 
 Rejected as non-defects: definer WARNs (documented inventory, each authorized); multiple permissive policies (performance only, low traffic); `ADMIN_BOOTSTRAP_EMAIL` in Preview (read by no runtime path); the 33 Production E2E skips (write journeys + Import two-photo gallery need the disposable database / a published Import product).
 
@@ -67,6 +70,8 @@ Rejected as non-defects: definer WARNs (documented inventory, each authorized); 
 | Production read-only Playwright (chromium, mobile, tablet, responsive) | 170 passed / 3 failed (only the new title test, expected until deploy) / 33 skipped (write journeys + Import gallery) |
 | `npm audit --omit=dev --audit-level=high` | 0 |
 | `npm run audit:dev` | PASS (1 documented exception) |
+| PR #58 CI on `0c9a932` (all required checks) | success — Web (Vitest 104/1193, `test:qa-target` 7/7), Database (pgTAP 58/1334), Browser E2E 249 passed, CodeQL, gitleaks, Vercel |
+| Preview `dpl_81YwF5bW7wfcNdDHfRS7iWhR7YB7` | READY, `githubCommitSha` = `0c9a932`; titles read through `vercel curl`: `/parfums` "Cruzial Parfums — Decants, frascos y combos", `/import` "Consolidados y catálogo | Cruzial Import", `/import/carrito` "Carrito | Cruzial Import", `/import/checkout` "Solicitud de pedido | Cruzial Import" |
 | Final `npm run check` on the branch | PASS — Vitest 104 files / 1193, node 6 + 4 + 7, lint, typecheck, build |
 | Final `npm run db:gate` on the branch (fresh local stack, 81 migrations) | PASS — 58 files / 1334 |
 
@@ -91,6 +96,8 @@ Rejected as non-defects: definer WARNs (documented inventory, each authorized); 
 - GitHub: enable secret scanning + push protection (free for public repos), Dependabot security updates, and branch protection on `master` requiring CI.
 - Vercel: set `www.cruzial.pe` → apex redirect to 308.
 - Supabase Pro (managed backups, leaked-password protection) or an encrypted off-site backup schedule; Vercel log drain if longer log retention is needed.
+
+Procedure to apply the migration in Production (prepared, not executed): `docs/migration-apply-20261010120000.md`.
 
 ## 6. Gate closure criteria
 
