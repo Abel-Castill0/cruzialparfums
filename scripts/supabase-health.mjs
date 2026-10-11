@@ -2,7 +2,7 @@
  * Supabase health agent (deterministic version): every run it asks the hosted Supabase MCP server for
  *   1. `get_advisors` (security + performance) and compares them with a committed baseline, and
  *   2. `query_logs` for API (/rest/v1) and Auth (/auth/v1) gateway requests in the last hour and in the hour before,
- * and posts ONE Discord message when the server-error rate of a service rose by MORE than 50% (or an advisor regressed).
+ * and raises an alert (a GitHub issue per condition by default; Discord with MONITOR_CHANNEL=discord) when the server-error rate of a service rose by MORE than 50% (or an advisor regressed).
  * The same procedure, written as a prompt for an LLM agent, is in docs/supabase-health-agent.md.
  *
  * READ-ONLY by construction: the endpoint is built here as
@@ -10,12 +10,16 @@
  * (only the "debugging" tool group: get_advisors and query_logs), only those two tools may be called, and the run aborts
  * if the server advertises any other tool. It creates no tables and changes nothing in the project.
  *
- * Usage:  SUPABASE_ACCESS_TOKEN=... SUPABASE_PROJECT_REF=... [DISCORD_WEBHOOK_URL=...] node scripts/supabase-health.mjs [--dry-run]
+ * Usage:  SUPABASE_ACCESS_TOKEN=... SUPABASE_PROJECT_REF=... [GITHUB_TOKEN=... GITHUB_REPOSITORY=owner/name] node scripts/supabase-health.mjs [--dry-run]
  *
  * Environment (secrets only through the environment, never argv):
  *   SUPABASE_ACCESS_TOKEN  required. A personal access token for the project; only ever sent to mcp.supabase.com.
  *   SUPABASE_PROJECT_REF   required, 20 lowercase letters. Not a secret.
- *   DISCORD_WEBHOOK_URL    needed to deliver alerts (validated by scripts/monitor-vercel.mjs: discord.com webhooks only).
+ *   MONITOR_CHANNEL        "github" (default) or "discord". See scripts/lib/alert-channels.mjs.
+ *   GITHUB_TOKEN, GITHUB_REPOSITORY  channel github: one issue per condition with a STABLE title ("[Monitor] supabase-api: ...",
+ *                          "supabase-auth", "supabase-advisors"); an open issue with the same title gets a comment instead
+ *                          of a duplicate. In Actions: `${{ github.token }}` + `issues: write`.
+ *   DISCORD_WEBHOOK_URL    channel discord only (discord.com webhooks only).
  *   HEALTH_MIN_REQUESTS    minimum requests in the current hour for a service to be evaluated (default 20).
  *   HEALTH_MIN_ERRORS      minimum server errors in the current hour (default 3).
  *   HEALTH_INCREASE        relative rate increase that triggers (default 0.5 = strictly more than +50%).
@@ -32,7 +36,7 @@
  */
 import { readFileSync } from "node:fs";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { assertDiscordWebhook, postDiscord } from "./monitor-vercel.mjs";
+import { deliverAlert, issueTitle, readChannel } from "./lib/alert-channels.mjs";
 
 export const MCP_ORIGIN = "https://mcp.supabase.com";
 export const ALLOWED_TOOLS = Object.freeze(["get_advisors", "query_logs"]);
@@ -57,7 +61,7 @@ export function readConfig(env) {
   return {
     token: env.SUPABASE_ACCESS_TOKEN,
     projectRef,
-    webhookUrl: env.DISCORD_WEBHOOK_URL || undefined,
+    channel: readChannel(env),
     minRequests: numberEnv(env.HEALTH_MIN_REQUESTS, 20, { min: 1, integer: true }),
     minErrors: numberEnv(env.HEALTH_MIN_ERRORS, 3, { min: 1, integer: true }),
     increase: numberEnv(env.HEALTH_INCREASE, 0.5, { min: 0 }),
@@ -235,6 +239,45 @@ export function buildAlert({ projectRef, services, advisorRegressions, runUrl })
   return { content: lines.join("\n").slice(0, 1900), allowed_mentions: { parse: [] } };
 }
 
+/**
+ * One issue per condition, each with a STABLE title (the numbers are in the body) so a sustained problem comments on the
+ * open issue instead of opening a new one every hour.
+ */
+export function buildIssues({ projectRef, services, advisorRegressions, runUrl }) {
+  const footer = [...(runUrl ? [`Run: ${runUrl}`] : []), "Counts and names only; no log text. Close this issue when the problem is solved."];
+  const out = [];
+  for (const s of services.filter((x) => x.alert)) {
+    out.push({
+      title: issueTitle(`supabase-${s.service}`, "server error rate up"),
+      body: [
+        `Project \`${projectRef}\`: ${s.service.toUpperCase()} server errors (status >= the configured floor) rose.`,
+        "",
+        "| Window | Errors | Requests | Rate |",
+        "| --- | --- | --- | --- |",
+        `| last hour | ${s.cur.errors} | ${s.cur.total} | ${(s.cur.rate * 100).toFixed(1)}% |`,
+        `| hour before | ${s.prev.errors} | ${s.prev.total} | ${(s.prev.rate * 100).toFixed(1)}% |`,
+        "",
+        `Verdict: ${s.reason}.`,
+        "",
+        ...footer,
+      ].join("\n"),
+    });
+  }
+  if (advisorRegressions.length) {
+    out.push({
+      title: issueTitle("supabase-advisors", "regression vs baseline"),
+      body: [
+        `Project \`${projectRef}\`: advisor findings worse than \`scripts/supabase-health-baseline.json\`.`,
+        "",
+        ...advisorRegressions.map((r) => `- **${r.kind}** \`${r.name}\`: ${r.why}`),
+        "",
+        ...footer,
+      ].join("\n"),
+    });
+  }
+  return out;
+}
+
 /* -------------------------------------------------------------------- main */
 
 export async function run({ env = process.env, argv = process.argv.slice(2), clientFactory, fetchImpl = fetch, now = new Date(), log = console.log, baseline } = {}) {
@@ -278,25 +321,10 @@ export async function run({ env = process.env, argv = process.argv.slice(2), cli
   if (!anyAlert) return 0;
 
   const runUrl = env.GITHUB_SERVER_URL && env.GITHUB_REPOSITORY && env.GITHUB_RUN_ID ? `${env.GITHUB_SERVER_URL}/${env.GITHUB_REPOSITORY}/actions/runs/${env.GITHUB_RUN_ID}` : undefined;
-  const payload = buildAlert({ projectRef: config.projectRef, services, advisorRegressions, runUrl });
-  if (dryRun) {
-    log("[health] --dry-run: alert NOT sent. Payload:");
-    log(JSON.stringify(payload, null, 2));
-    return 0;
-  }
-  if (!config.webhookUrl) {
-    log("[health] something to report but DISCORD_WEBHOOK_URL is not set; alert not delivered.");
-    return 2;
-  }
-  try {
-    assertDiscordWebhook(config.webhookUrl);
-    await postDiscord(config.webhookUrl, payload, fetchImpl);
-    log("[health] alert delivered to Discord.");
-    return 0;
-  } catch (error) {
-    log(`[health] alert NOT delivered: ${error.message}`);
-    return 2;
-  }
+  const args = { projectRef: config.projectRef, services, advisorRegressions, runUrl };
+  const alert = { discord: buildAlert(args), issues: buildIssues(args) };
+  const { ok } = await deliverAlert({ channel: config.channel, env, alert, fetchImpl, log, dryRun, prefix: "[health]" });
+  return ok ? 0 : 2;
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {

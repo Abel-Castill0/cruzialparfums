@@ -1,17 +1,19 @@
 /**
- * Basic Production monitor: counts error events in the logs of the latest Vercel deployments and alerts a Discord
- * webhook when the total exceeds a threshold. READ-ONLY on Vercel: it only calls `deployments.getDeployments` and
+ * Basic Production monitor: counts error events in the logs of the latest Vercel deployments and raises an alert when the
+ * total exceeds a threshold (a GitHub issue by default; Discord is opt-in with MONITOR_CHANNEL=discord). READ-ONLY on Vercel: it only calls `deployments.getDeployments` and
  * `deployments.getDeploymentEvents`; it never changes project settings, environment variables or deployments.
  *
  * Usage (from the repository root; the SDK is installed with `npm ci` in apps/web):
- *   VERCEL_TOKEN=... VERCEL_PROJECT_ID=... VERCEL_TEAM_ID=... [DISCORD_WEBHOOK_URL=...] node scripts/monitor-vercel.mjs [--dry-run]
+ *   VERCEL_TOKEN=... VERCEL_PROJECT_ID=... VERCEL_TEAM_ID=... [GITHUB_TOKEN=... GITHUB_REPOSITORY=owner/name] node scripts/monitor-vercel.mjs [--dry-run]
  *
  * Configuration (environment only; nothing is read from argv so secrets never reach process lists or shell history):
  *   VERCEL_TOKEN         required. Use a token that can read the team's deployments; never commit it.
  *   VERCEL_PROJECT_ID    required (e.g. prj_...). The ID is not a secret.
  *   VERCEL_TEAM_ID       optional but needed for team projects (team_...).
- *   DISCORD_WEBHOOK_URL  optional for --dry-run; required to deliver an alert. Only https://discord.com/api/webhooks/...
- *                        (and discordapp.com / ptb. / canary. hosts) is accepted.
+ *   MONITOR_CHANNEL      "github" (default) or "discord". See scripts/lib/alert-channels.mjs.
+ *   GITHUB_TOKEN, GITHUB_REPOSITORY   channel github: creates the issue "[Monitor] vercel-production: ...", or comments on the
+ *                        open issue with the same title (no duplicates). In Actions: `${{ github.token }}` + `issues: write`.
+ *   DISCORD_WEBHOOK_URL  channel discord only: https://discord.com/api/webhooks/... (and discordapp.com / ptb. / canary.).
  *   MONITOR_DEPLOYMENTS  how many latest deployments to inspect (default 5, max 20).
  *   MONITOR_THRESHOLD    alert when the TOTAL number of error events is strictly greater than this (default 10).
  *   MONITOR_TARGET       "production" (default) or "all" (also previews).
@@ -25,19 +27,23 @@
  *   - It is stateless: while the same failing deployments stay inside the latest N, every run above the threshold
  *     alerts again (hourly from the workflow). Roll forward with a healthy deployment, or raise MONITOR_THRESHOLD.
  *   - The alert contains only counts, deployment IDs, states and URLs. It never includes log text, which can hold
- *     paths, variable names or other sensitive details.
+ *     paths, variable names or other sensitive details. The issue title is fixed (numbers live in the body) so repeated
+ *     runs comment on one open issue instead of opening a new one each hour; close the issue when the problem is solved.
  *
  * Exit codes: 0 = below threshold, or alert delivered (or --dry-run); 1 = configuration or API failure;
- *             2 = threshold exceeded but the alert could not be delivered (missing/invalid webhook, Discord error).
+ *             2 = threshold exceeded but the alert could not be delivered (missing token/webhook, GitHub or Discord error).
  */
 import { createRequire } from "node:module";
 import { pathToFileURL } from "node:url";
+import { assertDiscordWebhook, deliverAlert, issueTitle, postDiscord, readChannel } from "./lib/alert-channels.mjs";
+
+// Kept as re-exports: the Discord helpers moved to ./lib/alert-channels.mjs.
+export { assertDiscordWebhook, postDiscord };
 
 export const DEFAULT_DEPLOYMENTS = 5;
 export const MAX_DEPLOYMENTS = 20;
 export const DEFAULT_THRESHOLD = 10;
 export const ERROR_EVENT_TYPES = Object.freeze(["error", "fatal"]);
-const DISCORD_HOSTS = new Set(["discord.com", "discordapp.com", "ptb.discord.com", "canary.discord.com"]);
 
 /** Events may be an array (possibly with nulls) or a single event object. */
 export function normalizeEvents(response) {
@@ -77,22 +83,8 @@ export function readConfig(env) {
     deployments: positiveInt(env.MONITOR_DEPLOYMENTS, DEFAULT_DEPLOYMENTS, MAX_DEPLOYMENTS),
     threshold,
     target,
-    webhookUrl: env.DISCORD_WEBHOOK_URL || undefined,
+    channel: readChannel(env),
   };
-}
-
-/** Only real Discord webhook endpoints: a poisoned secret must not turn this job into an exfiltration channel. */
-export function assertDiscordWebhook(raw) {
-  let url;
-  try {
-    url = new URL(raw);
-  } catch {
-    throw new Error("DISCORD_WEBHOOK_URL is not a valid URL.");
-  }
-  if (url.protocol !== "https:" || !DISCORD_HOSTS.has(url.hostname) || !url.pathname.startsWith("/api/webhooks/")) {
-    throw new Error("DISCORD_WEBHOOK_URL must be an https://discord.com/api/webhooks/... URL.");
-  }
-  return url;
 }
 
 /** Inspect the latest deployments; returns one row per deployment. */
@@ -134,15 +126,20 @@ export function buildDiscordPayload({ total, threshold, rows, runUrl }) {
   return { content: content.slice(0, 1900), allowed_mentions: { parse: [] } };
 }
 
-export async function postDiscord(webhookUrl, payload, fetchImpl = fetch) {
-  const url = assertDiscordWebhook(webhookUrl);
-  const response = await fetchImpl(url, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify(payload),
-    signal: AbortSignal.timeout(10_000),
-  });
-  if (!response.ok) throw new Error(`Discord rejected the alert (HTTP ${response.status}).`);
+/** GitHub issue for the same alert. The title is stable (no numbers) so repeated runs de-duplicate; counts go in the body. */
+export function buildIssue({ total, threshold, rows, runUrl }) {
+  const lines = rows.map((r) => `| \`${r.id}\` | ${r.state} | ${r.errors} | ${r.inspectorUrl ?? r.url ?? "-"} |`);
+  const body = [
+    `**${total}** error event(s) (\`error\`/\`fatal\`) in the last ${rows.length} Production deployment(s); threshold: more than ${threshold}.`,
+    "",
+    "| Deployment | State | Errors | URL |",
+    "| --- | --- | --- | --- |",
+    ...lines,
+    "",
+    ...(runUrl ? [`Monitor run: ${runUrl}`] : []),
+    "These are build/deployment events, not runtime 5xx. Counts, IDs and URLs only; no log text. Close this issue when the problem is solved.",
+  ].join("\n");
+  return { title: issueTitle("vercel-production", "deployment error events above threshold"), body };
 }
 
 export async function createSdk(token) {
@@ -175,24 +172,10 @@ export async function run({ env = process.env, argv = process.argv.slice(2), sdk
   if (!shouldAlert(total, config.threshold)) return 0;
 
   const runUrl = env.GITHUB_SERVER_URL && env.GITHUB_REPOSITORY && env.GITHUB_RUN_ID ? `${env.GITHUB_SERVER_URL}/${env.GITHUB_REPOSITORY}/actions/runs/${env.GITHUB_RUN_ID}` : undefined;
-  const payload = buildDiscordPayload({ total, threshold: config.threshold, rows, runUrl });
-  if (dryRun) {
-    log("[monitor] --dry-run: alert NOT sent. Payload:");
-    log(JSON.stringify(payload, null, 2));
-    return 0;
-  }
-  if (!config.webhookUrl) {
-    log("[monitor] threshold exceeded but DISCORD_WEBHOOK_URL is not set; alert not delivered.");
-    return 2;
-  }
-  try {
-    await postDiscord(config.webhookUrl, payload, fetchImpl);
-    log("[monitor] alert delivered to Discord.");
-    return 0;
-  } catch (error) {
-    log(`[monitor] alert NOT delivered: ${error.message}`);
-    return 2;
-  }
+  const args = { total, threshold: config.threshold, rows, runUrl };
+  const alert = { discord: buildDiscordPayload(args), issues: [buildIssue(args)] };
+  const { ok } = await deliverAlert({ channel: config.channel, env, alert, fetchImpl, log, dryRun, prefix: "[monitor]" });
+  return ok ? 0 : 2;
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {

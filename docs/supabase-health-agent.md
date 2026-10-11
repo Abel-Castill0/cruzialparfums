@@ -27,8 +27,17 @@ It creates no tables and changes nothing in the project.
    `anon`) alerts; a performance advisor alerts only if it is new or ERROR-level (`unused_index` counts drift on their own).
    Any ERROR-level advisor alerts. This is the "new and actionable findings only" rule of the operating contract.
 
-One Discord message is sent per run when anything fires. It has rates, counts, advisor names and the run URL — never log
-text or PII, and mentions are disabled.
+When anything fires, the alert goes to **GitHub Issues** by default: one issue per condition with a stable title —
+`[Monitor] supabase-api: server error rate up`, `[Monitor] supabase-auth: server error rate up`,
+`[Monitor] supabase-advisors: regression vs baseline` — with rates, counts, advisor names and the run URL in the body. If an
+**open** issue with exactly that title exists, a **comment** is added instead of a new issue, so a sustained problem does not
+spam; close the issue when it is solved. Discord is opt-in with `MONITOR_CHANNEL=discord` (one message per run). Neither
+destination ever gets log text or PII, and nobody is @-mentioned. Shared delivery code: `scripts/lib/alert-channels.mjs`.
+
+> **Workflow change still pending (deliberately not made together with this code change).** The default channel needs
+> `permissions: issues: write` and `GITHUB_TOKEN: ${{ github.token }}` (`GITHUB_REPOSITORY` is set by Actions) on the health step
+> of the workflow. Until that is added, a breach cannot be delivered on the default channel and the run ends with exit code 2;
+> set `MONITOR_CHANNEL=discord` and `DISCORD_WEBHOOK_URL` in the step environment to keep using Discord meanwhile.
 
 ## Limits
 
@@ -38,7 +47,7 @@ text or PII, and mentions are disabled.
   was 401 on `worker_record_health`). Set `HEALTH_ERROR_MIN_STATUS=400` to include client errors; expect noise (bad
   passwords are 400/401).
 - Supabase's Free plan keeps only 24 hours of logs, and the log window of one query is capped at 24 hours.
-- Stateless: a sustained problem alerts again on every run in which it still exceeds the rule.
+- Stateless: a sustained problem comments again on the same open issue on every run in which it still exceeds the rule.
 - Scheduled workflows are paused by GitHub after 60 days without repository activity.
 
 ## Setup (owner — secrets are never pasted in chat, PRs or commits)
@@ -46,13 +55,15 @@ text or PII, and mentions are disabled.
 1. Supabase → Account → Access Tokens: create a token named `cruzial-health`, with an expiry, restricted to the project
    if the dashboard offers it. A personal access token is account-scoped power; the read-only guarantees below come from
    the MCP URL and from this script, **not** from the token, so treat it as sensitive and rotate it.
-2. Discord webhook (Channel → Integrations → Webhooks).
-3. From your own terminal (the CLI prompts for each value):
+2. From your own terminal (the CLI prompts for the value):
 
 ```bash
 gh secret set SUPABASE_ACCESS_TOKEN --repo Abel-Castill0/cruzialparfums
-gh secret set DISCORD_WEBHOOK_URL --repo Abel-Castill0/cruzialparfums
 ```
+
+   The default channel (GitHub Issues) uses the Actions `GITHUB_TOKEN`. Only for `MONITOR_CHANNEL=discord`: create the webhook
+   (Channel → Integrations → Webhooks) and `gh secret set DISCORD_WEBHOOK_URL --repo Abel-Castill0/cruzialparfums`.
+3. Add the pending workflow step described in the note above (`issues: write` + `GITHUB_TOKEN`).
 
 4. Actions → "Supabase health" → Run workflow with `dry_run` ticked (default). The log prints, per service, the counts
    of both hours and the verdict, and the advisor comparison. Until `SUPABASE_ACCESS_TOKEN` exists the job only prints a
@@ -116,7 +127,7 @@ OUTPUT. Reply with one JSON object and nothing else:
  "alert":bool,"reason":"..."},"auth":{...}},"advisors":{"regressions":[{"kind":"security|performance","name":"...",
  "why":"..."}],"notes":["..."]},"alert":bool,"message":"<=1500 chars, counts and names only, no log text"}
 `alert` is true if any service is ALERTING or any advisor regression exists. Do not post anywhere yourself unless the
-caller has pre-approved a specific Discord webhook command; otherwise return the JSON and let the caller deliver `message`.
+caller has pre-approved a specific destination (a GitHub issue or a Discord webhook command); otherwise return the JSON and let the caller deliver `message`.
 ````
 
 ## Maintaining the baseline
@@ -127,12 +138,12 @@ copy of the baseline inside the agent prompt above in sync.
 
 ## Verification status
 
-- Unit and HTTP-level tests (`npm run test:supabase-health`, 22 tests, run in `npm run check` and CI): rate rules, volume
+- Unit and HTTP-level tests (`npm run test:supabase-health`, 26 tests; the alert-channel tests run with `npm run test:monitor-vercel`; both in `npm run check` and CI): rate rules, volume
   guards, baseline logic, the MCP client against a local fake MCP server (JSON and SSE replies, session id, protocol
   header, argument filtering by the advertised schema, refusal of extra tools), exit codes, no secrets in logs.
 - Against real Production data: the log SQL ran through the Supabase MCP connected to this development session (559 API
   and 1 Auth request in the last day, 0 server errors) and the real `get_advisors` output parses and matches the baseline
   with 0 regressions.
 - **Not yet exercised:** the script's own MCP connection to `mcp.supabase.com` with a real token (the protocol client is
-  tested only against a local fake) and a real Discord delivery. Use the dry-run dispatch first; if the hosted server's
+  tested only against a local fake) and a real alert delivery (GitHub issue or Discord). Use the dry-run dispatch first; if the hosted server's
   handshake differs, the run fails with exit code 1 and a one-line reason, it never reports a false "all clear".

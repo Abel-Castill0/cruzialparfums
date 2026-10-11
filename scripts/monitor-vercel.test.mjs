@@ -5,6 +5,7 @@ import assert from "node:assert/strict";
 import {
   assertDiscordWebhook,
   buildDiscordPayload,
+  buildIssue,
   collectDeployments,
   countErrorEvents,
   normalizeEvents,
@@ -116,7 +117,7 @@ test("the alert carries counts, ids, states and URLs only — no log text — an
 test("run: below or at the threshold sends nothing and exits 0", async () => {
   let posted = 0;
   const sdk = fakeSdk({ d1: Array.from({ length: 10 }, () => ev("error")) });
-  const code = await run({ env: { ...baseEnv, DISCORD_WEBHOOK_URL: WEBHOOK }, argv: [], sdkFactory: async () => sdk, fetchImpl: async () => { posted++; return { ok: true }; }, log: () => {} });
+  const code = await run({ env: { ...baseEnv, MONITOR_CHANNEL: "discord", DISCORD_WEBHOOK_URL: WEBHOOK }, argv: [], sdkFactory: async () => sdk, fetchImpl: async () => { posted++; return { ok: true }; }, log: () => {} });
   assert.equal(code, 0);
   assert.equal(posted, 0);
 });
@@ -126,7 +127,7 @@ test("run: above the threshold posts exactly one alert to Discord and exits 0", 
   const sdk = fakeSdk({ d1: Array.from({ length: 6 }, () => ev("error")), d2: Array.from({ length: 5 }, () => ev("fatal")) });
   const logs = [];
   const code = await run({
-    env: { ...baseEnv, DISCORD_WEBHOOK_URL: WEBHOOK, GITHUB_SERVER_URL: "https://github.com", GITHUB_REPOSITORY: "o/r", GITHUB_RUN_ID: "42" },
+    env: { ...baseEnv, MONITOR_CHANNEL: "discord", DISCORD_WEBHOOK_URL: WEBHOOK, GITHUB_SERVER_URL: "https://github.com", GITHUB_REPOSITORY: "o/r", GITHUB_RUN_ID: "42" },
     argv: [],
     sdkFactory: async () => sdk,
     fetchImpl: async (url, init) => { sent.push({ url: String(url), body: JSON.parse(init.body), method: init.method }); return { ok: true, status: 204 }; },
@@ -145,18 +146,18 @@ test("run: above the threshold posts exactly one alert to Discord and exits 0", 
 test("run: --dry-run prints the payload and never calls fetch", async () => {
   const sdk = fakeSdk({ d1: Array.from({ length: 11 }, () => ev("error")) });
   const logs = [];
-  const code = await run({ env: baseEnv, argv: ["--dry-run"], sdkFactory: async () => sdk, fetchImpl: async () => { throw new Error("must not be called"); }, log: (m) => logs.push(m) });
+  const code = await run({ env: { ...baseEnv, MONITOR_CHANNEL: "discord" }, argv: ["--dry-run"], sdkFactory: async () => sdk, fetchImpl: async () => { throw new Error("must not be called"); }, log: (m) => logs.push(m) });
   assert.equal(code, 0);
   assert.match(logs.join("\n"), /--dry-run: alert NOT sent/);
 });
 
 test("run: exit 2 when over the threshold but the alert cannot be delivered", async () => {
   const sdk = fakeSdk({ d1: Array.from({ length: 11 }, () => ev("error")) });
-  const noWebhook = await run({ env: baseEnv, argv: [], sdkFactory: async () => sdk, fetchImpl: async () => ({ ok: true }), log: () => {} });
+  const noWebhook = await run({ env: { ...baseEnv, MONITOR_CHANNEL: "discord" }, argv: [], sdkFactory: async () => sdk, fetchImpl: async () => ({ ok: true }), log: () => {} });
   assert.equal(noWebhook, 2);
-  const rejected = await run({ env: { ...baseEnv, DISCORD_WEBHOOK_URL: WEBHOOK }, argv: [], sdkFactory: async () => sdk, fetchImpl: async () => ({ ok: false, status: 500 }), log: () => {} });
+  const rejected = await run({ env: { ...baseEnv, MONITOR_CHANNEL: "discord", DISCORD_WEBHOOK_URL: WEBHOOK }, argv: [], sdkFactory: async () => sdk, fetchImpl: async () => ({ ok: false, status: 500 }), log: () => {} });
   assert.equal(rejected, 2);
-  const badUrl = await run({ env: { ...baseEnv, DISCORD_WEBHOOK_URL: "https://evil.example/x" }, argv: [], sdkFactory: async () => sdk, fetchImpl: async () => { throw new Error("must not be called"); }, log: () => {} });
+  const badUrl = await run({ env: { ...baseEnv, MONITOR_CHANNEL: "discord", DISCORD_WEBHOOK_URL: "https://evil.example/x" }, argv: [], sdkFactory: async () => sdk, fetchImpl: async () => { throw new Error("must not be called"); }, log: () => {} });
   assert.equal(badUrl, 2);
 });
 
@@ -172,4 +173,82 @@ test("run: configuration and API failures exit 1 without leaking the token", asy
 
 test("postDiscord re-validates the URL even when called directly", async () => {
   await assert.rejects(() => postDiscord("https://evil.example/api/webhooks/1/x", {}, async () => ({ ok: true })), /DISCORD_WEBHOOK_URL/);
+});
+
+/* ------------------------------------------------ GitHub Issues channel (default) */
+const GH_REPO = "Abel-Castill0/cruzialparfums";
+const GH_TOKEN = "ghs_test_token_value";
+const ghEnv = { GITHUB_TOKEN: GH_TOKEN, GITHUB_REPOSITORY: GH_REPO };
+const ghJson = (body, status = 200) => ({ ok: true, status, json: async () => body });
+function fakeGithub(open = []) {
+  const calls = [];
+  const fetchImpl = async (url, init = {}) => {
+    const u = new URL(String(url));
+    const method = init.method ?? "GET";
+    calls.push({ method, host: u.host, path: u.pathname, body: init.body ? JSON.parse(init.body) : undefined });
+    if (method === "GET") return ghJson(open);
+    const c = u.pathname.match(/\/issues\/(\d+)\/comments$/);
+    if (c) return ghJson({ html_url: `https://github.com/${GH_REPO}/issues/${c[1]}#c` }, 201);
+    return ghJson({ number: 200 + calls.length, html_url: `https://github.com/${GH_REPO}/issues/200` }, 201);
+  };
+  return { fetchImpl, calls };
+}
+
+const rowsFixture = [{ id: "dpl_a", state: "ERROR", errors: 7, inspectorUrl: "https://vercel.com/t/p/dpl_a" }, { id: "dpl_b", state: "READY", errors: 6, inspectorUrl: null, url: "https://b.vercel.app" }];
+const hotSdk = () => fakeSdk({ d1: Array.from({ length: 6 }, () => ev("error")), d2: Array.from({ length: 5 }, () => ev("fatal")) });
+
+test("the default channel is github and an invalid MONITOR_CHANNEL is a configuration error", async () => {
+  assert.equal(readConfig(baseEnv).channel, "github");
+  assert.equal(readConfig({ ...baseEnv, MONITOR_CHANNEL: "discord" }).channel, "discord");
+  const logs = [];
+  assert.equal(await run({ env: { ...baseEnv, MONITOR_CHANNEL: "slack" }, argv: [], sdkFactory: async () => hotSdk(), log: (m) => logs.push(m) }), 1);
+  assert.match(logs.join("\n"), /MONITOR_CHANNEL must be one of/);
+});
+
+test("buildIssue: stable title (no numbers), counts/IDs/URLs in the body, no log text", () => {
+  const a = buildIssue({ total: 13, threshold: 10, rows: rowsFixture, runUrl: "https://github.com/o/r/actions/runs/1" });
+  const b = buildIssue({ total: 99, threshold: 10, rows: rowsFixture.slice(0, 1), runUrl: undefined });
+  assert.equal(a.title, "[Monitor] vercel-production: deployment error events above threshold");
+  assert.equal(a.title, b.title, "the title must not change with the counts, or de-duplication would never match");
+  assert.match(a.body, /\*\*13\*\* error event\(s\)/);
+  assert.match(a.body, /dpl_a/);
+  assert.match(a.body, /https:\/\/b\.vercel\.app/);
+  assert.match(a.body, /actions\/runs\/1/);
+});
+
+test("run (github, default): above the threshold creates ONE issue and exits 0; secrets never in the log", async () => {
+  const gh = fakeGithub();
+  const logs = [];
+  const code = await run({ env: { ...baseEnv, ...ghEnv, DISCORD_WEBHOOK_URL: WEBHOOK }, argv: [], sdkFactory: async () => hotSdk(), fetchImpl: gh.fetchImpl, log: (m) => logs.push(m) });
+  assert.equal(code, 0);
+  const posts = gh.calls.filter((c) => c.method === "POST");
+  assert.equal(posts.length, 1);
+  assert.equal(posts[0].path, `/repos/${GH_REPO}/issues`);
+  assert.equal(posts[0].body.title, "[Monitor] vercel-production: deployment error events above threshold");
+  assert.match(posts[0].body.body, /\*\*11\*\* error event/);
+  assert.ok(gh.calls.every((c) => c.host === "api.github.com"), "the Discord webhook is ignored on the github channel");
+  const text = logs.join("\n");
+  assert.ok(!text.includes(GH_TOKEN) && !text.includes("tok_test") && !text.includes("SECRETPART"));
+});
+
+test("run (github): a second hot run comments on the open issue instead of creating another", async () => {
+  const title = "[Monitor] vercel-production: deployment error events above threshold";
+  const gh = fakeGithub([{ number: 41, title, html_url: `https://github.com/${GH_REPO}/issues/41` }]);
+  const code = await run({ env: { ...baseEnv, ...ghEnv }, argv: [], sdkFactory: async () => hotSdk(), fetchImpl: gh.fetchImpl, log: () => {} });
+  assert.equal(code, 0);
+  assert.deepEqual(gh.calls.filter((c) => c.method === "POST").map((c) => c.path), [`/repos/${GH_REPO}/issues/41/comments`]);
+});
+
+test("run (github): below the threshold makes no GitHub call; missing token/repo or API failure -> exit 2; dry-run -> exit 0 and no call", async () => {
+  const calm = fakeSdk({ d1: Array.from({ length: 10 }, () => ev("error")) });
+  const gh = fakeGithub();
+  assert.equal(await run({ env: { ...baseEnv, ...ghEnv }, argv: [], sdkFactory: async () => calm, fetchImpl: gh.fetchImpl, log: () => {} }), 0);
+  assert.equal(gh.calls.length, 0);
+  assert.equal(await run({ env: baseEnv, argv: [], sdkFactory: async () => hotSdk(), fetchImpl: gh.fetchImpl, log: () => {} }), 2);
+  assert.equal(await run({ env: { ...baseEnv, GITHUB_TOKEN: GH_TOKEN }, argv: [], sdkFactory: async () => hotSdk(), fetchImpl: gh.fetchImpl, log: () => {} }), 2);
+  assert.equal(await run({ env: { ...baseEnv, ...ghEnv }, argv: [], sdkFactory: async () => hotSdk(), fetchImpl: async () => ({ ok: false, status: 403 }), log: () => {} }), 2);
+  const logs = [];
+  assert.equal(await run({ env: { ...baseEnv, ...ghEnv }, argv: ["--dry-run"], sdkFactory: async () => hotSdk(), fetchImpl: async () => { throw new Error("must not be called"); }, log: (m) => logs.push(m) }), 0);
+  assert.match(logs.join("\n"), /--dry-run: alert NOT sent \(channel: github\)/);
+  assert.match(logs.join("\n"), /\[Monitor\] vercel-production/);
 });
