@@ -7,6 +7,11 @@ updates:
     open-pull-requests-limit: 10
     labels:
       - dependencies
+    ignore:
+      # typescript-eslint (8.71.1) declares peer typescript >=4.8.4 <6.1.0, so TypeScript 7 cannot be installed
+      # without bypassing the peer contract. Remove this entry once typescript-eslint publishes TS 7 support.
+      - dependency-name: typescript
+        versions: [">=6.1.0"]
 
   - package-ecosystem: github-actions
     directory: /
