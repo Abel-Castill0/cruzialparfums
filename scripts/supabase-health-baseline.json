@@ -1,0 +1,13 @@
+{
+  "_comment": "Accepted Supabase advisor counts for Production (iyxidhglyqkzoziyewlc), measured 2026-10-11 and documented in docs/closure-report-2026-10-10.md. The health script alerts when a security advisor is new or its count rises, or when a performance advisor is new or ERROR-level. Lower a number here when a finding is genuinely fixed; raise it only in a reviewed PR that explains why.",
+  "security": {
+    "rls_enabled_no_policy": 4,
+    "anon_security_definer_function_executable": 10,
+    "authenticated_security_definer_function_executable": 78,
+    "auth_leaked_password_protection": 1
+  },
+  "performance": {
+    "unused_index": 25,
+    "multiple_permissive_policies": 16
+  }
+}
