@@ -2,9 +2,10 @@ name: Supabase health
 
 # Hourly, READ-ONLY health check of the Production Supabase project through the hosted Supabase MCP server
 # (get_advisors + query_logs only; see scripts/supabase-health.mjs and docs/supabase-health-agent.md).
-# Needs the repository secrets SUPABASE_ACCESS_TOKEN and DISCORD_WEBHOOK_URL. Until SUPABASE_ACCESS_TOKEN exists the job
-# only emits a visible warning. Scheduled workflows run from the default branch only and fork pull requests never
-# receive secrets.
+# Needs the repository secret SUPABASE_ACCESS_TOKEN. Alerts go to GitHub Issues with the job's own short-lived
+# GITHUB_TOKEN (issues: write on this job only); Discord is opt-in with the repository variable MONITOR_CHANNEL=discord plus
+# the DISCORD_WEBHOOK_URL secret. Until SUPABASE_ACCESS_TOKEN exists the job only emits a visible warning. Scheduled
+# workflows run from the default branch only and fork pull requests never receive secrets.
 
 on:
   schedule:
@@ -12,9 +13,13 @@ on:
   workflow_dispatch:
     inputs:
       dry_run:
-        description: "Evaluate and print the alert instead of sending it to Discord"
+        description: "Read the project but write nothing (no issue, comment or webhook)"
         type: boolean
         default: true
+      alert_selftest:
+        description: "Prove alert delivery: create, comment and close a clearly labelled self-test issue"
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -29,6 +34,15 @@ jobs:
     if: github.repository == 'Abel-Castill0/cruzialparfums'
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    permissions:
+      contents: read
+      issues: write
+    env:
+      MONITOR_CHANNEL: ${{ vars.MONITOR_CHANNEL || 'github' }}
+      # Only handed to the scripts when Discord was chosen; the default GitHub path does not need it.
+      DISCORD_WEBHOOK_URL: ${{ vars.MONITOR_CHANNEL == 'discord' && secrets.DISCORD_WEBHOOK_URL || '' }}
+      # A scheduled run has no inputs, so it is a real run; a manual run is a dry run unless unticked.
+      DRY_RUN: ${{ inputs.dry_run == true }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -36,7 +50,13 @@ jobs:
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 24
-      # No dependency install on purpose: the script only uses Node built-ins and fetch.
+      # No dependency install on purpose: the scripts only use Node built-ins and fetch.
+      - name: Alert delivery self-test
+        if: inputs.alert_selftest == true
+        env:
+          MONITOR_SELFTEST_SOURCE: supabase-health
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/monitor-alert-selftest.mjs
       - name: Check configuration
         id: config
         env:
@@ -45,7 +65,7 @@ jobs:
           if [ "$HAS_TOKEN" != "true" ]; then
             echo "::warning title=Supabase health check NOT running::The SUPABASE_ACCESS_TOKEN repository secret is not set, so no check was made."
             echo "### Supabase health check is not configured" >> "$GITHUB_STEP_SUMMARY"
-            echo "Set the \`SUPABASE_ACCESS_TOKEN\` and \`DISCORD_WEBHOOK_URL\` repository secrets (see docs/supabase-health-agent.md)." >> "$GITHUB_STEP_SUMMARY"
+            echo "Set the \`SUPABASE_ACCESS_TOKEN\` repository secret (see docs/supabase-health-agent.md)." >> "$GITHUB_STEP_SUMMARY"
             echo "configured=false" >> "$GITHUB_OUTPUT"
           else
             echo "configured=true" >> "$GITHUB_OUTPUT"
@@ -54,13 +74,8 @@ jobs:
         if: steps.config.outputs.configured == 'true'
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          # Short-lived job token, given only to the steps that may write issues.
+          GITHUB_TOKEN: ${{ github.token }}
           # Not a secret: the Production project ref already appears in the public docs.
           SUPABASE_PROJECT_REF: iyxidhglyqkzoziyewlc
-          DRY_RUN: ${{ inputs.dry_run }}
-        run: |
-          if [ "$DRY_RUN" = "true" ]; then
-            node scripts/supabase-health.mjs --dry-run
-          else
-            node scripts/supabase-health.mjs
-          fi
+        run: node scripts/supabase-health.mjs

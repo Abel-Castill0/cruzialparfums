@@ -6,6 +6,7 @@ import { createServer } from "node:http";
 import {
   ALLOWED_TOOLS,
   buildAlert,
+  buildIssues,
   createMcpClient,
   evaluateAdvisors,
   evaluateService,
@@ -216,7 +217,7 @@ test("MCP client refuses a server that exposes any other tool (read_only/feature
 
 /* ------------------------------------------------------------------ run() */
 
-function runWith({ logs, advisors = calmAdvisors, runEnv = { ...env, DISCORD_WEBHOOK_URL: WEBHOOK }, argv = [], fetchImpl, baseline = quietBaseline }) {
+function runWith({ logs, advisors = calmAdvisors, runEnv = { ...env, MONITOR_CHANNEL: "discord", DISCORD_WEBHOOK_URL: WEBHOOK }, argv = [], fetchImpl, baseline = quietBaseline }) {
   const sent = [];
   const logsOut = [];
   const promise = (async () => {
@@ -270,7 +271,7 @@ test("run: --dry-run never calls fetch; exit 2 when it cannot deliver; exit 1 on
   const dry = await runWith({ logs: hot, argv: ["--dry-run"], fetchImpl: async () => { throw new Error("must not be called"); } });
   assert.equal(dry.code, 0);
   assert.match(dry.logs, /--dry-run: alert NOT sent/);
-  const noHook = await runWith({ logs: hot, runEnv: env });
+  const noHook = await runWith({ logs: hot, runEnv: { ...env, MONITOR_CHANNEL: "discord" } });
   assert.equal(noHook.code, 2);
   const rejected = await runWith({ logs: hot, fetchImpl: async () => ({ ok: false, status: 500 }) });
   assert.equal(rejected.code, 2);
@@ -286,4 +287,85 @@ test("buildAlert holds counts and names only", () => {
   assert.match(p.content, /auth\*\*: 6\/40/);
   assert.match(p.content, /actions\/runs\/9/);
   assert.ok(p.content.length <= 1900);
+});
+
+/* ------------------------------------------------ GitHub Issues channel (default) */
+const GH_REPO = "Abel-Castill0/cruzialparfums";
+const GH_TOKEN = "ghs_test_token_value";
+const ghEnv = { GITHUB_TOKEN: GH_TOKEN, GITHUB_REPOSITORY: GH_REPO };
+const ghJson = (body, status = 200) => ({ ok: true, status, json: async () => body });
+function fakeGithub(open = []) {
+  const calls = [];
+  const fetchImpl = async (url, init = {}) => {
+    const u = new URL(String(url));
+    const method = init.method ?? "GET";
+    calls.push({ method, host: u.host, path: u.pathname, body: init.body ? JSON.parse(init.body) : undefined });
+    if (method === "GET") return ghJson(open);
+    const c = u.pathname.match(/\/issues\/(\d+)\/comments$/);
+    if (c) return ghJson({ html_url: `https://github.com/${GH_REPO}/issues/${c[1]}#c` }, 201);
+    return ghJson({ number: 200 + calls.length, html_url: `https://github.com/${GH_REPO}/issues/200` }, 201);
+  };
+  return { fetchImpl, calls };
+}
+
+test("buildIssues: one issue per condition with stable titles; counts only in the body", () => {
+  const svc = (service, errors) => ({ service, alert: true, reason: "rate up 120%", cur: { total: 40, errors, rate: errors / 40 }, prev: { total: 40, errors: 2, rate: 0.05 } });
+  const a = buildIssues({ projectRef: REF, services: [svc("api", 6), { ...svc("auth", 0), alert: false }], advisorRegressions: [{ kind: "security", name: "x", why: "new" }], runUrl: "https://github.com/o/r/actions/runs/9" });
+  assert.deepEqual(a.map((i) => i.title), ["[Monitor] supabase-api: server error rate up", "[Monitor] supabase-advisors: regression vs baseline"]);
+  const b = buildIssues({ projectRef: REF, services: [svc("api", 30)], advisorRegressions: [] });
+  assert.equal(b[0].title, a[0].title, "same condition, same title, whatever the counts");
+  assert.match(a[0].body, /\| last hour \| 6 \| 40 \| 15\.0% \|/);
+  assert.match(a[1].body, /\*\*security\*\* `x`: new/);
+  assert.deepEqual(buildIssues({ projectRef: REF, services: [], advisorRegressions: [] }), []);
+});
+
+test("config: the default channel is github; an invalid MONITOR_CHANNEL is rejected", async () => {
+  assert.equal(readConfig(env).channel, "github");
+  assert.equal(readConfig({ ...env, MONITOR_CHANNEL: "discord" }).channel, "discord");
+  assert.throws(() => readConfig({ ...env, MONITOR_CHANNEL: "email" }), /MONITOR_CHANNEL must be one of/);
+});
+
+test("run (github, default): API and advisor problems create one issue each; a repeat comments instead", async () => {
+  const hot = (start) => [{ svc: "api", total: 100, errors: hourStart(start) ? 8 : 2 }];
+  const advisors = { security: [{ name: "s1", level: "WARN", count: 2 }, { name: "brand_new_lint", level: "WARN", count: 1 }], performance: [] };
+  const gh = fakeGithub();
+  const first = await runWith({ logs: hot, advisors, runEnv: { ...env, ...ghEnv, DISCORD_WEBHOOK_URL: WEBHOOK }, fetchImpl: gh.fetchImpl });
+  assert.equal(first.code, 0);
+  const created = gh.calls.filter((c) => c.method === "POST");
+  assert.deepEqual(created.map((c) => c.body.title), ["[Monitor] supabase-api: server error rate up", "[Monitor] supabase-advisors: regression vs baseline"]);
+  assert.ok(gh.calls.every((c) => c.host === "api.github.com"));
+  assert.ok(!first.logs.includes(GH_TOKEN) && !first.logs.includes("sbp_test_token") && !first.logs.includes("SECRETPART"));
+
+  const open = created.map((c, i) => ({ number: 50 + i, title: c.body.title, html_url: `https://github.com/${GH_REPO}/issues/${50 + i}` }));
+  const gh2 = fakeGithub(open);
+  const second = await runWith({ logs: hot, advisors, runEnv: { ...env, ...ghEnv }, fetchImpl: gh2.fetchImpl });
+  assert.equal(second.code, 0);
+  assert.deepEqual(gh2.calls.filter((c) => c.method === "POST").map((c) => c.path), [`/repos/${GH_REPO}/issues/50/comments`, `/repos/${GH_REPO}/issues/51/comments`]);
+});
+
+test("run (github): a calm hour makes no GitHub call; missing token or API failure -> exit 2; dry-run -> exit 0, no call", async () => {
+  const calm = () => [{ svc: "api", total: 100, errors: 2 }];
+  const gh = fakeGithub();
+  const quiet = await runWith({ logs: calm, runEnv: { ...env, ...ghEnv }, fetchImpl: gh.fetchImpl });
+  assert.equal(quiet.code, 0);
+  assert.equal(gh.calls.length, 0);
+  const hot = (start) => [{ svc: "api", total: 100, errors: hourStart(start) ? 10 : 2 }];
+  assert.equal((await runWith({ logs: hot, runEnv: env })).code, 2);
+  assert.equal((await runWith({ logs: hot, runEnv: { ...env, ...ghEnv }, fetchImpl: async () => ({ ok: false, status: 403 }) })).code, 2);
+  const dry = await runWith({ logs: hot, runEnv: { ...env, ...ghEnv }, argv: ["--dry-run"], fetchImpl: async () => { throw new Error("must not be called"); } });
+  assert.equal(dry.code, 0);
+  assert.match(dry.logs, /--dry-run: alert NOT sent \(channel: github\)/);
+  assert.match(dry.logs, /\[Monitor\] supabase-api/);
+});
+
+test("run (github): an MCP failure (rejected token) raises 'supabase-health: monitor cannot run'; DRY_RUN=true writes nothing", async () => {
+  const broken = async () => ({ initialize: async () => { throw new Error("MCP server answered HTTP 401.\nstack"); } });
+  const gh = fakeGithub();
+  assert.equal(await run({ env: { ...env, ...ghEnv }, now: NOW, baseline: quietBaseline, log: () => {}, fetchImpl: gh.fetchImpl, clientFactory: broken }), 1);
+  const created = gh.calls.find((c) => c.method === "POST");
+  assert.equal(created.body.title, "[Monitor] supabase-health: monitor cannot run");
+  assert.match(created.body.body, /HTTP 401/);
+  assert.ok(!created.body.body.includes("stack") && !created.body.body.includes("sbp_test_token"));
+  const never = async () => { throw new Error("must not be called"); };
+  assert.equal(await run({ env: { ...env, ...ghEnv, DRY_RUN: "true" }, now: NOW, baseline: quietBaseline, log: () => {}, fetchImpl: never, clientFactory: broken }), 1);
 });
