@@ -98,12 +98,11 @@ Revert: add them back in the same screen ("Add URL").
 
 ### 3d. Supabase API keys and JWT signing keys (changed 2026-10-11)
 
-- Legacy `anon`/`service_role` API keys: **disabled** (`GET /v1/projects/<ref>/api-keys/legacy` → `enabled:false`). Revert:
-  Dashboard → Settings → API Keys → Legacy → re-enable. The app uses only the publishable and secret keys (7-day log
-  evidence in docs/credential-rotation-plan.md).
-- JWT signing keys: ES256 `in_use`, legacy HS256 `previously_used`. Revoking HS256 is **irreversible** and is pending the
-  owner (Dashboard → Settings → JWT Keys → ⋯ → Revoke key). A rollback after that would mean creating a new standby key; there
-  is no way back to the old HS256 secret (nothing uses it).
+- Legacy `anon`/`service_role` API keys: **disabled** (`GET /v1/projects/<ref>/api-keys/legacy` → `enabled:false`). Because the HS256
+  signing key was revoked afterwards they are also untrusted as JWTs, so re-enabling them in the dashboard would not make them
+  work again. The app uses only the publishable and secret keys.
+- JWT signing keys: ES256 `in_use`, legacy HS256 **revoked** (2026-10-11, irreversible, no consumer). If a JWT-signing problem ever
+  appears, create a new standby key in Dashboard → Settings → JWT Keys and rotate to it; there is no way back to the old HS256 secret.
 - Emergency check that the app still reaches the database after any key change: `curl -s https://cruzial.pe/parfums/catalogo |
   grep -c '/parfums/productos/'` (≈94) and the gateway-log query by key class in the credential plan.
 
