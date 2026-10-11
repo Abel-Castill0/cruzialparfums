@@ -15,9 +15,11 @@ function assertServerOnly(fnName: string) {
  * Server-side Cloudinary signing.
  *
  * No Cloudinary SDK dependency: a signed-upload signature is just
- * `sha1(sorted "key=value&..." of every non-file param + api_secret)` per
- * Cloudinary's own documented algorithm, and destroy uses the same scheme
- * over a smaller param set. Hand-rolling this with node:crypto keeps the
+ * `sha256(sorted "key=value&..." of every non-file param + api_secret)` per
+ * Cloudinary's documented algorithm (SHA-1 and SHA-256 are both accepted by
+ * default; SHA-256 verified against the real account on 2026-10-11 with a
+ * signed destroy of a non-existent id: sha256 -> "not found", tampered -> 401),
+ * and destroy uses the same scheme over a smaller param set. Hand-rolling this with node:crypto keeps the
  * secret in exactly one small, auditable file instead of pulling in a
  * general-purpose SDK for two API calls.
  *
@@ -64,7 +66,7 @@ function signParams(params: Record<string, string | number>, apiSecret: string):
     .sort()
     .map((key) => `${key}=${params[key]}`)
     .join("&");
-  return createHash("sha1").update(`${toSign}${apiSecret}`).digest("hex");
+  return createHash("sha256").update(`${toSign}${apiSecret}`).digest("hex");
 }
 
 type UploadTokenPayload = {
