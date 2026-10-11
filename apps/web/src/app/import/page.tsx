@@ -7,7 +7,8 @@ import { readImportDepositPercentages } from "@/domains/import/import-deposit-po
 import { createSupabasePublicServerClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
-  title: "Consolidados y catálogo",
+  // Absolute: a page in the same segment as its layout gets the root template.
+  title: { absolute: "Consolidados y catálogo | Cruzial Import" },
   description: "Consulta el consolidado vigente y el catálogo público de Cruzial Import.",
 };
 
