@@ -88,7 +88,7 @@ docs/credential-rotation-plan.md §7 (sixth phase below). In this phase's list, 
   Supabase health 38157017223 succeeded. Issue #81 stays open until a **scheduled** run also succeeds.
 - **Working copy moved out of OneDrive** to `C:\dev\cruzialparfums` (2098/2098 files byte-identical, refs and stash
   identical, `npm ci` + full `npm run check` pass there). Original kept until the owner accepts the new location.
-- **Credential inventory + rotation plan (nothing rotated):** docs/credential-rotation-plan.md. Key finding: the root
+- **Credential inventory + rotation plan (at that time nothing was rotated; current status in the sixth phase above):** docs/credential-rotation-plan.md. Key finding: the root
   `.env` held Production secrets, including the Supabase **legacy JWT secret** (valid at that time; **since revoked**, see the sixth phase)
   with no live consumer in the gateway logs.
 
