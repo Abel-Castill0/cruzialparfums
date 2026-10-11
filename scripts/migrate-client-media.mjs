@@ -72,7 +72,8 @@ function requireCloudinaryEnv() {
 
 function sign(params, apiSecret) {
   const toSign = Object.keys(params).sort().map((key) => `${key}=${params[key]}`).join("&");
-  return createHash("sha1").update(`${toSign}${apiSecret}`).digest("hex");
+  // SHA-256: accepted by Cloudinary by default (see apps/web/src/lib/media/cloudinary.ts).
+  return createHash("sha256").update(`${toSign}${apiSecret}`).digest("hex");
 }
 
 function sha256File(path) {

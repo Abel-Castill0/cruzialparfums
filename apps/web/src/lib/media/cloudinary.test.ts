@@ -73,16 +73,17 @@ describe("createUploadAuthorization", () => {
     expect(first?.publicId).not.toBe(second?.publicId);
   });
 
-  it("produces a signature matching Cloudinary's documented sha1(sorted params + secret) scheme", () => {
+  it("produces a signature matching Cloudinary's documented sha256(sorted params + secret) scheme (not SHA-1)", () => {
     const auth = createUploadAuthorization(OTHER_PRODUCT_ID);
     expect(auth).not.toBeNull();
     if (!auth) return;
 
-    const expected = createHash("sha1")
+    const expected = createHash("sha256")
       .update(`allowed_formats=${auth.allowedFormats}&public_id=${auth.publicId}&timestamp=${auth.timestamp}topsecret`)
       .digest("hex");
 
     expect(auth.signature).toBe(expected);
+    expect(auth.signature).toMatch(/^[0-9a-f]{64}$/);
   });
 
   it("restricts uploads to jpg/jpeg/png/webp only", () => {
