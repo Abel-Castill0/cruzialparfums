@@ -68,8 +68,8 @@ holds the evidence for this pass.
   requirement) or the admin address is added as an organization member. Do not report recovery as verified before a real
   e-mail arrives.
 - Supabase Auth `uri_allow_list` no longer contains `localhost`/`127.0.0.1` (2026-10-11).
-- Supabase legacy API keys disabled 2026-10-11 (re-enable path in docs/credential-rotation-plan.md §7); the legacy HS256
-  signing key is still "previously used" until the owner revokes it.
+- Supabase legacy API keys disabled and the legacy HS256 signing key **revoked** (2026-10-11, irreversible; nothing used it).
+  Status of every other credential: docs/credential-rotation-plan.md §7.
 - GitHub scheduled workflows are best effort: today runs were 40-95 min late and most hourly slots were dropped; the
   monitors now have two off-peak slots per hour. A strict cadence needs an external scheduler.
 - Owner-session checks still pending (docs/owner-verification-runbook.md):

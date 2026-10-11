@@ -20,6 +20,36 @@ git rev-parse HEAD
 > The sections below the "Current verified state (2026-10-01)" block are
 > historical gate records; where they conflict with that block, that block wins.
 
+## Operational closure (2026-10-11, sixth phase) — HS256 revoked, secrets prepared — READ THIS FIRST
+
+State: master `c38d8e0` = Production `dpl_An6rgcSef2fVyA3XaSTeAec88XTT`; CI, CodeQL and secret scan green; 85 migrations in Production and
+QA; no open PRs or issues; indexing OFF. The authoritative per-credential table is **docs/credential-rotation-plan.md §7**.
+
+**TERMINADO Y VERIFICADO**
+- **Supabase legacy JWT secret revoked** (HS256 signing key → `revoked`; ES256 `in_use`; JWKS publishes only ES256) and the legacy
+  `anon`/`service_role` API keys stay disabled. Checked before and after: 7 days of gateway logs with 0 legacy-key requests; after the
+  revocation all public routes 200, catalog 94 products, Supabase Health and Vercel monitor green (real runs), 0 denied requests
+  from the app, `/auth/callback` redirects as before. Irreversible; nothing used that key.
+- The Production DB password no longer exists in plaintext: it is in the DPAPI store (current Windows user only) and operator
+  functions (`scripts/ops/secret-env.ps1`) use it without printing it; `Invoke-CruzialDbPushDryRun` against Production → "Remote database
+  is up to date". (Same password: rotation still pending, below.)
+- A human-run, tested helper `scripts/ops/store-secret.ps1` moves a copied value into exactly one destination (GitHub secret, DPAPI,
+  Vercel Production-only variable) after refusing empty/wrong-shaped input, without printing it; tested with dummy values.
+- Real credential state established by metadata and behavior: `VERCEL_TOKEN` holds the old team-wide "CRUZIAL" token (monitor ran
+  with it); the Supabase PAT is the single scoped token "Cruzial Monitor Read-Only" (also in the local `.env`); a LEGACY, non-expiring
+  Supabase CLI login token exists (not in OneDrive).
+
+**PENDIENTE DE INTERVENCIÓN DEL PROPIETARIO** (each is *prepared*: copy the value, run the helper; exact steps in §7)
+1. `VERCEL_TOKEN` swap to a project-scoped 90-day token, then revoke "CRUZIAL".
+2. Rotate the DB password, `sb_secret`, the Cloudinary pair; optionally narrow the Supabase PAT and renew the CLI login token.
+3. Cloudinary upload+delete on a draft product from the admin session (after the Cloudinary rotation).
+
+**BLOQUEADO POR UN PROVEEDOR / EXTERNO**
+- SMTP for Supabase Auth: the admin's recovery e-mail is not deliverable until an SMTP provider's credentials exist or the admin
+  address is an organization member. No provider is contracted; nothing was invented or purchased.
+- GitHub scheduled workflows are best effort (two slots per hour each; late/dropped runs observed).
+- Next.js 2026-10-14 release not published; the watcher workflow and a one-off scheduled check cover it.
+
 ## Operational closure (2026-10-11, fifth phase) — rotations started, metadata fixed, watchers added
 
 State at the end of the session: Production serves the master commit of PR #92 (`4366d41`, `dpl_6QWHn9sjnHW1LPZXfVfKxP7NCAbJ`);
@@ -44,13 +74,8 @@ State at the end of the session: Production serves the master commit of PR #92 (
   root `.env`); `.env`, `.env.qa`, `apps/web/.env.local` and `e2e/.auth` restricted to the Windows user; consumer-less secrets removed.
 - Backups re-verified after all changes: 3/3 SHA-256 each (private folder `C:\cruzial-private-backups`, outside OneDrive).
 
-**PENDIENTE DE INTERVENCIÓN DEL PROPIETARIO** (details and exact commands: docs/credential-rotation-plan.md §7)
-1. Create the project-scoped Vercel token and store it in `VERCEL_TOKEN`; then revoke the old team-wide "CRUZIAL" token.
-2. Revoke the Supabase HS256 signing key (irreversible; no consumer; kills the leaked legacy secret).
-3. Rotate the DB password, `sb_secret`, Cloudinary pair and the Supabase PAT (create-new → switch → verify → delete-old).
-4. SMTP provider for Supabase Auth: **recovery e-mail to the admin is not deliverable** with the built-in mailer (org has one
-   member, not the admin address).
-5. Cloudinary upload+delete on a draft product from the admin session; check the Personal OneDrive in the browser for old copies.
+**Pending items of this phase:** superseded — the current status of every credential and pending step is the table in
+docs/credential-rotation-plan.md §7 (sixth phase below). In this phase's list, the HS256 revocation has since been DONE.
 
 **BLOQUEADO POR UN PROVEEDOR / RIESGO RESIDUAL**
 - GitHub scheduled workflows are best effort (late/dropped slots); a strict cadence needs an external scheduler.
@@ -61,11 +86,11 @@ State at the end of the session: Production serves the master commit of PR #92 (
 - **Vercel monitor repaired.** The owner replaced the `VERCEL_TOKEN` secret (new token `cruzial-monitor`, expires
   2027-01-09). Dry run 38156949861 and real run 38157014418 succeeded (5 Production deployments, 0 error events);
   Supabase health 38157017223 succeeded. Issue #81 stays open until a **scheduled** run also succeeds.
-- **Working copy moved out of OneDrive** to `C:devcruzialparfums` (2098/2098 files byte-identical, refs and stash
+- **Working copy moved out of OneDrive** to `C:\dev\cruzialparfums` (2098/2098 files byte-identical, refs and stash
   identical, `npm ci` + full `npm run check` pass there). Original kept until the owner accepts the new location.
-- **Credential inventory + rotation plan (nothing rotated):** docs/credential-rotation-plan.md. Key finding: the root
-  `.env` held Production secrets, including the Supabase **legacy JWT secret** (still valid; legacy API keys enabled)
-  with no live consumer in the last 24 h of gateway logs.
+- **Credential inventory + rotation plan (at that time nothing was rotated; current status in the sixth phase above):** docs/credential-rotation-plan.md. Key finding: the root
+  `.env` held Production secrets, including the Supabase **legacy JWT secret** (valid at that time; **since revoked**, see the sixth phase)
+  with no live consumer in the gateway logs.
 
 ## Operational closure (2026-10-11, third phase)
 
@@ -84,7 +109,7 @@ State: master = Production `a8ced07` (`dpl_B1JB46r2eYMfCPbxkYaAfBcSfESU`, READY)
   issue #81 throttled, 0 extra comments). Env files were never committed (`git log --all` empty) and are ignored.
 - Metadata location investigated (async root `generateMetadata` + streaming); fix documented in rollback-runbook §3b.
 
-**PENDIENTE DE INTERVENCIÓN DEL PROPIETARIO**
+**PENDIENTE DE INTERVENCIÓN DEL PROPIETARIO** (superseded by docs/credential-rotation-plan.md §7)
 - Store the valid token as the `VERCEL_TOKEN` secret (command in the owner checklist; agents never store
   credentials), then a monitor run closes #81. Recommended afterwards: create a fresh token with an expiry (90 days) or
   a project-scoped one (`vercel tokens add --project`), store it the same way and revoke "CRUZIAL" (no expiry, team-wide).
