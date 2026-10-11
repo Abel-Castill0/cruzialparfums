@@ -4,7 +4,7 @@
 -- count, so the readiness gate is not weakened.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(6);
+select plan(8);
 
 create temporary table readiness_before as
 select code, app.unit_launch_readiness(id) r from public.business_units where code in ('parfums','import');
@@ -48,6 +48,15 @@ select is(
 select ok(
   (select app.unit_launch_readiness(id)->'blockers' ? 'catalog.unpublished_products' from public.business_units where code='parfums'),
   'a draft product still blocks launch readiness');
+
+select is(
+  (select (app.unit_launch_readiness(id)->>'commercial_blockers')::int from public.business_units where code='parfums'),
+  (select (r->>'commercial_blockers')::int + 1 from readiness_before where code='parfums'),
+  'the draft product''s legacy draft variant is still a commercial blocker');
+select is(
+  (select (app.unit_launch_readiness(id)->>'missing_primary_media')::int from public.business_units where code='parfums'),
+  (select (r->>'missing_primary_media')::int + 1 from readiness_before where code='parfums'),
+  'a draft product without a photo is still counted as missing media');
 
 -- Import is unaffected by a Parfums product either way.
 select is(
