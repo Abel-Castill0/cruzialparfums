@@ -1,30 +1,29 @@
 .notice {
   margin: 24px auto;
   max-width: 720px;
-  padding: 24px 20px;
-  border: 1px solid var(--color-line);
-  border-radius: 4px;
-  background: var(--color-paper);
+  padding: 24px 24px;
+  border: 1px solid var(--ds-hairline);
+  border-radius: var(--ds-radius-sm);
+  background: var(--ds-white);
   text-align: center;
 }
 
 .notice h2 {
-  margin: 8px 0 12px;
+  margin: 8px 0 16px;
   font-size: clamp(1.25rem, 2.4vw, 1.6rem);
   font-weight: 500;
   letter-spacing: -0.01em;
-  color: var(--color-ink);
+  color: var(--ds-ink);
 }
 
 .notice p {
   margin: 0;
-  color: var(--color-ink-muted);
+  color: var(--ds-ink-muted);
   line-height: 1.6;
 }
 
 .eyebrow {
-  font-size: var(--text-label);
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--color-ink-muted);
+  font-size: var(--ds-text-small);
+
+  color: var(--ds-ink-muted);
 }

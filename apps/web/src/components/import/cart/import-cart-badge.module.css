@@ -5,12 +5,12 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: var(--color-import-silver);
-  transition: color 180ms ease;
+  color: var(--ds-on-photo-muted);
+  transition: color var(--ds-dur-fast) var(--ds-ease-spring);
 }
 
 .badge:hover {
-  color: var(--color-import-white);
+  color: var(--ds-white);
 }
 
 .count {
@@ -19,14 +19,14 @@
   right: 2px;
   min-width: 18px;
   height: 18px;
-  padding: 0 5px;
+  padding: 0 4px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 999px;
-  background: var(--color-import-white);
-  color: var(--color-import-navy);
-  font-size: 0.62rem;
-  font-weight: 700;
+  background: var(--ds-white);
+  color: var(--ds-ink);
+  font-size: 0.75rem;
+  font-weight: 600;
   line-height: 1;
 }

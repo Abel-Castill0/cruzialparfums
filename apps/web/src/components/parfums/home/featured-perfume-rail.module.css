@@ -2,11 +2,11 @@
   width: min(1240px, calc(100% - 48px));
   margin-inline: auto;
   padding: clamp(48px, 7vw, 82px) 0;
-  border-top: 1px solid rgba(26, 22, 18, 0.12);
+  border-top: 1px solid var(--ds-hairline);
 }
 
 .sectionHead {
-  margin-bottom: 26px;
+  margin-bottom: 24px;
   display: flex;
   align-items: end;
   justify-content: space-between;
@@ -14,23 +14,23 @@
 }
 
 .eyebrow {
-  color: #756f66;
-  font-size: 10px;
+  color: var(--ds-ink-muted);
+  font-size: 0.75rem;
   font-weight: 600;
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
+
 }
 
 .sectionHead h2 {
   margin: 8px 0 0;
-  font-family: var(--font-display), Georgia, serif;
+  font-family: var(--ds-font);
+  letter-spacing: -0.03em;
   font-size: clamp(30px, 4vw, 46px);
-  font-weight: 500;
+  font-weight: 600;
   line-height: 1;
 }
 
 .sectionHead h2 em {
-  color: #756f66;
+  color: var(--ds-ink-muted);
   font-weight: 400;
   font-style: normal;
 }
@@ -46,21 +46,21 @@
   height: 44px;
   display: grid;
   place-items: center;
-  border: 1px solid rgba(26, 22, 18, 0.18);
-  color: #0a0806;
-  background: #fff;
+  border: 1px solid var(--ds-hairline);
+  color: var(--ds-ink);
+  background: var(--ds-white);
   font-size: 15px;
   cursor: pointer;
-  transition: background-color 180ms ease;
+  transition: background-color var(--ds-dur-fast) var(--ds-ease-spring);
 }
 
 .arrows button:hover {
-  background: #f5f1eb;
+  background: var(--ds-gray-50);
 }
 
 .track {
   display: flex;
-  gap: 14px;
+  gap: 16px;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
   scroll-behavior: smooth;
@@ -78,50 +78,50 @@
   scroll-snap-align: start;
   display: block;
   color: inherit;
-  border: 1px solid rgba(26, 22, 18, 0.12);
-  background: #fff;
-  transition: border-color 200ms ease, transform 200ms ease;
+  border: 1px solid var(--ds-hairline);
+  background: var(--ds-white);
+  transition: border-color var(--ds-dur-fast) var(--ds-ease-spring), transform var(--ds-dur-fast) var(--ds-ease-spring);
 }
 
 .card:hover {
-  border-color: rgba(10, 9, 8, 0.4);
+  border-color: rgba(0, 0, 0, 0.2);
   transform: translateY(-3px);
 }
 
 .cardMedia {
   position: relative;
   aspect-ratio: 1 / 1.1;
-  background: #fff;
+  background: var(--ds-white);
 }
 
 .cardImage {
   object-fit: contain;
-  padding: 14px;
+  padding: 16px;
 }
 
 .cardBody {
-  padding: 14px 16px 18px;
+  padding: 16px 16px 16px;
   display: grid;
   gap: 4px;
-  border-top: 1px solid rgba(26, 22, 18, 0.1);
+  border-top: 1px solid var(--ds-hairline);
 }
 
 .cardBrand {
-  color: #756f66;
-  font-size: 10px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
+  color: var(--ds-ink-muted);
+  font-size: 0.75rem;
+
 }
 
 .cardName {
-  font-family: var(--font-display), Georgia, serif;
+  font-family: var(--ds-font);
+  letter-spacing: -0.01em;
   font-size: 16px;
   font-weight: 500;
 }
 
 .cardPrice {
   margin-top: 2px;
-  color: #0a0806;
+  color: var(--ds-ink);
   font-size: 12px;
   font-weight: 600;
 }

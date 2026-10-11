@@ -1,11 +1,20 @@
 import type { Metadata } from "next";
-import { Cormorant_Garamond, Jost } from "next/font/google";
+import { Cormorant_Garamond, Geist, Jost } from "next/font/google";
 import { getAuthoritativeIndexingPolicy, getSiteUrl } from "@/lib/seo/site";
 import "./globals.css";
 
 const display = Cormorant_Garamond({
   variable: "--font-display",
   subsets: ["latin"],
+  display: "swap",
+});
+
+// Storefront (Parfums + Import) sets everything in one geometric sans — see DESIGN.md §3.
+// Admin keeps --font-display/--font-body.
+const sans = Geist({
+  variable: "--font-sans",
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
   display: "swap",
 });
 
@@ -46,7 +55,7 @@ export default function RootLayout({
   return (
     <html
       lang="es"
-      className={`${display.variable} ${body.variable}`}
+      className={`${display.variable} ${body.variable} ${sans.variable}`}
       data-scroll-behavior="smooth"
     >
       <body>{children}</body>

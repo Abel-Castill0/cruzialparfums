@@ -19,19 +19,15 @@
   display: grid;
   grid-template-columns: 1fr;
   grid-template-rows: 1fr;
-  height: calc(100svh - 36px);
-  min-height: 580px;
-  max-height: 1200px;
-  background: #fffdf8;
+  height: clamp(440px, 62svh, 600px);
+  background: var(--ds-white);
 }
 
 .eyebrow {
-  margin-bottom: 14px;
-  color: #756f66;
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.25em;
-  text-transform: uppercase;
+  margin-bottom: var(--ds-space-2);
+  color: var(--ds-ink-muted);
+  font-size: var(--ds-text-small);
+  font-weight: 500;
 }
 
 .catalogHeroMedia {
@@ -39,22 +35,23 @@
   grid-area: 1 / 1 / 2 / 2;
   min-height: 100%;
   overflow: hidden;
-  background: #f3ece1;
+  background: var(--ds-gray-100);
 }
 
 .catalogHeroImage {
   object-fit: cover;
 }
 
+/* Neutral white wash (no cream tint) keeps the headline legible on the left. */
 .catalogHeroScrim {
   position: absolute;
   inset: 0;
   background: linear-gradient(
     90deg,
-    rgba(255, 253, 248, 0.96) 0%,
-    rgba(255, 253, 248, 0.76) 32%,
-    rgba(255, 253, 248, 0.16) 56%,
-    rgba(255, 253, 248, 0) 68%
+    rgba(255, 255, 255, 0.94) 0%,
+    rgba(255, 255, 255, 0.7) 34%,
+    rgba(255, 255, 255, 0.12) 58%,
+    rgba(255, 255, 255, 0) 70%
   );
 }
 
@@ -67,90 +64,79 @@
 }
 
 .catalogHeroCopy {
-  width: min(540px, 100%);
+  width: min(560px, 100%);
   display: grid;
-  gap: 14px;
-  color: #0a0806;
+  gap: var(--ds-space-2);
+  color: var(--ds-ink);
   text-align: left;
 }
 
 .catalogHeroCopy h1 {
-  color: #0a0806;
-  font-family: var(--font-display), Georgia, serif;
-  font-size: clamp(34px, 4.6vw, 56px);
-  font-weight: 500;
-  line-height: 1.04;
-}
-
-.catalogHeroCopy h1 em {
-  color: #756f66;
-  font-style: italic;
-  font-weight: 400;
+  color: var(--ds-ink);
+  font-size: var(--ds-text-h1);
+  font-weight: 600;
+  line-height: 1.07;
+  letter-spacing: -0.03em;
 }
 
 .catalogHeroCopy > p {
   max-width: 42ch;
-  color: #5f5952;
-  font-size: 15px;
-  line-height: 1.7;
+  color: var(--ds-ink-muted);
+  font-size: var(--ds-text-lead);
+  line-height: 1.5;
 }
 
 .finderCta {
   width: fit-content;
-  min-height: 46px;
-  margin-top: 8px;
-  padding: 0 22px;
+  min-height: 48px;
+  margin-top: var(--ds-space-1);
+  padding: 0 var(--ds-space-3);
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  border: 1px solid #0a0806;
-  color: #0a0806;
-  background: transparent;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  transition: background-color 180ms ease, color 180ms ease;
+  gap: var(--ds-space-1);
+  border-radius: var(--ds-radius-pill);
+  color: var(--ds-white);
+  background: var(--ds-accent);
+  font-size: var(--ds-text-card);
+  font-weight: 500;
+  letter-spacing: -0.01em;
 }
 
 .finderCta:hover {
-  color: #fffdf8;
-  background: #0a0806;
+  background: var(--ds-accent-press);
 }
 
 .catalogLayout {
   min-height: 70vh;
   padding-bottom: clamp(70px, 8vw, 110px);
-  color: #2c2925;
-  background: #fff;
+  color: var(--ds-ink);
+  background: var(--ds-white);
 }
 
 .resultsTop {
   min-height: 26px;
-  margin-top: 32px;
-  margin-bottom: 20px;
+  margin-top: var(--ds-space-4);
+  margin-bottom: var(--ds-space-3);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 20px;
-  color: #756f66;
-  font-size: 10px;
+  gap: var(--ds-space-3);
+  color: var(--ds-ink-muted);
+  font-size: var(--ds-text-small);
   font-weight: 500;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
 }
 
 .giftNote {
   font-size: 12px;
   font-weight: 400;
-  letter-spacing: 0.01em;
+
   text-transform: none;
 }
 
 .productGrid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 20px;
+  gap: 24px;
   align-items: stretch;
 }
 
@@ -159,131 +145,87 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  border: 1px solid rgba(26, 22, 18, 0.12);
-  background: #fff;
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-gray-50);
+  box-shadow: var(--ds-shadow-1);
   scroll-margin-top: 140px;
-  transition: border-color 300ms ease, box-shadow 300ms ease, transform 300ms ease;
+  transition: box-shadow var(--ds-dur-base) var(--ds-ease-spring), transform var(--ds-dur-base) var(--ds-ease-spring);
 }
 
 .productCard:hover {
-  border-color: rgba(10, 9, 8, 0.36);
-  box-shadow: 0 18px 42px rgba(19, 15, 10, 0.09);
+  box-shadow: var(--ds-shadow-2);
   transform: translateY(-4px);
 }
 
 .cardMedia {
   position: relative;
+  isolation: isolate;
   aspect-ratio: 1 / 1.05;
   overflow: hidden;
-  background: #fff;
+  background: var(--ds-gray-50);
+}
+
+/* Soft contact shadow under the bottle: the photographs are studio shots on
+   white, so the shadow sits behind them and shows through the multiply blend. */
+.cardMedia::before {
+  position: absolute;
+  z-index: -1;
+  right: 22%;
+  bottom: 15%;
+  left: 22%;
+  height: 8%;
+  content: "";
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0) 70%);
+  filter: blur(6px);
+  transition: transform var(--ds-dur-slow) var(--ds-ease-spring), opacity var(--ds-dur-slow) var(--ds-ease-spring);
+}
+
+.productCard:hover .cardMedia::before {
+  transform: scale(1.08);
+  opacity: 0.85;
 }
 
 .cardMediaLink {
   position: absolute;
   z-index: 0;
   inset: 0;
+  /* The link is the stacking context, so the blend has to live on it:
+     white studio backgrounds melt into the grey tile. */
+  mix-blend-mode: multiply;
 }
 
 .cardImage {
+  padding: var(--ds-space-5) var(--ds-space-3) var(--ds-space-3);
   object-fit: contain;
-  padding: 16px;
-  transition: transform 650ms cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform var(--ds-dur-slow) var(--ds-ease-spring);
 }
 
 .productCard:hover .cardImage {
-  transform: scale(1.04);
+  transform: scale(1.03);
 }
 
+/* Quiet marker for the fragrance type. */
 .tag {
   position: absolute;
   z-index: 2;
-  top: 14px;
-  left: 14px;
+  top: var(--ds-space-2);
+  left: var(--ds-space-2);
   max-width: calc(100% - 76px);
-  padding: 6px 11px;
   overflow: hidden;
-  border: 1px solid rgba(26, 22, 18, 0.12);
-  color: #2c2925;
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(8px);
-  font-size: 10px;
-  letter-spacing: 0.22em;
+  color: var(--ds-ink-muted);
+  font-size: var(--ds-text-small);
+  font-weight: 500;
   text-overflow: ellipsis;
-  text-transform: uppercase;
   white-space: nowrap;
 }
 
 .cardBody {
   flex: 1;
-  padding: 20px 22px 22px;
+  padding: var(--ds-space-1) var(--ds-space-3) var(--ds-space-3);
   display: grid;
-  grid-template-rows: minmax(76px, auto) auto auto minmax(34px, auto);
+  grid-template-rows: minmax(76px, auto) auto auto minmax(32px, auto);
   align-content: start;
-}
-
-.quantityRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  margin-top: 12px;
-}
-
-.stepper {
-  display: inline-flex;
-  align-items: stretch;
-  flex: 0 0 auto;
-  border: 1px solid rgba(26, 22, 18, 0.18);
-}
-
-.stepper button {
-  width: 44px;
-  min-height: 44px;
-  border: 0;
-  background: transparent;
-  color: #2c2925;
-  font-size: 16px;
-  line-height: 1;
-  cursor: pointer;
-  transition: background 150ms ease;
-}
-
-.stepper button:hover:not(:disabled) {
-  background: rgba(10, 9, 8, 0.08);
-}
-
-.stepper button:disabled {
-  opacity: 0.35;
-  cursor: not-allowed;
-}
-
-.stepper output {
-  min-width: 30px;
-  display: grid;
-  place-items: center;
-  border-right: 1px solid rgba(26, 22, 18, 0.18);
-  border-left: 1px solid rgba(26, 22, 18, 0.18);
-  color: #1a1a1a;
-  font-size: 13px;
-  font-weight: 600;
-}
-
-.addButton {
-  flex: 1;
-  min-width: 0;
-  min-height: 44px;
-  border: 0;
-  color: #fff;
-  background: #0a0806;
-  font-size: 12px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: background 180ms ease;
-}
-
-.addButton:hover {
-  background: #2c2925;
 }
 
 .identity {
@@ -294,74 +236,130 @@
 
 .cardBrand {
   overflow: hidden;
-  color: #756f66;
-  font-size: 11px;
-  letter-spacing: 0.27em;
+  color: var(--ds-ink-muted);
+  font-size: var(--ds-text-small);
   text-overflow: ellipsis;
-  text-transform: uppercase;
   white-space: nowrap;
 }
 
 .cardName {
-  min-height: 2.15em;
-  margin: 6px 0 12px;
-  color: #1a1a1a;
-  font-family: var(--font-display), Georgia, serif;
-  font-size: 22px;
+  min-height: 2.6em;
+  margin: 4px 0 var(--ds-space-1);
+  color: var(--ds-ink);
+  font-size: var(--ds-text-card);
   font-weight: 500;
-  line-height: 1.08;
-  transition: color 180ms ease;
-}
-
-.productCard:hover .cardName {
-  color: #0a0806;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
 }
 
 .cardMeta {
   min-width: 0;
-  padding-top: 14px;
   display: flex;
-  align-items: center;
+  align-items: baseline;
   justify-content: space-between;
-  gap: 8px;
-  border-top: 1px solid rgba(26, 22, 18, 0.12);
+  gap: var(--ds-space-1);
 }
 
 .cardMeta span {
   min-width: 0;
-  color: #756f66;
-  font-size: 10px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  color: var(--ds-ink-muted);
+  font-size: var(--ds-text-small);
 }
 
 .cardMeta strong {
-  color: #0a0806;
-  font-family: var(--font-display), Georgia, serif;
-  font-size: 18px;
-  font-weight: 600;
+  color: var(--ds-ink-muted);
+  font-size: var(--ds-text-card);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
   white-space: nowrap;
+}
+
+.quantityRow {
+  margin-top: var(--ds-space-2);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-1);
+}
+
+.stepper {
+  display: inline-flex;
+  align-items: stretch;
+  flex: 0 0 auto;
+  overflow: hidden;
+  border-radius: var(--ds-radius-pill);
+  background: var(--ds-white);
+}
+
+.stepper button {
+  width: var(--ds-touch);
+  min-height: var(--ds-touch);
+  border: 0;
+  background: transparent;
+  color: var(--ds-ink);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color var(--ds-dur-fast) var(--ds-ease-spring);
+}
+
+.stepper button:hover:not(:disabled) {
+  background: var(--ds-gray-100);
+}
+
+.stepper button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.stepper output {
+  min-width: 32px;
+  display: grid;
+  place-items: center;
+  color: var(--ds-ink);
+  font-size: var(--ds-text-small);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.addButton {
+  flex: 1;
+  min-width: 0;
+  min-height: var(--ds-touch);
+  border: 0;
+  border-radius: var(--ds-radius-pill);
+  color: var(--ds-white);
+  background: var(--ds-accent);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.addButton:hover {
+  background: var(--ds-accent-press);
 }
 
 .bottleSlot {
   min-width: 0;
-  min-height: 34px;
+  min-height: 32px;
 }
 
 .bottleLink {
   min-width: 0;
-  margin-top: 12px;
-  padding-top: 11px;
+  min-height: var(--ds-touch);
+  margin-top: var(--ds-space-1);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 7px;
-  border-top: 1px solid rgba(26, 22, 18, 0.12);
-  color: #5f5a53;
-  font-size: 10px;
-  letter-spacing: 0.1em;
+  gap: var(--ds-space-1);
+  color: var(--ds-link);
+  font-size: var(--ds-text-small);
   line-height: 1.4;
-  text-transform: uppercase;
+}
+
+.bottleLink:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .bottleLink span {
@@ -379,64 +377,65 @@
 }
 
 .discontinued:hover {
-  border-color: rgba(26, 22, 18, 0.12);
-  box-shadow: none;
+  box-shadow: var(--ds-shadow-1);
   transform: none;
 }
 
 .discontinuedTag,
 .soldOut {
-  color: #6b655f !important;
+  color: var(--ds-ink-muted) !important;
 }
 
 .discontinued .cardName {
-  color: #756f66;
+  color: var(--ds-ink-muted);
 }
 
 .emptyState {
   min-height: 340px;
-  padding: 40px 24px;
+  padding: 48px 24px;
   display: grid;
   place-content: center;
   justify-items: center;
-  gap: 10px;
-  border: 1px solid #e8e4df;
+  gap: 8px;
+  border-radius: var(--ds-radius-lg);
+  background: var(--ds-gray-50);
   text-align: center;
 }
 
 .emptyState strong {
-  font-family: var(--font-display), Georgia, serif;
+  font-family: var(--ds-font);
+  letter-spacing: -0.03em;
   font-size: 32px;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .emptyState p {
   max-width: 40ch;
-  color: #756f66;
+  color: var(--ds-ink-muted);
 }
 
 .emptyStateActions {
-  margin-top: 12px;
+  margin-top: 16px;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: 16px;
 }
 
 .emptyState button {
   min-height: 44px;
-  padding: 10px 20px;
-  border: 1px solid #0a0806;
-  color: #2c2925;
-  background: #fff;
+  padding: 8px var(--ds-space-3);
+  border: 0;
+  border-radius: var(--ds-radius-pill);
+  color: var(--ds-white);
+  background: var(--ds-accent);
+  font-weight: 500;
   cursor: pointer;
-  transition: background-color 180ms ease, color 180ms ease;
 }
 
 .emptyState button:hover {
-  color: #fff;
-  background: #0a0806;
+  background: var(--ds-accent-press);
 }
 
 .emptyStateFinder {
@@ -444,20 +443,18 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 4px;
-  color: #5f5952;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.1em;
+  padding: 8px 4px;
+  color: var(--ds-link);
+  font-size: var(--ds-text-body);
+  font-weight: 500;
   text-decoration: underline;
   text-underline-offset: 4px;
-  text-transform: uppercase;
 }
 
 .recommendationBand {
   padding: clamp(36px, 6vw, 72px) 0;
-  color: #f3eee5;
-  background: #17140f;
+  color: var(--ds-ink);
+  background: var(--ds-gray-50);
 }
 
 .toast {
@@ -466,15 +463,16 @@
   right: 24px;
   bottom: 88px;
   max-width: min(380px, calc(100% - 32px));
-  padding: 14px 18px;
-  color: #fff;
-  background: #0a0806;
-  box-shadow: 0 12px 34px rgba(10, 8, 6, 0.22);
-  font-size: 12px;
+  padding: var(--ds-space-2);
+  border-radius: var(--ds-radius-md);
+  color: var(--ds-on-photo);
+  background: var(--ds-ink);
+  box-shadow: var(--ds-shadow-3);
+  font-size: var(--ds-text-small);
   opacity: 0;
   transform: translateY(12px);
   pointer-events: none;
-  transition: opacity 200ms ease, transform 200ms ease;
+  transition: opacity var(--ds-dur-fast) var(--ds-ease-spring), transform var(--ds-dur-fast) var(--ds-ease-spring);
 }
 
 .toastVisible {
@@ -495,8 +493,7 @@
 
   .catalogHero {
     grid-template-rows: 1fr;
-    height: calc(100svh - 34px);
-    min-height: 600px;
+    height: clamp(460px, 64svh, 560px);
   }
 
   .catalogHeroMedia {
@@ -510,12 +507,12 @@
 
   .catalogHeroScrim {
     display: block;
-    background: linear-gradient(90deg, rgba(255, 253, 248, 0.92), rgba(255, 253, 248, 0.55) 55%, rgba(255, 253, 248, 0.05));
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.55) 55%, rgba(255, 255, 255, 0.05));
   }
 
   .catalogHeroCopyWrap {
     grid-area: 1 / 1 / 2 / 2;
-    padding: 40px 0 26px;
+    padding: 48px 0 24px;
     background: transparent;
   }
 
@@ -526,7 +523,7 @@
   .resultsTop {
     align-items: flex-start;
     flex-direction: column;
-    gap: 7px;
+    gap: 8px;
   }
 
   .giftNote {
@@ -535,31 +532,31 @@
 
   .productGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 14px;
+    gap: 16px;
   }
 
   .cardImage {
-    padding: 10px;
+    padding: 8px;
   }
 
   .tag {
     top: 8px;
     left: 8px;
     max-width: calc(100% - 54px);
-    padding: 5px 7px;
-    font-size: 10px;
-    letter-spacing: 0.12em;
+    padding: 4px 8px;
+    font-size: 0.75rem;
+
   }
 
   .cardBody {
-    padding: 14px 12px 14px;
+    padding: 16px 16px 16px;
     grid-template-rows: minmax(69px, auto) auto auto minmax(35px, auto);
   }
 
   .quantityRow {
     flex-direction: column;
     align-items: stretch;
-    gap: 6px;
+    gap: 8px;
   }
 
   .stepper button,
@@ -568,8 +565,8 @@
   }
 
   .cardBrand {
-    font-size: 11px;
-    letter-spacing: 0.18em;
+    font-size: 0.75rem;
+
   }
 
   .cardName {
@@ -577,13 +574,13 @@
   }
 
   .cardMeta {
-    gap: 5px;
-    padding-top: 11px;
+    gap: 4px;
+    padding-top: 8px;
   }
 
   .cardMeta span {
-    font-size: 10px;
-    letter-spacing: 0.09em;
+    font-size: 0.75rem;
+
   }
 
   .cardMeta strong {
@@ -592,8 +589,8 @@
 
   .bottleLink {
     align-items: flex-start;
-    font-size: 10px;
-    letter-spacing: 0.06em;
+    font-size: 0.75rem;
+
   }
 }
 
@@ -610,7 +607,7 @@
   }
 
   .cardBody {
-    padding: 18px 20px;
+    padding: 16px 24px;
   }
 
   .cardName {
@@ -619,7 +616,7 @@
 
   .cardMeta span,
   .bottleLink {
-    font-size: 10px;
+    font-size: 0.75rem;
   }
 
   .cardMeta strong {
@@ -631,7 +628,7 @@
   position: relative;
   margin-top: clamp(48px, 7vw, 82px);
   overflow: hidden;
-  background: #0a0806;
+  background: var(--ds-ink);
 }
 
 .catalogFooterBandMedia {
@@ -658,44 +655,42 @@
 }
 
 .catalogFooterBandCopy .eyebrow {
-  color: rgba(255, 253, 248, 0.72);
+  color: rgba(255, 255, 255, 0.72);
 }
 
 .catalogFooterBandCopy h2 {
   max-width: 16ch;
-  margin: 6px 0 14px;
-  color: #fffdf8;
-  font-family: var(--font-display), Georgia, serif;
+  margin: 8px 0 16px;
+  color: var(--ds-on-photo);
+  font-family: var(--ds-font);
+  letter-spacing: -0.03em;
   font-size: clamp(24px, 3.2vw, 36px);
-  font-weight: 500;
+  font-weight: 600;
   line-height: 1.08;
 }
 
 .catalogFooterBandCopy h2 em {
-  color: rgba(255, 253, 248, 0.68);
-  font-style: italic;
+  color: rgba(255, 255, 255, 0.68);
+
   font-weight: 400;
 }
 
 .catalogFooterBandCta {
   width: fit-content;
   min-height: 44px;
-  padding: 0 20px;
+  padding: 0 var(--ds-space-3);
   display: inline-flex;
   align-items: center;
-  gap: 9px;
-  border: 1px solid #fffdf8;
-  color: #fffdf8;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  transition: background-color 180ms ease, color 180ms ease;
+  gap: var(--ds-space-1);
+  border-radius: var(--ds-radius-pill);
+  color: var(--ds-ink);
+  background: var(--ds-white);
+  font-size: var(--ds-text-body);
+  font-weight: 500;
 }
 
 .catalogFooterBandCta:hover {
-  color: #0a0806;
-  background: #fffdf8;
+  background: var(--ds-gray-100);
 }
 
 @media (max-width: 767px) {
@@ -710,7 +705,7 @@
 
   .catalogFooterBandCopy {
     align-items: flex-end;
-    padding-bottom: 30px;
+    padding-bottom: 32px;
   }
 
   .catalogFooterBandCopy h2 {
@@ -737,91 +732,13 @@
   .catalogHeroScrim {
     background: linear-gradient(
       0deg,
-      rgba(255, 253, 248, 0.97) 0%,
-      rgba(255, 253, 248, 0.92) 40%,
-      rgba(255, 253, 248, 0) 66%
+      rgba(255, 255, 255, 0.97) 0%,
+      rgba(255, 255, 255, 0.92) 40%,
+      rgba(255, 255, 255, 0) 66%
     );
   }
 
   .catalogHeroImage {
     object-position: 78% 30%;
   }
-}
-
-/* Card finish — the photograph sits on a warm mat (white studio backgrounds
- * melt into it), the type tag is a quiet marker, and nothing lifts on hover:
- * a hairline and a slow zoom are the only responses. */
-
-.resultsTop {
-  min-height: 24px;
-  font-size: 13px;
-  font-weight: 400;
-  letter-spacing: 0.01em;
-  text-transform: none;
-}
-
-.productCard {
-  border-color: rgba(26, 22, 18, 0.08);
-}
-
-.productCard:hover {
-  border-color: rgba(26, 22, 18, 0.34);
-  box-shadow: none;
-  transform: none;
-}
-
-.cardMedia {
-  background: radial-gradient(90% 80% at 50% 36%, #fff 0%, #f5f0e6 100%);
-}
-
-/* The link is the stacking context, so the blend has to live on it. */
-.cardMediaLink {
-  mix-blend-mode: multiply;
-}
-
-.cardImage {
-  padding: 22px;
-}
-
-.productCard:hover .cardImage {
-  transform: scale(1.03);
-}
-
-.tag {
-  top: 16px;
-  left: 16px;
-  padding: 0;
-  border: 0;
-  background: none;
-  backdrop-filter: none;
-  color: #6c665d;
-  font-size: 11px;
-  letter-spacing: 0.06em;
-  text-transform: none;
-}
-
-.tag::before {
-  display: inline-block;
-  width: 5px;
-  height: 5px;
-  margin-right: 8px;
-  content: "";
-  border-radius: 50%;
-  background: #a98648;
-  vertical-align: middle;
-}
-
-.discontinuedTag::before {
-  display: none;
-}
-
-.cardBrand {
-  letter-spacing: 0.2em;
-}
-
-.cardMeta span,
-.bottleLink {
-  font-size: 12px;
-  letter-spacing: 0.02em;
-  text-transform: none;
 }

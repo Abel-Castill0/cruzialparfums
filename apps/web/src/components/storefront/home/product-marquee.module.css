@@ -1,83 +1,68 @@
-/* Shared discovery rail. Colour, radius and rhythm come from the tone class so
-   both storefronts keep their own personality over one structure. */
+/* Shared discovery rail: the product card is the centre of attention.
+   Soft grey tile, no border; the photograph carries a realistic shadow and the
+   whole card lifts on hover. Both units use the same light surface. */
 
 .root {
-  --mq-gap: 18px;
-  --mq-card-w: clamp(210px, 21vw, 272px);
+  --mq-gap: var(--ds-space-3);
+  --mq-card-w: clamp(220px, 21vw, 280px);
 }
 
-.parfums {
-  --mq-ink: #0a0908;
-  --mq-muted: #5f5952;
-  --mq-line: rgba(10, 9, 8, 0.14);
-  --mq-surface: #fff;
-  --mq-radius: 2px;
-  --mq-fit: contain;
-  --mq-pad: 5%;
-  --mq-fade: #f7f3ea;
-  --mq-title-font: var(--font-display), Georgia, serif;
-  --mq-title-size: 1.3rem;
-  --mq-title-weight: 500;
-}
-
+.parfums,
 .import {
-  --mq-ink: #f4f7fb;
-  --mq-muted: #aebbc9;
-  --mq-line: rgba(244, 247, 251, 0.16);
-  --mq-surface: #0c223d;
-  --mq-radius: 14px;
-  --mq-fit: contain;
-  --mq-pad: 9%;
-  --mq-fade: #061527;
-  --mq-title-font: var(--font-body), sans-serif;
-  --mq-title-size: 0.98rem;
-  --mq-title-weight: 600;
+  --mq-ink: var(--ds-ink);
+  --mq-muted: var(--ds-ink-muted);
+  --mq-surface: var(--ds-gray-50);
+  --mq-radius: var(--ds-radius-md);
+  --mq-pad: 8%;
 }
 
 .head {
-  width: min(1280px, calc(100% - 48px));
-  margin: 0 auto 28px;
+  width: min(1280px, calc(100% - (var(--ds-gutter) * 2)));
+  margin: 0 auto var(--ds-space-4);
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  gap: 24px;
+  gap: var(--ds-space-3);
 }
 
 .controls {
   flex: 0 0 auto;
   display: flex;
-  gap: 8px;
+  gap: var(--ds-space-1);
 }
 
 .control {
-  width: 44px;
-  height: 44px;
+  width: var(--ds-touch);
+  height: var(--ds-touch);
   display: grid;
   place-items: center;
-  border: 1px solid var(--mq-line);
+  border: 0;
   border-radius: 50%;
   color: var(--mq-ink);
-  background: transparent;
+  background: var(--ds-gray-50);
   font-size: 1rem;
   cursor: pointer;
-  transition: background-color 200ms ease, color 200ms ease, border-color 200ms ease;
+  transition: background-color var(--ds-dur-base) var(--ds-ease-spring), transform var(--ds-dur-fast) var(--ds-ease-spring);
 }
 
 .control:hover {
-  border-color: var(--mq-ink);
-  color: var(--mq-fade);
-  background: var(--mq-ink);
+  background: var(--ds-gray-100);
+}
+
+.control:active {
+  transform: scale(0.96);
 }
 
 .viewport {
   position: relative;
   overflow-x: auto;
   overflow-y: hidden;
-  padding-block: 4px 10px;
+  /* Room for the hover lift and its shadow inside the scroll container. */
+  padding-block: var(--ds-space-2) var(--ds-space-5);
   scrollbar-width: none;
   overscroll-behavior-x: contain;
   -webkit-overflow-scrolling: touch;
-  mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent);
 }
 
 .viewport::-webkit-scrollbar {
@@ -86,7 +71,7 @@
 
 /* Static rows (not enough products to loop) align to the page gutter. */
 .viewport:not([data-loop]) {
-  padding-inline: max(24px, calc((100% - 1280px) / 2));
+  padding-inline: max(var(--ds-gutter), calc((100% - 1280px) / 2));
   scroll-snap-type: x proximity;
 }
 
@@ -109,65 +94,96 @@
 
 .card {
   display: grid;
-  gap: 14px;
+  gap: var(--ds-space-2);
   color: var(--mq-ink);
 }
 
 .media {
   position: relative;
+  isolation: isolate;
   aspect-ratio: 4 / 5;
   overflow: hidden;
   border-radius: var(--mq-radius);
   background: var(--mq-surface);
+  box-shadow: var(--ds-shadow-1);
+  transition: transform var(--ds-dur-slow) var(--ds-ease-spring), box-shadow var(--ds-dur-slow) var(--ds-ease-spring);
 }
 
+/* Soft contact shadow behind the photograph (it shows through the multiply
+   blend), grounding the bottle on any studio shot. */
+.media::before {
+  position: absolute;
+  z-index: -1;
+  right: 22%;
+  bottom: 14%;
+  left: 22%;
+  height: 7%;
+  content: "";
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0) 70%);
+  filter: blur(6px);
+  transition: transform var(--ds-dur-slow) var(--ds-ease-spring), opacity var(--ds-dur-slow) var(--ds-ease-spring);
+}
+
+.card:hover .media::before,
+.card:focus-visible .media::before {
+  transform: scale(1.08);
+  opacity: 0.85;
+}
+
+/* White studio backgrounds dissolve into the grey tile (multiply). */
 .image {
   padding: var(--mq-pad);
-  object-fit: var(--mq-fit);
-  transition: transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
+  object-fit: contain;
+  mix-blend-mode: multiply;
+  transition: transform var(--ds-dur-slow) var(--ds-ease-spring);
+}
+
+.card:hover .media,
+.card:focus-visible .media {
+  transform: translateY(-4px);
+  box-shadow: var(--ds-shadow-2);
 }
 
 .card:hover .image,
 .card:focus-visible .image {
-  transform: scale(1.045);
+  transform: scale(1.05);
 }
 
 .body {
   display: grid;
-  gap: 3px;
+  gap: 4px;
 }
 
 .kicker {
   color: var(--mq-muted);
-  font-size: 0.64rem;
-  font-weight: 600;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
+  font-size: var(--ds-text-small);
+  font-weight: 500;
 }
 
 .title {
-  font-family: var(--mq-title-font);
-  font-size: var(--mq-title-size);
-  font-weight: var(--mq-title-weight);
-  line-height: 1.15;
+  font-size: var(--ds-text-card);
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
   text-wrap: balance;
 }
 
 .meta {
-  margin-top: 2px;
   color: var(--mq-muted);
-  font-size: 0.8rem;
+  font-size: var(--ds-text-small);
+  font-variant-numeric: tabular-nums;
 }
 
 @media (max-width: 767px) {
   .root {
-    --mq-gap: 14px;
+    --mq-gap: var(--ds-space-2);
     --mq-card-w: 62vw;
   }
 
   .head {
-    width: calc(100% - 40px);
-    margin-bottom: 20px;
+    width: calc(100% - (var(--ds-gutter) * 2));
+    margin-bottom: var(--ds-space-3);
   }
 
   /* Touch users swipe; arrows are redundant noise at this size. */
@@ -176,7 +192,7 @@
   }
 
   .viewport:not([data-loop]) {
-    padding-inline: 20px;
+    padding-inline: var(--ds-gutter);
   }
 
   .viewport {
@@ -185,31 +201,17 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .media,
   .image,
   .control {
     transition: none;
   }
 
+  .card:hover .media,
+  .card:focus-visible .media,
   .card:hover .image,
-  .card:focus-visible .image {
+  .card:focus-visible .image,
+  .control:active {
     transform: none;
   }
-}
-
-/* Photographs dissolve into a plate of the unit's own tone instead of
- * showing their white studio rectangles. */
-.parfums {
-  --mq-plate: radial-gradient(90% 80% at 50% 36%, #fff 0%, #f1ebdf 100%);
-}
-
-.import {
-  --mq-plate: radial-gradient(82% 72% at 50% 34%, #fbfcfe 0%, #d9e2ec 100%);
-}
-
-.media {
-  background: var(--mq-plate, var(--mq-surface));
-}
-
-.image {
-  mix-blend-mode: multiply;
 }

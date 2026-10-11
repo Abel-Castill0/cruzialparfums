@@ -2,18 +2,18 @@
   min-width: 0;
   display: grid;
   grid-template-columns: 96px minmax(0, 1fr) auto;
-  gap: 18px;
+  gap: 16px;
   align-items: start;
-  padding: 22px 0;
-  border-bottom: 1px solid rgba(26, 22, 18, 0.11);
+  padding: 24px 0;
+  border-bottom: 1px solid var(--ds-hairline);
 }
 
 .media {
   position: relative;
   aspect-ratio: 1;
   overflow: hidden;
-  border: 1px solid rgba(26, 22, 18, 0.1);
-  background: #fff;
+  border: 1px solid var(--ds-hairline);
+  background: var(--ds-white);
 }
 
 .image {
@@ -29,40 +29,40 @@
 }
 
 .brand {
-  color: #756f66;
-  font-size: 11px;
+  color: var(--ds-ink-muted);
+  font-size: 0.75rem;
   font-weight: 600;
-  letter-spacing: 0.19em;
-  text-transform: uppercase;
+
 }
 
 .name {
   margin-top: 4px;
   overflow-wrap: anywhere;
-  font-family: var(--font-display), Georgia, serif;
+  font-family: var(--ds-font);
+  letter-spacing: -0.01em;
   font-size: 22px;
   font-weight: 500;
   line-height: 1.05;
 }
 
 .variant {
-  margin-top: 7px;
-  color: #756f66;
+  margin-top: 8px;
+  color: var(--ds-ink-muted);
   font-size: 12px;
 }
 
 .contents {
-  margin-top: 5px;
-  color: #8a847c;
-  font-size: 10px;
+  margin-top: 4px;
+  color: var(--ds-ink-muted);
+  font-size: 0.75rem;
   line-height: 1.45;
 }
 
 .actions {
-  margin-top: 13px;
+  margin-top: 16px;
   display: flex;
   flex-wrap: wrap;
-  gap: 10px 14px;
+  gap: 8px 16px;
   align-items: center;
 }
 
@@ -70,25 +70,25 @@
   display: grid;
   grid-template-columns: 44px 34px 44px;
   align-items: center;
-  border: 1px solid rgba(26, 22, 18, 0.14);
+  border: 1px solid var(--ds-hairline);
 }
 
 .quantity button {
   min-height: 44px;
   border: 0;
-  color: #17130f;
+  color: var(--ds-ink);
   background: transparent;
   cursor: pointer;
 }
 
 .quantity button:disabled {
-  color: #bbb5ad;
+  color: var(--ds-ink-muted);
   cursor: not-allowed;
 }
 
 .quantity span {
   text-align: center;
-  font-size: 11px;
+  font-size: 0.75rem;
 }
 
 .remove {
@@ -96,30 +96,30 @@
   padding: 0;
   border: 0;
   border-bottom: 1px solid transparent;
-  color: #756f66;
+  color: var(--ds-ink-muted);
   background: transparent;
-  font-size: 11px;
-  letter-spacing: 0.11em;
-  text-transform: uppercase;
+  font-size: 0.75rem;
+
   cursor: pointer;
 }
 
 .remove:hover {
   border-color: currentColor;
-  color: #17130f;
+  color: var(--ds-ink);
 }
 
 .media:focus-visible,
 .name:focus-visible,
 .quantity button:focus-visible,
 .remove:focus-visible {
-  outline: 2px solid #0a0806;
+  outline: 2px solid var(--ds-ink);
   outline-offset: 2px;
 }
 
 .subtotal {
-  color: #0a0806;
-  font-family: var(--font-display), Georgia, serif;
+  color: var(--ds-ink);
+  font-family: var(--ds-font);
+  letter-spacing: -0.01em;
   font-size: 19px;
   font-weight: 500;
   white-space: nowrap;
@@ -127,8 +127,8 @@
 
 .compact {
   grid-template-columns: 70px minmax(0, 1fr) auto;
-  gap: 13px;
-  padding: 17px 0;
+  gap: 16px;
+  padding: 16px 0;
 }
 
 .compact .name {
@@ -142,7 +142,7 @@
 @media (max-width: 520px) {
   .line {
     grid-template-columns: 74px minmax(0, 1fr);
-    gap: 13px;
+    gap: 16px;
   }
 
   /* The subtotal gets its own row under the actions. It used to be pulled up
@@ -161,7 +161,7 @@
 
 /* Fragrance photographs sit on the warm plate. Set photographs are left exactly as supplied. */
 .media:not([data-combo]) {
-  background: radial-gradient(90% 80% at 50% 36%, #fff 0%, #f1ebdf 100%);
+  background: radial-gradient(90% 80% at 50% 36%, var(--ds-white) 0%, var(--ds-gray-50) 100%);
 }
 
 .media:not([data-combo]) .image {

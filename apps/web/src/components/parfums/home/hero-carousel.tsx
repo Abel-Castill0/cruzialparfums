@@ -3,23 +3,29 @@ import Image from "next/image";
 import Link from "next/link";
 import styles from "./hero-carousel.module.css";
 
-/** One editorial artwork, with the navigation cue kept outside the image. */
+/** One cinematic artwork with the page headline and two calls to action over it. */
 export function HeroArtwork({
   src,
   alt,
   position,
   mobilePosition,
   mobileFit,
+  title,
   ctaHref,
   ctaLabel,
+  secondaryHref,
+  secondaryLabel,
 }: {
   src: string;
   alt: string;
   position: string;
   mobilePosition: string;
   mobileFit?: "wordmark";
+  title: string;
   ctaHref: Route;
   ctaLabel: string;
+  secondaryHref?: Route;
+  secondaryLabel?: string;
 }) {
   return (
     <section className={styles.hero} data-home-hero data-fit={mobileFit} aria-label="Cruzial Parfums">
@@ -34,10 +40,18 @@ export function HeroArtwork({
         fetchPriority="high"
       />
       <div className={styles.shade} aria-hidden="true" />
-      <div className={styles.bar}>
-        <Link href={ctaHref} className={styles.cta}>
-          {ctaLabel} <span aria-hidden="true">→</span>
-        </Link>
+      <div className={styles.content}>
+        <h1 className={styles.title}>{title}</h1>
+        <div className={styles.actions}>
+          <Link href={ctaHref} className={styles.cta}>
+            {ctaLabel}
+          </Link>
+          {secondaryHref && secondaryLabel ? (
+            <Link href={secondaryHref} className={styles.ctaSecondary}>
+              {secondaryLabel}
+            </Link>
+          ) : null}
+        </div>
       </div>
     </section>
   );

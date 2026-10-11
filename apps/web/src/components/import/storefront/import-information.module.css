@@ -8,19 +8,18 @@
 
 .eyebrow {
   color: var(--import-muted);
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
+  font-size: 0.75rem;
+  font-weight: 600;
+
 }
 
 .heading h2,
 .conditionsBody h2,
 .contactBody h2 {
-  margin-top: 14px;
-  font-family: var(--font-body), sans-serif;
+  margin-top: 16px;
+  font-family: var(--ds-font);
   font-size: clamp(1.9rem, 4vw, 3rem);
-  font-weight: 520;
+  font-weight: 500;
   line-height: 1.04;
   letter-spacing: -0.035em;
   text-wrap: balance;
@@ -37,7 +36,7 @@
 
 .process {
   padding-block: clamp(64px, 9vw, 120px);
-  border-top: 1px solid var(--import-line);
+  border-top: 1px solid var(--ds-hairline);
 }
 
 .steps {
@@ -50,10 +49,10 @@
 
 .steps li > div {
   position: relative;
-  padding-top: 28px;
+  padding-top: 32px;
   display: grid;
-  gap: 10px;
-  border-top: 1px solid var(--import-line);
+  gap: 8px;
+  border-top: 1px solid var(--ds-hairline);
 }
 
 /* The dot that sits on the rail. */
@@ -71,14 +70,14 @@
 
 .stepNumber {
   color: var(--import-muted);
-  font-size: 0.74rem;
-  font-weight: 700;
-  letter-spacing: 0.2em;
+  font-size: 0.75rem;
+  font-weight: 600;
+
 }
 
 .steps strong {
   font-size: clamp(1.25rem, 2vw, 1.55rem);
-  font-weight: 560;
+  font-weight: 500;
   letter-spacing: -0.02em;
 }
 
@@ -105,7 +104,7 @@
   position: relative;
   min-height: 480px;
   overflow: hidden;
-  border-radius: 20px;
+  border-radius: var(--ds-radius-lg);
   background: var(--import-surface);
 }
 
@@ -123,21 +122,21 @@
 
 .terms {
   margin-top: clamp(28px, 4vw, 44px);
-  border-top: 1px solid var(--import-line);
+  border-top: 1px solid var(--ds-hairline);
 }
 
 .terms > div {
-  padding-block: 20px;
+  padding-block: 24px;
   display: grid;
   grid-template-columns: minmax(104px, 0.4fr) minmax(0, 1fr);
   gap: 16px;
   align-items: center;
-  border-bottom: 1px solid var(--import-line);
+  border-bottom: 1px solid var(--ds-hairline);
 }
 
 .terms dt {
   font-size: clamp(2.4rem, 5vw, 3.6rem);
-  font-weight: 460;
+  font-weight: 400;
   line-height: 1;
   letter-spacing: -0.045em;
   font-variant-numeric: tabular-nums;
@@ -168,7 +167,7 @@
 
 .faq {
   padding-block: clamp(56px, 8vw, 104px);
-  border-top: 1px solid var(--import-line);
+  border-top: 1px solid var(--ds-hairline);
 }
 
 .faqGrid {
@@ -179,11 +178,11 @@
 }
 
 .faqList {
-  border-top: 1px solid var(--import-line);
+  border-top: 1px solid var(--ds-hairline);
 }
 
 .faqList details {
-  border-bottom: 1px solid var(--import-line);
+  border-bottom: 1px solid var(--ds-hairline);
 }
 
 .faqList summary {
@@ -192,9 +191,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 20px;
+  gap: 24px;
   font-size: 1rem;
-  font-weight: 560;
+  font-weight: 500;
   line-height: 1.35;
   cursor: pointer;
   list-style: none;
@@ -210,10 +209,10 @@
   height: 32px;
   display: grid;
   place-items: center;
-  border: 1px solid var(--import-line);
+  border: 1px solid var(--ds-hairline);
   border-radius: 50%;
   color: var(--import-muted);
-  transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1), color 200ms ease;
+  transition: transform var(--ds-dur-base) var(--ds-ease-spring), color var(--ds-dur-fast) var(--ds-ease-spring);
 }
 
 .faqList details[open] .faqChevron {
@@ -223,7 +222,7 @@
 
 .faqList p {
   max-width: 62ch;
-  padding-bottom: 22px;
+  padding-bottom: 24px;
   color: var(--import-muted);
   font-size: 0.94rem;
   line-height: 1.7;
@@ -244,8 +243,8 @@
   overflow: hidden;
   display: flex;
   align-items: center;
-  border: 1px solid var(--import-line);
-  border-radius: 24px;
+  border: 1px solid var(--ds-hairline);
+  border-radius: var(--ds-radius-lg);
   background: var(--import-surface);
 }
 
@@ -270,35 +269,35 @@
 }
 
 .contactBody > p:not(.eyebrow) {
-  margin-top: 14px;
+  margin-top: 16px;
   color: var(--import-muted);
   line-height: 1.65;
 }
 
 .contactAction {
   min-height: 48px;
-  margin-top: 28px;
-  padding: 0 26px;
+  margin-top: 32px;
+  padding: 0 24px;
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   border-radius: 999px;
   color: var(--import-accent-text);
   background: var(--import-accent);
   font-size: 0.86rem;
-  font-weight: 650;
-  transition: gap 320ms cubic-bezier(0.22, 1, 0.36, 1), background-color 200ms ease;
+  font-weight: 600;
+  transition: gap var(--ds-dur-base) var(--ds-ease-spring), background-color var(--ds-dur-fast) var(--ds-ease-spring);
 }
 
 .contactAction:hover {
   gap: 16px;
-  background: #dbe6f1;
+  background: var(--ds-gray-50);
 }
 
 @media (max-width: 1023px) {
   .steps {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    row-gap: 40px;
+    row-gap: 48px;
   }
 
   .conditions {
@@ -324,9 +323,9 @@
   }
 
   .steps li > div {
-    padding: 0 0 28px 28px;
+    padding: 0 0 32px 32px;
     border-top: 0;
-    border-left: 1px solid var(--import-line);
+    border-left: 1px solid var(--ds-hairline);
   }
 
   .steps li:last-child > div {

@@ -4,53 +4,52 @@
   display: grid;
   place-content: center;
   justify-items: center;
-  gap: 15px;
-  color: #2c2925;
-  background: #fff;
+  gap: 16px;
+  color: var(--ds-ink);
+  background: var(--ds-white);
   text-align: center;
 }
 
 .eyebrow {
-  color: #756f66;
-  font-size: 10px;
+  color: var(--ds-ink-muted);
+  font-size: 0.75rem;
   font-weight: 600;
-  letter-spacing: 0.25em;
-  text-transform: uppercase;
+
 }
 
 .page h1 {
-  font-family: var(--font-display), Georgia, serif;
+  font-family: var(--ds-font);
+  letter-spacing: -0.03em;
   font-size: clamp(38px, 6vw, 62px);
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .page > p:not(.eyebrow) {
   max-width: 470px;
-  color: #756f66;
+  color: var(--ds-ink-muted);
 }
 
 .page div {
-  margin-top: 14px;
+  margin-top: 16px;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 12px;
+  gap: 16px;
 }
 
 .page a {
   min-height: 48px;
-  padding: 13px 20px;
+  padding: 16px 24px;
   display: inline-flex;
   align-items: center;
-  gap: 9px;
-  border: 1px solid #17130f;
-  font-size: 10px;
+  gap: 8px;
+  border: 1px solid var(--ds-hairline);
+  font-size: 0.75rem;
   font-weight: 600;
-  letter-spacing: 0.13em;
-  text-transform: uppercase;
+
 }
 
 .page a:first-child {
-  color: #fff;
-  background: #17130f;
+  color: var(--ds-on-photo);
+  background: var(--ds-ink);
 }

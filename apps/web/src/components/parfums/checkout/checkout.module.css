@@ -1,43 +1,43 @@
 .page {
   width: min(1240px, calc(100% - 48px));
   margin: 0 auto;
-  padding: 18px 0 100px;
-  color: #17130f;
+  padding: 16px 0 96px;
+  color: var(--ds-ink);
 }
 
 .hero {
   max-width: 690px;
-  margin: 74px auto 68px;
+  margin: 64px auto 64px;
   text-align: center;
 }
 
 .hero > p,
 .panelHead span,
 .formHead > span {
-  color: #756f66;
-  font-size: 10px;
+  color: var(--ds-ink-muted);
+  font-size: 0.75rem;
   font-weight: 600;
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
+
 }
 
 .hero h1 {
-  margin: 14px 0 18px;
-  font-family: var(--font-display), Georgia, serif;
+  margin: 16px 0 16px;
+  font-family: var(--ds-font);
+  letter-spacing: -0.03em;
   font-size: clamp(46px, 6vw, 78px);
-  font-weight: 500;
+  font-weight: 600;
   line-height: 0.91;
-  letter-spacing: -0.035em;
+
 }
 
 .hero h1 em {
-  color: #756f66;
+  color: var(--ds-ink-muted);
   font-weight: 400;
 }
 
 .hero > span {
   display: block;
-  color: #756f66;
+  color: var(--ds-ink-muted);
   font-size: 13px;
   line-height: 1.7;
 }
@@ -51,8 +51,8 @@
 
 .cartPanel,
 .formPanel {
-  border: 1px solid rgba(26, 22, 18, 0.13);
-  background: #fff;
+  border: 1px solid var(--ds-hairline);
+  background: var(--ds-white);
 }
 
 .cartPanel {
@@ -63,17 +63,18 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 20px;
-  padding-bottom: 21px;
-  border-bottom: 1px solid rgba(26, 22, 18, 0.12);
+  gap: 24px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--ds-hairline);
 }
 
 .panelHead h2,
 .formHead h2 {
-  margin-top: 5px;
-  font-family: var(--font-display), Georgia, serif;
+  margin-top: 4px;
+  font-family: var(--ds-font);
+  letter-spacing: -0.03em;
   font-size: 31px;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .panelHead button {
@@ -81,17 +82,16 @@
   padding: 0;
   border: 0;
   border-bottom: 1px solid transparent;
-  color: #756f66;
+  color: var(--ds-ink-muted);
   background: transparent;
-  font-size: 10px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  font-size: 0.75rem;
+
   cursor: pointer;
 }
 
 .panelHead button:hover {
   border-color: currentColor;
-  color: #17130f;
+  color: var(--ds-ink);
 }
 
 .lines {
@@ -103,74 +103,74 @@
   display: grid;
   align-content: center;
   justify-items: center;
-  gap: 10px;
+  gap: 8px;
   text-align: center;
 }
 
 .empty strong {
-  font-family: var(--font-display), Georgia, serif;
+  font-family: var(--ds-font);
+  letter-spacing: -0.03em;
   font-size: 25px;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .empty p {
   max-width: 390px;
-  color: #756f66;
+  color: var(--ds-ink-muted);
   font-size: 12px;
   line-height: 1.6;
 }
 
 .empty a {
   min-height: 46px;
-  margin-top: 10px;
-  padding: 0 21px;
+  margin-top: 8px;
+  padding: 0 24px;
   display: flex;
   align-items: center;
-  gap: 9px;
-  color: #fff;
-  background: #0a0806;
-  font-size: 10px;
+  gap: 8px;
+  color: var(--ds-on-photo);
+  background: var(--ds-ink);
+  font-size: 0.75rem;
   font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+
 }
 
 .total {
-  padding-top: 23px;
+  padding-top: 24px;
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 20px;
+  gap: 24px;
 }
 
 .total span {
-  color: #756f66;
-  font-size: 10px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  color: var(--ds-ink-muted);
+  font-size: 0.75rem;
+
 }
 
 .total strong {
-  color: #0a0806;
-  font-family: var(--font-display), Georgia, serif;
+  color: var(--ds-ink);
+  font-family: var(--ds-font);
+  letter-spacing: -0.03em;
   font-size: 31px;
-  font-weight: 500;
+  font-weight: 600;
   white-space: nowrap;
 }
 
 .estimate {
-  margin-top: 5px;
-  color: #756f66;
+  margin-top: 4px;
+  color: var(--ds-ink-muted);
   font-size: 12px;
   text-align: right;
 }
 
 .error {
-  margin-top: 15px;
-  padding: 11px 13px;
-  color: #7c3028;
-  background: #fff2ef;
-  font-size: 11px;
+  margin-top: 16px;
+  padding: 8px 16px;
+  color: var(--ds-danger);
+  background: rgba(180, 35, 24, 0.08);
+  font-size: 0.75rem;
 }
 
 .formPanel {
@@ -178,40 +178,39 @@
    * viewport, and a sticky panel that tall cannot be scrolled to its end. */
   position: static;
   padding: 30px clamp(22px, 3vw, 36px) 34px;
-  background: #faf9f6;
+  background: var(--ds-white);
 }
 
 .formHead {
-  padding-bottom: 23px;
-  border-bottom: 1px solid rgba(26, 22, 18, 0.12);
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--ds-hairline);
 }
 
 .formHead p {
   margin-top: 8px;
-  color: #756f66;
-  font-size: 11px;
+  color: var(--ds-ink-muted);
+  font-size: 0.75rem;
   line-height: 1.55;
 }
 
 .formPanel form {
-  margin-top: 23px;
+  margin-top: 24px;
   display: grid;
-  gap: 17px;
+  gap: 16px;
 }
 
 .formPanel label {
   display: grid;
-  gap: 7px;
-  color: #514b44;
-  font-size: 10px;
+  gap: 8px;
+  color: var(--ds-ink-muted);
+  font-size: 0.75rem;
   font-weight: 600;
-  letter-spacing: 0.13em;
-  text-transform: uppercase;
+
 }
 
 .formPanel label small {
-  color: #6f6a63;
-  font-size: 10px;
+  color: var(--ds-ink-muted);
+  font-size: 0.75rem;
   font-weight: 400;
 }
 
@@ -220,12 +219,12 @@
 .formPanel textarea {
   width: 100%;
   min-height: 48px;
-  padding: 12px 13px;
-  border: 1px solid rgba(26, 22, 18, 0.16);
+  padding: 16px 16px;
+  border: 1px solid var(--ds-hairline);
   border-radius: 0;
   outline: 0;
-  color: #17130f;
-  background: #fff;
+  color: var(--ds-ink);
+  background: var(--ds-white);
   font: 400 13px/1.4 var(--font-body), sans-serif;
   letter-spacing: 0;
   text-transform: none;
@@ -239,29 +238,28 @@
 .formPanel input:focus-visible,
 .formPanel select:focus-visible,
 .formPanel textarea:focus-visible {
-  border-color: #0a0806;
-  box-shadow: 0 0 0 2px rgba(10, 9, 8, 0.14);
+  border-color: var(--ds-accent);
+  box-shadow: var(--ds-focus);
 }
 
 .submit {
   min-height: 52px;
-  margin-top: 3px;
+  margin-top: 4px;
   border: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  color: #fff;
-  background: #0a0806;
+  gap: 8px;
+  color: var(--ds-on-photo);
+  background: var(--ds-ink);
   font-size: 12px;
   font-weight: 600;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
+
   cursor: pointer;
 }
 
 .submit:hover {
-  background: #2b241c;
+  background: var(--ds-ink);
 }
 
 .submit:active {
@@ -269,31 +267,31 @@
 }
 
 .submit:disabled {
-  color: #9d9890;
-  background: #e7e4de;
+  color: var(--ds-ink-muted);
+  background: var(--ds-gray-100);
   cursor: not-allowed;
   transform: none;
 }
 
 .formNote {
-  color: #756f66;
+  color: var(--ds-ink-muted);
   font-size: 12px;
   line-height: 1.55;
 }
 
 .formNote strong {
-  color: #514b44;
+  color: var(--ds-ink-muted);
 }
 
 .submitFeedback {
   min-height: 18px;
-  color: #527050;
+  color: var(--ds-success);
   font-size: 12px;
   line-height: 1.5;
 }
 
 .submitFeedback span {
-  color: #7c3028;
+  color: var(--ds-danger);
 }
 
 .submitFeedback a {
@@ -301,31 +299,31 @@
 }
 .submitError {
   scroll-margin-top: 112px;
-  padding: 12px 14px;
-  border-left: 3px solid #7c3028;
+  padding: 16px 16px;
+  border-left: 1px solid var(--ds-hairline);
   display: grid;
   gap: 4px;
-  color: #6b2923;
-  background: #fff2ef;
-  font-size: 11px;
+  color: var(--ds-danger);
+  background: rgba(180, 35, 24, 0.08);
+  font-size: 0.75rem;
   line-height: 1.5;
 }
 
 .submitError strong {
-  color: #541e1a;
+  color: var(--ds-danger);
 }
 
 .fieldError {
-  color: #7c3028 !important;
-  font-size: 10px !important;
+  color: var(--ds-danger) !important;
+  font-size: 0.75rem;
   font-weight: 500 !important;
-  letter-spacing: 0 !important;
+
   line-height: 1.45;
   text-transform: none;
 }
 
 .formPanel [aria-invalid="true"] {
-  border-color: #7c3028;
+  border-color: var(--ds-accent);
 }
 
 @media (max-width: 920px) {
@@ -345,11 +343,11 @@
 @media (max-width: 560px) {
   .page {
     padding-top: 8px;
-    padding-bottom: 70px;
+    padding-bottom: 64px;
   }
 
   .hero {
-    margin: 48px auto 40px;
+    margin: 48px auto 48px;
   }
 
   .hero h1 {
@@ -380,18 +378,18 @@
 .submitErrorAction {
   justify-self: start;
   min-height: 44px;
-  margin-top: 6px;
-  padding: 10px 14px;
-  border: 1px solid #541e1a;
+  margin-top: 8px;
+  padding: 8px 16px;
+  border: 1px solid var(--ds-hairline);
   background: transparent;
-  color: #541e1a;
+  color: var(--ds-danger);
   font: inherit;
   font-weight: 600;
   cursor: pointer;
 }
 
 .submitErrorAction:focus-visible {
-  outline: 2px solid #541e1a;
+  outline: 2px solid var(--ds-danger);
   outline-offset: 2px;
 }
 
@@ -423,7 +421,7 @@
 .formPanel label {
   font-size: 13px;
   font-weight: 500;
-  letter-spacing: 0.01em;
+
   text-transform: none;
 }
 
@@ -434,25 +432,25 @@
 .formPanel input,
 .formPanel select,
 .formPanel textarea {
-  border-radius: 14px;
+  border-radius: var(--ds-radius-md);
   font-size: 14px;
-  transition: border-color 200ms ease, box-shadow 200ms ease;
+  transition: border-color var(--ds-dur-fast) var(--ds-ease-spring), box-shadow var(--ds-dur-fast) var(--ds-ease-spring);
 }
 
 .formPanel input:hover,
 .formPanel select:hover,
 .formPanel textarea:hover {
-  border-color: rgba(26, 22, 18, 0.5);
+  border-color: rgba(0, 0, 0, 0.2);
 }
 
 .formPanel input:focus-visible,
 .formPanel select:focus-visible,
 .formPanel textarea:focus-visible {
-  box-shadow: 0 0 0 4px rgba(169, 134, 72, 0.2);
+  box-shadow: var(--ds-focus);
 }
 
 .formPanel select {
-  padding-right: 42px;
+  padding-right: 48px;
   appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none' stroke='%230a0806' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m1 1.5 5 5 5-5'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
@@ -460,12 +458,12 @@
 }
 
 .submit {
-  transition: background-color 200ms ease, gap 300ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition: background-color var(--ds-dur-fast) var(--ds-ease-spring), gap var(--ds-dur-base) var(--ds-ease-spring);
 }
 
 .submit:hover:not(:disabled) {
   gap: 16px;
-  background: #2c2925;
+  background: var(--ds-ink);
 }
 
 @media (max-width: 767px), (pointer: coarse) {

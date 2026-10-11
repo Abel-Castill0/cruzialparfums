@@ -1,11 +1,11 @@
 .page {
-  --import-bg: #f3f6fa;
-  --import-surface: #fbfcfe;
-  --import-surface-strong: #e7edf4;
-  --import-text: #0b1f3d;
-  --import-muted: #536478;
-  --import-line: rgba(11, 31, 61, 0.15);
-  --import-accent: #173f70;
+  --import-bg: var(--ds-gray-50);
+  --import-surface: var(--ds-white);
+  --import-surface-strong: var(--ds-gray-50);
+  --import-text: var(--ds-ink);
+  --import-muted: var(--ds-ink-muted);
+  --import-line: var(--ds-hairline);
+  --import-accent: var(--ds-accent);
   min-height: 100dvh;
   padding: clamp(32px, 6vw, 72px) 24px;
   color: var(--import-text);
@@ -18,17 +18,17 @@
 }
 
 .heading {
-  font-family: var(--font-body), sans-serif;
+  font-family: var(--ds-font);
   font-size: clamp(1.8rem, 4vw, 3rem);
-  font-weight: 520;
+  font-weight: 500;
   letter-spacing: -0.04em;
 }
 
 .empty {
-  margin-top: 40px;
+  margin-top: 48px;
   padding: clamp(36px, 6vw, 72px);
-  border: 1px solid var(--import-line);
-  border-radius: 16px;
+  border: 1px solid var(--ds-hairline);
+  border-radius: var(--ds-radius-lg);
   background: var(--import-surface);
   text-align: center;
 }
@@ -45,8 +45,8 @@
 .summary {
   margin-top: 32px;
   padding: 24px;
-  border: 1px solid var(--import-line);
-  border-radius: 16px;
+  border: 1px solid var(--ds-hairline);
+  border-radius: var(--ds-radius-lg);
   background: var(--import-surface);
 }
 
@@ -59,11 +59,11 @@
 
 .summaryRow strong {
   font-size: 1.2rem;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .summaryNote {
-  margin-top: 10px;
+  margin-top: 8px;
   color: var(--import-muted);
   font-size: 0.76rem;
   line-height: 1.55;
@@ -71,11 +71,11 @@
 
 .noticeBanner {
   margin-top: 16px;
-  padding: 14px 18px;
-  border: 1px solid #a6761f;
-  border-radius: 12px;
-  background: #fdf6e8;
-  color: #5c4108;
+  padding: 16px 16px;
+  border: 1px solid var(--ds-hairline);
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-gray-50);
+  color: var(--ds-ink);
   font-size: 0.85rem;
   font-weight: 600;
   line-height: 1.5;
@@ -85,71 +85,51 @@
   margin-top: 24px;
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 16px;
 }
 
 .primaryAction {
   min-height: 48px;
-  padding: 13px 22px;
+  padding: 16px 24px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid var(--import-accent);
-  border-radius: 12px;
-  color: #f5f8fc;
+  border: 1px solid var(--ds-hairline);
+  border-radius: var(--ds-radius-md);
+  color: var(--ds-on-photo);
   background: var(--import-accent);
   font-size: 0.82rem;
-  font-weight: 650;
+  font-weight: 600;
   white-space: nowrap;
-  transition: transform 180ms ease, background-color 180ms ease;
+  transition: transform var(--ds-dur-fast) var(--ds-ease-spring), background-color var(--ds-dur-fast) var(--ds-ease-spring);
 }
 
 .primaryAction:hover {
-  background: #0b2d56;
+  background: var(--ds-accent);
   transform: translateY(-2px);
 }
 
 .secondaryAction {
   min-height: 48px;
-  padding: 13px 22px;
+  padding: 16px 24px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid var(--import-line);
-  border-radius: 12px;
+  border: 1px solid var(--ds-hairline);
+  border-radius: var(--ds-radius-md);
   color: var(--import-text);
   background: var(--import-surface);
   font-size: 0.82rem;
-  font-weight: 650;
+  font-weight: 600;
   white-space: nowrap;
-  transition: border-color 180ms ease;
+  transition: border-color var(--ds-dur-fast) var(--ds-ease-spring);
 }
 
 .secondaryAction:hover {
-  border-color: var(--import-accent);
+  border-color: rgba(0, 0, 0, 0.2);
 }
 
-@media (prefers-color-scheme: dark) {
-  .page {
-    --import-bg: #08192e;
-    --import-surface: #0c223d;
-    --import-surface-strong: #132d4b;
-    --import-text: #edf3fa;
-    --import-muted: #afbecd;
-    --import-line: rgba(215, 226, 238, 0.17);
-    --import-accent: #9ab8d7;
-  }
 
-  .primaryAction {
-    border-color: #dce8f5;
-    color: #0b1f3d;
-    background: #dce8f5;
-  }
-
-  .primaryAction:hover {
-    background: #c5d7e9;
-  }
-}
 
 @media (max-width: 639px) {
   .actions {

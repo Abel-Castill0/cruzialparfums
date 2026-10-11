@@ -1,99 +1,83 @@
 .story {
-  padding-block: clamp(64px, 9vw, 128px);
+  padding-block: var(--ds-section-y);
 }
 
-.parfums {
-  --vs-ink: #0a0908;
-  --vs-muted: #5f5952;
-  --vs-line: rgba(10, 9, 8, 0.3);
-  --vs-bg: #efe8da;
-  --vs-radius: 2px;
-  --vs-title-font: var(--font-display), Georgia, serif;
-  background: var(--vs-bg);
-  color: var(--vs-ink);
-}
-
+/* One light surface for both units (DESIGN.md): grey band, ink copy. */
+.parfums,
 .import {
-  --vs-ink: #f4f7fb;
-  --vs-muted: #aebbc9;
-  --vs-line: rgba(244, 247, 251, 0.28);
-  --vs-bg: #061527;
-  --vs-radius: 18px;
-  --vs-title-font: var(--font-body), sans-serif;
-  background: var(--vs-bg);
+  --vs-ink: var(--ds-ink);
+  --vs-muted: var(--ds-ink-muted);
+  background: var(--ds-gray-50);
   color: var(--vs-ink);
 }
 
 .inner {
-  width: min(1100px, calc(100% - 48px));
+  width: min(1100px, calc(100% - (var(--ds-gutter) * 2)));
   margin-inline: auto;
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(260px, 340px);
   column-gap: clamp(40px, 8vw, 120px);
-  row-gap: 14px;
+  row-gap: var(--ds-space-2);
   align-items: center;
 }
 
 .eyebrow {
   color: var(--vs-muted);
-  font-size: 0.68rem;
-  font-weight: 600;
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
+  font-size: var(--ds-text-small);
+  font-weight: 500;
 }
 
 .copy h2 {
-  margin-top: 14px;
-  font-family: var(--vs-title-font);
-  font-size: clamp(2.1rem, 4.6vw, 3.6rem);
-  font-weight: 500;
-  line-height: 1.02;
+  margin-top: var(--ds-space-2);
+  font-size: var(--ds-text-h2);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
   text-wrap: balance;
 }
 
 .copy > p:not(.eyebrow) {
   max-width: 44ch;
-  margin-top: 20px;
+  margin-top: var(--ds-space-3);
   color: var(--vs-muted);
-  font-size: 1.02rem;
-  line-height: 1.65;
+  font-size: var(--ds-text-lead);
+  line-height: 1.5;
 }
 
 .actions {
-  margin-top: 32px;
+  margin-top: var(--ds-space-4);
   display: flex;
   flex-wrap: wrap;
-  gap: 12px 28px;
+  gap: var(--ds-space-2) var(--ds-space-4);
 }
 
 .link {
   min-height: 44px;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  border-bottom: 1px solid var(--vs-line);
-  color: var(--vs-ink);
-  font-size: 0.78rem;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  transition: border-color 200ms ease;
+  gap: var(--ds-space-1);
+  color: var(--ds-link);
+  font-size: var(--ds-text-card);
+  font-weight: 500;
+  text-decoration: underline transparent;
+  text-underline-offset: 4px;
+  transition: text-decoration-color var(--ds-dur-base) var(--ds-ease-spring);
 }
 
 .link:hover {
-  border-bottom-color: var(--vs-ink);
+  text-decoration-color: currentColor;
 }
 
 .fallback {
   grid-column: 2;
-  margin-top: 12px;
+  margin-top: var(--ds-space-2);
   color: var(--vs-muted);
-  font-size: 0.78rem;
+  font-size: var(--ds-text-small);
   line-height: 1.5;
 }
 
 .fallback a {
-  color: var(--vs-ink);
+  color: var(--ds-link);
   text-decoration: underline;
   text-underline-offset: 3px;
 }
@@ -103,8 +87,9 @@
   aspect-ratio: 9 / 16;
   max-height: 78svh;
   overflow: hidden;
-  border-radius: var(--vs-radius);
-  background: #000;
+  border-radius: var(--ds-radius-lg);
+  background: var(--ds-white);
+  box-shadow: var(--ds-shadow-2);
 }
 
 .player {
@@ -113,8 +98,11 @@
   width: 100%;
   height: 100%;
   border: 0;
+  background: #000;
 }
 
+/* Cover: a calm white poster with one obvious play control. The player only
+   loads from TikTok after the tap. */
 .playGate {
   position: absolute;
   inset: 0;
@@ -122,34 +110,57 @@
   display: grid;
   align-content: center;
   justify-items: center;
-  gap: 14px;
-  padding: 24px;
-  border: 1px solid var(--vs-line);
-  background: radial-gradient(circle at 50% 44%, #173552, #061527 70%);
-  color: var(--vs-ink);
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-3);
+  border: 0;
+  background: var(--ds-white);
+  color: var(--ds-ink);
   text-align: center;
   cursor: pointer;
 }
 
 .playGate > span:first-of-type {
   display: grid;
-  width: 58px;
+  width: 64px;
   aspect-ratio: 1;
   place-items: center;
-  border: 1px solid currentColor;
   border-radius: 50%;
+  color: var(--ds-white);
+  background: var(--ds-accent);
   font-size: 1.25rem;
+  transition: transform var(--ds-dur-base) var(--ds-ease-spring), background-color var(--ds-dur-base) var(--ds-ease-spring);
+}
+
+.playGate:hover > span:first-of-type,
+.playGate:focus-visible > span:first-of-type {
+  background: var(--ds-accent-press);
+  transform: scale(1.06);
+}
+
+.playGate small {
+  color: var(--vs-muted);
+  font-size: var(--ds-text-small);
+  font-weight: 500;
+}
+
+.playGate strong {
+  font-size: var(--ds-text-card);
+  font-weight: 600;
 }
 
 .playGate > span:last-of-type {
   color: var(--vs-muted);
-  font-size: 0.8rem;
+  font-size: var(--ds-text-small);
+}
+
+.playGate:focus-visible {
+  outline-offset: -6px;
 }
 
 @media (max-width: 767px) {
   .inner {
     grid-template-columns: 1fr;
-    gap: 36px;
+    gap: var(--ds-space-4);
   }
 
   .frame {
@@ -164,35 +175,13 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .link { transition: none; }
-}
+  .link,
+  .playGate > span:first-of-type {
+    transition: none;
+  }
 
-/* Cover: the unit's own palette, a clear play affordance and the source. */
-.playGate small {
-  color: var(--vs-muted);
-  font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
-.playGate strong {
-  font-size: 1.05rem;
-}
-
-.parfums .playGate {
-  background: radial-gradient(circle at 50% 44%, #3a2f21, #0a0806 72%);
-  color: #fffdf8;
-  --vs-muted: #d8cdb8;
-  --vs-line: rgba(255, 253, 248, 0.35);
-}
-
-.playGate:focus-visible {
-  outline: 3px solid #d1b16f;
-  outline-offset: -6px;
-}
-
-.playGate:hover > span:first-of-type,
-.playGate:focus-visible > span:first-of-type {
-  background: rgba(255, 253, 248, 0.14);
+  .playGate:hover > span:first-of-type,
+  .playGate:focus-visible > span:first-of-type {
+    transform: none;
+  }
 }
