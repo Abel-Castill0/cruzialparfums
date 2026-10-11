@@ -1,6 +1,6 @@
 # CRUZIAL V2 - CURRENT CHECKPOINT
 
-Updated: 2026-10-08
+Updated: 2026-10-10
 
 ## Scope
 
@@ -19,6 +19,22 @@ git rev-parse HEAD
 
 > The sections below the "Current verified state (2026-10-01)" block are
 > historical gate records; where they conflict with that block, that block wins.
+
+## Live checkpoint (2026-10-10) — read this first; supersedes 2026-10-09 where they conflict
+
+Evidence: docs/closure-report-2026-10-10.md (branch `claude/closure-audit-2026-10-10`).
+- Production serves `6d2ebc4` = origin/master (Vercel API `githubCommitSha`). Migrations repo = Production = QA (80,
+  same ordered-version hash). Production: 0 orders, 0 outbox, 97 published, `public_launch_ready() = false`.
+- Fixed on the branch (not yet merged/applied): **P2** launch readiness counted the status-archived
+  `invictus-elixir` as blockers (migration `20261010120000`, pgTAP 56, rollback script); **P2** Import hero/preview
+  would show a past "Apertura estimada" after 2026-10-15; **P3** duplicated/unbranded titles; **P3** CI token
+  permissions + `test:qa-target` in CI; **P3** stale known-issues.
+- Re-verified without change: 125 SECURITY DEFINER functions (search_path, owner, grants, AAL2 authorization),
+  RLS write grants, Server Action guards, client bundle (no secrets), HTTP headers, Vercel/Supabase logs, advisors.
+- Gate: local Playwright **249/0/0**; Production read-only 170 passed (new title test fails until deploy) / 33
+  skipped by design; audits clean (1 documented dev exception).
+- Pending authorization: merge + apply `20261010120000`; Next.js upgrade after the 2026-10-14 security release.
+  External inputs: docs/known-issues.md and section 5 of the closure report.
 
 ## Live checkpoint (2026-10-09) — read this first; supersedes 2026-10-08 where they conflict
 
