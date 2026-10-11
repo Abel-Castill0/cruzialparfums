@@ -27,6 +27,10 @@ adding code. Pick one before treating backups as "handled":
 Until one of these is chosen and set up, the only backup that exists is
 whatever an operator runs manually with the script below.
 
+Latest manual backups and their validation (2026-10-11): see `docs/rollback-runbook.md` section 4. The newest one,
+`cruzial-iyxidhglyqkzoziyewlc-2026-10-11T07-13-47-671Z` (taken right before migrations 82-85), passed checksums and a
+full restore validation into a disposable empty stack on 2026-10-11.
+
 ## Why three files, not one
 
 A plain `supabase db dump` is **schema only** — confirmed directly against

@@ -20,6 +20,44 @@ git rev-parse HEAD
 > The sections below the "Current verified state (2026-10-01)" block are
 > historical gate records; where they conflict with that block, that block wins.
 
+## Operational closure (2026-10-11, second phase) — read with the checkpoint below
+
+- **GitHub Pages** no longer publishes the legacy storefront (it advertised old prices and a different WhatsApp
+  number, with `index, follow`). Pages now serves branch `pages-redirect` (redirect-only, `noindex`): every old
+  address `abel-castill0.github.io/cruzialparfums/<page>?<query>` forwards to `https://cruzial.pe/<page>?<query>`,
+  where V2's legacy resolver maps it (verified in a browser: `product.html?id=red-intensely` →
+  `/parfums/productos/red-intensely`). Production never depended on Pages (0 `github.io` media rows). Restore:
+  Settings → Pages → Source `master` `/`. Legacy files untouched on `master`.
+- **CodeQL**: #1 (DOM XSS in the legacy search "no results" message) and #6 (incomplete URL-scheme check) fixed in
+  `assets/app.js` (PR #85). #4/#5 (SHA-1 Cloudinary signature) fixed by switching to SHA-256 (PR #86) after a
+  non-mutating proof on the real account (signed destroy of a random id: SHA-256 200 "not found", tampered 401).
+- **Preserved stash** (256 files: 168 `img/perfumes` PNG, 80 `.claude`, PDFs, `.mcp.json`): extracted read-only to
+  `C:\Users\ABEL\cruzial-preservation\2026-10-11\stash-untracked` with `stash-img-manifest.sha256`; stash itself
+  untouched. 164/168 images are byte-identical (SHA-256) to Production `product_media` (already uploaded). The other 4
+  ("Cuarteto Oriental Vainilla Freak" ×2, "VERSACE - EROS EDP" ×2) stay preserved and unassigned: one name covers two
+  combos that already have photos, and no Eros EDP product exists (EDT/Flame only). No stash image matches a product
+  without a photo (`lovely-cherry`, `royal-blend-sequoia`, `sceptre-malachite`, `le-male-le-parfum`).
+- **Production read-only audit** (commit `c3ca201`): Playwright chromium/mobile/tablet/responsive **185 passed / 0
+  failed / 39 skipped by design** (writes, admin, local DB). Admin routes 307 → `/admin/login` when logged out;
+  password-recovery form answers generically (tested with a reserved example.com address); Supabase Auth
+  `site_url=https://cruzial.pe`, allow-list includes `/auth/callback`, signup disabled, TOTP on.
+- **Lighthouse 13.5 (Playwright Chromium, read-only, 2026-10-11)** — perf m/d, a11y, bp, SEO, LCP m/d, weight:
+  `/` 95/99, 100, 100, 54, 2.5/0.7 s, 302 KiB; `/parfums` 92/99, 100, 100, 58-66, 3.0/0.7 s, ~580 KiB;
+  `/import` 96/98, 100, 100, 66, 2.4/0.7 s, ~335 KiB; CLS 0, TBT ≤ 80 ms. Equal or better than the 2026-10-11 baseline
+  in docs/closure-report-2026-10-10.md §7. SEO: `is-crawlable` (intentional noindex) plus `meta-description` on `/`
+  and `/parfums`, because Next 16 **streams** metadata into `<body>` for non-bot user agents (documented behaviour;
+  listed crawlers get it in `<head>`). Decision before switching indexing on: keep the default or set
+  `htmlLimitedBots: /.*/` (blocking metadata for everyone, slightly higher TTFB).
+- **Runbooks**: new docs/rollback-runbook.md (stop criteria, Vercel rollback/promote, append-only DB rollback table,
+  indexing switch + `CRUZIAL_INDEXING_FORCE_OFF`, verified backups, Cloudinary/Vercel/GitHub recovery, provider
+  support). All three private backups re-verified 3/3 SHA-256.
+- **Next.js**: `latest` still 16.4.0 (production audit 0 vulnerabilities); the 2026-10-14 release is not published. A
+  one-off scheduled check runs 2026-10-14 12:00 Lima.
+- **Still needs the owner**: new `VERCEL_TOKEN` (issue #81), reading the recovery e-mail in the admin mailbox, a
+  real admin/AAL2 session check and a Cloudinary upload in Production (SHA-256 path), removing `localhost` callback
+  URLs from the Production Auth allow-list (security setting), and Auth uses Supabase's built-in mailer (no custom
+  SMTP): rate-limited, and Supabase's policy typically limits it to team-member addresses.
+
 ## Live checkpoint (2026-10-11) — read this first; supersedes 2026-10-10 where they conflict
 
 Production serves `488eaa9` (deployment `dpl_4CYCP8EKkURTZDjHHgP7bSjyGQh2`, READY; the app code was released with
