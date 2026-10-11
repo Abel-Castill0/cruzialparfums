@@ -8,7 +8,7 @@
 // the bottom of migrate-client-media.mjs.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { hasFatalPlanIssues, planUploadDecision } from "./migrate-client-media.mjs";
+import { assertHostedDbTarget, hasFatalPlanIssues, planUploadDecision } from "./migrate-client-media.mjs";
 
 function counts(overrides) {
   return {
@@ -82,4 +82,18 @@ test("planUploadDecision treats a clean plan with zero duplicate_content rows as
   const classified = [{ publicId: "a", classification: "would_upload" }];
   const decision = planUploadDecision(counts({ would_upload: 1, duplicate_content: 2 }), classified);
   assert.equal(decision.refused, false);
+});
+
+// Regression (2026-10-10): `--target=staging` meant `supabase db query --linked`, and the repository's default
+// link (supabase/.temp/project-ref) is the PRODUCTION project despite its historical "staging" name.
+test("assertHostedDbTarget refuses the production project and an unknown link", () => {
+  assert.throws(() => assertHostedDbTarget("iyxidhglyqkzoziyewlc"), /production/i);
+  assert.throws(() => assertHostedDbTarget(" iyxidhglyqkzoziyewlc\n"), /production/i);
+  assert.throws(() => assertHostedDbTarget(""), /linked project/i);
+  assert.throws(() => assertHostedDbTarget(null), /linked project/i);
+  assert.throws(() => assertHostedDbTarget("not a ref"), /linked project/i);
+});
+
+test("assertHostedDbTarget accepts a non-production project ref", () => {
+  assert.doesNotThrow(() => assertHostedDbTarget("aqbhtmylqnpahynarnhm"));
 });

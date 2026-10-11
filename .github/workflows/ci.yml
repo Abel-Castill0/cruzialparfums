@@ -37,6 +37,7 @@ jobs:
       - run: npm run test:4j4b
       - run: npm run test:audit-gate
       - run: npm run test:qa-target
+      - run: npm run test:media-migration
       - run: npm run lint
       - run: npm run typecheck
       - run: npm run test

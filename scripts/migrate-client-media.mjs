@@ -33,6 +33,7 @@ import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { spawnSync } from "node:child_process";
+import { isProductionRef } from "../apps/web/e2e/qa-target.mjs";
 import { buildMediaMigrationPlan, buildResultManifest, MIGRATION_SOURCE, computePortablePublicId } from "./lib/client-media-plan.mjs";
 
 const scriptDirectory = dirname(fileURLToPath(import.meta.url));
@@ -363,7 +364,30 @@ function buildDbManifest() {
   };
 }
 
+const PROJECT_REF_PATTERN = /^[a-z]{20}$/;
+
+/**
+ * `--target=staging` runs `supabase db query --linked`, and this repository's default link
+ * (supabase/.temp/project-ref) is the PRODUCTION project despite its historical "staging" name. Never
+ * infer the environment from the flag: refuse Production and any link that cannot be read as a ref.
+ */
+export function assertHostedDbTarget(linkedRef) {
+  const ref = String(linkedRef ?? "").trim();
+  if (!PROJECT_REF_PATTERN.test(ref)) {
+    throw new Error("Refusing --target=staging: the linked project could not be read from supabase/.temp/project-ref.");
+  }
+  if (isProductionRef(ref)) {
+    throw new Error("Refusing --target=staging: the linked project is the PRODUCTION project (its historical name contains 'staging'). Link a non-production project first.");
+  }
+}
+
+function readLinkedProjectRef() {
+  const path = join(repositoryRoot, "supabase", ".temp", "project-ref");
+  return existsSync(path) ? readFileSync(path, "utf8") : "";
+}
+
 function runSupabaseDbQuery(sql, target) {
+  if (target === "staging") assertHostedDbTarget(readLinkedProjectRef());
   const tmpDir = mkdtempSync(join(tmpdir(), "cruzial-media-"));
   const sqlPath = join(tmpDir, "query.sql");
   writeFileSync(sqlPath, sql);
