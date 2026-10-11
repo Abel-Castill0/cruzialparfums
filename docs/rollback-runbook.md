@@ -78,6 +78,24 @@ page is then `noindex` and `robots.txt` is `Disallow: /` regardless of the datab
 control to the switch. Do NOT remove variables that are shared across targets without checking which targets the
 entry covers (one entry can hold several targets).
 
+### 3b. Before switching indexing ON: metadata in `<head>`
+
+The root layout's `generateMetadata` is async (it reads the switch), so on fast routes (`/`, `/parfums`) Next 16
+streams `<title>`, `description` and `robots` into `<body>` for non-bot user agents (documented "streaming
+metadata"; listed HTML-limited bots such as Googlebot/Bingbot already get them in `<head>`). Fix compatible with the
+installed Next 16.4 (node_modules/next/dist/docs/.../htmlLimitedBots.md): add `htmlLimitedBots: /.*/` to
+`apps/web/next.config.ts`. Verify after deploy: `curl -s https://cruzial.pe/parfums` must show
+`<meta name="description"` before `</head>`; Lighthouse SEO `meta-description` passes; compare TTFB before/after.
+Rollback: remove the option.
+
+## 3c. Supabase Auth redirect allow-list (changed 2026-10-11)
+
+Production `uri_allow_list` is `https://cruzial.pe/auth/callback,https://www.cruzial.pe/auth/callback`. Removed on
+2026-10-11 (owner-authorized, dashboard Authentication → URL Configuration): `http://localhost:3000/auth/callback` and
+`http://127.0.0.1:3000/auth/callback` — no Production flow used them (local development uses the local Supabase stack
+with its own `supabase/config.toml` redirects; Preview uses QA; only the email provider is enabled, no OAuth).
+Revert: add them back in the same screen ("Add URL").
+
 ## 4. Database restore (disaster recovery)
 
 Latest verified backups (private disk, outside the repository and OneDrive; contain PII):
@@ -123,7 +141,8 @@ the owner's password manager):
 | `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`, `CRON_SECRET` | Production only |
 | `CRUZIAL_PRODUCTION_CUTOVER_APPROVED` | retired (no longer read); optional `CRUZIAL_INDEXING_FORCE_OFF` |
 
-**GitHub.** Repository secrets `VERCEL_TOKEN`, `SUPABASE_ACCESS_TOKEN` (monitors); branch protection and security
+**GitHub.** Repository secrets `VERCEL_TOKEN` (needs: team or project scope, read deployments + events) and
+`SUPABASE_ACCESS_TOKEN` (scoped PAT: Advisors Read + Logs Read — it correctly cannot change Auth config); branch protection and security
 settings are listed in `docs/closure-report-2026-10-10.md` §7. GitHub Pages serves branch `pages-redirect`
 (redirect-only); to restore the old publication: Settings → Pages → Source `master` `/`.
 
