@@ -20,7 +20,11 @@ insert into public.import_presentations(id,product_id,stable_key,label,presentat
 values ('99001000-0000-4000-8000-000000000003','99001000-0000-4000-8000-000000000002','local-qa-100','QA 100 ml','single_fixed',100,'published') on conflict do nothing;
 insert into public.campaigns(id,business_unit_id,number,name,status,opens_at,closes_at)
 values ('99001000-0000-4000-8000-000000000004','22222222-2222-4222-8222-222222222222',9901,'LOCAL QA activo','open',now()-interval '1 day',now()+interval '1 day'),
-('99001000-0000-4000-8000-000000000005','22222222-2222-4222-8222-222222222222',9902,'LOCAL QA cerrado','closed',now()-interval '2 days',now()-interval '1 day') on conflict do nothing;
+('99001000-0000-4000-8000-000000000005','22222222-2222-4222-8222-222222222222',9902,'LOCAL QA cerrado','closed',now()-interval '2 days',now()-interval '1 day')
+-- The windows are relative to now(): on a database that persists between days (the hosted QA project) a plain
+-- `do nothing` left 'LOCAL QA activo' expired two days after the first seed, so every Import purchase journey
+-- failed with "Producto no disponible". Re-seeding must renew the windows.
+on conflict (id) do update set status=excluded.status, opens_at=excluded.opens_at, closes_at=excluded.closes_at, archived_at=null;
 insert into public.campaign_products(id,campaign_id,product_id,import_presentation_id,price_amount,availability_status)
 values ('99001000-0000-4000-8000-000000000006','99001000-0000-4000-8000-000000000004','99001000-0000-4000-8000-000000000002','99001000-0000-4000-8000-000000000003',10,'available'),
 ('99001000-0000-4000-8000-000000000007','99001000-0000-4000-8000-000000000005','99001000-0000-4000-8000-000000000002','99001000-0000-4000-8000-000000000003',20,'available') on conflict do nothing;

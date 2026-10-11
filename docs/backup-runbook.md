@@ -84,6 +84,40 @@ node scripts/backup-production-db.mjs --output-dir C:\cruzial-private-backups
   `spawnSync` even with an absolute path — confirmed empirically, not
   assumed); every other platform runs plain `npx` with no shell involved.
 
+## Encrypted off-site copy (Option B tooling — ready, owner chooses the destination)
+
+`scripts/backup-crypt.mjs` turns a backup folder into ONE authenticated encrypted file
+(AES-256-GCM, key from scrypt, random salt/IV, header authenticated). Node standard library only.
+
+```bash
+# 1. Make the dump (see "Manual backup"), then in the SAME shell:
+export CRUZIAL_BACKUP_PASSPHRASE='<>=20 characters, from your password manager>'
+node scripts/backup-crypt.mjs encrypt --backup-dir C:cruzial-private-backupscruzial-<ref>-<timestamp> --output C:cruzial-private-backupscruzial-<ref>-<timestamp>.crzbk
+node scripts/backup-crypt.mjs verify  --file C:cruzial-private-backupscruzial-<ref>-<timestamp>.crzbk
+unset CRUZIAL_BACKUP_PASSPHRASE
+```
+
+- `encrypt` refuses a source whose files do not match their own `checksums.sha256`, refuses to overwrite,
+  refuses to write inside the repository, and re-decrypts the result before reporting success.
+- `verify` decrypts in memory and recomputes every SHA-256; output is file names, sizes and OK/FAIL only.
+- `decrypt --file <f> --output-dir <new-or-empty-dir>` restores the verified files (never into the repository,
+  never over existing files); feed that folder to `scripts/restore-validate-backup.mjs` as described below.
+- The passphrase is accepted ONLY from `CRUZIAL_BACKUP_PASSPHRASE` (not argv). **Losing it makes the backup
+  unrecoverable.** Store it in the operator's password manager, never next to the encrypted file, never in this
+  repository, chat or CI.
+- Only the `.crzbk` file may be copied to an off-site/cloud-synced location. The plaintext folder stays on the
+  private disk and is deleted from any temporary location after use.
+- Verified 2026-10-10 against the real 2026-10-09 dump with a throwaway passphrase (encrypt + verify OK; the
+  test file was deleted). Automated tests use synthetic data only (`npm run test:backup-crypt`).
+
+Proposed retention (owner decision — not enforced by any code): last 7 daily + 4 weekly + 6 monthly encrypted
+copies; delete older ones. A dump is a point-in-time copy: take one right before every Production migration
+(`docs/migration-apply-20261010120000.md` step 3) and after any bulk commercial load.
+
+Scope reminder: a database dump does **not** back up Cloudinary media (the DB only stores their URLs), Vercel
+environment variables/project settings, or Supabase Auth provider/dashboard settings (the auth contract lives in
+`supabase/config.toml`; Vercel env variable NAMES are listed in `docs/closure-report-2026-10-10.md`).
+
 ## What this backup does NOT cover
 
 - **Cloudinary-hosted media**: product/combo images live in Cloudinary, not

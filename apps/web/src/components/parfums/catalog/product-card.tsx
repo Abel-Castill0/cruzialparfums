@@ -15,6 +15,7 @@ import { minimumPrice } from "@/domains/catalog/catalog-query";
 import { clampPurchaseQuantity } from "@/domains/catalog/product-purchase";
 import type { CatalogProduct } from "@/domains/catalog/types";
 import styles from "./catalog.module.css";
+import { productMediaLinkLabel } from "./product-media-label";
 
 type CardMode = "decant" | "bottle";
 
@@ -128,7 +129,7 @@ export function ProductCard({
   return (
     <article data-product-card className={styles.productCard} id={product.slug}>
       <div data-card-media className={styles.cardMedia}>
-        <Link className={styles.cardMediaLink} href={detailHref} aria-label={`Ver ${product.brand} ${product.name}`}>
+        <Link className={styles.cardMediaLink} href={detailHref} aria-label={productMediaLinkLabel(product)}>
           {product.imageUrl ? (
             <Image
               src={product.imageUrl}

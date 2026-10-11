@@ -21,10 +21,11 @@
     "test:e2e": "playwright test",
     "test:4j4b": "node --test ../../scripts/import-consolidado-4j4b.test.mjs",
     "test:audit-gate": "node --test ../../scripts/audit-dev-gate.test.mjs",
+    "test:backup-crypt": "node --test ../../scripts/backup-crypt.test.mjs",
     "test:qa-target": "node --test ../../scripts/qa-target.test.mjs",
     "test:media-migration": "node --test ../../scripts/migrate-client-media.test.mjs",
     "audit:dev": "node ../../scripts/audit-dev-gate.mjs",
-    "check": "npm run catalog:check && npm run commercial:check && npm run test:4j4b && npm run test:audit-gate && npm run test:qa-target && npm run test:media-migration && npm run lint && npm run typecheck && npm run test && npm run build",
+    "check": "npm run catalog:check && npm run commercial:check && npm run test:4j4b && npm run test:audit-gate && npm run test:backup-crypt && npm run test:qa-target && npm run test:media-migration && npm run lint && npm run typecheck && npm run test && npm run build",
     "etl:legacy": "node ../../scripts/etl-legacy-catalog.mjs",
     "etl:check": "node ../../scripts/etl-legacy-catalog.mjs --check",
     "db:reset": "npx supabase db reset",
@@ -46,7 +47,7 @@
     "@types/react-dom": "^19",
     "eslint": "10.12.0",
     "eslint-config-next": "16.4.0",
-    "typescript": "^5",
+    "typescript": "~6.0.3",
     "vitest": "^5.0.3"
   }
 }
