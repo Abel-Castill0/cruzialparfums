@@ -151,7 +151,7 @@ function productCard(p, mode){
     : bottleSVG(p);
   if(p.discontinued){
     return `<article class="product-card is-discontinued">
-      <a href="product.html?id=${p.id}">
+      <a href="product.html?id=${encodeURIComponent(p.id)}">
         <div class="card-media${mediaClass}" style="--glow:${glow(p)}">
           ${media}
           <span class="tag tag-discontinued">Descontinuado</span>
@@ -263,6 +263,10 @@ function initPills(){
 }
 
 /* ---------- Buscador ---------- */
+/* Texto -> HTML seguro: lo que escribe el usuario (y cualquier dato) nunca se reinterpreta como marcado. */
+function escapeHtml(value){
+  return String(value).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);
+}
 function initSearch(){
   const panel = document.querySelector("[data-search-panel]"), overlay = document.querySelector("[data-overlay]"),
         input = document.getElementById("global-search"), results = document.getElementById("search-results");
@@ -290,11 +294,11 @@ function initSearch(){
         : `<span class="s-price">${money(Math.min(...Object.values(p.price)))}</span>`;
       return `
       <a class="search-item${p.discontinued ? " is-discontinued" : ""}" href="product.html?id=${p.id}">
-        ${searchImg ? `<img src="${searchImg}" alt="${p.brand} ${p.name}" class="search-img" loading="lazy" decoding="async">` : bottleSVG(p)}
-        <span><span class="s-brand">${p.brand}</span><span class="s-name">${p.name}</span></span>
+        ${searchImg ? `<img src="${escapeHtml(searchImg)}" alt="${escapeHtml(p.brand + " " + p.name)}" class="search-img" loading="lazy" decoding="async">` : bottleSVG(p)}
+        <span><span class="s-brand">${escapeHtml(p.brand)}</span><span class="s-name">${escapeHtml(p.name)}</span></span>
         ${priceOrStatus}
       </a>`;
-    }).join("") : `<p class="search-empty">No encontramos nada con "${input.value.trim()}". Prueba con otra marca o nota olfativa.</p>`;
+    }).join("") : `<p class="search-empty">No encontramos nada con "${escapeHtml(input.value.trim())}". Prueba con otra marca o nota olfativa.</p>`;
   },150));
 }
 
@@ -1399,7 +1403,8 @@ function initAnalytics(){
 document.addEventListener("DOMContentLoaded",function(){
   document.querySelectorAll('a[href]').forEach(function(a){
     var href=a.getAttribute("href");
-    if(!href||href.startsWith("#")||href.startsWith("javascript:")||a.target==="_blank") return;
+    /* Solo navegación http(s)/relativa recibe la transición; javascript:, data:, vbscript: y otros esquemas se ignoran. */
+    if(!href||href.startsWith("#")||/^\s*(javascript|data|vbscript):/i.test(href)||a.target==="_blank") return;
     a.addEventListener("click",function(e){
       if(e.metaKey||e.ctrlKey||e.shiftKey) return;
       e.preventDefault();
