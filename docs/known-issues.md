@@ -1,7 +1,7 @@
 # Known Issues — CURRENT
 
-Re-verified 2026-10-10 against Git, the Production DB (read-only), Vercel and
-the code. docs/current-v2.md is authoritative; docs/closure-report-2026-10-10.md
+Re-verified 2026-10-11 against Git, the Production DB (read-only), Vercel and
+the code (2026-10-10 text below kept where still true). docs/current-v2.md is authoritative; docs/closure-report-2026-10-10.md
 holds the evidence for this pass.
 
 ## Product / commercial (business facts, not engineering gaps)
@@ -46,7 +46,14 @@ holds the evidence for this pass.
   dashboard logs. Manual backup + restore proven 2026-10-09.
 - Vercel request logs are short-lived on the current plan; the daily cron run
   can only be evidenced through `automation_worker_health`.
-- `www.cruzial.pe` redirects to the apex with 307; switch to 308 at cutover.
+- `www.cruzial.pe` redirects to the apex with **308** (changed 2026-10-11).
+- Monitoring (2026-10-11): Supabase health runs hourly and passes with a valid scoped token; alerts go to GitHub
+  Issues (proven by the self-test). The Vercel monitor's `VERCEL_TOKEN` secret is rejected (403 invalidToken): open
+  issue #81 stays open until the owner stores a new token (docs/monitoring.md, "One-time setup").
+- Legacy root storefront is still published by GitHub Pages at `abel-castill0.github.io/cruzialparfums/` (old data;
+  CodeQL #1/#6 are there). Recommended: Settings → Pages → Unpublish/disable (owner decision).
+- Vercel env `CRUZIAL_PRODUCTION_CUTOVER_APPROVED` is no longer read (retired by #77); removing it is optional and
+  removes it from every target at once.
 - Next.js out-of-band security release announced for 2026-10-14 (upstream
   dependencies, 2 Critical + 1 High). 16.4.0 includes every fix published so
   far; upgrade as soon as the patched version is out.
@@ -63,8 +70,9 @@ holds the evidence for this pass.
 
 ## Public cutover
 
-- Indexing is closed on purpose: robots `Disallow: /`, empty sitemap, `noindex`
-  on every page, `public_launch_ready() = false`.
+- Indexing is closed because the owner switch (Admin → Operaciones → "Permitir indexación en buscadores") is OFF
+  (default). Missing content is a warning next to the switch, not a lock; `public_launch_ready()` stays a factual
+  report (`false` today).
 - Cutover window, legal facts and Import policies are owner/client decisions.
 
 Historical incidents live in Git history and are not active V2 issues.
