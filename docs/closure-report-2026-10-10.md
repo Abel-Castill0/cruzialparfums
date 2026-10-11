@@ -37,7 +37,7 @@ Legend: **V** verified · **F** fixed in this branch · **B** blocked by a busin
 | SEO / indexing | F + V | Indexing closed on purpose (robots `Disallow: /`, empty sitemap, `noindex`). Titles fixed (D2). `www` → apex is 307 (A). |
 | Import campaign timing | F | D3. |
 | Parfums/Import flows | V | Local E2E 249/0/0 covers catalog, cart, checkout, idempotency, Libro, admin MFA/AAL2, isolation, Import preview. Production read-only E2E 170 passed; write journeys skip by design there. |
-| CI/CD | F + A | D4. Repo is public with secret scanning/push protection off and `master` unprotected (A). |
+| CI/CD and repository | F + V | D4, D7, D11. Secret scanning, push protection, Dependabot alerts/updates and `master` protection are enabled and read back (section 7); CI moves to Node 24 in PR #60. |
 | Dependencies | V | `npm audit --omit=dev` 0; `audit:dev` PASS with 1 documented exception (`braces`, no patched release, re-checked). Next 16.4.0 = latest. |
 | Backup / restore | V (2026-10-09) | Proven restore on 2026-10-09; unchanged since (0 orders). Managed backups need a paid plan (A). |
 | WhatsApp Cloud API | B | No Meta credentials; fails closed. |
@@ -53,6 +53,11 @@ Legend: **V** verified · **F** fixed in this branch · **B** blocked by a busin
 | D4 | P3 | `ci.yml` had no `permissions:`; CI never ran `test:qa-target` | Relied on repo default; guard tests only in local `npm run check` | `permissions: contents: read`; added `npm run test:qa-target` | CI on this PR |
 | D5 | P3 | `docs/known-issues.md` said the storefront uses the legacy catalog, listed resolved items | Not updated after the Supabase cutover | Rewritten from today's evidence | — |
 | D6 | P2 | `scripts/migrate-client-media.mjs db-apply --target=staging` ran `supabase db query --linked`; the repo default link (`supabase/.temp/project-ref`) is Production | The flag name, not the real project, decided the environment (same class as the 10-09 Import loader fix) | `assertHostedDbTarget` refuses the Production ref and any unreadable link before any query | `migrate-client-media.test.mjs` (11/11; 2 new) now wired into `npm run check` and CI (it was in neither) |
+| D7 | P2 | GitHub (public repo): secret scanning, push protection, Dependabot alerts and security updates were disabled; `master` unprotected; no SHA-pinning policy | Never configured | Enabled and re-read from the API (section 7); `master` requires a PR + the 5 real check names; `sha_pinning_required`; fork workflows need approval for all external contributors | Final state read back from GitHub (section 7) |
+| D8 | P3 | WCAG 2.5.3 (label in name): footer brand link and the photo links of the 3 products without a photo (axe `label-content-name-mismatch`, live Production) | `aria-label` omitted the visible text; the rule is experimental so the tag-based axe runs never evaluated it | PR #61: name from content; `productMediaLinkLabel()` | New E2E fails on Production (`/parfums`, `/parfums/catalogo`), passes locally 60/60; unit test |
+| D9 | P3 | Parfums home LCP image lacks `fetchpriority=high` (Lighthouse `lcp-discovery-insight`, mobile LCP 2.5-3.1 s) | `preload` only adds the `<link>`; Next 16 docs recommend `fetchPriority` | PR #61 | Verify the attribute on the deployed preview |
+| D10 | P2 (test infra) | Hosted QA: 7 Import-journey failures on 2026-10-10 ("Producto no disponible") | Fixture campaign `LOCAL QA activo` has a `now()`-relative window with `on conflict do nothing`; QA persists between days so it expired 2 days after the first seed | PR #63: upsert renews `status/opens_at/closes_at` | `qa-target.test.mjs` contract (fails 7/1 without the fix, 8/8 with); hosted QA after `--reset`: 246 passed / 0 failed |
+| D11 | P3 | CI ran Node 22 while Vercel Production uses Node 24.x; TypeScript 7 (Dependabot #10) is not installable | Drift; `typescript-eslint` peer `<6.1.0` | PR #60 (CI on Node 24, gates unchanged); PR #59 (`typescript ~6.0.3`, Dependabot ignores `>=6.1.0`) | Both PRs 8/8 green; `npm run check` PASS locally on TS 6.0.3 |
 
 Other scripts reviewed for a silent Production target: `qa-hosted-browser.mjs` (throwaway linked workdir, Production-ref refusal, marker before reset), `load-import-consolidado.mjs` (fixed 10-09), `load-commercial-catalog.mjs`, `prepare-commercial-reconciliation-test.mjs`, `concurrency-customer-conflict-repro.mjs` (Docker-local only), `restore-validate-backup.mjs` (loopback only), `verify-staging-qa-fixtures.mjs` (historical, read-only, fixed ref), `backup-production-db.mjs` (intentional read-only Production dump). Phase `cloudinary-apply` uploads to the single (Production) Cloudinary account by design.
 
@@ -93,15 +98,53 @@ Rejected as non-defects: definer WARNs (documented inventory, each authorized); 
 **Owner session checks** (`docs/owner-verification-runbook.md`) — admin MFA, password recovery email, Cloudinary upload in Production.
 
 **Owner settings / cost decisions**
-- GitHub: enable secret scanning + push protection (free for public repos), Dependabot security updates, and branch protection on `master` requiring CI.
-- Vercel: set `www.cruzial.pe` → apex redirect to 308.
-- Supabase Pro (managed backups, leaked-password protection) or an encrypted off-site backup schedule; Vercel log drain if longer log retention is needed.
+- Vercel: `www.cruzial.pe` -> apex is 307; decide whether it should be 308 (a Production domain change, not made here).
+- Supabase Pro (managed backups, leaked-password protection) **or** run the encrypted off-site copy of PR #62 on a schedule the owner controls; pick the destination and retention (proposal in `docs/backup-runbook.md`); a Vercel log drain if longer log retention is needed.
+- The GitHub items from the previous pass are DONE (section 7); `master` protection lets the owner bypass (`enforce_admins=false`) for emergencies.
 
 Procedure to apply the migration in Production (prepared, not executed): `docs/migration-apply-20261010120000.md`.
 
-## 6. Gate closure criteria
+## 6. Follow-up pass (2026-10-10/11) — PR board
+
+| PR | Content | Checks | State |
+| --- | --- | --- | --- |
+| #58 | Closure audit: readiness migration, opening label, titles, CI hardening, media-script guard, docs | 8/8 | VERIFICADO — merge REQUIERE AUTORIZACIÓN; applying the migration REQUIERE AUTORIZACIÓN |
+| #59 | TypeScript ~6.0.3 (supersedes Dependabot #10) | 8/8 | VERIFICADO — close #10 after merge |
+| #60 | CI on Node 24 | 8/8 (the jobs run on Node 24) | VERIFICADO |
+| #61 | Label-in-name + LCP priority | 8/8 | VERIFICADO locally; PENDIENTE DE VERIFICACIÓN on the deployed preview/Production |
+| #62 | Encrypted, verifiable backup file (AES-256-GCM) | 8/8 | VERIFICADO (real dump, throwaway passphrase) |
+| #63 | QA fixture windows renew on seed | in progress when written | CORREGIDO; hosted QA 246/0 after reset |
+
+Merge order has no hard dependency. #58, #60 and #62 touch `ci.yml` / `package.json` close to each other (adjacent insertions); resolve by keeping every added step and script. Merging to `master` deploys Production automatically, so each merge is a release decision.
+
+## 7. GitHub, performance, QA — evidence
+
+**GitHub (read back from the API).** Secret scanning `enabled`, push protection `enabled`, Dependabot alerts `enabled`, Dependabot security updates `enabled`; open secret-scanning alerts 0; open Dependabot alerts 0. Branch protection on `master`: PR required (0 approvals, single owner); required checks `Web (lint · typecheck · build · unit)`, `Database (migrations · pgTAP)`, `Browser E2E (public · responsive · MFA admin)`, `Analyze (javascript-typescript)`, `gitleaks` (names read from the CI check runs); force-push and deletion blocked; `enforce_admins=false`. Actions: `sha_pinning_required=true` (all 3 workflows were already pinned by SHA), default token `read`, 0 Actions secrets, fork-PR approval `all_external_contributors`.
+
+Code scanning, 4 open: 2x SHA-1 required by Cloudinary's upload-signature protocol (ACCEPTED P3, owner: engineering, no alternative inside the provider protocol) and 2 in the legacy storefront `assets/app.js` (`innerHTML` built from the first-party static catalog; a `javascript:` filter over own links) — ACCEPTED P3, out of scope, owner: engineering, revisit if the legacy storefront is touched.
+
+**Lighthouse 13.5 against `cruzial.pe` (read-only, mobile emulation / desktop preset, 2026-10-11)**
+
+| Page | Perf m / d | A11y | Best practices | SEO | LCP m / d | TBT m / d | CLS |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| /parfums | 91 / 98 | 100 | 100 | 66 | 3.1 s / 0.9 s | 100 / 0 ms | 0 |
+| /parfums/catalogo | 90 / 98 | 100 | 100 | 66 | 2.9 s / 0.8 s | 180 / 0 ms | 0 |
+| /parfums/productos/212-edt | 93 / 98 | 100 | 100 | 69 | 2.8 s / 0.8 s | 130 / 10 ms | 0 |
+| /import | 94 / 97 | 100 | 100 | 66 | 2.5 s / 0.7 s | 120 / 10 ms | 0 |
+
+SEO below 100 is the intentional `noindex` (`is-crawlable`). INP is not measurable in a lab run. Page weight 330-590 KB. bfcache is blocked by `Cache-Control: no-store` on dynamic CSP-nonce pages (not actionable). Remaining mobile opportunities (render-blocking CSS ~150 ms; ~124 KiB of image delivery on the home) are low impact and were not changed.
+
+**Hosted QA (`aqbhtmylqnpahynarnhm`, marker verified, synthetic data only).** The 2026-10-10 run on the #58 code gave 236 passed / 7 failed, all explained by D10 (expired fixture) plus a second pass without `--reset` (now documented). After the fixture fix and `--reset`: **246 passed / 0 failed**. Production was not written to.
+
+**Backups.** The 2026-10-09 dump was re-verified (3/3 SHA-256 OK) and the encrypt + verify tool was validated on it. There is no newer dump: Production has had no business writes since (0 orders, 0 outbox). A fresh dump is required immediately before applying the migration.
+
+**Next.js.** `latest` is 16.4.0 (installed). The announced out-of-band release of 2026-10-14 (2 Critical + 1 High in upstream dependencies) is not published yet. Dependabot security updates are now enabled, so the advisory should open a PR by itself; the upgrade still goes through an isolated branch, Preview and the full gate. PENDIENTE DE VERIFICACIÓN until published; check on or after 2026-10-14.
+
+**Admin screens.** Covered by automated Playwright + axe (MFA/AAL2, unit isolation, mobile overflow). A manual visual review of every admin screen was NOT done in this pass: PENDIENTE DE VERIFICACIÓN.
+
+## 8. Gate closure criteria
 
 - **Technical gate** closes when: this PR's CI is green, the migration is applied to Production with history = repo (81), Production serves the merge SHA, the read-only Production E2E is fully green (title test included), and logs/advisors show no new finding. Known P0/P1/P2 after merge+apply: 0.
 - **Business cutover** closes when `public_launch_ready()` returns `true` from real facts (never forced), the owner session checks pass, and indexing is opened by explicit decision.
 
-Status today: TECHNICAL PLATFORM COMPLETE pending merge + migration apply; BUSINESS CUTOVER BLOCKED BY EXTERNAL INPUTS.
+Status: TECHNICAL PLATFORM COMPLETE pending the PR merges, the migration apply and the post-deploy checks (section 6 board); BUSINESS CUTOVER BLOCKED BY EXTERNAL INPUTS. Not claimed as 100%: the Next.js 2026-10-14 release is unpublished, the deployed version is not yet the approved one, and the owner-session checks have not been run.

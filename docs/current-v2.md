@@ -33,6 +33,10 @@ Evidence: docs/closure-report-2026-10-10.md (branch `claude/closure-audit-2026-1
   RLS write grants, Server Action guards, client bundle (no secrets), HTTP headers, Vercel/Supabase logs, advisors.
 - Gate: local Playwright **249/0/0**; Production read-only 170 passed (new title test fails until deploy) / 33
   skipped by design; audits clean (1 documented dev exception).
+- Follow-up (2026-10-11): GitHub secret scanning, push protection, Dependabot alerts/security updates, `master`
+  protection (PR + 5 required checks) and SHA-pinned Actions are now **enabled** (supersedes the 10-09 "disabled" note).
+  Open PRs: #58 (audit), #59 (TypeScript ~6.0.3), #60 (CI Node 24), #61 (a11y/LCP), #62 (encrypted backup tool),
+  #63 (QA fixture windows) — see docs/closure-report-2026-10-10.md section 6.
 - Pending authorization: merge + apply `20261010120000`; Next.js upgrade after the 2026-10-14 security release.
   External inputs: docs/known-issues.md and section 5 of the closure report.
 

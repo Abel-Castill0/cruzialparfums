@@ -50,11 +50,16 @@ holds the evidence for this pass.
 - Next.js out-of-band security release announced for 2026-10-14 (upstream
   dependencies, 2 Critical + 1 High). 16.4.0 includes every fix published so
   far; upgrade as soon as the patched version is out.
-- Dependabot #10 (TypeScript 7) blocked upstream: typescript-eslint supports
-  TypeScript < 6.1.
+- Dependabot #10 (TypeScript 7) cannot be installed: typescript-eslint supports TypeScript < 6.1. PR #59 moves to
+  TypeScript ~6.0.3 and Dependabot ignores >= 6.1.0 until typescript-eslint supports 7 (remove the ignore then).
 - `braces` GHSA-vfj7-8cjw-p6xm: dev-only lint tooling, no patched release.
 - Owner-session checks still pending (docs/owner-verification-runbook.md):
   admin MFA, password recovery email, Cloudinary upload in Production.
+
+- GitHub (2026-10-11): secret scanning, push protection, Dependabot alerts/security updates and `master` branch
+  protection (PR + 5 required checks) are enabled; CodeQL keeps 2 accepted SHA-1 findings (Cloudinary protocol) and
+  2 in the out-of-scope legacy `assets/app.js`.
+- Hosted QA needs `--reset` before each full run (serial Gate B specs consume their order).
 
 ## Public cutover
 
