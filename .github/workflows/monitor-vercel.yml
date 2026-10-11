@@ -6,6 +6,8 @@ name: Monitor Vercel Production
 # DISCORD_WEBHOOK_URL secret. Until VERCEL_TOKEN exists the job only emits a visible warning and does nothing.
 # Scheduled workflows run from the default branch only and never receive secrets from fork pull requests.
 
+# Hourly at minute 17 UTC (GitHub may delay scheduled runs under load). GitHub registers a schedule when this file
+# changes on the default branch; after disabling/re-enabling the workflow, verify that "schedule" runs appear again.
 on:
   schedule:
     - cron: "17 * * * *"

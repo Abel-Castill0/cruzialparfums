@@ -7,6 +7,8 @@ name: Supabase health
 # the DISCORD_WEBHOOK_URL secret. Until SUPABASE_ACCESS_TOKEN exists the job only emits a visible warning. Scheduled
 # workflows run from the default branch only and fork pull requests never receive secrets.
 
+# Hourly at minute 43 UTC (GitHub may delay scheduled runs under load). GitHub registers a schedule when this file
+# changes on the default branch; after disabling/re-enabling the workflow, verify that "schedule" runs appear again.
 on:
   schedule:
     - cron: "43 * * * *"
