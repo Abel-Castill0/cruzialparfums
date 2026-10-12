@@ -695,3 +695,77 @@
   content-visibility: auto;
   contain-intrinsic-size: auto 800px;
 }
+
+/* Phones: with the hero at 45% of the screen (42% on short ones) the essentials become a 2x2 grid with a short second line
+   (keep the attributes, drop the connectors; both lines visible, one line each at 12px down to 320px) and the product
+   section starts closer, so the first carousel card peeks (>= 45px at 390x844, 375x667, 360x640 and 320x568).
+   The long copy stays in the DOM and is the one shown from 481px. See docs/hero-variants.md section 13. */
+.assuranceShort {
+  display: none;
+}
+
+@media (max-width: 480px) {
+  .showcase {
+    padding-top: var(--ds-space-3);
+  }
+
+  .showcase h2 {
+    font-size: clamp(1.5rem, 7vw, 1.75rem);
+  }
+
+  .assurance {
+    padding-block: 12px;
+    row-gap: 12px;
+  }
+
+  .assurance li {
+    gap: 8px;
+    padding-inline: 10px;
+    align-items: center;
+  }
+
+  .assurance li > svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .assurance li > span {
+    font-size: 0.75rem;
+    line-height: 1.3;
+  }
+
+  .assurance li > span > strong {
+    font-size: 0.85rem;
+    text-wrap: balance;
+  }
+
+  .assuranceFull {
+    display: none;
+  }
+
+  .assuranceShort {
+    display: block;
+  }
+}
+
+@media (max-width: 340px) {
+  .assurance {
+    width: calc(100% - 16px);
+    padding-block: 8px;
+    row-gap: 8px;
+  }
+
+  .assurance li {
+    gap: 6px;
+    padding-inline: 4px;
+  }
+
+  .assurance li > svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .assurance li > span > strong {
+    font-size: 0.8rem;
+  }
+}

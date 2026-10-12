@@ -1,49 +1,46 @@
 import type { Route } from "next";
-import Image from "next/image";
+import { getImageProps } from "next/image";
 import Link from "next/link";
 import styles from "./hero-carousel.module.css";
 
-/** One cinematic artwork with the page headline and two calls to action over it. */
+/*
+ * Hero of /parfums (variant F, docs/hero-variants.md). Two sources, one headline, two actions:
+ * - Desktop and landscape: a 21:9 crop of hero-crop.webp (x 95-1672, y 88-764). Pure crop: all six bottles and the
+ *   baked wordmark, no synthesized pixels. The headline sits on the ink strip below the art.
+ * - Phones and portrait tablets: no product image. The official lockup (logo.jpeg, byte-identical, 499x494, near-black
+ *   ground) shows its "CRUZIAL / PERFUMERIA" window on a solid --ds-color-navy hero. Nothing is keyed, blended or edited.
+ * Only /parfums uses this component; Import has its own hero.
+ */
+const DESKTOP_ART = { src: "/parfums/hero/hero-wide-21x9.webp", width: 1577, height: 676 } as const;
+const PHONE_LOGO = { src: "/parfums/hero/logo-official.jpeg", width: 499, height: 494 } as const;
+const PHONE_MEDIA = "(max-width: 767px), (max-width: 1100px) and (orientation: portrait)";
+
 export function HeroArtwork({
-  src,
-  alt,
-  position,
-  mobilePosition,
-  mobileFit,
   title,
   ctaHref,
   ctaLabel,
   secondaryHref,
   secondaryLabel,
 }: {
-  src: string;
-  alt: string;
-  position: string;
-  mobilePosition: string;
-  mobileFit?: "wordmark";
   title: string;
   ctaHref: Route;
   ctaLabel: string;
-  secondaryHref?: Route;
-  secondaryLabel?: string;
+  secondaryHref?: Route | undefined;
+  secondaryLabel?: string | undefined;
 }) {
+  const shared = { alt: "Cruzial Perfumería", quality: 60, fetchPriority: "high" as const };
+  const { props: desktop } = getImageProps({ ...shared, ...DESKTOP_ART, sizes: "100vw" });
+  // The official logo is served byte for byte: the optimizer would recompress it.
+  const { props: phone } = getImageProps({ ...shared, ...PHONE_LOGO, sizes: "280px", unoptimized: true });
+  const { srcSet: desktopSet, ...img } = desktop;
   return (
-    <section className={styles.hero} data-home-hero data-fit={mobileFit} aria-label="Cruzial Parfums">
-      <Image
-        src={src}
-        alt={alt}
-        fill
-        // Desktop: the artwork spans the viewport, so the optimizer serves its 1920 entry (the source is 1672 wide).
-        // Phones draw it at 250% of the width but 540px here makes a 2x screen pick the 1080 entry (~44 KB instead of ~87 KB).
-        sizes="(max-width: 767px) 540px, 100vw"
-        className={styles.image}
-        style={{ "--pos": position, "--pos-mobile": mobilePosition } as React.CSSProperties}
-        preload
-        fetchPriority="high"
-        quality={60}
-      />
-      <div className={styles.shade} aria-hidden="true" />
-      <div className={styles.content}>
+    <section className={styles.hero} data-home-hero aria-label="Cruzial Parfums">
+      <picture className={styles.art}>
+        <source media={PHONE_MEDIA} srcSet={phone.srcSet ?? phone.src} />
+        <source srcSet={desktopSet} />
+        <img {...img} alt={shared.alt} className={styles.image} />
+      </picture>
+      <div className={styles.foot}>
         <h1 className={styles.title}>{title}</h1>
         <div className={styles.actions}>
           <Link href={ctaHref} className={styles.cta}>

@@ -21,11 +21,14 @@ test.describe("parfums home hero and header", () => {
     await expect(hero).toBeVisible();
     const artwork = hero.locator("img");
     await expect(artwork).toHaveCount(1);
-    await expect(artwork).toHaveAttribute("src", /hero-crop\.webp/);
+    // Desktop art is the 21:9 crop; on phones a <source> swaps in the official logo (currentSrc), see hero-carousel.tsx.
+    await expect(artwork).toHaveAttribute("src", /hero-wide-21x9\.webp/);
 
     const viewport = page.viewportSize()!;
     const box = (await hero.boundingBox())!;
-    expect(box.height).toBeGreaterThan(viewport.height * 0.8);
+    // Desktop: art + headline strip. Phones: a compact navy hero (45% / 42% of the screen) so the product carousel peeks.
+    const phoneLayout = viewport.width < 768 || (viewport.width <= 1100 && viewport.height > viewport.width);
+    expect(box.height).toBeGreaterThan(viewport.height * (phoneLayout ? 0.4 : 0.8));
     // One headline and two actions sit on the image; no other copy does.
     await expect(hero.getByRole("heading", { level: 1 })).toHaveText(/Perfumería de descubrimiento/);
     await expect(hero.locator("h2, h3, p")).toHaveCount(0);
@@ -39,15 +42,16 @@ test.describe("parfums home hero and header", () => {
     await expect(header).toBeVisible();
   });
 
-  // Replaces the coverage lost when "no text on the hero" was retired: the artwork still carries a baked
-  // wordmark, so the headline must sit in the reserved lower band, and the new actions must be real controls.
+  // The headline must sit below the wordmark block (never over it), and the actions must be real 44px controls.
   test("hero headline stays below the artwork wordmark band and its actions are keyboard-reachable 44px controls", async ({ page }) => {
     await page.goto("/parfums");
     const hero = page.locator("[data-home-hero]");
     const heroBox = (await hero.boundingBox())!;
     const titleBox = (await hero.getByRole("heading", { level: 1 }).boundingBox())!;
-    // The wordmark sits around 40-60% of the hero height; the headline must start in the lower 40%.
-    expect(titleBox.y - heroBox.y).toBeGreaterThan(heroBox.height * 0.6);
+    // The wordmark (baked in the desktop art, the official logo on phones) is the first block; the headline starts below it.
+    const artBox = (await hero.locator("picture").boundingBox())!;
+    expect(titleBox.y).toBeGreaterThanOrEqual(artBox.y + artBox.height - 2);
+    expect(heroBox.y + heroBox.height).toBeGreaterThan(titleBox.y + titleBox.height);
 
     const primary = hero.getByRole("link", { name: "Explorar catálogo" });
     const secondary = hero.getByRole("link", { name: "Arma tu combo" });
