@@ -1,5 +1,6 @@
-/* Hero of /parfums (variant F, docs/hero-variants.md). Desktop: 21:9 art + ink strip with the headline. Phones: official
-   logo on a solid navy hero, 45% of the screen (42% when it is 700px tall or less), so the product carousel peeks. */
+/* Hero of /parfums (docs/hero-variants.md section 15). One image per screen, both pure crops of the same original, then an
+   ink strip with the single visible action. 768px and up: the 21:9 crop; phones: the 3:2 crop that keeps the whole wordmark and
+   the bottles beside it. */
 
 .hero {
   position: relative;
@@ -13,7 +14,10 @@
 .art {
   display: block;
   width: 100%;
-  aspect-ratio: 1577 / 676;
+  aspect-ratio: 1200 / 792;
+  /* Short phones: cap the art at a third of the screen so the product carousel peeks under the hero. The image is then
+     cropped top and bottom by object-fit (smoke above, ledge below); the wordmark and the bottles sit in the middle 78% of it. */
+  max-height: 33svh;
 }
 
 .image {
@@ -21,6 +25,7 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: 50% 55%;
   /* The ledge melts into the strip: no hard edge between art and floor. */
   -webkit-mask-image: linear-gradient(180deg, #000 84%, transparent 100%);
   mask-image: linear-gradient(180deg, #000 84%, transparent 100%);
@@ -29,7 +34,7 @@
 .foot {
   position: relative;
   z-index: 2;
-  padding: 0 var(--ds-gutter) var(--ds-space-6);
+  padding: 6px var(--ds-gutter) var(--ds-space-1);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -37,13 +42,16 @@
   text-align: center;
 }
 
+/* The page's h1 stays in the DOM for screen readers and search engines but is not drawn. */
 .title {
-  max-width: 18ch;
-  font-size: clamp(2.25rem, 1.2rem + 3.4vw, 3.5rem);
-  font-weight: 600;
-  line-height: 1.06;
-  letter-spacing: -0.035em;
-  color: var(--ds-on-photo);
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 .actions {
@@ -54,8 +62,7 @@
   gap: var(--ds-space-2);
 }
 
-.cta,
-.ctaSecondary {
+.cta {
   min-height: 48px;
   padding: 0 var(--ds-space-3);
   display: inline-flex;
@@ -81,40 +88,28 @@
   background: var(--ds-color-accent-active);
 }
 
-.ctaSecondary {
-  color: var(--ds-on-photo);
-  background: rgba(255, 255, 255, 0.16);
-  backdrop-filter: blur(14px) saturate(160%);
-}
+/* 768px and up: the 21:9 crop and a roomier strip, the button centered both ways under the art (not over it: the middle of the
+   image is the monogram and wordmark). */
+@media (min-width: 768px) {
+  .art {
+    aspect-ratio: 1577 / 676;
+    max-height: none;
+  }
 
-.ctaSecondary:hover {
-  background: rgba(255, 255, 255, 0.28);
-}
-
-@media (min-width: 1100px) {
-  .title {
-    max-width: none;
-    white-space: nowrap;
+  .foot {
+    padding: var(--ds-space-4) var(--ds-gutter);
+    justify-content: center;
   }
 }
 
-/* Entrance: the art fades in, the copy rises in sequence (ease-out, <= 600ms). */
+/* Entrance: the art fades in, the button rises (ease-out, <= 600ms). */
 @media (prefers-reduced-motion: no-preference) {
   .image {
     animation: heroFade var(--ds-dur-hero) var(--ds-ease-enter) both;
   }
 
-  .title,
   .actions {
-    animation: heroRise var(--ds-dur-hero) var(--ds-ease-enter) both;
-  }
-
-  .title {
-    animation-delay: 120ms;
-  }
-
-  .actions {
-    animation-delay: 240ms;
+    animation: heroRise var(--ds-dur-hero) var(--ds-ease-enter) 240ms both;
   }
 }
 
@@ -128,114 +123,5 @@
   from {
     opacity: 0;
     transform: translateY(20px);
-  }
-}
-
-/* Phones and portrait tablets: the official logo.jpeg, untouched, on a solid --ds-color-navy hero. The file keeps its own
-   near-black ground, so it reads as a plaque on the navy; nothing is keyed, blended or edited. The wordmark is capped at
-   280px. */
-@media (max-width: 767px), (max-width: 1100px) and (orientation: portrait) {
-  .hero {
-    justify-content: center;
-    min-height: 45svh;
-    padding: var(--ds-space-3) 0;
-    background: var(--ds-color-navy);
-  }
-
-  /* A 440 x 130 window of the 499 x 494 file: "CRUZIAL / PERFUMERIA" (x 36-476, y 326-456). */
-  .art {
-    position: relative;
-    width: min(280px, calc(100vw - 40px));
-    aspect-ratio: 440 / 130;
-    margin-inline: auto;
-    overflow: hidden;
-    border-radius: var(--ds-radius-sm);
-    /* A 1px ring a little lighter than the navy plus a faint lift make the plaque read as a deliberate panel.
-       Zero-offset ring, not an opaque border (DESIGN.md section 5). */
-    box-shadow:
-      0 0 0 1px color-mix(in srgb, var(--ds-color-navy) 92%, var(--ds-white)),
-      0 1px 2px rgba(0, 0, 0, 0.15);
-  }
-
-  .image {
-    position: absolute;
-    top: calc(-326 / 130 * 100%);
-    left: calc(-36 / 440 * 100%);
-    width: calc(499 / 440 * 100%);
-    max-width: none;
-    height: auto;
-    -webkit-mask-image: none;
-    mask-image: none;
-  }
-
-  .foot {
-    margin-top: var(--ds-space-2);
-    gap: var(--ds-space-1);
-    padding: 0 var(--ds-space-2);
-  }
-
-  .title {
-    max-width: none;
-    font-size: clamp(1.25rem, 5.6vw, 1.5rem);
-    line-height: 1.15;
-    color: var(--ds-on-navy);
-  }
-
-  .actions {
-    flex-wrap: nowrap;
-    gap: var(--ds-space-1);
-  }
-
-  .cta,
-  .ctaSecondary {
-    padding: 0 var(--ds-space-2);
-    font-size: 0.9375rem;
-  }
-}
-
-@media (max-width: 340px) {
-  .cta,
-  .ctaSecondary {
-    padding: 0 12px;
-    font-size: 0.875rem;
-  }
-}
-
-@media (max-height: 700px) and (max-width: 767px) {
-  .hero {
-    min-height: 42svh;
-  }
-}
-
-@media (min-width: 600px) and (max-width: 1100px) and (orientation: portrait) {
-  .art {
-    width: 280px;
-  }
-}
-
-/* Desktop (the exact complement of the phone query above): the art speaks for itself. The headline stays in the DOM for
-   screen readers and search engines but is not drawn, the secondary link is dropped (it lives in the header navigation) and
-   "Explorar catalogo" is the only thing under the art, centered both ways in an evenly padded strip. It is not laid over
-   the art: the middle of the 21:9 image is the Cruzial monogram and wordmark. */
-@media (min-width: 1101px), (min-width: 768px) and (orientation: landscape) {
-  .title {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    margin: -1px;
-    padding: 0;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
-    animation: none;
-  }
-
-  .ctaSecondary {
-    display: none;
-  }
-
-  .foot {
-    padding: var(--ds-space-4) var(--ds-gutter);
-    justify-content: center;
   }
 }

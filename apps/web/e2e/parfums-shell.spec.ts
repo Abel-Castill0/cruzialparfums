@@ -1,5 +1,3 @@
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
 import { expect, test, type Page } from "@playwright/test";
 
 // Parfums shell and home behaviour: hero + header, the search dialog, the
@@ -20,35 +18,28 @@ async function firstPurchasableCardAdd(page: Page) {
 }
 
 test.describe("parfums home hero and header", () => {
-  test("the hero owns the first screen with one headline and two actions; the header appears after it", async ({ page }) => {
+  test("the hero owns the first screen with one hidden headline and one visible action; the header appears after it", async ({ page }) => {
     await page.goto("/parfums");
     const hero = page.locator("[data-home-hero]");
     await expect(hero).toBeVisible();
-    const artwork = hero.locator("img");
+    const artwork = hero.locator("picture img");
     await expect(artwork).toHaveCount(1);
-    // Desktop art is the 21:9 crop; on phones a <source> swaps in the official logo (currentSrc), see hero-carousel.tsx.
-    await expect(artwork).toHaveAttribute("src", /hero-wide-21x9\.webp/);
-
     const viewport = page.viewportSize()!;
     const box = (await hero.boundingBox())!;
-    // Desktop: art + headline strip. Phones: a compact navy hero (45% / 42% of the screen) so the product carousel peeks.
-    const phoneLayout = viewport.width < 768 || (viewport.width <= 1100 && viewport.height > viewport.width);
-    expect(box.height).toBeGreaterThan(viewport.height * (phoneLayout ? 0.4 : 0.8));
+    // Desktop (768px and up): the 21:9 crop + button strip. Phones: the 3:2 crop + button, ~40% of the screen so the product carousel peeks.
+    const phoneLayout = viewport.width < 768;
+    await expect.poll(() => artwork.evaluate((image: HTMLImageElement) => image.currentSrc)).toContain(phoneLayout ? "hero-mobile-3x2" : "hero-wide-21x9");
+    // A portrait tablet (>= 768px wide) gets the 21:9 crop, which is short on a tall screen.
+    const portrait = viewport.height > viewport.width;
+    expect(box.height).toBeGreaterThan(viewport.height * (phoneLayout || portrait ? 0.3 : 0.8));
     // The h1 is always in the DOM (screen readers, search engines); no other copy sits in the hero.
     await expect(hero.getByRole("heading", { level: 1 })).toHaveText(/Perfumería de descubrimiento/);
     await expect(hero.locator("h2, h3, p")).toHaveCount(0);
     await expect(hero.getByRole("link", { name: "Explorar catálogo" })).toBeVisible();
-    if (phoneLayout) {
-      // Phones keep the headline and both actions under the logo plate.
-      await expect(hero.getByRole("heading", { level: 1 })).toBeVisible();
-      await expect(hero.getByRole("link", { name: "Arma tu combo" })).toBeVisible();
-    } else {
-      // Desktop: the art speaks for itself. No drawn text, one action.
-      const title = (await hero.getByRole("heading", { level: 1 }).boundingBox())!;
-      expect(Math.max(title.width, title.height), "h1 is visually hidden (1px), not drawn").toBeLessThanOrEqual(1);
-      await expect(hero.getByRole("link")).toHaveCount(1);
-      await expect(hero.getByRole("link", { name: "Arma tu combo" })).toBeHidden();
-    }
+    // Both layouts: no drawn text, one action. The h1 is a 1px visually hidden element.
+    const title = (await hero.getByRole("heading", { level: 1 }).boundingBox())!;
+    expect(Math.max(title.width, title.height), "h1 is visually hidden (1px), not drawn").toBeLessThanOrEqual(1);
+    await expect(hero.getByRole("link")).toHaveCount(1);
 
     const header = page.locator("header").first();
     await expect(header).toBeHidden();
@@ -57,51 +48,33 @@ test.describe("parfums home hero and header", () => {
     await expect(header).toBeVisible();
   });
 
-  // Phones: the headline sits below the wordmark block (never over it) and both actions are real 44px controls reachable by keyboard.
-  // Desktop: "Explorar catálogo" is the only visible element under the art, centered both ways in its strip and never over the art.
-  test("hero actions are keyboard-reachable 44px controls, laid out for the screen (phones: headline below the logo; desktop: one centered button)", async ({ page }) => {
+  // Both screens: "Explorar catálogo" is the only visible element under the art, centered, a real 44px control, never over the art.
+  // Desktop also has even space above and below it in its strip.
+  test("hero action is a keyboard-reachable 44px control centered under the art", async ({ page }) => {
     // The hero copy rises 20px on entry; measure the layout, not the animation frame the test happened to catch.
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto("/parfums");
     const hero = page.locator("[data-home-hero]");
     const viewport = page.viewportSize()!;
-    const phoneLayout = viewport.width < 768 || (viewport.width <= 1100 && viewport.height > viewport.width);
     const heroBox = (await hero.boundingBox())!;
     const artBox = (await hero.locator("picture").boundingBox())!;
     const primary = hero.getByRole("link", { name: "Explorar catálogo" });
-    expect((await primary.boundingBox())!.height).toBeGreaterThanOrEqual(44);
-
-    if (phoneLayout) {
-      const titleBox = (await hero.getByRole("heading", { level: 1 }).boundingBox())!;
-      // The wordmark (the official logo on phones) is the first block; the headline starts below it.
-      expect(titleBox.y).toBeGreaterThanOrEqual(artBox.y + artBox.height - 2);
-      expect(heroBox.y + heroBox.height).toBeGreaterThan(titleBox.y + titleBox.height);
-
-      const secondary = hero.getByRole("link", { name: "Arma tu combo" });
-      expect((await secondary.boundingBox())!.height).toBeGreaterThanOrEqual(44);
-      await primary.focus();
-      await page.keyboard.press("Tab");
-      await expect(secondary).toBeFocused();
-      const ring = await secondary.evaluate((element) => {
-        const style = getComputedStyle(element);
-        return { outline: parseFloat(style.outlineWidth), outlineStyle: style.outlineStyle, shadow: style.boxShadow };
-      });
-      expect(ring.outlineStyle !== "none" && ring.outline > 0 || ring.shadow !== "none").toBe(true);
-    } else {
-      const button = (await primary.boundingBox())!;
-      // Centered horizontally in the page.
-      expect(Math.abs(button.x + button.width / 2 - viewport.width / 2)).toBeLessThanOrEqual(2);
-      // Under the art (never over the monogram and wordmark in the middle of it), with even space above and below.
-      expect(button.y).toBeGreaterThanOrEqual(artBox.y + artBox.height - 2);
+    const button = (await primary.boundingBox())!;
+    expect(button.height).toBeGreaterThanOrEqual(44);
+    expect(Math.abs(button.x + button.width / 2 - viewport.width / 2)).toBeLessThanOrEqual(2);
+    // Under the art (never over the monogram and wordmark), inside the hero.
+    expect(button.y).toBeGreaterThanOrEqual(artBox.y + artBox.height - 2);
+    expect(button.y + button.height).toBeLessThanOrEqual(heroBox.y + heroBox.height + 1);
+    await primary.focus();
+    await expect(primary).toBeFocused();
+    if (viewport.width >= 768) {
       const above = button.y - (artBox.y + artBox.height);
       const below = heroBox.y + heroBox.height - (button.y + button.height);
       expect(Math.abs(above - below), `space above ${above}px vs below ${below}px`).toBeLessThanOrEqual(4);
-      await primary.focus();
-      await expect(primary).toBeFocused();
     }
   });
 
-  // Hero F (docs/hero-variants.md): the phone hero is 45% of the screen (42% on short ones) precisely so the product carousel
+  // Phone hero (docs/hero-variants.md section 15): the art is capped at a third of the screen so the product carousel
   // peeks under it. Same three viewports the design was verified at. One engine is enough: the layout, not the browser, is
   // under test (Chromium resizes freely; the phone/tablet projects would repeat it).
   for (const [width, height] of [[375, 667], [360, 640], [320, 568]] as const) {
@@ -124,22 +97,19 @@ test.describe("parfums home hero and header", () => {
     });
   }
 
-  test("hero logo: phones load the official logo.jpeg (byte-identical), desktop loads the 21:9 crop", async ({ page, request }, testInfo) => {
+  test("hero art: phones load the 3:2 crop, 768px and up the 21:9 crop (both pure crops of the original)", async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== "chromium", "viewport is set explicitly; run once");
-    const heroImage = page.locator("[data-home-hero] img");
+    const heroImage = page.locator("[data-home-hero] picture img");
 
     await page.setViewportSize({ width: 375, height: 667 });
     await page.goto("/parfums");
-    await expect.poll(() => heroImage.evaluate((image: HTMLImageElement) => image.currentSrc)).toContain("logo-official.jpeg");
-    await expect(page.locator("[data-home-hero]")).toHaveCSS("background-color", "rgb(11, 31, 61)"); // --ds-color-navy
+    await expect.poll(() => heroImage.evaluate((image: HTMLImageElement) => image.currentSrc)).toContain("hero-mobile-3x2");
 
-    // The file served is the brand's logo.jpeg untouched: no keying, no recompression.
-    const served = await request.get("/parfums/hero/logo-official.jpeg");
-    expect(served.ok()).toBe(true);
-    const original = readFileSync(resolve(process.cwd(), "../../logo.jpeg"));
-    expect(Buffer.compare(await served.body(), original), "logo-official.jpeg must equal the repo-root logo.jpeg").toBe(0);
+    await page.setViewportSize({ width: 767, height: 900 });
+    await page.goto("/parfums");
+    await expect.poll(() => heroImage.evaluate((image: HTMLImageElement) => image.currentSrc)).toContain("hero-mobile-3x2");
 
-    await page.setViewportSize({ width: 1280, height: 720 });
+    await page.setViewportSize({ width: 768, height: 900 });
     await page.goto("/parfums");
     await expect.poll(() => heroImage.evaluate((image: HTMLImageElement) => image.currentSrc)).toContain("hero-wide-21x9");
   });
@@ -150,10 +120,10 @@ test.describe("parfums home hero and header", () => {
     const heroRequests: string[] = [];
     page.on("request", (request) => {
       const url = decodeURIComponent(request.url());
-      if (/hero-wide-21x9|logo-official/.test(url)) heroRequests.push(url);
+      if (/hero-wide-21x9|hero-mobile-3x2/.test(url)) heroRequests.push(url);
     });
     await page.goto("/parfums");
-    const image = page.locator("[data-home-hero] img");
+    const image = page.locator("[data-home-hero] picture img");
     await expect(image).toHaveAttribute("loading", "eager");
     await expect(image).toHaveAttribute("fetchpriority", "high");
     await page.waitForLoadState("networkidle");
@@ -161,9 +131,9 @@ test.describe("parfums home hero and header", () => {
     // The preload scanner reads the server HTML, and React reconciles <head> links after hydration: assert on the HTML, not the live DOM.
     const html = await (await page.request.get("/parfums")).text();
     const state = await page.evaluate((serverHtml) => {
-      const hero = document.querySelector("[data-home-hero] img") as HTMLImageElement;
+      const hero = document.querySelector("[data-home-hero] picture img") as HTMLImageElement;
       const links = [...new DOMParser().parseFromString(serverHtml, "text/html").querySelectorAll<HTMLLinkElement>('link[rel="preload"][as="image"]')];
-      const pictureSource = document.querySelector<HTMLSourceElement>("[data-home-hero] picture source:not([media])");
+      const pictureSource = document.querySelector<HTMLSourceElement>("[data-home-hero] picture source[media]");
       return {
         currentSrc: hero.currentSrc,
         desktopSourceSrcset: pictureSource?.getAttribute("srcset") ?? null,
@@ -187,15 +157,15 @@ test.describe("parfums home hero and header", () => {
     const applicable = state.preloads.filter((link) => link.appliesHere);
     expect(applicable, "exactly one preload applies to this viewport").toHaveLength(1);
     const [preload] = applicable;
-    if (preload!.srcset) {
+    expect(preload!.sizes).toBe("100vw");
+    if (page.viewportSize()!.width >= 768) {
       // Desktop: same srcset and sizes as the <picture> source, so the browser picks the same candidate for both.
       expect(preload!.srcset).toBe(state.desktopSourceSrcset);
-      expect(preload!.sizes).toBe("100vw");
       expect(state.currentSrc).toContain("hero-wide-21x9");
     } else {
-      // Phones: the preload is the file the <img> ends up showing.
-      expect(new URL(preload!.href!, page.url()).href).toBe(state.currentSrc);
-      expect(state.currentSrc).toContain("logo-official.jpeg");
+      // Phones: the preload names the srcset of the <img> the browser ends up showing.
+      expect(preload!.srcset).toContain("hero-mobile-3x2");
+      expect(state.currentSrc).toContain("hero-mobile-3x2");
     }
     // The preload is consumed, not duplicated: the hero asset is requested exactly once.
     expect(heroRequests, heroRequests.join("\n")).toHaveLength(1);

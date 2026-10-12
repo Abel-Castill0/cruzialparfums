@@ -523,3 +523,140 @@ axe también limpio a 1440 y 768 px. Capturas: `docs/hero-variants/hero-f-tipogr
 - Se mantiene el título de la sección del carrusel 24 px más arriba y algo menor en ≤ 480 px (§10.2).
 - Límites que persisten: la placa sigue siendo la del JPEG (T20, wordmark en SVG), y la integración debe llevar los cambios de
   `page.tsx` y `page.module.css` (copy corto incluido) además del héroe.
+
+## 14. Variante G · «Composición CSS» — logo arriba, frascos abajo, botón al pie (móvil) — REEMPLAZADA por §15
+
+**Encargo:** el cliente no quiere la placa navy (F) sino «el logo arriba y los perfumes abajo». La imagen compuesta no existe y no se
+pueden inventar píxeles; E y EB quedan fuera. **Solución:** no componer ninguna imagen; apilar con CSS archivos que **ya existen y se
+muestran tal cual**.
+
+### 14.1 Assets (ninguno editado)
+
+| Zona | Archivo | Origen / uso actual |
+|---|---|---|
+| Logo | `public/parfums/hero/logo-official.jpeg` | el logo oficial, byte a byte (la prueba e2e lo compara con `logo.jpeg`) |
+| Frasco 1 | `public/images/parfums-home/parfums-wholesale.webp` | frasco Cruzial ámbar, recorte transparente 1122×1402 |
+| Frasco 2 (protagonista) | `public/images/parfums-home/parfums-authenticity.webp` | frasco Cruzial negro (ya se usa en `/parfums` y en Nosotros) |
+| Frasco 3 | `public/images/parfums-home/parfums-decant-5ml.webp` | decant de 5 ml (ya se usa en `/parfums`) |
+
+Los tres son recortes con canal alfa de la línea Cruzial: sobre un fondo claro se leen limpios, sin halo, y no hace falta tocarlos.
+El logo trae su propio fondo casi negro (`rgb(1,1,1)`); el héroe usa exactamente ese tono de fondo, así que el cuadrado no deja marco
+visible (diferencia de 1/255 medida en píxeles) y **no se hace keying ni mezcla**.
+
+### 14.2 Composición
+
+1. Banda superior: el logo, `height: clamp(76px, 15svh, 140px)`, centrado sobre `#010101`.
+2. «Estante» claro (`--ds-gray-50`) con hombros redondeados que sube sobre la banda oscura: tres frascos en rejilla de 3 columnas,
+   alineados al suelo, sombra suave (`drop-shadow`), el negro algo más grande.
+3. Botón «Explorar catálogo» (dorado `--ds-color-accent`, tinta) centrado en la base del estante.
+4. El `h1` queda en el DOM, visualmente oculto (1 px), y el enlace secundario se retira: igual que en escritorio.
+5. Alto: `min-height: 45svh`; todo se dimensiona en `svh`, medido 45–46 % en 390×844, 375×667, 360×640 y 320×568.
+6. En pantallas de 640 px de alto o menos se muestran **dos** frascos (ámbar y negro) para no apretar el botón.
+
+Escritorio y tableta horizontal no cambian (recorte 21:9). Tableta vertical usa esta composición con margen lateral del 18 %.
+
+### 14.3 Medidas
+
+| Móvil | Alto del héroe | Carrusel visible bajo el héroe | Frascos |
+|---|---|---|---|
+| 390×844 | 380 px (45 %) | 156 px | 3 |
+| 375×667 | 300 px (45 %) | 61 px | 3 |
+| 360×640 | 288 px (45 %) | 49 px | 2 |
+| 320×568 | 259 px (46 %) | 41 px | 2 |
+
+Peso en un Pixel 7: logo 29 KB + frascos 26.7 + 18.4 + 10.2 KB (WebP optimizado, `sizes` 34vw) = **≈ 84 KB** frente a 29 KB de F. Los
+frascos van en `loading="lazy"` y el logo conserva el preload (`media`); en escritorio los frascos están en `display: none` y **no se
+descargan** (comprobado: sólo se pide el recorte 21:9). El elemento LCP sigue siendo el logo.
+
+Capturas: `docs/hero-variants/hero-g-composicion-{390,375,360,320}.jpg`.
+
+### 14.4 Límites y alternativas
+
+- Es una **composición de CSS, no un arte compuesto**: los frascos no comparten luz ni sombra con el logo (la luz es la de cada
+  recorte). Lo resuelve la banda oscura / estante claro, que los separa en lugar de fingir una sola escena.
+- El logo queda a 140–150 px de ancho en 390 px (en F, 280 px): se lee, pero menos que en F. Si el cliente quiere el wordmark más
+  grande, la alternativa es reducir el estante a un solo frasco.
+- Los frascos son del catálogo de marca, no de las fragancias a la venta: si se prefiere mostrar productos reales, basta cambiar
+  `PHONE_BOTTLES` en `hero-carousel.tsx` (cualquier recorte con alfa 4:5).
+- **T25** (asset compuesto 4:5) deja de bloquear: esta variante lo sustituye hasta que el cliente apruebe o aporte el asset.
+
+## 15. Variante H · «Recorte puro» — la imagen de escritorio, adaptada a móvil (sustituye a §14)
+
+**Encargo:** el cliente quiere *esa misma imagen* del héroe de escritorio en el móvil, no una composición nueva. §14 (logo + frascos con
+CSS) queda **reemplazada**; se conserva arriba sólo como historial y para la comparación.
+
+### 15.1 Fuente y por qué un 4:5 no puede llevar lo pedido
+
+La única imagen con el wordmark y los seis frascos es `public/parfums/hero/hero-crop.webp` (**1672 × 792**, 160 KB); el héroe de escritorio
+(`hero-wide-21x9.webp`, 1577 × 676) es un recorte suyo. Se revisó el repo y el historial de git: no hay una versión mayor ni sin
+comprimir (`hero2.png` es otra composición, de otro set de frascos, y los demás héroes del repo no llevan el wordmark). Las otras
+imágenes de 1672 × 941 (`parfums-hero.webp`, `PERFUMES.png`) son escenas distintas, sin logo.
+
+Posiciones medidas sobre esos 1672 × 792 (x en píxeles de la fuente):
+
+| Elemento | x |
+|---|---|
+| Tom Ford | 110 – 278 |
+| Erba Pura | 258 – 425 |
+| Valentino | 390 – 570 |
+| **Monograma + wordmark** | **612 – 1073** (y 128 – 600) |
+| Sauvage | 1125 – 1300 |
+| 9 PM | 1275 – 1460 |
+| Guerlain | 1455 – 1620 |
+
+El wordmark está **entre** los dos grupos de frascos. Una ventana 4:5 a altura completa mide 634 px de ancho: centrada en el logo
+(525 – 1159) sólo deja ver rodajas de Valentino y Sauvage. Para incluir lo que pide el brief (logo completo + Tom Ford + Erba Pura +
+un frasco de la derecha) hacen falta **1 190 px**, es decir, una ventana de **3:2**. Con píxeles que ya existen no hay un 4:5 (ni un
+3:4) que lleve a la vez el logo y esos frascos: sería hacer la imagen más alta de lo que es, y eso es inventar píxeles.
+
+![candidatos](hero-variants/hero-h-candidatos-recorte.jpg)
+
+(A: 4:5 sólo logo · B: 8:7 · C: 4:3 · **D: 3:2, la elegida**.)
+
+### 15.2 El recorte
+
+`public/parfums/hero/hero-mobile-3x2.webp` = `hero-crop.webp` recortado a **x 100 – 1300, y 0 – 792** (1200 × 792, altura completa), WebP
+calidad 90 (133 KB), sin tocar el original. Contiene el monograma y el wordmark completos, **Tom Ford, Erba Pura, Valentino y
+Sauvage** enteros, y el humo alrededor. Fidelidad medida contra la misma región de la fuente: **PSNR 44 dB**, diferencia media 0.95 de
+255 (la única diferencia es la recompresión WebP; ningún píxel nuevo). Con 1200 px de ancho cubre 390 px a ×3 de densidad.
+
+### 15.3 Implementación
+
+- `<picture>` con **un `<source media="(min-width: 768px)">`** → `hero-wide-21x9.webp`, y el `<img>` por defecto → `hero-mobile-3x2.webp`
+  (`getImageProps`, `loading="eager"`, `fetchpriority="high"`). Dos `<link rel="preload">` con `media` complementarios
+  (`(max-width: 767px)` / `(min-width: 768px)`): cada pantalla descarga sólo su imagen.
+- Sólo imagen y botón: sin composición CSS, sin `box-shadow`, sin `background-blend`. El `h1` sigue en el DOM, oculto visualmente. El
+  botón «Explorar catálogo» (dorado) queda centrado en una franja de tinta bajo la imagen; el degradado de máscara existente funde la
+  base de la imagen con esa franja (igual que en escritorio).
+- El enlace secundario «Arma tu combo» ya no está en el héroe (sigue en el menú).
+- Las tabletas verticales (768 px o más) pasan a usar el recorte 21:9, como pide el brief (`min-width: 768px`); antes usaban la
+  versión móvil.
+
+### 15.4 Medidas
+
+| Móvil | Alto del héroe | Carrusel visible bajo el héroe | Se ve |
+|---|---|---|---|
+| 390 × 844 | 319 px (38 %) | 217 px | los 3:2 completos |
+| 375 × 667 | 282 px (42 %) | 79 px | recorte de 33svh: humo arriba y suelo abajo |
+| 360 × 640 | 273 px (43 %) | 64 px | ídem |
+| 320 × 568 | 249 px (44 %) | 51 px | ídem |
+
+En pantallas cortas el arte se limita a `33svh` y `object-fit: cover` recorta humo arriba y suelo abajo (el wordmark y los frascos
+ocupan el 78 % central de la imagen, no se tocan). Peso: 133 KB servidos (WebP optimizado por Next según `sizes`); en escritorio no se descarga el recorte móvil.
+
+Capturas: `docs/hero-variants/hero-h-recorte-{390,375,360,320}.jpg`. Comparación con la versión CSS anterior:
+![comparación](hero-variants/hero-h-comparacion-css-vs-recorte.jpg)
+
+### 15.5 Lo que NO se cumple del brief y por qué
+
+1. **Recorte 4:5 / 3:4** → es **3:2**: un 4:5 no contiene el logo y esos frascos (§15.1).
+2. **Alto del héroe de 55 – 60 % del viewport** → mide **38 – 44 %**. Una imagen 3:2 a todo el ancho de un teléfono mide ~ 40 % de una
+   pantalla de 844 px; llegar a 55 – 60 % exigiría una imagen más alta (mismo problema que el 4:5) o rellenar con una franja vacía. Además
+   en 375 × 667, 360 × 640 y 320 × 568 un héroe de 55 – 60 % **no deja asomar el carrusel** (el requisito de ≥ 40 px, que sí se cumple).
+3. El logo queda a ~150 px de ancho en 390 px (el del §14 y el de F eran de 143 y 280 px): se lee, sin el protagonismo de un 4:5.
+
+### 15.6 Para conseguir el 4:5 que quiere el cliente
+
+Hace falta **un original vertical con esa composición** (logo arriba, frascos abajo): el mismo estudio/IA que generó el héroe de
+escritorio puede pedirlo en 4:5 con la misma escena. Hasta que exista, T25 sigue abierto como «asset 4:5»; el recorte 3:2 es lo máximo
+que da la imagen actual sin sintetizar.
