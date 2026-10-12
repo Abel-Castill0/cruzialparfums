@@ -19,6 +19,8 @@ const sans = Geist({
   subsets: ["latin"],
   weight: ["400", "500", "600"],
   display: "swap",
+  // The only storefront font: fetch it with the HTML so the swap lands before the first layout, not after.
+  preload: true,
 });
 
 const body = Jost({

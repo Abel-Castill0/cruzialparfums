@@ -143,9 +143,15 @@
   align-items: stretch;
 }
 
+/* Off-screen cards skip layout and paint (content-visibility). Paint containment would clip the hover shadow, so
+   the cell is padded by the grid gap and pulled back with a negative margin: same geometry, room for the shadow. */
 .revealCell {
   min-width: 0;
   display: flex;
+  margin: -24px;
+  padding: 24px;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 480px;
 }
 
 .revealCell > * {

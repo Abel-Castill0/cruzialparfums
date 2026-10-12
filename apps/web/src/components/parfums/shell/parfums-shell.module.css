@@ -606,6 +606,14 @@
   padding: var(--ds-space-6) 0 var(--ds-space-7);
   color: var(--ds-ink-muted);
   background: var(--ds-gray-50);
+  content-visibility: auto;
+  contain-intrinsic-size: auto 500px;
+}
+
+@media (max-width: 767px) {
+  .footer {
+    contain-intrinsic-size: auto 1080px;
+  }
 }
 
 .footer .brandWord strong {

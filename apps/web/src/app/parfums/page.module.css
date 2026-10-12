@@ -688,3 +688,10 @@
     font-size: 0.78rem;
   }
 }
+
+/* Below-the-fold sections (everything after the hero and the assurance row) are laid out and painted only when they
+   approach the viewport. `auto` remembers the real height after the first render, so the 800px is only a first guess. */
+.home > :nth-child(n + 3) {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 800px;
+}

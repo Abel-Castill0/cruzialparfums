@@ -33,8 +33,9 @@ export function HeroArtwork({
         src={src}
         alt={alt}
         fill
-        // Phones draw the artwork at 250% of the viewport width (see hero-carousel.module.css).
-        sizes="(max-width: 767px) 250vw, 100vw"
+        // Desktop: the artwork spans the viewport, so the optimizer serves its 1920 entry (the source is 1672 wide).
+        // Phones draw it at 250% of the width but 540px here makes a 2x screen pick the 1080 entry (~44 KB instead of ~87 KB).
+        sizes="(max-width: 767px) 540px, 100vw"
         className={styles.image}
         style={{ "--pos": position, "--pos-mobile": mobilePosition } as React.CSSProperties}
         preload
