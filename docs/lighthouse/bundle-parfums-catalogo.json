@@ -1,0 +1,360 @@
+{
+ "/parfums": {
+  "totalRaw": 527904,
+  "totalGzip": 161176,
+  "chunks": [
+   {
+    "chunk": "0mwk-tq0k_qj4.js",
+    "raw": 13799,
+    "gzip": 3532,
+    "own": 0,
+    "nextReact": 13534,
+    "third": 0,
+    "other": 0
+   },
+   {
+    "chunk": "0u2zhrydnl3mt.js",
+    "raw": 8545,
+    "gzip": 3628,
+    "own": 710,
+    "nextReact": 7605,
+    "third": 0,
+    "other": 0
+   },
+   {
+    "chunk": "24z85dck0khh7.js",
+    "raw": 7830,
+    "gzip": 3334,
+    "own": 0,
+    "nextReact": 7584,
+    "third": 0,
+    "other": 0
+   },
+   {
+    "chunk": "0ce_08-ozszwm.js",
+    "raw": 40402,
+    "gzip": 13928,
+    "own": 17809,
+    "nextReact": 22334,
+    "third": 0,
+    "other": 0
+   },
+   {
+    "chunk": "1hg18ob7kulr_.js",
+    "raw": 15332,
+    "gzip": 5026,
+    "own": 15112,
+    "nextReact": 0,
+    "third": 0,
+    "other": 0
+   },
+   {
+    "chunk": "3w4-jgo1zrjh9.js",
+    "raw": 5616,
+    "gzip": 2057,
+    "own": 0,
+    "nextReact": 4380,
+    "third": 0,
+    "other": 0
+   },
+   {
+    "chunk": "1244yipdigkhq.js",
+    "raw": 33987,
+    "gzip": 8670,
+    "own": 0,
+    "nextReact": 33148,
+    "third": 682,
+    "other": 0
+   },
+   {
+    "chunk": "0v2s8pfzbm7q7.js",
+    "raw": 131324,
+    "gzip": 35694,
+    "own": 0,
+    "nextReact": 131232,
+    "third": 0,
+    "other": 0
+   },
+   {
+    "chunk": "3odt6ak0509r2.js",
+    "raw": 229519,
+    "gzip": 71745,
+    "own": 0,
+    "nextReact": 229274,
+    "third": 0,
+    "other": 0
+   },
+   {
+    "chunk": "1kkcb1l5ds-0a.js",
+    "raw": 31477,
+    "gzip": 9582,
+    "own": 0,
+    "nextReact": 31287,
+    "third": 0,
+    "other": 0
+   },
+   {
+    "chunk": "turbopack-0hk-bigsin20q.js",
+    "raw": 10073,
+    "gzip": 3980,
+    "own": 0,
+    "nextReact": 10020,
+    "third": 0,
+    "other": 0
+   }
+  ],
+  "top": [
+   {
+    "kind": "next/react",
+    "name": "next",
+    "raw": 233947,
+    "gzipEst": 68322
+   },
+   {
+    "kind": "next/react",
+    "name": "next/compiled/react-dom",
+    "raw": 207424,
+    "gzipEst": 64807
+   },
+   {
+    "kind": "next/react",
+    "name": "next/compiled/react-server-dom-turbopack",
+    "raw": 23942,
+    "gzipEst": 7288
+   },
+   {
+    "kind": "own",
+    "name": "components/parfums",
+    "raw": 20673,
+    "gzipEst": 7022
+   },
+   {
+    "kind": "next/react",
+    "name": "next runtime",
+    "raw": 10020,
+    "gzipEst": 3959
+   },
+   {
+    "kind": "next/react",
+    "name": "next/compiled/react",
+    "raw": 8247,
+    "gzipEst": 2104
+   },
+   {
+    "kind": "own",
+    "name": "components/storefront",
+    "raw": 7735,
+    "gzipEst": 2536
+   },
+   {
+    "kind": "next/react",
+    "name": "next/compiled/scheduler",
+    "raw": 3541,
+    "gzipEst": 1107
+   },
+   {
+    "kind": "own",
+    "name": "domains/catalog",
+    "raw": 2195,
+    "gzipEst": 740
+   },
+   {
+    "kind": "own",
+    "name": "domains/carts",
+    "raw": 2021,
+    "gzipEst": 697
+   },
+   {
+    "kind": "next/react",
+    "name": "next/compiled/process",
+    "raw": 1897,
+    "gzipEst": 484
+   },
+   {
+    "kind": "next/react",
+    "name": "next/build",
+    "raw": 1380,
+    "gzipEst": 431
+   }
+  ]
+ },
+ "/parfums/catalogo": {
+  "totalRaw": 542811,
+  "totalGzip": 165190,
+  "chunks": [
+   {
+    "chunk": "0mwk-tq0k_qj4.js",
+    "raw": 13799,
+    "gzip": 3532,
+    "own": 0,
+    "nextReact": 13534,
+    "third": 0,
+    "other": 0
+   },
+   {
+    "chunk": "0u2zhrydnl3mt.js",
+    "raw": 8545,
+    "gzip": 3628,
+    "own": 710,
+    "nextReact": 7605,
+    "third": 0,
+    "other": 0
+   },
+   {
+    "chunk": "24z85dck0khh7.js",
+    "raw": 7830,
+    "gzip": 3334,
+    "own": 0,
+    "nextReact": 7584,
+    "third": 0,
+    "other": 0
+   },
+   {
+    "chunk": "0ce_08-ozszwm.js",
+    "raw": 40402,
+    "gzip": 13928,
+    "own": 17809,
+    "nextReact": 22334,
+    "third": 0,
+    "other": 0
+   },
+   {
+    "chunk": "1dx9ql4bld4az.js",
+    "raw": 30239,
+    "gzip": 9040,
+    "own": 29999,
+    "nextReact": 0,
+    "third": 0,
+    "other": 0
+   },
+   {
+    "chunk": "3w4-jgo1zrjh9.js",
+    "raw": 5616,
+    "gzip": 2057,
+    "own": 0,
+    "nextReact": 4380,
+    "third": 0,
+    "other": 0
+   },
+   {
+    "chunk": "1244yipdigkhq.js",
+    "raw": 33987,
+    "gzip": 8670,
+    "own": 0,
+    "nextReact": 33148,
+    "third": 682,
+    "other": 0
+   },
+   {
+    "chunk": "0v2s8pfzbm7q7.js",
+    "raw": 131324,
+    "gzip": 35694,
+    "own": 0,
+    "nextReact": 131232,
+    "third": 0,
+    "other": 0
+   },
+   {
+    "chunk": "3odt6ak0509r2.js",
+    "raw": 229519,
+    "gzip": 71745,
+    "own": 0,
+    "nextReact": 229274,
+    "third": 0,
+    "other": 0
+   },
+   {
+    "chunk": "1kkcb1l5ds-0a.js",
+    "raw": 31477,
+    "gzip": 9582,
+    "own": 0,
+    "nextReact": 31287,
+    "third": 0,
+    "other": 0
+   },
+   {
+    "chunk": "turbopack-0hk-bigsin20q.js",
+    "raw": 10073,
+    "gzip": 3980,
+    "own": 0,
+    "nextReact": 10020,
+    "third": 0,
+    "other": 0
+   }
+  ],
+  "top": [
+   {
+    "kind": "next/react",
+    "name": "next",
+    "raw": 233947,
+    "gzipEst": 68322
+   },
+   {
+    "kind": "next/react",
+    "name": "next/compiled/react-dom",
+    "raw": 207424,
+    "gzipEst": 64807
+   },
+   {
+    "kind": "own",
+    "name": "components/parfums",
+    "raw": 39126,
+    "gzipEst": 12361
+   },
+   {
+    "kind": "next/react",
+    "name": "next/compiled/react-server-dom-turbopack",
+    "raw": 23942,
+    "gzipEst": 7288
+   },
+   {
+    "kind": "next/react",
+    "name": "next runtime",
+    "raw": 10020,
+    "gzipEst": 3959
+   },
+   {
+    "kind": "next/react",
+    "name": "next/compiled/react",
+    "raw": 8247,
+    "gzipEst": 2104
+   },
+   {
+    "kind": "next/react",
+    "name": "next/compiled/scheduler",
+    "raw": 3541,
+    "gzipEst": 1107
+   },
+   {
+    "kind": "own",
+    "name": "domains/finder",
+    "raw": 3512,
+    "gzipEst": 1050
+   },
+   {
+    "kind": "own",
+    "name": "domains/catalog",
+    "raw": 2388,
+    "gzipEst": 768
+   },
+   {
+    "kind": "own",
+    "name": "domains/carts",
+    "raw": 2021,
+    "gzipEst": 697
+   },
+   {
+    "kind": "next/react",
+    "name": "next/compiled/process",
+    "raw": 1897,
+    "gzipEst": 484
+   },
+   {
+    "kind": "next/react",
+    "name": "next/build",
+    "raw": 1380,
+    "gzipEst": 431
+   }
+  ]
+ }
+}
