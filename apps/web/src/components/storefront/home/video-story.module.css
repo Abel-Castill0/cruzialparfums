@@ -125,16 +125,21 @@
   aspect-ratio: 1;
   place-items: center;
   border-radius: 50%;
-  color: var(--ds-white);
-  background: var(--ds-accent);
+  color: var(--ds-color-on-accent);
+  background: var(--ds-color-accent);
   font-size: 1.25rem;
   transition: transform var(--ds-dur-base) var(--ds-ease-spring), background-color var(--ds-dur-base) var(--ds-ease-spring);
 }
 
 .playGate:hover > span:first-of-type,
 .playGate:focus-visible > span:first-of-type {
-  background: var(--ds-accent-press);
+  background: var(--ds-color-accent-hover);
   transform: scale(1.06);
+}
+
+.playGate:active > span:first-of-type,
+.playGate:focus-visible > span:first-of-type {
+  background: var(--ds-color-accent-active);
 }
 
 .playGate small {

@@ -136,12 +136,16 @@
 }
 
 .primaryAction {
-  color: var(--ds-white);
-  background: var(--ds-accent);
+  color: var(--ds-color-on-accent);
+  background: var(--ds-color-accent);
 }
 
 .primaryAction:hover {
-  background: var(--ds-accent-press);
+  background: var(--ds-color-accent-hover);
+}
+
+.primaryAction:active {
+  background: var(--ds-color-accent-active);
 }
 
 .secondaryAction {
@@ -241,15 +245,19 @@
   align-items: center;
   gap: 16px;
   border: 0;
-  color: var(--ds-white);
-  background: var(--ds-accent);
+  color: var(--ds-color-on-accent);
+  background: var(--ds-color-accent);
   border-radius: var(--ds-radius-pill);
   font-size: var(--ds-text-card);
   font-weight: 500;
 }
 
 .catalogDoor > a:hover {
-  background: var(--ds-accent-press);
+  background: var(--ds-color-accent-hover);
+}
+
+.catalogDoor > a:active {
+  background: var(--ds-color-accent-active);
 }
 
 .catalogPage {
@@ -562,8 +570,8 @@
   padding: 0 24px;
   border: 0;
   border-radius: 999px;
-  color: var(--import-accent-text);
-  background: var(--import-accent);
+  color: var(--ds-color-on-accent);
+  background: var(--ds-color-accent);
   font-size: 0.84rem;
   font-weight: 600;
   cursor: pointer;
@@ -602,9 +610,9 @@
 }
 
 .categoryFilters a[aria-current="page"] {
-  border-color: var(--ds-accent);
-  color: var(--import-accent-text);
-  background: var(--import-accent);
+  border-color: var(--ds-color-accent);
+  color: var(--ds-color-on-accent);
+  background: var(--ds-color-accent);
 }
 
 .categoryFilters span {
@@ -757,14 +765,18 @@
   justify-content: center;
   gap: 8px;
   border-radius: var(--ds-radius-pill);
-  color: var(--ds-white);
-  background: var(--ds-accent);
+  color: var(--ds-color-on-accent);
+  background: var(--ds-color-accent);
   font-size: 0.9375rem;
   font-weight: 500;
 }
 
 .choosePresentation:hover {
-  background: var(--ds-accent-press);
+  background: var(--ds-color-accent-hover);
+}
+
+.choosePresentation:active {
+  background: var(--ds-color-accent-active);
 }
 
 .productLink {

@@ -170,8 +170,8 @@
 }
 
 .regionChip[aria-pressed="true"] {
-  background: var(--ds-accent);
-  color: var(--ds-white);
+  background: var(--ds-color-accent);
+  color: var(--ds-color-on-accent);
 }
 
 .regionChip:focus-visible,

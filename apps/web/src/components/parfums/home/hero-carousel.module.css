@@ -69,12 +69,16 @@
 }
 
 .cta {
-  color: var(--ds-white);
-  background: var(--ds-accent);
+  color: var(--ds-color-on-accent);
+  background: var(--ds-color-accent);
 }
 
 .cta:hover {
-  background: var(--ds-accent-press);
+  background: var(--ds-color-accent-hover);
+}
+
+.cta:active {
+  background: var(--ds-color-accent-active);
 }
 
 .ctaSecondary {

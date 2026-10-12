@@ -74,13 +74,17 @@
 }
 
 .primary {
-  color: var(--ds-white);
-  background: var(--ds-accent);
+  color: var(--ds-color-on-accent);
+  background: var(--ds-color-accent);
   border-radius: var(--ds-radius-pill);
 }
 
 .primary:hover {
-  background: var(--ds-accent-press);
+  background: var(--ds-color-accent-hover);
+}
+
+.primary:active {
+  background: var(--ds-color-accent-active);
 }
 
 .secondary {

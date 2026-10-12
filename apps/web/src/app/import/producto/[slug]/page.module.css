@@ -166,8 +166,8 @@
   background: var(--ds-gray-50);
 }
 .actions a:first-child {
-  color: var(--ds-on-photo);
-  background: var(--detail-accent);
+  color: var(--ds-color-on-accent);
+  background: var(--ds-color-accent);
 }
 
 .cartSection {

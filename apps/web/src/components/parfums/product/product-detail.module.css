@@ -220,7 +220,8 @@
 }
 
 .sizeButton.selected {
-  background: var(--ds-accent);
+  background: var(--ds-color-accent);
+  color: var(--ds-color-on-accent);
 }
 
 .sizeButton strong,
@@ -403,8 +404,8 @@
 }
 
 .primaryAction {
-  color: var(--ds-white);
-  background: var(--ds-accent);
+  color: var(--ds-color-on-accent);
+  background: var(--ds-color-accent);
   border-radius: var(--ds-radius-pill);
 }
 
@@ -414,7 +415,11 @@
 }
 
 .primaryAction:hover {
-  background: var(--ds-accent-press);
+  background: var(--ds-color-accent-hover);
+}
+
+.primaryAction:active {
+  background: var(--ds-color-accent-active);
 }
 
 .secondaryAction:hover {

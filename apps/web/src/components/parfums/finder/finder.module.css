@@ -91,9 +91,10 @@
   width: 100%;
   height: 100%;
   display: block;
-  background: var(--ds-accent);
+  background: var(--ds-color-accent);
   transform-origin: left center;
   transition: transform var(--ds-dur-slow) var(--ds-ease-spring);
+  color: var(--ds-color-on-accent);
 }
 
 .body > h1,
@@ -151,8 +152,8 @@
 }
 
 .options button.selected {
-  color: var(--ds-white);
-  background: var(--ds-accent);
+  color: var(--ds-color-on-accent);
+  background: var(--ds-color-accent);
 }
 
 .options button span {
@@ -189,12 +190,16 @@
 }
 
 .nav button.next {
-  color: var(--ds-white);
-  background: var(--ds-accent);
+  color: var(--ds-color-on-accent);
+  background: var(--ds-color-accent);
 }
 
 .nav button.next:hover:not(:disabled) {
-  background: var(--ds-accent-press);
+  background: var(--ds-color-accent-hover);
+}
+
+.nav button.next:active:not(:disabled) {
+  background: var(--ds-color-accent-active);
 }
 
 .nav button:disabled {
@@ -328,12 +333,16 @@
 }
 
 .resultActions button {
-  color: var(--ds-white);
-  background: var(--ds-accent);
+  color: var(--ds-color-on-accent);
+  background: var(--ds-color-accent);
 }
 
 .resultActions button:hover {
-  background: var(--ds-accent-press);
+  background: var(--ds-color-accent-hover);
+}
+
+.resultActions button:active {
+  background: var(--ds-color-accent-active);
 }
 
 .resultBody > small {
@@ -353,8 +362,8 @@
 }
 
 .resultFooter button:first-child {
-  color: var(--ds-white);
-  background: var(--ds-accent);
+  color: var(--ds-color-on-accent);
+  background: var(--ds-color-accent);
 }
 
 .toast {

@@ -29,6 +29,10 @@ Estrategia: **Restrained** — neutros + un acento ≤ 10 % de la superficie. Re
 | `--ds-accent` | `#0071E3` | CTA primario, selección de chip, foco | 4.7:1 con texto blanco encima · no usar como texto sobre `#F5F5F7` (4.3:1) |
 | `--ds-accent-hover` | `#0077ED` | Hover del botón primario | — |
 | `--ds-accent-press` | `#0058B0` | Active / enlaces sobre blanco | 6.9:1 (con texto blanco o sobre blanco) |
+| `--ds-color-accent` | `#C5A059` | **Acento de marca**: relleno de CTA primarios y chips seleccionados (desde 2026-10-12) | texto `--ds-color-on-accent` encima: 6.85:1 · **con texto blanco sería 2.46:1 (no pasa AA)** |
+| `--ds-color-accent-hover` | `#B8934D` | Hover del relleno de marca | 5.87:1 con `--ds-ink` |
+| `--ds-color-accent-active` | `#A8863F` | Pressed del relleno de marca | 4.93:1 con `--ds-ink` |
+| `--ds-color-on-accent` | `var(--ds-ink)` `#1D1D1F` | Etiqueta sobre el relleno de marca | ver arriba |
 | `--ds-link` | `#0066CC` | Enlaces de texto | 5.6:1 sobre blanco · 5.1:1 sobre `#F5F5F7` |
 | `--ds-danger` | `#B42318` | Errores de formulario | 6.6:1 |
 | `--ds-success` | `#137333` | Confirmaciones | 6.0:1 |
@@ -133,13 +137,15 @@ prohibidos como icono.
 `--ds-hairline` inferior. Enlaces 14 px / 500 con subrayado animado (§8). En la home de Parfums el héroe ocupa la
 primera pantalla y el header aparece al salir de él (`hero-aware-header`). Menú móvil y cajón del carrito en blanco.
 
-**Botón primario.** Fondo `--ds-accent`, texto blanco, 17 px / 500, alto 48 px (mín. 44), padding 0 24 px, radio pill.
-Hover: fondo más oscuro (`--ds-accent-press`) y `scale(1.02)`. Active: `scale(1)`.
+**Botón primario.** Fondo `--ds-color-accent` (dorado apagado), texto `--ds-color-on-accent` (tinta, no blanco: el blanco sobre
+ese dorado da 2.46:1), 17 px / 500, alto 48 px (mín. 44), padding 0 24 px, radio pill.
+Hover: `--ds-color-accent-hover` y `scale(1.02)`. Active: `--ds-color-accent-active` y `scale(1)`.
+El azul `--ds-accent*` queda sólo para el anillo de foco, el borde de campos con foco y los íconos/enlaces que aún no se migran.
 **Botón secundario.** Fondo `--ds-gray-50`, texto `--ds-ink`; sobre foto: blanco translúcido con blur.
 **Enlace de texto.** `--ds-link`, con flecha "›"; subrayado en hover.
 
 **Chip de filtro.** Pill, alto 44 px, fondo `--ds-gray-50`, texto `--ds-ink` 15 px / 500, sin borde. Seleccionado:
-fondo `--ds-accent`, texto blanco; transición de color 200 ms.
+fondo `--ds-color-accent`, texto `--ds-color-on-accent`; transición de color 200 ms.
 
 **Tarjeta de producto.** Sin borde; fondo `--ds-gray-50`, radio 14 px, padding 24 px. Las fotos son tomas de estudio
 sobre blanco: se mezclan con `mix-blend-mode: multiply` y llevan una *sombra de contacto* difusa detrás del frasco

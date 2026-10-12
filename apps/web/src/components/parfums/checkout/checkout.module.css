@@ -130,8 +130,8 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  color: var(--ds-white);
-  background: var(--ds-accent);
+  color: var(--ds-color-on-accent);
+  background: var(--ds-color-accent);
   font-size: 0.75rem;
   font-weight: 600;
   border-radius: var(--ds-radius-pill);
@@ -252,8 +252,8 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  color: var(--ds-white);
-  background: var(--ds-accent);
+  color: var(--ds-color-on-accent);
+  background: var(--ds-color-accent);
   font-size: 0.9375rem;
   font-weight: 500;
 
@@ -262,7 +262,11 @@
 }
 
 .submit:hover {
-  background: var(--ds-accent-press);
+  background: var(--ds-color-accent-hover);
+}
+
+.submit:active {
+  background: var(--ds-color-accent-active);
 }
 
 .submit:active {
@@ -468,7 +472,11 @@
 }
 
 .submit:hover:not(:disabled) {
-  background: var(--ds-accent-press);
+  background: var(--ds-color-accent-hover);
+}
+
+.submit:active:not(:disabled) {
+  background: var(--ds-color-accent-active);
 }
 
 @media (max-width: 767px), (pointer: coarse) {

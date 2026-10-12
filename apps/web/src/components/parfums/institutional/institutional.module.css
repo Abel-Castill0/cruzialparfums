@@ -182,14 +182,18 @@
 
 .btnPrimary {
   border: 0;
-  color: var(--ds-white);
-  background: var(--ds-accent);
+  color: var(--ds-color-on-accent);
+  background: var(--ds-color-accent);
   border-radius: var(--ds-radius-pill);
 }
 
 .btnPrimary:hover {
   border-color: rgba(0, 0, 0, 0.2);
-  background: var(--ds-accent-press);
+  background: var(--ds-color-accent-hover);
+}
+
+.btnPrimary:active {
+  background: var(--ds-color-accent-active);
 }
 
 .btnGhost {
@@ -514,8 +518,8 @@
   min-height: 50px;
   margin-top: 2px;
   border: 0;
-  color: var(--ds-white);
-  background: var(--ds-accent);
+  color: var(--ds-color-on-accent);
+  background: var(--ds-color-accent);
   font-size: 0.9375rem;
   font-weight: 500;
 
@@ -525,7 +529,11 @@
 
 .submitBtn:hover {
   border-color: rgba(0, 0, 0, 0.2);
-  background: var(--ds-accent-press);
+  background: var(--ds-color-accent-hover);
+}
+
+.submitBtn:active {
+  background: var(--ds-color-accent-active);
 }
 
 .formNote {

@@ -152,8 +152,8 @@
   display: grid;
   place-items: center;
   border-radius: 999px;
-  background: var(--ds-accent);
-  color: var(--ds-white);
+  background: var(--ds-color-accent);
+  color: var(--ds-color-on-accent);
   font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0;
@@ -374,8 +374,8 @@
 }
 
 .chip[aria-pressed="true"] {
-  background: var(--ds-accent);
-  color: var(--ds-white);
+  background: var(--ds-color-accent);
+  color: var(--ds-color-on-accent);
 }
 
 .panelFoot {
@@ -413,8 +413,8 @@
   padding: 0 var(--ds-space-4);
   border: 0;
   border-radius: var(--ds-radius-pill);
-  background: var(--ds-accent);
-  color: var(--ds-white);
+  background: var(--ds-color-accent);
+  color: var(--ds-color-on-accent);
   font: inherit;
   font-size: var(--ds-text-card);
   font-weight: 500;
@@ -422,7 +422,11 @@
 }
 
 .applyButton:hover {
-  background: var(--ds-accent-press);
+  background: var(--ds-color-accent-hover);
+}
+
+.applyButton:active {
+  background: var(--ds-color-accent-active);
 }
 
 /* Category doors: the three buttons that set the type filter */

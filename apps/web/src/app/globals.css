@@ -118,6 +118,13 @@ textarea {
   --ds-accent: #0071e3;
   --ds-accent-hover: #0077ed;
   --ds-accent-press: #0058b0;
+  /* Brand accent for primary actions (CTA fills, selected chips): a muted gold with the ink label (6.85:1; white on this gold
+     would be 2.46:1 and fail AA). Hover is a shade deeper (5.87:1), pressed deeper still (4.93:1). The blue --ds-accent* stays
+     for focus rings and form focus borders only (DESIGN.md section 2). */
+  --ds-color-accent: #c5a059;
+  --ds-color-accent-hover: #b8934d;
+  --ds-color-accent-active: #a8863f;
+  --ds-color-on-accent: var(--ds-ink);
   --ds-link: #0066cc;
   --ds-danger: #b42318;
   --ds-success: #137333;
