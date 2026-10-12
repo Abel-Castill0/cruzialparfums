@@ -60,6 +60,8 @@ test.describe("parfums home hero and header", () => {
   // Phones: the headline sits below the wordmark block (never over it) and both actions are real 44px controls reachable by keyboard.
   // Desktop: "Explorar catálogo" is the only visible element under the art, centered both ways in its strip and never over the art.
   test("hero actions are keyboard-reachable 44px controls, laid out for the screen (phones: headline below the logo; desktop: one centered button)", async ({ page }) => {
+    // The hero copy rises 20px on entry; measure the layout, not the animation frame the test happened to catch.
+    await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto("/parfums");
     const hero = page.locator("[data-home-hero]");
     const viewport = page.viewportSize()!;
