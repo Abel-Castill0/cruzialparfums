@@ -14,6 +14,9 @@ async function firstPurchasableCardAdd(page: Page) {
     .first();
   await expect(card).toBeVisible();
   await card.getByRole("button", { name: /^Añadir/ }).click();
+  // The catalog hero hides the header (and its cart button) by design, and how far the click scrolls depends on image
+  // layout: on a tall tablet it can stop with the hero still in view. Leave the hero explicitly, as accessibility.spec does.
+  await page.evaluate(() => window.scrollTo(0, (document.querySelector("[data-home-hero]") as HTMLElement).offsetHeight + 100));
 }
 
 test.describe("parfums home hero and header", () => {

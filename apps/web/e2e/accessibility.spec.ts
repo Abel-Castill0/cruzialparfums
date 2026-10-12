@@ -107,6 +107,8 @@ test("keyboard: product card 'Añadir' is reachable and announces the cart updat
   await add.focus();
   await expect(add).toBeFocused();
   await page.keyboard.press("Enter");
+  // The header (and the cart button in it) stays hidden while the catalog hero is in view: scroll past it before asserting.
+  await page.evaluate(() => window.scrollTo(0, (document.querySelector("[data-home-hero]") as HTMLElement).offsetHeight + 100));
   await expect(page.getByRole("button", { name: /Abrir carrito, 1 producto/ })).toBeVisible();
 });
 
