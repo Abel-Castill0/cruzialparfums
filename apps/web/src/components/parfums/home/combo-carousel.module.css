@@ -234,16 +234,31 @@
 }
 
 @media (max-width: 640px) {
+  /* Stacked, in flow: the artwork on top, the copy below it. The card used to be a fixed 620px with absolutely placed
+     copy, so a set with a long list of fragrances ran up over the picture. Now the slide grows with its copy (the track
+     stretches every slide to the tallest one, so the card does not jump while rotating). */
   .carousel {
     aspect-ratio: auto;
     min-height: 0;
-    height: 620px;
+    height: auto;
+  }
+
+  .track {
+    height: auto;
+  }
+
+  .slide {
+    height: auto;
+    display: flex;
+    flex-direction: column;
   }
 
   .slideMedia {
-    inset: 0 0 auto;
+    position: relative;
+    inset: auto;
+    flex: 0 0 auto;
     width: 100%;
-    height: 56%;
+    height: 340px;
   }
 
   .slideImage {
@@ -251,9 +266,8 @@
   }
 
   .slideCopy {
-    top: auto;
-    right: 0;
-    bottom: 0;
+    position: static;
+    flex: 1;
     transform: none;
     padding: var(--ds-space-3) var(--ds-space-3) var(--ds-space-7);
   }

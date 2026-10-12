@@ -72,3 +72,25 @@ test("catalog category buttons and filter controls remain clear on mobile", asyn
   await sheet.getByRole("button", { name: "Árabe", exact: true }).click();
   await expect(page.locator("[aria-live=polite]").filter({ hasText: "Tipo" })).toContainText("Árabe");
 });
+
+test("combo carousel stacks artwork above copy on phones, even with a long list of fragrances", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/parfums");
+  const carousel = page.locator('[aria-roledescription="carousel"]').first();
+  await carousel.scrollIntoViewIfNeeded();
+  // Stress the copy: it used to be absolutely placed at the bottom of a fixed-height card, so a long list grew upward over the picture.
+  await page.evaluate(() => {
+    for (const contents of document.querySelectorAll("[class*=contents]")) {
+      contents.textContent = Array.from({ length: 12 }, (_, i) => `Fragancia de prueba número ${i + 1}`).join(" · ");
+    }
+  });
+  const geometry = await page.evaluate(() => {
+    const slide = document.querySelector('[class*=slide][data-active="true"]')!;
+    const media = slide.querySelector("[class*=slideMedia]")!.getBoundingClientRect();
+    const copy = slide.querySelector("[class*=slideCopy]")!.getBoundingClientRect();
+    const card = document.querySelector('[aria-roledescription="carousel"]')!.getBoundingClientRect();
+    return { mediaBottom: media.bottom, copyTop: copy.top, copyBottom: copy.bottom, cardBottom: card.bottom };
+  });
+  expect(geometry.copyTop, "copy starts below the artwork").toBeGreaterThanOrEqual(geometry.mediaBottom - 1);
+  expect(geometry.copyBottom, "card grows to hold its copy").toBeLessThanOrEqual(geometry.cardBottom + 1);
+});

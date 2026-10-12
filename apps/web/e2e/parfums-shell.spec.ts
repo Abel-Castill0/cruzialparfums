@@ -326,6 +326,24 @@ test.describe("import TikTok module", () => {
     );
   });
 
+  // The TikTok player asks for accelerometer/gyroscope and playback features; without them in `allow` the browser logs
+  // "Permissions policy violation: accelerometer is not allowed in this document" and may refuse playback.
+  test("the Parfums TikTok iframe is created on play, also after a client-side navigation, with the permissions the player asks for", async ({ page }) => {
+    await page.goto("/parfums/catalogo");
+    await page.locator('a[href="/parfums"]:visible').first().click();
+    await page.waitForURL("**/parfums");
+    const section = page.locator("[data-home-video]");
+    await section.scrollIntoViewIfNeeded();
+    await expect(section.locator("iframe")).toHaveCount(0);
+    await section.getByRole("button", { name: /Reproducir video/ }).click();
+    const frame = section.locator("iframe[data-tiktok-player]");
+    await expect(frame).toHaveAttribute("src", /^https:\/\/www\.tiktok\.com\/player\/v1\/\d+/);
+    const allow = (await frame.getAttribute("allow")) ?? "";
+    for (const feature of ["autoplay", "fullscreen", "encrypted-media", "picture-in-picture", "accelerometer", "gyroscope"]) {
+      expect(allow, `allow has ${feature}`).toContain(feature);
+    }
+  });
+
   test("the CSP frames TikTok and nothing else", async ({ request }) => {
     const response = await request.get("/import");
     const csp = response.headers()["content-security-policy"] ?? "";
