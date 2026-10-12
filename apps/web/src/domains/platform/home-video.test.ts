@@ -4,6 +4,8 @@ import {
   PARFUMS_HOME_VIDEO,
   CRUZIAL_TIKTOK_PROFILE,
   homeVideoNeedsTikTokFrame,
+  homeVideoUsesHostedMedia,
+  isValidHostedVideo,
   parseTikTokVideoId,
   tiktokEmbedUrl,
 } from "./home-video";
@@ -44,5 +46,31 @@ describe("home video helpers", () => {
     expect(tiktokEmbedUrl("7234567890123456789")).toBe(
       "https://www.tiktok.com/player/v1/7234567890123456789?controls=1&autoplay=0&rel=0&music_info=0&description=0",
     );
+  });
+
+  it("trusts a hosted video only when every source and the poster are on Cloudinary or on this site", () => {
+    const mp4 = (src: string) => ({ sources: [{ src, type: "video/mp4" as const }] });
+    expect(isValidHostedVideo(mp4("https://res.cloudinary.com/demo/video/upload/v1/cruzial/parfums.mp4"))).toBe(true);
+    expect(isValidHostedVideo(mp4("/videos/parfums.mp4"))).toBe(true);
+    expect(isValidHostedVideo({ ...mp4("/videos/parfums.mp4"), poster: "https://res.cloudinary.com/demo/image/upload/p.jpg" })).toBe(true);
+    for (const bad of [
+      "http://res.cloudinary.com/demo/video/upload/a.mp4",
+      "https://res.cloudinary.com.evil.test/a.mp4",
+      "https://example.com/a.mp4",
+      "//evil.test/a.mp4",
+      "javascript:alert(1)",
+      "",
+    ]) {
+      expect(isValidHostedVideo(mp4(bad)), bad).toBe(false);
+    }
+    expect(isValidHostedVideo({ ...mp4("/videos/parfums.mp4"), poster: "https://example.com/p.jpg" })).toBe(false);
+    expect(isValidHostedVideo({ sources: [] })).toBe(false);
+    expect(isValidHostedVideo(undefined)).toBe(false);
+  });
+
+  it("ships with TikTok as the player until the owner supplies the video files", () => {
+    expect(PARFUMS_HOME_VIDEO?.hosted).toBeUndefined();
+    expect(IMPORT_HOME_VIDEO?.hosted).toBeUndefined();
+    expect(homeVideoUsesHostedMedia()).toBe(false);
   });
 });

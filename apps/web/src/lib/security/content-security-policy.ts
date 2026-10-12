@@ -16,6 +16,7 @@
  *   player, and only while a home video is actually configured
  *   (domains/platform/home-video.ts). With no video there is no frame
  *   exception, so the policy is exactly as strict as before the video story.
+ * - media: `'self'`, plus Cloudinary only while a home video is a hosted file (home-video.ts), played by a native <video>.
  * - fonts: next/font self-hosts Google fonts at build time, so 'self' only.
  * - styles: 'unsafe-inline' is required for React inline `style` attributes
  *   (carousel transforms, next/image sizing). Style injection is not an
@@ -26,7 +27,7 @@
  * 'unsafe-eval' is development-only (React's enhanced error stacks).
  */
 
-import { homeVideoNeedsTikTokFrame, TIKTOK_EMBED_ORIGIN } from "@/domains/platform/home-video";
+import { homeVideoNeedsTikTokFrame, homeVideoUsesHostedMedia, TIKTOK_EMBED_ORIGIN } from "@/domains/platform/home-video";
 
 const CLOUDINARY_RES = "https://res.cloudinary.com";
 const CLOUDINARY_API = "https://api.cloudinary.com";
@@ -45,7 +46,8 @@ export function buildContentSecurityPolicy(
   {
     development = process.env.NODE_ENV === "development",
     tiktokEmbed = homeVideoNeedsTikTokFrame(),
-  }: { development?: boolean; tiktokEmbed?: boolean } = {},
+    hostedVideo = homeVideoUsesHostedMedia(),
+  }: { development?: boolean; tiktokEmbed?: boolean; hostedVideo?: boolean } = {},
 ): string {
   const directives = [
     "default-src 'self'",
@@ -54,7 +56,7 @@ export function buildContentSecurityPolicy(
     `img-src 'self' data: blob: ${CLOUDINARY_RES} ${LEGACY_MEDIA_HOST}`,
     "font-src 'self'",
     `connect-src 'self' ${CLOUDINARY_API}${development ? " ws: wss:" : ""}`,
-    "media-src 'self'",
+    `media-src 'self'${hostedVideo ? ` ${CLOUDINARY_RES}` : ""}`,
     ...(tiktokEmbed ? [`frame-src 'self' ${TIKTOK_EMBED_ORIGIN}`] : []),
     "object-src 'none'",
     "base-uri 'self'",

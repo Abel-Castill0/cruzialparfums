@@ -46,6 +46,11 @@ describe("Content-Security-Policy", () => {
     expect(csp).toContain("frame-ancestors 'none'");
   });
 
+  it("opens media-src to Cloudinary only while a home video is a hosted file", () => {
+    expect(buildContentSecurityPolicy("n", { development: false, hostedVideo: false })).toContain("media-src 'self';");
+    expect(buildContentSecurityPolicy("n", { development: false, hostedVideo: true })).toContain("media-src 'self' https://res.cloudinary.com;");
+  });
+
   it("relaxes only eval and websockets in development", () => {
     const csp = buildContentSecurityPolicy("n", { development: true });
     expect(csp).toContain("'unsafe-eval'");

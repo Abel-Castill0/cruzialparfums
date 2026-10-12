@@ -101,6 +101,45 @@
   background: #000;
 }
 
+/* A hosted file fills the 9:16 frame like the iframe does; native controls, no cover needed. */
+.hostedVideo {
+  object-fit: cover;
+}
+
+/* The big play control over a hosted video's poster, same gold disc as the TikTok cover. It sits above the native controls'
+   area only in the middle of the frame; once playing it is removed and the native bar takes over. */
+.bigPlay {
+  position: absolute;
+  inset: 0 0 56px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.bigPlay > span {
+  display: grid;
+  width: 64px;
+  aspect-ratio: 1;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--ds-color-on-accent);
+  background: var(--ds-color-accent);
+  box-shadow: var(--ds-shadow-2);
+  font-size: 1.25rem;
+  transition: transform var(--ds-dur-base) var(--ds-ease-spring), background-color var(--ds-dur-base) var(--ds-ease-spring);
+}
+
+.bigPlay:hover > span {
+  background: var(--ds-color-accent-hover);
+  transform: scale(1.06);
+}
+
+.bigPlay:active > span {
+  background: var(--ds-color-accent-active);
+}
+
 /* Cover: a calm white poster with one obvious play control. The player only
    loads from TikTok after the tap. */
 .playGate {
@@ -181,6 +220,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .link,
+  .bigPlay > span,
   .playGate > span:first-of-type {
     transition: none;
   }

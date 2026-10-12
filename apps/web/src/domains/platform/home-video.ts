@@ -11,6 +11,13 @@
  * - Import: the owner supplied a separate video for the Import audience.
  */
 
+/** A video file the business hosts itself (Cloudinary or this site), played by a native <video>: no third-party player. */
+export type HostedVideo = {
+  /** Same clip in the formats browsers need: MP4 (H.264, Safari/iOS/Chrome) and optionally WebM. Absolute https Cloudinary URLs or /root-relative paths. */
+  sources: readonly { src: string; type: "video/mp4" | "video/webm" }[];
+  poster?: string;
+};
+
 export type HomeVideo = {
   /** Public video URL, e.g. https://www.tiktok.com/@cruzial_parfum/video/<id>. */
   tiktokUrl: string;
@@ -18,6 +25,12 @@ export type HomeVideo = {
   title: string;
   text: string;
   cta?: { label: string; href: string };
+  /**
+   * When set, the story plays this file instead of loading the TikTok embed. The TikTok URL stays as the "Ver en TikTok"
+   * link. TikTok's player is blocked by many ad blockers and tracking-protection settings (its telemetry hosts, e.g.
+   * mon.tiktokv.com, return ERR_BLOCKED_BY_CLIENT and the player shows "Player error"); a file on our own media host is not.
+   */
+  hosted?: HostedVideo;
 };
 
 export const PARFUMS_HOME_VIDEO: HomeVideo | null = {
@@ -40,9 +53,27 @@ export const CRUZIAL_TIKTOK_PROFILE = {
   name: "Cruzial Parfums",
 } as const;
 
-/** True only while at least one home actually has a video to frame. */
+const HOSTED_VIDEO_SRC = /^(?:https:\/\/res\.cloudinary\.com\/[^\s"'<>]+|\/[^\s"'<>/][^\s"'<>]*)$/;
+
+/** A hosted video is only trusted when every source (and the poster) is on Cloudinary or on this site. */
+export function isValidHostedVideo(hosted: HostedVideo | undefined): hosted is HostedVideo {
+  if (!hosted || hosted.sources.length === 0) return false;
+  if (!hosted.sources.every((source) => HOSTED_VIDEO_SRC.test(source.src))) return false;
+  return hosted.poster === undefined || HOSTED_VIDEO_SRC.test(hosted.poster);
+}
+
+function configuredHomeVideos(): HomeVideo[] {
+  return [PARFUMS_HOME_VIDEO, IMPORT_HOME_VIDEO].filter((video): video is HomeVideo => video !== null);
+}
+
+/** True only while at least one home still plays through the TikTok embed (and so needs the frame-src exception). */
 export function homeVideoNeedsTikTokFrame(): boolean {
-  return PARFUMS_HOME_VIDEO !== null || IMPORT_HOME_VIDEO !== null;
+  return configuredHomeVideos().some((video) => !isValidHostedVideo(video.hosted));
+}
+
+/** True while a home plays a hosted file, which needs Cloudinary in media-src. */
+export function homeVideoUsesHostedMedia(): boolean {
+  return configuredHomeVideos().some((video) => isValidHostedVideo(video.hosted));
 }
 
 const TIKTOK_VIDEO_URL = /^https:\/\/(?:www\.)?tiktok\.com\/@[\w.-]+\/video\/(\d{8,25})(?:[/?#].*)?$/;
