@@ -1,3 +1,8 @@
+> **EXPERIMENTO — NO SE MERGEA.** Esta rama (`claude/hero-variants-experiments`) conserva, con su historial, las variantes A–F del héroe
+> detrás de la bandera `?hero=`. **Lo adoptado (F) se integró desde `claude/hero-variants` en el PR #99** sin variantes ni bandera. Código y
+> assets de esta rama (p. ej. `hero-d-portrait.webp`, recomposición con humo sintetizado) **no son para producción**. Historial reescrito del
+> repositorio: esta rama parte de commits anteriores a la reescritura de `claude/apple-design-system` (base `3020eb5`).
+
 # Héroe de Parfums: seis variantes para recuperar el impacto de la imagen
 
 **Rama:** `claude/hero-variants` (parte de `claude/apple-design-system` @ `3020eb5`). **Nada se mergea.**
