@@ -333,3 +333,23 @@ test.describe("import TikTok module", () => {
     expect(csp).toContain("frame-ancestors 'none'");
   });
 });
+
+test.describe("browser console hygiene", () => {
+  // A preloaded stylesheet nobody uses ("preloaded using link preload but not used") and an unknown Permissions-Policy
+  // feature both log to the console on every visit. Next preloads the root not-found boundary's CSS on each route, so that
+  // CSS lives in globals.css, and interest-cohort (FLoC, removed from browsers) is not in the header any more.
+  for (const path of ["/parfums", "/parfums/catalogo"]) {
+    test(`${path} logs no preload or Permissions-Policy warnings`, async ({ page }) => {
+      const noisy: string[] = [];
+      page.on("console", (message) => {
+        if (["warning", "error"].includes(message.type()) && /preload|Permissions-Policy/i.test(message.text())) noisy.push(message.text());
+      });
+      const response = await page.goto(path);
+      expect(response?.headers()["permissions-policy"] ?? "").not.toContain("interest-cohort");
+      await page.waitForLoadState("networkidle");
+      // The "not used" warning fires a few seconds after the load event.
+      await page.waitForTimeout(4000);
+      expect(noisy, noisy.join("\n")).toEqual([]);
+    });
+  }
+});
