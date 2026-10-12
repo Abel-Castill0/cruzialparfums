@@ -42,7 +42,7 @@ export function VideoStory({ video, tone }: { video: HomeVideo; tone: "parfums" 
           <h2 id="home-video-title">{video.title}</h2>
           <p>{video.text}</p>
           <div className={styles.actions}>
-            <a href={video.tiktokUrl} target="_blank" rel="noopener noreferrer" className={styles.link}>
+            <a href={video.tiktokUrl} target="_blank" rel="noopener noreferrer" className={styles.tiktokButton}>
               Ver en TikTok <span aria-hidden="true">↗</span>
             </a>
             {video.cta ? (

@@ -64,6 +64,27 @@
   transition: text-decoration-color var(--ds-dur-base) var(--ds-ease-spring);
 }
 
+/* "Ver en TikTok": a real button (grey pill, 48px) so it is found even when the player cannot load. On a phone with the app
+   installed the link opens the video there. */
+.tiktokButton {
+  min-height: 48px;
+  padding: 0 var(--ds-space-3);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+  border-radius: var(--ds-radius-pill);
+  background: var(--ds-gray-100);
+  box-shadow: inset 0 0 0 1px rgba(29, 29, 31, 0.14);
+  color: var(--ds-ink);
+  font-size: var(--ds-text-card);
+  font-weight: 500;
+  transition: box-shadow var(--ds-dur-fast) var(--ds-ease-spring);
+}
+
+.tiktokButton:hover {
+  box-shadow: inset 0 0 0 1px rgba(29, 29, 31, 0.32);
+}
+
 .link:hover {
   text-decoration-color: currentColor;
 }

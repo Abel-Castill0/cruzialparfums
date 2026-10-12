@@ -62,6 +62,25 @@ export function isValidHostedVideo(hosted: HostedVideo | undefined): hosted is H
   return hosted.poster === undefined || HOSTED_VIDEO_SRC.test(hosted.poster);
 }
 
+/**
+ * Builds the hosted sources from a Cloudinary public ID, so activating a video is one line:
+ *   hosted: cloudinaryHostedVideo({ cloudName: "<cloud>", publicId: "cruzial/parfums-detalle" })
+ * MP4 (H.264, 720px wide) for Safari/iOS/Chrome, WebM (VP9) for the rest, and the poster from second 1 of the same clip.
+ * Throws on anything that is not a plain cloud name / public ID, so a typo cannot produce an untrusted URL.
+ */
+export function cloudinaryHostedVideo({ cloudName, publicId }: { cloudName: string; publicId: string }): HostedVideo {
+  if (!/^[a-z0-9][a-z0-9_-]*$/i.test(cloudName)) throw new Error("Invalid Cloudinary cloud name");
+  if (!/^[a-z0-9_\-]+(?:\/[a-z0-9_\-]+)*$/i.test(publicId)) throw new Error("Invalid Cloudinary public ID");
+  const base = `https://res.cloudinary.com/${cloudName}/video/upload`;
+  return {
+    sources: [
+      { src: `${base}/vc_h264,q_auto,w_720/${publicId}.mp4`, type: "video/mp4" },
+      { src: `${base}/vc_vp9,q_auto,w_720/${publicId}.webm`, type: "video/webm" },
+    ],
+    poster: `${base}/so_1,w_720/${publicId}.jpg`,
+  };
+}
+
 function configuredHomeVideos(): HomeVideo[] {
   return [PARFUMS_HOME_VIDEO, IMPORT_HOME_VIDEO].filter((video): video is HomeVideo => video !== null);
 }

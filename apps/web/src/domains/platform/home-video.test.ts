@@ -4,6 +4,7 @@ import {
   PARFUMS_HOME_VIDEO,
   CRUZIAL_TIKTOK_PROFILE,
   homeVideoNeedsTikTokFrame,
+  cloudinaryHostedVideo,
   homeVideoUsesHostedMedia,
   isValidHostedVideo,
   parseTikTokVideoId,
@@ -72,5 +73,20 @@ describe("home video helpers", () => {
     expect(PARFUMS_HOME_VIDEO?.hosted).toBeUndefined();
     expect(IMPORT_HOME_VIDEO?.hosted).toBeUndefined();
     expect(homeVideoUsesHostedMedia()).toBe(false);
+  });
+
+  it("builds MP4, WebM and poster URLs from a Cloudinary public ID, and they pass the host check", () => {
+    const hosted = cloudinaryHostedVideo({ cloudName: "demo-cloud", publicId: "cruzial/parfums-detalle" });
+    expect(hosted.sources.map((source) => source.type)).toEqual(["video/mp4", "video/webm"]);
+    expect(hosted.sources[0]!.src).toBe("https://res.cloudinary.com/demo-cloud/video/upload/vc_h264,q_auto,w_720/cruzial/parfums-detalle.mp4");
+    expect(hosted.poster).toBe("https://res.cloudinary.com/demo-cloud/video/upload/so_1,w_720/cruzial/parfums-detalle.jpg");
+    expect(isValidHostedVideo(hosted)).toBe(true);
+  });
+
+  it("refuses a cloud name or public ID that could point somewhere else", () => {
+    expect(() => cloudinaryHostedVideo({ cloudName: "demo.evil.test", publicId: "a" })).toThrow();
+    expect(() => cloudinaryHostedVideo({ cloudName: "demo", publicId: "../a" })).toThrow();
+    expect(() => cloudinaryHostedVideo({ cloudName: "demo", publicId: "a b" })).toThrow();
+    expect(() => cloudinaryHostedVideo({ cloudName: "", publicId: "a" })).toThrow();
   });
 });

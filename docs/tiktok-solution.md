@@ -42,23 +42,46 @@ este entorno y comparte la causa del fallo.
   vuelve a no tener ninguna excepción de frames.
 - Pruebas unitarias: validación de URLs, render con y sin archivo (sin `<iframe>` ni URL de player con archivo), CSP.
 
-## Lo que falta (necesito los archivos)
+## Estado y cómo se activa cuando llegue el MP4 (T25-video)
 
-**No se subió ningún video**: los MP4 los tiene que aportar el dueño (puede descargar los suyos desde TikTok Studio) y subirlos a su
-Cloudinary; no se descargan videos de TikTok ni se escribe en la cuenta de Cloudinary de producción sin su OK. Para activarlo basta
-rellenar `hosted` en `PARFUMS_HOME_VIDEO` / `IMPORT_HOME_VIDEO`:
+**Estado: preparado y dormido.** El código está listo, tipado y probado, pero **no hay ningún MP4**, así que producción sigue con el embed de
+TikTok (portada con botón de play + «Ver en TikTok»). No se subió nada a Cloudinary ni se descargó nada de TikTok: los archivos los
+aporta el dueño (puede bajar los suyos desde TikTok Studio) y los sube él, o da su OK para que se suban.
+
+**Mientras no haya MP4 (placeholder):** la portada actual (play dorado, texto del video) más el botón **«Ver en TikTok ↗»** (gris, 48 px),
+que abre el video en la app de TikTok en un teléfono con la app instalada. No se capturó el primer fotograma de los videos de TikTok:
+hacerlo implicaría guardar en el repo medios alojados por TikTok sin que el dueño lo haya aprobado; el póster definitivo saldrá del
+propio MP4 (`so_1`, segundo 1).
+
+### Requisitos del archivo
+
+| | |
+|---|---|
+| Formato | **MP4, H.264** (+ AAC), el que reproducen Safari, iOS y Chrome |
+| Orientación | **vertical 9:16** (p. ej. 1080 × 1920 de origen; se sirve a 720 px de ancho) |
+| Peso | **≤ 15 MB** el original (≈ 1–3 MB tras `q_auto,w_720`) |
+| Duración | la del video de TikTok (el de Parfums dura 1:14) |
+| Nombre | un *public ID* de Cloudinary sin espacios ni acentos: `cruzial/parfums-detalle`, `cruzial/import-consolidado` |
+
+### Pasos (una línea por video)
+
+1. Subir el MP4 a Cloudinary como **video** (carpeta `cruzial/`), p. ej. public ID `cruzial/parfums-detalle`.
+2. En `apps/web/src/domains/platform/home-video.ts`, dentro de `PARFUMS_HOME_VIDEO` (o `IMPORT_HOME_VIDEO`), añadir:
 
 ```ts
-hosted: {
-  sources: [
-    { src: "https://res.cloudinary.com/<cloud>/video/upload/q_auto,vc_h264,w_720/cruzial/parfums-detalle.mp4", type: "video/mp4" },
-    { src: "https://res.cloudinary.com/<cloud>/video/upload/q_auto,vc_vp9,w_720/cruzial/parfums-detalle.webm", type: "video/webm" },
-  ],
-  poster: "https://res.cloudinary.com/<cloud>/video/upload/so_1,w_720/cruzial/parfums-detalle.jpg",
-},
+hosted: cloudinaryHostedVideo({ cloudName: "<cloud-name>", publicId: "cruzial/parfums-detalle" }),
 ```
 
-(9:16, 720 px de ancho, H.264 + WebM; el póster sale del segundo 1 del propio video.)
+   `cloudinaryHostedVideo` genera MP4 (H.264, 720 px), WebM (VP9) y el póster (segundo 1) desde ese public ID y **lanza un error si el
+   cloud name o el public ID no son simples**. Si se prefiere una URL directa, vale
+   `hosted: { sources: [{ src: "https://res.cloudinary.com/…/video/upload/…/x.mp4", type: "video/mp4" }], poster: "https://res.cloudinary.com/…/x.jpg" }`;
+   sólo se aceptan URLs `https://res.cloudinary.com/…` o rutas `/…` del propio sitio (`isValidHostedVideo`).
+3. No hace falta tocar la CSP: se abre `media-src` a Cloudinary sólo mientras algún video esté alojado, y el `frame-src` de TikTok se
+   cierra cuando ninguna home use el embed (`content-security-policy.ts`).
+4. Comprobar en la vista previa de Vercel: el video arranca con el disco dorado, hay control nativo, no hay peticiones a
+   `tiktok.com` ni errores en consola. Publicar.
+
+El botón «Ver en TikTok» y el enlace «También lo puedes ver en TikTok» se mantienen con el video propio.
 
 ## Verificación de reproducción
 
@@ -75,9 +98,13 @@ marca y no se versionó), servido por el propio sitio y con el cableado temporal
 Peticiones durante la prueba: **sólo `localhost`**, ningún host de terceros. Capturas en `docs/screenshots/video-2026-10-12/`
 (`video-propio-poster-{1280,390}.jpg`, `video-propio-reproduciendo-{chromium,edge,webkit}.jpg`).
 
-## Limitaciones
+## Limitaciones conocidas
 
 - Hasta que lleguen los MP4, producción sigue con el embed y el mismo «Player error» en los navegadores con bloqueadores.
 - Un clic en la superficie del video no inicia la reproducción en Chromium de escritorio con `preload="none"`; por eso el disco dorado
   (que llama a `play()`), probado en los tres motores.
 - Un video propio consume ancho de banda de Cloudinary; con `preload="none"` no se descarga nada hasta pulsar play.
+- **Si el dueño decide mantener el embed de TikTok de forma permanente:** el «Player error» seguirá apareciendo para cualquier visitante con
+  bloqueador de anuncios o protección contra rastreo (los hosts `mon.tiktokv.com` y `byteoversea.com` son parte del reproductor), sin
+  forma de arreglarlo desde el sitio ni de detectarlo (ocurre dentro del iframe de otro origen). La recomendación sigue siendo migrar al
+  archivo propio; el botón «Ver en TikTok» es la salida para esos visitantes.
