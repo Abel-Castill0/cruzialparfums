@@ -1,31 +1,17 @@
 .profile {
-  padding-block: clamp(64px, 9vw, 128px);
+  padding-block: var(--ds-section-y);
 }
 
-.parfums {
-  --tp-ink: #0a0908;
-  --tp-muted: #5f5952;
-  --tp-line: rgba(10, 9, 8, 0.3);
-  --tp-bg: #efe8da;
-  --tp-radius: 2px;
-  --tp-font: var(--font-display), Georgia, serif;
-  background: var(--tp-bg);
-  color: var(--tp-ink);
-}
-
+.parfums,
 .import {
-  --tp-ink: #f4f7fb;
-  --tp-muted: #aebbc9;
-  --tp-line: rgba(244, 247, 251, 0.3);
-  --tp-bg: #061527;
-  --tp-radius: 18px;
-  --tp-font: var(--font-body), sans-serif;
-  background: var(--tp-bg);
+  --tp-ink: var(--ds-ink);
+  --tp-muted: var(--ds-ink-muted);
+  background: var(--ds-gray-50);
   color: var(--tp-ink);
 }
 
 .inner {
-  width: min(1100px, calc(100% - 48px));
+  width: min(1100px, calc(100% - (var(--ds-gutter) * 2)));
   margin-inline: auto;
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(240px, 340px);
@@ -35,54 +21,54 @@
 
 .eyebrow {
   color: var(--tp-muted);
-  font-size: 0.68rem;
-  font-weight: 600;
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
+  font-size: var(--ds-text-small);
+  font-weight: 500;
+
 }
 
 .copy h2 {
-  margin-top: 14px;
-  font-family: var(--tp-font);
-  font-size: clamp(2.1rem, 4.6vw, 3.6rem);
-  font-weight: 500;
-  line-height: 1.02;
+  margin-top: 16px;
+  font-size: var(--ds-text-h2);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
   text-wrap: balance;
 }
 
 .copy > p:not(.eyebrow) {
   max-width: 44ch;
-  margin-top: 20px;
+  margin-top: 24px;
   color: var(--tp-muted);
-  font-size: 1.02rem;
-  line-height: 1.65;
+  font-size: var(--ds-text-lead);
+  line-height: 1.5;
 }
 
 .action {
   min-height: 44px;
-  margin-top: 32px;
+  margin-top: var(--ds-space-4);
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  border-bottom: 1px solid var(--tp-line);
-  font-size: 0.78rem;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  transition: border-color 200ms ease;
+  gap: var(--ds-space-1);
+  color: var(--ds-link);
+  font-size: var(--ds-text-card);
+  font-weight: 500;
+  text-decoration: underline transparent;
+  text-underline-offset: 4px;
+  transition: text-decoration-color var(--ds-dur-base) var(--ds-ease-spring);
 }
 
 .action:hover {
-  border-bottom-color: var(--tp-ink);
+  text-decoration-color: currentColor;
 }
 
 .card {
   position: relative;
   aspect-ratio: 4 / 5;
   overflow: hidden;
-  border-radius: var(--tp-radius);
-  color: #fffdf8;
-  background: #0a0908;
+  border-radius: var(--ds-radius-lg);
+  box-shadow: var(--ds-shadow-2);
+  color: var(--ds-on-photo);
+  background: var(--ds-ink);
 }
 
 .cardImage {
@@ -98,7 +84,7 @@
 .cardCopy {
   position: absolute;
   inset: auto 0 0;
-  padding: 22px;
+  padding: 24px;
   display: grid;
   gap: 2px;
 }
@@ -115,8 +101,8 @@
 
 @media (max-width: 767px) {
   .inner {
-    grid-template-columns: 1fr;
-    gap: 36px;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 32px;
   }
 
   .card {
