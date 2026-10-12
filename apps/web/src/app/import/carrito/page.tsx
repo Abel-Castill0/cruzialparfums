@@ -40,7 +40,7 @@ export default function ImportCartPage() {
   }, 0);
 
   return (
-    <main className={styles.page}>
+    <main id="main" tabIndex={-1} className={styles.page}>
       <div className={styles.container}>
         <h1 className={styles.heading}>Carrito de Import</h1>
         {campaign && (

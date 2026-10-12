@@ -4,7 +4,7 @@ import styles from "./not-found.module.css";
 
 export default function ProductNotFound() {
   return (
-    <main className={styles.page}>
+    <main id="main" tabIndex={-1} className={styles.page}>
       <p className={styles.eyebrow}>Cruzial Parfums</p>
       <h1>Fragancia no encontrada</h1>
       <p>Esta fragancia ya no está disponible o el enlace es incorrecto.</p>

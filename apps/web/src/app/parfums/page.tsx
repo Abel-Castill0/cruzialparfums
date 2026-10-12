@@ -132,7 +132,7 @@ export default async function ParfumsHomePage() {
   const typeCounts = countFragrancesByType(fragrances);
 
   return (
-    <main className={styles.home}>
+    <main id="main" tabIndex={-1} className={styles.home}>
       <HeroArtwork
         {...heroArtwork}
         title="Perfumería de descubrimiento."

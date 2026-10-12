@@ -12,7 +12,7 @@ export default async function CombosPage() {
   const { catalog, contact } = await loadParfumsStorefront();
 
   return (
-    <main>
+    <main id="main" tabIndex={-1}>
       <CombosExperience
         combos={catalog.listCombos()}
         products={catalog.listFragrances()}

@@ -48,7 +48,7 @@ export default async function ContactoPage() {
   const storeName = "Cruzial Parfums";
 
   return (
-    <main>
+    <main id="main" tabIndex={-1}>
       <div className={styles.breadcrumbs}>
         <Breadcrumbs items={crumbs} />
       </div>

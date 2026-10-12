@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function ParfumsNotFound() {
   return (
-    <main className={styles.notFound}>
+    <main id="main" tabIndex={-1} className={styles.notFound}>
       <span className={styles.notFoundCode} aria-hidden="true">404</span>
       <h1>Esta ruta no existe.</h1>
       <p>Puede que la página se haya movido o el enlace sea incorrecto. Volvamos a lo que importa: encontrar tu próxima fragancia.</p>

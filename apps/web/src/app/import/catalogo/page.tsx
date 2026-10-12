@@ -26,7 +26,7 @@ export default async function ImportCatalogPage({ searchParams }: PageProps) {
     : { status: "unavailable" as const };
 
   return (
-    <main className={`${styles.home} ${styles.catalogPage}`}>
+    <main id="main" tabIndex={-1} className={`${styles.home} ${styles.catalogPage}`}>
       <header className={styles.catalogPageHeader}>
         <p className={styles.eyebrow}>Cruzial Import</p>
         <h1>Catálogo del consolidado</h1>

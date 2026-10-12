@@ -80,7 +80,7 @@ export default async function NosotrosPage() {
   const whatsappNumber = contact.whatsappNumber;
 
   return (
-    <main>
+    <main id="main" tabIndex={-1}>
       <div className={styles.breadcrumbs}>
         <Breadcrumbs items={crumbs} />
       </div>

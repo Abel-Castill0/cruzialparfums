@@ -66,7 +66,7 @@ for (const route of STOREFRONT_ROUTES) {
       await page.keyboard.press("Enter");
       const focused = await page.evaluate(() => ({ tag: document.activeElement?.tagName, id: document.activeElement?.id }));
       expect(focused.tag).toBe("MAIN");
-      expect(focused.id).toBe("contenido-principal");
+      expect(focused.id).toBe("main");
       // The next Tab continues from inside <main>, not from the header the link skipped.
       await page.keyboard.press("Tab");
       const insideMain = await page.evaluate(() => document.activeElement?.closest("main") !== null);
@@ -134,3 +134,48 @@ for (const route of ["/parfums/catalogo", "/import"]) {
     expect(blocking.map(({ id }) => id)).toEqual([]);
   });
 }
+
+// WCAG 2.4.1 must hold without JavaScript: the anchor, the target id and the tabindex are all in the static HTML.
+test.describe("skip link without JavaScript", () => {
+  test.use({ javaScriptEnabled: false });
+
+  for (const route of ["/", "/parfums", "/parfums/catalogo", "/import"]) {
+    test(`${route}: target is in the HTML and Tab + Enter lands on <main>`, async ({ page, request }) => {
+      test.slow();
+      const html = await (await request.get(route)).text();
+      expect(html, "static <main> carries id and tabindex").toMatch(/<main[^>]*id="main"[^>]*tabindex="-1"|<main[^>]*tabindex="-1"[^>]*id="main"/);
+      expect(html, "skip link is a plain anchor").toMatch(/<a [^>]*href="#main"[^>]*>Saltar al contenido<\/a>/);
+
+      await page.goto(route);
+      const skip = page.getByRole("link", { name: "Saltar al contenido" });
+      await page.keyboard.press("Tab");
+      await expect(skip, "first Tab lands on the skip link").toBeFocused();
+      await expect(skip).toBeInViewport({ ratio: 1 });
+      await page.keyboard.press("Enter");
+      await expect(page).toHaveURL(/#main$/);
+      await expect(page.locator("main#main"), "the browser focused the fragment target").toBeFocused();
+      // Keyboard arrival shows the ring; focus put there by a mouse click does not.
+      const ring = await page.locator("main#main").evaluate((el) => getComputedStyle(el).outlineStyle).catch(() => "unavailable without JS");
+      expect(["solid", "unavailable without JS"]).toContain(ring);
+    });
+  }
+});
+
+test.describe("main focus ring", () => {
+  test("shows after the keyboard skip, not after a mouse click", async ({ page }) => {
+    test.slow();
+    await page.goto("/parfums");
+    await settle(page);
+    await page.keyboard.press("Tab");
+    await page.keyboard.press("Enter");
+    await expect(page.locator("main#main")).toBeFocused();
+    expect(await page.locator("main#main").evaluate((el) => getComputedStyle(el).outlineStyle), "keyboard skip: ring").toBe("solid");
+
+    await page.goto("/parfums");
+    await settle(page);
+    await page.mouse.click(5, 300);
+    await page.locator("main#main").evaluate((el) => el.blur());
+    await page.locator("main#main").click({ position: { x: 4, y: 400 }, force: true });
+    expect(await page.locator("main#main").evaluate((el) => getComputedStyle(el).outlineStyle), "mouse click: no ring").toBe("none");
+  });
+});

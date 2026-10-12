@@ -21,7 +21,7 @@ export default async function ParfumsOrderThankYouPage({
   const { contact } = await loadParfumsStorefront();
 
   return (
-    <main>
+    <main id="main" tabIndex={-1}>
       <OrderHandoff orderNumber={order} whatsappNumber={contact.whatsappNumber} />
     </main>
   );

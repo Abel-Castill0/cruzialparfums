@@ -222,6 +222,22 @@ body:has([data-storefront]) {
   background: transparent;
 }
 
+/* Skip link target (WCAG 2.4.1). <main id="main" tabindex="-1"> is in the static HTML of every storefront page.
+   Focus ring only when the skip link (or the keyboard) put focus there: :focus-visible is false for a mouse click. */
+main#main:focus:not(:focus-visible) {
+  outline: none;
+}
+
+main#main:focus-visible {
+  outline: 2px solid var(--ds-accent);
+  outline-offset: -2px;
+}
+
+/* The admin brings its own skip link and has no main#main: hide the global one there. */
+body:not(:has(main#main)) [data-skip-link] {
+  display: none;
+}
+
 /* Keyboard focus: one subtle #0071E3 ring, 2px, offset 2px (never the browser default). */
 [data-storefront] :focus-visible {
   outline: 2px solid var(--ds-accent);

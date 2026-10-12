@@ -16,7 +16,7 @@ export default async function FinderPage({ searchParams }: { searchParams: Searc
   const catalogQuery = sanitizeCatalogQuery(typeof params.catalog === "string" ? params.catalog : undefined).toString();
 
   return (
-    <main>
+    <main id="main" tabIndex={-1}>
       <FinderExperience products={catalog.listFragrances()} catalogQuery={catalogQuery} />
     </main>
   );

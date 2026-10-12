@@ -56,7 +56,7 @@ export default async function ImportProductPage({ params }: ProductPageProps) {
     : "";
 
   return (
-    <main className={styles.page}>
+    <main id="main" tabIndex={-1} className={styles.page}>
       <nav className={styles.breadcrumb} aria-label="Ruta de navegación">
         <Link href="/import">Cruzial Import</Link><span aria-hidden="true">/</span><span>{product.name}</span>
       </nav>

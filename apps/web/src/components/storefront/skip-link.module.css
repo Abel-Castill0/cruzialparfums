@@ -29,8 +29,3 @@
     transition: transform var(--ds-dur-fast) var(--ds-ease-enter);
   }
 }
-
-/* <main> receives programmatic focus after the jump: the ring on the whole region would be noise. */
-:global(main[tabindex="-1"]:focus) {
-  outline: none;
-}

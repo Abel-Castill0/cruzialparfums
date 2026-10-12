@@ -8,7 +8,7 @@ import styles from "./page.module.css";
  */
 export default function Home() {
   return (
-    <main className={styles.page} aria-label="Elige tu tienda Cruzial">
+    <main id="main" tabIndex={-1} className={styles.page} aria-label="Elige tu tienda Cruzial">
       <h1 className={styles.srOnly}>Cruzial: elige entre Parfums e Import</h1>
       <p className={styles.wordmark} aria-hidden="true">Cruzial</p>
       <span className={styles.seam} aria-hidden="true" />
