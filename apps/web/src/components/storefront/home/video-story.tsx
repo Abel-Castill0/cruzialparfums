@@ -59,8 +59,7 @@ export function VideoStory({ video, tone }: { video: HomeVideo; tone: "parfums" 
               className={styles.player}
               src={tiktokEmbedUrl(videoId)}
               title={video.title}
-              allow="fullscreen; encrypted-media; picture-in-picture"
-              allowFullScreen
+              allow="autoplay; fullscreen; encrypted-media; picture-in-picture; accelerometer; gyroscope; clipboard-write; web-share"
               loading="lazy"
               data-tiktok-player
               referrerPolicy="strict-origin-when-cross-origin"

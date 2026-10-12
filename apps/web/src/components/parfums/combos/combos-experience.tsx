@@ -347,38 +347,58 @@ export function CombosExperience({
               </div>
             </div>
 
-            <div className={styles.picker} role="listbox" aria-label="Selecciona fragancias para tu combo" aria-multiselectable="true">
+            {/* A list of toggle buttons (not a listbox: its rows are not arrow-key options, and a size group cannot live inside one).
+                On phones the chosen fragrance's size chips appear right under its row, because the summary with the same chips sits
+                far below a long list. */}
+            <ul className={styles.picker} aria-label="Selecciona fragancias para tu combo">
               {visible.length === 0 ? (
-                <div className={styles.noResults} role="option" aria-selected="false" aria-disabled="true">No encontramos fragancias con estos criterios.</div>
+                <li className={styles.noResults}>No encontramos fragancias con estos criterios.</li>
               ) : null}
               {visible.map((product) => {
-                const line = lines.find((candidate) => candidate.productId === cartIdentity(product));
+                const productId = cartIdentity(product);
+                const line = lines.find((candidate) => candidate.productId === productId);
                 const isSelected = Boolean(line);
                 const disabled = lines.length >= COMBO_MAX_ITEMS && !isSelected;
                 const referenceSize = line?.size ?? defaultComboSize(product);
                 const referencePrice = referenceSize === null ? null : product.decantPrices[String(referenceSize)] ?? null;
+                const sizeOptions = availableComboSizes(product);
                 return (
-                  <button
-                    key={cartIdentity(product)}
-                    type="button"
-                    role="option"
-                    aria-selected={isSelected}
-                    disabled={disabled}
-                    className={`${styles.pickerItem} ${isSelected ? styles.pickerSelected : ""}`}
-                    onClick={() => toggle(product)}
-                    data-combo-option={cartIdentity(product)}
-                  >
-                    <span className={styles.thumb}>{product.imageUrl ? <Image src={product.imageUrl} alt="" fill sizes="58px" className={styles.thumbImage} /> : null}</span>
-                    <span className={styles.itemInfo}>
-                      <small>{product.brand}</small>
-                      <strong>{product.name}</strong>
-                      <em>{referencePrice === null ? "No disponible" : <>{isSelected ? `${referenceSize} ml · ` : "desde "}{money(referencePrice)}</>}</em>
-                    </span>
-                    <span className={styles.pickerAction} aria-hidden="true">{isSelected ? "✓" : "+"}</span>
-                  </button>
+                  <li key={productId} className={styles.pickerRow}>
+                    <button
+                      type="button"
+                      aria-pressed={isSelected}
+                      disabled={disabled}
+                      className={`${styles.pickerItem} ${isSelected ? styles.pickerSelected : ""}`}
+                      onClick={() => toggle(product)}
+                      data-combo-option={productId}
+                    >
+                      <span className={styles.thumb}>{product.imageUrl ? <Image src={product.imageUrl} alt="" fill sizes="58px" className={styles.thumbImage} /> : null}</span>
+                      <span className={styles.itemInfo}>
+                        <small>{product.brand}</small>
+                        <strong>{product.name}</strong>
+                        <em>{referencePrice === null ? "No disponible" : <>{isSelected ? `${referenceSize} ml · ` : "desde "}{money(referencePrice)}</>}</em>
+                      </span>
+                      <span className={styles.pickerAction} aria-hidden="true">{isSelected ? "✓" : "+"}</span>
+                    </button>
+                    {line && sizeOptions.length > 1 ? (
+                      <div className={styles.pickerSizes} role="group" aria-label={`Tamaño de ${product.name}`}>
+                        {sizeOptions.map((value) => (
+                          <button
+                            key={value}
+                            type="button"
+                            aria-pressed={line.size === value}
+                            className={line.size === value ? styles.selected : ""}
+                            onClick={() => changeLineSize(productId, value)}
+                          >
+                            {value} ml
+                          </button>
+                        ))}
+                      </div>
+                    ) : null}
+                  </li>
                 );
               })}
-            </div>
+            </ul>
           </div>
 
           <aside className={styles.summary} aria-label="Resumen de tu combo" aria-live="polite">
