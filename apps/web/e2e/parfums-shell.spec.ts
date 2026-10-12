@@ -81,6 +81,9 @@ test.describe("parfums home hero and header", () => {
     test(`phone hero ${width}x${height}: the first carousel card peeks at least 40px above the fold`, async ({ page }, testInfo) => {
       test.skip(testInfo.project.name !== "chromium", "viewport is set explicitly; run once");
       await page.setViewportSize({ width, height });
+      // Reveal slides content in 20px (translateY) when it scrolls into view; with reduced motion it sits at its layout position.
+      // Measure the layout, not the animation frame the test happened to catch.
+      await page.emulateMedia({ reducedMotion: "reduce" });
       await page.goto("/parfums");
       const card = page.locator("[data-marquee-card]").first();
       await expect(card).toBeAttached();

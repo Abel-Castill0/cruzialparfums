@@ -749,20 +749,22 @@
 }
 
 @media (max-width: 340px) {
+  /* Margin for wider text rendering (Linux CI renders Geist a few percent wider than Windows): the short second lines must
+     stay on one line with about 10% to spare, or the strip grows by a line per row and the carousel stops peeking. */
   .assurance {
-    width: calc(100% - 16px);
+    width: calc(100% - 8px);
     padding-block: 8px;
     row-gap: 8px;
   }
 
   .assurance li {
-    gap: 6px;
-    padding-inline: 4px;
+    gap: 5px;
+    padding-inline: 2px;
   }
 
   .assurance li > svg {
-    width: 18px;
-    height: 18px;
+    width: 16px;
+    height: 16px;
   }
 
   .assurance li > span > strong {
