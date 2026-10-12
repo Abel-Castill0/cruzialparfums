@@ -33,6 +33,29 @@ Estrategia: **Restrained** — neutros + un acento ≤ 10 % de la superficie. Re
 | `--ds-danger` | `#B42318` | Errores de formulario | 6.6:1 |
 | `--ds-success` | `#137333` | Confirmaciones | 6.0:1 |
 | `--ds-overlay` | `rgba(0,0,0,.38)` | Capa sobre foto del héroe (más gradiente inferior) | texto blanco ≥ 4.5:1 |
+| `--ds-color-navy` | `#0B1F3D` | Superficie oscura de la unidad Import (ver §2.1) | blanco 16.4:1 · `--ds-on-navy-muted` 9.5:1 |
+| `--ds-color-navy-deep` | `#0A1629` | Cápsula del logotipo y velos de héroe/banner de Import | blanco 18.1:1 |
+| `--ds-on-navy` / `--ds-on-navy-muted` | `#FFF` / `rgba(255,255,255,.74)` | Texto sobre navy | ver arriba |
+| `--ds-hairline-on-navy` | `rgba(255,255,255,.14)` | Único separador sobre navy | — |
+
+### 2.1 Import: superficies navy
+
+Import es el mismo sistema con **tres superficies navy intencionales** que enmarcan la página: el héroe (velo navy sobre la
+foto), el banner de contacto final y el pie. El cuerpo es blanco / `#F5F5F7` como en Parfums.
+
+- El navy es **sólo color de superficie**: `--ds-color-navy` (pie, texto sobre foto en banner), `--ds-color-navy-deep` (cápsula, velos).
+  Nunca fondo de `<body>` ni de secciones de contenido, nunca color de texto, nunca hex suelto fuera de `globals.css`.
+- Los velos usan `color-mix(in srgb, var(--ds-color-navy*) N%, transparent)`, no negro puro, para que las fotos
+  se tiñan del mismo navy que el pie.
+- Sobre navy se usa **sólo** `--ds-on-navy`, `--ds-on-navy-muted` y `--ds-hairline-on-navy`; los botones primarios siguen
+  siendo `--ds-accent` (3.5:1 contra navy, suficiente como componente de UI; el texto del botón es blanco, 4.7:1).
+- Foco sobre navy (pie): anillo blanco 2 px (el azul sólo da 3.5:1 con el texto, 3:1 mínimo para el anillo).
+- **Cápsula del logotipo** (`.capsule`): píldora `--ds-color-navy-deep` con la marca circular de 44 px + "Import" (14–17 px, 600);
+  alto táctil 44 px; en el pie, fondo `rgba(255,255,255,.08)` sin sombra. La marca es un cuadrado sobre su propio navy
+  (esquinas `#0A1629`), por eso la cápsula usa ese mismo navy y el recorte circular no deja marco visible.
+- Ritmo: `[data-storefront="import"]` redefine `--ds-section-y` (64 / 80 / 96 px, en vez de 64 / 96 / 128). Es la única diferencia
+  de espaciado entre unidades.
+- Prohibido en Import (igual que en Parfums): sombras duras, bordes opacos, mayúsculas, dorado.
 
 Reglas:
 - Prohibido: degradados morados/azules, gradientes en texto, color en bordes laterales, crema/beige, dorado en UI.
@@ -188,8 +211,9 @@ Reglas:
 
 ## 11. Decisiones y excepciones (2026-10-11)
 
-- **Una sola marca visual.** Import adopta este mismo sistema (antes navy a pantalla completa). Conserva su
-  identidad en la fotografía del héroe (contenedor azul) y en su logotipo, no en la pintura de la interfaz.
+- **Una sola marca visual.** Import adopta este mismo sistema (antes navy a pantalla completa) y recupera su identidad con
+  tres superficies navy intencionales (héroe, banner final, pie) y la cápsula del logotipo: opción C de `docs/import-decision.md`
+  (§2.1). El resto de la página es blanco/gris.
 - **Superficies oscuras permitidas (únicas):** héroes fotográficos con velo, mosaicos de categoría con foto y
   scrim, barra de anuncio de Parfums (`--ds-ink`), toasts, el panel de arte del carrusel de combos y la
   pasarela `/` (dos puertas fotográficas). Todo lo demás es blanco o `#F5F5F7`.

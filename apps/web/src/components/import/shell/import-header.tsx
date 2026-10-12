@@ -62,8 +62,9 @@ export function ImportHeader() {
   return (
     <header className={[styles.header, isHome ? styles.headerHome : "", hiddenOverHero ? styles.headerHidden : ""].join(" ")}>
       <div className={styles.headerInner}>
-        <Link href="/import" className={styles.lockup} aria-label="Cruzial Import, ir al inicio">
-          <Image src="/images/import-home/cruzial-import-logo.png" alt="" width={136} height={68} priority className={styles.importLogo} />
+        <Link href="/import" className={`${styles.lockup} ${styles.capsule}`} aria-label="Cruzial Import, ir al inicio">
+          <Image src="/images/import-home/cruzial-import-logo.png" alt="" width={88} height={88} priority className={styles.capsuleMark} />
+          <span className={styles.capsuleName} aria-hidden="true">Import</span>
         </Link>
 
         <nav className={styles.navigation} aria-label="Navegación de Cruzial Import">

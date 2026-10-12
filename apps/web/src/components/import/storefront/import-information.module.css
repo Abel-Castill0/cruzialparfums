@@ -34,7 +34,7 @@
 /* Process — a rail with four moments. */
 
 .process {
-  padding-block: clamp(64px, 9vw, 120px);
+  padding-block: var(--ds-section-y);
   border-top: 1px solid var(--ds-hairline);
 }
 
@@ -92,7 +92,7 @@
 .conditions {
   width: min(1280px, calc(100% - (var(--import-gutter, 24px) * 2)));
   margin-inline: auto;
-  padding-block: clamp(24px, 4vw, 48px) clamp(64px, 9vw, 120px);
+  padding-block: clamp(24px, 4vw, 48px) var(--ds-section-y);
   display: grid;
   grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
   gap: clamp(32px, 6vw, 96px);
@@ -165,7 +165,7 @@
 /* FAQ */
 
 .faq {
-  padding-block: clamp(56px, 8vw, 104px);
+  padding-block: var(--ds-section-y);
   border-top: 1px solid var(--ds-hairline);
 }
 
@@ -236,8 +236,12 @@
 }
 
 .contactPanel {
+  /* Intentional navy surface: light type on the navy veil over the photograph. */
+  --import-text: var(--ds-on-navy);
+  --import-muted: var(--ds-on-navy-muted);
   position: relative;
   isolation: isolate;
+  color: var(--ds-on-navy);
   min-height: 340px;
   overflow: hidden;
   display: flex;
@@ -259,7 +263,7 @@
   z-index: -1;
   inset: 0;
   content: "";
-  background: linear-gradient(90deg, rgba(6, 21, 39, 0.96) 0%, rgba(6, 21, 39, 0.78) 45%, rgba(6, 21, 39, 0.1) 80%);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--ds-color-navy-deep) 96%, transparent) 0%, color-mix(in srgb, var(--ds-color-navy-deep) 80%, transparent) 45%, color-mix(in srgb, var(--ds-color-navy-deep) 10%, transparent) 80%);
 }
 
 .contactBody {
@@ -281,9 +285,9 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  border-radius: 999px;
-  color: var(--import-accent-text);
-  background: var(--import-accent);
+  border-radius: var(--ds-radius-pill);
+  color: var(--ds-white);
+  background: var(--ds-accent);
   font-size: var(--ds-text-card);
   font-weight: 500;
   transition: background-color var(--ds-dur-base) var(--ds-ease-spring);

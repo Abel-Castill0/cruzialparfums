@@ -20,12 +20,6 @@
   transition: opacity var(--ds-dur-fast) var(--ds-ease-exit), visibility 0s linear var(--ds-dur-fast);
 }
 
-.importLogo {
-  width: 136px;
-  height: 68px;
-  object-fit: contain;
-}
-
 .headerInner {
   width: min(1280px, calc(100% - 48px));
   margin-inline: auto;
@@ -221,44 +215,31 @@
 }
 
 .footer {
-  background: var(--ds-gray-50);
-  color: var(--ds-ink-muted);
+  background: var(--ds-color-navy);
+  color: var(--ds-on-navy-muted);
 }
 
 .footerInner {
   width: min(1280px, calc(100% - 48px));
   margin-inline: auto;
-  padding: clamp(36px, 5vw, 56px) 0 28px;
+  padding: var(--ds-space-6) 0 var(--ds-space-4);
 }
 
 .footerTop {
-  padding-bottom: 32px;
+  padding-bottom: var(--ds-space-4);
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 24px;
-  border-bottom: 1px solid var(--ds-hairline);
-}
-
-.footerLockup {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--ds-ink);
-}
-
-.footerLockup img {
-  width: 164px;
-  height: 82px;
-  object-fit: contain;
+  gap: var(--ds-space-3);
+  border-bottom: 1px solid var(--ds-hairline-on-navy);
 }
 
 .footerNav {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: clamp(14px, 2vw, 26px);
+  gap: var(--ds-space-1) var(--ds-space-3);
 }
 
 .footerNav a {
@@ -267,59 +248,103 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.875rem;
+  color: var(--ds-on-navy-muted);
+  font-size: var(--ds-text-small);
   font-weight: 500;
+  transition: color var(--ds-dur-fast) var(--ds-ease-spring);
+}
+
+.footerNav a:hover,
+.footerLegal a:hover {
+  color: var(--ds-on-navy);
 }
 
 .footerBack {
-  min-height: 44px;
-  padding: 8px 16px;
+  min-height: var(--ds-touch);
+  padding: 0 var(--ds-space-3);
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  border: 0;
-  border-radius: 999px;
-  color: var(--ds-ink);
-  font-size: 0.75rem;
-  font-weight: 600;
-
+  gap: var(--ds-space-1);
+  border-radius: var(--ds-radius-pill);
+  color: var(--ds-on-navy);
+  background: rgba(255, 255, 255, 0.12);
+  font-size: 0.9375rem;
+  font-weight: 500;
   white-space: nowrap;
-  transition: border-color var(--ds-dur-fast) var(--ds-ease-spring), background-color var(--ds-dur-fast) var(--ds-ease-spring);
+  transition: background-color var(--ds-dur-base) var(--ds-ease-spring);
 }
 
 .footerBack:hover {
-  border-color: rgba(0, 0, 0, 0.2);
-  background: rgba(244, 247, 251, 0.08);
+  background: rgba(255, 255, 255, 0.22);
 }
 
 .footerBottom {
-  padding-top: 24px;
+  padding-top: var(--ds-space-3);
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  font-size: 0.75rem;
-
+  gap: var(--ds-space-2);
+  font-size: var(--ds-text-small);
 }
 
 .footerLegal {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 16px;
-}
-
-.footerLegal a,
-.footerInner a:hover {
-  color: var(--ds-ink);
+  gap: var(--ds-space-2);
 }
 
 .footerLegal a {
-  min-height: 44px;
+  min-height: var(--ds-touch);
   display: inline-flex;
   align-items: center;
+  color: var(--ds-on-navy-muted);
+  font-weight: 500;
+  transition: color var(--ds-dur-fast) var(--ds-ease-spring);
+}
+
+/* Focus on the navy footer: the blue ring is only 3.4:1 on navy, so the ring turns white there. */
+.footer :focus-visible {
+  outline-color: var(--ds-on-navy);
+}
+
+/* Logo capsule: the mark is a square on its own navy, so it sits in a navy pill (same navy as the mark's
+   corners) as a deliberate badge. Header: navy pill on the white bar. Footer: raised pill on navy. */
+.capsule {
+  min-height: var(--ds-touch);
+  padding: 4px var(--ds-space-3) 4px 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+  border-radius: var(--ds-radius-pill);
+  color: var(--ds-on-navy);
+  background: var(--ds-color-navy-deep);
+  box-shadow: var(--ds-shadow-1);
+}
+
+.capsuleMark {
+  width: 44px;
+  height: 44px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.capsule .capsuleName {
+  color: var(--ds-on-navy);
+  font-size: var(--ds-text-card);
   font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.footerLockup {
+  display: inline-flex;
+}
+
+.footer .capsule {
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: none;
 }
 
 @media (max-width: 860px) {
@@ -336,15 +361,7 @@
 
 @media (max-width: 560px) {
   .headerHome {
-    margin-bottom: -92px;
-  }
-  .importLogo {
-    width: 52px;
-    height: 52px;
-  }
-  .footerLockup img {
-    width: 142px;
-    height: 72px;
+    margin-bottom: -76px;
   }
   .headerActions {
     gap: 8px;
@@ -371,21 +388,5 @@
   .whatsapp,
   .back {
     transition: none;
-  }
-}
-
-/* The mark ships on its own navy square (not transparent), so it is presented
- * as a deliberate badge: rounded, with a silver hairline, never a hard box. */
-.importLogo {
-  width: 60px;
-  height: 60px;
-  border-radius: var(--ds-radius-md);
-  box-shadow: var(--ds-shadow-1);
-}
-
-@media (max-width: 767px) {
-  .importLogo {
-    width: 52px;
-    height: 52px;
   }
 }

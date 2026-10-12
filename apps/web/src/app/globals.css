@@ -122,6 +122,14 @@ textarea {
   --ds-danger: #b42318;
   --ds-success: #137333;
   --ds-overlay: rgba(0, 0, 0, 0.38);
+
+  /* Navy: the Import unit's dark surfaces (hero veil, footer, logo capsule). Never a body background,
+     never for text; see DESIGN.md "Import: superficies navy". */
+  --ds-color-navy: #0b1f3d;
+  --ds-color-navy-deep: #0a1629;
+  --ds-on-navy: #ffffff;
+  --ds-on-navy-muted: rgba(255, 255, 255, 0.74);
+  --ds-hairline-on-navy: rgba(255, 255, 255, 0.14);
   --ds-on-photo: #ffffff;
   --ds-on-photo-muted: rgba(255, 255, 255, 0.86);
 
@@ -300,4 +308,21 @@ body:has([data-storefront]) {
 
 [data-storefront] main [id] {
   scroll-margin-top: 96px;
+}
+
+/* Import keeps the same system with tighter vertical rhythm (64 / 80 / 96 instead of 64 / 96 / 128). */
+[data-storefront="import"] {
+  --ds-section-y: var(--ds-space-6);
+}
+
+@media (min-width: 768px) {
+  [data-storefront="import"] {
+    --ds-section-y: 80px;
+  }
+}
+
+@media (min-width: 1100px) {
+  [data-storefront="import"] {
+    --ds-section-y: var(--ds-space-7);
+  }
 }
