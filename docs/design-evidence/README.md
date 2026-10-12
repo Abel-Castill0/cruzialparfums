@@ -45,3 +45,13 @@ Listas de resultados: `playwright-matrix-prod-run.txt`, `playwright-webkit-dev-f
 | 1 | axe `color-contrast` en `/import/catalogo` (eyebrow del encabezado de categorías) | Diferencia de pintado o de `color-mix()` en WebKit; sin reproducir en Safari real | T16 |
 | 1 | el diálogo del recomendador no aparece en 20 s | Ruta interceptada en servidor de desarrollo frío; sin reproducir | T17 |
 | 1 | el carrusel de producto no reanuda su movimiento tras salir el puntero | `scrollLeft` por `requestAnimationFrame` en WebKit; sin reproducir | T18 |
+
+## 3. Cómo repetir la matriz
+
+Los proyectos `firefox` y `webkit` son opt-in (CI sólo instala Chromium; sin la variable fallaron 194 pruebas con «Executable doesn't exist»):
+
+```bash
+npx playwright install firefox webkit
+E2E_ENGINES=1 npx playwright test --project=firefox
+E2E_ENGINES=1 E2E_SERVER=dev npx playwright test --project=webkit   # dev: la CSP de producción rompe WebKit en http://localhost
+```
