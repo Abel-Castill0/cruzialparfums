@@ -201,7 +201,7 @@ Reglas:
 - Objetivos táctiles ≥ 44×44 px en cualquier viewport táctil (botones, enlaces de navegación y de pie, chips).
 - Breakpoints: 390 (móvil), 768 (tableta), 1100 (escritorio), 1440 (ancho). Sin scroll horizontal.
 - Imágenes: `next/image` con `sizes` real; `priority` sólo para la imagen del héroe; `loading="lazy"` en el resto.
-- Estructura (WCAG 2.4.1 / 1.3.1): enlace «Saltar al contenido» global (`storefront/skip-link.tsx`, montado en `app/layout.tsx`); un solo `h1` por página y niveles sin saltos; listas de producto como `ul[role=list] > li > article` con el nombre en `h3` bajo un `h2` de sección. Verificado por `e2e/accessibility-structure.spec.ts`.
+- Estructura (WCAG 2.4.1 / 1.3.1): enlace «Saltar al contenido» global (`storefront/skip-link.tsx`, montado en `app/layout.tsx`: `<a href="#main">` renderizado en servidor; cada `<main>` lleva `id="main" tabindex="-1"` en el HTML estático, así que funciona sin JavaScript); un solo `h1` por página y niveles sin saltos; listas de producto como `ul[role=list] > li > article` con el nombre en `h3` bajo un `h2` de sección. Verificado por `e2e/accessibility-structure.spec.ts`.
 
 ## 10. Prohibiciones (checklist de revisión)
 

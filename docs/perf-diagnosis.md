@@ -282,3 +282,7 @@ garantizar < 200 ms con el aplicado sin reducir de verdad lo que se hidrata**. L
   difieren menos que eso. Sólo `content-visibility` supera con claridad el ruido.
 - La tarea 5 se atribuye a efectos/observers por inferencia (nombre de evento y momento), no por una función concreta.
 - El tiempo de CPU del navegador local no es el de un teléfono real; no se midió en dispositivo.
+
+### 6.10 Resultado de aplicar las palancas (actualización)
+
+Aplicadas en `claude/apple-design-system` (`f976976`): imagen del héroe a 1080 px en móvil, `preload: true` de Geist y `content-visibility: auto`. TBT aplicado, mediana de 3 ejecuciones: **465 → 326 ms** (507/335/465 → 326/305/326); primer layout 340–383 → 129–143 ms; el segundo layout por cambio de fuente desaparece; LCP 2.18 → 1.29 s; bytes 441 → 345 KB. Lo que queda es la hidratación (≈ 300 ms): ticket T13. Detalle y reportes en `docs/design-evidence/README.md`.
