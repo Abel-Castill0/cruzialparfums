@@ -27,10 +27,10 @@ export function HeroArtwork({
   ctaLabel: string;
   secondaryHref?: Route;
   secondaryLabel?: string;
-  /** Design experiment on claude/hero-variants only: a | b | c | d | e | ec | eb. Undefined = the shipped hero. */
-  variant?: "a" | "b" | "c" | "d" | "e" | "ec" | "eb" | undefined;
+  /** Design experiment on claude/hero-variants only: a | b | c | d | e | ec | eb | f. Undefined = the shipped hero. */
+  variant?: "a" | "b" | "c" | "d" | "e" | "ec" | "eb" | "f" | undefined;
 }) {
-  if (variant === "d" || variant === "e" || variant === "ec" || variant === "eb") {
+  if (variant === "d" || variant === "e" || variant === "ec" || variant === "eb" || variant === "f") {
     return <HeroArtworkD variant={variant} alt={alt} title={title} ctaHref={ctaHref} ctaLabel={ctaLabel} secondaryHref={secondaryHref} secondaryLabel={secondaryLabel} />;
   }
   return (
@@ -80,6 +80,9 @@ const ART_D = {
   // E: an existing original, cut as-is. hero2.png (1376x768, commit 0c3752b, Aug 30) cropped to 4:5 at x 706-1320:
   // wordmark and four complete bottles, no synthesis. Native 614x768, so it is upscaled on dense phones.
   hero2: { src: "/parfums/hero/hero-e-hero2-4x5.webp", width: 614, height: 768 },
+  // F: the official wordmark (logo.jpeg, 499x494, black ground) keyed to transparency by luminance and cropped to
+  // "CRUZIAL / PERFUMERÍA" (x 36-476, y 326-456). Phones only: navy ground, no product image.
+  wordmark: { src: "/parfums/hero/hero-f-wordmark.webp", width: 440, height: 130 },
 } as const;
 
 /** Phones and portrait tablets get the 4:5 asset; landscape screens get the 21:9 one. Keep in sync with the CSS. */
@@ -94,7 +97,7 @@ function HeroArtworkD({
   secondaryHref,
   secondaryLabel,
 }: {
-  variant: "d" | "e" | "ec" | "eb";
+  variant: "d" | "e" | "ec" | "eb" | "f";
   alt: string;
   title: string;
   ctaHref: Route;
@@ -106,15 +109,16 @@ function HeroArtworkD({
   const { props: wide } = getImageProps({ ...shared, ...ART_D.wide, sizes: "100vw" });
   // D: 4:5 recomposition (synthesised smoke). E: pure 4:5 crop of an older original. EC: pure crop of the wordmark column.
   // EB: the 21:9 band on phones too.
-  const phoneArt = variant === "d" ? ART_D.portrait : variant === "e" ? ART_D.hero2 : ART_D.center;
-  const { props: phone } = getImageProps({ ...shared, ...phoneArt, sizes: variant === "ec" ? "80vw" : "100vw" });
+  const phoneArt = variant === "d" ? ART_D.portrait : variant === "e" ? ART_D.hero2 : variant === "f" ? ART_D.wordmark : ART_D.center;
+  // The wordmark is a 35 KB lossless file: serve it as-is, the optimizer would re-encode the gold gradient lossy.
+  const { props: phone } = getImageProps({ ...shared, ...phoneArt, sizes: variant === "ec" ? "80vw" : "100vw", ...(variant === "f" ? { unoptimized: true } : {}) });
   const { srcSet: wideSet, ...img } = wide;
   return (
     <section className={styles.hero} data-home-hero data-variant={variant} aria-label="Cruzial Parfums">
       <picture className={styles.artD}>
-        {variant === "eb" ? null : <source media={PORTRAIT_MEDIA} srcSet={phone.srcSet} />}
+        {variant === "eb" ? null : <source media={PORTRAIT_MEDIA} srcSet={phone.srcSet ?? phone.src} />}
         <source srcSet={wideSet} />
-        <img {...img} alt={alt} className={styles.imageD} />
+        <img {...img} alt={variant === "f" ? "Cruzial Perfumería" : alt} className={styles.imageD} />
       </picture>
       <div className={styles.footD}>
         <h1 className={styles.title}>{title}</h1>

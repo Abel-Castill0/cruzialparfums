@@ -357,7 +357,8 @@
 .hero[data-variant="d"],
 .hero[data-variant="e"],
 .hero[data-variant="ec"],
-.hero[data-variant="eb"] {
+.hero[data-variant="eb"],
+.hero[data-variant="f"] {
   display: flex;
   flex-direction: column;
   height: auto;
@@ -483,5 +484,54 @@
   .hero[data-variant="ec"] .actions,
   .hero[data-variant="eb"] .actions {
     justify-content: flex-start;
+  }
+}
+
+/* F - "Tipográfica": phones get the official wordmark on a solid navy ground and no product image, in the manner of the
+   AirPods / HomePod pages. Desktop keeps the 21:9 art (the same wordmark, baked in). The hero is about 60svh tall so the
+   next section peeks. */
+@media (max-width: 767px), (max-width: 1100px) and (orientation: portrait) {
+  .hero[data-variant="f"] {
+    justify-content: center;
+    min-height: 60svh;
+    padding: var(--ds-space-5) 0 var(--ds-space-4);
+    background: var(--ds-color-navy);
+  }
+
+  .hero[data-variant="f"] .artD {
+    /* 440px of source = CRUZIAL cap height 70px: 337px wide gives a 54px cap height; never wider than the screen. */
+    width: min(337px, calc(100vw - 30px));
+    aspect-ratio: 440 / 130;
+    margin-inline: auto;
+  }
+
+  .hero[data-variant="f"] .imageD {
+    object-fit: contain;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+
+  .hero[data-variant="f"] .footD {
+    margin-top: var(--ds-space-3);
+    gap: var(--ds-space-2);
+    padding: 0 var(--ds-gutter);
+    align-items: center;
+    text-align: center;
+  }
+
+  .hero[data-variant="f"] .title {
+    max-width: 18ch;
+    font-size: clamp(1.5rem, 6.4vw, 1.875rem);
+    color: var(--ds-on-navy);
+  }
+
+  .hero[data-variant="f"] .actions {
+    justify-content: center;
+  }
+}
+
+@media (min-width: 600px) and (max-width: 1100px) and (orientation: portrait) {
+  .hero[data-variant="f"] .artD {
+    width: 420px;
   }
 }
