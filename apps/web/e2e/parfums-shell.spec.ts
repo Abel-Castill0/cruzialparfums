@@ -330,7 +330,9 @@ test.describe("import TikTok module", () => {
   // "Permissions policy violation: accelerometer is not allowed in this document" and may refuse playback.
   test("the Parfums TikTok iframe is created on play, also after a client-side navigation, with the permissions the player asks for", async ({ page }) => {
     await page.goto("/parfums/catalogo");
-    await page.locator('a[href="/parfums"]:visible').first().click();
+    // The header is hidden over the catalog hero; scroll past it, then take the brand link back to /parfums (a client-side navigation).
+    await page.evaluate(() => window.scrollTo(0, window.innerHeight + 300));
+    await page.locator('header a[href="/parfums"]').first().click();
     await page.waitForURL("**/parfums");
     const section = page.locator("[data-home-video]");
     await section.scrollIntoViewIfNeeded();
