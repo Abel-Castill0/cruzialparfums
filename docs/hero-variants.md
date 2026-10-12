@@ -338,6 +338,9 @@ píxeles). La versión inicial de F tenía tres defectos y se corrige antes del 
 | 2 | Altura del héroe en móvil | 60 % | **45 %** (**48 %** en pantallas ≤ 700 px de alto) |
 | 3 | Ancho máximo del wordmark | 337 px (letras «CRUZIAL» de 322 px) | **280 px** (letras de **268 px**) |
 
+> **Actualización (§13):** la altura pasa a 42 % en pantallas ≤ 700 px de alto y la franja de garantías vuelve a una rejilla 2 × 2 con
+> texto corto; la placa recibe un aro. Las cifras de §10.3 son anteriores a ese ajuste; las vigentes están en §13.3.
+
 ### 10.1 Razón por la que se descarta el keying de luminancia
 
 1. **Es una edición del activo de marca.** Convertir el negro en transparencia produce un archivo nuevo (`alfa = f(luminancia)`), no el
@@ -436,3 +439,82 @@ incluir los cambios de apoyo de `page.module.css` y `page.tsx`, o decidir otra f
 
 (El «T20» provisional de `docs/design-audit-2026-10-11.md`, «decidir el héroe», queda resuelto por esta decisión; esa auditoría
 vive en el PR de evidencia y conviene renumerarla allí.)
+
+## 13. Ajustes tras aprobar F: placa intencional y franja de garantías sin comprimir
+
+F queda aprobada con dos cambios sobre §10 (que se corrigen aquí): la placa negra sobre navy (contraste 1.27:1) se leía como un
+accidente, y la franja de garantías en una línea con desplazamiento horizontal escondía contenido que existe para dar confianza.
+
+### 13.1 La placa se lee como panel
+
+- Se añade un **aro de 1 px** con un navy algo más claro y una **elevación mínima**:
+  `box-shadow: 0 0 0 1px color-mix(in srgb, var(--ds-color-navy) 92%, var(--ds-white)), 0 1px 2px rgba(0,0,0,.15)`.
+- El aro resuelve a `#1F314D` (HSL 217° / 43 % / **21 %**, frente a 216° / 69 % / **14 %** del navy: **+7 puntos de luminosidad**,
+  ≈ 1.4:1 contra el navy). Se hizo con `color-mix` sobre el token, sin hex nuevo, y como **anillo de desplazamiento 0** (no como borde
+  opaco: `DESIGN.md` §5 prohíbe los bordes opacos de 1 px; un anillo de `box-shadow` es lo que el sistema permite).
+- El archivo sigue sin tocarse; el aro y la sombra son CSS del contenedor.
+
+### 13.2 Franja de garantías: tres alternativas medidas (todas con la segunda línea visible)
+
+Medido en Chromium con el héroe al 45 % (48 % en pantallas ≤ 700 px de alto, la regla anterior). «Tarjeta» = píxeles visibles de la
+primera tarjeta del carrusel (mínimo exigido: 40); negativo = no asoma.
+
+| Variante | Qué cambia | Franja 390 × 844 / 375 × 667 / 360 × 640 / 320 × 568 | Tarjeta visible (mismos tamaños) |
+|---|---|---|---|
+| Sin tocar | — | 228 / 228 / 266 / 304 px | 70 / −65 / −115 / −188 |
+| **A** | menos relleno vertical (12 px) | 192 / 192 / 230 / 268 px | 106 / −29 / −79 / −152 |
+| **B** | **2 × 2, icono de 20 px y texto corto (≤ 4 palabras)** | **142 / 142 / 142 / 157 px** | **156 / 41 / 30 / −41** |
+| **C** | iconos de 18 px y tipografía menor, misma estructura y texto | 151 / 153 / 153 / 183 px | 147 / 30 / 18 / −66 |
+
+Con el héroe al **42 %** en pantallas cortas: B pasa a **182 / 81 / 68 / 13** px y C a 172 / 70 / 57 / −32. A no se repitió con 42 %:
+restando los 40 / 38 / 34 px que libera el héroe (extrapolación aritmética) quedaría en 11 / −41 / −118 en las tres pantallas
+cortas, sin llegar nunca a 40 en 360 × 640 y 320 × 568.
+
+**Elegida: B.** Es la única que, con el héroe al 42 %, deja asomar la tarjeta en 375 × 667 y 360 × 640 y la única que se acerca en
+320 × 568 (13 px). A recorta sólo 36 px porque el cuello de botella no es el relleno sino el **salto de línea** del texto largo en
+dos columnas estrechas; C no lo evita. B ataca la causa (menos palabras) sin esconder nada.
+
+Para 320 × 568 B necesita además una compactación ≤ 340 px (relleno de 8 px, iconos de 18 px, títulos de 12.8 px; el texto
+secundario se mantiene en **12 px**, el mínimo del sistema: una primera pasada con 11.2 px se descartó por incumplir `DESIGN.md` §10).
+
+**Copy de B (3–4 palabras, sólo en ≤ 480 px y sólo en `?hero=f`):**
+
+| Título (no cambia) | Segunda línea antes | Segunda línea en B |
+|---|---|---|
+| 100% originales | Frascos auténticos de casas oficiales | **Casas oficiales** |
+| Decants desde 3 ml | También en 5 y 10 ml | **En 5 y 10 ml** |
+| Envío por Shalom | A todo el Perú | **A todo el Perú** (sin cambio) |
+| Atención por WhatsApp | Stock y total final contigo | **Total final contigo** |
+
+El texto largo sigue en el DOM y es el que se ve a partir de 481 px; en ≤ 480 px se muestra el corto (el otro queda en
+`display: none`, así que los lectores de pantalla leen sólo el visible). **Hay que validar con el cliente** que el acortado conserva el
+mensaje: «Casas oficiales» pierde «frascos auténticos» y «Total final contigo» pierde «stock», aunque el título «100% originales» y
+el cierre por WhatsApp se mantienen. No se añade ningún claim nuevo.
+
+### 13.3 Verificación final (hero 45 % / 42 %, B, aro)
+
+| | 390 × 844 | 375 × 667 | 360 × 640 | 320 × 568 |
+|---|---|---|---|---|
+| Altura del héroe | 380 px (**45 %**) | 280 px (**42 %**) | 269 px (**42 %**) | 239 px (**42 %**) |
+| Franja de garantías (sin scroll horizontal) | 142 px | 142 px | 142 px | 126 px |
+| **Primera tarjeta del carrusel visible** (≥ 40 px) | **156 px** | **81 px** | **68 px** | **45 px** |
+| Título de la sección visible | 256 px | 179 px | 163 px | 138 px |
+| Segunda línea de cada garantía visible | sí | sí | sí | sí |
+| Texto más pequeño de la franja | 12.0 px | 12.0 px | 12.0 px | 12.0 px |
+| Scroll horizontal de la página | no | no | no | no |
+| Contraste del `h1` sobre navy | 16.4 | 16.4 | 16.4 | 16.4 |
+| CTA | 48 px | 48 px | 48 px | 48 px |
+| axe (WCAG 2.2 A/AA) | 0 violaciones | 0 | 0 | 0 |
+
+axe también limpio a 1440 y 768 px. Capturas: `docs/hero-variants/hero-f-tipografica-{390x844,375x667,360x640,320x568,768x1024}.jpg`.
+
+![F 375 × 667](hero-variants/hero-f-tipografica-375x667.jpg)
+![F 320 × 568](hero-variants/hero-f-tipografica-320x568.jpg)
+
+### 13.4 Qué cambia respecto a §10
+
+- Altura en pantallas ≤ 700 px de alto: **42 %** (antes 48 %). En el resto sigue en 45 %.
+- La franja de garantías **deja de ser una tira con scroll horizontal**: vuelve a ser una rejilla 2 × 2 con las dos líneas visibles.
+- Se mantiene el título de la sección del carrusel 24 px más arriba y algo menor en ≤ 480 px (§10.2).
+- Límites que persisten: la placa sigue siendo la del JPEG (T20, wordmark en SVG), y la integración debe llevar los cambios de
+  `page.tsx` y `page.module.css` (copy corto incluido) además del héroe.

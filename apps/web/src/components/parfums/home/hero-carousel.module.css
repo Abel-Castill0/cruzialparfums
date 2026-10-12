@@ -489,7 +489,7 @@
 
 /* F - "Tipográfica": phones get the official logo.jpeg, untouched, on a solid --ds-color-navy hero and no product image, in
    the manner of the AirPods / HomePod pages. The file keeps its own near-black ground, so it reads as a plaque on the
-   navy; nothing is keyed, blended or edited. The hero is 45% of the screen (48% when it is 700px tall or less) and the
+   navy; nothing is keyed, blended or edited. The hero is 45% of the screen (42% when it is 700px tall or less) and the
    wordmark is capped at 280px. Desktop keeps the 21:9 art (the same wordmark, baked in). */
 @media (max-width: 767px), (max-width: 1100px) and (orientation: portrait) {
   .hero[data-variant="f"] {
@@ -507,6 +507,11 @@
     margin-inline: auto;
     overflow: hidden;
     border-radius: var(--ds-radius-sm);
+    /* The logo file keeps its near-black ground: a 1px ring a little lighter than the navy (and a faint lift) makes it
+       read as a deliberate panel. Zero-offset ring, not an opaque border (DESIGN.md section 5). */
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--ds-color-navy) 92%, var(--ds-white)),
+      0 1px 2px rgba(0, 0, 0, 0.15);
   }
 
   .hero[data-variant="f"] .imageD {
@@ -558,7 +563,7 @@
 
 @media (max-height: 700px) and (max-width: 767px) {
   .hero[data-variant="f"] {
-    min-height: 48svh;
+    min-height: 42svh;
   }
 }
 
