@@ -7,7 +7,6 @@
   --hairline: var(--ds-hairline);
   --gutter: clamp(20px, 4vw, 48px);
   --wrap: min(1280px, calc(100% - (var(--gutter) * 2)));
-  --ease: cubic-bezier(0.22, 1, 0.36, 1);
   display: block;
   overflow-x: clip;
   background: var(--ds-white);
@@ -491,7 +490,7 @@
   font-family: var(--ds-font);
   font-size: 1rem;
   font-weight: 400;
-  transition: transform var(--ds-dur-base) var(--ease), background-color var(--ds-dur-fast) var(--ds-ease-spring), color var(--ds-dur-fast) var(--ds-ease-spring);
+  transition: transform var(--ds-dur-base) var(--ds-ease-spring), background-color var(--ds-dur-fast) var(--ds-ease-spring), color var(--ds-dur-fast) var(--ds-ease-spring);
 }
 
 .faqItem[open] summary::after {
@@ -512,7 +511,7 @@
 
 @media (max-width: 1023px) {
   .craftGrid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 32px;
   }
 
@@ -525,11 +524,11 @@
   }
 
   .formats {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .faqGrid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -572,7 +571,7 @@
   }
 
   .finderRow {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   /* Three sizes read as one glance: numeral + sprays. The longer sentence per

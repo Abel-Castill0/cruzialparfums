@@ -242,7 +242,7 @@
     padding-inline: 16px;
   }
   .product {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
   .media {
     position: relative;

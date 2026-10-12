@@ -55,7 +55,7 @@
   font-size: 0.85rem;
   font-weight: 500;
   letter-spacing: 0.04em;
-  transition: background-color 200ms ease, color 200ms ease;
+  transition: background-color var(--ds-dur-fast) var(--ds-ease-spring), color var(--ds-dur-fast) var(--ds-ease-spring);
 }
 
 .actions a:first-child {

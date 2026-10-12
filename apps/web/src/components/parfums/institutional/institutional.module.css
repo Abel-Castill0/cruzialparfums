@@ -293,7 +293,7 @@
   color: var(--ds-ink);
 }
 
-.contactCard h3 {
+.contactCard h2 {
   margin: 0 0 8px;
   font-family: var(--ds-font);
   letter-spacing: -0.01em;
@@ -645,7 +645,7 @@
 @media (max-width: 860px) {
   .split,
   .formSplit {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .splitArt {
@@ -654,7 +654,7 @@
 
   .cardGrid,
   .steps {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -672,7 +672,7 @@
   }
 
   .contactGrid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 

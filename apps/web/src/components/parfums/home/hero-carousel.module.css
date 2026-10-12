@@ -103,12 +103,15 @@
   background: rgba(255, 255, 255, 0.28);
 }
 
-/* Entrance: image settles, copy rises in sequence (ease-out, <= 600ms). */
-@media (prefers-reduced-motion: no-preference) {
+/* Entrance: image settles (desktop only: on phones the wordmark image already
+   carries its own centring transform), copy rises in sequence (ease-out, <= 600ms). */
+@media (min-width: 768px) and (prefers-reduced-motion: no-preference) {
   .image {
     animation: heroSettle var(--ds-dur-hero) var(--ds-ease-enter) both;
   }
+}
 
+@media (prefers-reduced-motion: no-preference) {
   .title,
   .actions {
     animation: heroRise var(--ds-dur-hero) var(--ds-ease-enter) both;

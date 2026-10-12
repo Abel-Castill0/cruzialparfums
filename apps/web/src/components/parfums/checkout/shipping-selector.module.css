@@ -345,7 +345,7 @@
 
 @media (max-width: 420px) {
   .methods {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 

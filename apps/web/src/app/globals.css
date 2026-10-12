@@ -114,7 +114,7 @@ textarea {
   --ds-gray-50: #f5f5f7;
   --ds-gray-100: #e8e8ed;
   --ds-ink: #1d1d1f;
-  --ds-ink-muted: #6e6e73;
+  --ds-ink-muted: #666669;
   --ds-accent: #0071e3;
   --ds-accent-hover: #0077ed;
   --ds-accent-press: #0058b0;
@@ -214,10 +214,10 @@ body:has([data-storefront]) {
   background: transparent;
 }
 
+/* Keyboard focus: one subtle #0071E3 ring, 2px, offset 2px (never the browser default). */
 [data-storefront] :focus-visible {
   outline: 2px solid var(--ds-accent);
   outline-offset: 2px;
-  box-shadow: var(--ds-focus);
 }
 
 [data-storefront] ::selection {
@@ -231,7 +231,7 @@ body:has([data-storefront]) {
 }
 
 /* Interaction primitives (DESIGN.md §8): primary/secondary actions darken and
-   lift to 1.02 on hover, settle back to 1.0 on press. transform only. */
+   grow to 1.02 on hover, press to 0.98. transform only. */
 [data-storefront]
   :is(button, a):is(
     [class*="primary" i],
@@ -275,7 +275,29 @@ body:has([data-storefront]) {
       [class*="btnGhost" i],
       [class*="secondary" i]
     ):not(:disabled):not([aria-disabled="true"]):active {
-    transform: scale(1);
+    transform: scale(0.98);
     transition-duration: 120ms;
   }
+}
+
+/* 400% zoom / 320px reflow (WCAG 1.4.10): action labels may wrap instead of overflowing. */
+@media (max-width: 400px) {
+  [data-storefront]
+    :is(button, a):is([class*="primary" i], [class*="cta" i], [class*="submit" i], [class*="secondary" i], [class*="btnGhost" i]) {
+    height: auto;
+    padding-block: var(--ds-space-1);
+    white-space: normal;
+    text-align: center;
+  }
+}
+
+/* WCAG 2.4.11 focus not obscured: controls inside <main> and #anchor targets scroll clear of the sticky
+   header (72px) and the catalog toolbar (~76px). Applied to the targets, not to <html>: a root
+   scroll-padding would also push the header's own controls (cart, search) when they take focus. */
+[data-storefront] main :is(a, button, input, select, textarea, summary, [tabindex="0"]) {
+  scroll-margin-top: 168px;
+}
+
+[data-storefront] main [id] {
+  scroll-margin-top: 96px;
 }

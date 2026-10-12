@@ -864,12 +864,13 @@ button.send:disabled,
   opacity: 0;
   transform: translate(-50%, 12px);
   pointer-events: none;
-  transition: opacity var(--ds-dur-fast) var(--ds-ease-spring), transform var(--ds-dur-fast) var(--ds-ease-spring);
+  transition: opacity var(--ds-dur-fast) var(--ds-ease-exit), transform var(--ds-dur-fast) var(--ds-ease-exit);
 }
 
 .toast:not(:empty) {
   opacity: 1;
   transform: translate(-50%, 0);
+  transition-timing-function: var(--ds-ease-enter);
 }
 
 .srOnly {
@@ -898,7 +899,7 @@ button.send:disabled,
 
 @media (max-width: 1024px) {
   .hero {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .heroMedia {
@@ -911,12 +912,12 @@ button.send:disabled,
   }
 
   .trustStrip {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 16px;
   }
 
   .comboGrid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .comboCard {
@@ -932,7 +933,7 @@ button.send:disabled,
   }
 
   .postTrust {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -956,11 +957,11 @@ button.send:disabled,
   }
 
   .controlsRow {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .builder {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .pickerColumn {
@@ -1054,7 +1055,7 @@ button.send:disabled,
   }
 
   .picker {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     max-height: 580px;
   }
 
@@ -1069,7 +1070,7 @@ button.send:disabled,
 
 @media (max-width: 370px) {
   .comboBuy {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .comboBuy > button {

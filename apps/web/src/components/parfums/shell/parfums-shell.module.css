@@ -94,7 +94,7 @@
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  transition: opacity var(--ds-dur-base) var(--ds-ease-spring), visibility 0s linear var(--ds-dur-base);
+  transition: opacity var(--ds-dur-base) var(--ds-ease-exit), visibility 0s linear var(--ds-dur-base);
 }
 
 @media (scripting: none) {
@@ -265,14 +265,14 @@
   pointer-events: none;
   overflow-y: auto;
   overscroll-behavior: contain;
-  transition: opacity var(--ds-dur-base) var(--ds-ease-spring), visibility 0s linear var(--ds-dur-base);
+  transition: opacity var(--ds-dur-base) var(--ds-ease-exit), visibility 0s linear var(--ds-dur-base);
 }
 
 .panelOpen {
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
-  transition: opacity var(--ds-dur-base) var(--ds-ease-spring), visibility 0s;
+  transition: opacity var(--ds-dur-base) var(--ds-ease-enter), visibility 0s;
 }
 
 .closePanel,
@@ -382,11 +382,10 @@
   inset: 0;
   border: 0;
   background: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(4px);
   opacity: 0;
   visibility: hidden;
   cursor: pointer;
-  transition: opacity var(--ds-dur-base) var(--ds-ease-spring), visibility var(--ds-dur-base) var(--ds-ease-spring);
+  transition: opacity var(--ds-dur-base) var(--ds-ease-exit), visibility var(--ds-dur-base) var(--ds-ease-exit);
 }
 
 .drawer {
@@ -404,18 +403,19 @@
   box-shadow: var(--ds-shadow-3);
   transform: translateX(100%);
   visibility: hidden;
-  transition: transform var(--ds-dur-base) var(--ds-ease-spring), visibility 0s linear var(--ds-dur-base);
+  transition: transform var(--ds-dur-base) var(--ds-ease-exit), visibility 0s linear var(--ds-dur-base);
 }
 
 .drawerOverlay.drawerOpen {
   opacity: 1;
   visibility: visible;
+  transition: opacity var(--ds-dur-base) var(--ds-ease-enter), visibility 0s;
 }
 
 .drawer.drawerOpen {
   transform: translateX(0);
   visibility: visible;
-  transition: transform var(--ds-dur-base) var(--ds-ease-spring), visibility 0s;
+  transition: transform var(--ds-dur-base) var(--ds-ease-enter), visibility 0s;
 }
 
 .drawerHead {
@@ -545,7 +545,7 @@
   transform: scale(0.97);
   visibility: hidden;
   pointer-events: none;
-  transition: opacity var(--ds-dur-base) var(--ds-ease-spring), transform var(--ds-dur-base) var(--ds-ease-spring), visibility 0s linear var(--ds-dur-base);
+  transition: opacity var(--ds-dur-base) var(--ds-ease-exit), transform var(--ds-dur-base) var(--ds-ease-exit), visibility 0s linear var(--ds-dur-base);
 }
 
 .menuOpen {
@@ -553,7 +553,7 @@
   transform: scale(1);
   visibility: visible;
   pointer-events: auto;
-  transition: opacity var(--ds-dur-base) var(--ds-ease-spring), transform var(--ds-dur-base) var(--ds-ease-spring), visibility 0s;
+  transition: opacity var(--ds-dur-base) var(--ds-ease-enter), transform var(--ds-dur-base) var(--ds-ease-enter), visibility 0s;
 }
 
 .mobileMenu > a {
@@ -852,7 +852,7 @@
   }
 
   .footerGrid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .footerBrand {

@@ -10,14 +10,14 @@
 
 .headerHome {
   margin-bottom: -100px;
-  transition: opacity var(--ds-dur-base) var(--ds-ease-spring), visibility 0s;
+  transition: opacity var(--ds-dur-base) var(--ds-ease-enter), visibility 0s;
 }
 
 .headerHidden {
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  transition: opacity var(--ds-dur-fast) var(--ds-ease-spring), visibility 0s linear var(--ds-dur-fast);
+  transition: opacity var(--ds-dur-fast) var(--ds-ease-exit), visibility 0s linear var(--ds-dur-fast);
 }
 
 .importLogo {

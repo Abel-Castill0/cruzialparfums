@@ -33,11 +33,13 @@ export function HeroArtwork({
         src={src}
         alt={alt}
         fill
-        sizes="(max-width: 767px) 330vw, 100vw"
+        // Phones draw the artwork at 250% of the viewport width (see hero-carousel.module.css).
+        sizes="(max-width: 767px) 250vw, 100vw"
         className={styles.image}
         style={{ "--pos": position, "--pos-mobile": mobilePosition } as React.CSSProperties}
         preload
         fetchPriority="high"
+        quality={60}
       />
       <div className={styles.shade} aria-hidden="true" />
       <div className={styles.content}>

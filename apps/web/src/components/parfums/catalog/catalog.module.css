@@ -17,7 +17,7 @@
 .catalogHero {
   position: relative;
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
   grid-template-rows: 1fr;
   height: clamp(440px, 62svh, 600px);
   background: var(--ds-white);
@@ -157,7 +157,6 @@
   overflow: hidden;
   border-radius: var(--ds-radius-md);
   background: var(--ds-gray-50);
-  box-shadow: var(--ds-shadow-1);
   scroll-margin-top: 140px;
   transition: box-shadow var(--ds-dur-base) var(--ds-ease-spring), transform var(--ds-dur-base) var(--ds-ease-spring);
 }
@@ -482,12 +481,13 @@
   opacity: 0;
   transform: translateY(12px);
   pointer-events: none;
-  transition: opacity var(--ds-dur-fast) var(--ds-ease-spring), transform var(--ds-dur-fast) var(--ds-ease-spring);
+  transition: opacity var(--ds-dur-fast) var(--ds-ease-exit), transform var(--ds-dur-fast) var(--ds-ease-exit);
 }
 
 .toastVisible {
   opacity: 1;
   transform: translateY(0);
+  transition-timing-function: var(--ds-ease-enter);
 }
 
 @media (min-width: 1440px) {
@@ -613,7 +613,7 @@
 @media (max-width: 359px) {
 
   .productGrid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .cardBody {

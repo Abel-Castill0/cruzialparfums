@@ -66,7 +66,9 @@ export function ImportHero({
           src="/images/import-home/import-hero-container.webp"
           alt="Contenedor de carga Cruzial Import listo para consolidado"
           fill
-          priority
+          preload
+          fetchPriority="high"
+          quality={60}
           sizes="(max-width: 767px) 100vw, 70vw"
           className={styles.heroImage}
         />

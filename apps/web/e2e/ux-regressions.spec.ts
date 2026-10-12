@@ -109,6 +109,46 @@ test("text needed to decide or buy is at least 12px and combo size choices keep 
   }
 });
 
+// Replaces the coverage lost when the size buttons lost their border: a size choice is a pressed-state toggle
+// whose selected state is visibly different (filled background) and legible (>= 4.5:1).
+test("combo size choice: exactly one size is pressed, the selected one is visibly filled and legible, and it follows the click", async ({ page }) => {
+  await page.goto("/parfums/combos");
+  const option = page.locator("#arma-combo [data-combo-option]").first();
+  if ((await option.count()) === 0) test.skip(true, "no combo options in this catalog");
+  await option.scrollIntoViewIfNeeded();
+  await option.click();
+  const sizes = page.locator("#arma-combo [class*=summaryLineSizes]").first().getByRole("button");
+  const total = await sizes.count();
+  if (total < 2) test.skip(true, "this fragrance has a single size");
+
+  const paint = (index: number) => sizes.nth(index).evaluate((element) => {
+    const style = getComputedStyle(element);
+    const rgb = (value: string) => (value.match(/[\d.]+/g) ?? []).slice(0, 3).map(Number);
+    const lum = ([r, g, b]: number[]) => {
+      const f = (v: number) => { const s = v / 255; return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4; };
+      return 0.2126 * f(r!) + 0.7152 * f(g!) + 0.0722 * f(b!);
+    };
+    const [a, b] = [lum(rgb(style.color)), lum(rgb(style.backgroundColor))];
+    return { background: style.backgroundColor, contrast: (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05) };
+  });
+
+  const pressedIndex = async () => {
+    const states = await sizes.evaluateAll((items) => items.map((item) => item.getAttribute("aria-pressed")));
+    expect(states.filter((state) => state === "true")).toHaveLength(1);
+    return states.indexOf("true");
+  };
+
+  const first = await pressedIndex();
+  const other = first === 0 ? 1 : 0;
+  const selected = await paint(first);
+  const unselected = await paint(other);
+  expect(selected.background).not.toBe(unselected.background);
+  expect(selected.contrast).toBeGreaterThanOrEqual(4.5);
+
+  await sizes.nth(other).click();
+  expect(await pressedIndex()).toBe(other);
+});
+
 test("checkout shipping: pick a Shalom agency from the district map, by mouse and keyboard", async ({ page }) => {
   await page.goto("/parfums/checkout");
   const panel = page.locator("[data-shalom-panel]");

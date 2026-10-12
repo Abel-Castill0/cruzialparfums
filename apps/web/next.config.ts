@@ -9,8 +9,9 @@ const nextConfig: NextConfig = {
   htmlLimitedBots: /.*/,
   poweredByHeader: false,
   images: {
-    // AVIF first, WebP fallback: smaller product photography at the same quality.
-    formats: ["image/avif", "image/webp"],
+    // 75 is the default; 60 is for full-bleed cinematic heroes (visually identical, ~30% lighter).
+    // AVIF was tried and reverted: +31% cold-cache encode time and more optimizer 504s under load.
+    qualities: [60, 75],
     remotePatterns: [
       {
         protocol: "https",

@@ -74,7 +74,7 @@
   background: var(--ds-ink);
   text-decoration: none;
   -webkit-tap-highlight-color: transparent;
-  animation: curtain 1300ms var(--ds-ease-enter) both;
+  animation: curtain 600ms var(--ds-ease-enter) both;
 }
 
 .world[data-unit="import"] {
@@ -93,7 +93,7 @@
   z-index: -1;
   inset: 0;
   content: "";
-  transition: opacity 700ms var(--ds-ease-spring);
+  transition: opacity var(--ds-dur-slow) var(--ds-ease-spring);
 }
 
 .world[data-unit="parfums"]::before {

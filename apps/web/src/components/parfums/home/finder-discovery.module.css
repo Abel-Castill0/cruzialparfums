@@ -127,7 +127,7 @@
 
 @media (max-width: 900px) {
   .inner {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: var(--ds-space-4);
   }
 

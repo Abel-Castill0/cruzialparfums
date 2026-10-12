@@ -24,7 +24,8 @@ export default function Home() {
             src="/images/home-redesign/home-hero-perfume.webp"
             alt=""
             fill
-            priority
+            preload
+            fetchPriority="high"
             sizes="(max-width: 700px) 100vw, 50vw"
             className={styles.parfumsImage}
           />
@@ -50,7 +51,8 @@ export default function Home() {
             src="/images/import-home/import-hero-container.webp"
             alt=""
             fill
-            priority
+            preload
+            fetchPriority="high"
             sizes="(max-width: 700px) 100vw, 50vw"
             className={styles.importImage}
           />

@@ -25,18 +25,34 @@ const PUBLIC_ROUTES = [
 
 for (const route of PUBLIC_ROUTES) {
   test(`axe: no serious/critical violations on ${route}`, async ({ page }, testInfo) => {
+    // On a cold `.next/cache/images` the optimizer has to fetch and transcode every Cloudinary photo of the page
+    // (38 on /parfums/combos); with three projects in parallel `networkidle` alone can pass 30s. Reproduced on
+    // master (3/3 cold runs) and on the redesign, so it is test budget, not page behaviour.
+    test.slow();
     const runtimeErrors: string[] = [];
     page.on("pageerror", (error) => runtimeErrors.push(`pageerror: ${error.message}`));
     page.on("console", (message) => {
       // TikTok logs these known policy/cookie notices from its cross-origin
       // player. The iframe is excluded from axe; our own runtime errors remain fatal.
       const externalEmbedNotice = /Permissions policy violation: accelerometer is not allowed|Content Security Policy directive 'upgrade-insecure-requests' is ignored when delivered in a report-only policy|@tiktok-fe\/web-cookie-banner init failed/.test(message.text());
-      if (message.type() === "error" && !externalEmbedNotice) {
+      // The image optimizer answers 504 when its upstream (Cloudinary) fetch times out. On a cold
+      // `.next/cache/images` with parallel workers that happens on master as well; it says nothing about the page.
+      // Any other failed resource, and any 5xx that is not from /_next/image, stays fatal.
+      const optimizerTimeout = /Failed to load resource: the server responded with a status of 50[34]/.test(message.text())
+        && message.location().url.includes("/_next/image");
+      if (optimizerTimeout) {
+        testInfo.annotations.push({ type: "image-optimizer-5xx", description: message.location().url.slice(0, 120) });
+      } else if (message.type() === "error" && !externalEmbedNotice) {
         runtimeErrors.push(`console: ${message.text()}`);
       }
     });
     await page.goto(route);
     await page.waitForLoadState("networkidle");
+    // Entrance transitions (Reveal, hero rise) start at opacity 0: scanning mid-fade reports contrast on
+    // semi-transparent text that no user ever sees as final. Wait for every finite animation to settle.
+    await page.evaluate(() => Promise.all(document.getAnimations()
+      .filter((animation) => animation.effect?.getComputedTiming().iterations !== Infinity)
+      .map((animation) => animation.finished.catch(() => undefined))));
     const results = await new AxeBuilder({ page })
       .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
       // TikTok owns its iframe document; we separately assert our iframe title,

@@ -3,10 +3,12 @@ import { Cormorant_Garamond, Geist, Jost } from "next/font/google";
 import { getAuthoritativeIndexingPolicy, getSiteUrl } from "@/lib/seo/site";
 import "./globals.css";
 
+// Cormorant and Jost only serve the admin now: no preload, so storefront pages do not fetch them.
 const display = Cormorant_Garamond({
   variable: "--font-display",
   subsets: ["latin"],
   display: "swap",
+  preload: false,
 });
 
 // Storefront (Parfums + Import) sets everything in one geometric sans — see DESIGN.md §3.
@@ -22,6 +24,7 @@ const body = Jost({
   variable: "--font-body",
   subsets: ["latin"],
   display: "swap",
+  preload: false,
 });
 
 // Every response carries a per-request CSP nonce (src/proxy.ts); a

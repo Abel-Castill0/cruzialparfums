@@ -105,7 +105,6 @@
   overflow: hidden;
   border-radius: var(--mq-radius);
   background: var(--mq-surface);
-  box-shadow: var(--ds-shadow-1);
   transition: transform var(--ds-dur-slow) var(--ds-ease-spring), box-shadow var(--ds-dur-slow) var(--ds-ease-spring);
 }
 
@@ -147,7 +146,7 @@
 
 .card:hover .image,
 .card:focus-visible .image {
-  transform: scale(1.05);
+  transform: scale(1.03);
 }
 
 .body {

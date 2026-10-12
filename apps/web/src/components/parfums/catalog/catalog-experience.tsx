@@ -179,6 +179,8 @@ export function CatalogExperience({ products, initialFilters, initialRecommendat
             fill
             sizes="100vw"
             preload
+            fetchPriority="high"
+            quality={60}
             className={styles.catalogHeroImage}
           />
           <div className={styles.catalogHeroScrim} aria-hidden="true" />

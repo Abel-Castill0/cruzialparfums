@@ -472,7 +472,7 @@
   z-index: -1;
   inset: 0;
   content: "";
-  background: linear-gradient(0deg, rgba(10, 8, 6, 0.84) 0%, rgba(10, 8, 6, 0.28) 46%, rgba(10, 8, 6, 0) 72%);
+  background: linear-gradient(0deg, rgba(0, 0, 0, 0.82) 0%, rgba(0, 0, 0, 0.58) 42%, rgba(0, 0, 0, 0) 78%);
 }
 
 /* The chosen door carries an accent ring; the others step back. */
@@ -506,15 +506,15 @@
 
 .doorNote {
   max-width: 28ch;
-  color: rgba(255, 255, 255, 0.82);
-  font-size: 13px;
+  color: var(--ds-on-photo);
+  font-size: var(--ds-text-small);
   line-height: 1.45;
 }
 
 .doorCount {
   margin-top: 8px;
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 12px;
+  color: var(--ds-on-photo-muted);
+  font-size: var(--ds-text-small);
 }
 
 @media (min-width: 768px) and (max-width: 1024px) {
@@ -600,7 +600,7 @@
   }
 
   .groups {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .group {
@@ -642,6 +642,11 @@
 
   .doorNote {
     display: none;
+  }
+
+  /* Tall phone doors: a deeper, taller scrim keeps the label at AA over bright photographs. */
+  .door::before {
+    background: linear-gradient(0deg, rgba(0, 0, 0, 0.86) 0%, rgba(0, 0, 0, 0.66) 52%, rgba(0, 0, 0, 0.12) 92%);
   }
 
   .doorCount {

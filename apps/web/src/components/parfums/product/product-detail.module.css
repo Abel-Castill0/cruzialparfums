@@ -523,12 +523,13 @@
   opacity: 0;
   transform: translateY(12px);
   pointer-events: none;
-  transition: opacity var(--ds-dur-fast) var(--ds-ease-spring), transform var(--ds-dur-fast) var(--ds-ease-spring);
+  transition: opacity var(--ds-dur-fast) var(--ds-ease-exit), transform var(--ds-dur-fast) var(--ds-ease-exit);
 }
 
 .toastVisible {
   opacity: 1;
   transform: translateY(0);
+  transition-timing-function: var(--ds-ease-enter);
 }
 
 @media (max-width: 1024px) {
@@ -541,7 +542,7 @@
  * pushed the add-to-cart button two screens below the fold. */
 @media (max-width: 860px) {
   .productDetail {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     max-width: 760px;
     margin-inline: auto;
   }
@@ -631,7 +632,7 @@
 
 
   .detailActions {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .primaryAction,
@@ -661,7 +662,7 @@
   }
 
   .orderSummary {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 16px;
   }
 
@@ -687,7 +688,7 @@
 
 @media (max-width: 359px) {
   .relatedGrid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
