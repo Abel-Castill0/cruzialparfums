@@ -20,7 +20,7 @@ export default async function LibroDeReclamacionesPage({searchParams}:{searchPar
       ])
     : [null, null];
   return (
-    <main className={styles.page}>
+    <main id="main" tabIndex={-1} className={styles.page}>
       <div className={styles.container}>
         <p className={styles.eyebrow}>Cruzial</p>
         <h1>Libro de Reclamaciones Virtual</h1>

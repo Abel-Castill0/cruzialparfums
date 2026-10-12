@@ -14,62 +14,62 @@
 }
 
 .tileBase {
-  fill: #fff;
+  fill: var(--ds-on-photo);
   stroke: rgba(26, 22, 18, 0.2);
   stroke-width: 1;
-  transition: fill 160ms ease, stroke 160ms ease;
+  transition: fill var(--ds-dur-fast) var(--ds-ease-spring), stroke var(--ds-dur-fast) var(--ds-ease-spring);
 }
 
 .tileLabel {
-  fill: #2c2925;
+  fill: var(--ds-ink);
   font: 500 9.5px/1 var(--font-body), sans-serif;
   pointer-events: none;
   letter-spacing: 0;
 }
 
 .tileCount {
-  fill: #7a5d2a;
+  fill: var(--ds-ink);
   font: 600 8px/1 var(--font-body), sans-serif;
   pointer-events: none;
 }
 
 .tileHas .tileBase {
-  fill: #f6efe0;
+  fill: var(--ds-on-photo);
   stroke: rgba(169, 134, 72, 0.7);
 }
 
 .tile:hover .tileBase {
-  stroke: #0a0806;
+  stroke: var(--ds-ink);
 }
 
 .tile:focus-visible .tileBase {
-  stroke: #0a0806;
+  stroke: var(--ds-ink);
   stroke-width: 2.5;
 }
 
 .tileRestricted .tileBase {
-  stroke: #b0463d;
+  stroke: var(--ds-danger);
 }
 
 .tileRestricted .tileLabel {
-  fill: #6e1f19;
-  font-weight: 700;
+  fill: var(--ds-danger);
+  font-weight: 600;
 }
 
 .tileHatch {
   pointer-events: none;
-  stroke: #b0463d;
+  stroke: var(--ds-danger);
   stroke-width: 1;
 }
 
 .tileSelected .tileBase {
-  fill: #0a0806;
-  stroke: #0a0806;
+  fill: var(--ds-ink);
+  stroke: var(--ds-ink);
 }
 
 .tileSelected .tileLabel,
 .tileSelected .tileCount {
-  fill: #fffdf8;
+  fill: var(--ds-on-photo);
 }
 
 .tileDisabled {
@@ -77,12 +77,12 @@
 }
 
 .tileDisabled .tileBase {
-  fill: #f3f1ec;
+  fill: var(--ds-on-photo);
   stroke: rgba(26, 22, 18, 0.1);
 }
 
 .tileDisabled .tileLabel {
-  fill: #8a847a;
+  fill: var(--ds-ink-muted);
 }
 
 .tileDisabled:hover .tileBase {

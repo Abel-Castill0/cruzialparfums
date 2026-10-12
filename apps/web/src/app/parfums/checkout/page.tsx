@@ -13,7 +13,7 @@ export default async function CheckoutPage() {
   const { catalog } = await loadParfumsStorefront();
 
   return (
-    <main>
+    <main id="main" tabIndex={-1}>
       <CheckoutExperience products={catalog.list().map(toCartCatalogProduct)} />
     </main>
   );

@@ -37,7 +37,7 @@ export default async function CatalogPage({ searchParams }: { searchParams: Sear
   const products = catalog.listFragrances();
 
   return (
-    <main>
+    <main id="main" tabIndex={-1}>
       {source === "unavailable" ? <CatalogUnavailableNotice /> : null}
       {/* Keyed by the answers so a new recommendation (arriving from the
           questionnaire over this same route) starts from fresh state. */}

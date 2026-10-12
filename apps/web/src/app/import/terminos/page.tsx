@@ -26,7 +26,7 @@ export default async function ImportTerminosPage() {
   const contactEmail = contact?.contactEmail ?? "";
 
   return (
-    <main>
+    <main id="main" tabIndex={-1}>
       <div className={styles.breadcrumbs}>
         <Breadcrumbs items={crumbs} />
       </div>

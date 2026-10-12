@@ -7,6 +7,7 @@ import { PARFUMS_INSTAGRAM_URL } from "@/domains/platform/parfums-storefront";
 import { loadParfumsStorefront } from "@/lib/catalog/parfums-storefront";
 import { WhatsAppIcon } from "@/components/parfums/shell/shell-icons";
 import styles from "@/components/parfums/institutional/institutional.module.css";
+import { Reveal } from "@/components/storefront/home/reveal";
 
 function Glyph({ children }: { children: React.ReactNode }) {
   return (
@@ -47,7 +48,7 @@ export default async function ContactoPage() {
   const storeName = "Cruzial Parfums";
 
   return (
-    <main>
+    <main id="main" tabIndex={-1}>
       <div className={styles.breadcrumbs}>
         <Breadcrumbs items={crumbs} />
       </div>
@@ -62,11 +63,11 @@ export default async function ContactoPage() {
       </section>
 
       <section className={styles.section} style={{ paddingTop: 0 }}>
-        <div className={styles.wrap}>
+        <Reveal className={styles.wrap}>
           <div className={styles.contactGrid}>
             <div className={styles.contactCard}>
               <div className={styles.contactIcon} aria-hidden="true"><WhatsAppIcon size={20} /></div>
-              <h3>WhatsApp</h3>
+              <h2>WhatsApp</h2>
               <p>La vía más rápida para pedidos, consultas y cotizaciones.</p>
               <span className={styles.contactValue}>{phoneDisplay}</span>
               <a className={styles.textLink} href={`https://wa.me/${whatsappNumber}`} target="_blank" rel="noopener noreferrer">
@@ -75,13 +76,13 @@ export default async function ContactoPage() {
             </div>
             <div className={styles.contactCard}>
               <div className={styles.contactIcon} aria-hidden="true"><TruckIcon /></div>
-              <h3>Envíos</h3>
+              <h2>Envíos</h2>
               <p>Recoge en la agencia Shalom que elijas, o pide motorizado en Lima. El costo del motorizado se confirma por WhatsApp.</p>
               <span className={styles.contactValue}>Shalom · Motorizado</span>
             </div>
             <div className={styles.contactCard}>
               <div className={styles.contactIcon} aria-hidden="true"><InstagramIcon /></div>
-              <h3>Instagram</h3>
+              <h2>Instagram</h2>
               <p>Lanzamientos, notas olfativas y detrás de escena de la casa.</p>
               <span className={styles.contactValue}>{instagramHandle}</span>
               <a className={styles.textLink} href={instagramUrl} target="_blank" rel="noopener noreferrer">
@@ -90,7 +91,7 @@ export default async function ContactoPage() {
             </div>
             <div className={styles.contactCard}>
               <div className={styles.contactIcon} aria-hidden="true"><MailIcon /></div>
-              <h3>Correo</h3>
+              <h2>Correo</h2>
               <p>Para consultas por escrito, cotizaciones extensas o coordinación fuera de WhatsApp.</p>
               <span className={styles.contactValue}>{contactEmail}</span>
               <a className={styles.textLink} href={`mailto:${contactEmail}`}>
@@ -98,11 +99,11 @@ export default async function ContactoPage() {
               </a>
             </div>
           </div>
-        </div>
+        </Reveal>
       </section>
 
       <section className={`${styles.section} ${styles.band}`}>
-        <div className={styles.wrap}>
+        <Reveal className={styles.wrap}>
           <div className={styles.formSplit}>
             <div>
               <h2>
@@ -112,11 +113,11 @@ export default async function ContactoPage() {
             </div>
             <InstitutionalContactForm storeName={storeName} whatsappNumber={whatsappNumber} />
           </div>
-        </div>
+        </Reveal>
       </section>
 
       <section className={`${styles.section} ${styles.sectionTop}`}>
-        <div className={styles.wrap}>
+        <Reveal className={styles.wrap}>
           <div className={styles.split}>
             <div className={styles.splitCopy}>
               <h2 className={styles.splitTitle}>
@@ -144,7 +145,7 @@ export default async function ContactoPage() {
               <span className={styles.artCaption}>Formatos 3 · 5 · 10 ml</span>
             </div>
           </div>
-        </div>
+        </Reveal>
       </section>
     </main>
   );

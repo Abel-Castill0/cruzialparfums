@@ -3,7 +3,7 @@ import styles from "./page.module.css";
 
 export default function ImportProductNotFound() {
   return (
-    <main className={styles.page}>
+    <main id="main" tabIndex={-1} className={styles.page}>
       <section className={styles.notFound}>
         <h1>Producto no disponible</h1>
         <p>Este producto no forma parte del consolidado público vigente.</p>

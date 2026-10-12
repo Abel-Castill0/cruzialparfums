@@ -2,27 +2,22 @@
   position: sticky;
   top: 0;
   z-index: 40;
-  border-bottom: 1px solid rgba(244, 247, 251, 0.12);
-  background: var(--color-import-navy);
-  color: var(--color-import-white);
+  border-bottom: 1px solid var(--ds-hairline);
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: saturate(180%) blur(20px);
+  color: var(--ds-ink);
 }
 
 .headerHome {
   margin-bottom: -100px;
-  transition: opacity 240ms ease, visibility 0s;
+  transition: opacity var(--ds-dur-base) var(--ds-ease-enter), visibility 0s;
 }
 
 .headerHidden {
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  transition: opacity 220ms ease, visibility 0s linear 220ms;
-}
-
-.importLogo {
-  width: 136px;
-  height: 68px;
-  object-fit: contain;
+  transition: opacity var(--ds-dur-fast) var(--ds-ease-exit), visibility 0s linear var(--ds-dur-fast);
 }
 
 .headerInner {
@@ -47,19 +42,43 @@
   min-height: 44px;
   display: inline-flex;
   align-items: center;
-  color: var(--color-import-silver);
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.03em;
-  transition: color 180ms ease;
+  color: var(--ds-ink-muted);
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: color var(--ds-dur-fast) var(--ds-ease-spring);
 }
 
-.navigation a:hover { color: var(--color-import-white); }
+.navigation a {
+  position: relative;
+}
+
+/* Underline grows from 0 to 100% on hover (transform only, ease-out). */
+.navigation a::after {
+  position: absolute;
+  right: 0;
+  bottom: 10px;
+  left: 0;
+  height: 1px;
+  content: "";
+  background: var(--ds-ink);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform var(--ds-dur-base) var(--ds-ease-enter);
+}
+
+.navigation a:hover::after,
+.navigation a:focus-visible::after {
+  transform: scaleX(1);
+}
+
+.navigation a:hover {
+  color: var(--ds-ink);
+}
 
 .lockup {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   color: inherit;
 }
 
@@ -69,36 +88,36 @@
   flex: 0 0 auto;
   display: grid;
   place-items: center;
-  border: 1px solid var(--color-import-silver);
+  border: 1px solid var(--ds-hairline);
   border-radius: 50%;
-  color: var(--color-import-silver);
-  font-family: var(--font-display), Georgia, serif;
+  color: var(--ds-ink-muted);
+  font-family: var(--ds-font);
+  letter-spacing: -0.01em;
   font-size: 16px;
 }
 
 .lockup strong,
 .footerLockup strong {
   display: block;
-  font-family: var(--font-body), sans-serif;
+  font-family: var(--ds-font);
   font-size: 15px;
   font-weight: 600;
-  letter-spacing: 0.06em;
+
 }
 
 .lockup span,
 .footerLockup span {
   display: block;
-  color: var(--color-import-silver);
-  font-size: 9px;
+  color: var(--ds-ink-muted);
+  font-size: 0.75rem;
   font-weight: 500;
-  letter-spacing: 0.28em;
-  text-transform: uppercase;
+
 }
 
 .headerActions {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 16px;
 }
 
 .whatsapp {
@@ -106,39 +125,39 @@
   padding: 8px 16px;
   display: inline-flex;
   align-items: center;
-  border: 1px solid var(--color-import-silver);
+  border: 1px solid var(--ds-hairline);
   border-radius: 999px;
-  color: var(--color-import-white);
-  font-size: 11px;
+  color: var(--ds-ink);
+  font-size: 0.75rem;
   font-weight: 600;
-  letter-spacing: 0.06em;
+
   white-space: nowrap;
-  transition: border-color 180ms ease, background-color 180ms ease;
+  transition: border-color var(--ds-dur-fast) var(--ds-ease-spring), background-color var(--ds-dur-fast) var(--ds-ease-spring);
 }
 
 .whatsapp:hover {
-  border-color: var(--color-import-white);
+  border-color: rgba(0, 0, 0, 0.2);
   background: rgba(244, 247, 251, 0.08);
 }
 
 .back {
   min-height: 44px;
-  padding: 8px 14px;
+  padding: 8px 16px;
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  border: 1px solid rgba(244, 247, 251, 0.28);
+  border: 0;
   border-radius: 999px;
-  color: var(--color-import-white);
-  font-size: 11px;
+  color: var(--ds-ink);
+  font-size: 0.75rem;
   font-weight: 600;
-  letter-spacing: 0.04em;
+
   white-space: nowrap;
-  transition: border-color 180ms ease, background-color 180ms ease;
+  transition: border-color var(--ds-dur-fast) var(--ds-ease-spring), background-color var(--ds-dur-fast) var(--ds-ease-spring);
 }
 
 .back:hover {
-  border-color: var(--color-import-white);
+  border-color: rgba(0, 0, 0, 0.2);
   background: rgba(244, 247, 251, 0.08);
 }
 
@@ -148,9 +167,9 @@
   height: 44px;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba(244, 247, 251, 0.28);
+  border: 0;
   border-radius: 999px;
-  color: var(--color-import-white);
+  color: var(--ds-ink);
   background: transparent;
 }
 
@@ -167,10 +186,10 @@
 }
 
 .mobileNav {
-  padding: 8px 0 18px;
+  padding: 8px 0 16px;
   display: none;
   flex-direction: column;
-  border-top: 1px solid rgba(244, 247, 251, 0.12);
+  border-top: 1px solid var(--ds-hairline);
 }
 
 .mobileNav a {
@@ -179,152 +198,195 @@
   margin-inline: auto;
   display: flex;
   align-items: center;
-  color: var(--color-import-silver);
+  color: var(--ds-ink-muted);
   font-size: 14px;
   font-weight: 600;
   border-bottom: 1px solid rgba(244, 247, 251, 0.08);
 }
 
-.mobileNav a:hover { color: var(--color-import-white); }
+.mobileNav a:hover {
+  color: var(--ds-ink);
+}
 
 .mobileNav .mobileNavBack {
   gap: 8px;
-  color: var(--color-import-white);
-  font-weight: 700;
+  color: var(--ds-ink);
+  font-weight: 600;
 }
 
 .footer {
-  border-top: 1px solid rgba(244, 247, 251, 0.12);
-  background: var(--color-import-navy-deep);
-  color: var(--color-import-silver);
+  background: var(--ds-color-navy);
+  color: var(--ds-on-navy-muted);
 }
 
 .footerInner {
   width: min(1280px, calc(100% - 48px));
   margin-inline: auto;
-  padding: clamp(36px, 5vw, 56px) 0 28px;
+  padding: var(--ds-space-6) 0 var(--ds-space-4);
 }
 
 .footerTop {
-  padding-bottom: 28px;
+  padding-bottom: var(--ds-space-4);
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 20px;
-  border-bottom: 1px solid rgba(244, 247, 251, 0.12);
-}
-
-.footerLockup {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  color: var(--color-import-white);
-}
-
-.footerLockup img {
-  width: 164px;
-  height: 82px;
-  object-fit: contain;
+  gap: var(--ds-space-3);
+  border-bottom: 1px solid var(--ds-hairline-on-navy);
 }
 
 .footerNav {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: clamp(14px, 2vw, 26px);
+  gap: var(--ds-space-1) var(--ds-space-3);
 }
 
 .footerNav a {
-  min-height: 44px;
+  min-width: var(--ds-touch);
+  min-height: var(--ds-touch);
   display: inline-flex;
   align-items: center;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.03em;
+  justify-content: center;
+  color: var(--ds-on-navy-muted);
+  font-size: var(--ds-text-small);
+  font-weight: 500;
+  transition: color var(--ds-dur-fast) var(--ds-ease-spring);
+}
+
+.footerNav a:hover,
+.footerLegal a:hover {
+  color: var(--ds-on-navy);
 }
 
 .footerBack {
-  min-height: 44px;
-  padding: 8px 14px;
+  min-height: var(--ds-touch);
+  padding: 0 var(--ds-space-3);
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  border: 1px solid rgba(244, 247, 251, 0.28);
-  border-radius: 999px;
-  color: var(--color-import-white);
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
+  gap: var(--ds-space-1);
+  border-radius: var(--ds-radius-pill);
+  color: var(--ds-on-navy);
+  background: rgba(255, 255, 255, 0.12);
+  font-size: 0.9375rem;
+  font-weight: 500;
   white-space: nowrap;
-  transition: border-color 180ms ease, background-color 180ms ease;
+  transition: background-color var(--ds-dur-base) var(--ds-ease-spring);
 }
 
 .footerBack:hover {
-  border-color: var(--color-import-white);
-  background: rgba(244, 247, 251, 0.08);
+  background: rgba(255, 255, 255, 0.22);
 }
 
 .footerBottom {
-  padding-top: 20px;
+  padding-top: var(--ds-space-3);
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  font-size: 11px;
-  letter-spacing: 0.02em;
+  gap: var(--ds-space-2);
+  font-size: var(--ds-text-small);
 }
 
 .footerLegal {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 18px;
+  gap: var(--ds-space-2);
 }
 
-.footerLegal a,
-.footerInner a:hover { color: var(--color-import-white); }
+.footerLegal a {
+  min-height: var(--ds-touch);
+  display: inline-flex;
+  align-items: center;
+  color: var(--ds-on-navy-muted);
+  font-weight: 500;
+  transition: color var(--ds-dur-fast) var(--ds-ease-spring);
+}
 
-.footerLegal a { min-height: 44px; display: inline-flex; align-items: center; font-weight: 600; }
+/* Focus on the navy footer: the blue ring is only 3.4:1 on navy, so the ring turns white there. */
+.footer :focus-visible {
+  outline-color: var(--ds-on-navy);
+}
+
+/* Logo capsule: the mark is a square on its own navy, so it sits in a navy pill (same navy as the mark's
+   corners) as a deliberate badge. Header: navy pill on the white bar. Footer: raised pill on navy. */
+.capsule {
+  min-height: var(--ds-touch);
+  padding: 4px var(--ds-space-3) 4px 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+  border-radius: var(--ds-radius-pill);
+  color: var(--ds-on-navy);
+  background: var(--ds-color-navy-deep);
+  box-shadow: var(--ds-shadow-1);
+}
+
+.capsuleMark {
+  width: 44px;
+  height: 44px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.capsule .capsuleName {
+  color: var(--ds-on-navy);
+  font-size: var(--ds-text-card);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.footerLockup {
+  display: inline-flex;
+}
+
+.footer .capsule {
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: none;
+}
 
 @media (max-width: 860px) {
-  .navigation { display: none; }
-  .menuToggle { display: inline-flex; }
-  .mobileNav { display: flex; }
+  .navigation {
+    display: none;
+  }
+  .menuToggle {
+    display: inline-flex;
+  }
+  .mobileNav {
+    display: flex;
+  }
 }
 
 @media (max-width: 560px) {
-  .headerHome { margin-bottom: -92px; }
-  .importLogo { width: 52px; height: 52px; }
-  .footerLockup img { width: 142px; height: 72px; }
-  .headerActions { gap: 10px; }
+  .headerHome {
+    margin-bottom: -76px;
+  }
+  .headerActions {
+    gap: 8px;
+  }
   .whatsapp,
-  .back { display: none; }
-  .footerTop { flex-direction: column; align-items: flex-start; }
-  .footerBottom { flex-direction: column; align-items: flex-start; }
+  .back {
+    display: none;
+  }
+  .footerTop {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .footerBottom {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .headerHome,
   .headerHidden,
   .navigation a,
+  .navigation a::after,
   .whatsapp,
-  .back { transition: none; }
-}
-
-/* The mark ships on its own navy square (not transparent), so it is presented
- * as a deliberate badge: rounded, with a silver hairline, never a hard box. */
-.importLogo {
-  width: 60px;
-  height: 60px;
-  border-radius: 14px;
-  box-shadow: 0 0 0 1px rgba(244, 247, 251, 0.24);
-}
-
-@media (max-width: 767px) {
-  .importLogo {
-    width: 52px;
-    height: 52px;
+  .back {
+    transition: none;
   }
 }

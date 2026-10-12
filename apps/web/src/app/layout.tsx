@@ -1,18 +1,33 @@
 import type { Metadata } from "next";
-import { Cormorant_Garamond, Jost } from "next/font/google";
+import { Cormorant_Garamond, Geist, Jost } from "next/font/google";
+import { SkipLink } from "@/components/storefront/skip-link";
 import { getAuthoritativeIndexingPolicy, getSiteUrl } from "@/lib/seo/site";
 import "./globals.css";
 
+// Cormorant and Jost only serve the admin now: no preload, so storefront pages do not fetch them.
 const display = Cormorant_Garamond({
   variable: "--font-display",
   subsets: ["latin"],
   display: "swap",
+  preload: false,
+});
+
+// Storefront (Parfums + Import) sets everything in one geometric sans — see DESIGN.md §3.
+// Admin keeps --font-display/--font-body.
+const sans = Geist({
+  variable: "--font-sans",
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  display: "swap",
+  // The only storefront font: fetch it with the HTML so the swap lands before the first layout, not after.
+  preload: true,
 });
 
 const body = Jost({
   variable: "--font-body",
   subsets: ["latin"],
   display: "swap",
+  preload: false,
 });
 
 // Every response carries a per-request CSP nonce (src/proxy.ts); a
@@ -46,10 +61,13 @@ export default function RootLayout({
   return (
     <html
       lang="es"
-      className={`${display.variable} ${body.variable}`}
+      className={`${display.variable} ${body.variable} ${sans.variable}`}
       data-scroll-behavior="smooth"
     >
-      <body>{children}</body>
+      <body>
+        <SkipLink />
+        {children}
+      </body>
     </html>
   );
 }

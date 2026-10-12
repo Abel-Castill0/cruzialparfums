@@ -16,8 +16,9 @@ export function ImportFooter() {
     <footer className={styles.footer}>
       <div className={styles.footerInner}>
         <div className={styles.footerTop}>
-          <div className={styles.footerLockup} role="img" aria-label="Cruzial Import">
-            <Image src="/images/import-home/cruzial-import-logo.png" alt="" width={164} height={82} />
+          <div className={`${styles.footerLockup} ${styles.capsule}`} role="img" aria-label="Cruzial Import">
+            <Image src="/images/import-home/cruzial-import-logo.png" alt="" width={88} height={88} className={styles.capsuleMark} />
+            <span className={styles.capsuleName} aria-hidden="true">Import</span>
           </div>
 
           <nav className={styles.footerNav} aria-label="Enlaces de Cruzial Import">

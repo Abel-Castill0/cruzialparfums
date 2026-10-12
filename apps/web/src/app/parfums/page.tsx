@@ -132,15 +132,20 @@ export default async function ParfumsHomePage() {
   const typeCounts = countFragrancesByType(fragrances);
 
   return (
-    <main className={styles.home}>
-      <h1 className={styles.srOnly}>Perfumería de descubrimiento.</h1>
-
-      <HeroArtwork {...heroArtwork} ctaHref="/parfums/catalogo" ctaLabel="Explorar catálogo" />
+    <main id="main" tabIndex={-1} className={styles.home}>
+      <HeroArtwork
+        {...heroArtwork}
+        title="Perfumería de descubrimiento."
+        ctaHref="/parfums/catalogo"
+        ctaLabel="Explorar catálogo"
+        secondaryHref="/parfums/combos#arma-combo"
+        secondaryLabel="Arma tu combo"
+      />
 
       <ul className={styles.assurance} aria-label="Lo esencial">
         {assurances.map((item) => (
           <li key={item.title}>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{item.icon}</svg>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{item.icon}</svg>
             <span><strong>{item.title}</strong>{item.text}</span>
           </li>
         ))}
@@ -319,7 +324,6 @@ export default async function ParfumsHomePage() {
       )}
 
       <section className={styles.combos} aria-labelledby="combos-title">
-        <Image src="/images/parfums-home/parfums-combos-bg.webp" alt="" fill sizes="100vw" loading="lazy" className={styles.combosBg} />
         <div className={styles.combosInner}>
           <div className={styles.sectionHead}>
             <div>

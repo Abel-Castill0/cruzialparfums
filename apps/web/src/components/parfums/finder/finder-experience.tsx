@@ -169,7 +169,7 @@ export function FinderExperience({ products, catalogQuery = "", intercepted = fa
         </header>
         <div className={styles.body}>
           <>
-              <div className={styles.progress}><span>{String(stepIndex + 1).padStart(2, "0")} / {String(steps.length).padStart(2, "0")}</span><div><i style={{ width: `${((stepIndex + 1) / steps.length) * 100}%` }} /></div></div>
+              <div className={styles.progress}><span>{String(stepIndex + 1).padStart(2, "0")} / {String(steps.length).padStart(2, "0")}</span><div><i style={{ transform: `scaleX(${(stepIndex + 1) / steps.length})` }} /></div></div>
               <h1 id="finder-title">{title}</h1>
               <p className={styles.subtitle}>{subtitle}</p>
               <div className={`${styles.options} ${options.length > 8 ? styles.manyOptions : ""}`}>

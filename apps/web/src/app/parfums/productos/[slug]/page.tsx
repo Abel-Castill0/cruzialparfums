@@ -66,7 +66,7 @@ export default async function ProductPage({ params, searchParams }: ProductPageP
   const safeStructuredData = buildSafeProductPageStructuredData(product, canonical);
 
   return (
-    <main className={styles.page}>
+    <main id="main" tabIndex={-1} className={styles.page}>
       <div className={styles.container}>
         <Breadcrumbs items={[{ label: "Catálogo", href: "/parfums/catalogo" }, { label: product.name }]} />
         <ProductDetailExperience

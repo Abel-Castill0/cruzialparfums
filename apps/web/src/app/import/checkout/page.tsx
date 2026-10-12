@@ -239,7 +239,7 @@ export default function ImportCheckoutPage() {
   if (formState.phase === "success") {
     const d = formState.data;
     return (
-      <main className={styles.page}>
+      <main id="main" tabIndex={-1} className={styles.page}>
         <div className={styles.container}>
           <section className={styles.success} aria-labelledby="success-title">
             <h1 id="success-title" className={styles.successHeading}>
@@ -307,7 +307,7 @@ export default function ImportCheckoutPage() {
 
   if (lines.length === 0 && formState.phase === "form" && !held) {
     return (
-      <main className={styles.page}>
+      <main id="main" tabIndex={-1} className={styles.page}>
         <div className={styles.container}>
           {reconciliation?.status === "discarded" && (
             <div className={styles.noticeBanner} role="status" aria-live="polite">
@@ -338,7 +338,7 @@ export default function ImportCheckoutPage() {
   }
 
   return (
-    <main className={styles.page}>
+    <main id="main" tabIndex={-1} className={styles.page}>
       <div className={styles.container}>
         <h1 className={styles.heading}>Checkout de Import</h1>
 

@@ -19,6 +19,7 @@ import { SearchIcon } from "@/components/parfums/shell/shell-icons";
 import { RecommendationPanel } from "@/components/parfums/finder/recommendation-panel";
 import { finderAnswersToParams } from "@/domains/finder/finder-url";
 import type { FinderAnswers } from "@/domains/finder/finder-rules";
+import { Reveal } from "@/components/storefront/home/reveal";
 import { ProductCard } from "./product-card";
 import { CatalogFilterPanel, FILTER_GROUPS, optionLabel, type FilterKey } from "./catalog-filter-panel";
 import toolbar from "./catalog-toolbar.module.css";
@@ -178,6 +179,8 @@ export function CatalogExperience({ products, initialFilters, initialRecommendat
             fill
             sizes="100vw"
             preload
+            fetchPriority="high"
+            quality={60}
             className={styles.catalogHeroImage}
           />
           <div className={styles.catalogHeroScrim} aria-hidden="true" />
@@ -207,7 +210,8 @@ export function CatalogExperience({ products, initialFilters, initialRecommendat
         </div>
       ) : null}
 
-      <section className={styles.catalogLayout} aria-label="Catálogo de perfumes">
+      <section className={styles.catalogLayout} aria-labelledby="catalog-results-title">
+        <h2 id="catalog-results-title" className={styles.srOnly}>Catálogo de perfumes</h2>
         <div className={toolbar.toolbar}>
           <div className={toolbar.container}>
             <div className={toolbar.bar}>
@@ -302,9 +306,13 @@ export function CatalogExperience({ products, initialFilters, initialRecommendat
             ) : null}
           </div>
           {results.length > 0 ? (
-            <div data-product-grid className={styles.productGrid}>
-              {results.map((product, index) => <ProductCard key={product.legacyId} product={product} mode={filters.format === "bottle" ? "bottle" : "decant"} onAdded={announceAdded} eager={index < 4} />)}
-            </div>
+            <ul role="list" data-product-grid className={styles.productGrid}>
+              {results.map((product, index) => (
+                <Reveal as="li" key={product.legacyId} className={styles.revealCell} delay={(index % 4) * 60}>
+                  <ProductCard product={product} mode={filters.format === "bottle" ? "bottle" : "decant"} onAdded={announceAdded} eager={index < 4} />
+                </Reveal>
+              ))}
+            </ul>
           ) : (
             <div className={styles.emptyState}>
               <strong>Sin resultados</strong>

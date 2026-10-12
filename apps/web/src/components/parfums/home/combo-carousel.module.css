@@ -1,15 +1,20 @@
+/* Combo carousel: one white card per set. Copy on the left, the set's own
+   artwork on a dark panel on the right. Controls are 44px pills. */
+
 .carousel {
   position: relative;
   aspect-ratio: 21 / 9;
-  min-height: 320px;
+  min-height: 400px;
   overflow: hidden;
-  background: var(--color-ink);
+  border-radius: var(--ds-radius-lg);
+  background: var(--ds-white);
+  box-shadow: var(--ds-shadow-1);
 }
 
 .track {
   height: 100%;
   display: flex;
-  transition: transform 650ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition: transform var(--ds-dur-hero) var(--ds-ease-spring);
   will-change: transform;
 }
 
@@ -17,100 +22,94 @@
   position: relative;
   flex: 0 0 100%;
   height: 100%;
-  background: #20180f;
 }
 
 .slideMedia {
   position: absolute;
   inset: 0 0 0 auto;
-  width: 44%;
+  width: 52%;
   overflow: hidden;
-  background: #21190f;
+  background: var(--ds-ink);
 }
 
 .slideImage {
   object-fit: contain;
-  object-position: right center;
+  object-position: var(--pos, 50% 50%);
 }
 
+/* Kept for markup parity: copy sits on white, no shade is needed. */
 .scrim {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(90deg, #20180f 0%, rgba(32, 24, 15, 0.96) 39%, rgba(32, 24, 15, 0.55) 57%, rgba(32, 24, 15, 0) 74%);
+  display: none;
 }
 
 .slideCopy {
   position: absolute;
-  left: 0;
-  right: 42%;
   top: 50%;
-  bottom: auto;
+  right: 52%;
+  left: 0;
   transform: translateY(-50%);
-  padding: clamp(1.25rem, 4vw, 3rem);
+  padding: var(--ds-space-5);
   display: grid;
-  gap: 0.5rem;
-  color: var(--color-paper);
+  gap: var(--ds-space-1);
+  color: var(--ds-ink);
 }
 
 .eyebrow {
-  color: var(--color-paper);
-  opacity: 0.72;
-  font-size: var(--text-label);
-  font-weight: 600;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
+  color: var(--ds-ink-muted);
+  font-size: var(--ds-text-small);
+  font-weight: 500;
 }
 
 .slideCopy h3 {
-  max-width: 20ch;
-  font-family: var(--font-display), Georgia, serif;
-  font-size: clamp(1.75rem, 4.5vw, 3.25rem);
-  font-weight: 500;
-  line-height: 1.02;
+  max-width: 16ch;
+  font-size: clamp(1.75rem, 1.1rem + 2vw, 2.75rem);
+  font-weight: 600;
+  line-height: 1.08;
+  letter-spacing: -0.03em;
 }
 
 .contents {
   max-width: 46ch;
-  opacity: 0.82;
-  font-size: clamp(0.75rem, 1.2vw, 0.9rem);
+  color: var(--ds-ink-muted);
+  font-size: var(--ds-text-small);
+  line-height: 1.5;
 }
 
 .slideActions {
-  margin-top: 0.5rem;
+  margin-top: var(--ds-space-2);
   display: flex;
-  align-items: center;
-  gap: 1.25rem;
   flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ds-space-3);
 }
 
 .price {
-  font-family: var(--font-display), Georgia, serif;
-  font-size: clamp(1.1rem, 2vw, 1.4rem);
-  color: var(--color-paper);
+  color: var(--ds-ink);
+  font-size: var(--ds-text-card);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
 }
 
 .cta {
   min-height: 44px;
+  padding: 0 var(--ds-space-3);
   display: inline-flex;
   align-items: center;
-  padding: 0.7rem 1.3rem;
-  border: 1px solid var(--color-paper);
-  color: var(--color-paper);
-  font-size: var(--text-label);
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  transition: background-color 180ms ease, color 180ms ease;
+  gap: var(--ds-space-1);
+  border-radius: var(--ds-radius-pill);
+  color: var(--ds-white);
+  background: var(--ds-accent);
+  font-size: var(--ds-text-body);
+  font-weight: 500;
 }
 
 .cta:hover {
-  color: var(--color-ink);
-  background: var(--color-paper);
+  background: var(--ds-accent-press);
 }
 
-.arrow {
+.arrow,
+.pause {
   position: absolute;
-  top: 50%;
   z-index: 2;
   width: 44px;
   height: 44px;
@@ -118,34 +117,46 @@
   place-items: center;
   border: 0;
   border-radius: 50%;
-  transform: translateY(-50%);
-  color: var(--color-ink);
-  background: rgba(255, 253, 248, 0.88);
+  color: var(--ds-ink);
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: var(--ds-shadow-1);
+  backdrop-filter: blur(12px);
   font-size: 1.1rem;
   cursor: pointer;
-  transition: background-color 180ms ease;
+  transition: background-color var(--ds-dur-base) var(--ds-ease-spring), transform var(--ds-dur-fast) var(--ds-ease-spring);
 }
 
-.arrow:hover {
-  background: var(--color-paper);
+.arrow:hover,
+.pause:hover {
+  background: var(--ds-white);
+}
+
+.arrow {
+  top: 50%;
+  transform: translateY(-50%);
 }
 
 .arrowPrev {
-  left: 56%;
-  transform: translate(-50%, -50%);
+  left: calc(48% + var(--ds-space-2));
 }
 
 .arrowNext {
-  right: 1rem;
+  right: var(--ds-space-2);
+}
+
+.pause {
+  top: var(--ds-space-2);
+  right: var(--ds-space-2);
+  font-size: 0.75rem;
 }
 
 .dots {
   position: absolute;
-  right: clamp(1.25rem, 4vw, 3rem);
-  bottom: clamp(1.25rem, 4vw, 3rem);
+  bottom: var(--ds-space-2);
+  left: var(--ds-space-5);
   z-index: 2;
   display: flex;
-  gap: 0.6rem;
+  gap: 0;
 }
 
 .dot {
@@ -161,86 +172,45 @@
 
 .dot::after {
   content: "";
-  width: 1.4rem;
-  height: 3px;
-  background: rgba(255, 253, 248, 0.45);
-  transition: background-color 180ms ease, width 180ms ease;
+  width: 24px;
+  height: 4px;
+  border-radius: var(--ds-radius-sm);
+  background: var(--ds-gray-100);
+  transform-origin: left center;
+  transition: background-color var(--ds-dur-base) var(--ds-ease-spring), transform var(--ds-dur-base) var(--ds-ease-spring);
 }
 
 .dot:hover::after {
-  background: rgba(255, 253, 248, 0.75);
+  background: var(--ds-ink-muted);
 }
 
 .dotActive::after {
-  width: 2.1rem;
-  background: var(--color-paper);
-}
-
-@media (max-width: 640px) {
-  .carousel {
-    aspect-ratio: 3 / 4;
-  }
-
-  .slideMedia {
-    inset: 0 0 auto;
-    width: 100%;
-    height: 68%;
-  }
-
-  .slideImage {
-    object-position: center top;
-  }
-
-  .scrim {
-    background: linear-gradient(180deg, rgba(32, 24, 15, 0) 42%, #20180f 69%);
-  }
-
-  .slideCopy {
-    right: 0;
-    top: auto;
-    bottom: 0;
-    transform: none;
-    padding: 1rem 1rem 3.6rem;
-  }
-
-  .arrow {
-    width: 44px;
-    height: 44px;
-    font-size: 0.95rem;
-  }
-
-  .dots {
-    right: 50%;
-    bottom: 1rem;
-    transform: translateX(50%);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .track {
-    transition: none;
-  }
+  background: var(--ds-ink);
+  transform: scaleX(1.5);
 }
 
 /* A set without a photo of its own shows the real photos of the fragrances
- * inside it, instead of an empty dark panel. */
+   inside it, instead of an empty dark panel. */
 .slidePhotos {
   position: absolute;
   z-index: 1;
-  top: clamp(1rem, 3vw, 2.25rem);
+  top: 50%;
   right: clamp(4.25rem, 7vw, 6rem);
   left: clamp(4.25rem, 7vw, 6rem);
-  display: grid;
   max-width: 40rem;
   margin-left: auto;
+  display: grid;
   grid-template-columns: repeat(var(--count, 3), minmax(0, 1fr));
-  gap: 0.5rem;
+  gap: var(--ds-space-1);
+  transform: translateY(-50%);
 }
 
 .slidePhoto {
   position: relative;
   aspect-ratio: 1 / 1.05;
-  background: #fff;
+  overflow: hidden;
+  border-radius: var(--ds-radius-sm);
+  background: var(--ds-white);
 }
 
 .slidePhotoImage {
@@ -248,80 +218,75 @@
   padding: 6%;
 }
 
+@media (min-width: 641px) and (max-width: 1024px) {
+  .carousel {
+    aspect-ratio: auto;
+    min-height: 440px;
+  }
+
+  .slideCopy {
+    padding: var(--ds-space-4);
+  }
+
+  .dots {
+    left: var(--ds-space-4);
+  }
+}
+
 @media (max-width: 640px) {
+  .carousel {
+    aspect-ratio: auto;
+    min-height: 0;
+    height: 620px;
+  }
+
+  .slideMedia {
+    inset: 0 0 auto;
+    width: 100%;
+    height: 56%;
+  }
+
+  .slideImage {
+    object-position: var(--pos-mobile, 50% 50%);
+  }
+
+  .slideCopy {
+    top: auto;
+    right: 0;
+    bottom: 0;
+    transform: none;
+    padding: var(--ds-space-3) var(--ds-space-3) var(--ds-space-7);
+  }
+
   .slidePhotos {
-    right: 1.25rem;
-    left: 1.25rem;
+    right: var(--ds-space-3);
+    left: var(--ds-space-3);
+    top: 28%;
   }
 
   /* Arrows share the bottom strip with the dots so they never cover the copy. */
   .arrow {
     top: auto;
-    bottom: 0.4rem;
+    bottom: var(--ds-space-2);
     transform: none;
   }
 
   .arrowPrev {
-    left: 0.5rem;
-    transform: none;
+    left: auto;
+    right: calc(var(--ds-space-3) + 52px);
   }
 
   .arrowNext {
-    right: 0.5rem;
+    right: var(--ds-space-3);
+  }
+
+  .dots {
+    left: var(--ds-space-2);
   }
 }
 
-.pause {
-  position: absolute;
-  top: 0.75rem;
-  right: 0.75rem;
-  z-index: 3;
-  width: 44px;
-  height: 44px;
-  display: grid;
-  place-items: center;
-  border: 0;
-  border-radius: 50%;
-  color: var(--color-ink);
-  background: rgba(255, 253, 248, 0.88);
-  font-size: 0.7rem;
-  cursor: pointer;
-  transition: background-color 180ms ease;
-}
-
-.pause:hover {
-  background: var(--color-paper);
-}
-
-/* Tablets: the carousel is short, so centred arrows would cross the copy at
- * the bottom-left; keep them level with the photo row instead. */
-@media (min-width: 641px) and (max-width: 1024px) {
-  .arrow {
-    top: 30%;
+@media (prefers-reduced-motion: reduce) {
+  .track {
+    transition: none;
   }
-}
-
-/* Set photographs keep their own focal point; phones use the tall-crop one. */
-.slideImage {
-  object-position: var(--pos, 50% 50%);
-}
-
-@media (max-width: 640px) {
-  .slideImage {
-    object-position: var(--pos-mobile, 50% 50%);
-  }
-}
-
-/* The set photographs are bright: a deeper, longer shade under the copy keeps
- * the title and list legible without darkening the whole picture. */
-.scrim {
-  background: linear-gradient(0deg, rgba(10, 9, 8, 0.9) 0%, rgba(10, 9, 8, 0.55) 34%, rgba(10, 9, 8, 0) 66%);
-}
-
-.slideCopy h3 {
-  text-shadow: 0 2px 24px rgba(0, 0, 0, 0.35);
-}
-
-.contents {
-  max-width: 46ch;
 }
