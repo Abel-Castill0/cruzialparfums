@@ -210,7 +210,8 @@ export function CatalogExperience({ products, initialFilters, initialRecommendat
         </div>
       ) : null}
 
-      <section className={styles.catalogLayout} aria-label="Catálogo de perfumes">
+      <section className={styles.catalogLayout} aria-labelledby="catalog-results-title">
+        <h2 id="catalog-results-title" className={styles.srOnly}>Catálogo de perfumes</h2>
         <div className={toolbar.toolbar}>
           <div className={toolbar.container}>
             <div className={toolbar.bar}>
@@ -305,13 +306,13 @@ export function CatalogExperience({ products, initialFilters, initialRecommendat
             ) : null}
           </div>
           {results.length > 0 ? (
-            <div data-product-grid className={styles.productGrid}>
+            <ul role="list" data-product-grid className={styles.productGrid}>
               {results.map((product, index) => (
-                <Reveal key={product.legacyId} className={styles.revealCell} delay={(index % 4) * 60}>
+                <Reveal as="li" key={product.legacyId} className={styles.revealCell} delay={(index % 4) * 60}>
                   <ProductCard product={product} mode={filters.format === "bottle" ? "bottle" : "decant"} onAdded={announceAdded} eager={index < 4} />
                 </Reveal>
               ))}
-            </div>
+            </ul>
           ) : (
             <div className={styles.emptyState}>
               <strong>Sin resultados</strong>

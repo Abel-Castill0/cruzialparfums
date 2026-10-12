@@ -1,0 +1,36 @@
+/* Visually hidden until focused (not display:none, so it stays in the tab order). */
+.skipLink {
+  position: fixed;
+  top: var(--ds-space-2);
+  left: var(--ds-space-2);
+  z-index: 1000;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 var(--ds-space-3);
+  border-radius: var(--ds-radius-pill);
+  background: var(--ds-ink);
+  color: var(--ds-white);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  box-shadow: var(--ds-shadow-2);
+  transform: translateY(-200%);
+}
+
+.skipLink:focus-visible {
+  transform: translateY(0);
+  outline: 2px solid var(--ds-accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .skipLink {
+    transition: transform var(--ds-dur-fast) var(--ds-ease-enter);
+  }
+}
+
+/* <main> receives programmatic focus after the jump: the ring on the whole region would be noise. */
+:global(main[tabindex="-1"]:focus) {
+  outline: none;
+}

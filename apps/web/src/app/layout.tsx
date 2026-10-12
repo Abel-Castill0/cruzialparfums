@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Cormorant_Garamond, Geist, Jost } from "next/font/google";
+import { SkipLink } from "@/components/storefront/skip-link";
 import { getAuthoritativeIndexingPolicy, getSiteUrl } from "@/lib/seo/site";
 import "./globals.css";
 
@@ -61,7 +62,10 @@ export default function RootLayout({
       className={`${display.variable} ${body.variable} ${sans.variable}`}
       data-scroll-behavior="smooth"
     >
-      <body>{children}</body>
+      <body>
+        <SkipLink />
+        {children}
+      </body>
     </html>
   );
 }

@@ -99,7 +99,7 @@ export function ProductCard({
           <div className={styles.cardBody}>
             <div className={styles.identity}>
               <span className={styles.cardBrand}>{product.brand}</span>
-              <h2 className={styles.cardName}>{product.name}</h2>
+              <h3 className={styles.cardName}>{product.name}</h3>
             </div>
             <div className={styles.cardMeta}>
               <span>Sin stock disponible</span>
@@ -148,7 +148,7 @@ export function ProductCard({
       <div className={styles.cardBody}>
         <Link className={styles.identity} href={detailHref}>
           <span className={styles.cardBrand}>{product.brand}</span>
-          <h2 className={styles.cardName}>{product.name}</h2>
+          <h3 className={styles.cardName}>{product.name}</h3>
         </Link>
         <div className={styles.cardMeta}>
           <span>{mode === "bottle" ? `frasco ${currentVariant.size} ml` : `desde ${decantVariant.size} ml`}</span>
