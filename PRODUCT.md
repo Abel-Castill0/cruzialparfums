@@ -30,6 +30,10 @@ Cruzial Parfums es una tienda de decants (perfumería árabe, diseñador y nicho
 
 ## Brand Personality
 
+> Superseded for V2 by `DESIGN.md` (2026-10-11): the storefront is now white / #F5F5F7 / ink with a single
+> blue accent and one sans family (Geist). The paragraph below describes the legacy root storefront only.
+
+
 **Lujo editorial, frío, aspiracional** — estética de revista de moda: distante, minimalista, sofisticada. Negro/blanco dominante con dorado como acento de precisión (no de exceso). Tipografía editorial (Cormorant Garamond serif + Jost sans + Italianno script como firma ocasional). El tono es seguro y curado, no efusivo ni "vendedor" — deja que el producto y el espacio en blanco hablen.
 
 ## Anti-references
