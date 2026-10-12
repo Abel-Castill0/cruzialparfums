@@ -42,9 +42,13 @@ export default defineConfig({
   projects: [
     { name: "setup", testMatch: /auth\.setup\.ts/ },
     { name: "chromium", testMatch: [PUBLIC_SPECS, /ux-regressions-desktop\.spec\.ts/], use: { ...devices["Desktop Chrome"] } },
-    // Engine matrix (T4): the same public specs on Gecko and WebKit. Desktop-only; Chromium covers the touch projects.
-    { name: "firefox", testMatch: [PUBLIC_SPECS, /ux-regressions-desktop\.spec\.ts/], use: { ...devices["Desktop Firefox"] } },
-    { name: "webkit", testMatch: [PUBLIC_SPECS, /ux-regressions-desktop\.spec\.ts/], use: { ...devices["Desktop Safari"] } },
+    // Engine matrix (T4), opt-in: CI installs Chromium only, so these projects join the run with E2E_ENGINES=1
+    // (after `npx playwright install firefox webkit`). WebKit needs `E2E_SERVER=dev`: the production CSP upgrades
+    // http://localhost subresources to https, which WebKit enforces. Desktop-only; Chromium covers the touch projects.
+    ...(process.env.E2E_ENGINES
+      ? [{ name: "firefox", testMatch: [PUBLIC_SPECS, /ux-regressions-desktop\.spec\.ts/], use: { ...devices["Desktop Firefox"] } },
+         { name: "webkit", testMatch: [PUBLIC_SPECS, /ux-regressions-desktop\.spec\.ts/], use: { ...devices["Desktop Safari"] } }]
+      : []),
     { name: "responsive", testMatch: /responsive\.spec\.ts/, use: { ...devices["Desktop Chrome"] } },
     { name: "mobile", testMatch: [PUBLIC_SPECS, /ux-regressions-phone\.spec\.ts/], use: { ...devices["Pixel 7"] } },
     // Tablet portrait (touch, 820x1180) between the phone and desktop layouts. Chromium engine on purpose:
