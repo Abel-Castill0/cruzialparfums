@@ -29,6 +29,27 @@ test.describe("responsive layout", () => {
     });
   }
 
+  // The search kept a 320px flex-basis and no min-width: 0, so on a phone the bar outgrew its container and the Filtros
+  // button was clipped by the viewport edge (the page itself never scrolled, so the overflow test above did not notice).
+  for (const width of [320, 375, 390]) {
+    test(`catalog Filtros button is fully inside the viewport at ${width}px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 800 });
+      await page.goto("/parfums/catalogo");
+      const button = page.getByRole("button", { name: /Filtros/ }).first();
+      await button.scrollIntoViewIfNeeded();
+      const box = await button.boundingBox();
+      expect(box).not.toBeNull();
+      expect(box!.x + box!.width, "right edge inside the 16px gutter").toBeLessThanOrEqual(width - 16 + 1);
+    });
+  }
+
+  test("footer Instagram link is the Instagram glyph, not the letters IG", async ({ page }) => {
+    await page.goto("/parfums");
+    const link = page.locator("footer").getByRole("link", { name: "Instagram", exact: true });
+    await expect(link.locator("svg")).toHaveCount(1);
+    await expect(link).not.toHaveText(/IG/);
+  });
+
   test("product page keeps the add-to-cart control inside the viewport on a phone", async ({ page }) => {
     await page.setViewportSize({ width: 360, height: 740 });
     await page.goto("/parfums/catalogo");

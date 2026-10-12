@@ -342,3 +342,101 @@ body:not(:has(main#main)) [data-skip-link] {
     --ds-section-y: var(--ds-space-7);
   }
 }
+
+/* Root not-found and error boundaries. They live here (not in a CSS module) because Next preloads the not-found boundary's
+   stylesheet on every route, and a preloaded sheet no page uses triggers the console warning "preloaded ... but not used". */
+.boundary {
+  min-height: 100svh;
+  padding: clamp(1.5rem, 5vw, 4rem);
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 1.25rem;
+  text-align: center;
+  background: var(--color-ivory);
+  color: var(--color-ink);
+}
+
+.boundary-mark {
+  margin: 0 0 1rem;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 1.1rem;
+  font-weight: 500;
+  letter-spacing: 0.5em;
+  text-indent: 0.5em;
+  text-transform: uppercase;
+}
+
+.boundary h1 {
+  max-width: 14ch;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: clamp(2.6rem, 8vw, 5.5rem);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.boundary-text {
+  max-width: 34ch;
+  margin: 0;
+  color: var(--color-ink-muted);
+  line-height: 1.6;
+}
+
+.boundary-actions {
+  margin-top: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.boundary-actions a {
+  min-height: 48px;
+  padding: 0 1.8rem;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--color-ink);
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  transition: background-color var(--ds-dur-fast) var(--ds-ease-spring), color var(--ds-dur-fast) var(--ds-ease-spring);
+}
+
+.boundary-actions a:first-child {
+  background: var(--color-ink);
+  color: #fff;
+}
+
+.boundary-actions a:hover {
+  background: #2c2925;
+  color: #fff;
+}
+
+.boundary-actions a:first-child:hover {
+  background: #2c2925;
+}
+
+.boundary-actions a:not(:first-child):hover {
+  background: var(--color-ink);
+}
+
+.boundary-retry {
+  min-height: 48px;
+  padding: 0 1.8rem;
+  border: 1px solid var(--color-ink);
+  border-radius: 999px;
+  background: var(--color-ink);
+  color: #fff;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+}
+
+.boundary-retry:hover {
+  background: #2c2925;
+}

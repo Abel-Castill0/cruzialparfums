@@ -6,7 +6,7 @@ import { MissingPhoto } from "../shared/missing-photo";
 import Link from "next/link";
 import { useRef } from "react";
 import { minimumPrice } from "@/domains/catalog/catalog-query";
-import type { CatalogProduct } from "@/domains/catalog/types";
+import { cartIdentity, type CatalogProduct } from "@/domains/catalog/types";
 import styles from "./featured-perfume-rail.module.css";
 
 function money(value: number) {
@@ -47,7 +47,7 @@ export function FeaturedPerfumeRail({ products }: { products: CatalogProduct[] }
       <div className={styles.track} ref={trackRef} role="list">
         {products.map((product) => (
           <Link
-            key={product.legacyId}
+            key={cartIdentity(product)}
             href={`/parfums/productos/${product.slug}` as Route}
             className={styles.card}
             data-rail-card
