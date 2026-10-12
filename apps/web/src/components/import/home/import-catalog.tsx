@@ -192,7 +192,9 @@ export function ImportCatalog({
       {result.products.length > 0 && !invalidPage ? (
         <div className={styles.productGrid}>
           {result.products.map((product, index) => (
-            <ProductCard key={product.id} product={product} campaign={result.campaign} priority={index === 0} />
+            <Reveal key={product.id} className={styles.revealCell} delay={(index % 3) * 60}>
+              <ProductCard product={product} campaign={result.campaign} priority={index === 0} />
+            </Reveal>
           ))}
         </div>
       ) : (

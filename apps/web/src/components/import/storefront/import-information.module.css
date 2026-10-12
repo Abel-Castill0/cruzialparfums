@@ -8,21 +8,19 @@
 
 .eyebrow {
   color: var(--import-muted);
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
+  font-size: var(--ds-text-small);
+  font-weight: 500;
 }
 
 .heading h2,
 .conditionsBody h2,
 .contactBody h2 {
-  margin-top: 14px;
-  font-family: var(--font-body), sans-serif;
-  font-size: clamp(1.9rem, 4vw, 3rem);
-  font-weight: 520;
-  line-height: 1.04;
-  letter-spacing: -0.035em;
+  margin-top: 16px;
+  font-family: var(--ds-font);
+  font-size: var(--ds-text-h2);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
   text-wrap: balance;
 }
 
@@ -36,8 +34,8 @@
 /* Process — a rail with four moments. */
 
 .process {
-  padding-block: clamp(64px, 9vw, 120px);
-  border-top: 1px solid var(--import-line);
+  padding-block: var(--ds-section-y);
+  border-top: 1px solid var(--ds-hairline);
 }
 
 .steps {
@@ -50,10 +48,10 @@
 
 .steps li > div {
   position: relative;
-  padding-top: 28px;
+  padding-top: 32px;
   display: grid;
-  gap: 10px;
-  border-top: 1px solid var(--import-line);
+  gap: 8px;
+  border-top: 1px solid var(--ds-hairline);
 }
 
 /* The dot that sits on the rail. */
@@ -71,14 +69,14 @@
 
 .stepNumber {
   color: var(--import-muted);
-  font-size: 0.74rem;
-  font-weight: 700;
-  letter-spacing: 0.2em;
+  font-size: 0.75rem;
+  font-weight: 600;
+
 }
 
 .steps strong {
   font-size: clamp(1.25rem, 2vw, 1.55rem);
-  font-weight: 560;
+  font-weight: 500;
   letter-spacing: -0.02em;
 }
 
@@ -94,7 +92,7 @@
 .conditions {
   width: min(1280px, calc(100% - (var(--import-gutter, 24px) * 2)));
   margin-inline: auto;
-  padding-block: clamp(24px, 4vw, 48px) clamp(64px, 9vw, 120px);
+  padding-block: clamp(24px, 4vw, 48px) var(--ds-section-y);
   display: grid;
   grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
   gap: clamp(32px, 6vw, 96px);
@@ -105,7 +103,7 @@
   position: relative;
   min-height: 480px;
   overflow: hidden;
-  border-radius: 20px;
+  border-radius: var(--ds-radius-lg);
   background: var(--import-surface);
 }
 
@@ -123,21 +121,21 @@
 
 .terms {
   margin-top: clamp(28px, 4vw, 44px);
-  border-top: 1px solid var(--import-line);
+  border-top: 1px solid var(--ds-hairline);
 }
 
 .terms > div {
-  padding-block: 20px;
+  padding-block: 24px;
   display: grid;
   grid-template-columns: minmax(104px, 0.4fr) minmax(0, 1fr);
   gap: 16px;
   align-items: center;
-  border-bottom: 1px solid var(--import-line);
+  border-bottom: 1px solid var(--ds-hairline);
 }
 
 .terms dt {
   font-size: clamp(2.4rem, 5vw, 3.6rem);
-  font-weight: 460;
+  font-weight: 400;
   line-height: 1;
   letter-spacing: -0.045em;
   font-variant-numeric: tabular-nums;
@@ -167,8 +165,8 @@
 /* FAQ */
 
 .faq {
-  padding-block: clamp(56px, 8vw, 104px);
-  border-top: 1px solid var(--import-line);
+  padding-block: var(--ds-section-y);
+  border-top: 1px solid var(--ds-hairline);
 }
 
 .faqGrid {
@@ -179,11 +177,11 @@
 }
 
 .faqList {
-  border-top: 1px solid var(--import-line);
+  border-top: 1px solid var(--ds-hairline);
 }
 
 .faqList details {
-  border-bottom: 1px solid var(--import-line);
+  border-bottom: 1px solid var(--ds-hairline);
 }
 
 .faqList summary {
@@ -192,9 +190,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 20px;
+  gap: 24px;
   font-size: 1rem;
-  font-weight: 560;
+  font-weight: 500;
   line-height: 1.35;
   cursor: pointer;
   list-style: none;
@@ -210,10 +208,10 @@
   height: 32px;
   display: grid;
   place-items: center;
-  border: 1px solid var(--import-line);
+  border: 1px solid var(--ds-hairline);
   border-radius: 50%;
   color: var(--import-muted);
-  transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1), color 200ms ease;
+  transition: transform var(--ds-dur-base) var(--ds-ease-spring), color var(--ds-dur-fast) var(--ds-ease-spring);
 }
 
 .faqList details[open] .faqChevron {
@@ -223,7 +221,7 @@
 
 .faqList p {
   max-width: 62ch;
-  padding-bottom: 22px;
+  padding-bottom: 24px;
   color: var(--import-muted);
   font-size: 0.94rem;
   line-height: 1.7;
@@ -238,15 +236,20 @@
 }
 
 .contactPanel {
+  /* Intentional navy surface: light type on the navy veil over the photograph. */
+  --import-text: var(--ds-on-navy);
+  --import-muted: var(--ds-on-navy-muted);
   position: relative;
   isolation: isolate;
+  color: var(--ds-on-navy);
   min-height: 340px;
   overflow: hidden;
   display: flex;
   align-items: center;
-  border: 1px solid var(--import-line);
-  border-radius: 24px;
+  border: 0;
+  border-radius: var(--ds-radius-lg);
   background: var(--import-surface);
+  box-shadow: var(--ds-shadow-1);
 }
 
 .contactImage {
@@ -260,7 +263,7 @@
   z-index: -1;
   inset: 0;
   content: "";
-  background: linear-gradient(90deg, rgba(6, 21, 39, 0.96) 0%, rgba(6, 21, 39, 0.78) 45%, rgba(6, 21, 39, 0.1) 80%);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--ds-color-navy-deep) 96%, transparent) 0%, color-mix(in srgb, var(--ds-color-navy-deep) 80%, transparent) 45%, color-mix(in srgb, var(--ds-color-navy-deep) 10%, transparent) 80%);
 }
 
 .contactBody {
@@ -270,39 +273,38 @@
 }
 
 .contactBody > p:not(.eyebrow) {
-  margin-top: 14px;
+  margin-top: 16px;
   color: var(--import-muted);
   line-height: 1.65;
 }
 
 .contactAction {
   min-height: 48px;
-  margin-top: 28px;
-  padding: 0 26px;
+  margin-top: 32px;
+  padding: 0 24px;
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  border-radius: 999px;
-  color: var(--import-accent-text);
-  background: var(--import-accent);
-  font-size: 0.86rem;
-  font-weight: 650;
-  transition: gap 320ms cubic-bezier(0.22, 1, 0.36, 1), background-color 200ms ease;
+  gap: 8px;
+  border-radius: var(--ds-radius-pill);
+  color: var(--ds-white);
+  background: var(--ds-accent);
+  font-size: var(--ds-text-card);
+  font-weight: 500;
+  transition: background-color var(--ds-dur-base) var(--ds-ease-spring);
 }
 
 .contactAction:hover {
-  gap: 16px;
-  background: #dbe6f1;
+  background: var(--ds-accent-press);
 }
 
 @media (max-width: 1023px) {
   .steps {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    row-gap: 40px;
+    row-gap: 48px;
   }
 
   .conditions {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .conditionsVisual {
@@ -311,7 +313,7 @@
   }
 
   .faqGrid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -319,14 +321,14 @@
 @media (max-width: 767px) {
   .steps {
     margin-top: 32px;
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 0;
   }
 
   .steps li > div {
-    padding: 0 0 28px 28px;
+    padding: 0 0 32px 32px;
     border-top: 0;
-    border-left: 1px solid var(--import-line);
+    border-left: 1px solid var(--ds-hairline);
   }
 
   .steps li:last-child > div {
