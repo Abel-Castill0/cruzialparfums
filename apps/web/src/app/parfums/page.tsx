@@ -123,7 +123,7 @@ const homeFaqs = [
 
 export default async function ParfumsHomePage({ searchParams }: { searchParams: Promise<{ hero?: string }> }) {
   const { hero } = await searchParams;
-  const heroVariant = hero === "a" || hero === "b" || hero === "c" || hero === "d" ? hero : undefined;
+  const heroVariant = hero === "a" || hero === "b" || hero === "c" || hero === "d" || hero === "e" || hero === "ec" || hero === "eb" ? hero : undefined;
   const { catalog, source } = await loadParfumsStorefront();
   const combos = catalog.listCombos();
   const fragrances = catalog.listFragrances();

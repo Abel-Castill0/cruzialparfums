@@ -354,7 +354,10 @@
 
 /* D - "Reencuadre": the asset is re-framed (21:9 desktop, 4:5 phone), shown at scale 1.0, and the headline lives on
    the ink strip below it. No object-fit zoom, no veil over the art. */
-.hero[data-variant="d"] {
+.hero[data-variant="d"],
+.hero[data-variant="e"],
+.hero[data-variant="ec"],
+.hero[data-variant="eb"] {
   display: flex;
   flex-direction: column;
   height: auto;
@@ -403,13 +406,15 @@
 }
 
 @media (max-width: 767px), (max-width: 1100px) and (orientation: portrait) {
-  .artD {
+  .hero[data-variant="d"] .artD,
+  .hero[data-variant="e"] .artD {
     aspect-ratio: 1100 / 1375;
     /* Short screens lose only the empty smoke above the wordmark (17% of the frame), never a bottle. */
     max-height: calc(100svh - 36px - 200px);
   }
 
-  .imageD {
+  .hero[data-variant="d"] .imageD,
+  .hero[data-variant="e"] .imageD {
     object-position: 50% 100%;
     -webkit-mask-image: linear-gradient(180deg, #000 90%, transparent 100%);
     mask-image: linear-gradient(180deg, #000 90%, transparent 100%);
@@ -423,12 +428,60 @@
     padding-right: var(--ds-space-6);
   }
 
-  .hero[data-variant="d"] .title {
+  .hero[data-variant="d"] .title,
+  .hero[data-variant="e"] .title {
     max-width: 14ch;
     font-size: clamp(2rem, 8.4vw, 2.5rem);
   }
 
-  .hero[data-variant="d"] .actions {
+  .hero[data-variant="d"] .actions,
+  .hero[data-variant="e"] .actions {
+    justify-content: flex-start;
+  }
+}
+
+/* E - "Sin síntesis": desktop = the same pure 21:9 crop as D; phones = a pure 4:5 crop of the older hero2.png original (it shares the D phone layout).
+   EC (fallback, no 4:5 original): phones show the wordmark column of the current original,
+   smaller than the full-bleed C (78% of the width) and feathered into the ink on both sides, which frees vertical
+   space for the headline. No bottle is shown, so none is cut. E2 keeps the 21:9 band on phones: every bottle, tiny wordmark. */
+@media (max-width: 767px), (max-width: 1100px) and (orientation: portrait) {
+  /* The crop's smoke is darker than the ink floor: take the floor to the smoke so the feathered edges disappear. */
+  /* E: hero2 has almost no empty smoke above the monogram, so short screens shrink the art instead of cropping it. */
+  .hero[data-variant="e"] .artD {
+    max-height: none;
+    width: min(100%, max(320px, calc((100svh - 256px) * 0.8)));
+    margin-inline: auto;
+  }
+
+  .hero[data-variant="e"] .imageD {
+    object-position: 50% 50%;
+  }
+
+  .hero[data-variant="ec"] {
+    background: color-mix(in srgb, var(--ds-ink) 45%, #000);
+  }
+
+  .hero[data-variant="ec"] .artD {
+    width: min(78%, 480px);
+    margin-inline: auto;
+    aspect-ratio: 550 / 590;
+  }
+
+  .hero[data-variant="ec"] .imageD {
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 16%, #000 84%, transparent 100%), linear-gradient(180deg, #000 86%, transparent 100%);
+    -webkit-mask-composite: source-in;
+    mask-image: linear-gradient(90deg, transparent 0, #000 16%, #000 84%, transparent 100%), linear-gradient(180deg, #000 86%, transparent 100%);
+    mask-composite: intersect;
+  }
+
+  .hero[data-variant="ec"] .title,
+  .hero[data-variant="eb"] .title {
+    max-width: 14ch;
+    font-size: clamp(2rem, 8.4vw, 2.5rem);
+  }
+
+  .hero[data-variant="ec"] .actions,
+  .hero[data-variant="eb"] .actions {
     justify-content: flex-start;
   }
 }

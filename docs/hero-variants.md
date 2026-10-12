@@ -1,8 +1,8 @@
-# Héroe de Parfums: cuatro variantes para recuperar el impacto de la imagen
+# Héroe de Parfums: cinco variantes para recuperar el impacto de la imagen
 
 **Rama:** `claude/hero-variants` (parte de `claude/apple-design-system` @ `3020eb5`). **Nada se mergea.**
-Las variantes viven detrás de `?hero=a|b|c|d` en `/parfums` (sin parámetro = el héroe actual). Evidencia en
-`docs/hero-variants/` (`hero-<variante>-<ancho>.jpg`: A, B, C y actual a 1440 y 390 px; D a 1440, 1024 y 390 px, más los dos assets nuevos). **La recomendación vigente es la de la sección 6** (la de la sección 3 es anterior a D).
+Las variantes viven detrás de `?hero=a|b|c|d|e|ec|eb` en `/parfums` (sin parámetro = el héroe actual). Evidencia en
+`docs/hero-variants/` (`hero-<variante>-<ancho>.jpg`: A, B, C y actual a 1440 y 390 px; D a 1440, 1024 y 390 px, más los dos assets nuevos). **La recomendación vigente es la de la sección 9** (las de las secciones 3 y 6 son anteriores a E; D queda descartada por sintetizar píxeles).
 
 ## 1. Análisis de la imagen
 
@@ -212,3 +212,117 @@ Regla para decidir:
 - **No se quiere tocar el arte → C** (tamaño idéntico a D en escritorio, sin cambios de asset, pero en móvil no se ve producto).
 
 No se ha mergeado nada; `claude/hero-variants` queda como rama de evidencia.
+
+## 7. Variante E · "Sin síntesis": sólo píxeles que ya existen
+
+**Restricción:** una marca de lujo no inventa arte. D sintetiza humo en el asset móvil y queda descartada por esa regla. E usa
+**únicamente recortes de originales**; si no hay original, se renuncia a mostrar el frasco antes que fabricarlo.
+
+### 7.1 Búsqueda de un original 4:5 con wordmark + frascos completos
+
+| Dónde se buscó | Qué se revisó | Resultado |
+|---|---|---|
+| Árbol del repo | 288 imágenes versionadas, hoja de contactos de las 46 con pinta de héroe/banner (1672×941, 2172×724, 1122×1402…) | Sólo `hero-crop.webp/.jpg` (1672×792) combina wordmark horneado y la línea de frascos; es apaisada (2.11:1). Los 1122×1402 (4:5) son un único frasco Cruzial sobre negro (`PERFUME NEGRO`, `PERFUME DORADO`, `parfums-authenticity`…): llevan el logotipo en la etiqueta, no la composición. |
+| Manifiesto de Cloudinary | `supabase/staging/client-media-cloudinary.json`: 190 URLs | Todas son fotos de producto; ninguna de héroe/marca. |
+| Historial de git (`--all`) | `img/hero/*`, `hero.png` (raíz), versiones previas de `hero-crop` | **`hero2.png` (1376×768, commit `0c3752b`, 30-ago-2026)**: otro héroe, ya retirado del árbol en `14e9323`. Una ventana 4:5 de 614×768 contiene **wordmark + 4 frascos completos**. También `hero.png` (1024×572, `d3cc623`) y un `hero-crop` anterior (1024×417): apaisados y de menor resolución. |
+| Perfil del usuario (Escritorio / OneDrive) | proyectos hermanos (Fragance Obsession, JNAFRAGANCE…) | Sólo fotos de producto; ningún héroe de Cruzial. |
+
+**Conclusión:** sí existe un original utilizable, pero **no es el de escritorio**: es el héroe anterior. Se recupera con
+`git show 0c3752b:img/hero/hero2.png`.
+
+### 7.2 Los assets de E (todos recortes puros, ninguno sintetizado)
+
+| Formato | Archivo | Origen | Píxeles |
+|---|---|---|---|
+| Escritorio y tableta apaisada | `hero-d-wide.webp` (el de D) | `hero-crop.webp`, x 95–1672, y 88–764 | 1577 × 676 (21:9) |
+| **Móvil y tableta vertical (E)** | `hero-e-hero2-4x5.webp` | `hero2.png`, x 706–1320, y 0–768 | 614 × 768 (4:5), 38 KB servidos |
+| Móvil, plan B sin original 4:5 (EC) | `hero-e-center.webp` | `hero-crop.webp`, x 575–1125, y 70–660 (la columna del wordmark, entre los dos grupos de frascos) | 550 × 590, 15 KB servidos |
+
+Variantes en el sitio (`/parfums?hero=…`):
+- **`e`**: escritorio D + móvil con el recorte de `hero2` (el que cumple el punto 2 del encargo).
+- **`ec`** (plan B del punto 4, ya construido y medido): escritorio D + móvil con la columna del wordmark al 78 % del ancho,
+  bordes difuminados, suelo del héroe del color del humo. **Ningún frasco se ve y ninguno se corta**; el wordmark queda más pequeño
+  que en C (254 px frente a 333 px) y el héroe mide 596 px de alto en 390 × 844 (el actual, 810).
+- **`eb`** (alternativa pura extra): la banda 21:9 completa también en móvil. Todos los frascos, wordmark de 114 px.
+
+![E 390](hero-variants/hero-e-sin-sintesis-390.jpg)
+![E 768](hero-variants/hero-e-sin-sintesis-768.jpg)
+
+Capturas de E a 1440, 1024, 768, 390 y 375 px: `docs/hero-variants/hero-e-sin-sintesis-<ancho>.jpg`. Del plan B:
+`hero-ec-columna-movil-{768,390,375}.jpg`; de la banda: `hero-eb-banda-movil-{390,375}.jpg`.
+
+### 7.3 Implementación
+
+`HeroArtworkD` (comparte estructura con D): `<picture>` con `getImageProps`, origen vertical bajo
+`(max-width: 767px), (max-width: 1100px) and (orientation: portrait)`. Para `e` el arte **nunca se recorta con CSS**: en pantallas
+bajas (iPhone SE, 375 × 667) se reduce su anchura (`min(100%, (100svh − 256px) × 0.8)`), no se corta el monograma.
+
+### 7.4 Medidas (misma metodología; 5 anchos)
+
+| | 1440 | 1024 | 768 (vertical) | 390 | 375 |
+|---|---|---|---|---|---|
+| **E** · escala de la imagen | 0.91 | 0.65 | 1.00 | 0.64 | 0.54 |
+| **E** · wordmark (px de ancho) | 420 | 299 | 275 | 175 | 147 |
+| **E** · frascos visibles izq. / der. | 100 / 100 | 100 / 100 | 100 / 100 | 100 / 100 | 100 / 100 |
+| **E** · wordmark visible | 100 % | 100 % | 100 % | 100 % | 100 % |
+| **E** · arte en el viewport | 69 % | 57 % | 60 % | 58 % | 54 % |
+| **E** · texto sobre zona sagrada | 0 % | 0 % | 0 % | 0 % | 0 % |
+| **E** · contraste del `h1` | 16.8 | 16.8 | 16.8 | 16.8 | 16.8 |
+| **E** · CTA | 48 px | 48 | 48 | 48 | 48 |
+| EC · frascos visibles / wordmark px | 100 / 420 | 100 / 299 | 0 (ninguno) / 401 | 0 (ninguno) / 254 | 0 (ninguno) / 245 |
+| EB · frascos visibles / wordmark px | 100 / 420 | 100 / 299 | 100 / 224 | 100 / 114 | 100 / 109 |
+
+axe (WCAG 2.2 A/AA) sobre el héroe: **0 violaciones** en E, EC y EB a 1440, 768, 390 y 375 px. (En EC la métrica «texto sobre zona
+sagrada» da 1–8 % porque el rectángulo del frasco izquierdo, que **no se dibuja**, se extiende bajo el titular: es un artefacto del
+cálculo, no texto sobre arte.)
+
+### 7.5 Por qué no hay una opción mejor sin síntesis
+
+1. La composición actual mide 1 560 px de producto en 1 672 de ancho y 792 de alto. **Cualquier ventana 4:5 de esa imagen contiene
+   o el wordmark o un grupo de frascos, nunca todo**: para tener todo hay que recomponer (D), es decir, inventar la unión.
+2. No existe en el repo, en Cloudinary ni en el historial otra fotografía vertical con esa composición. El único original vertical
+   utilizable es el héroe antiguo (`hero2`), que es **otra composición**.
+3. Lo que se puede hacer sin síntesis se reduce a tres opciones, todas medidas: mostrar el original antiguo (E), mostrar sólo el
+   wordmark sin frascos (EC/C) o mostrar la banda completa pequeña (EB/D-banda).
+
+### 7.6 Riesgos de E (a decidir por la marca)
+
+- **No es el mismo arte que en escritorio:** `hero2` tiene 4 frascos (Valentino, Erba Pura, Tom Ford, 9 PM) y el de escritorio 6.
+  Además el Tom Ford de `hero2` es un frasco transparente con etiqueta, distinto del negro del héroe actual, y se ve menos
+  convincente. Móvil y escritorio mostrarían composiciones diferentes.
+- **Baja resolución:** 614 × 768 nativos. A 390 px de ancho con densidad 2 hace falta 780 px (×1.27 de ampliación); con densidad 3,
+  ×1.9. Se verá algo blando. Con el archivo de alta resolución de `hero2` (si existe en manos del diseñador) el problema desaparece.
+- `hero2.png` está fuera del árbol desde `14e9323`: hay que confirmar con el dueño que sigue siendo un activo aprobado.
+
+## 8. Comparación final A · B · C · D · E
+
+| Criterio | A · Velo | B · Zonas libres | C · Recorte sagrado | D · Reencuadre | **E · Sin síntesis** |
+|---|---|---|---|---|---|
+| Arte nuevo / inventado | no | no | no | **sí (humo sintetizado)** | **no** |
+| Cambia | CSS | CSS | CSS | asset + CSS | asset (recortes) + CSS |
+| Frascos cortados en 1440 | sí (32 % der.) | sí (32 % der.) | no | no | **no** |
+| Frascos visibles en móvil 390 | 15 / 8 % | 15 / 8 % | 1 / 0 % | 100 / 100 % | **100 / 100 % (4 frascos de otro set)** |
+| Frascos visibles en 1024 | 63 / 49 % | 63 / 49 % | 88 / 70 % | 100 / 100 % | **100 / 100 %** |
+| Tamaño del producto en 1440 | 1.09 | 1.09 | 0.92 | 0.91 | **0.91** |
+| Wordmark en móvil (390 / 375) | 268 / 258 px | 268 / 258 | 333 / 320 | 163 / 157 | **175 / 168** |
+| Superficie de arte en 1440 | 96 % | 96 % | 81 % | 69 % | **69 %** |
+| Texto sobre zona sagrada | hasta 9 % | 0 % | 0 % | 0 % | **0 %** |
+| Contraste del `h1` | ≥ 7.2 | ≥ 16.7 | ≥ 9.1 | 16.8 | **16.8** |
+| Descarga móvil del héroe | 44–87 KB | 44–87 KB | 44–87 KB | 29–41 KB | **38 KB** (EC: 15 KB) |
+| Riesgo principal | oscurece la foto | titular pequeño y separado | pierde impacto, sin producto en móvil | **inventa píxeles** | **arte distinto en móvil y baja resolución** |
+
+(A y B no se midieron a 768 y 375 en esta ronda; sus columnas de 1440, 1024 y 390 vienen de las secciones 2 y 4.)
+
+## 9. Recomendación final (vigente; sustituye a las secciones 3 y 6)
+
+1. **D queda descartada** por la regla «no se inventan píxeles».
+2. **Recomiendo E**, condicionada a que el dueño apruebe usar `hero2` en móvil. Es la única variante que cumple a la vez: ningún
+   píxel inventado, ningún frasco cortado en ningún ancho (los 4 de `hero2` completos en móvil, los 6 completos en escritorio),
+   0 % de texto sobre el arte, contraste 16.8:1 y producto visible en el teléfono. Pide dos cosas: **el archivo de `hero2` en alta
+   resolución** (614 px es justo) y **aceptar que móvil y escritorio muestran composiciones distintas**.
+3. **Si no se acepta el arte antiguo, EC** (`?hero=ec`): sin síntesis, mismo arte en todos los dispositivos, wordmark de 254 px,
+   nada de producto en el teléfono (queda ninguno visible y ninguno cortado). Es C con menos wordmark.
+4. **B** sólo si se prioriza la superficie de foto en escritorio (96 %) y se acepta cortar el frasco de cristal derecho (32 %).
+
+No se ha mergeado nada; `claude/hero-variants` queda como rama de evidencia (basada en el historial anterior a la
+reescritura; habrá que rebasarla sobre `claude/apple-design-system` cuando se elija).

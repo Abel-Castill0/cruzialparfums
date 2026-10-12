@@ -27,11 +27,11 @@ export function HeroArtwork({
   ctaLabel: string;
   secondaryHref?: Route;
   secondaryLabel?: string;
-  /** Design experiment on claude/hero-variants only: a | b | c | d. Undefined = the shipped hero. */
-  variant?: "a" | "b" | "c" | "d" | undefined;
+  /** Design experiment on claude/hero-variants only: a | b | c | d | e | ec | eb. Undefined = the shipped hero. */
+  variant?: "a" | "b" | "c" | "d" | "e" | "ec" | "eb" | undefined;
 }) {
-  if (variant === "d") {
-    return <HeroArtworkD alt={alt} title={title} ctaHref={ctaHref} ctaLabel={ctaLabel} secondaryHref={secondaryHref} secondaryLabel={secondaryLabel} />;
+  if (variant === "d" || variant === "e" || variant === "ec" || variant === "eb") {
+    return <HeroArtworkD variant={variant} alt={alt} title={title} ctaHref={ctaHref} ctaLabel={ctaLabel} secondaryHref={secondaryHref} secondaryLabel={secondaryLabel} />;
   }
   return (
     <section className={styles.hero} data-home-hero data-fit={mobileFit} data-variant={variant} aria-label="Cruzial Parfums">
@@ -74,12 +74,19 @@ export function HeroArtwork({
 const ART_D = {
   wide: { src: "/parfums/hero/hero-d-wide.webp", width: 1577, height: 676 },
   portrait: { src: "/parfums/hero/hero-d-portrait.webp", width: 1100, height: 1375 },
+  // E: no synthesis. A pure crop of the original (x 575-1125, y 70-660): the wordmark column, between the two bottle
+  // groups, so no bottle appears and none is cut.
+  center: { src: "/parfums/hero/hero-e-center.webp", width: 550, height: 590 },
+  // E: an existing original, cut as-is. hero2.png (1376x768, commit 0c3752b, Aug 30) cropped to 4:5 at x 706-1320:
+  // wordmark and four complete bottles, no synthesis. Native 614x768, so it is upscaled on dense phones.
+  hero2: { src: "/parfums/hero/hero-e-hero2-4x5.webp", width: 614, height: 768 },
 } as const;
 
 /** Phones and portrait tablets get the 4:5 asset; landscape screens get the 21:9 one. Keep in sync with the CSS. */
 const PORTRAIT_MEDIA = "(max-width: 767px), (max-width: 1100px) and (orientation: portrait)";
 
 function HeroArtworkD({
+  variant,
   alt,
   title,
   ctaHref,
@@ -87,6 +94,7 @@ function HeroArtworkD({
   secondaryHref,
   secondaryLabel,
 }: {
+  variant: "d" | "e" | "ec" | "eb";
   alt: string;
   title: string;
   ctaHref: Route;
@@ -96,12 +104,15 @@ function HeroArtworkD({
 }) {
   const shared = { alt, quality: 60, fetchPriority: "high" as const };
   const { props: wide } = getImageProps({ ...shared, ...ART_D.wide, sizes: "100vw" });
-  const { props: portrait } = getImageProps({ ...shared, ...ART_D.portrait, sizes: "100vw" });
+  // D: 4:5 recomposition (synthesised smoke). E: pure 4:5 crop of an older original. EC: pure crop of the wordmark column.
+  // EB: the 21:9 band on phones too.
+  const phoneArt = variant === "d" ? ART_D.portrait : variant === "e" ? ART_D.hero2 : ART_D.center;
+  const { props: phone } = getImageProps({ ...shared, ...phoneArt, sizes: variant === "ec" ? "80vw" : "100vw" });
   const { srcSet: wideSet, ...img } = wide;
   return (
-    <section className={styles.hero} data-home-hero data-variant="d" aria-label="Cruzial Parfums">
+    <section className={styles.hero} data-home-hero data-variant={variant} aria-label="Cruzial Parfums">
       <picture className={styles.artD}>
-        <source media={PORTRAIT_MEDIA} srcSet={portrait.srcSet} />
+        {variant === "eb" ? null : <source media={PORTRAIT_MEDIA} srcSet={phone.srcSet} />}
         <source srcSet={wideSet} />
         <img {...img} alt={alt} className={styles.imageD} />
       </picture>
