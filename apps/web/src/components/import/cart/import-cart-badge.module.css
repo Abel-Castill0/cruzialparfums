@@ -5,12 +5,13 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: var(--ds-on-photo-muted);
+  /* The Import header is light (white) once it shows: the icon is ink, not the white-on-photo it used to be (invisible). */
+  color: var(--ds-ink);
   transition: color var(--ds-dur-fast) var(--ds-ease-spring);
 }
 
 .badge:hover {
-  color: var(--ds-white);
+  color: var(--ds-ink-muted);
 }
 
 .count {
@@ -24,8 +25,8 @@
   align-items: center;
   justify-content: center;
   border-radius: 999px;
-  background: var(--ds-white);
-  color: var(--ds-ink);
+  background: var(--ds-color-accent);
+  color: var(--ds-color-on-accent);
   font-size: 0.75rem;
   font-weight: 600;
   line-height: 1;
