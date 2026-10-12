@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { minimumPrice } from "@/domains/catalog/catalog-query";
-import type { CatalogProduct } from "@/domains/catalog/types";
+import { cartIdentity, type CatalogProduct } from "@/domains/catalog/types";
 import type { ComboMemberPhoto } from "@/domains/combos/combo-builder";
 import { COMBO_ART, COMBO_SET_ART } from "@/components/parfums/shared/combo-art";
 import styles from "./combo-carousel.module.css";
@@ -123,7 +123,7 @@ export function ComboCarousel({ combos, photosBySlug = {} }: { combos: CatalogPr
           const memberPhotos = content?.heroImageUrl || art ? [] : (photosBySlug[combo.slug] ?? []);
           return (
             <article
-              key={combo.legacyId}
+              key={cartIdentity(combo)}
               className={styles.slide}
               aria-hidden={slideIndex !== index}
               data-active={slideIndex === index}
@@ -210,7 +210,7 @@ export function ComboCarousel({ combos, photosBySlug = {} }: { combos: CatalogPr
           <div className={styles.dots} role="tablist" aria-label="Selecciona un combo">
             {combos.map((combo, dotIndex) => (
               <button
-                key={combo.legacyId}
+                key={cartIdentity(combo)}
                 type="button"
                 role="tab"
                 aria-selected={dotIndex === index}

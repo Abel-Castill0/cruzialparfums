@@ -269,7 +269,7 @@ export function ProductDetailExperience({
         </div>
         <div className={styles.relatedGrid}>
           {relatedProducts.map((related, index) => (
-            <ProductCard key={related.legacyId} product={related} mode="decant" onAdded={announce} eager={index < 2} />
+            <ProductCard key={cartIdentity(related)} product={related} mode="decant" onAdded={announce} eager={index < 2} />
           ))}
         </div>
       </section>
