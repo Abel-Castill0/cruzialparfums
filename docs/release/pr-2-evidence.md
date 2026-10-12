@@ -1,6 +1,6 @@
-# PR 2 — Documentación del rediseño (`claude/design-evidence`)
+# Documentación del rediseño (`claude/design-evidence`)
 
-Documentación del rediseño. **Ver PR #1** (`claude/apple-design-system`, el código).
+Documentación del rediseño. **Ver el PR de código** (`claude/apple-design-system`, que se abre después de éste).
 
 Esta rama es sólo documentación: ningún archivo de `apps/`, `supabase/` ni `scripts/`.
 
@@ -12,8 +12,9 @@ Esta rama es sólo documentación: ningún archivo de `apps/`, `supabase/` ni `s
 | Diagnóstico de rendimiento y «TBT root cause» (§6) | `docs/perf-diagnosis.md` |
 | Capturas antes/después a 8 anchos e Import C | `docs/screenshots/` |
 | Reportes Lighthouse y datos del bundle | `docs/lighthouse/` |
+| Ronda de optimización: TBT antes/después (3 ejecuciones), matriz Chromium/WebKit/Firefox, tickets T12–T20 | `docs/design-evidence/` |
 
-**Orden de merge:** independiente; los comentarios del código del PR #1 citan `DESIGN.md`, así que conviene fusionar este PR
-con o antes que el PR #1. Pesa ≈ 31 MB por las capturas e informes (ver T9 en el PR #1).
+**Orden de merge:** primero éste; los comentarios del código citan `DESIGN.md`. Pesa ≈ 35 MB por las capturas e informes
+(ver T9 en el PR de código).
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
