@@ -72,3 +72,17 @@ test("catalog category buttons and filter controls remain clear on mobile", asyn
   await sheet.getByRole("button", { name: "Árabe", exact: true }).click();
   await expect(page.locator("[aria-live=polite]").filter({ hasText: "Tipo" })).toContainText("Árabe");
 });
+
+test("catalog hero stacks the photograph above the headline on phones; nothing is laid over the image", async ({ page }) => {
+  await page.goto("/parfums/catalogo");
+  const geometry = await page.evaluate(() => {
+    const hero = document.querySelector("[data-home-hero]")!;
+    const media = hero.querySelector("[class*=catalogHeroMedia]")!.getBoundingClientRect();
+    const h1 = hero.querySelector("h1")!.getBoundingClientRect();
+    const copy = hero.querySelector("[class*=catalogHeroCopyWrap]")!.getBoundingClientRect();
+    return { mediaTop: media.top, mediaBottom: media.bottom, h1Top: h1.top, copyTop: copy.top, heroBottom: hero.getBoundingClientRect().bottom, h1Bottom: h1.bottom };
+  });
+  expect(geometry.h1Top, "headline starts below the photograph").toBeGreaterThanOrEqual(geometry.mediaBottom);
+  expect(geometry.copyTop, "copy block starts below the photograph").toBeGreaterThanOrEqual(geometry.mediaBottom - 1);
+  expect(geometry.h1Bottom).toBeLessThanOrEqual(geometry.heroBottom);
+});

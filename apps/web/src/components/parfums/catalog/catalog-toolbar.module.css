@@ -67,6 +67,7 @@
 .search input {
   flex: 1;
   min-width: 0;
+  text-overflow: ellipsis;
   height: 100%;
   border: 0;
   outline: 0;
@@ -544,7 +545,17 @@
     gap: 8px;
   }
 
+  /* The search keeps a 320px flex-basis on larger screens; on a phone it must be allowed to shrink (min-width: 0) or the
+     bar grows past the container and the Filtros button is clipped by the viewport. */
+  .bar {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
   .search {
+    flex: 1 1 0;
+    min-width: 0;
     max-width: none;
     padding-left: 16px;
   }

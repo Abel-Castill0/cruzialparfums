@@ -46,7 +46,7 @@ const nextConfig: NextConfig = {
       { key: "X-Content-Type-Options", value: "nosniff" },
       { key: "X-Frame-Options", value: "DENY" },
       { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-      { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()" },
+      { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=(), usb=()" },
       { key: "X-DNS-Prefetch-Control", value: "on" },
       // HSTS only where the canonical production host is guaranteed HTTPS;
       // previews/staging must never pin the browser to a hostname policy.

@@ -14,7 +14,7 @@ import {
   BOTTLE_GIFT_MESSAGE,
   isBottleGiftEligible,
 } from "@/domains/catalog/promotion-eligibility";
-import type { CatalogProduct } from "@/domains/catalog/types";
+import { cartIdentity, type CatalogProduct } from "@/domains/catalog/types";
 import { SearchIcon } from "@/components/parfums/shell/shell-icons";
 import { RecommendationPanel } from "@/components/parfums/finder/recommendation-panel";
 import { finderAnswersToParams } from "@/domains/finder/finder-url";
@@ -308,7 +308,7 @@ export function CatalogExperience({ products, initialFilters, initialRecommendat
           {results.length > 0 ? (
             <ul role="list" data-product-grid className={styles.productGrid}>
               {results.map((product, index) => (
-                <Reveal as="li" key={product.legacyId} className={styles.revealCell} delay={(index % 4) * 60}>
+                <Reveal as="li" key={cartIdentity(product)} className={styles.revealCell} delay={(index % 4) * 60}>
                   <ProductCard product={product} mode={filters.format === "bottle" ? "bottle" : "decant"} onAdded={announceAdded} eager={index < 4} />
                 </Reveal>
               ))}
