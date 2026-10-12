@@ -1259,9 +1259,10 @@ button.send:disabled,
     transition: background-color var(--ds-dur-fast) var(--ds-ease-spring), color var(--ds-dur-fast) var(--ds-ease-spring);
   }
 
+  /* Fallbacks keep this correct whichever lands first: the gold accent tokens (design/accent-gold) or the blue ones. */
   .pickerSizes button.selected {
-    color: var(--ds-white);
-    background: var(--ds-accent);
+    color: var(--ds-color-on-accent, var(--ds-white));
+    background: var(--ds-color-accent, var(--ds-accent));
     box-shadow: none;
   }
 }
