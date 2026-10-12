@@ -506,3 +506,28 @@ este PR.
 | T20 | **Conseguir el wordmark oficial en SVG antes del próximo rediseño** (hoy sólo existe `logo.jpeg`, 499 px con fondo negro) | Alta | `docs/hero-variants.md` §12 |
 | T21 | Héroe: integrar la variante F (adoptada; ver `docs/hero-variants.md` §10–13) rebasando `claude/hero-variants` sobre la rama de código | Alta | hero |
 | T22 | **LCP de `/` móvil varía 1.5–2.6 s según el arranque en frío**: la imagen del héroe no está en `lazy` (no es el caso de `/parfums`); la primera visita paga el arranque de la función (TTFB ≈ 3 s en la primera ejecución de Lighthouse, ≈ 0.7 s en caliente) y la primera transformación de `_next/image`. Opciones: cachear la consulta de política de indexación del layout, precalentar `_next/image`, reducir lo que renderiza `/` en servidor | Media | `docs/lighthouse/hero-eager/README.md` |
+| T23 | **LCP real con throttling 4× bloqueado por hidratación + `Reveal`**: en producción (`cruzial.pe/parfums`, móvil, throttling aplicado) el LCP final es `h2#showcase-title` a 3.2–3.5 s; el encabezado queda oculto hasta que termina la hidratación (≈ 2.1–2.4 s con CPU 4× y el catálogo completo). **Depende de T12 + T13**; no se toca `Reveal` ni el encabezado (decisión: rompe la coherencia visual). El caso es sintético; sin throttling el LCP de un Pixel 7 emulado es ≈ 1.6 s | Media | §11 |
+| T24 | *(opcional, futuro)* Migrar las animaciones de entrada por encima del pliegue a CSS puro para que no dependan de la hidratación | Baja | T23, T13 |
+
+### 11. Verificación en producción tras #101 (2026-10-12)
+
+`master` @ `df805f7` (#101, squash) desplegado en producción (estado `success`); `https://cruzial.pe/parfums` y `https://cruzial.pe/`
+responden 200 y el HTML trae `loading="eager"` y los dos preloads del héroe. Lighthouse 12 sobre `https://cruzial.pe/parfums`, móvil,
+3 ejecuciones por modo. Reportes en `docs/lighthouse/prod/` (`parfums-mobile-2026-10-12-after-eager-{simulated,applied}-run{1,2,3}`);
+los previos al fix (`parfums-mobile.*`, 2026-10-12) siguen ahí para comparar.
+
+| | Rendimiento | LCP (ms) | TBT (ms) | CLS | Elemento LCP |
+|---|---|---|---|---|---|
+| Antes del fix (simulado, 1 ejecución) | 97 | 2 494 | 30 | 0 | `<img>` del héroe (retraso de carga 1 104 ms) |
+| Después, simulado | 92 / 96 / 96 | 2 185 / 2 594 / 2 610 (mediana 2 594) | 49 / 23 / 50 | 0 | héroe (1) y `h2#showcase-title` (2) |
+| Después, throttling aplicado (4G lento + CPU 4×) | 84 / 85 / 86 | **3 263 / 3 223 / 3 456** | 341 / 331 / 239 | 0 | `h2#showcase-title` (3) |
+
+- **«LCP lazy-loaded»: ya no aparece.** Pasa donde el elemento LCP sigue siendo la imagen y no aplica en el resto; la petición del
+  logotipo arranca a 0.55–0.75 s (antes 1.17 s).
+- **Objetivo LCP < 1.5 s: no se cumple en el laboratorio con throttling 4×.** El cuello de botella ya no es la imagen del héroe
+  (descargada a ≈ 1.4 s): es el encabezado «Fragancias para descubrir», dentro de `Reveal`, que se pinta cuando termina la hidratación.
+  Sin throttling (Pixel 7 emulado) la secuencia es barra de anuncio 1.25 s, héroe 1.28 s, foto de producto 1.63 s.
+- **Qué no queda demostrado:** no hay una medición de producción con throttling aplicado *antes* del fix; la mejora de −353 ms es del
+  A/B local (`docs/lighthouse/hero-eager/README.md`), con un catálogo local casi vacío que no reproduce la hidratación de producción.
+- **Decisión (Release Manager):** #101 se mantiene; no se persigue el LCP de 3.2 s (caso sintético, el usuario mediano ve ≈ 1.6 s), no se
+  quita `Reveal` del encabezado y no se refactoriza. Se documenta como **T23** y se vincula a **T12 + T13**, las palancas del siguiente ciclo.
