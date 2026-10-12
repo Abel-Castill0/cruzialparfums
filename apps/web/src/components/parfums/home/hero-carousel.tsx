@@ -14,6 +14,8 @@ import styles from "./hero-carousel.module.css";
 const DESKTOP_ART = { src: "/parfums/hero/hero-wide-21x9.webp", width: 1577, height: 676 } as const;
 const PHONE_LOGO = { src: "/parfums/hero/logo-official.jpeg", width: 499, height: 494 } as const;
 const PHONE_MEDIA = "(max-width: 767px), (max-width: 1100px) and (orientation: portrait)";
+// The exact complement of PHONE_MEDIA (width > 1100, or 768-1100 and landscape), so each preload fetches only the asset its screen shows.
+const DESKTOP_MEDIA = "(min-width: 1101px), (min-width: 768px) and (orientation: landscape)";
 
 export function HeroArtwork({
   title,
@@ -28,31 +30,37 @@ export function HeroArtwork({
   secondaryHref?: Route | undefined;
   secondaryLabel?: string | undefined;
 }) {
-  const shared = { alt: "Cruzial Perfumería", quality: 60, fetchPriority: "high" as const };
+  // The hero image is the LCP element on every screen: eager + high priority + a preload, never lazy.
+  const shared = { alt: "Cruzial Perfumería", quality: 60, fetchPriority: "high" as const, loading: "eager" as const };
   const { props: desktop } = getImageProps({ ...shared, ...DESKTOP_ART, sizes: "100vw" });
   // The official logo is served byte for byte: the optimizer would recompress it.
   const { props: phone } = getImageProps({ ...shared, ...PHONE_LOGO, sizes: "280px", unoptimized: true });
   const { srcSet: desktopSet, ...img } = desktop;
   return (
-    <section className={styles.hero} data-home-hero aria-label="Cruzial Parfums">
-      <picture className={styles.art}>
-        <source media={PHONE_MEDIA} srcSet={phone.srcSet ?? phone.src} />
-        <source srcSet={desktopSet} />
-        <img {...img} alt={shared.alt} className={styles.image} />
-      </picture>
-      <div className={styles.foot}>
-        <h1 className={styles.title}>{title}</h1>
-        <div className={styles.actions}>
-          <Link href={ctaHref} className={styles.cta}>
-            {ctaLabel}
-          </Link>
-          {secondaryHref && secondaryLabel ? (
-            <Link href={secondaryHref} className={styles.ctaSecondary}>
-              {secondaryLabel}
+    <>
+      {/* React hoists these to <head>; `media` keeps the other screen's asset from being downloaded. */}
+      <link rel="preload" as="image" media={PHONE_MEDIA} href={phone.src} fetchPriority="high" />
+      <link rel="preload" as="image" media={DESKTOP_MEDIA} imageSrcSet={desktopSet} imageSizes="100vw" fetchPriority="high" />
+      <section className={styles.hero} data-home-hero aria-label="Cruzial Parfums">
+        <picture className={styles.art}>
+          <source media={PHONE_MEDIA} srcSet={phone.srcSet ?? phone.src} />
+          <source srcSet={desktopSet} />
+          <img {...img} alt={shared.alt} className={styles.image} />
+        </picture>
+        <div className={styles.foot}>
+          <h1 className={styles.title}>{title}</h1>
+          <div className={styles.actions}>
+            <Link href={ctaHref} className={styles.cta}>
+              {ctaLabel}
             </Link>
-          ) : null}
+            {secondaryHref && secondaryLabel ? (
+              <Link href={secondaryHref} className={styles.ctaSecondary}>
+                {secondaryLabel}
+              </Link>
+            ) : null}
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+    </>
   );
 }

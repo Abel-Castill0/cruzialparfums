@@ -117,6 +117,63 @@ test.describe("parfums home hero and header", () => {
     await expect.poll(() => heroImage.evaluate((image: HTMLImageElement) => image.currentSrc)).toContain("hero-wide-21x9");
   });
 
+  // The hero image is the LCP element on every screen. F first shipped it through getImageProps, which defaults to
+  // loading="lazy" and drops Next's preload: Lighthouse flagged "LCP lazy-loaded" (1.1s of load delay, 44% of the mobile LCP).
+  test("hero LCP image is eager, high priority and preloaded once for the screen that shows it", async ({ page }) => {
+    const heroRequests: string[] = [];
+    page.on("request", (request) => {
+      const url = decodeURIComponent(request.url());
+      if (/hero-wide-21x9|logo-official/.test(url)) heroRequests.push(url);
+    });
+    await page.goto("/parfums");
+    const image = page.locator("[data-home-hero] img");
+    await expect(image).toHaveAttribute("loading", "eager");
+    await expect(image).toHaveAttribute("fetchpriority", "high");
+    await page.waitForLoadState("networkidle");
+
+    // The preload scanner reads the server HTML, and React reconciles <head> links after hydration: assert on the HTML, not the live DOM.
+    const html = await (await page.request.get("/parfums")).text();
+    const state = await page.evaluate((serverHtml) => {
+      const hero = document.querySelector("[data-home-hero] img") as HTMLImageElement;
+      const links = [...new DOMParser().parseFromString(serverHtml, "text/html").querySelectorAll<HTMLLinkElement>('link[rel="preload"][as="image"]')];
+      const pictureSource = document.querySelector<HTMLSourceElement>("[data-home-hero] picture source:not([media])");
+      return {
+        currentSrc: hero.currentSrc,
+        desktopSourceSrcset: pictureSource?.getAttribute("srcset") ?? null,
+        preloads: links.map((link) => ({
+          media: link.getAttribute("media"),
+          href: link.getAttribute("href"),
+          srcset: link.getAttribute("imagesrcset"),
+          sizes: link.getAttribute("imagesizes"),
+          fetchPriority: link.getAttribute("fetchpriority"),
+          appliesHere: link.media ? window.matchMedia(link.media).matches : true,
+        })),
+      };
+    }, html);
+
+    // One preload per screen class, each gated by a media query so a phone never downloads the desktop art (and vice versa).
+    expect(state.preloads).toHaveLength(2);
+    for (const link of state.preloads) {
+      expect(link.media, "every hero preload carries a media query").toBeTruthy();
+      expect(link.fetchPriority).toBe("high");
+    }
+    const applicable = state.preloads.filter((link) => link.appliesHere);
+    expect(applicable, "exactly one preload applies to this viewport").toHaveLength(1);
+    const [preload] = applicable;
+    if (preload!.srcset) {
+      // Desktop: same srcset and sizes as the <picture> source, so the browser picks the same candidate for both.
+      expect(preload!.srcset).toBe(state.desktopSourceSrcset);
+      expect(preload!.sizes).toBe("100vw");
+      expect(state.currentSrc).toContain("hero-wide-21x9");
+    } else {
+      // Phones: the preload is the file the <img> ends up showing.
+      expect(new URL(preload!.href!, page.url()).href).toBe(state.currentSrc);
+      expect(state.currentSrc).toContain("logo-official.jpeg");
+    }
+    // The preload is consumed, not duplicated: the hero asset is requested exactly once.
+    expect(heroRequests, heroRequests.join("\n")).toHaveLength(1);
+  });
+
   test("the navigation stays hidden until the visitor leaves the hero", async ({ page }) => {
     await page.goto("/parfums");
     const hero = page.locator("[data-home-hero]");
