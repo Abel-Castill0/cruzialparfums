@@ -413,7 +413,7 @@ se extrajo la estructura que un lector recorrería (Playwright, 1280 px):
 | T1 | Optimizar el héroe de `/parfums` (≈1080 px o recorte móvil ≈30 KB) y la fuente | Alta | LCP −0.7 s medido; `docs/perf-diagnosis.md` |
 | T2 | Decidir la variante del héroe (A/B/C) y fusionar `claude/hero-variants` | Alta | `docs/hero-variants.md` |
 | T3 | Reducir el TBT aplicado (< 200 ms): dividir código propio, `content-visibility`, menos CSS por ruta | Media | 332–375 ms con CPU 4× |
-| T4 | Instalar Firefox/WebKit, añadir proyectos a `playwright.config.ts` y ejecutar la matriz | Alta | §2 |
+| ~~T4~~ | ~~Instalar Firefox/WebKit y ejecutar la matriz~~ | **Hecho parcialmente** (WebKit sí; Firefox no se pudo lanzar: T14) | §10 |
 | T5 | Pasada manual en Android + iPhone y con NVDA/VoiceOver | Alta | §4 y §5 |
 | ~~T6~~ | ~~Enlace "saltar al contenido" en el storefront; revisar los 99 `h2` de producto del catálogo~~ | **Cerrado** | §9 |
 | T7 | Logotipo de Import horizontal con fondo transparente (monograma + texto) | Baja | la marca de 44 px apenas se lee |
@@ -435,8 +435,12 @@ Los dos fallos de nivel A que dejó la pasada manual (§5), corregidos y cubiert
   `id="contenido-principal"` y `tabindex="-1"` tras cada navegación (`usePathname`) para que el destino exista siempre
   (axe sólo trata el enlace como "skip link" si el destino existe) y no añade ninguna parada de tabulador.
 - No se muestra en `/admin/**`, que conserva su propio enlace (`#admin-content`).
-- Limitación: el destino se crea con JavaScript; sin JS el ancla no resuelve. El storefront necesita JS (carrito, filtros), por
-  lo que se aceptó frente a añadir `id` a 20 `<main>`.
+- **Actualización (commit `81de615`): funciona sin JavaScript.** Cada `<main>` del storefront (25 en 24 archivos) sale del servidor con
+  `id="main" tabindex="-1"` y el enlace es un `<a href="#main">` renderizado en servidor (ya no es un componente cliente). El anillo
+  de foco de `<main>` sólo aparece con `:focus-visible` (llegada por teclado, no por clic). En `/admin` (sin `main#main`) el enlace
+  global se oculta con CSS (`body:not(:has(main#main))`) y se conserva el propio del admin. Pruebas con `javaScriptEnabled: false` en
+  `/`, `/parfums`, `/parfums/catalogo` e `/import`: el HTML estático contiene el ancla y el destino, `Tab` + `Enter` deja el foco en
+  `main#main`. 81 pruebas en chromium, mobile y tablet.
 
 **1.3.1 Info and Relationships.** En `/parfums/catalogo` cada nombre de producto era un `h2` (99 paradas al navegar por encabezados).
 - Sección del catálogo: `aria-labelledby` → `h2 "Catálogo de perfumes"` (oculto visualmente, `.srOnly`; el `h1` visible es el del héroe).
@@ -455,3 +459,48 @@ serias/críticas. **66 pruebas pasan** (22 × 3 proyectos).
 
 Observación abierta (mejores prácticas, no WCAG A/AA): axe `region` marca en el catálogo el botón flotante de WhatsApp y el control de
 la barra de anuncio por estar fuera de un landmark. Preexistente; la prueba sólo exige que el enlace de salto no esté entre ellos.
+
+### 10. Optimización de rendimiento y matriz de motores (2026-10-11, tras la división en PR)
+
+**Aplicado** (commit `f976976` en `claude/apple-design-system`): `sizes` del héroe (540 px en móvil: una pantalla 2× elige la entrada
+de 1080; 100vw en escritorio: 1920), `preload: true` explícito en Geist y `content-visibility: auto` en las tarjetas del catálogo
+(celda con relleno de 24 px y margen negativo para que la contención de pintura no recorte la sombra del hover), en las secciones
+3+ de `/parfums` y en el pie. Tamaños intrínsecos medidos (800 px secciones; 500/1 080 px pie). CLS 0 recorriendo `/parfums` y
+`/parfums/catalogo` en 1440 y 390 px.
+
+**TBT con throttling aplicado** (Lighthouse `devtools`, CPU 4× + 4G lento, `/parfums`, 3 ejecuciones; reportes en
+`docs/design-evidence/`):
+
+| Ejecución | TBT antes | TBT después | LCP antes | LCP después |
+|---|---|---|---|---|
+| 1 | 507 ms | 326 ms | 2 175 ms | 2 044 ms |
+| 2 | 335 ms | 305 ms | 2 110 ms | 1 287 ms |
+| 3 | 465 ms | 326 ms | 2 406 ms | 1 277 ms |
+| **Mediana** | **465 ms** | **326 ms** | **2 175 ms** | **1 287 ms** |
+
+Además: bytes 441 → 345 KB; primer layout 340–383 → 129–143 ms; el segundo layout completo (cambio de fuente) desaparece, así que
+el TBT deja de ser bimodal (298–649 ms → 305–326 ms). **El TBT aplicado sigue por encima de 200 ms**: lo que queda es la hidratación
+(≈ 294–320 ms en un solo microtask del chunk principal), sin función caliente. Se documenta como **T13** y no se intenta arreglar en
+este PR.
+
+**Matriz de motores** (suite pública, caché `.next/cache` borrada; detalle en `docs/design-evidence/README.md`):
+
+| Motor | Resultado |
+|---|---|
+| Chromium (+ mobile, tablet, responsive) | **275 pasan, 0 fallan**, 39 omitidas; `npm run check` EXIT 0 |
+| WebKit 27.2 | contra el servidor de desarrollo: 69 pasan, 19 fallan, 13 omitidas. Contra el build de producción: la CSP `upgrade-insecure-requests` hace que WebKit pida los recursos por `https://localhost` («SSL connect error») y la página se ve sin estilos: **artefacto del entorno, no del sitio** (T19) |
+| Firefox 157 | **no se pudo lanzar** (`browserType.launch: spawn UNKNOWN` desde este entorno; `firefox.exe --version` funciona) |
+
+**Deuda nueva** (no bloquea el merge):
+
+| # | Ticket | Prioridad | Contexto |
+|---|---|---|---|
+| T12 | Reducir el payload RSC: el layout de `/parfums/**` serializa 98 productos (`cartProducts`, 178 KB) hacia `SiteHeaderActions` en cada página | Media | `perf-diagnosis.md` §6.6 |
+| T13 | **Reducir la hidratación del catálogo / `/parfums`** (TBT aplicado 305–326 ms > 200): menos fronteras cliente, `dynamic` bajo el pliegue, `Reveal` y cabecera en CSS | Media | §10 |
+| T14 | Ejecutar la suite en Firefox desde una terminal normal (`npx playwright test --project=firefox`); aquí no pudo lanzarse | Alta | §10 |
+| T15 | WebKit no pasa `Tab` por los enlaces por defecto (16 pruebas de teclado); usar `Alt+Tab` en el proyecto `webkit` o comprobar a mano en Safari (Opción + Tab) | Media | `design-evidence/README.md` |
+| T16 | axe `color-contrast` en `/import/catalogo` (eyebrow) sólo en WebKit; reproducir en Safari real | Media | idem |
+| T17 | WebKit: el diálogo del recomendador no aparece en 20 s (servidor de desarrollo frío) | Baja | idem |
+| T18 | WebKit: el carrusel de producto no reanuda su movimiento tras salir el puntero | Media | idem |
+| T19 | Probar WebKit contra el servidor de desarrollo o con HTTPS local: la CSP de producción rompe `http://localhost` en WebKit | Baja | idem |
+| T20 | Héroe: decidir E/EC/B (`docs/hero-variants.md` §9) y rebasar `claude/hero-variants` sobre la rama de código | Alta | hero |
