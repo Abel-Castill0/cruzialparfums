@@ -476,30 +476,37 @@ dos columnas estrechas; C no lo evita. B ataca la causa (menos palabras) sin esc
 
 Para 320 × 568 B necesita además una compactación ≤ 340 px (relleno de 8 px, iconos de 18 px, títulos de 12.8 px; el texto
 secundario se mantiene en **12 px**, el mínimo del sistema: una primera pasada con 11.2 px se descartó por incumplir `DESIGN.md` §10).
+La medición de la tabla anterior (45 px de tarjeta a 320 px) es la de esa primera versión del copy; los números vigentes son los de §13.3.
 
-**Copy de B (3–4 palabras, sólo en ≤ 480 px y sólo en `?hero=f`):**
+**Copy de B — versión final.** La primera versión acortada («Casas oficiales», «Total final contigo») quitaba atributos
+diferenciadores. Criterio de la reescritura: **quitar conectores, no atributos** (autenticidad, oficialidad, stock, tallas). Cada
+segunda línea debe caber **en una sola línea a 12 px** en la columna más estrecha (a 320 px el texto dispone de ≈ 95–120 px; los anchos
+de abajo están medidos con Geist 12 px / 400).
 
-| Título (no cambia) | Segunda línea antes | Segunda línea en B |
-|---|---|---|
-| 100% originales | Frascos auténticos de casas oficiales | **Casas oficiales** |
-| Decants desde 3 ml | También en 5 y 10 ml | **En 5 y 10 ml** |
-| Envío por Shalom | A todo el Perú | **A todo el Perú** (sin cambio) |
-| Atención por WhatsApp | Stock y total final contigo | **Total final contigo** |
+| Garantía (título, no cambia) | Original | Opción A | Opción B | **Recomendada** |
+|---|---|---|---|---|
+| **100% originales** | Frascos auténticos de casas oficiales | **Auténtico y oficial** (98 px) | De casas oficiales (99 px) | **A**: conserva *auténtico* y *oficial*, los dos atributos; B pierde *auténtico* |
+| **Decants desde 3 ml** | También en 5 y 10 ml | **En 5 y 10 ml** (66 px) | También 5 y 10 ml (≈ 104 px) | **A**: conserva las dos tallas (el atributo); «también» es un conector |
+| **Envío por Shalom** | A todo el Perú | **A todo el Perú** (77 px, sin cambio) | Todo el Perú (≈ 66 px) | **A**: ya es corta y completa |
+| **Atención por WhatsApp** | Stock y total final contigo | **Stock y total final** (97 px) | Stock confirmado (97 px) | **A**: conserva *stock* y *total final*; B pierde el total. «Contigo» es un conector: el título ya dice que la atención es por WhatsApp |
 
-El texto largo sigue en el DOM y es el que se ve a partir de 481 px; en ≤ 480 px se muestra el corto (el otro queda en
-`display: none`, así que los lectores de pantalla leen sólo el visible). **Hay que validar con el cliente** que el acortado conserva el
-mensaje: «Casas oficiales» pierde «frascos auténticos» y «Total final contigo» pierde «stock», aunque el título «100% originales» y
-el cierre por WhatsApp se mantienen. No se añade ningún claim nuevo.
+Sólo en ≤ 480 px y sólo en `?hero=f`; el texto original sigue en el DOM y es el que se ve desde 481 px. En ≤ 480 px el otro texto queda en
+`display: none`, así que los lectores de pantalla leen sólo el visible. No se añade ningún claim nuevo: todo atributo corto aparece en el
+texto original.
+
+**Ajuste de maquetación para que quepan a 320 px:** en ≤ 340 px la franja usa el ancho casi completo (`calc(100% − 16px)` en vez de
+`− 48px`) y 4 px de relleno lateral por ítem. Con eso el texto dispone de ≈ 98–122 px y **las cuatro segundas líneas caben en una
+línea a 12 px** (medido, abajo).
 
 ### 13.3 Verificación final (hero 45 % / 42 %, B, aro)
 
 | | 390 × 844 | 375 × 667 | 360 × 640 | 320 × 568 |
 |---|---|---|---|---|
 | Altura del héroe | 380 px (**45 %**) | 280 px (**42 %**) | 269 px (**42 %**) | 239 px (**42 %**) |
-| Franja de garantías (sin scroll horizontal) | 142 px | 142 px | 142 px | 126 px |
-| **Primera tarjeta del carrusel visible** (≥ 40 px) | **156 px** | **81 px** | **68 px** | **45 px** |
-| Título de la sección visible | 256 px | 179 px | 163 px | 138 px |
-| Segunda línea de cada garantía visible | sí | sí | sí | sí |
+| Franja de garantías (sin scroll horizontal) | 142 px | 142 px | 142 px | **109 px** |
+| **Primera tarjeta del carrusel visible** (≥ 40 px) | **156 px** | **81 px** | **68 px** | **62 px** |
+| Título de la sección visible | 256 px | 179 px | 163 px | 155 px |
+| Segunda línea de cada garantía: visible y **en una sola línea** (12 px) | sí | sí | sí | sí |
 | Texto más pequeño de la franja | 12.0 px | 12.0 px | 12.0 px | 12.0 px |
 | Scroll horizontal de la página | no | no | no | no |
 | Contraste del `h1` sobre navy | 16.4 | 16.4 | 16.4 | 16.4 |

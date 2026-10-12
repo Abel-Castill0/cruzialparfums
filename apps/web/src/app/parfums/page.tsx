@@ -31,10 +31,10 @@ export const metadata: Metadata = {
 // A single established brand banner keeps the Parfums hero focused. The sets'
 // own photographs appear in their dedicated section further down the page.
 const assurances = [
-  { title: "100% originales", text: "Frascos auténticos de casas oficiales", short: "Casas oficiales", icon: <path d="M12 3 4.5 6v5.5c0 4.4 3.1 8 7.5 9.5 4.4-1.5 7.5-5.1 7.5-9.5V6L12 3Zm-3 9 2.2 2.2L15.5 10" /> },
+  { title: "100% originales", text: "Frascos auténticos de casas oficiales", short: "Auténtico y oficial", icon: <path d="M12 3 4.5 6v5.5c0 4.4 3.1 8 7.5 9.5 4.4-1.5 7.5-5.1 7.5-9.5V6L12 3Zm-3 9 2.2 2.2L15.5 10" /> },
   { title: "Decants desde 3 ml", text: "También en 5 y 10 ml", short: "En 5 y 10 ml", icon: <path d="M9.5 3h5v3l1.4 2.8V19a2 2 0 0 1-2 2h-3.8a2 2 0 0 1-2-2V8.8L9.5 6V3Zm-1.5 10h8" /> },
   { title: "Envío por Shalom", text: "A todo el Perú", short: "A todo el Perú", icon: <path d="M3 6.5h11v9H3zM14 10h4l3 3v2.5h-7M7 17.5a1.8 1.8 0 1 0 0 .01M17 17.5a1.8 1.8 0 1 0 0 .01" /> },
-  { title: "Atención por WhatsApp", text: "Stock y total final contigo", short: "Total final contigo", icon: <path d="M12 4a8 8 0 0 0-6.9 12l-1 3.5 3.6-1A8 8 0 1 0 12 4Z" /> },
+  { title: "Atención por WhatsApp", text: "Stock y total final contigo", short: "Stock y total final", icon: <path d="M12 4a8 8 0 0 0-6.9 12l-1 3.5 3.6-1A8 8 0 1 0 12 4Z" /> },
 ] as const;
 
 const heroArtwork = {

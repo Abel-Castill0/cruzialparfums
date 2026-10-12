@@ -743,13 +743,14 @@
 
 @media (max-width: 340px) {
   .home[data-hero="f"] .assurance {
+    width: calc(100% - 16px);
     padding-block: 8px;
     row-gap: 8px;
   }
 
   .home[data-hero="f"] .assurance li {
     gap: 6px;
-    padding-inline: 6px;
+    padding-inline: 4px;
   }
 
   .home[data-hero="f"] .assurance li > svg {
