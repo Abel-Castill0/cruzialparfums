@@ -1,62 +1,64 @@
 .page {
   width: min(880px, calc(100% - 48px));
   margin: 0 auto;
-  padding: 18px 0 100px;
-  color: #17130f;
+  padding: 16px 0 96px;
+  color: var(--ds-ink);
 }
 
 .card {
   max-width: 680px;
-  margin: 74px auto 0;
+  margin: 64px auto 0;
   padding: clamp(34px, 7vw, 72px);
-  border: 1px solid rgba(26, 22, 18, 0.13);
-  background: #faf9f6;
+  border: 0;
+  background: var(--ds-white);
   text-align: center;
+  border-radius: var(--ds-radius-md);
+  box-shadow: var(--ds-shadow-1);
 }
 
 .eyebrow,
 .reference span {
-  color: #756f66;
-  font-size: 10px;
+  color: var(--ds-ink-muted);
+  font-size: 0.75rem;
   font-weight: 600;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
+
 }
 
 .card h1 {
-  margin: 16px 0 22px;
-  font-family: var(--font-display), Georgia, serif;
+  margin: 16px 0 24px;
+  font-family: var(--ds-font);
+  letter-spacing: -0.03em;
   font-size: clamp(42px, 7vw, 68px);
-  font-weight: 500;
+  font-weight: 600;
   line-height: 0.94;
-  letter-spacing: -0.035em;
+
 }
 
 .card h1 em {
-  color: #756f66;
+  color: var(--ds-ink-muted);
   font-weight: 400;
 }
 
 .message {
   max-width: 470px;
   margin: 0 auto;
-  color: #514b44;
+  color: var(--ds-ink-muted);
   font-size: 14px;
   line-height: 1.7;
 }
 
 .reference {
-  margin: 30px 0;
-  padding: 17px;
-  border-block: 1px solid rgba(26, 22, 18, 0.12);
+  margin: 32px 0;
+  padding: 16px;
+  border-block: 1px solid var(--ds-hairline);
   display: grid;
-  gap: 7px;
+  gap: 8px;
 }
 
 .reference strong {
   overflow-wrap: anywhere;
   font: 600 13px/1.4 var(--font-body), sans-serif;
-  letter-spacing: 0.08em;
+
 }
 
 .primary,
@@ -65,40 +67,40 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  gap: 8px;
+  font-size: 0.9375rem;
+  font-weight: 500;
+
 }
 
 .primary {
-  color: #fff;
-  background: #0a0806;
+  color: var(--ds-white);
+  background: var(--ds-accent);
+  border-radius: var(--ds-radius-pill);
 }
 
 .primary:hover {
-  background: #2b241c;
+  background: var(--ds-accent-press);
 }
 
 .secondary {
   margin-top: 8px;
-  color: #17130f;
-  border: 1px solid rgba(26, 22, 18, 0.2);
-  background: #fff;
+  color: var(--ds-ink);
+  border: 1px solid var(--ds-hairline);
+  background: var(--ds-white);
 }
 
 .primary:focus-visible,
 .secondary:focus-visible {
-  outline: 2px solid #17130f;
+  outline: 2px solid var(--ds-ink);
   outline-offset: 3px;
 }
 
 .note {
   max-width: 500px;
-  margin: 20px auto 0;
-  color: #756f66;
-  font-size: 10px;
+  margin: 24px auto 0;
+  color: var(--ds-ink-muted);
+  font-size: 0.75rem;
   line-height: 1.6;
 }
 
@@ -106,12 +108,12 @@
   .page {
     width: min(100% - 32px, 680px);
     padding-top: 8px;
-    padding-bottom: 70px;
+    padding-bottom: 64px;
   }
 
   .card {
     margin-top: 48px;
-    padding-inline: 20px;
+    padding-inline: 24px;
   }
 
   .card h1 {

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Breadcrumbs, type BreadcrumbItem } from "@/components/parfums/navigation/breadcrumbs";
 import { loadParfumsStorefront } from "@/lib/catalog/parfums-storefront";
 import styles from "@/components/parfums/institutional/institutional.module.css";
+import { Reveal } from "@/components/storefront/home/reveal";
 
 export const metadata: Metadata = {
   title: "Nosotros",
@@ -94,7 +95,7 @@ export default async function NosotrosPage() {
       </section>
 
       <section className={styles.section} style={{ paddingTop: 0 }}>
-        <div className={styles.wrap}>
+        <Reveal className={styles.wrap}>
           <div className={styles.split}>
             <div className={styles.splitArt} aria-hidden="true">
               <Image src="/images/parfums-home/parfums-authenticity.webp" alt="" fill sizes="(max-width: 899px) 100vw, 46vw" className={styles.artImage} />
@@ -128,11 +129,11 @@ export default async function NosotrosPage() {
               </div>
             </div>
           </div>
-        </div>
+        </Reveal>
       </section>
 
       <section className={`${styles.section} ${styles.band}`}>
-        <div className={styles.wrap}>
+        <Reveal className={styles.wrap}>
           <div className={styles.centerBlock}>
             <div className={styles.heading}>
               <h2>
@@ -148,11 +149,11 @@ export default async function NosotrosPage() {
               </article>
             ))}
           </div>
-        </div>
+        </Reveal>
       </section>
 
       <section className={styles.section} id="como-comprar">
-        <div className={styles.wrap}>
+        <Reveal className={styles.wrap}>
           <div className={styles.centerBlock}>
             <div className={styles.heading}>
               <h2>
@@ -170,11 +171,11 @@ export default async function NosotrosPage() {
               </article>
             ))}
           </div>
-        </div>
+        </Reveal>
       </section>
 
       <section className={`${styles.section} ${styles.band}`} id="faq">
-        <div className={styles.wrap}>
+        <Reveal className={styles.wrap}>
           <div className={styles.centerBlock}>
             <div className={styles.heading}>
               <h2>
@@ -190,11 +191,11 @@ export default async function NosotrosPage() {
               </details>
             ))}
           </div>
-        </div>
+        </Reveal>
       </section>
 
       <section className={`${styles.section} ${styles.sectionTop}`}>
-        <div className={styles.wrap}>
+        <Reveal className={styles.wrap}>
           <div className={styles.split}>
             <div className={styles.splitCopy}>
               <h2 className={styles.splitTitle}>
@@ -220,7 +221,7 @@ export default async function NosotrosPage() {
               <span className={styles.artCaption}>Decants 3 · 5 · 10 ml</span>
             </div>
           </div>
-        </div>
+        </Reveal>
       </section>
     </main>
   );
