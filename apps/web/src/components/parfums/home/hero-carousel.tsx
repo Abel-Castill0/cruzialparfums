@@ -80,9 +80,9 @@ const ART_D = {
   // E: an existing original, cut as-is. hero2.png (1376x768, commit 0c3752b, Aug 30) cropped to 4:5 at x 706-1320:
   // wordmark and four complete bottles, no synthesis. Native 614x768, so it is upscaled on dense phones.
   hero2: { src: "/parfums/hero/hero-e-hero2-4x5.webp", width: 614, height: 768 },
-  // F: the official wordmark (logo.jpeg, 499x494, black ground) keyed to transparency by luminance and cropped to
-  // "CRUZIAL / PERFUMERÍA" (x 36-476, y 326-456). Phones only: navy ground, no product image.
-  wordmark: { src: "/parfums/hero/hero-f-wordmark.webp", width: 440, height: 130 },
+  // F: the official lockup, logo.jpeg, byte-identical (499x494, near-black ground, no transparency, no keying). Phones only:
+  // CSS shows its "CRUZIAL / PERFUMERÍA" window on a solid --ds-color-navy hero; the file itself is never edited.
+  wordmark: { src: "/parfums/hero/logo-official.jpeg", width: 499, height: 494 },
 } as const;
 
 /** Phones and portrait tablets get the 4:5 asset; landscape screens get the 21:9 one. Keep in sync with the CSS. */
@@ -110,7 +110,7 @@ function HeroArtworkD({
   // D: 4:5 recomposition (synthesised smoke). E: pure 4:5 crop of an older original. EC: pure crop of the wordmark column.
   // EB: the 21:9 band on phones too.
   const phoneArt = variant === "d" ? ART_D.portrait : variant === "e" ? ART_D.hero2 : variant === "f" ? ART_D.wordmark : ART_D.center;
-  // The wordmark is a 35 KB lossless file: serve it as-is, the optimizer would re-encode the gold gradient lossy.
+  // The official logo is served byte-for-byte (unoptimized): the optimizer would recompress it.
   const { props: phone } = getImageProps({ ...shared, ...phoneArt, sizes: variant === "ec" ? "80vw" : "100vw", ...(variant === "f" ? { unoptimized: true } : {}) });
   const { srcSet: wideSet, ...img } = wide;
   return (

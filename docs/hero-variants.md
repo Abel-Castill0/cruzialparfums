@@ -2,7 +2,7 @@
 
 **Rama:** `claude/hero-variants` (parte de `claude/apple-design-system` @ `3020eb5`). **Nada se mergea.**
 Las variantes viven detrás de `?hero=a|b|c|d|e|ec|eb|f` en `/parfums` (sin parámetro = el héroe actual). Evidencia en
-`docs/hero-variants/` (`hero-<variante>-<ancho>.jpg`: A, B, C y actual a 1440 y 390 px; D a 1440, 1024 y 390 px, más los dos assets nuevos). **La recomendación vigente es la de la sección 12** (F; D, E y EB están descartadas: D sintetiza píxeles, E y EB cambian de producto entre breakpoints).
+`docs/hero-variants/` (`hero-<variante>-<ancho>.jpg`: A, B, C y actual a 1440 y 390 px; D a 1440, 1024 y 390 px, más los dos assets nuevos). **Decisión vigente: sección 12 (F adoptada con ajustes; D, E y EB descartadas: D sintetiza píxeles, E y EB cambian de producto entre breakpoints).**
 
 ## 1. Análisis de la imagen
 
@@ -313,7 +313,7 @@ cálculo, no texto sobre arte.)
 
 (A y B no se midieron a 768 y 375 en esta ronda; sus columnas de 1440, 1024 y 390 vienen de las secciones 2 y 4.)
 
-## 9. Recomendación final (vigente; sustituye a las secciones 3 y 6)
+## 9. Recomendación final (anterior a F; sustituida por la sección 12)
 
 1. **D queda descartada** por la regla «no se inventan píxeles».
 2. **Recomiendo E**, condicionada a que el dueño apruebe usar `hero2` en móvil. Es la única variante que cumple a la vez: ningún
@@ -327,112 +327,112 @@ cálculo, no texto sobre arte.)
 No se ha mergeado nada; `claude/hero-variants` queda como rama de evidencia (basada en el historial anterior a la
 reescritura; habrá que rebasarla sobre `claude/apple-design-system` cuando se elija).
 
-## 10. Variante F · "Tipográfica": el wordmark oficial en lugar de imagen, en móvil
+## 10. Variante F · "Tipográfica" — ADOPTADA con tres ajustes
 
-**Contexto:** E y EB quedan **rechazadas** (cambian de producto entre breakpoints y rompen la coherencia de marca). F no muestra
-producto en móvil: sólo el wordmark oficial sobre un fondo sólido, al estilo de las páginas de AirPods o HomePod. En escritorio
-conserva el recorte puro 21:9 (que ya lleva ese mismo wordmark horneado), así que **ningún producto cambia entre breakpoints**: en
-móvil simplemente no hay producto.
+**Decisión:** se adopta **F** para el móvil (E, EB y D quedan descartadas: E y EB cambian de producto entre breakpoints y D sintetiza
+píxeles). La versión inicial de F tenía tres defectos y se corrige antes del merge:
 
-### 10.1 ¿Existe el wordmark oficial como asset separado?
-
-| Archivo | Contenido | Formato | Veredicto |
+| # | Ajuste obligatorio | Antes | Ahora |
 |---|---|---|---|
-| **`logo.jpeg`** (raíz del repo) | **Lockup oficial «monograma + CRUZIAL + PERFUMERÍA»**, dorado | JPEG 499 × 494, RGB, **fondo negro (≈ 1,1,1), sin transparencia** | **Sí existe**, pero no en SVG ni PNG con alfa |
-| `apps/web/public/parfums/logo-mark.png` (= `img/logo-mark.png`) | sólo el monograma | PNG 256 × 256, RGB, fondo negro | Es el isotipo, no el wordmark |
-| `public/images/import-home/cruzial-import-logo.png` | logotipo de **Cruzial Import** (azul/plata) | PNG 1254 × 1254 | Otra marca; no se usa |
-| `src/app/icon.png` | favicon | PNG 32 × 32 con alfa | No sirve |
-| Búsqueda de `*.svg`, carpeta de marca, Cloudinary (190 URLs), Escritorio/OneDrive | — | — | Ningún SVG ni carpeta de marca; Cloudinary sólo trae fotos de producto |
+| 1 | Asset | `hero-f-wordmark.webp`, derivado del logotipo por **llave de luminancia** | **`logo.jpeg` original**, byte a byte (`logo-official.jpeg`, SHA-256 `2c457b1e…` idéntico), sin transparencia, sin llave, sin edición, servido sin recodificar |
+| 2 | Altura del héroe en móvil | 60 % | **45 %** (**48 %** en pantallas ≤ 700 px de alto) |
+| 3 | Ancho máximo del wordmark | 337 px (letras «CRUZIAL» de 322 px) | **280 px** (letras de **268 px**) |
 
-**Como existe, no se usa el recorte de `hero2` (instrucción 3 no aplica) y no se reconstruye nada con tipografía.**
+### 10.1 Razón por la que se descarta el keying de luminancia
 
-### 10.2 Cómo se obtiene el asset de F
+1. **Es una edición del activo de marca.** Convertir el negro en transparencia produce un archivo nuevo (`alfa = f(luminancia)`), no el
+   logotipo oficial; nadie de la marca lo ha aprobado. Un logotipo se coloca, no se retoca.
+2. **Cambia el color del propio logotipo.** Para que los bordes no queden grises se divide el color por el alfa: eso aclara el
+   degradado dorado en los bordes y funde en transparencia los extremos de bronce oscuro (los de menor luminancia), de modo que la
+   forma percibida de las letras ya no es la del original.
+3. **Amplifica el ruido de la compresión JPEG.** El original es un JPEG: el halo de bloques cerca del negro pasa a ser alfa visible.
+4. **Crea una segunda fuente de verdad.** El derivado diverge del original en cuanto la marca actualice `logo.jpeg`.
+5. **Coherencia con el criterio del dueño** para el resto del héroe: no se inventan ni se alteran píxeles.
 
-`logo.jpeg` tiene el negro como fondo, así que sobre navy se vería una caja negra. Se pasa a transparencia **por luminancia** (llave
-de negro): `alfa = clamp((máx(r,g,b) − 14) / (90 − 14))` y el color de los bordes se vuelve a normalizar dividiendo por el alfa;
-**el interior de los trazos no cambia y no se dibuja nada nuevo**. Se recorta a «CRUZIAL / PERFUMERÍA» (x 36–476, y 326–456 del
-original) y se guarda como WebP sin pérdida: `public/parfums/hero/hero-f-wordmark.webp`, 440 × 130, 35 KB, servido tal cual (sin
-pasar por el optimizador, que recodificaría con pérdida el degradado dorado). Se probaron tres umbrales (90, 130, 180); el de 90
-deja los bordes más limpios sobre navy.
+**Coste asumido:** el JPEG lleva su propio fondo casi negro (`1,1,1`), así que sobre el navy `#0B1F3D` se lee como una **placa
+negra** con el wordmark dorado (contraste placa/navy 1.27:1, es decir, sutil). Se le da `--ds-radius-sm` y **ni borde ni sombra**.
+Es el precio de no tocar el archivo; desaparece cuando exista el wordmark en SVG (T20).
 
-El monograma queda fuera de esta versión (sigue en la cabecera). Si se quiere el lockup completo basta recortar también el
-monograma (y 36–304 del original); ocuparía ~320 px de alto y sacaría al héroe del ~60 vh.
+### 10.2 Implementación (`/parfums?hero=f`, sólo móvil y tableta vertical)
 
-### 10.3 Diseño y aplicación (`/parfums?hero=f`)
+- Héroe con fondo **`var(--ds-color-navy)`** (exactamente `#0B1F3D`), sin imagen de producto, `min-height: 45svh`
+  (`48svh` con `max-height: 700px`).
+- Placa de **280 px de ancho** (nunca más que `100vw − 40px`) que muestra la ventana «CRUZIAL / PERFUMERÍA» de 440 × 130 px del
+  archivo de 499 × 494 con CSS (`overflow: hidden`, imagen posicionada); el archivo no se recorta ni se modifica.
+- Debajo, el `h1` «Perfumería de descubrimiento.» (≈ 21 px, `--ds-on-navy`) y dos CTA de 48 px en una sola fila.
+- **Ampliación del bitmap** (píxeles de pantalla por píxel de archivo): densidad 2: **×1.27** (antes ×1.53); densidad 3: **×1.91**
+  (antes ×2.3).
+- Escritorio y tableta apaisada: el recorte puro 21:9 de D/E, sin cambios.
 
-- **Móvil y tableta vertical** (`(max-width: 767px), (max-width: 1100px) and (orientation: portrait)`): fondo sólido
-  `--ds-color-navy`; wordmark centrado de **337 px de ancho** (letras «CRUZIAL» de **54 px de alto**, dentro del rango 48–64;
-  nunca más ancho que la pantalla: 46 px a 320 px); el `h1` «Perfumería de descubrimiento.» (≈ 25 px, blanco) como línea de
-  apoyo y los dos CTA de 48 px debajo, centrados; **altura ≈ 60 svh**; sin imagen de producto. En tableta vertical (≥ 600 px) el
-  wordmark pasa a 420 px (67 px de alto de letra).
-- **Escritorio y tableta apaisada:** el mismo recorte 21:9 de D/E, sin cambios.
-- El wordmark se sirve vía `<picture>` (sólo se descarga el asset del breakpoint activo). `alt="Cruzial Perfumería"`.
-- Tagline: la marca ya trae «PERFUMERÍA» dentro del lockup; el `h1` hace de línea descriptiva. No se inventó ningún texto.
+**Cambios de apoyo para que el carrusel asome** (bajo `data-hero="f"` y ≤ 480 px; sólo en esta variante): con un héroe de 45 %,
+la franja de garantías (228 px) y el encabezado de la sección empujaban las tarjetas fuera de pantalla. La franja pasa a **una sola
+línea con desplazamiento horizontal** que muestra los títulos (la segunda línea de cada garantía sigue en el DOM y en el árbol de
+accesibilidad, sólo se oculta a la vista) y la sección «Fragancias para descubrir» arranca 24 px más arriba con un título algo
+menor. Es un cambio de contenido visible en móvil que la marca debe aprobar.
 
-![F 390](hero-variants/hero-f-tipografica-390.jpg)
-![F 320](hero-variants/hero-f-tipografica-320.jpg)
+![F 390 × 844](hero-variants/hero-f-tipografica-390x844.jpg)
+![F 375 × 667](hero-variants/hero-f-tipografica-375x667.jpg)
+![F 360 × 640](hero-variants/hero-f-tipografica-360x640.jpg)
+![F 320 × 568](hero-variants/hero-f-tipografica-320x568.jpg)
 
-Capturas (densidad 2): `docs/hero-variants/hero-f-tipografica-{390,375,360,320,768}.jpg`.
+Capturas: `docs/hero-variants/hero-f-tipografica-{390x844,375x667,360x640,320x568,768x1024}.jpg`.
 
-### 10.4 Medidas
+### 10.3 Verificación
 
-| | 390 × 844 | 375 × 667 | 360 × 800 | 320 × 568 |
+| | 390 × 844 | 375 × 667 | 360 × 640 | 320 × 568 |
 |---|---|---|---|---|
-| Altura del héroe (porcentaje del alto) | 506 px (60 %) | 400 px (60 %) | 480 px (60 %) | 369 px (65 %) |
-| Wordmark «CRUZIAL»: ancho / alto de letra | 322 / 54 px | 322 / 54 px | 316 / 53 px | 277 / 46 px |
+| Altura del héroe | 380 px (**45 %**) | 320 px (**48 %**) | 307 px (**48 %**) | 273 px (**48 %**) |
+| Placa / letras «CRUZIAL» / altura de letra | 280 / 268 / 44 px | 280 / 268 / 44 px | 280 / 268 / 44 px | 280 / 268 / 44 px |
+| **Asoma la sección del carrusel** (px visibles) | 384 | 267 | 253 | 215 |
+| **Asoma su título** | 352 | 235 | 221 | 183 |
+| **Asoma la primera tarjeta** (≥ 40 px exigidos) | **252** | **137** | **125** | **91** |
 | Contraste del `h1` (blanco sobre `#0B1F3D`) | 16.4 | 16.4 | 16.4 | 16.4 |
 | CTA | 48 px | 48 px | 48 px | 48 px |
-| Scroll horizontal | no | no | no | no |
-| Asoma el carrusel de producto (sección 3) | sí, 75 px | no (5 px) | sí, 20 px | no |
-| Asoma al menos la franja de garantías | sí | sí | sí | sí |
+| Scroll horizontal de la página | no | no | no | no |
+| axe (WCAG 2.2 A/AA, héroe) | 0 violaciones | 0 | 0 | 0 |
 
-axe (WCAG 2.2 A/AA) sobre el héroe: **0 violaciones** a 1440, 768, 390 y 375 px. Contraste del dorado del wordmark sobre navy:
-mediana 5.9:1, p95 10.6:1, **p5 2.5:1** (los extremos más oscuros del degradado se apagan sobre el navy); un logotipo está exento de
-1.4.3, pero conviene saberlo.
+(axe también limpio a 1440 y 768 px.) Con la primera versión de este ajuste (sin compactar la franja de garantías) la tarjeta sólo
+asomaba 133 / 16 / 2 px y a 320 px no asomaba: por eso hace falta el cambio de apoyo.
 
-**Sobre «que el carrusel asome»:** entre el héroe y el carrusel de producto está la franja de garantías (228 px). Con el héroe a
-60 svh, el carrusel sólo asoma en teléfonos altos (≥ 800 px); en pantallas cortas lo que asoma es la franja de garantías. Para
-que el carrusel asome en todos haría falta bajar el héroe a ~40 svh, lo que deja de ser un héroe.
+**Contraste del wordmark (≥ 4.5:1 exigido) — resultado honesto: se cumple en mediana, no en todo el glifo.** Sobre el fondo en el
+que realmente se asienta (la placa negra del JPEG): **mediana 7.6:1, 89 % de los píxeles del glifo ≥ 4.5:1** y p5 = 3.3:1; sobre
+el navy directamente: mediana 6.0:1, 72 % ≥ 4.5:1, p5 = 2.6:1. Lo que queda por debajo es el 11 % más oscuro del degradado (bronce).
+Sin editar el activo no puede garantizarse 4.5:1 en todo el glifo; un logotipo está exento de WCAG 1.4.3, y el texto que se debe leer
+(`h1`, CTA) tiene 16.4:1.
 
-### 10.5 Límites
+### 10.4 Límites que se mantienen
 
-- **Resolución:** el wordmark mide 421 px de ancho en el original (499 px el archivo). Mostrado a 337 px con densidad 2–3 se amplía
-  ×1.6–2.4 y **se ve algo blando** (visible en las capturas a densidad 2). Es el mejor original que existe; la solución es que la
-  marca entregue el wordmark en **vectorial (SVG)**, con lo que F pasaría a ser nítido a cualquier escala.
-- **El asset de F es derivado** (llave de luminancia de un JPEG). Es el wordmark oficial sin cambios de forma, pero conviene
-  validarlo con quien lleve la marca.
-- La tableta vertical (768 × 1024) queda con un héroe de 614 px sobre 1 024: es austero, coherente con el estilo.
+- **Resolución:** el wordmark mide 421 px en el original. A 280 px y densidad 3 aún se amplía ×1.9: algo blando. La solución es el SVG.
+- **Placa negra visible** sobre el navy (1.27:1): sutil pero presente.
+- La tableta vertical (768 × 1024) muestra la misma placa de 280 px en un héroe de 461 px: austero.
 
 ## 11. Comparación F · EC · B (móvil)
 
-| Criterio | **B · Zonas libres** | **EC · Columna sin síntesis** | **F · Tipográfica** |
+| Criterio | **B · Zonas libres** | **EC · Columna sin síntesis** | **F · Tipográfica (ajustada)** |
 |---|---|---|---|
-| Qué se ve en móvil | arte recortado: wordmark + 15 / 8 % de frascos | wordmark del arte, sin frascos | wordmark oficial sobre navy, sin imagen |
-| Producto cortado | **sí** (frascos parciales) | no (ninguno visible) | no (ninguno visible) |
-| Coherencia con escritorio | mismo arte recortado distinto | mismo arte, otra ventana | mismo wordmark; sin producto en móvil |
-| Píxeles inventados | no | no | no (llave de luminancia, sin dibujar) |
-| Ancho del wordmark a 390 / 375 / 360 / 320 | 268 / 258 / 248 / 220 px | 254 / 245 / 235 / 209 px | **322 / 322 / 316 / 277 px** |
-| Altura del héroe a 390 × 844 | 810 px (96 %) | 596 px (70 %) | **506 px (60 %)** |
-| Contraste del `h1` (peor ancho) | 12.4 | 19.4 | **16.4** |
-| Texto sobre zona sagrada (peor ancho) | **12 %** a 320 px | 1 % (artefacto) | 0 % (no hay arte) |
-| Descarga del héroe en móvil | 44–87 KB | 15 KB | **35 KB** (sin recodificar) |
-| Nitidez | la del arte (1672 px) | 550 px nativos, algo blando | 440 px nativos, **algo blando** |
-| Usa tokens del sistema | no | suelo de color mezclado | **sí: `--ds-color-navy`, `--ds-on-navy`** |
-| Riesgo | recorta producto | sin producto; arte ampliado | fondo plano; asset derivado de un JPEG |
+| Qué se ve en móvil | arte recortado: wordmark + 15 / 8 % de frascos | wordmark del arte, sin frascos | logotipo oficial sobre navy, sin imagen de producto |
+| Producto cortado | **sí** | no (ninguno visible) | no (ninguno visible) |
+| Píxeles alterados | no | no | **no** (archivo oficial intacto) |
+| Coherencia con escritorio | mismo arte, recortado distinto | mismo arte, otra ventana | mismo wordmark; sin producto en móvil |
+| Letras «CRUZIAL» a 390 / 375 / 360 / 320 | 268 / 258 / 248 / 220 px | 254 / 245 / 235 / 209 px | **268 / 268 / 268 / 268 px** |
+| Altura del héroe a 390 × 844 | 810 px (96 %) | 596 px (70 %) | **380 px (45 %)** |
+| Primera tarjeta del carrusel a 375 × 667 | no asoma | no asoma | **137 px** |
+| Contraste del `h1` (peor ancho) | 12.4 | 19.4 | 16.4 |
+| Descarga del héroe en móvil | 44–87 KB | 15 KB | **29 KB** (el JPEG original) |
+| Usa tokens del sistema | no | suelo mezclado | **`--ds-color-navy`, `--ds-on-navy`** |
+| Riesgo | recorta producto | sin producto; arte ampliado | placa negra sobre navy; bitmap de 421 px |
 
-## 12. Recomendación final (vigente; sustituye a la de la sección 9)
+## 12. Decisión y deuda
 
-**F.** Es la única que resuelve el problema de raíz en móvil sin tocar el producto ni inventar arte: no muestra ni corta ningún
-frasco, usa el wordmark oficial (el mismo que va horneado en el arte de escritorio), encaja en el sistema (`--ds-color-navy`),
-cumple AA y 48 px, pesa 35 KB y deja el héroe en ~60 svh. Lo que no hace es enseñar producto en el primer pantallazo del
-teléfono: el producto entra con el carrusel (que asoma en teléfonos de 800 px o más).
+**F adoptada con los tres ajustes.** No se ha mergeado nada; `claude/hero-variants` queda como rama de evidencia (basada en el
+historial anterior a la reescritura: habrá que rebasarla sobre `claude/apple-design-system` al integrarla, y la integración debe
+incluir los cambios de apoyo de `page.module.css` y `page.tsx`, o decidir otra forma de que el carrusel asome).
 
-Condiciones antes de adoptarla:
-1. **Pedir el wordmark en SVG** a quien lleve la marca (la nitidez es el único defecto visible de F).
-2. Validar el asset derivado (`hero-f-wordmark.webp`) y decidir si el monograma debe acompañar al wordmark.
-3. Decidir el escritorio: F deja el recorte 21:9 (el mismo de D/E); si se prefiere la imagen de siempre, F es sólo la parte móvil.
+**Deuda técnica**
 
-Orden de preferencia si F no se acepta: **EC** (sin síntesis, mismo arte, sin producto) y después **B** (sólo si se tolera cortar
-frascos). D, E y EB quedan descartadas.
+| # | Ticket | Prioridad | Por qué |
+|---|---|---|---|
+| **T20** | **Conseguir el wordmark oficial en SVG antes del próximo rediseño** | Alta | El único original es un JPEG de 499 px con fondo negro: obliga a la placa negra, limita la nitidez (×1.9 en pantallas 3×) y hace imposible garantizar 4.5:1 en todo el glifo. Un SVG permite fondo transparente sobre `--ds-color-navy`, nitidez a cualquier escala y el monograma opcional. |
 
-No se ha mergeado nada; `claude/hero-variants` queda como rama de evidencia.
+(El «T20» provisional de `docs/design-audit-2026-10-11.md`, «decidir el héroe», queda resuelto por esta decisión; esa auditoría
+vive en el PR de evidencia y conviene renumerarla allí.)

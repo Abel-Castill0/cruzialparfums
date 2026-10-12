@@ -134,7 +134,7 @@ export default async function ParfumsHomePage({ searchParams }: { searchParams: 
   const typeCounts = countFragrancesByType(fragrances);
 
   return (
-    <main className={styles.home}>
+    <main className={styles.home} data-hero={heroVariant}>
       <HeroArtwork
         {...heroArtwork}
         variant={heroVariant}

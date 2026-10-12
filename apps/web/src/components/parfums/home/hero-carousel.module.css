@@ -487,51 +487,83 @@
   }
 }
 
-/* F - "Tipográfica": phones get the official wordmark on a solid navy ground and no product image, in the manner of the
-   AirPods / HomePod pages. Desktop keeps the 21:9 art (the same wordmark, baked in). The hero is about 60svh tall so the
-   next section peeks. */
+/* F - "Tipográfica": phones get the official logo.jpeg, untouched, on a solid --ds-color-navy hero and no product image, in
+   the manner of the AirPods / HomePod pages. The file keeps its own near-black ground, so it reads as a plaque on the
+   navy; nothing is keyed, blended or edited. The hero is 45% of the screen (48% when it is 700px tall or less) and the
+   wordmark is capped at 280px. Desktop keeps the 21:9 art (the same wordmark, baked in). */
 @media (max-width: 767px), (max-width: 1100px) and (orientation: portrait) {
   .hero[data-variant="f"] {
     justify-content: center;
-    min-height: 60svh;
-    padding: var(--ds-space-5) 0 var(--ds-space-4);
+    min-height: 45svh;
+    padding: var(--ds-space-3) 0;
     background: var(--ds-color-navy);
   }
 
+  /* A 440 x 130 window of the 499 x 494 file: "CRUZIAL / PERFUMERÍA" (x 36-476, y 326-456). */
   .hero[data-variant="f"] .artD {
-    /* 440px of source = CRUZIAL cap height 70px: 337px wide gives a 54px cap height; never wider than the screen. */
-    width: min(337px, calc(100vw - 30px));
+    position: relative;
+    width: min(280px, calc(100vw - 40px));
     aspect-ratio: 440 / 130;
     margin-inline: auto;
+    overflow: hidden;
+    border-radius: var(--ds-radius-sm);
   }
 
   .hero[data-variant="f"] .imageD {
-    object-fit: contain;
+    position: absolute;
+    top: calc(-326 / 130 * 100%);
+    left: calc(-36 / 440 * 100%);
+    width: calc(499 / 440 * 100%);
+    max-width: none;
+    height: auto;
     -webkit-mask-image: none;
     mask-image: none;
   }
 
   .hero[data-variant="f"] .footD {
-    margin-top: var(--ds-space-3);
-    gap: var(--ds-space-2);
-    padding: 0 var(--ds-gutter);
+    margin-top: var(--ds-space-2);
+    gap: var(--ds-space-1);
+    padding: 0 var(--ds-space-2);
     align-items: center;
     text-align: center;
   }
 
   .hero[data-variant="f"] .title {
-    max-width: 18ch;
-    font-size: clamp(1.5rem, 6.4vw, 1.875rem);
+    max-width: none;
+    font-size: clamp(1.25rem, 5.6vw, 1.5rem);
+    line-height: 1.15;
     color: var(--ds-on-navy);
   }
 
   .hero[data-variant="f"] .actions {
+    flex-wrap: nowrap;
+    gap: var(--ds-space-1);
     justify-content: center;
+  }
+
+  .hero[data-variant="f"] .cta,
+  .hero[data-variant="f"] .ctaSecondary {
+    padding: 0 var(--ds-space-2);
+    font-size: 0.9375rem;
+  }
+}
+
+@media (max-width: 340px) {
+  .hero[data-variant="f"] .cta,
+  .hero[data-variant="f"] .ctaSecondary {
+    padding: 0 12px;
+    font-size: 0.875rem;
+  }
+}
+
+@media (max-height: 700px) and (max-width: 767px) {
+  .hero[data-variant="f"] {
+    min-height: 48svh;
   }
 }
 
 @media (min-width: 600px) and (max-width: 1100px) and (orientation: portrait) {
   .hero[data-variant="f"] .artD {
-    width: 420px;
+    width: 280px;
   }
 }
