@@ -351,3 +351,84 @@
     background: linear-gradient(0deg, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0) 40%);
   }
 }
+
+/* D - "Reencuadre": the asset is re-framed (21:9 desktop, 4:5 phone), shown at scale 1.0, and the headline lives on
+   the ink strip below it. No object-fit zoom, no veil over the art. */
+.hero[data-variant="d"] {
+  display: flex;
+  flex-direction: column;
+  height: auto;
+  min-height: 0;
+  max-height: none;
+}
+
+.artD {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1577 / 676;
+}
+
+.imageD {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* The ledge melts into the strip: no hard edge between art and floor. */
+  -webkit-mask-image: linear-gradient(180deg, #000 84%, transparent 100%);
+  mask-image: linear-gradient(180deg, #000 84%, transparent 100%);
+}
+
+.footD {
+  position: relative;
+  z-index: 2;
+  margin-top: 0;
+  padding: 0 var(--ds-gutter) var(--ds-space-6);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ds-space-3);
+  text-align: center;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .imageD {
+    animation: heroFade var(--ds-dur-hero) var(--ds-ease-enter) both;
+  }
+}
+
+@keyframes heroFade {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (max-width: 767px), (max-width: 1100px) and (orientation: portrait) {
+  .artD {
+    aspect-ratio: 1100 / 1375;
+    /* Short screens lose only the empty smoke above the wordmark (17% of the frame), never a bottle. */
+    max-height: calc(100svh - 36px - 200px);
+  }
+
+  .imageD {
+    object-position: 50% 100%;
+    -webkit-mask-image: linear-gradient(180deg, #000 90%, transparent 100%);
+    mask-image: linear-gradient(180deg, #000 90%, transparent 100%);
+  }
+
+  .footD {
+    margin-top: 0;
+    align-items: flex-start;
+    text-align: left;
+    /* Leaves the lower-right corner to the floating WhatsApp action. */
+    padding-right: var(--ds-space-6);
+  }
+
+  .hero[data-variant="d"] .title {
+    max-width: 14ch;
+    font-size: clamp(2rem, 8.4vw, 2.5rem);
+  }
+
+  .hero[data-variant="d"] .actions {
+    justify-content: flex-start;
+  }
+}
