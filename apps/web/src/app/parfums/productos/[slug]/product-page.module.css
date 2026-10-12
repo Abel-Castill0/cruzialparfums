@@ -1,6 +1,6 @@
 .page {
-  color: #2c2925;
-  background: #fff;
+  color: var(--ds-ink);
+  background: var(--ds-white);
 }
 
 .container {

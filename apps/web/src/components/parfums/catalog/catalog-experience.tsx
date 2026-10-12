@@ -19,6 +19,7 @@ import { SearchIcon } from "@/components/parfums/shell/shell-icons";
 import { RecommendationPanel } from "@/components/parfums/finder/recommendation-panel";
 import { finderAnswersToParams } from "@/domains/finder/finder-url";
 import type { FinderAnswers } from "@/domains/finder/finder-rules";
+import { Reveal } from "@/components/storefront/home/reveal";
 import { ProductCard } from "./product-card";
 import { CatalogFilterPanel, FILTER_GROUPS, optionLabel, type FilterKey } from "./catalog-filter-panel";
 import toolbar from "./catalog-toolbar.module.css";
@@ -178,6 +179,8 @@ export function CatalogExperience({ products, initialFilters, initialRecommendat
             fill
             sizes="100vw"
             preload
+            fetchPriority="high"
+            quality={60}
             className={styles.catalogHeroImage}
           />
           <div className={styles.catalogHeroScrim} aria-hidden="true" />
@@ -303,7 +306,11 @@ export function CatalogExperience({ products, initialFilters, initialRecommendat
           </div>
           {results.length > 0 ? (
             <div data-product-grid className={styles.productGrid}>
-              {results.map((product, index) => <ProductCard key={product.legacyId} product={product} mode={filters.format === "bottle" ? "bottle" : "decant"} onAdded={announceAdded} eager={index < 4} />)}
+              {results.map((product, index) => (
+                <Reveal key={product.legacyId} className={styles.revealCell} delay={(index % 4) * 60}>
+                  <ProductCard product={product} mode={filters.format === "bottle" ? "bottle" : "decant"} onAdded={announceAdded} eager={index < 4} />
+                </Reveal>
+              ))}
             </div>
           ) : (
             <div className={styles.emptyState}>

@@ -11,8 +11,9 @@
   top: 110px;
   aspect-ratio: 1 / 1.08;
   overflow: hidden;
-  border: 1px solid rgba(26, 22, 18, 0.12);
-  background: #fff;
+  border: 0;
+  background: var(--ds-gray-50);
+  border-radius: var(--ds-radius-lg);
 }
 
 .imageFrame {
@@ -23,8 +24,9 @@
 
 .productImage {
   object-fit: contain;
+  mix-blend-mode: multiply;
   padding: clamp(24px, 4vw, 46px);
-  transition: opacity 220ms ease, transform 280ms ease;
+  transition: opacity var(--ds-dur-fast) var(--ds-ease-spring), transform var(--ds-dur-base) var(--ds-ease-spring);
 }
 
 .tag {
@@ -33,17 +35,18 @@
   top: 20px;
   left: 20px;
   max-width: calc(100% - 40px);
-  padding: 7px 13px;
+  padding: 8px 16px;
   overflow: hidden;
-  border: 1px solid rgba(26, 22, 18, 0.14);
-  color: #2c2925;
-  background: rgba(255, 255, 255, 0.92);
+  border: 0;
+  color: var(--ds-ink);
+  background: var(--ds-gray-50);
   backdrop-filter: blur(8px);
-  font-size: 10px;
-  letter-spacing: 0.24em;
+  font-size: 0.75rem;
+
   text-overflow: ellipsis;
-  text-transform: uppercase;
+
   white-space: nowrap;
+  border-radius: var(--ds-radius-pill);
 }
 
 .stageDiscontinued {
@@ -51,7 +54,7 @@
 }
 
 .discontinuedTag {
-  color: #6b655f;
+  color: var(--ds-ink-muted);
   background: rgba(247, 247, 247, 0.94);
 }
 
@@ -69,89 +72,85 @@
 .eyebrow,
 .sectionLabel,
 .bottleLabel {
-  color: #756f66;
-  font-size: 10px;
+  color: var(--ds-ink-muted);
+  font-size: 0.75rem;
   font-weight: 600;
-  letter-spacing: 0.25em;
-  text-transform: uppercase;
+
 }
 
 .eyebrow {
-  color: #756f66;
+  color: var(--ds-ink-muted);
 }
 
 .brandLine {
-  margin-top: 18px;
+  margin-top: 16px;
   display: block;
-  color: #756f66;
-  font-size: 11px;
+  color: var(--ds-ink-muted);
+  font-size: 0.75rem;
   font-weight: 500;
-  letter-spacing: 0.3em;
-  text-transform: uppercase;
+
 }
 
 .identityBlock h1 {
-  margin: 8px 0 7px;
-  color: #17130f;
-  font-family: var(--font-display), Georgia, serif;
+  margin: 8px 0 8px;
+  color: var(--ds-ink);
+  font-family: var(--ds-font);
+  letter-spacing: -0.03em;
   font-size: clamp(40px, 4.6vw, 58px);
-  font-weight: 500;
-  letter-spacing: -0.025em;
+  font-weight: 600;
+
   line-height: 1;
 }
 
 .subline {
-  color: #756f66;
-  font-size: 10px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
+  color: var(--ds-ink-muted);
+  font-size: 0.75rem;
+
 }
 
 .descriptionBlock {
   order: 2;
-  margin-top: 26px;
+  margin-top: 24px;
 }
 
 .descriptionBlock p {
   max-width: 530px;
-  color: #645f58;
+  color: var(--ds-ink-muted);
   font-size: 15px;
   line-height: 1.75;
 }
 
 .metaRow {
   order: 3;
-  margin: 27px 0 0;
+  margin: 24px 0 0;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  border: 1px solid rgba(26, 22, 18, 0.12);
+  gap: var(--ds-space-1);
 }
 
 .metaRow div {
   min-width: 0;
-  padding: 15px 16px;
-  border-right: 1px solid rgba(26, 22, 18, 0.12);
-}
-
-.metaRow div:last-child {
-  border-right: 0;
+  padding: var(--ds-space-2);
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-gray-50);
 }
 
 .metaRow dt {
-  margin-bottom: 5px;
+  margin-bottom: 4px;
   overflow: hidden;
-  color: #756f66;
-  font-size: 10px;
-  letter-spacing: 0.19em;
+  color: var(--ds-ink-muted);
+  font-size: 0.75rem;
+
   text-overflow: ellipsis;
-  text-transform: uppercase;
+
   white-space: nowrap;
 }
 
 .metaRow dd {
   overflow: hidden;
-  color: #0a0806;
-  font-family: var(--font-display), Georgia, serif;
+  color: var(--ds-ink);
+  font-family: var(--ds-font);
+  letter-spacing: -0.01em;
   font-size: 17px;
   font-weight: 500;
   text-overflow: ellipsis;
@@ -160,29 +159,31 @@
 
 .notesBlock {
   order: 4;
-  margin-top: 28px;
+  margin-top: 32px;
 }
 
 .noteChips {
-  margin-top: 13px;
+  margin-top: 16px;
   display: flex;
   flex-wrap: wrap;
-  gap: 9px;
+  gap: 8px;
 }
 
 .noteChips span {
-  padding: 9px 17px;
-  border: 1px solid rgba(26, 22, 18, 0.12);
-  color: #1a1a1a;
-  background: #fff;
-  font-family: var(--font-display), Georgia, serif;
+  padding: 8px 16px;
+  border: 0;
+  color: var(--ds-ink);
+  background: var(--ds-gray-50);
+  font-family: var(--ds-font);
+  letter-spacing: -0.01em;
   font-size: 15px;
+  border-radius: var(--ds-radius-pill);
 }
 
 .purchaseBlock,
 .discontinuedBlock {
   order: 5;
-  margin-top: 30px;
+  margin-top: 32px;
 }
 
 .variantSection,
@@ -191,26 +192,27 @@
 }
 
 .sizeRow {
-  margin-top: 13px;
+  margin-top: 16px;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 9px;
+  gap: 8px;
 }
 
 .sizeButton {
   position: relative;
   min-height: 68px;
-  padding: 11px 8px;
-  border: 1px solid rgba(26, 22, 18, 0.14);
-  color: #17130f;
-  background: #fff;
+  padding: 8px 8px;
+  border: 0;
+  color: var(--ds-ink);
+  background: var(--ds-gray-50);
   text-align: center;
   cursor: pointer;
-  transition: border-color 180ms ease, background 180ms ease, transform 120ms ease;
+  transition: background-color var(--ds-dur-fast) var(--ds-ease-spring), color var(--ds-dur-fast) var(--ds-ease-spring), transform var(--ds-dur-fast) var(--ds-ease-spring);
+  border-radius: var(--ds-radius-md);
 }
 
 .sizeButton:hover {
-  border-color: #0a0806;
+  background: var(--ds-gray-100);
 }
 
 .sizeButton:active {
@@ -218,18 +220,7 @@
 }
 
 .sizeButton.selected {
-  border-color: #0a0806;
-  background: #fbf8f3;
-}
-
-.sizeButton.selected::before {
-  position: absolute;
-  top: -1px;
-  right: -1px;
-  left: -1px;
-  height: 2px;
-  content: "";
-  background: #0a0806;
+  background: var(--ds-accent);
 }
 
 .sizeButton strong,
@@ -238,27 +229,28 @@
 }
 
 .sizeButton strong {
-  font-family: var(--font-display), Georgia, serif;
+  font-family: var(--ds-font);
+  letter-spacing: -0.01em;
   font-size: 19px;
   font-weight: 500;
 }
 
 .sizeButton span {
-  margin-top: 3px;
-  color: #756f66;
-  font-size: 10px;
-  letter-spacing: 0.1em;
+  margin-top: 4px;
+  color: var(--ds-ink-muted);
+  font-size: 0.75rem;
+
   white-space: nowrap;
 }
 
 .sizeButton.selected strong,
 .sizeButton.selected span {
-  color: #0a0806;
+  color: var(--ds-white);
 }
 
 .sizeButton.sizeUnavailable {
   border-style: dashed;
-  background: #f7f5f1;
+  background: var(--ds-gray-50);
   opacity: 0.6;
 }
 
@@ -267,47 +259,48 @@
 }
 
 .sizeButton.sizeUnavailable span {
-  color: #9a3f3f;
+  color: var(--ds-danger);
 }
 
 .performance {
-  margin-top: 14px;
-  padding: 13px 17px;
+  margin-top: 16px;
+  padding: 16px 16px;
   display: flex;
   flex-direction: column;
   gap: 2px;
-  border: 1px solid rgba(26, 22, 18, 0.11);
-  background: #faf9f7;
+  border: 0;
+  background: var(--ds-gray-50);
+  border-radius: var(--ds-radius-md);
 }
 
 .performance > span {
-  color: #756f66;
-  font-size: 10px;
+  color: var(--ds-ink-muted);
+  font-size: 0.75rem;
   font-weight: 600;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
+
 }
 
 .performance strong {
-  color: #2c2925;
-  font-family: var(--font-display), Georgia, serif;
+  color: var(--ds-ink);
+  font-family: var(--ds-font);
+  letter-spacing: -0.01em;
   font-size: 19px;
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .performance small {
-  color: #756f66;
-  font-size: 11px;
+  color: var(--ds-ink-muted);
+  font-size: 0.75rem;
 }
 
 .bottleSection {
-  margin-top: 22px;
-  padding-top: 21px;
-  border-top: 1px solid rgba(26, 22, 18, 0.16);
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid var(--ds-hairline);
 }
 
 .bottleLabel {
-  color: #0a0806;
+  color: var(--ds-ink);
 }
 
 .bottleSection .sizeRow {
@@ -315,37 +308,38 @@
 }
 
 .orderSummary {
-  margin-top: 26px;
-  padding: 17px 0;
+  margin-top: 24px;
+  padding: 16px 0;
   display: grid;
   grid-template-columns: 1fr auto;
   align-items: center;
-  gap: 20px;
-  border-top: 1px solid rgba(26, 22, 18, 0.13);
-  border-bottom: 1px solid rgba(26, 22, 18, 0.13);
+  gap: 24px;
+  border-top: 1px solid var(--ds-hairline);
+  border-bottom: 1px solid var(--ds-hairline);
 }
 
 .quantityControl,
 .total {
   display: flex;
   align-items: center;
-  gap: 13px;
+  gap: 16px;
 }
 
 .quantityControl > span,
 .total > span {
-  color: #756f66;
-  font-size: 10px;
+  color: var(--ds-ink-muted);
+  font-size: 0.75rem;
   font-weight: 600;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
+
 }
 
 .quantityControl > div {
   display: grid;
   grid-template-columns: 44px 40px 44px;
   align-items: center;
-  border: 1px solid rgba(26, 22, 18, 0.14);
+  overflow: hidden;
+  border-radius: var(--ds-radius-pill);
+  background: var(--ds-gray-50);
 }
 
 .quantityControl button,
@@ -354,8 +348,8 @@
   display: grid;
   place-items: center;
   border: 0;
-  color: #17130f;
-  background: #fff;
+  color: var(--ds-ink);
+  background: var(--ds-white);
   font-size: 15px;
 }
 
@@ -364,7 +358,7 @@
 }
 
 .quantityControl button:disabled {
-  color: #b8b3ad;
+  color: var(--ds-ink-muted);
   cursor: not-allowed;
 }
 
@@ -373,96 +367,104 @@
 }
 
 .total strong {
-  color: #0a0806;
-  font-family: var(--font-display), Georgia, serif;
+  color: var(--ds-ink);
+  font-family: var(--ds-font);
+  letter-spacing: -0.03em;
   font-size: 27px;
-  font-weight: 500;
+  font-weight: 600;
   white-space: nowrap;
 }
 
 .detailActions {
-  margin-top: 20px;
+  margin-top: 24px;
   display: grid;
   grid-template-columns: minmax(0, 1.5fr) minmax(130px, 0.7fr);
-  gap: 11px;
+  gap: 8px;
 }
 
 .primaryAction,
 .secondaryAction {
   min-height: 50px;
-  padding: 14px 19px;
+  padding: 16px 16px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 9px;
-  border: 1px solid #17130f;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.11em;
+  gap: 8px;
+  border: 0;
+  font-size: 0.9375rem;
+  font-weight: 500;
+
   line-height: 1.3;
   text-align: center;
-  text-transform: uppercase;
+
   cursor: pointer;
+  background: var(--ds-gray-50);
+  border-radius: var(--ds-radius-pill);
 }
 
 .primaryAction {
-  color: #fff;
-  background: #17130f;
+  color: var(--ds-white);
+  background: var(--ds-accent);
+  border-radius: var(--ds-radius-pill);
 }
 
 .secondaryAction {
-  color: #17130f;
-  background: #fff;
+  color: var(--ds-ink);
+  background: var(--ds-white);
 }
 
 .primaryAction:hover {
-  background: #2b251e;
+  background: var(--ds-accent-press);
 }
 
 .secondaryAction:hover {
-  border-color: #0a0806;
-  color: #0a0806;
+  border-color: rgba(0, 0, 0, 0.2);
+  color: var(--ds-ink);
 }
 
 .actionNote,
 .giftNote {
-  margin-top: 14px;
-  color: #756f66;
-  font-size: 11px;
+  margin-top: 16px;
+  color: var(--ds-ink-muted);
+  font-size: 0.75rem;
   line-height: 1.55;
 }
 
 .giftNote {
-  padding: 13px 15px;
-  border: 1px solid rgba(10, 9, 8, 0.2);
-  color: #5f594f;
-  background: #fbf8f3;
+  padding: 16px 16px;
+  border: 0;
+  color: var(--ds-ink-muted);
+  background: var(--ds-gray-50);
+  border-radius: var(--ds-radius-md);
 }
 
 .discontinuedNotice {
-  padding: 18px 20px;
-  border: 1px solid #e8e0d0;
-  background: #fbf8f3;
+  padding: 16px 24px;
+  border: 0;
+  background: var(--ds-gray-50);
+  border-radius: var(--ds-radius-md);
+  box-shadow: var(--ds-shadow-1);
 }
 
 .discontinuedNotice strong {
   display: block;
-  color: #2c2925;
-  font-family: var(--font-display), Georgia, serif;
+  color: var(--ds-ink);
+  font-family: var(--ds-font);
+  letter-spacing: -0.01em;
   font-size: 18px;
   font-weight: 500;
 }
 
 .discontinuedNotice p {
-  margin-top: 6px;
-  color: #756f66;
+  margin-top: 8px;
+  color: var(--ds-ink-muted);
   font-size: 13px;
   line-height: 1.65;
 }
 
 .discontinuedBlock .secondaryAction {
   width: 100%;
-  margin-top: 13px;
+  margin-top: 16px;
 }
 
 
@@ -471,7 +473,7 @@
 }
 
 .relatedHeading {
-  margin-bottom: 28px;
+  margin-bottom: 32px;
   display: flex;
   align-items: end;
   justify-content: space-between;
@@ -479,32 +481,32 @@
 }
 
 .relatedHeading h2 {
-  margin-top: 7px;
-  color: #17130f;
-  font-family: var(--font-display), Georgia, serif;
+  margin-top: 8px;
+  color: var(--ds-ink);
+  font-family: var(--ds-font);
+  letter-spacing: -0.03em;
   font-size: clamp(32px, 4vw, 48px);
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .relatedHeading h2 em {
-  color: #756f66;
+  color: var(--ds-ink-muted);
   font-weight: 400;
 }
 
 .relatedHeading > a {
-  padding-bottom: 5px;
-  border-bottom: 1px solid #0a0806;
-  color: #2c2925;
-  font-size: 10px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--ds-hairline);
+  color: var(--ds-ink);
+  font-size: 0.75rem;
   font-weight: 600;
-  letter-spacing: 0.13em;
-  text-transform: uppercase;
+
 }
 
 .relatedGrid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 20px;
+  gap: 24px;
   align-items: stretch;
 }
 
@@ -514,20 +516,21 @@
   right: 24px;
   bottom: 88px;
   max-width: min(390px, calc(100% - 32px));
-  padding: 14px 18px;
-  color: #fff;
-  background: #0a0806;
-  box-shadow: 0 12px 34px rgba(10, 8, 6, 0.22);
+  padding: 16px 16px;
+  color: var(--ds-on-photo);
+  background: var(--ds-ink);
+  box-shadow: var(--ds-shadow-1);
   font-size: 12px;
   opacity: 0;
   transform: translateY(12px);
   pointer-events: none;
-  transition: opacity 200ms ease, transform 200ms ease;
+  transition: opacity var(--ds-dur-fast) var(--ds-ease-exit), transform var(--ds-dur-fast) var(--ds-ease-exit);
 }
 
 .toastVisible {
   opacity: 1;
   transform: translateY(0);
+  transition-timing-function: var(--ds-ease-enter);
 }
 
 @media (max-width: 1024px) {
@@ -540,7 +543,7 @@
  * pushed the add-to-cart button two screens below the fold. */
 @media (max-width: 860px) {
   .productDetail {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     max-width: 760px;
     margin-inline: auto;
   }
@@ -570,9 +573,9 @@
 
   .descriptionBlock {
     order: 3;
-    margin-top: 30px;
-    padding-top: 26px;
-    border-top: 1px solid rgba(26, 22, 18, 0.12);
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid var(--ds-hairline);
   }
 
   .metaRow {
@@ -586,8 +589,8 @@
 
 @media (max-width: 767px) {
   .productDetail {
-    padding-top: 10px;
-    gap: 28px;
+    padding-top: 8px;
+    gap: 32px;
   }
 
   .productStage {
@@ -595,7 +598,7 @@
   }
 
   .productImage {
-    padding: 18px;
+    padding: 16px;
   }
 
   .tag {
@@ -615,9 +618,9 @@
 
   .descriptionBlock {
     order: 3;
-    margin-top: 30px;
-    padding-top: 26px;
-    border-top: 1px solid rgba(26, 22, 18, 0.12);
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid var(--ds-hairline);
   }
 
   .metaRow {
@@ -630,7 +633,7 @@
 
 
   .detailActions {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .primaryAction,
@@ -645,23 +648,23 @@
 
   .relatedGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 14px;
+    gap: 16px;
   }
 }
 
 @media (max-width: 430px) {
   .sizeRow {
-    gap: 7px;
+    gap: 8px;
   }
 
   .sizeButton {
     min-height: 64px;
-    padding-inline: 5px;
+    padding-inline: 4px;
   }
 
   .orderSummary {
-    grid-template-columns: 1fr;
-    gap: 13px;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
   }
 
   .quantityControl,
@@ -670,12 +673,12 @@
   }
 
   .metaRow div {
-    padding: 13px 9px;
+    padding: 16px 8px;
   }
 
   .metaRow dt {
-    font-size: 10px;
-    letter-spacing: 0.1em;
+    font-size: 0.75rem;
+
   }
 
   .metaRow dd {
@@ -686,7 +689,7 @@
 
 @media (max-width: 359px) {
   .relatedGrid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -700,7 +703,7 @@
 
 /* The photograph sits on the warm plate used across the catalog. */
 .productStage {
-  background: radial-gradient(90% 80% at 50% 38%, #fff 0%, #f1ebdf 100%);
+  background: radial-gradient(90% 80% at 50% 38%, var(--ds-white) 0%, var(--ds-gray-50) 100%);
 }
 
 .productImage {
@@ -709,9 +712,9 @@
 
 /* Identity reads as one calm line under the name, not three stacked labels. */
 .subline {
-  color: #6c665d;
+  color: var(--ds-ink-muted);
   font-size: 14px;
-  letter-spacing: 0.02em;
+
   text-transform: none;
 }
 
@@ -724,7 +727,7 @@
   position: sticky;
   top: 110px;
   display: grid;
-  gap: 12px;
+  gap: 16px;
 }
 
 .productStage {
@@ -733,7 +736,7 @@
 }
 
 .productStage:focus-visible {
-  outline: 2px solid #0a0806;
+  outline: 2px solid var(--ds-ink);
   outline-offset: 3px;
 }
 
