@@ -774,3 +774,28 @@
   white-space: nowrap;
   border: 0;
 }
+
+/* Phones, catalog hero: a column. The photograph is its own band on top and the headline, text and button sit below it on
+   white. They used to share one grid cell (copy laid over the image under a scrim), so the h1 ran across the bottle. */
+@media (max-width: 767px) {
+  .catalogHero {
+    display: flex;
+    flex-direction: column;
+    height: auto;
+  }
+
+  .catalogHeroMedia {
+    flex: 0 0 auto;
+    height: clamp(220px, 36svh, 320px);
+    min-height: 0;
+  }
+
+  .catalogHeroScrim {
+    display: none;
+  }
+
+  .catalogHeroCopyWrap {
+    align-items: flex-start;
+    padding: var(--ds-space-4) 0 var(--ds-space-3);
+  }
+}

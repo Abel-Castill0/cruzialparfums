@@ -34,11 +34,21 @@ test.describe("parfums home hero and header", () => {
     // Desktop: art + headline strip. Phones: a compact navy hero (45% / 42% of the screen) so the product carousel peeks.
     const phoneLayout = viewport.width < 768 || (viewport.width <= 1100 && viewport.height > viewport.width);
     expect(box.height).toBeGreaterThan(viewport.height * (phoneLayout ? 0.4 : 0.8));
-    // One headline and two actions sit on the image; no other copy does.
+    // The h1 is always in the DOM (screen readers, search engines); no other copy sits in the hero.
     await expect(hero.getByRole("heading", { level: 1 })).toHaveText(/Perfumería de descubrimiento/);
     await expect(hero.locator("h2, h3, p")).toHaveCount(0);
     await expect(hero.getByRole("link", { name: "Explorar catálogo" })).toBeVisible();
-    await expect(hero.getByRole("link", { name: "Arma tu combo" })).toBeVisible();
+    if (phoneLayout) {
+      // Phones keep the headline and both actions under the logo plate.
+      await expect(hero.getByRole("heading", { level: 1 })).toBeVisible();
+      await expect(hero.getByRole("link", { name: "Arma tu combo" })).toBeVisible();
+    } else {
+      // Desktop: the art speaks for itself. No drawn text, one action.
+      const title = (await hero.getByRole("heading", { level: 1 }).boundingBox())!;
+      expect(Math.max(title.width, title.height), "h1 is visually hidden (1px), not drawn").toBeLessThanOrEqual(1);
+      await expect(hero.getByRole("link")).toHaveCount(1);
+      await expect(hero.getByRole("link", { name: "Arma tu combo" })).toBeHidden();
+    }
 
     const header = page.locator("header").first();
     await expect(header).toBeHidden();
@@ -47,31 +57,46 @@ test.describe("parfums home hero and header", () => {
     await expect(header).toBeVisible();
   });
 
-  // The headline must sit below the wordmark block (never over it), and the actions must be real 44px controls.
-  test("hero headline stays below the artwork wordmark band and its actions are keyboard-reachable 44px controls", async ({ page }) => {
+  // Phones: the headline sits below the wordmark block (never over it) and both actions are real 44px controls reachable by keyboard.
+  // Desktop: "Explorar catálogo" is the only visible element under the art, centered both ways in its strip and never over the art.
+  test("hero actions are keyboard-reachable 44px controls, laid out for the screen (phones: headline below the logo; desktop: one centered button)", async ({ page }) => {
     await page.goto("/parfums");
     const hero = page.locator("[data-home-hero]");
+    const viewport = page.viewportSize()!;
+    const phoneLayout = viewport.width < 768 || (viewport.width <= 1100 && viewport.height > viewport.width);
     const heroBox = (await hero.boundingBox())!;
-    const titleBox = (await hero.getByRole("heading", { level: 1 }).boundingBox())!;
-    // The wordmark (baked in the desktop art, the official logo on phones) is the first block; the headline starts below it.
     const artBox = (await hero.locator("picture").boundingBox())!;
-    expect(titleBox.y).toBeGreaterThanOrEqual(artBox.y + artBox.height - 2);
-    expect(heroBox.y + heroBox.height).toBeGreaterThan(titleBox.y + titleBox.height);
-
     const primary = hero.getByRole("link", { name: "Explorar catálogo" });
-    const secondary = hero.getByRole("link", { name: "Arma tu combo" });
-    for (const link of [primary, secondary]) {
-      expect((await link.boundingBox())!.height).toBeGreaterThanOrEqual(44);
-    }
+    expect((await primary.boundingBox())!.height).toBeGreaterThanOrEqual(44);
 
-    await primary.focus();
-    await page.keyboard.press("Tab");
-    await expect(secondary).toBeFocused();
-    const ring = await secondary.evaluate((element) => {
-      const style = getComputedStyle(element);
-      return { outline: parseFloat(style.outlineWidth), outlineStyle: style.outlineStyle, shadow: style.boxShadow };
-    });
-    expect(ring.outlineStyle !== "none" && ring.outline > 0 || ring.shadow !== "none").toBe(true);
+    if (phoneLayout) {
+      const titleBox = (await hero.getByRole("heading", { level: 1 }).boundingBox())!;
+      // The wordmark (the official logo on phones) is the first block; the headline starts below it.
+      expect(titleBox.y).toBeGreaterThanOrEqual(artBox.y + artBox.height - 2);
+      expect(heroBox.y + heroBox.height).toBeGreaterThan(titleBox.y + titleBox.height);
+
+      const secondary = hero.getByRole("link", { name: "Arma tu combo" });
+      expect((await secondary.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+      await primary.focus();
+      await page.keyboard.press("Tab");
+      await expect(secondary).toBeFocused();
+      const ring = await secondary.evaluate((element) => {
+        const style = getComputedStyle(element);
+        return { outline: parseFloat(style.outlineWidth), outlineStyle: style.outlineStyle, shadow: style.boxShadow };
+      });
+      expect(ring.outlineStyle !== "none" && ring.outline > 0 || ring.shadow !== "none").toBe(true);
+    } else {
+      const button = (await primary.boundingBox())!;
+      // Centered horizontally in the page.
+      expect(Math.abs(button.x + button.width / 2 - viewport.width / 2)).toBeLessThanOrEqual(2);
+      // Under the art (never over the monogram and wordmark in the middle of it), with even space above and below.
+      expect(button.y).toBeGreaterThanOrEqual(artBox.y + artBox.height - 2);
+      const above = button.y - (artBox.y + artBox.height);
+      const below = heroBox.y + heroBox.height - (button.y + button.height);
+      expect(Math.abs(above - below), `space above ${above}px vs below ${below}px`).toBeLessThanOrEqual(4);
+      await primary.focus();
+      await expect(primary).toBeFocused();
+    }
   });
 
   // Hero F (docs/hero-variants.md): the phone hero is 45% of the screen (42% on short ones) precisely so the product carousel

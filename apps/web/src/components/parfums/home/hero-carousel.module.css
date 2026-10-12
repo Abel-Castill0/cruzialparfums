@@ -208,3 +208,30 @@
     width: 280px;
   }
 }
+
+/* Desktop (the exact complement of the phone query above): the art speaks for itself. The headline stays in the DOM for
+   screen readers and search engines but is not drawn, the secondary link is dropped (it lives in the header navigation) and
+   "Explorar catalogo" is the only thing under the art, centered both ways in an evenly padded strip. It is not laid over
+   the art: the middle of the 21:9 image is the Cruzial monogram and wordmark. */
+@media (min-width: 1101px), (min-width: 768px) and (orientation: landscape) {
+  .title {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    animation: none;
+  }
+
+  .ctaSecondary {
+    display: none;
+  }
+
+  .foot {
+    padding: var(--ds-space-4) var(--ds-gutter);
+    justify-content: center;
+  }
+}
