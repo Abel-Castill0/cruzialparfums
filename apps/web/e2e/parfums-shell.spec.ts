@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { expect, test, type Page } from "@playwright/test";
 
 // Parfums shell and home behaviour: hero + header, the search dialog, the
@@ -12,6 +14,9 @@ async function firstPurchasableCardAdd(page: Page) {
     .first();
   await expect(card).toBeVisible();
   await card.getByRole("button", { name: /^Añadir/ }).click();
+  // The catalog hero hides the header (and its cart button) by design, and how far the click scrolls depends on image
+  // layout: on a tall tablet it can stop with the hero still in view. Leave the hero explicitly, as accessibility.spec does.
+  await page.evaluate(() => window.scrollTo(0, (document.querySelector("[data-home-hero]") as HTMLElement).offsetHeight + 100));
 }
 
 test.describe("parfums home hero and header", () => {
@@ -21,11 +26,14 @@ test.describe("parfums home hero and header", () => {
     await expect(hero).toBeVisible();
     const artwork = hero.locator("img");
     await expect(artwork).toHaveCount(1);
-    await expect(artwork).toHaveAttribute("src", /hero-crop\.webp/);
+    // Desktop art is the 21:9 crop; on phones a <source> swaps in the official logo (currentSrc), see hero-carousel.tsx.
+    await expect(artwork).toHaveAttribute("src", /hero-wide-21x9\.webp/);
 
     const viewport = page.viewportSize()!;
     const box = (await hero.boundingBox())!;
-    expect(box.height).toBeGreaterThan(viewport.height * 0.8);
+    // Desktop: art + headline strip. Phones: a compact navy hero (45% / 42% of the screen) so the product carousel peeks.
+    const phoneLayout = viewport.width < 768 || (viewport.width <= 1100 && viewport.height > viewport.width);
+    expect(box.height).toBeGreaterThan(viewport.height * (phoneLayout ? 0.4 : 0.8));
     // One headline and two actions sit on the image; no other copy does.
     await expect(hero.getByRole("heading", { level: 1 })).toHaveText(/Perfumería de descubrimiento/);
     await expect(hero.locator("h2, h3, p")).toHaveCount(0);
@@ -39,15 +47,16 @@ test.describe("parfums home hero and header", () => {
     await expect(header).toBeVisible();
   });
 
-  // Replaces the coverage lost when "no text on the hero" was retired: the artwork still carries a baked
-  // wordmark, so the headline must sit in the reserved lower band, and the new actions must be real controls.
+  // The headline must sit below the wordmark block (never over it), and the actions must be real 44px controls.
   test("hero headline stays below the artwork wordmark band and its actions are keyboard-reachable 44px controls", async ({ page }) => {
     await page.goto("/parfums");
     const hero = page.locator("[data-home-hero]");
     const heroBox = (await hero.boundingBox())!;
     const titleBox = (await hero.getByRole("heading", { level: 1 }).boundingBox())!;
-    // The wordmark sits around 40-60% of the hero height; the headline must start in the lower 40%.
-    expect(titleBox.y - heroBox.y).toBeGreaterThan(heroBox.height * 0.6);
+    // The wordmark (baked in the desktop art, the official logo on phones) is the first block; the headline starts below it.
+    const artBox = (await hero.locator("picture").boundingBox())!;
+    expect(titleBox.y).toBeGreaterThanOrEqual(artBox.y + artBox.height - 2);
+    expect(heroBox.y + heroBox.height).toBeGreaterThan(titleBox.y + titleBox.height);
 
     const primary = hero.getByRole("link", { name: "Explorar catálogo" });
     const secondary = hero.getByRole("link", { name: "Arma tu combo" });
@@ -63,6 +72,49 @@ test.describe("parfums home hero and header", () => {
       return { outline: parseFloat(style.outlineWidth), outlineStyle: style.outlineStyle, shadow: style.boxShadow };
     });
     expect(ring.outlineStyle !== "none" && ring.outline > 0 || ring.shadow !== "none").toBe(true);
+  });
+
+  // Hero F (docs/hero-variants.md): the phone hero is 45% of the screen (42% on short ones) precisely so the product carousel
+  // peeks under it. Same three viewports the design was verified at. One engine is enough: the layout, not the browser, is
+  // under test (Chromium resizes freely; the phone/tablet projects would repeat it).
+  for (const [width, height] of [[375, 667], [360, 640], [320, 568]] as const) {
+    test(`phone hero ${width}x${height}: the first carousel card peeks at least 40px above the fold`, async ({ page }, testInfo) => {
+      test.skip(testInfo.project.name !== "chromium", "viewport is set explicitly; run once");
+      await page.setViewportSize({ width, height });
+      // Reveal slides content in 20px (translateY) when it scrolls into view; with reduced motion it sits at its layout position.
+      // Measure the layout, not the animation frame the test happened to catch.
+      await page.emulateMedia({ reducedMotion: "reduce" });
+      await page.goto("/parfums");
+      const card = page.locator("[data-marquee-card]").first();
+      await expect(card).toBeAttached();
+      // Visible height of the card = viewport height minus the card's top edge (a card is taller than the peek, so its
+      // bottom edge is below the fold by design). Measured from layout, not from a screenshot.
+      const peek = await card.evaluate((element) => window.innerHeight - element.getBoundingClientRect().top);
+      expect(peek, `first card visible px at ${width}x${height}`).toBeGreaterThanOrEqual(40);
+      // The hero stays a compact panel: it must not creep back to a full-screen hero.
+      const heroHeight = (await page.locator("[data-home-hero]").boundingBox())!.height;
+      expect(heroHeight).toBeLessThanOrEqual(height * 0.5);
+    });
+  }
+
+  test("hero logo: phones load the official logo.jpeg (byte-identical), desktop loads the 21:9 crop", async ({ page, request }, testInfo) => {
+    test.skip(testInfo.project.name !== "chromium", "viewport is set explicitly; run once");
+    const heroImage = page.locator("[data-home-hero] img");
+
+    await page.setViewportSize({ width: 375, height: 667 });
+    await page.goto("/parfums");
+    await expect.poll(() => heroImage.evaluate((image: HTMLImageElement) => image.currentSrc)).toContain("logo-official.jpeg");
+    await expect(page.locator("[data-home-hero]")).toHaveCSS("background-color", "rgb(11, 31, 61)"); // --ds-color-navy
+
+    // The file served is the brand's logo.jpeg untouched: no keying, no recompression.
+    const served = await request.get("/parfums/hero/logo-official.jpeg");
+    expect(served.ok()).toBe(true);
+    const original = readFileSync(resolve(process.cwd(), "../../logo.jpeg"));
+    expect(Buffer.compare(await served.body(), original), "logo-official.jpeg must equal the repo-root logo.jpeg").toBe(0);
+
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await page.goto("/parfums");
+    await expect.poll(() => heroImage.evaluate((image: HTMLImageElement) => image.currentSrc)).toContain("hero-wide-21x9");
   });
 
   test("the navigation stays hidden until the visitor leaves the hero", async ({ page }) => {

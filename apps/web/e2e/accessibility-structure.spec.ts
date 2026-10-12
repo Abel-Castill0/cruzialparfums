@@ -146,7 +146,8 @@ test.describe("skip link without JavaScript", () => {
       expect(html, "static <main> carries id and tabindex").toMatch(/<main[^>]*id="main"[^>]*tabindex="-1"|<main[^>]*tabindex="-1"[^>]*id="main"/);
       expect(html, "skip link is a plain anchor").toMatch(/<a [^>]*href="#main"[^>]*>Saltar al contenido<\/a>/);
 
-      await page.goto(route);
+      // JS is off and the page has ~95 product photos: do not wait for them (cold image cache), the HTML is what is under test.
+      await page.goto(route, { waitUntil: "domcontentloaded" });
       const skip = page.getByRole("link", { name: "Saltar al contenido" });
       await page.keyboard.press("Tab");
       await expect(skip, "first Tab lands on the skip link").toBeFocused();
