@@ -340,6 +340,8 @@ test.describe("browser console hygiene", () => {
   // CSS lives in globals.css, and interest-cohort (FLoC, removed from browsers) is not in the header any more.
   for (const path of ["/parfums", "/parfums/catalogo"]) {
     test(`${path} logs no preload or Permissions-Policy warnings`, async ({ page }) => {
+      // The dev server emits one CSS chunk per module and preloads those it does not render yet; only the production build is meaningful here.
+      test.skip(process.env.E2E_SERVER === "dev", "dev-server chunking preloads per-module CSS");
       const noisy: string[] = [];
       page.on("console", (message) => {
         if (["warning", "error"].includes(message.type()) && /preload|Permissions-Policy/i.test(message.text())) noisy.push(message.text());
