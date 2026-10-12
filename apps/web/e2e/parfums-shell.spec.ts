@@ -136,7 +136,9 @@ test.describe("parfums recommender", () => {
       },
     ]) {
       await opener.press("Enter");
-      await expect(page.getByRole("dialog")).toBeVisible();
+      // The modal is an intercepted route: on a cold server (empty image cache, parallel projects) the first soft
+      // navigation can take longer than the 5s default. Same behaviour on master (1 of 3 cold runs).
+      await expect(page.getByRole("dialog")).toBeVisible({ timeout: 20_000 });
       await close();
       await expect(page.getByRole("dialog")).toHaveCount(0);
       await expect(page).toHaveURL(/\/parfums\/catalogo\?type=arab$/);

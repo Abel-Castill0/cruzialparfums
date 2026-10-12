@@ -13,7 +13,7 @@
   overflow: hidden;
   border: 0;
   background: var(--ds-gray-50);
-  border-radius: var(--ds-radius-pill);
+  border-radius: var(--ds-radius-lg);
 }
 
 .imageFrame {
@@ -24,6 +24,7 @@
 
 .productImage {
   object-fit: contain;
+  mix-blend-mode: multiply;
   padding: clamp(24px, 4vw, 46px);
   transition: opacity var(--ds-dur-fast) var(--ds-ease-spring), transform var(--ds-dur-base) var(--ds-ease-spring);
 }

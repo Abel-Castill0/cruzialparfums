@@ -25,7 +25,7 @@ Estrategia: **Restrained** — neutros + un acento ≤ 10 % de la superficie. Re
 | `--ds-gray-50` | `#F5F5F7` | Secciones alternas, chips, tarjeta de producto | — |
 | `--ds-gray-100` | `#E8E8ED` | Estado pressed de chips, skeletons | — |
 | `--ds-ink` | `#1D1D1F` | Texto principal, botón secundario | 16.8:1 sobre blanco · 15.5:1 sobre `#F5F5F7` |
-| `--ds-ink-muted` | `#6E6E73` | Texto secundario, precios, captions | 5.1:1 sobre blanco · 4.7:1 sobre `#F5F5F7` |
+| `--ds-ink-muted` | `#666669` | Texto secundario, precios, captions | 5.7:1 sobre blanco · 5.3:1 sobre `#F5F5F7` · 4.7:1 sobre `#E8E8ED` |
 | `--ds-accent` | `#0071E3` | CTA primario, selección de chip, foco | 4.7:1 con texto blanco encima · no usar como texto sobre `#F5F5F7` (4.3:1) |
 | `--ds-accent-hover` | `#0077ED` | Hover del botón primario | — |
 | `--ds-accent-press` | `#0058B0` | Active / enlaces sobre blanco | 6.9:1 (con texto blanco o sobre blanco) |
@@ -90,7 +90,7 @@ entre secciones (`--ds-section-y`), nunca márgenes ad hoc.
 | `--ds-radius-lg` | 22 px | Tiles grandes, modales, héroes en tarjeta |
 | `--ds-radius-pill` | 980 px | Botones, chips, controles del carrusel |
 | `--ds-hairline` | `rgba(0,0,0,.08)` (`rgba(255,255,255,.18)` sobre oscuro) | Único borde permitido: inputs y separadores |
-| `--ds-shadow-1` | `0 1px 2px rgba(0,0,0,.04), 0 2px 8px rgba(0,0,0,.04)` | Reposo de tarjeta / header al hacer scroll |
+| `--ds-shadow-1` | `0 1px 2px rgba(0,0,0,.04), 0 2px 8px rgba(0,0,0,.04)` | Superficies sueltas (tiles de categoría, carrusel de combos, tarjetas de contacto). Las rejillas de producto (99 tarjetas) van planas en reposo: la sombra sólo aparece al hover (coste de pintado) |
 | `--ds-shadow-2` | `0 8px 28px rgba(0,0,0,.09)` | Hover de tarjeta, panel flotante |
 | `--ds-shadow-product` | `0 18px 36px -14px rgba(0,0,0,.2), 0 4px 10px rgba(0,0,0,.05)` | Imagen del producto dentro de su tarjeta |
 | `--ds-shadow-3` | `0 24px 64px rgba(0,0,0,.16)` | Modales y cajones |
@@ -122,7 +122,7 @@ fondo `--ds-accent`, texto blanco; transición de color 200 ms.
 sobre blanco: se mezclan con `mix-blend-mode: multiply` y llevan una *sombra de contacto* difusa detrás del frasco
 (`::before` radial, blur 6 px) en lugar de `drop-shadow` (que dibujaría un rectángulo). Marca (14 px,
 `--ds-ink-muted`), nombre (`--ds-text-card` 500), precio (14 px, `--ds-ink-muted`, tabular). Hover: `--ds-shadow-2`,
-`translateY(-4px)`; zoom de imagen 1.05 en el carrusel y 1.03 en el catálogo. Botón «Añadir» = acento, pill.
+`translateY(-4px)`; zoom de imagen 1.03 (carrusel y catálogo). Botón «Añadir» = acento, pill.
 
 **Hero.** Foto de alta calidad a pantalla casi completa (`100svh − barra de anuncio`), `--ds-overlay` + gradiente
 inferior; titular blanco 600 con tracking −0.035em, CTA primario (acento) + secundario (blanco translúcido con blur),
@@ -160,9 +160,15 @@ Reglas:
 - Sólo `transform` y `opacity` (más `background-color`/`color` en controles pequeños). Nunca `width`, `height`, `top`.
 - **Entrada al scroll:** `opacity 0→1` + `translateY(20px)→0` con `IntersectionObserver` (`Reveal`); escalonado ≤ 80 ms
   entre hermanos; el contenido es visible sin JS y con movimiento reducido.
-- **Botón:** hover → fondo más oscuro + `scale(1.02)`; active → `scale(1)` con `--dur-fast`.
+- **Botón:** hover → fondo más oscuro + `scale(1.02)`; active → `scale(0.98)` en 120 ms.
 - **Enlace de menú:** subrayado de 1 px que crece de 0 a 100 % de ancho (`transform: scaleX`, origen izquierdo) en 300 ms `--ds-ease-enter`.
-- **Tarjeta de producto:** hover sombra 1→2 y zoom de imagen `scale(1.03)`.
+- **Tarjeta de producto:** hover sombra 0→2, elevación −4 px y zoom de imagen `scale(1.03)`.
+- **Entrada vs salida:** cajón del carrito, buscador, menú móvil, header sobre héroe y toasts entran con
+  `--ds-ease-enter` (ease-out) y salen con `--ds-ease-exit` (ease-in): la transición vive en el estado de destino.
+- **Sin `backdrop-filter` en velos de pantalla completa** (cajón): costaba ~15 fps con CPU 4×. Sólo header y barra de
+  filtros (franjas de 72–76 px) lo usan.
+- **Foco:** `outline: 2px solid #0071E3; outline-offset: 2px` (sin halo extra); en `<main>`, `scroll-margin-top: 168px`
+  en controles y 96 px en `[id]` para que el foco no quede bajo las barras fijas (WCAG 2.4.11).
 - **`prefers-reduced-motion: reduce`:** sin desplazamientos ni escala; sólo cross-fade de opacidad ≤ 120 ms.
 
 ## 9. Accesibilidad y responsive
