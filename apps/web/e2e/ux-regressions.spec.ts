@@ -250,3 +250,48 @@ test("an Import product with several photos gets the same gallery as Parfums, pr
   await expect(counter).toHaveText("1 / 2");
   await expect(thumbs.first()).toHaveAttribute("aria-current", "true");
 });
+
+// Brand accent (globals.css --ds-color-accent*): primary fills are muted gold with an ink label. White on that gold would be
+// 2.46:1, so the label colour is part of the token pair. This scans every filled element for the legible pairing and for any
+// leftover Apple blue fill.
+test("primary fills use the gold accent with a legible label (>= 4.5:1) and no button is Apple blue", async ({ page }) => {
+  const first = await (async () => {
+    await page.goto("/parfums/catalogo");
+    return page.locator("[data-product-card] a[href^='/parfums/productos/']").first().getAttribute("href");
+  })();
+  const routes = ["/", "/parfums", "/parfums/catalogo", "/parfums/combos", ...(first ? [first] : [])];
+  const gold = new Set(["rgb(197, 160, 89)", "rgb(184, 147, 77)", "rgb(168, 134, 63)"]);
+  let goldFills = 0;
+  for (const route of routes) {
+    await page.goto(route);
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.waitForTimeout(600);
+    const found = await page.evaluate((goldList) => {
+      const rgb = (value: string) => (value.match(/[\d.]+/g) ?? []).slice(0, 3).map(Number);
+      const lum = ([r, g, b]: number[]) => {
+        const f = (v: number) => { const s = v / 255; return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4; };
+        return 0.2126 * f(r!) + 0.7152 * f(g!) + 0.0722 * f(b!);
+      };
+      const out: { blue: string[]; weak: string[]; gold: number } = { blue: [], weak: [], gold: 0 };
+      for (const el of document.querySelectorAll<HTMLElement>("a, button, span, i, li, div")) {
+        const style = getComputedStyle(el);
+        const box = el.getBoundingClientRect();
+        if (box.width === 0 || box.height === 0 || style.visibility === "hidden") continue;
+        const label = `${el.tagName.toLowerCase()}.${String(el.className).split(" ")[0]}`;
+        if (style.backgroundColor === "rgb(0, 113, 227)" && el.textContent?.trim()) out.blue.push(label);
+        if (goldList.includes(style.backgroundColor)) {
+          out.gold += 1;
+          if (!el.textContent?.trim()) continue; // a bar or dot fill carries no label
+          const [a, b] = [lum(rgb(style.color)), lum(rgb(style.backgroundColor))];
+          const ratio = (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+          if (ratio < 4.5) out.weak.push(`${label} ${ratio.toFixed(2)}:1`);
+        }
+      }
+      return out;
+    }, [...gold]);
+    expect(found.blue, `${route}: blue-filled controls`).toEqual([]);
+    expect(found.weak, `${route}: gold fills with a weak label`).toEqual([]);
+    goldFills += found.gold;
+  }
+  expect(goldFills, "at least one gold primary fill across the storefront").toBeGreaterThan(0);
+});

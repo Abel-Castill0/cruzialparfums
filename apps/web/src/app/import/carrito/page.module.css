@@ -99,8 +99,8 @@
   justify-content: center;
   border: 0;
   border-radius: var(--ds-radius-pill);
-  color: var(--ds-white);
-  background: var(--ds-accent);
+  color: var(--ds-color-on-accent);
+  background: var(--ds-color-accent);
   font-size: 0.9375rem;
   font-weight: 500;
   white-space: nowrap;
@@ -108,7 +108,7 @@
 }
 
 .primaryAction:hover {
-  background: var(--ds-accent);
+  background: var(--ds-color-accent);
   transform: translateY(-2px);
 }
 

@@ -503,8 +503,8 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  color: var(--ds-white);
-  background: var(--ds-accent);
+  color: var(--ds-color-on-accent);
+  background: var(--ds-color-accent);
   font-size: var(--ds-text-card);
   font-weight: 500;
   cursor: pointer;
@@ -512,7 +512,12 @@
 
 .drawerFoot > a:hover,
 .drawerFoot > button:not(:disabled):hover {
-  background: var(--ds-accent-press);
+  background: var(--ds-color-accent-hover);
+}
+
+.drawerFoot > a:active,
+.drawerFoot > button:not(:disabled):active {
+  background: var(--ds-color-accent-active);
 }
 
 .drawerFoot > button:disabled {

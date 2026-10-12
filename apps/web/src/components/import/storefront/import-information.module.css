@@ -286,15 +286,19 @@
   align-items: center;
   gap: 8px;
   border-radius: var(--ds-radius-pill);
-  color: var(--ds-white);
-  background: var(--ds-accent);
+  color: var(--ds-color-on-accent);
+  background: var(--ds-color-accent);
   font-size: var(--ds-text-card);
   font-weight: 500;
   transition: background-color var(--ds-dur-base) var(--ds-ease-spring);
 }
 
 .contactAction:hover {
-  background: var(--ds-accent-press);
+  background: var(--ds-color-accent-hover);
+}
+
+.contactAction:active {
+  background: var(--ds-color-accent-active);
 }
 
 @media (max-width: 1023px) {

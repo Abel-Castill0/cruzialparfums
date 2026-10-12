@@ -101,8 +101,8 @@
 }
 
 .heroCta {
-  color: var(--ds-white);
-  background: var(--ds-accent);
+  color: var(--ds-color-on-accent);
+  background: var(--ds-color-accent);
   border-radius: var(--ds-radius-pill);
 }
 
@@ -117,8 +117,12 @@
 }
 
 .heroCtaSecondary:hover {
-  color: var(--ds-on-photo);
-  background: var(--ds-accent-press);
+  color: var(--ds-color-on-accent);
+  background: var(--ds-color-accent-hover);
+}
+
+.heroCtaSecondary:active {
+  background: var(--ds-color-accent-active);
 }
 
 .heroMedia {
@@ -328,8 +332,8 @@
 }
 
 .comboSizes button.selected {
-  color: var(--ds-white);
-  background: var(--ds-accent);
+  color: var(--ds-color-on-accent);
+  background: var(--ds-color-accent);
 }
 
 .summaryLineHead {
@@ -388,8 +392,8 @@
 }
 
 .summaryLineSizes button.selected {
-  color: var(--ds-white);
-  background: var(--ds-accent);
+  color: var(--ds-color-on-accent);
+  background: var(--ds-color-accent);
 }
 
 .comboBuy {
@@ -433,8 +437,8 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  color: var(--ds-white);
-  background: var(--ds-accent);
+  color: var(--ds-color-on-accent);
+  background: var(--ds-color-accent);
   font-size: 0.9375rem;
   font-weight: 500;
 
@@ -444,7 +448,11 @@
 }
 
 .comboBuy > button:hover:not(:disabled) {
-  background: var(--ds-accent-press);
+  background: var(--ds-color-accent-hover);
+}
+
+.comboBuy > button:active:not(:disabled) {
+  background: var(--ds-color-accent-active);
 }
 
 .builderSection {
@@ -532,8 +540,8 @@
 }
 
 .typeChips button.selected {
-  color: var(--ds-white);
-  background: var(--ds-accent);
+  color: var(--ds-color-on-accent);
+  background: var(--ds-color-accent);
 }
 
 .resetFilters {
@@ -607,9 +615,9 @@
 }
 
 .pickerSelected .pickerAction {
-  border-color: var(--ds-accent);
-  color: var(--ds-white);
-  background: var(--ds-accent);
+  border-color: var(--ds-color-accent);
+  color: var(--ds-color-on-accent);
+  background: var(--ds-color-accent);
   border-radius: var(--ds-radius-pill);
 }
 

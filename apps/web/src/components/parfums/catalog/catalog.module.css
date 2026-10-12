@@ -95,15 +95,19 @@
   align-items: center;
   gap: var(--ds-space-1);
   border-radius: var(--ds-radius-pill);
-  color: var(--ds-white);
-  background: var(--ds-accent);
+  color: var(--ds-color-on-accent);
+  background: var(--ds-color-accent);
   font-size: var(--ds-text-card);
   font-weight: 500;
   letter-spacing: -0.01em;
 }
 
 .finderCta:hover {
-  background: var(--ds-accent-press);
+  background: var(--ds-color-accent-hover);
+}
+
+.finderCta:active {
+  background: var(--ds-color-accent-active);
 }
 
 .catalogLayout {
@@ -346,15 +350,19 @@
   min-height: var(--ds-touch);
   border: 0;
   border-radius: var(--ds-radius-pill);
-  color: var(--ds-white);
-  background: var(--ds-accent);
+  color: var(--ds-color-on-accent);
+  background: var(--ds-color-accent);
   font-size: 0.9375rem;
   font-weight: 500;
   cursor: pointer;
 }
 
 .addButton:hover {
-  background: var(--ds-accent-press);
+  background: var(--ds-color-accent-hover);
+}
+
+.addButton:active {
+  background: var(--ds-color-accent-active);
 }
 
 .bottleSlot {
@@ -446,14 +454,18 @@
   padding: 8px var(--ds-space-3);
   border: 0;
   border-radius: var(--ds-radius-pill);
-  color: var(--ds-white);
-  background: var(--ds-accent);
+  color: var(--ds-color-on-accent);
+  background: var(--ds-color-accent);
   font-weight: 500;
   cursor: pointer;
 }
 
 .emptyState button:hover {
-  background: var(--ds-accent-press);
+  background: var(--ds-color-accent-hover);
+}
+
+.emptyState button:active {
+  background: var(--ds-color-accent-active);
 }
 
 .emptyStateFinder {
