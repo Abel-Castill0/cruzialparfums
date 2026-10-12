@@ -15,6 +15,7 @@ export function HeroArtwork({
   ctaLabel,
   secondaryHref,
   secondaryLabel,
+  variant,
 }: {
   src: string;
   alt: string;
@@ -26,9 +27,11 @@ export function HeroArtwork({
   ctaLabel: string;
   secondaryHref?: Route;
   secondaryLabel?: string;
+  /** Design experiment on claude/hero-variants only: a | b | c. Undefined = the shipped hero. */
+  variant?: "a" | "b" | "c" | undefined;
 }) {
   return (
-    <section className={styles.hero} data-home-hero data-fit={mobileFit} aria-label="Cruzial Parfums">
+    <section className={styles.hero} data-home-hero data-fit={mobileFit} data-variant={variant} aria-label="Cruzial Parfums">
       <Image
         src={src}
         alt={alt}

@@ -186,3 +186,168 @@
     mask-image: linear-gradient(180deg, transparent 0, #000 20%, #000 80%, transparent 100%);
   }
 }
+
+/* ==========================================================================
+   Hero variants (claude/hero-variants). Opt-in with ?hero=a|b|c; the shipped hero
+   above is the reference. Source art: 1672x792 (2.11:1). Sacred zones: wordmark
+   x615-1075 / y130-600 and the bottle groups x110-570 and x1125-1670. Free zones:
+   the smoke band above the wordmark (y < 125) and the ledge between the two
+   groups (x575-1125, y640-792).
+   ========================================================================== */
+
+/* A - "Velo": full-bleed art as in master, a soft veil under the copy. */
+.hero[data-variant="a"] {
+  --hero-foot: 0px;
+}
+
+.hero[data-variant="a"] .image {
+  -webkit-mask-image: none;
+  mask-image: none;
+  object-position: 50% 40%;
+}
+
+.hero[data-variant="a"] .shade {
+  background: linear-gradient(0deg, rgba(0, 0, 0, 0.78) 0%, rgba(0, 0, 0, 0.5) 22%, rgba(0, 0, 0, 0) 46%);
+  opacity: 1;
+}
+
+.hero[data-variant="a"] .title {
+  max-width: none;
+  font-size: clamp(2rem, 1.2rem + 2.4vw, 3rem);
+  white-space: nowrap;
+}
+
+.hero[data-variant="a"] .content {
+  bottom: max(var(--ds-space-4), env(safe-area-inset-bottom));
+  gap: var(--ds-space-2);
+}
+
+/* B - "Zonas libres": full-bleed art, headline in the smoke above the wordmark,
+   actions on the ledge between the bottle groups. Nothing sits over a sacred zone. */
+.hero[data-variant="b"] {
+  --hero-foot: 0px;
+}
+
+.hero[data-variant="b"] .image {
+  -webkit-mask-image: none;
+  mask-image: none;
+  object-position: 50% 40%;
+}
+
+.hero[data-variant="b"] .shade {
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0) 24%),
+    linear-gradient(0deg, rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0) 22%);
+  opacity: 1;
+}
+
+.hero[data-variant="b"] .content {
+  inset: var(--ds-space-5) var(--ds-gutter) max(var(--ds-space-5), env(safe-area-inset-bottom));
+  justify-content: space-between;
+  gap: 0;
+}
+
+.hero[data-variant="b"] .title {
+  max-width: none;
+  font-size: clamp(1.75rem, 1rem + 2vw, 2.5rem);
+  white-space: nowrap;
+}
+
+/* C - "Recorte sagrado": the largest scale that keeps every bottle (crop only the
+   100px of foliage on the left), a thin 128-160px floor and a one-row footer. */
+.hero[data-variant="c"] {
+  --hero-foot: clamp(128px, 15svh, 160px);
+}
+
+.hero[data-variant="c"] .image {
+  object-position: 100% 40%;
+  -webkit-mask-image: linear-gradient(180deg, #000 88%, transparent 100%);
+  mask-image: linear-gradient(180deg, #000 88%, transparent 100%);
+}
+
+.hero[data-variant="c"] .shade {
+  background: none;
+}
+
+.hero[data-variant="c"] .content {
+  bottom: 0;
+  height: var(--hero-foot);
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-content: center;
+  justify-content: center;
+  gap: var(--ds-space-1) var(--ds-space-4);
+}
+
+.hero[data-variant="c"] .title {
+  max-width: none;
+  font-size: clamp(1.75rem, 1rem + 2vw, 2.5rem);
+  white-space: nowrap;
+}
+
+/* Landscape tablets: the window is too narrow to bias the crop to one side. */
+@media (max-width: 1100px) {
+  .hero[data-variant="c"] .image {
+    object-position: 50% 40%;
+  }
+}
+
+@media (max-width: 767px) {
+  /* Phones draw the whole artwork centred (wordmark fit): keep its soft top and bottom edges. */
+  .hero[data-variant][data-fit="wordmark"] .image {
+    -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 20%, #000 80%, transparent 100%);
+    mask-image: linear-gradient(180deg, transparent 0, #000 20%, #000 80%, transparent 100%);
+  }
+
+  /* Phones draw the artwork centred at 250% of the width (wordmark fit). */
+  .hero[data-variant="a"] .content,
+  .hero[data-variant="c"] .content {
+    padding-right: var(--ds-space-6);
+  }
+
+  .hero[data-variant="a"] .title,
+  .hero[data-variant="b"] .title,
+  .hero[data-variant="c"] .title {
+    max-width: 14ch;
+    font-size: clamp(2rem, 8.4vw, 2.5rem);
+    white-space: normal;
+    text-align: left;
+  }
+
+  .hero[data-variant="a"] .content,
+  .hero[data-variant="b"] .content {
+    align-items: flex-start;
+  }
+
+  /* B on phones: headline above the art, actions below it. */
+  .hero[data-variant="b"] .content {
+    padding-right: 0;
+  }
+
+  .hero[data-variant="b"] .shade {
+    background:
+      linear-gradient(180deg, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0) 30%),
+      linear-gradient(0deg, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0) 26%);
+  }
+
+  /* C on phones: a taller crop of the wordmark (300%) and a compact footer. */
+  .hero[data-variant="c"] {
+    --hero-foot: 0px;
+  }
+
+  .hero[data-variant="c"][data-fit="wordmark"] .image {
+    width: 310% !important;
+    top: 44% !important;
+  }
+
+  .hero[data-variant="c"] .content {
+    height: auto;
+    bottom: max(var(--ds-space-4), env(safe-area-inset-bottom));
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .hero[data-variant="c"] .shade {
+    background: linear-gradient(0deg, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0) 40%);
+  }
+}

@@ -121,7 +121,9 @@ const homeFaqs = [
   },
 ];
 
-export default async function ParfumsHomePage() {
+export default async function ParfumsHomePage({ searchParams }: { searchParams: Promise<{ hero?: string }> }) {
+  const { hero } = await searchParams;
+  const heroVariant = hero === "a" || hero === "b" || hero === "c" ? hero : undefined;
   const { catalog, source } = await loadParfumsStorefront();
   const combos = catalog.listCombos();
   const fragrances = catalog.listFragrances();
@@ -135,6 +137,7 @@ export default async function ParfumsHomePage() {
     <main className={styles.home}>
       <HeroArtwork
         {...heroArtwork}
+        variant={heroVariant}
         title="Perfumería de descubrimiento."
         ctaHref="/parfums/catalogo"
         ctaLabel="Explorar catálogo"
