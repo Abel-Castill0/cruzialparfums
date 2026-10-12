@@ -503,4 +503,5 @@ este PR.
 | T17 | WebKit: el diálogo del recomendador no aparece en 20 s (servidor de desarrollo frío) | Baja | idem |
 | T18 | WebKit: el carrusel de producto no reanuda su movimiento tras salir el puntero | Media | idem |
 | T19 | Probar WebKit contra el servidor de desarrollo o con HTTPS local: la CSP de producción rompe `http://localhost` en WebKit | Baja | idem |
-| T20 | Héroe: decidir E/EC/B (`docs/hero-variants.md` §9) y rebasar `claude/hero-variants` sobre la rama de código | Alta | hero |
+| T20 | **Conseguir el wordmark oficial en SVG antes del próximo rediseño** (hoy sólo existe `logo.jpeg`, 499 px con fondo negro) | Alta | `docs/hero-variants.md` §12 |
+| T21 | Héroe: integrar la variante F (adoptada; ver `docs/hero-variants.md` §10–13) rebasando `claude/hero-variants` sobre la rama de código | Alta | hero |

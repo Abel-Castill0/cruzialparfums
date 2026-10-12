@@ -12,7 +12,7 @@ Esta rama es sólo documentación: ningún archivo de `apps/`, `supabase/` ni `s
 | Diagnóstico de rendimiento y «TBT root cause» (§6) | `docs/perf-diagnosis.md` |
 | Capturas antes/después a 8 anchos e Import C | `docs/screenshots/` |
 | Reportes Lighthouse y datos del bundle | `docs/lighthouse/` |
-| Ronda de optimización: TBT antes/después (3 ejecuciones), matriz Chromium/WebKit/Firefox, tickets T12–T20 | `docs/design-evidence/` |
+| Ronda de optimización: TBT antes/después (3 ejecuciones), matriz Chromium/WebKit/Firefox, tickets T12–T21 | `docs/design-evidence/` |
 
 **Orden de merge:** primero éste; los comentarios del código citan `DESIGN.md`. Pesa ≈ 35 MB por las capturas e informes
 (ver T9 en el PR de código).
