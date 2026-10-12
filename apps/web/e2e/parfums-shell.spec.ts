@@ -15,7 +15,7 @@ async function firstPurchasableCardAdd(page: Page) {
 }
 
 test.describe("parfums home hero and header", () => {
-  test("the hero owns the first screen with no text on it; the header appears after it", async ({ page }) => {
+  test("the hero owns the first screen with one headline and two actions; the header appears after it", async ({ page }) => {
     await page.goto("/parfums");
     const hero = page.locator("[data-home-hero]");
     await expect(hero).toBeVisible();
@@ -26,14 +26,43 @@ test.describe("parfums home hero and header", () => {
     const viewport = page.viewportSize()!;
     const box = (await hero.boundingBox())!;
     expect(box.height).toBeGreaterThan(viewport.height * 0.8);
-    // Artwork only: no headline or paragraph sits on the image.
-    await expect(hero.locator("h1, h2, h3, p")).toHaveCount(0);
+    // One headline and two actions sit on the image; no other copy does.
+    await expect(hero.getByRole("heading", { level: 1 })).toHaveText(/Perfumería de descubrimiento/);
+    await expect(hero.locator("h2, h3, p")).toHaveCount(0);
+    await expect(hero.getByRole("link", { name: "Explorar catálogo" })).toBeVisible();
+    await expect(hero.getByRole("link", { name: "Arma tu combo" })).toBeVisible();
 
     const header = page.locator("header").first();
     await expect(header).toBeHidden();
 
     await page.evaluate(() => window.scrollTo(0, window.innerHeight + 300));
     await expect(header).toBeVisible();
+  });
+
+  // Replaces the coverage lost when "no text on the hero" was retired: the artwork still carries a baked
+  // wordmark, so the headline must sit in the reserved lower band, and the new actions must be real controls.
+  test("hero headline stays below the artwork wordmark band and its actions are keyboard-reachable 44px controls", async ({ page }) => {
+    await page.goto("/parfums");
+    const hero = page.locator("[data-home-hero]");
+    const heroBox = (await hero.boundingBox())!;
+    const titleBox = (await hero.getByRole("heading", { level: 1 }).boundingBox())!;
+    // The wordmark sits around 40-60% of the hero height; the headline must start in the lower 40%.
+    expect(titleBox.y - heroBox.y).toBeGreaterThan(heroBox.height * 0.6);
+
+    const primary = hero.getByRole("link", { name: "Explorar catálogo" });
+    const secondary = hero.getByRole("link", { name: "Arma tu combo" });
+    for (const link of [primary, secondary]) {
+      expect((await link.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+    }
+
+    await primary.focus();
+    await page.keyboard.press("Tab");
+    await expect(secondary).toBeFocused();
+    const ring = await secondary.evaluate((element) => {
+      const style = getComputedStyle(element);
+      return { outline: parseFloat(style.outlineWidth), outlineStyle: style.outlineStyle, shadow: style.boxShadow };
+    });
+    expect(ring.outlineStyle !== "none" && ring.outline > 0 || ring.shadow !== "none").toBe(true);
   });
 
   test("the navigation stays hidden until the visitor leaves the hero", async ({ page }) => {
@@ -107,7 +136,9 @@ test.describe("parfums recommender", () => {
       },
     ]) {
       await opener.press("Enter");
-      await expect(page.getByRole("dialog")).toBeVisible();
+      // The modal is an intercepted route: on a cold server (empty image cache, parallel projects) the first soft
+      // navigation can take longer than the 5s default. Same behaviour on master (1 of 3 cold runs).
+      await expect(page.getByRole("dialog")).toBeVisible({ timeout: 20_000 });
       await close();
       await expect(page.getByRole("dialog")).toHaveCount(0);
       await expect(page).toHaveURL(/\/parfums\/catalogo\?type=arab$/);

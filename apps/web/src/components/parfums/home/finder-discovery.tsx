@@ -5,6 +5,13 @@ import type { CatalogProduct } from "@/domains/catalog/types";
 import { listFinderFamilies, listFinderTopNotes } from "@/domains/finder/finder-rules";
 import styles from "./finder-discovery.module.css";
 
+// Thin-line icons (24px grid, 1.5 stroke) restate the copy below: no new claims.
+const finderSteps = [
+  { label: "5 preguntas", icon: <path d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01" /> },
+  { label: "Opciones explicables", icon: <path d="M9.5 3h5v3l1.4 2.8V19a2 2 0 0 1-2 2h-3.8a2 2 0 0 1-2-2V8.8L9.5 6V3Zm-1.5 10h8" /> },
+  { label: "Reglas deterministas", icon: <path d="M4 7h10M18 7h2M4 17h2M10 17h10M14 4v6M6 14v6" /> },
+] as const;
+
 export type DiscoveryFamily = { family: string; count: number };
 
 /** Families that really exist in the catalog, with how many fragrances each has. */
@@ -39,6 +46,16 @@ export function FinderDiscovery({ fragrances }: { fragrances: readonly CatalogPr
           <p>
             Responde 5 preguntas y recibe opciones explicables del catálogo. Reglas deterministas, no inteligencia artificial.
           </p>
+          <ul className={styles.steps} aria-label="Cómo funciona el recomendador">
+            {finderSteps.map((step) => (
+              <li key={step.label}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  {step.icon}
+                </svg>
+                {step.label}
+              </li>
+            ))}
+          </ul>
           <Link href={"/parfums/finder" as Route} className={styles.cta}>
             Iniciar el recomendador <span aria-hidden="true">→</span>
           </Link>

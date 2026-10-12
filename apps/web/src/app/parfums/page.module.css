@@ -1,17 +1,22 @@
 .home {
-  --ink: #0a0908;
-  --paper: #f7f3ea;
-  --sand: #efe8da;
-  --muted: #5f5952;
-  --quiet: #6b655c;
-  --hairline: rgba(10, 9, 8, 0.16);
+  --ink: var(--ds-ink);
+  --paper: var(--ds-gray-50);
+  --sand: var(--ds-gray-50);
+  --muted: var(--ds-ink-muted);
+  --quiet: var(--ds-ink-muted);
+  --hairline: var(--ds-hairline);
   --gutter: clamp(20px, 4vw, 48px);
   --wrap: min(1280px, calc(100% - (var(--gutter) * 2)));
-  --ease: cubic-bezier(0.22, 1, 0.36, 1);
   display: block;
   overflow-x: clip;
-  /* Covers the site-wide centre hairline so it never cuts through headlines. */
-  background: var(--paper);
+  background: var(--ds-white);
+}
+
+/* Alternating bands: white <-> #F5F5F7, painted edge to edge without a wrapper. */
+.discovery {
+  background: var(--ds-gray-50);
+  box-shadow: 0 0 0 100vmax var(--ds-gray-50);
+  clip-path: inset(0 -100vmax);
 }
 
 .srOnly {
@@ -28,14 +33,13 @@
 
 .eyebrow {
   color: var(--quiet);
-  font-size: 0.66rem;
-  font-weight: 600;
-  letter-spacing: 0.26em;
-  text-transform: uppercase;
+  font-size: var(--ds-text-small);
+  font-weight: 500;
+
 }
 
 .sectionHead {
-  margin-bottom: clamp(28px, 4vw, 48px);
+  margin-bottom: var(--ds-space-5);
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
@@ -46,11 +50,12 @@
 .faqHead h2,
 .craftBody h2,
 .showcase h2 {
-  margin-top: 10px;
-  font-family: var(--font-display), Georgia, serif;
-  font-size: clamp(2.1rem, 4.6vw, 3.6rem);
-  font-weight: 500;
-  line-height: 1;
+  margin-top: 8px;
+  font-family: var(--ds-font);
+  letter-spacing: -0.03em;
+  font-size: var(--ds-text-h2);
+  font-weight: 600;
+  line-height: 1.1;
   text-wrap: balance;
 }
 
@@ -60,7 +65,7 @@
 .showcase h2 em {
   color: var(--quiet);
   font-weight: 400;
-  font-style: italic;
+
 }
 
 .sectionHead > a,
@@ -70,26 +75,24 @@
   align-items: center;
   gap: 8px;
   flex: 0 0 auto;
-  border-bottom: 1px solid var(--hairline);
-  color: var(--ink);
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
+  color: var(--ds-link);
+  font-size: var(--ds-text-card);
+  font-weight: 500;
   white-space: nowrap;
-  transition: border-color 220ms ease, gap 320ms var(--ease);
+  text-decoration: underline transparent;
+  text-underline-offset: 4px;
+  transition: text-decoration-color var(--ds-dur-base) var(--ds-ease-spring);
 }
 
 .sectionHead > a:hover,
 .textLink:hover {
-  gap: 14px;
-  border-bottom-color: var(--ink);
+  text-decoration-color: currentColor;
 }
 
 /* Showcase rail */
 
 .showcase {
-  padding-block: clamp(64px, 9vw, 120px) clamp(8px, 2vw, 24px);
+  padding-block: var(--ds-section-y) var(--ds-space-3);
 }
 
 /* Discovery */
@@ -97,20 +100,15 @@
 .discovery {
   width: var(--wrap);
   margin-inline: auto;
-  padding-block: clamp(56px, 8vw, 112px) clamp(56px, 8vw, 104px);
+  padding-block: var(--ds-section-y);
 }
 
 .tiles {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: clamp(14px, 2vw, 28px);
+  gap: var(--ds-space-3);
   align-items: start;
   list-style: none;
-}
-
-/* A quiet stagger gives the row rhythm without adding any decoration. */
-.tileItem:nth-child(2) {
-  margin-top: clamp(24px, 4vw, 60px);
 }
 
 .tile {
@@ -119,14 +117,21 @@
   aspect-ratio: 4 / 5;
   display: block;
   overflow: hidden;
-  color: #fffdf8;
-  background: #0a0806;
+  border-radius: var(--ds-radius-lg);
+  color: var(--ds-on-photo);
+  background: var(--ds-ink);
+  box-shadow: var(--ds-shadow-1);
+  transition: box-shadow var(--ds-dur-base) var(--ds-ease-spring);
+}
+
+.tile:hover {
+  box-shadow: var(--ds-shadow-2);
 }
 
 .tileImage {
   object-fit: cover;
   object-position: var(--focus, 70% 50%);
-  transition: transform 1200ms var(--ease);
+  transition: transform var(--ds-dur-slow) var(--ds-ease-spring);
 }
 
 .tile:hover .tileImage,
@@ -144,23 +149,23 @@
   position: absolute;
   inset: auto 0 0;
   padding: clamp(20px, 2.4vw, 32px);
-  padding-right: 72px;
+  padding-right: 64px;
   display: grid;
-  gap: 6px;
+  gap: 8px;
 }
 
 .tileCount {
   color: rgba(255, 253, 248, 0.74);
-  font-size: 0.64rem;
+  font-size: 0.75rem;
   font-weight: 600;
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
+
 }
 
 .tileLabel {
-  font-family: var(--font-display), Georgia, serif;
+  font-family: var(--ds-font);
+  letter-spacing: -0.03em;
   font-size: clamp(2rem, 3.2vw, 2.8rem);
-  font-weight: 500;
+  font-weight: 600;
   line-height: 1;
 }
 
@@ -178,32 +183,34 @@
   height: 44px;
   display: grid;
   place-items: center;
-  border: 1px solid rgba(255, 253, 248, 0.5);
   border-radius: 50%;
-  transition: transform 420ms var(--ease), background-color 260ms ease, color 260ms ease;
+  background: rgba(255, 255, 255, 0.22);
+  backdrop-filter: blur(12px);
+  transition: transform var(--ds-dur-slow) var(--ds-ease-spring), background-color var(--ds-dur-base) var(--ds-ease-spring), color var(--ds-dur-base) var(--ds-ease-spring);
 }
 
 .tile:hover .tileArrow,
 .tile:focus-visible .tileArrow {
   color: var(--ink);
-  background: #fffdf8;
+  background: var(--ds-white);
   transform: translateX(4px);
 }
 
 .finderRow {
   margin-top: clamp(40px, 6vw, 72px);
-  padding-block: 28px;
+  padding-block: 32px;
   display: grid;
   grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.4fr) auto;
   gap: 16px clamp(24px, 4vw, 56px);
   align-items: center;
-  border-block: 1px solid var(--hairline);
+  border-block: 1px solid var(--ds-hairline);
 }
 
 .finderRow h3 {
-  font-family: var(--font-display), Georgia, serif;
+  font-family: var(--ds-font);
+  letter-spacing: -0.03em;
   font-size: clamp(1.5rem, 2.4vw, 2rem);
-  font-weight: 500;
+  font-weight: 600;
   line-height: 1.1;
 }
 
@@ -217,8 +224,8 @@
 /* Craft — how the house works, told as one composition. */
 
 .craft {
-  padding-block: clamp(24px, 4vw, 48px) clamp(64px, 9vw, 128px);
-  background: var(--paper);
+  padding-block: var(--ds-section-y);
+  background: var(--ds-white);
 }
 
 .craftGrid,
@@ -237,29 +244,30 @@
 .principles {
   margin-block: clamp(28px, 4vw, 44px);
   list-style: none;
-  border-top: 1px solid var(--hairline);
+  border-top: 1px solid var(--ds-hairline);
 }
 
 .principles li {
-  padding-block: 22px;
+  padding-block: 24px;
   display: grid;
-  grid-template-columns: 52px minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
   gap: 8px;
-  border-bottom: 1px solid var(--hairline);
+  border-bottom: 1px solid var(--ds-hairline);
 }
 
 .principles li > span {
-  padding-top: 5px;
+  padding-top: 4px;
   color: var(--quiet);
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 600;
-  letter-spacing: 0.18em;
+
 }
 
 .principles h3 {
-  font-family: var(--font-display), Georgia, serif;
+  font-family: var(--ds-font);
+  letter-spacing: -0.03em;
   font-size: clamp(1.4rem, 2.2vw, 1.75rem);
-  font-weight: 500;
+  font-weight: 600;
   line-height: 1.1;
 }
 
@@ -280,14 +288,15 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   grid-template-rows: 1.5fr 1fr;
-  gap: 10px;
+  gap: var(--ds-space-2);
   aspect-ratio: 5 / 6;
 }
 
 .mosaicCell {
   position: relative;
   overflow: hidden;
-  background: var(--sand);
+  border-radius: var(--ds-radius-lg);
+  background: var(--ds-gray-50);
 }
 
 .mosaicMain {
@@ -302,25 +311,27 @@
   grid-column: 1 / -1;
   margin-top: -2px;
   color: var(--quiet);
-  font-size: 0.72rem;
-  letter-spacing: 0.04em;
+  font-size: 0.75rem;
+
 }
 
 .formats {
-  margin-top: clamp(56px, 8vw, 104px);
-  padding-top: clamp(32px, 5vw, 56px);
+  margin-top: var(--ds-space-7);
+  padding: clamp(32px, 5vw, 64px);
   display: grid;
   grid-template-columns: minmax(0, 0.8fr) minmax(0, 2fr);
-  gap: 32px clamp(32px, 6vw, 96px);
-  border-top: 1px solid var(--hairline);
+  gap: var(--ds-space-4) clamp(32px, 6vw, 96px);
+  border-radius: var(--ds-radius-lg);
+  background: var(--ds-gray-50);
 }
 
 .formatsHead h3 {
-  margin-top: 10px;
-  font-family: var(--font-display), Georgia, serif;
-  font-size: clamp(1.7rem, 2.8vw, 2.3rem);
-  font-weight: 500;
-  line-height: 1.05;
+  margin-top: 8px;
+  font-family: var(--ds-font);
+  letter-spacing: -0.03em;
+  font-size: clamp(1.5rem, 1.1rem + 1.2vw, 2rem);
+  font-weight: 600;
+  line-height: 1.15;
   text-wrap: balance;
 }
 
@@ -334,10 +345,11 @@
 .formatNumeral {
   display: flex;
   align-items: baseline;
-  gap: 6px;
-  font-family: var(--font-display), Georgia, serif;
+  gap: 8px;
+  font-family: var(--ds-font);
+  letter-spacing: -0.03em;
   font-size: clamp(3.4rem, 6vw, 5.2rem);
-  font-weight: 500;
+  font-weight: 600;
   line-height: 0.9;
   font-variant-numeric: lining-nums;
 }
@@ -345,18 +357,17 @@
 .formatNumeral span {
   color: var(--quiet);
   font-size: 1.1rem;
-  font-style: italic;
+
   font-weight: 400;
 }
 
 .formatSprays {
-  margin-top: 14px;
+  margin-top: 16px;
   display: block;
   color: var(--ink);
-  font-size: 0.66rem;
+  font-size: 0.75rem;
   font-weight: 600;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
+
 }
 
 .formatList p {
@@ -366,30 +377,12 @@
   line-height: 1.6;
 }
 
-/* Combos — the one dark passage on the page. */
+/* Combos — a light band; the carousel card inside carries the photography. */
 
 .combos {
   position: relative;
-  isolation: isolate;
-  padding-block: clamp(56px, 8vw, 104px);
-  color: #fffdf8;
-  background: #0a0806;
-}
-
-/* Decorative photo as a lazy <img> (not a CSS background) so it never competes
- * with the hero for bandwidth; the veil below keeps it as faint as before. */
-.combosBg {
-  z-index: -2;
-  object-fit: cover;
-  object-position: center 30%;
-}
-
-.combos::before {
-  position: absolute;
-  z-index: -1;
-  inset: 0;
-  content: "";
-  background: linear-gradient(rgba(10, 8, 6, 0.9), rgba(10, 8, 6, 0.94));
+  padding-block: var(--ds-section-y);
+  background: var(--ds-white);
 }
 
 .combosInner {
@@ -397,46 +390,25 @@
   margin-inline: auto;
 }
 
-.combos .eyebrow {
-  color: rgba(255, 253, 248, 0.7);
-}
-
-.combos .sectionHead h2 {
-  color: #fffdf8;
-}
-
-.combos .sectionHead h2 em {
-  color: rgba(255, 253, 248, 0.6);
-}
-
-.combos .sectionHead > a {
-  border-bottom-color: rgba(255, 253, 248, 0.3);
-  color: #fffdf8;
-}
-
-.combos .sectionHead > a:hover {
-  border-bottom-color: #fffdf8;
-}
-
 .buildRow {
-  margin-top: clamp(28px, 4vw, 44px);
-  padding-top: 24px;
+  margin-top: var(--ds-space-5);
+  padding-top: var(--ds-space-3);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px 40px;
-  border-top: 1px solid rgba(255, 253, 248, 0.2);
+  gap: var(--ds-space-2) var(--ds-space-5);
+  border-top: 1px solid var(--ds-hairline);
 }
 
 .buildRow p {
   max-width: 58ch;
-  color: rgba(255, 253, 248, 0.74);
-  font-size: 0.94rem;
+  color: var(--ds-ink-muted);
+  font-size: var(--ds-text-body);
   line-height: 1.6;
 }
 
 .buildRow strong {
-  color: #fffdf8;
+  color: var(--ds-ink);
   font-weight: 600;
 }
 
@@ -446,19 +418,17 @@
   align-items: center;
   gap: 8px;
   flex: 0 0 auto;
-  border-bottom: 1px solid rgba(255, 253, 248, 0.4);
-  color: #fffdf8;
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
+  color: var(--ds-link);
+  font-size: var(--ds-text-card);
+  font-weight: 500;
   white-space: nowrap;
-  transition: gap 320ms var(--ease), border-color 220ms ease;
+  text-decoration: underline transparent;
+  text-underline-offset: 4px;
+  transition: text-decoration-color var(--ds-dur-base) var(--ds-ease-spring);
 }
 
 .buildLink:hover {
-  gap: 14px;
-  border-bottom-color: #fffdf8;
+  text-decoration-color: currentColor;
 }
 
 /* FAQ */
@@ -466,7 +436,7 @@
 .faq {
   width: var(--wrap);
   margin-inline: auto;
-  padding-block: clamp(56px, 8vw, 112px) clamp(72px, 10vw, 140px);
+  padding-block: var(--ds-section-y);
 }
 
 .faqGrid {
@@ -477,27 +447,28 @@
 }
 
 .faqHead .textLink {
-  margin-top: 28px;
+  margin-top: 32px;
 }
 
 .faqList {
-  border-top: 1px solid var(--hairline);
+  border-top: 1px solid var(--ds-hairline);
 }
 
 .faqItem {
-  border-bottom: 1px solid var(--hairline);
+  border-bottom: 1px solid var(--ds-hairline);
 }
 
 .faqItem summary {
   min-height: 64px;
-  padding-block: 18px;
+  padding-block: 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 24px;
-  font-family: var(--font-display), Georgia, serif;
+  font-family: var(--ds-font);
+  letter-spacing: -0.03em;
   font-size: clamp(1.2rem, 1.9vw, 1.5rem);
-  font-weight: 500;
+  font-weight: 600;
   line-height: 1.2;
   cursor: pointer;
   list-style: none;
@@ -513,13 +484,13 @@
   height: 28px;
   display: grid;
   place-items: center;
-  border: 1px solid var(--hairline);
+  border: 1px solid var(--ds-hairline);
   border-radius: 50%;
   content: "+";
-  font-family: var(--font-body), sans-serif;
+  font-family: var(--ds-font);
   font-size: 1rem;
   font-weight: 400;
-  transition: transform 320ms var(--ease), background-color 220ms ease, color 220ms ease;
+  transition: transform var(--ds-dur-base) var(--ds-ease-spring), background-color var(--ds-dur-fast) var(--ds-ease-spring), color var(--ds-dur-fast) var(--ds-ease-spring);
 }
 
 .faqItem[open] summary::after {
@@ -540,8 +511,8 @@
 
 @media (max-width: 1023px) {
   .craftGrid {
-    grid-template-columns: 1fr;
-    gap: 36px;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 32px;
   }
 
   .craftMediaWrap {
@@ -553,11 +524,11 @@
   }
 
   .formats {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .faqGrid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -567,7 +538,7 @@
   .sectionHead {
     align-items: flex-start;
     flex-direction: column;
-    gap: 12px;
+    gap: 16px;
   }
 
   /* Three tall tiles stacked would be a very long scroll: swipe instead. */
@@ -575,7 +546,7 @@
     margin-inline: calc(var(--gutter) * -1);
     padding-inline: var(--gutter);
     display: flex;
-    gap: 12px;
+    gap: 16px;
     overflow-x: auto;
     scroll-padding-inline: var(--gutter);
     scroll-snap-type: x mandatory;
@@ -600,13 +571,13 @@
   }
 
   .finderRow {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   /* Three sizes read as one glance: numeral + sprays. The longer sentence per
      size is secondary and stays on tablet and desktop. */
   .formatList {
-    gap: 12px;
+    gap: 16px;
   }
 
   .formatNumeral {
@@ -614,9 +585,9 @@
   }
 
   .formatSprays {
-    margin-top: 10px;
-    font-size: 0.58rem;
-    letter-spacing: 0.1em;
+    margin-top: 8px;
+    font-size: 0.75rem;
+
     line-height: 1.5;
   }
 
@@ -650,32 +621,6 @@
 }
 
 /* Three principles are not a sequence: a brass tick marks each, not a number. */
-.principles li {
-  grid-template-columns: 36px minmax(0, 1fr);
-}
-
-.principles li::before {
-  width: 20px;
-  height: 1px;
-  margin-top: 0.95rem;
-  content: "";
-  background: #a98648;
-}
-
-/* Family doors answer the pointer with an inner frame, like the catalog doors. */
-.tile::after {
-  position: absolute;
-  inset: 14px;
-  content: "";
-  border: 1px solid rgba(255, 253, 248, 0);
-  transition: border-color 400ms ease;
-  pointer-events: none;
-}
-
-.tile:hover::after,
-.tile:focus-visible::after {
-  border-color: rgba(255, 253, 248, 0.7);
-}
 
 /* Assurance strip: four facts the store already stands behind, set quietly
  * under the hero. Hairlines divide them; nothing is boxed. */
@@ -693,28 +638,28 @@
   display: flex;
   align-items: center;
   gap: 16px;
-  color: #1a1612;
+  color: var(--ds-ink);
 }
 
 .assurance li + li {
-  border-left: 1px solid rgba(26, 22, 18, 0.14);
+  border-left: 1px solid var(--ds-hairline);
 }
 
 .assurance li > svg {
   flex: 0 0 auto;
-  color: #a98648;
+  color: var(--ds-accent);
 }
 
 .assurance li > span {
   display: grid;
   gap: 2px;
-  color: #6c665d;
+  color: var(--ds-ink-muted);
   font-size: 0.82rem;
   line-height: 1.4;
 }
 
 .assurance li > span > strong {
-  color: #1a1612;
+  color: var(--ds-ink);
   font-size: 0.92rem;
   font-weight: 500;
 }
@@ -723,7 +668,7 @@
   .assurance {
     padding-block: 24px;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    row-gap: 22px;
+    row-gap: 24px;
   }
 
   .assurance li:nth-child(odd) {
@@ -735,8 +680,8 @@
 @media (max-width: 480px) {
   .assurance li {
     align-items: flex-start;
-    gap: 12px;
-    padding-inline: 12px;
+    gap: 16px;
+    padding-inline: 16px;
   }
 
   .assurance li > span {
