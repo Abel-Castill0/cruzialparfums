@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { expect, test, type Page } from "@playwright/test";
 
 // Parfums shell and home behaviour: hero + header, the search dialog, the
@@ -67,6 +69,46 @@ test.describe("parfums home hero and header", () => {
       return { outline: parseFloat(style.outlineWidth), outlineStyle: style.outlineStyle, shadow: style.boxShadow };
     });
     expect(ring.outlineStyle !== "none" && ring.outline > 0 || ring.shadow !== "none").toBe(true);
+  });
+
+  // Hero F (docs/hero-variants.md): the phone hero is 45% of the screen (42% on short ones) precisely so the product carousel
+  // peeks under it. Same three viewports the design was verified at. One engine is enough: the layout, not the browser, is
+  // under test (Chromium resizes freely; the phone/tablet projects would repeat it).
+  for (const [width, height] of [[375, 667], [360, 640], [320, 568]] as const) {
+    test(`phone hero ${width}x${height}: the first carousel card peeks at least 40px above the fold`, async ({ page }, testInfo) => {
+      test.skip(testInfo.project.name !== "chromium", "viewport is set explicitly; run once");
+      await page.setViewportSize({ width, height });
+      await page.goto("/parfums");
+      const card = page.locator("[data-marquee-card]").first();
+      await expect(card).toBeAttached();
+      // Visible height of the card = viewport height minus the card's top edge (a card is taller than the peek, so its
+      // bottom edge is below the fold by design). Measured from layout, not from a screenshot.
+      const peek = await card.evaluate((element) => window.innerHeight - element.getBoundingClientRect().top);
+      expect(peek, `first card visible px at ${width}x${height}`).toBeGreaterThanOrEqual(40);
+      // The hero stays a compact panel: it must not creep back to a full-screen hero.
+      const heroHeight = (await page.locator("[data-home-hero]").boundingBox())!.height;
+      expect(heroHeight).toBeLessThanOrEqual(height * 0.5);
+    });
+  }
+
+  test("hero logo: phones load the official logo.jpeg (byte-identical), desktop loads the 21:9 crop", async ({ page, request }, testInfo) => {
+    test.skip(testInfo.project.name !== "chromium", "viewport is set explicitly; run once");
+    const heroImage = page.locator("[data-home-hero] img");
+
+    await page.setViewportSize({ width: 375, height: 667 });
+    await page.goto("/parfums");
+    await expect.poll(() => heroImage.evaluate((image: HTMLImageElement) => image.currentSrc)).toContain("logo-official.jpeg");
+    await expect(page.locator("[data-home-hero]")).toHaveCSS("background-color", "rgb(11, 31, 61)"); // --ds-color-navy
+
+    // The file served is the brand's logo.jpeg untouched: no keying, no recompression.
+    const served = await request.get("/parfums/hero/logo-official.jpeg");
+    expect(served.ok()).toBe(true);
+    const original = readFileSync(resolve(process.cwd(), "../../logo.jpeg"));
+    expect(Buffer.compare(await served.body(), original), "logo-official.jpeg must equal the repo-root logo.jpeg").toBe(0);
+
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await page.goto("/parfums");
+    await expect.poll(() => heroImage.evaluate((image: HTMLImageElement) => image.currentSrc)).toContain("hero-wide-21x9");
   });
 
   test("the navigation stays hidden until the visitor leaves the hero", async ({ page }) => {
