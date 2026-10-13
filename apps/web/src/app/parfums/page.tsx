@@ -129,8 +129,6 @@ export default async function ParfumsHomePage() {
         title="Perfumería de descubrimiento."
         ctaHref="/parfums/catalogo"
         ctaLabel="Explorar catálogo"
-        secondaryHref="/parfums/combos#arma-combo"
-        secondaryLabel="Arma tu combo"
       />
 
       <ul className={styles.assurance} aria-label="Lo esencial">

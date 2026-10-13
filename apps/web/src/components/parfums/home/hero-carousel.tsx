@@ -4,48 +4,44 @@ import Link from "next/link";
 import styles from "./hero-carousel.module.css";
 
 /*
- * Hero of /parfums (variant F, docs/hero-variants.md). Two sources, one headline, two actions:
- * - Desktop and landscape: a 21:9 crop of hero-crop.webp (x 95-1672, y 88-764). Pure crop: all six bottles and the
- *   baked wordmark, no synthesized pixels. The headline sits on the ink strip below the art.
- * - Phones and portrait tablets: no product image. The official lockup (logo.jpeg, byte-identical, 499x494, near-black
- *   ground) shows its "CRUZIAL / PERFUMERIA" window on a solid --ds-color-navy hero. Nothing is keyed, blended or edited.
+ * Hero of /parfums: one image per screen, both pure crops of the same original (hero-crop.webp, 1672x792), plus one visible
+ * action ("Explorar catalogo") and a visually hidden h1. Nothing is composed, blended or synthesized (docs/hero-variants.md §15).
+ * - 768px and up: a 21:9 crop (x 95-1672, y 88-764): all six bottles and the baked wordmark.
+ * - Phones: a 3:2 crop (x 100-1300, y 0-792, full height): the complete wordmark and monogram, Tom Ford, Erba Pura, Valentino and
+ *   Sauvage, with the smoke around them. A 4:5 window of this image can hold the wordmark or the bottles, never both (the
+ *   wordmark sits between the two groups), so the phone crop is the narrowest window that keeps both.
  * Only /parfums uses this component; Import has its own hero.
  */
 const DESKTOP_ART = { src: "/parfums/hero/hero-wide-21x9.webp", width: 1577, height: 676 } as const;
-const PHONE_LOGO = { src: "/parfums/hero/logo-official.jpeg", width: 499, height: 494 } as const;
-const PHONE_MEDIA = "(max-width: 767px), (max-width: 1100px) and (orientation: portrait)";
-// The exact complement of PHONE_MEDIA (width > 1100, or 768-1100 and landscape), so each preload fetches only the asset its screen shows.
-const DESKTOP_MEDIA = "(min-width: 1101px), (min-width: 768px) and (orientation: landscape)";
+const PHONE_ART = { src: "/parfums/hero/hero-mobile-3x2.webp", width: 1200, height: 792 } as const;
+const DESKTOP_MEDIA = "(min-width: 768px)";
+// The exact complement of DESKTOP_MEDIA, so each preload fetches only the asset its screen shows.
+const PHONE_MEDIA = "(max-width: 767px)";
 
 export function HeroArtwork({
   title,
   ctaHref,
   ctaLabel,
-  secondaryHref,
-  secondaryLabel,
 }: {
   title: string;
   ctaHref: Route;
   ctaLabel: string;
-  secondaryHref?: Route | undefined;
-  secondaryLabel?: string | undefined;
 }) {
   // The hero image is the LCP element on every screen: eager + high priority + a preload, never lazy.
-  const shared = { alt: "Cruzial Perfumería", quality: 60, fetchPriority: "high" as const, loading: "eager" as const };
-  const { props: desktop } = getImageProps({ ...shared, ...DESKTOP_ART, sizes: "100vw" });
-  // The official logo is served byte for byte: the optimizer would recompress it.
-  const { props: phone } = getImageProps({ ...shared, ...PHONE_LOGO, sizes: "280px", unoptimized: true });
-  const { srcSet: desktopSet, ...img } = desktop;
+  const shared = { alt: "Cruzial Perfumería", quality: 70, fetchPriority: "high" as const, loading: "eager" as const, sizes: "100vw" };
+  const { props: desktop } = getImageProps({ ...shared, ...DESKTOP_ART });
+  const { props: phone } = getImageProps({ ...shared, ...PHONE_ART });
+  const { srcSet: desktopSet } = desktop;
+  const { srcSet: phoneSet, ...img } = phone;
   return (
     <>
       {/* React hoists these to <head>; `media` keeps the other screen's asset from being downloaded. */}
-      <link rel="preload" as="image" media={PHONE_MEDIA} href={phone.src} fetchPriority="high" />
+      <link rel="preload" as="image" media={PHONE_MEDIA} imageSrcSet={phoneSet} imageSizes="100vw" fetchPriority="high" />
       <link rel="preload" as="image" media={DESKTOP_MEDIA} imageSrcSet={desktopSet} imageSizes="100vw" fetchPriority="high" />
       <section className={styles.hero} data-home-hero aria-label="Cruzial Parfums">
         <picture className={styles.art}>
-          <source media={PHONE_MEDIA} srcSet={phone.srcSet ?? phone.src} />
-          <source srcSet={desktopSet} />
-          <img {...img} alt={shared.alt} className={styles.image} />
+          <source media={DESKTOP_MEDIA} srcSet={desktopSet} />
+          <img {...img} src={phone.src} srcSet={phoneSet} alt={shared.alt} className={styles.image} />
         </picture>
         <div className={styles.foot}>
           <h1 className={styles.title}>{title}</h1>
@@ -53,11 +49,6 @@ export function HeroArtwork({
             <Link href={ctaHref} className={styles.cta}>
               {ctaLabel}
             </Link>
-            {secondaryHref && secondaryLabel ? (
-              <Link href={secondaryHref} className={styles.ctaSecondary}>
-                {secondaryLabel}
-              </Link>
-            ) : null}
           </div>
         </div>
       </section>

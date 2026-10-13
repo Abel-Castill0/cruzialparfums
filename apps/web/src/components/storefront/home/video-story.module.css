@@ -64,6 +64,27 @@
   transition: text-decoration-color var(--ds-dur-base) var(--ds-ease-spring);
 }
 
+/* "Ver en TikTok": a real button (grey pill, 48px) so it is found even when the player cannot load. On a phone with the app
+   installed the link opens the video there. */
+.tiktokButton {
+  min-height: 48px;
+  padding: 0 var(--ds-space-3);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+  border-radius: var(--ds-radius-pill);
+  background: var(--ds-gray-100);
+  box-shadow: inset 0 0 0 1px rgba(29, 29, 31, 0.14);
+  color: var(--ds-ink);
+  font-size: var(--ds-text-card);
+  font-weight: 500;
+  transition: box-shadow var(--ds-dur-fast) var(--ds-ease-spring);
+}
+
+.tiktokButton:hover {
+  box-shadow: inset 0 0 0 1px rgba(29, 29, 31, 0.32);
+}
+
 .link:hover {
   text-decoration-color: currentColor;
 }
@@ -99,6 +120,45 @@
   height: 100%;
   border: 0;
   background: #000;
+}
+
+/* A hosted file fills the 9:16 frame like the iframe does; native controls, no cover needed. */
+.hostedVideo {
+  object-fit: cover;
+}
+
+/* The big play control over a hosted video's poster, same gold disc as the TikTok cover. It sits above the native controls'
+   area only in the middle of the frame; once playing it is removed and the native bar takes over. */
+.bigPlay {
+  position: absolute;
+  inset: 0 0 56px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.bigPlay > span {
+  display: grid;
+  width: 64px;
+  aspect-ratio: 1;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--ds-color-on-accent);
+  background: var(--ds-color-accent);
+  box-shadow: var(--ds-shadow-2);
+  font-size: 1.25rem;
+  transition: transform var(--ds-dur-base) var(--ds-ease-spring), background-color var(--ds-dur-base) var(--ds-ease-spring);
+}
+
+.bigPlay:hover > span {
+  background: var(--ds-color-accent-hover);
+  transform: scale(1.06);
+}
+
+.bigPlay:active > span {
+  background: var(--ds-color-accent-active);
 }
 
 /* Cover: a calm white poster with one obvious play control. The player only
@@ -181,6 +241,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .link,
+  .bigPlay > span,
   .playGate > span:first-of-type {
     transition: none;
   }
