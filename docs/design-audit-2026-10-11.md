@@ -508,7 +508,7 @@ este PR.
 | T22 | **LCP de `/` móvil varía 1.5–2.6 s según el arranque en frío**: la imagen del héroe no está en `lazy` (no es el caso de `/parfums`); la primera visita paga el arranque de la función (TTFB ≈ 3 s en la primera ejecución de Lighthouse, ≈ 0.7 s en caliente) y la primera transformación de `_next/image`. Opciones: cachear la consulta de política de indexación del layout, precalentar `_next/image`, reducir lo que renderiza `/` en servidor | Media | `docs/lighthouse/hero-eager/README.md` |
 | T23 | **LCP real con throttling 4× bloqueado por hidratación + `Reveal`**: en producción (`cruzial.pe/parfums`, móvil, throttling aplicado) el LCP final es `h2#showcase-title` a 3.2–3.5 s; el encabezado queda oculto hasta que termina la hidratación (≈ 2.1–2.4 s con CPU 4× y el catálogo completo). **Depende de T12 + T13**; no se toca `Reveal` ni el encabezado (decisión: rompe la coherencia visual). El caso es sintético; sin throttling el LCP de un Pixel 7 emulado es ≈ 1.6 s | Media | §11 |
 | T24 | *(opcional, futuro)* Migrar las animaciones de entrada por encima del pliegue a CSS puro para que no dependan de la hidratación | Baja | T23, T13 |
-| T25 | **Asset compuesto 4:5 «logo arriba + frascos abajo» para el héroe móvil de `/parfums`**: no existe y componerlo sería sintetizar arte de marca. Con la imagen actual lo máximo sin sintetizar es un recorte **3:2** (logo completo + 4 frascos, `hero-mobile-3x2.webp`, `docs/hero-variants.md` §15): un 4:5 no puede llevar el wordmark y esos frascos porque el wordmark está entre los dos grupos. **Sigue abierto** hasta tener un original vertical (mismo estudio/IA que el de escritorio, pedido en 4:5) | Alta | `docs/hero-variants.md` §15 |
+| T25 | **Asset vertical (4:5 / 9:16) «logo arriba + frascos abajo» para el héroe móvil de `/parfums`**: con la imagen actual sólo sale un recorte **3:2** (`hero-mobile-3x2.webp`, en producción como solución provisional; `docs/hero-variants.md` §15) y la recomposición con sus propios píxeles se intentó y **no quedó convincente** (§16 abajo). **Sigue abierto** hasta recibir del estudio **PSD con capas**, un **original vertical** o una **aprobación explícita de extensión generativa** (requisitos en «Próximos pasos T25») | Alta | §16 y «Próximos pasos T25» de este documento |
 | T25-video | **MP4 de los videos de la home pendiente**: el reproductor propio (`<video>` con archivo en Cloudinary) está listo y dormido; mientras no haya MP4 sigue el embed de TikTok, que muestra «Player error» con bloqueadores. Hace falta MP4 H.264 vertical 9:16 ≤ 15 MB por video (Parfums e Import) y su public ID; se activa con una línea en `home-video.ts` (`docs/tiktok-solution.md`) | Alta | `docs/tiktok-solution.md` |
 
 ### 11. Verificación en producción tras #101 (2026-10-12)
@@ -533,3 +533,90 @@ los previos al fix (`parfums-mobile.*`, 2026-10-12) siguen ahí para comparar.
   A/B local (`docs/lighthouse/hero-eager/README.md`), con un catálogo local casi vacío que no reproduce la hidratación de producción.
 - **Decisión (Release Manager):** #101 se mantiene; no se persigue el LCP de 3.2 s (caso sintético, el usuario mediano ve ≈ 1.6 s), no se
   quita `Reveal` del encabezado y no se refactoriza. Se documenta como **T23** y se vincula a **T12 + T13**, las palancas del siguiente ciclo.
+
+### 16. Héroe móvil vertical: recomposición intentada (variante I), NO adoptada — se mantiene el 3:2 (2026-10-13)
+
+*(Numeración heredada de `docs/hero-variants.md`, donde §14 y §15 describen la composición CSS y el recorte 3:2.)*
+
+**Encargo (2026-10-13):** recomponer el asset original en un lienzo 4:5 reorganizando sus propios píxeles: logo arriba, 2–3 frascos
+abajo, humo original de fondo, sin costuras, sin relleno plano, dorado y escala de los frascos intactos. Y una cláusula: *si no queda
+convincente, documentar el intento y mantener el 3:2; no entregar una composición mediocre para cumplir el brief.* **No quedó
+convincente. Producción sigue con el 3:2 (§15).**
+
+#### 16.1 Fuente
+
+Se buscó un original en alta resolución (repo, historial de git, `Downloads` y `Desktop` del usuario, incluidos los `.zip` de
+`Downloads`): **no existe**. Lo único con el wordmark y los frascos es `public/parfums/hero/hero-crop.webp` (1672 × 792, WebP con
+pérdida). Los `.zip` de `Downloads` sólo traen fotos de otros productos (Birth of Venus, Mefisto, Toucan, Ani, Paragon, Tropikalys).
+Sin capas separadas (logo / frascos / humo) ni un lienzo mayor, cualquier recomposición parte de esos 1.3 Mpx.
+
+#### 16.2 Qué se extrajo y cómo se compuso (`docs/hero-variants/recompose-intento.py`)
+
+Todo con píxeles de la propia imagen, sólo movidos y con bordes difuminados (no se pinta nada):
+
+| Elemento | Región de la fuente (px) |
+|---|---|
+| Monograma + wordmark + ornamento, con su humo | x 590–1100, y 60–650 |
+| Grupo Tom Ford + Erba Pura + Valentino, con su follaje y un trozo de suelo | x 100–580, y 230–792 |
+| Humo para el fondo | nube de x 300–610, y 0–240 (sin objetos) |
+
+Lienzo 960 × 1200 (4:5), escala 1.0 (los frascos conservan su escala relativa y el logo su tamaño): logo arriba y centrado con
+margen, el grupo de tres frascos abajo sobre su propio suelo de piedra.
+
+- **Intento A:** fondo = la nube reflejada en espejo y repetida en mosaico.
+- **Intento B:** fondo = la misma nube ampliada hasta cubrir el lienzo y suavizada (humo desenfocado), con difuminados de 90/70 px.
+
+![comparación](hero-variants/hero-i-recomposicion-comparacion.jpg)
+
+#### 16.3 Por qué no se adopta
+
+El centro (logo + tres frascos) se ve bien: es el original, sin tocar. **Lo que falla es el entorno**, y es lo que el brief prohíbe:
+
+1. **Costuras.** Los parches (logo y grupo) llevan su propio humo, que no coincide en tono ni en dirección con el fondo: se ve un
+   **rectángulo con halo** alrededor de cada uno (borde vertical claro/oscuro a ambos lados). Aumentar el difuminado sólo lo
+   convierte en un velo. (Ampliado ×2 en `hero-i-recomposicion-costuras.jpg`.)
+2. **Humo que no fluye.** En A el espejo deja **simetrías evidentes** (nubes en mariposa) y un resto de planta reflejado (un «><»
+   dentro de la nube). En B el fondo es una mancha de degradado sin textura, que ya no es el humo de la foto.
+3. **No hay humo suficiente.** El humo libre de objetos de la imagen son ~0.37 Mpx (nube de 310 × 240, banda superior de 1672 × 125 con
+   los arcos dorados, 225 × 380 a la derecha del logo) frente a 1.15 Mpx que pide un lienzo 960 × 1200: hay que repetir, reflejar o
+   estirar, y eso se nota o deja de ser «el humo original».
+4. Un 4:5 más pequeño (que los parches llenaran el ancho y no hiciera falta fondo) no es posible: el parche del logo mide 510 px y el
+   del grupo 480, y no se pueden ensanchar sin meter en cuadro trozos de otros frascos o letras del wordmark.
+
+Rellenar esas zonas con humo nuevo sería **sintetizar píxeles** (relleno por IA o *inpainting*), exactamente lo que se quiere evitar.
+
+#### 16.4 Lo que haría falta
+
+Cualquiera de estas tres, por orden de preferencia:
+
+1. **El archivo con capas** (PSD / PNG por capas) del estudio que hizo el héroe: logo, frascos y humo separados. Con eso la
+   recomposición es un trabajo de montaje normal y sin costuras.
+2. **Un original vertical** 4:5 o 9:16 con esa composición, pedido al mismo estudio/IA que generó el de escritorio.
+3. **Aprobar por escrito una extensión generativa del fondo** (humo nuevo coherente con el original): es una decisión de marca, no
+   una recomposición, y habría que revisar el resultado antes de publicarlo.
+
+#### 16.5 Estado
+
+- Producción: **sin cambios** (recorte 3:2 de `docs/hero-variants.md` §15, héroe 37–41 % del alto, carrusel asomando ≥ 40 px en 375×667, 360×640 y 320×568; 68 px en 320×568 medido en local).
+- **T25 sigue abierto**, con la causa y la petición concreta en «Próximos pasos T25» (abajo).
+- Las dos imágenes del intento y el script quedan como evidencia; no se usan en el sitio (`hero-tall-4x5.webp` **no se creó**).
+
+### Próximos pasos T25 (lo que necesita el estudio)
+
+T25 sigue **abierto**. El héroe de producción es el recorte 3:2 provisional (`hero-mobile-3x2.webp`) y **no se vuelve a intentar una
+recomposición sin material nuevo** (el intento de §16 mostró que con el JPEG/WebP actual no sale sin inventar píxeles). Se necesita
+**una** de estas tres cosas, en este orden de preferencia, que pide el dueño al estudio que hizo el héroe de escritorio:
+
+| # | Entrega | Requisitos concretos |
+|---|---|---|
+| 1 | **PSD con capas** (o TIFF/PNG por capas) del héroe de escritorio | Capas **separadas y sin aplanar**: logo + wordmark (fondo transparente, dorado sin recomprimir), **cada frasco en su capa** con canal alfa (Tom Ford, Erba Pura, Valentino, Sauvage, 9 PM, Guerlain), follaje y suelo de piedra, y **el humo/fondo como capa propia a tamaño completo** (sin objetos encima). Lienzo ≥ 3344 × 1584 px (2× la imagen actual) o el tamaño original del proyecto; sin pérdida (PSD/TIFF/PNG), sRGB. Con esto se arma el 4:5 con montaje normal y sin costuras |
+| 2 | **Original vertical** con la misma escena | 4:5 (mín. 1600 × 2000 px, ideal 2400 × 3000) **o** 9:16 (mín. 1080 × 1920): logo arriba y centrado con margen, 2–3 frascos abajo sobre el suelo, humo de fondo; mismos frascos y mismo logo que el de escritorio. PNG/TIFF o JPEG calidad ≥ 95, sRGB, **sin texto añadido ni recompresión previa** |
+| 3 | **Aprobación explícita por escrito de una extensión generativa del fondo** | Decisión de marca, no técnica: quién la aprueba (el dueño), qué se permite (sólo humo/fondo nuevo coherente; **logo y frascos intactos**), y que se revisa el resultado antes de publicar (sin costuras, sin deformar la escala, dorado igual). Se registra aquí con fecha y nombre antes de empezar |
+
+**Criterios de aceptación (aplican a las tres):** dorado del logo idéntico al actual; escala relativa de los frascos conservada; ninguna
+costura ni halo visible (revisado ampliado ×2); sin relleno plano; derechos de uso confirmados por el estudio.
+
+**Qué se hace al recibirlo:** exportar `hero-tall-4x5.webp` (≈ 1200 × 1500, sin tocar el original); `<picture>` con
+`min-width: 768px` → `hero-wide-21x9.webp` y por defecto el vertical; altura 50–55 svh con `max-height` en pantallas cortas;
+comprobar que el carrusel asoma ≥ 40 px en 375 × 667, 360 × 640 y 320 × 568; capturas a 390 / 375 / 360 / 320 y comparación con el 3:2;
+actualizar `docs/hero-variants.md`. La rama de referencia `claude/hero-variants-experiments` (variantes A–E) **se conserva** hasta cerrar T25.

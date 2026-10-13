@@ -83,6 +83,21 @@ hosted: cloudinaryHostedVideo({ cloudName: "<cloud-name>", publicId: "cruzial/pa
 
 El botón «Ver en TikTok» y el enlace «También lo puedes ver en TikTok» se mantienen con el video propio.
 
+### Confirmación: es una sola línea, sin cambiar componentes
+
+- **No hay un `<TikTokEmbed />` que sustituir ni un `<VideoPlayer>` que montar a mano.** `VideoStory` (el componente de la sección) decide solo:
+  si el video tiene `hosted` válido renderiza el `<video controls>` con esos archivos; si no, la portada con el embed de TikTok. Por eso
+  activar un video es **únicamente** añadir `hosted: cloudinaryHostedVideo({ cloudName, publicId })` a su entrada en `home-video.ts`
+  (la línea del paso 2), sin quitar ni sustituir nada.
+- Comprobado con una prueba unitaria (`video-story.test.tsx`): con `cloudinaryHostedVideo({ cloudName: "demo-cloud", publicId:
+  "cruzial/parfums-detalle" })` el componente renderiza un `<video>` cuyas `<source>` son las URLs de Cloudinary de ese `publicId`
+  (MP4 y WebM), con póster, sin `<iframe>` y con TikTok sólo como enlace.
+- **Hosting alternativo** (si el cliente prefiere Vimeo, Bunny, S3…): hoy el sitio sólo acepta `https://res.cloudinary.com/…` o archivos
+  del propio sitio (`/videos/x.mp4` dentro de `public/`). Otro host exige añadirlo a la lista de orígenes de `isValidHostedVideo`
+  (`home-video.ts`) y a `media-src` de la CSP (`content-security-policy.ts`), con su prueba; Vimeo además serviría un reproductor
+  propio (iframe), que reintroduce un tercero. Servir el MP4 desde `public/` funciona sin tocar nada más, pero 1–3 MB por video van en
+  cada despliegue y sin CDN de video.
+
 ## Verificación de reproducción
 
 Con un video **sintético de prueba** (patrón de barras 360×640, 4 s, MP4 H.264 + WebM VP9, generado con ffmpeg; no es arte de

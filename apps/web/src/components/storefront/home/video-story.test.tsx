@@ -1,6 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import type { HomeVideo } from "@/domains/platform/home-video";
+import { cloudinaryHostedVideo, type HomeVideo } from "@/domains/platform/home-video";
 import { VideoStory } from "./video-story";
 
 const base: HomeVideo = {
@@ -43,5 +43,16 @@ describe("VideoStory", () => {
     );
     expect(html).not.toContain("<video");
     expect(html).toContain("Reproducir video");
+  });
+
+  it("activated with one line: a Cloudinary publicId renders a <video> with valid sources for that id", () => {
+    const hosted = cloudinaryHostedVideo({ cloudName: "demo-cloud", publicId: "cruzial/parfums-detalle" });
+    const html = renderToStaticMarkup(<VideoStory video={{ ...base, hosted }} tone="parfums" />);
+    expect(html).toContain("<video");
+    expect(html).toContain('src="https://res.cloudinary.com/demo-cloud/video/upload/vc_h264,q_auto,w_720/cruzial/parfums-detalle.mp4"');
+    expect(html).toContain('src="https://res.cloudinary.com/demo-cloud/video/upload/vc_vp9,q_auto,w_720/cruzial/parfums-detalle.webm"');
+    expect(html).toContain('poster="https://res.cloudinary.com/demo-cloud/video/upload/so_1,w_720/cruzial/parfums-detalle.jpg"');
+    expect(html).not.toContain("<iframe");
+    expect(html).not.toContain("Reproducir video");
   });
 });
