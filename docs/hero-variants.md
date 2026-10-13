@@ -660,3 +660,7 @@ Capturas: `docs/hero-variants/hero-h-recorte-{390,375,360,320}.jpg`. Comparació
 Hace falta **un original vertical con esa composición** (logo arriba, frascos abajo): el mismo estudio/IA que generó el héroe de
 escritorio puede pedirlo en 4:5 con la misma escena. Hasta que exista, T25 sigue abierto como «asset 4:5»; el recorte 3:2 es lo máximo
 que da la imagen actual sin sintetizar.
+
+## 16. Recomposición vertical (intento, no adoptado)
+
+Se consolidó en `docs/design-audit-2026-10-11.md` §16, junto con «Próximos pasos T25» (requisitos para el estudio). Evidencia: `hero-variants/hero-i-recomposicion-*.jpg` y `hero-variants/recompose-intento.py`. Producción sigue con el recorte 3:2 de §15.
