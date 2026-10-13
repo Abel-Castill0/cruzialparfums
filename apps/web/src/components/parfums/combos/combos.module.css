@@ -21,13 +21,13 @@
 .hero {
   padding: clamp(40px, 6vw, 72px) 0 clamp(56px, 7vw, 88px);
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
   gap: clamp(28px, 5vw, 56px);
-  align-items: center;
 }
 
 .heroCopy {
   min-width: 0;
+  max-width: 44rem;
 }
 
 .eyebrow {
@@ -125,17 +125,6 @@
   background: var(--ds-color-accent-active);
 }
 
-.heroMedia {
-  position: relative;
-  aspect-ratio: 1672 / 941;
-  overflow: hidden;
-  background: var(--ds-gray-100);
-}
-
-.heroImage {
-  object-fit: cover;
-}
-
 /* Trust strip */
 
 .trustStrip {
@@ -205,13 +194,6 @@
   color: var(--ds-ink-muted);
   font-size: 12px;
   line-height: 1.7;
-}
-
-.comboGrid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;
-  align-items: stretch;
 }
 
 .comboCard {
@@ -923,26 +905,9 @@ button.send:disabled,
 }
 
 @media (max-width: 1024px) {
-  .hero {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .heroMedia {
-    order: 2;
-    aspect-ratio: 16 / 9;
-  }
-
-  .heroCopy {
-    order: 1;
-  }
-
   .trustStrip {
     grid-template-columns: minmax(0, 1fr);
     gap: 16px;
-  }
-
-  .comboGrid {
-    grid-template-columns: minmax(0, 1fr);
   }
 
   .comboCard {
@@ -1050,10 +1015,6 @@ button.send:disabled,
 
   .heroCopy h1 {
     font-size: clamp(38px, 11vw, 50px);
-  }
-
-  .heroMedia {
-    aspect-ratio: 4 / 3;
   }
 
   .heroActions {
@@ -1272,5 +1233,95 @@ button.send:disabled,
     color: var(--ds-color-on-accent, var(--ds-white));
     background: var(--ds-color-accent, var(--ds-accent));
     box-shadow: none;
+  }
+}
+
+/* Sets carousel (bottom of the page): three cards in view, one set of movement every 4 s. The track is translated by whole
+   cards: each slide is (100% - gaps) / visible wide, so one step is (100% + gap) / visible. The viewport is padded and pulled
+   back with a negative margin so the cards' shadows are not clipped. */
+.setsCarousel {
+  --sets-gap: 16px;
+  position: relative;
+}
+
+.setsViewport {
+  margin: -12px;
+  padding: 12px;
+  overflow: hidden;
+}
+
+.setsTrack {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  gap: var(--sets-gap);
+  list-style: none;
+  transform: translateX(calc(var(--index, 0) * -1 * (100% + var(--sets-gap)) / var(--visible, 3)));
+  transition: transform var(--ds-dur-hero) var(--ds-ease-spring);
+  will-change: transform;
+}
+
+.setsSlide {
+  min-width: 0;
+  display: flex;
+  flex: 0 0 calc((100% - (var(--visible, 3) - 1) * var(--sets-gap)) / var(--visible, 3));
+}
+
+.setsSlide > * {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+/* Inside the carousel a card is always the stacked one (art on top, copy below), whatever the page width. */
+.setsSlide .comboCard {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto 1fr;
+}
+
+.setsSlide .comboMedia {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 5;
+  border-right: 0;
+  border-bottom: 1px solid var(--ds-hairline);
+}
+
+.setsControls {
+  margin-top: var(--ds-space-3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ds-space-1);
+}
+
+.setsControls button {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  color: var(--ds-ink);
+  background: var(--ds-white);
+  box-shadow: inset 0 0 0 1px rgba(29, 29, 31, 0.28);
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color var(--ds-dur-fast) var(--ds-ease-spring), color var(--ds-dur-fast) var(--ds-ease-spring);
+}
+
+.setsControls button:hover {
+  box-shadow: inset 0 0 0 1px var(--ds-ink);
+}
+
+.setsControls button:focus-visible {
+  outline: 2px solid var(--ds-ink);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .setsTrack {
+    transition: none;
   }
 }

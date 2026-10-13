@@ -1,8 +1,12 @@
-/* Recommender teaser: continues the grey band of the family tiles above. */
+/* Recommender teaser: a dark band (subtle ink gradient with a faint gold glow) so it is never a white block. White on it is
+   14.1:1 at its lightest end, the muted copy 8.4:1; the gold CTA keeps its ink label. */
 
 .discovery {
-  padding-block: var(--ds-space-5) var(--ds-section-y);
-  background: var(--ds-gray-50);
+  padding-block: var(--ds-section-y);
+  color: var(--ds-on-dark);
+  background:
+    radial-gradient(ellipse 60% 80% at 85% 0%, rgba(197, 160, 89, 0.14), transparent 70%),
+    linear-gradient(160deg, var(--ds-ink) 0%, var(--ds-color-surface-dark) 100%);
 }
 
 .inner {
@@ -15,7 +19,7 @@
 }
 
 .eyebrow {
-  color: var(--ds-ink-muted);
+  color: var(--ds-on-dark-muted);
   font-size: var(--ds-text-small);
   font-weight: 500;
 }
@@ -32,7 +36,7 @@
 .lead > p:not(.eyebrow) {
   max-width: 44ch;
   margin-top: var(--ds-space-3);
-  color: var(--ds-ink-muted);
+  color: var(--ds-on-dark-muted);
   font-size: var(--ds-text-lead);
   line-height: 1.5;
 }
@@ -48,14 +52,14 @@
   display: flex;
   align-items: center;
   gap: var(--ds-space-2);
-  color: var(--ds-ink);
+  color: var(--ds-on-dark);
   font-size: var(--ds-text-card);
   font-weight: 500;
 }
 
 .steps svg {
   flex: 0 0 auto;
-  color: var(--ds-ink-muted);
+  color: var(--ds-color-accent);
 }
 
 .cta {
@@ -88,7 +92,7 @@
 
 .shortcuts h3 {
   margin-bottom: var(--ds-space-2);
-  color: var(--ds-ink-muted);
+  color: var(--ds-on-dark-muted);
   font-size: var(--ds-text-small);
   font-weight: 500;
 }
@@ -100,7 +104,7 @@
   list-style: none;
 }
 
-/* Pills: white on the grey band, no border. */
+/* Pills: a translucent white chip on the dark band, with a hairline. */
 .shortcuts a {
   min-height: var(--ds-touch);
   padding: 0 var(--ds-space-2);
@@ -108,15 +112,16 @@
   align-items: center;
   gap: var(--ds-space-1);
   border-radius: var(--ds-radius-pill);
-  color: var(--ds-ink);
-  background: var(--ds-white);
+  color: var(--ds-on-dark);
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 0 0 1px var(--ds-hairline-on-dark);
   font-size: 0.9375rem;
   font-weight: 500;
   transition: background-color var(--ds-dur-fast) var(--ds-ease-spring), transform var(--ds-dur-fast) var(--ds-ease-spring);
 }
 
 .shortcuts a:hover {
-  background: var(--ds-gray-100);
+  background: rgba(255, 255, 255, 0.16);
 }
 
 .shortcuts a:active {
@@ -124,7 +129,7 @@
 }
 
 .shortcuts a span {
-  color: var(--ds-ink-muted);
+  color: var(--ds-on-dark-muted);
   font-size: var(--ds-text-small);
   font-variant-numeric: tabular-nums;
 }

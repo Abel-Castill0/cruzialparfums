@@ -35,7 +35,7 @@ export function VideoStory({ video, tone }: { video: HomeVideo; tone: "parfums" 
   if (!videoId) return null;
 
   return (
-    <section className={`${styles.story} ${styles[tone]}`} aria-labelledby="home-video-title" data-home-video={tone}>
+    <section className={`${styles.story} ${styles[tone]}`} aria-labelledby="home-video-title" data-home-video={tone} data-band={tone === "parfums" ? "dark" : undefined}>
       <div className={styles.inner}>
         <div className={styles.copy}>
           {video.eyebrow ? <p className={styles.eyebrow}>{video.eyebrow}</p> : null}

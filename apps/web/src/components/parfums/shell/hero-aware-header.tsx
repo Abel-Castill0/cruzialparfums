@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 
-const HERO_PATHS = new Set(["/parfums", "/parfums/catalogo"]);
+const HERO_PATHS = new Set(["/parfums"]);
 // Tall enough to cover the sticky header, so it appears the moment the hero
 // no longer reaches the top of the viewport.
 const HEADER_REVEAL_MARGIN = "-80px 0px 0px 0px";

@@ -3,7 +3,7 @@
 import type { Route } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { Breadcrumbs } from "@/components/parfums/navigation/breadcrumbs";
 import {
   addParfumsCartLine,
@@ -33,6 +33,16 @@ import {
   buildCustomComboMessage,
   buildWhatsAppUrl,
 } from "@/domains/whatsapp/parfums-message-builder";
+import {
+  clampSetsIndex,
+  isSetsRotating,
+  nextSetsIndex,
+  previousSetsIndex,
+  SETS_ROTATION_MS,
+  SETS_VISIBLE_DESKTOP,
+  setsVisibleFor,
+} from "@/domains/combos/sets-carousel";
+import { usePrefersReducedMotion } from "@/lib/use-prefers-reduced-motion";
 import styles from "./combos.module.css";
 
 function money(value: number) {
@@ -42,7 +52,7 @@ function money(value: number) {
 const TYPE_FILTERS: { value: "all" | CatalogProductType; label: string }[] = [
   { value: "all", label: "Todas" },
   { value: "arab", label: "Árabe" },
-  { value: "designer", label: "Designer" },
+  { value: "designer", label: "Diseñador" },
   { value: "niche", label: "Nicho" },
 ];
 
@@ -152,6 +162,95 @@ function ComboCard({ combo, products, onAdded, preload }: { combo: CatalogProduc
   );
 }
 
+function subscribeResize(callback: () => void) {
+  window.addEventListener("resize", callback);
+  return () => window.removeEventListener("resize", callback);
+}
+
+/** How many sets fit in view at the current width (3 / 2 / 1). The server and first render use the desktop count. */
+function useSetsVisible() {
+  return useSyncExternalStore(subscribeResize, () => setsVisibleFor(window.innerWidth), () => SETS_VISIBLE_DESKTOP);
+}
+
+/**
+ * The sets, in a carousel at the bottom of the page: three in view on desktop (two on tablets, one on phones) and one
+ * set of movement every 4 seconds when some are out of view. It waits while the pointer or focus is on it, never moves
+ * under reduced motion, and stops for good once the visitor uses the arrows or the pause control. Sets outside the
+ * window are `inert`, so keyboard focus never lands on a card that is off screen.
+ */
+function SetsCarousel({ combos, products, onAdded }: { combos: CatalogProduct[]; products: CatalogProduct[]; onAdded: (message: string) => void }) {
+  const visible = useSetsVisible();
+  const reducedMotion = usePrefersReducedMotion();
+  const total = combos.length;
+  const [position, setPosition] = useState(0);
+  const [stopped, setStopped] = useState(false);
+  const [holding, setHolding] = useState(false);
+  const index = clampSetsIndex(position, total, visible);
+  const rotating = isSetsRotating({ total, visible, reducedMotion, stopped, holding });
+  const canMove = total > visible;
+
+  useEffect(() => {
+    if (!rotating) return undefined;
+    const timer = window.setTimeout(() => setPosition(nextSetsIndex(index, total, visible)), SETS_ROTATION_MS);
+    // Every new position restarts the countdown.
+    return () => window.clearTimeout(timer);
+  }, [rotating, index, total, visible]);
+
+  function move(next: number) {
+    setStopped(true);
+    setPosition(next);
+  }
+
+  return (
+    <div
+      className={styles.setsCarousel}
+      role="region"
+      aria-roledescription="carrusel"
+      aria-label="Sets Cruzial"
+      data-sets-carousel
+      data-visible={visible}
+      data-index={index}
+      onMouseEnter={() => setHolding(true)}
+      onMouseLeave={() => setHolding(false)}
+      onFocus={() => setHolding(true)}
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) setHolding(false);
+      }}
+    >
+      <div className={styles.setsViewport}>
+        <ul
+          className={styles.setsTrack}
+          style={{ "--visible": visible, "--index": index } as React.CSSProperties}
+          aria-live={rotating ? "off" : "polite"}
+        >
+          {combos.map((combo, position) => (
+            <li key={cartIdentity(combo)} className={styles.setsSlide} inert={position < index || position >= index + visible} data-sets-slide>
+              <ComboCard combo={combo} products={products} onAdded={onAdded} preload={position === 0} />
+            </li>
+          ))}
+        </ul>
+      </div>
+      {canMove ? (
+        <div className={styles.setsControls}>
+          <button type="button" onClick={() => move(previousSetsIndex(index, total, visible))} aria-label="Sets anteriores" data-sets-prev>
+            <span aria-hidden="true">‹</span>
+          </button>
+          {reducedMotion ? null : (
+            <button type="button" onClick={() => setStopped((value) => !value)} aria-label={stopped ? "Reanudar el cambio automático de sets" : "Pausar el cambio automático de sets"} aria-pressed={stopped} data-sets-pause>
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                {stopped ? <path d="M4.5 3v10l8-5-8-5Z" /> : <><rect x="3.5" y="3" width="3" height="10" rx="0.6" /><rect x="9.5" y="3" width="3" height="10" rx="0.6" /></>}
+              </svg>
+            </button>
+          )}
+          <button type="button" onClick={() => move(nextSetsIndex(index, total, visible))} aria-label="Sets siguientes" data-sets-next>
+            <span aria-hidden="true">›</span>
+          </button>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 export function CombosExperience({
   combos,
   products,
@@ -246,19 +345,9 @@ export function CombosExperience({
           </p>
           <p className={styles.heroNote}>Stock y total final se confirman por WhatsApp.</p>
           <div className={styles.heroActions}>
-            {combos.length > 0 ? <a href="#sets-armados" className={styles.heroCta}>Ver sets curados <span aria-hidden="true">→</span></a> : null}
+            {combos.length > 0 ? <a href="#sets-armados" className={styles.heroCta}>Ver sets <span aria-hidden="true">→</span></a> : null}
             <a href="#arma-combo" className={combos.length > 0 ? styles.heroCtaSecondary : styles.heroCta}>Armar mi combo <span aria-hidden="true">→</span></a>
           </div>
-        </div>
-        <div className={styles.heroMedia}>
-          <Image
-            src="/images/parfums-combos/combo-hero.webp"
-            alt="Selección de fragancias Cruzial Parfums sobre piedra natural"
-            fill
-            sizes="(max-width: 900px) 100vw, 50vw"
-            preload
-            className={styles.heroImage}
-          />
         </div>
       </header>
 
@@ -280,7 +369,7 @@ export function CombosExperience({
             <path d="M9 3h3v3H9zM9.5 6h2l1 2.4v10.6a1 1 0 01-1 1h-2a1 1 0 01-1-1V8.4L9.5 6z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
             <path d="M15.5 9h1.6l.8 1.9v8.6a.8.8 0 01-.8.8h-1.6a.8.8 0 01-.8-.8v-8.6L15.5 9z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" />
           </svg>
-          <span><strong>{eligible.length} fragancias disponibles</strong>Árabe, designer y nicho en un solo lugar.</span>
+          <span><strong>{eligible.length} fragancias disponibles</strong>Árabe, diseñador y nicho en un solo lugar.</span>
         </div>
         <div>
           <svg className={styles.trustIcon} viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -292,18 +381,6 @@ export function CombosExperience({
           <span><strong>Envíos a todo el Perú</strong>Por agencia Shalom o motorizado en Lima; se confirman por WhatsApp.</span>
         </div>
       </section>
-
-      {combos.length > 0 ? (
-        <section className={styles.setsSection} id="sets-armados" aria-labelledby="sets-title">
-          <div className={styles.sectionHead}>
-            <div><h2 id="sets-title">Sets <em>Cruzial.</em></h2></div>
-            <span>Sets con composición y precio publicados del catálogo. Cada fragancia del set va en el tamaño elegido.</span>
-          </div>
-          <div className={styles.comboGrid}>
-            {combos.map((combo, index) => <ComboCard key={cartIdentity(combo)} combo={combo} products={products} onAdded={announce} preload={index === 0} />)}
-          </div>
-        </section>
-      ) : null}
 
       <section className={styles.builderSection} id="arma-combo" aria-labelledby="builder-title">
         <div className={styles.sectionHead}>
@@ -454,6 +531,16 @@ export function CombosExperience({
           {ready ? <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">Continuar <span aria-hidden="true">↗</span></a> : <button type="button" disabled>Continuar</button>}
         </div>
       </section>
+
+      {combos.length > 0 ? (
+        <section className={styles.setsSection} id="sets-armados" aria-labelledby="sets-title">
+          <div className={styles.sectionHead}>
+            <div><h2 id="sets-title">Sets <em>Cruzial.</em></h2></div>
+            <span>Sets con composición y precio publicados del catálogo. Cada fragancia del set va en el tamaño elegido.</span>
+          </div>
+          <SetsCarousel combos={combos} products={products} onAdded={announce} />
+        </section>
+      ) : null}
 
       <section className={styles.postTrust} aria-label="Por qué elegir Cruzial Parfums">
         {POST_BUILDER_TRUST.map((item) => (

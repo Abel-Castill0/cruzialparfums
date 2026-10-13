@@ -27,7 +27,7 @@
   inset: 0;
   content: "";
   border-bottom: 1px solid var(--ds-hairline);
-  background: rgba(255, 255, 255, 0.82);
+  background: rgba(245, 245, 247, 0.82);
   backdrop-filter: saturate(180%) blur(20px);
 }
 
@@ -453,8 +453,8 @@
 /* Category doors: the three buttons that set the type filter */
 
 .doors {
-  padding: 48px 0 8px;
-  background: var(--ds-white);
+  padding: 8px 0 var(--ds-space-3);
+  background: var(--ds-color-surface);
 }
 
 .doorList {
@@ -707,4 +707,30 @@
   .door:hover .doorImage {
     transform: none;
   }
+}
+
+/* Brand filter: a native select (the list is as long as the catalog's brands), styled like the chips. */
+.brandSelect {
+  width: 100%;
+  max-width: 420px;
+  min-height: var(--ds-touch);
+  padding: 0 var(--ds-space-3);
+  border: 0;
+  border-radius: var(--ds-radius-pill);
+  color: var(--ink);
+  background: var(--ds-gray-100);
+  box-shadow: inset 0 0 0 1px var(--ds-control-ring);
+  font: inherit;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.brandSelect:hover {
+  box-shadow: inset 0 0 0 1px var(--ds-control-ring-strong);
+}
+
+.brandSelect:focus-visible {
+  outline: 2px solid var(--ds-accent);
+  outline-offset: 2px;
 }

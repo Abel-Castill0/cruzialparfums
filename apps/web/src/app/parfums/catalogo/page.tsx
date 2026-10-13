@@ -11,7 +11,7 @@ import { loadParfumsStorefront } from "@/lib/catalog/parfums-storefront";
 
 export const metadata: Metadata = {
   title: "Catálogo",
-  description: "Catálogo completo de decants y frascos Cruzial Parfums.",
+  description: "Catálogo de decants de 3, 5 y 10 ml de Cruzial Parfums.",
 };
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
@@ -27,8 +27,10 @@ export default async function CatalogPage({ searchParams }: { searchParams: Sear
     gender: scalar(params.gender) ?? "all",
     family: scalar(params.family) ?? "all",
     type: scalar(params.type) ?? "all",
-    format: scalar(params.format) ?? "all",
-    price: scalar(params.price) ?? "all",
+    brand: scalar(params.brand) ?? "all",
+    // Retired filters (whole bottles and budget): a shared link that still carries them just shows the full decant catalog.
+    format: "all",
+    price: "all",
     sort: (scalar(params.sort) ?? "featured") as CatalogSort,
     search: scalar(params.search) ?? "",
   };
@@ -45,6 +47,7 @@ export default async function CatalogPage({ searchParams }: { searchParams: Sear
         key={recommendation ? JSON.stringify(recommendation) : "all"}
         products={products}
         initialFilters={initialFilters}
+        initialPage={Number.parseInt(scalar(params.vista) ?? "1", 10) || 1}
         initialRecommendation={recommendation}
       />
     </main>

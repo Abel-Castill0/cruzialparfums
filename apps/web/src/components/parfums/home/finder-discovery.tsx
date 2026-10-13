@@ -37,7 +37,7 @@ export function FinderDiscovery({ fragrances }: { fragrances: readonly CatalogPr
   if (families.length === 0 && notes.length === 0) return null;
 
   return (
-    <section className={styles.discovery} aria-labelledby="finder-discovery-title">
+    <section className={styles.discovery} aria-labelledby="finder-discovery-title" data-band="dark">
       <Reveal className={styles.inner}>
         <div className={styles.lead}>
           <h2 id="finder-discovery-title">

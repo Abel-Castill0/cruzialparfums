@@ -88,8 +88,6 @@ test("the 404 page is accessible and raises no runtime error beyond its own 404 
 
 test("keyboard: the cart dialog opens, traps focus, closes with Escape and restores focus", async ({ page }) => {
   await page.goto("/parfums/catalogo");
-  const heroHeight = (await page.locator("[data-home-hero]").boundingBox())!.height;
-  await page.evaluate((y) => window.scrollTo(0, y), heroHeight + 100);
   const trigger = page.getByRole("button", { name: /Abrir carrito/ });
   await trigger.focus();
   await page.keyboard.press("Enter");
@@ -107,8 +105,6 @@ test("keyboard: product card 'Añadir' is reachable and announces the cart updat
   await add.focus();
   await expect(add).toBeFocused();
   await page.keyboard.press("Enter");
-  // The header (and the cart button in it) stays hidden while the catalog hero is in view: scroll past it before asserting.
-  await page.evaluate(() => window.scrollTo(0, (document.querySelector("[data-home-hero]") as HTMLElement).offsetHeight + 100));
   await expect(page.getByRole("button", { name: /Abrir carrito, 1 producto/ })).toBeVisible();
 });
 

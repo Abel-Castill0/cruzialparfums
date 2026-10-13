@@ -1,16 +1,30 @@
 import Image from "next/image";
 import Link from "next/link";
+import { describeImportGateDate, IMPORT_GATE_HEADLINE } from "@/domains/import/import-gate";
+import { readImportGate } from "@/lib/catalog/import-gate";
 import styles from "./page.module.css";
 
 /**
  * Gateway: two doors and nothing else. The only furniture is a transparent
- * bar with the wordmark and the seam between the two worlds.
+ * bar with the official mark and the seam between the two worlds.
  */
-export default function Home() {
+export default async function Home() {
+  const gate = await readImportGate();
+  const importClosed = gate.state === "closed";
+  const importDate = gate.state === "closed" ? describeImportGateDate(gate.opensAt) : null;
+
   return (
     <main id="main" tabIndex={-1} className={styles.page} aria-label="Elige tu tienda Cruzial">
       <h1 className={styles.srOnly}>Cruzial: elige entre Parfums e Import</h1>
-      <p className={styles.wordmark} aria-hidden="true">Cruzial</p>
+      <Image
+        className={styles.logo}
+        src="/parfums/hero/logo-official.jpeg"
+        alt="Cruzial Perfumería"
+        width={500}
+        height={495}
+        sizes="96px"
+        priority
+      />
       <span className={styles.seam} aria-hidden="true" />
 
       <Link
@@ -19,9 +33,9 @@ export default function Home() {
         href="/parfums"
         aria-label="Entrar a Cruzial Parfums"
       >
-        <span className={`${styles.visual} ${styles.parfumsVisual}`} aria-hidden="true">
+        <span className={styles.visual} aria-hidden="true">
           <Image
-            src="/images/home-redesign/home-hero-perfume.webp"
+            src="/images/parfums-home/parfums-hero.webp"
             alt=""
             fill
             preload
@@ -32,7 +46,7 @@ export default function Home() {
         </span>
         <span className={styles.copy}>
           <span className={styles.label}>Parfums</span>
-          <span className={styles.line}>Decants, frascos y combos de perfumería árabe, designer y nicho.</span>
+          <span className={styles.line}>Decants, frascos y combos de perfumería árabe, de diseñador y nicho.</span>
           <span className={styles.enter}>
             <span className={styles.enterText}>Entrar</span>
             <span className={styles.arrow} aria-hidden="true">↗</span>
@@ -43,12 +57,13 @@ export default function Home() {
       <Link
         className={styles.world}
         data-unit="import"
+        data-closed={importClosed ? "true" : undefined}
         href="/import"
-        aria-label="Entrar a Cruzial Import"
+        aria-label={importClosed ? `Entrar a Cruzial Import. ${IMPORT_GATE_HEADLINE}. ${importDate}` : "Entrar a Cruzial Import"}
       >
-        <span className={`${styles.visual} ${styles.importVisual}`} aria-hidden="true">
+        <span className={styles.visual} aria-hidden="true">
           <Image
-            src="/images/import-home/import-hero-container.webp"
+            src="/images/import-home/import-conditions-container.webp"
             alt=""
             fill
             preload
@@ -57,9 +72,19 @@ export default function Home() {
             className={styles.importImage}
           />
         </span>
+        {importClosed ? (
+          <span className={styles.closedVeil} aria-hidden="true" />
+        ) : null}
         <span className={styles.copy}>
           <span className={styles.label}>Import</span>
-          <span className={styles.line}>Consolidados de perfumería: compra grupal por campaña.</span>
+          {importClosed ? (
+            <span className={styles.closedNote}>
+              <strong>{IMPORT_GATE_HEADLINE}</strong>
+              <span>{importDate}</span>
+            </span>
+          ) : (
+            <span className={styles.line}>Consolidados de perfumería: compra grupal por campaña.</span>
+          )}
           <span className={styles.enter}>
             <span className={styles.enterText}>Entrar</span>
             <span className={styles.arrow} aria-hidden="true">↗</span>

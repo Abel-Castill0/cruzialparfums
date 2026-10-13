@@ -16,7 +16,7 @@ export function TikTokProfile({ eyebrow, title, text, posterSrc, posterAlt, tone
   tone: "parfums" | "import";
 }) {
   return (
-    <section className={`${styles.profile} ${styles[tone]}`} aria-labelledby="tiktok-profile-title">
+    <section className={`${styles.profile} ${styles[tone]}`} aria-labelledby="tiktok-profile-title" data-band={tone === "parfums" ? "dark" : undefined}>
       <div className={styles.inner}>
         <div className={styles.copy}>
           <p className={styles.eyebrow}>{eyebrow}</p>

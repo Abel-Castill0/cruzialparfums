@@ -36,7 +36,8 @@ type ProductMarqueeProps = {
 // Below this the strip is a calm static row: duplicating two products to fake
 // an endless loop reads as a bug, not as abundance.
 const LOOP_MIN_ITEMS = 5;
-const DRIFT_PX_PER_SECOND = 26;
+/** Drift speed of the strip (px/s). Code-level setting on purpose: it is not an admin option. */
+export const MARQUEE_DRIFT_PX_PER_SECOND = 40;
 const RESUME_DELAY_MS = 900;
 
 function subscribeReducedMotion(callback: () => void) {
@@ -145,7 +146,7 @@ export function ProductMarquee({ heading, label, items, tone }: ProductMarqueePr
         position = viewport.scrollLeft;
       } else {
         const half = viewport.scrollWidth / 2;
-        position += (DRIFT_PX_PER_SECOND * elapsed) / 1000;
+        position += (MARQUEE_DRIFT_PX_PER_SECOND * elapsed) / 1000;
         if (position >= half) position -= half;
         viewport.scrollLeft = position;
       }

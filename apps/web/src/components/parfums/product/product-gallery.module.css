@@ -112,3 +112,31 @@
     transition: none;
   }
 }
+
+/* Pause / resume the automatic change of photos: always visible (a moving image needs a visible way to stop it). */
+.rotationToggle {
+  position: absolute;
+  z-index: 2;
+  bottom: 8px;
+  left: 8px;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--ds-ink);
+  box-shadow: var(--ds-shadow-1);
+  cursor: pointer;
+  transition: background-color var(--ds-dur-fast) var(--ds-ease-spring);
+}
+
+.rotationToggle:hover {
+  background: var(--ds-white);
+}
+
+.rotationToggle:focus-visible {
+  outline: 2px solid var(--ds-ink);
+  outline-offset: 2px;
+}
