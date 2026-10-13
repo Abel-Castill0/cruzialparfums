@@ -15,9 +15,9 @@
   display: block;
   width: 100%;
   aspect-ratio: 1200 / 792;
-  /* Short phones: cap the art at a third of the screen so the product carousel peeks under the hero. The image is then
+  /* Short phones: cap the art at 30% of the screen so the product carousel peeks under the hero. The image is then
      cropped top and bottom by object-fit (smoke above, ledge below); the wordmark and the bottles sit in the middle 78% of it. */
-  max-height: 33svh;
+  max-height: 30svh;
 }
 
 .image {

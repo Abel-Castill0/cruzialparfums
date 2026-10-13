@@ -636,12 +636,12 @@ Sauvage** enteros, y el humo alrededor. Fidelidad medida contra la misma región
 
 | Móvil | Alto del héroe | Carrusel visible bajo el héroe | Se ve |
 |---|---|---|---|
-| 390 × 844 | 319 px (38 %) | 217 px | los 3:2 completos |
-| 375 × 667 | 282 px (42 %) | 79 px | recorte de 33svh: humo arriba y suelo abajo |
-| 360 × 640 | 273 px (43 %) | 64 px | ídem |
-| 320 × 568 | 249 px (44 %) | 51 px | ídem |
+| 390 × 844 | 315 px (37 %) | 221 px | los 3:2 completos |
+| 375 × 667 | 262 px (39 %) | 99 px | recorte de 30svh: humo arriba y suelo abajo |
+| 360 × 640 | 254 px (40 %) | 83 px | ídem |
+| 320 × 568 | 232 px (41 %) | 68 px | ídem |
 
-En pantallas cortas el arte se limita a `33svh` y `object-fit: cover` recorta humo arriba y suelo abajo (el wordmark y los frascos
+En pantallas cortas el arte se limita a `30svh` y `object-fit: cover` recorta humo arriba y suelo abajo (el wordmark y los frascos
 ocupan el 78 % central de la imagen, no se tocan). Peso: 133 KB servidos (WebP optimizado por Next según `sizes`); en escritorio no se descarga el recorte móvil.
 
 Capturas: `docs/hero-variants/hero-h-recorte-{390,375,360,320}.jpg`. Comparación con la versión CSS anterior:
@@ -650,7 +650,7 @@ Capturas: `docs/hero-variants/hero-h-recorte-{390,375,360,320}.jpg`. Comparació
 ### 15.5 Lo que NO se cumple del brief y por qué
 
 1. **Recorte 4:5 / 3:4** → es **3:2**: un 4:5 no contiene el logo y esos frascos (§15.1).
-2. **Alto del héroe de 55 – 60 % del viewport** → mide **38 – 44 %**. Una imagen 3:2 a todo el ancho de un teléfono mide ~ 40 % de una
+2. **Alto del héroe de 55 – 60 % del viewport** → mide **37 – 41 %**. Una imagen 3:2 a todo el ancho de un teléfono mide ~ 40 % de una
    pantalla de 844 px; llegar a 55 – 60 % exigiría una imagen más alta (mismo problema que el 4:5) o rellenar con una franja vacía. Además
    en 375 × 667, 360 × 640 y 320 × 568 un héroe de 55 – 60 % **no deja asomar el carrusel** (el requisito de ≥ 40 px, que sí se cumple).
 3. El logo queda a ~150 px de ancho en 390 px (el del §14 y el de F eran de 143 y 280 px): se lee, sin el protagonismo de un 4:5.
