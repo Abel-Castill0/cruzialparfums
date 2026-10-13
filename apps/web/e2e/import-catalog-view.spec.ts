@@ -42,6 +42,11 @@ test("Parfums catalog has exactly three discovery categories, no hero, and a hea
   const homeHeroHeight = (await homeHero.boundingBox())!.height;
   await page.evaluate((height) => window.scrollTo(0, height + 100), homeHeroHeight);
   await expect(header).toHaveCSS("visibility", "visible");
+  // Back at the hero the header hides again (this used to be asserted on the catalog hero; the home hero keeps that coverage).
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await expect(header).toHaveCSS("visibility", "hidden");
+  await page.evaluate((height) => window.scrollTo(0, height + 100), homeHeroHeight);
+  await expect(header).toHaveCSS("visibility", "visible");
   await page.getByRole("link", { name: "Catálogo" }).first().click();
   await expect(page).toHaveURL(/\/parfums\/catalogo/);
   await expect(header).toHaveCSS("visibility", "visible");

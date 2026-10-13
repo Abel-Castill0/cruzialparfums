@@ -47,7 +47,11 @@ donde se podía reutilizar. Rama `design/redesign-batch-3`; sin push, sin PR, si
 | 17 | Sin frascos enteros | El catálogo solo muestra decants: se excluyen productos sin precio de decant, las tarjetas ya no ofrecen «Frasco N ml · S/» ni el aviso de regalo de frasco. **La ficha de producto sigue vendiendo frascos** (la ruta de frascos es otro PR). |
 | 18 | 24 por vista | «Vista 1, Vista 2…» (pills, la actual en tinta sólida, `aria-current="page"`), 24 productos por vista, `?vista=N` compartible; cambiar filtro/orden/búsqueda vuelve a la Vista 1; al cambiar de vista se sube al inicio del grid. |
 
-**Límite honesto (18):** la paginación es del lado del cliente: la página sigue recibiendo la lista completa en su payload y solo **renderiza** 24 tarjetas (y 24 imágenes) por vista. Paginar en servidor implicaría mover búsqueda y filtros al servidor: un refactor mayor que no estaba en el encargo.
+**Paginación provisional: NO ahorra recursos (decisión del Release Manager, 2026-10-13).** Las «Vistas» de 24 son una solución de presentación aprobada como provisional, no una optimización:
+- La página sigue enviando **todos** los productos al navegador (mismo payload RSC y mismas props hidratadas que antes) y el filtrado/búsqueda siguen siendo del cliente.
+- Lo único que cambia es cuánto se **dibuja**: 24 tarjetas y 24 imágenes por vista en vez de todas, y a cambio cada cambio de vista re-renderiza el grid. No mejora TTFB, tamaño del HTML/RSC ni coste de hidratación de la lista.
+- **T12 la reemplaza** con paginación y filtros del lado del servidor (cada vista pide solo sus 24 productos); T12 queda actualizado con esta nota en `design-audit-2026-10-11.md`. No se refactoriza aquí.
+- Cuando T12 llegue, se conserva la interfaz («Vista n», `?vista=`, 24 por vista, vuelta a la Vista 1 al cambiar filtros) y se cambia solo de dónde salen los datos.
 
 ## 4. Producto `/parfums/productos/[slug]`
 
@@ -81,6 +85,21 @@ Las pruebas que necesitan más de 24 productos o más de 3 sets **se omiten sola
 
 **Pruebas existentes actualizadas** (porque codificaban el diseño anterior): cinco e2e que esperaban el héroe del catálogo (header oculto, scroll por encima del héroe), el de «catalog hero stacks…» (borrado: el héroe ya no existe) y «Designer» → «Diseñador».
 
+**Diff exacto de tests adaptados o borrados:** `docs/redesign-batch-3-tests.diff` (`git diff master..design/redesign-batch-3 -- apps/web/e2e/*.spec.ts apps/web/playwright.config.ts`, sin el spec nuevo). Resumen y justificación, test por test:
+
+| Archivo | Cambio | Por qué | ¿Cobertura perdida? |
+|---|---|---|---|
+| `accessibility.spec.ts` (2 tests) | se quita el scroll «pasa el héroe» | el catálogo ya no tiene héroe: el header y el carrito están visibles desde el inicio | No: mismas aserciones (diálogo del carrito, foco, «Añadir» anuncia el carrito) |
+| `parfums-shell.spec.ts` · `firstPurchasableCardAdd`, búsqueda y TikTok | se quita el mismo scroll | ídem | No |
+| `parfums-shell.spec.ts` · «the catalog hero also hides the header…» | pasa a «the catalog has no hero, so the header is there from the first screen» | el comportamiento cambió por diseño | No: lo que protegía (el header oculto sobre un héroe) sigue cubierto en `/parfums` por «the navigation stays hidden until the visitor leaves the hero» |
+| `parfums-shell.spec.ts` · recomendador | el enlace de apertura pasa de «Encontrar mi fragancia» (botón del héroe retirado) a «Usar el Finder» (banda final) | el botón ya no existe | No: mismo flujo (cerrar con Esc / X / clic fuera, foco y posición, completar) |
+| `import-catalog-view.spec.ts` · catálogo de Parfums | reescrito: sin héroe, header siempre visible, 3 categorías; **y** se añadió a la home la comprobación «al volver al scroll 0 el header se oculta de nuevo» | esa vuelta al héroe solo se probaba con el héroe del catálogo; ahora la cubre el de la home | No (se añadió una aserción para no perderla) |
+| `parfums-storefront.spec.ts` | `/Designer/i` → `/Diseñador/i` | etiqueta renombrada | No |
+| `ux-regressions-phone.spec.ts` | **borrado** «catalog hero stacks the photograph above the headline on phones» | prueba la geometría de un héroe que ya no existe; no hay nada que apilar | Sí, pero de una función retirada; la intro del catálogo en teléfono está cubierta por el orden intro → categorías → filtros → grid y por `responsive.spec.ts` (sin desborde horizontal) |
+| `playwright.config.ts` | `redesign-batch-3` entra en `PUBLIC_SPECS` | para que el spec nuevo corra en chromium, mobile y tablet | — |
+
+No se borró ningún otro test. Tests nuevos: 13 archivos tocados/añadidos, +666 líneas (`git diff --stat`).
+
 **Verificación (2026-10-13):** `npm run check` EXIT 0 (lint, tipos, 1257 pruebas unitarias, build) y la suite pública e2e en frío sobre el build de producción (chromium, mobile, tablet, responsive), dos corridas seguidas: **361 pasan, 0 fallan, 58 omitidas** (las propias de otras pantallas/stacks y las que necesitan más datos, ver arriba). Firefox/WebKit no se corrieron (el matriz de motores es opt-in).
 
 **Tres hallazgos durante la verificación (arreglados):**
@@ -113,7 +132,14 @@ Las pruebas que necesitan más de 24 productos o más de 3 sets **se omiten sola
 
 La rotación (fotos, sets, ruleta) es movimiento: no se ve en una captura fija; está cubierta por las pruebas con reloj simulado.
 
-## 8. Pendiente / fuera de este lote
+## 8. Preguntas para la revisión con el cliente
+
+1. **Finder del catálogo (decisión del Release Manager: no tocar ahora).** Se retiró el botón «Encontrar mi fragancia» junto con el héroe; el Finder sigue en la home, en la banda final del catálogo y en el estado sin resultados. ¿Lo quiere arriba?
+2. **«Del frasco original a tu piel» (7).** Quedó como sección **de texto** (principios + tamaños), no vacía. Se mantiene así hasta que el cliente aporte fotos propias que pueda mostrar sin datos de clientes; si prefiere no tener la sección, se elimina.
+3. **Imágenes del selector (1).** ¿Son éstas las aprobadas? Nota visual: Import perdió la «C» gigante del contenedor de antes (que ya existía como `import-hero-container.webp`) porque el brief pedía «contenedor», y la foto nueva es más oscura con el velo de campaña cerrada.
+4. **Combos en teléfono (6).** 1 set a 390 px (decisión: compromiso espacial, no regresión). 2 en tablet, 3 desde 1024 px.
+
+## 9. Pendiente / fuera de este lote
 
 - Confirmar con el cliente que `parfums-hero` y el contenedor son las imágenes «aprobadas» del selector (#1).
 - Paginación en servidor (#18), ficha de producto sin frascos (#17) y la lógica real de bloqueo de Import (#3): otros PRs.

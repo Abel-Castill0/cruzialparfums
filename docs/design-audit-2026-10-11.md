@@ -495,7 +495,7 @@ este PR.
 
 | # | Ticket | Prioridad | Contexto |
 |---|---|---|---|
-| T12 | Reducir el payload RSC: el layout de `/parfums/**` serializa 98 productos (`cartProducts`, 178 KB) hacia `SiteHeaderActions` en cada página | Media | `perf-diagnosis.md` §6.6 |
+| T12 | Reducir el payload RSC: el layout de `/parfums/**` serializa 98 productos (`cartProducts`, 178 KB) hacia `SiteHeaderActions` en cada página. **Ampliado (2026-10-13):** `/parfums/catalogo` también recibe la lista completa de productos como prop del cliente; las «Vistas» de 24 (`docs/redesign-batch-3.md` §3) solo limitan lo que se **dibuja**, no lo que se **envía**. T12 las reemplaza con paginación y filtros del lado del servidor (cada vista pide solo sus 24 productos) | Media | `perf-diagnosis.md` §6.6 · `redesign-batch-3.md` §3 |
 | T13 | **Reducir la hidratación del catálogo / `/parfums`** (TBT aplicado 305–326 ms > 200): menos fronteras cliente, `dynamic` bajo el pliegue, `Reveal` y cabecera en CSS | Media | §10 |
 | T14 | Ejecutar la suite en Firefox desde una terminal normal (`E2E_ENGINES=1 npx playwright test --project=firefox`; los proyectos Firefox/WebKit son opt-in porque CI sólo instala Chromium); aquí no pudo lanzarse | Alta | §10 |
 | T15 | WebKit no pasa `Tab` por los enlaces por defecto (16 pruebas de teclado); usar `Alt+Tab` en el proyecto `webkit` o comprobar a mano en Safari (Opción + Tab) | Media | `design-evidence/README.md` |
