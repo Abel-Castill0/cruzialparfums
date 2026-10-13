@@ -1,5 +1,5 @@
-/* Combo carousel: one white card per set. Copy on the left, the set's own
-   artwork on a dark panel on the right. Controls are 44px pills. */
+/* Combo carousel: one white card per set. Copy on the left, the set's own artwork on the right, matted on the system's light
+   grey (no dark panel: the artwork is 4:5 and used to sit between two black bars). Controls are 44px pills. */
 
 .carousel {
   position: relative;
@@ -29,12 +29,15 @@
   inset: 0 0 0 auto;
   width: 52%;
   overflow: hidden;
-  background: var(--ds-ink);
+  background: var(--ds-gray-50);
 }
 
+/* A mat of padding around the artwork and a soft shadow that follows the picture (not the letterbox). */
 .slideImage {
+  padding: clamp(16px, 3vw, 32px);
   object-fit: contain;
   object-position: var(--pos, 50% 50%);
+  filter: drop-shadow(0 12px 22px rgba(0, 0, 0, 0.16));
 }
 
 /* Kept for markup parity: copy sits on white, no shade is needed. */

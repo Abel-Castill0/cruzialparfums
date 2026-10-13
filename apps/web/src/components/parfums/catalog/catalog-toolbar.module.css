@@ -8,6 +8,9 @@
   --line-strong: var(--ds-hairline);
   --muted: var(--ds-ink-muted);
   --brass: var(--ds-accent);
+  /* A hairline of ink around the grey controls so they read on the white bar (the bare grey pills were nearly invisible). */
+  --ds-control-ring: rgba(29, 29, 31, 0.14);
+  --ds-control-ring-strong: rgba(29, 29, 31, 0.32);
   position: sticky;
   z-index: 40;
   top: 72px;
@@ -49,13 +52,14 @@
   align-items: center;
   gap: 8px;
   border-radius: var(--ds-radius-pill);
-  background: var(--ds-gray-50);
+  background: var(--ds-gray-100);
+  box-shadow: inset 0 0 0 1px var(--ds-control-ring);
   color: var(--muted);
   transition: background-color var(--ds-dur-fast) var(--ds-ease-spring), box-shadow var(--ds-dur-fast) var(--ds-ease-spring);
 }
 
 .search:hover {
-  background: var(--ds-gray-100);
+  box-shadow: inset 0 0 0 1px var(--ds-control-ring-strong);
 }
 
 .search:focus-within {
@@ -118,18 +122,30 @@
   align-items: center;
   gap: 8px;
   border-radius: var(--ds-radius-pill);
-  background: var(--ds-gray-50);
+  background: var(--ds-gray-100);
+  box-shadow: inset 0 0 0 1px var(--ds-control-ring);
   color: var(--ink);
   font: inherit;
   font-size: 0.9375rem;
   font-weight: 500;
   cursor: pointer;
-  transition: background-color var(--ds-dur-fast) var(--ds-ease-spring);
+  transition: background-color var(--ds-dur-fast) var(--ds-ease-spring), box-shadow var(--ds-dur-fast) var(--ds-ease-spring);
 }
 
-.control:hover,
+.control svg {
+  flex: none;
+  color: var(--ink);
+}
+
+.control:hover {
+  box-shadow: inset 0 0 0 1px var(--ds-control-ring-strong);
+}
+
+/* Open panel: the control takes the brand accent, like a selected chip. */
 .control[aria-expanded="true"] {
-  background: var(--ds-gray-100);
+  background: var(--ds-color-accent);
+  color: var(--ds-color-on-accent);
+  box-shadow: none;
 }
 
 .control:focus-visible,
@@ -214,7 +230,8 @@
   align-items: center;
   gap: 4px;
   border-radius: var(--ds-radius-pill);
-  background: var(--ds-gray-50);
+  background: var(--ds-gray-100);
+  box-shadow: inset 0 0 0 1px var(--ds-control-ring);
   color: var(--ds-ink);
   font-size: var(--ds-text-small);
   font-weight: 500;
@@ -360,22 +377,26 @@
   padding: 0 var(--ds-space-2);
   border: 0;
   border-radius: var(--ds-radius-pill);
-  background: var(--ds-gray-50);
+  background: var(--ds-gray-100);
+  box-shadow: inset 0 0 0 1px var(--ds-control-ring);
   color: var(--ink);
   font: inherit;
   font-size: 0.9375rem;
   font-weight: 500;
   cursor: pointer;
-  transition: background-color var(--ds-dur-fast) var(--ds-ease-spring), color var(--ds-dur-fast) var(--ds-ease-spring);
+  transition: background-color var(--ds-dur-fast) var(--ds-ease-spring), color var(--ds-dur-fast) var(--ds-ease-spring), box-shadow var(--ds-dur-fast) var(--ds-ease-spring);
 }
 
 .chip:hover {
-  background: var(--ds-gray-100);
+  box-shadow: inset 0 0 0 1px var(--ds-control-ring-strong);
 }
 
+/* Active: the brand gold with an ink label (6.85:1), a touch bolder so it reads at a glance. */
 .chip[aria-pressed="true"] {
   background: var(--ds-color-accent);
+  box-shadow: none;
   color: var(--ds-color-on-accent);
+  font-weight: 600;
 }
 
 .panelFoot {

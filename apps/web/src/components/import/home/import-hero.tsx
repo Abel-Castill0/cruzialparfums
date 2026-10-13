@@ -41,11 +41,10 @@ function ArrowIcon() {
   );
 }
 
-const ASSURANCES = ["Consolidado independiente", "Catálogo por campaña", "Delivery privado"] as const;
-
 /**
- * Campaign poster: the container image carries the page, the copy stays
- * short. One heading id per state is kept because tests and anchors rely on
+ * Campaign poster: the container image carries the page and the copy is just a
+ * title, one short line and the actions (no status pill, no facts grid). One
+ * heading id per state is kept because tests and anchors rely on
  * `#campaign-title` / `#import-closed-title`.
  */
 export function ImportHero({
@@ -75,15 +74,6 @@ export function ImportHero({
       </div>
 
       <div className={styles.heroCopy}>
-        {open ? (
-          <p className={styles.heroStatus}>
-            <span className={styles.statusDot} aria-hidden="true" />
-            Consolidado #{hero.campaign.number} abierto
-          </p>
-        ) : (
-          <p className={styles.heroStatus}>Cruzial Import</p>
-        )}
-
         <h1 id={titleId}>
           {open
             ? hero.campaign.name
@@ -94,14 +84,16 @@ export function ImportHero({
                 : "El próximo consolidado se está preparando."}
         </h1>
 
+        {/* One line (CSS clamps it). The owner's public message wins; without one, the closing date. */}
         <p className={styles.heroSummary}>
           {open
-            ? hero.campaign.publicMessage || "Precios exclusivos de este consolidado."
+            ? hero.campaign.publicMessage ||
+              (hero.campaign.closesAt ? `Cierra el ${formatClosingDate(hero.campaign.closesAt)}` : "Precios exclusivos de este consolidado.")
             : upcoming
-              ? `Vista previa de productos. Apertura estimada: ${estimatedOpeningLabel(hero.campaign.opensAt)}. El consolidado sigue cerrado hasta que el cliente confirme precios y disponibilidad.`
-            : hero.state === "unavailable"
-              ? "No pudimos consultar el estado del consolidado. Inténtalo nuevamente o contáctanos."
-              : "Los productos y precios aparecerán cuando el próximo consolidado abra."}
+              ? `Vista previa · apertura estimada: ${estimatedOpeningLabel(hero.campaign.opensAt)}`
+              : hero.state === "unavailable"
+                ? "No pudimos consultar el estado del consolidado."
+                : "Los productos y precios aparecerán cuando abra."}
         </p>
 
         <div className={styles.heroActions}>
@@ -128,32 +120,6 @@ export function ImportHero({
           )}
         </div>
 
-        {open ? (
-          <dl className={styles.heroFacts}>
-            {hero.campaign.closesAt ? (
-              <div>
-                <dt>Cierre</dt>
-                <dd>{formatClosingDate(hero.campaign.closesAt)}</dd>
-              </div>
-            ) : null}
-            <div>
-              <dt>Precios</dt>
-              <dd>Válidos para este consolidado</dd>
-            </div>
-            <div>
-              <dt>Atención</dt>
-              <dd>WhatsApp {contact?.whatsappDisplay ?? "no disponible"}</dd>
-            </div>
-          </dl>
-        ) : upcoming ? (
-          <dl className={styles.heroFacts}><div><dt>Estado</dt><dd>Apertura estimada</dd></div><div><dt>Catálogo</dt><dd>Vista previa · compra deshabilitada</dd></div></dl>
-        ) : (
-          <ul className={styles.assurances}>
-            {ASSURANCES.map((label) => (
-              <li key={label}>{label}</li>
-            ))}
-          </ul>
-        )}
       </div>
     </section>
   );

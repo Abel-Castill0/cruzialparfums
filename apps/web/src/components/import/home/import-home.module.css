@@ -70,32 +70,9 @@
   justify-items: start;
 }
 
-.heroStatus {
-  padding: 8px 16px;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  border: 0;
-  border-radius: 999px;
-  color: var(--import-text);
-  background: rgba(255, 255, 255, 0.16);
-  font-size: var(--ds-text-small);
-  font-weight: 500;
-  backdrop-filter: blur(14px) saturate(160%);
-}
-
-.statusDot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--import-text);
-  box-shadow: var(--ds-focus);
-}
-
 .heroCopy h1 {
-  margin-top: 24px;
   font-family: var(--ds-font);
-  font-size: var(--ds-text-hero);
+  font-size: clamp(2rem, 1.2rem + 3.4vw, 3.5rem);
   font-weight: 600;
   line-height: 1.04;
   letter-spacing: -0.035em;
@@ -103,16 +80,20 @@
   text-wrap: balance;
 }
 
+/* One line: a longer message is cut with an ellipsis instead of growing the hero. */
 .heroSummary {
-  max-width: 48ch;
-  margin-top: 24px;
+  max-width: min(48ch, 100%);
+  margin-top: 12px;
+  overflow: hidden;
   color: var(--import-muted);
-  font-size: clamp(1rem, 1.4vw, 1.15rem);
-  line-height: 1.65;
+  font-size: clamp(0.9375rem, 1.2vw, 1.0625rem);
+  line-height: 1.5;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .heroActions {
-  margin-top: 32px;
+  margin-top: 24px;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -156,51 +137,6 @@
 
 .secondaryAction:hover {
   background: rgba(255, 255, 255, 0.28);
-}
-
-.heroFacts {
-  margin-top: 48px;
-  padding-top: 24px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px 48px;
-  border-top: 1px solid var(--ds-hairline);
-}
-
-.heroFacts dt {
-  color: var(--import-muted);
-  font-size: var(--ds-text-small);
-  font-weight: 500;
-}
-
-.heroFacts dd {
-  margin-top: 4px;
-  font-size: var(--ds-text-card);
-  font-weight: 500;
-}
-
-.assurances {
-  margin-top: 48px;
-  padding-top: 24px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 32px;
-  list-style: none;
-  border-top: 1px solid var(--ds-hairline);
-  color: var(--import-muted);
-  font-size: 0.84rem;
-  font-weight: 600;
-}
-
-.assurances li::before {
-  width: 5px;
-  height: 5px;
-  margin-right: 8px;
-  display: inline-block;
-  vertical-align: middle;
-  content: "";
-  border-radius: 50%;
-  background: var(--import-text);
 }
 
 .catalogDoor {
@@ -399,7 +335,8 @@
 .categoryTiles {
   margin-top: clamp(28px, 4vw, 44px);
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  /* auto-fill, not auto-fit: a single category keeps a tile's width instead of stretching across the page. */
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
   gap: 16px;
   list-style: none;
 }
@@ -946,22 +883,6 @@
     gap: 24px;
   }
 
-  .heroFacts {
-    margin-top: 32px;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px 24px;
-  }
-
-  .heroFacts > div:last-child {
-    grid-column: 1 / -1;
-  }
-
-  .heroFacts,
-  .assurances {
-    display: none;
-  }
-
   .categoryTiles {
     margin-inline: calc(var(--import-gutter) * -1);
     padding-inline: var(--import-gutter);
@@ -1176,4 +1097,22 @@
 
 .presentationPrice span[data-availability="available"]::before {
   background: var(--ds-success);
+}
+
+/* Phones, product cards (last on purpose: it must come after the general card rules above). One column, stacked: a photo band
+ * on top and the details under it. The earlier side-by-side grid collapsed the details column on 390px screens. */
+@media (max-width: 767px) {
+  .productCard {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .productMedia {
+    min-height: 0;
+    aspect-ratio: 5 / 4;
+  }
+
+  .productBody {
+    padding: 16px 16px 20px;
+  }
 }

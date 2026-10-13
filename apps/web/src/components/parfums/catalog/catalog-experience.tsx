@@ -299,12 +299,13 @@ export function CatalogExperience({ products, initialFilters, initialRecommendat
         </nav>
 
         <div className={styles.container}>
-          <div className={styles.resultsTop}>
-            <span>{results.length} {results.length === 1 ? "perfume" : "perfumes"}</span>
-            {isBottleGiftEligible(filters.format === "bottle" ? "bottle" : "decant") ? (
+          {/* The visible "N perfumes" count was noise; screen readers still hear how many results a filter leaves. */}
+          <span className={styles.srOnly} role="status">{results.length} {results.length === 1 ? "perfume" : "perfumes"}</span>
+          {isBottleGiftEligible(filters.format === "bottle" ? "bottle" : "decant") ? (
+            <div className={styles.resultsTop}>
               <span className={styles.giftNote} data-bottle-gift-note>{BOTTLE_GIFT_MESSAGE}</span>
-            ) : null}
-          </div>
+            </div>
+          ) : null}
           {results.length > 0 ? (
             <ul role="list" data-product-grid className={styles.productGrid}>
               {results.map((product, index) => (
