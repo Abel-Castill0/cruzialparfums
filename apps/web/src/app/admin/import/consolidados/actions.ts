@@ -2,6 +2,7 @@
 
 import type { Route } from "next";
 import { revalidatePath } from "next/cache";
+import { revalidateImportCampaign } from "@/lib/catalog/import-campaign-revalidate";
 import { redirect } from "next/navigation";
 import { requireUnitAdmin } from "@/lib/auth/admin-session";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -187,6 +188,7 @@ export async function createCampaignAction(
     return { status: "error", message: friendlyError(result.error) };
   }
 
+  revalidateImportCampaign();
   revalidatePath(CONSOLIDADOS_PATH);
   revalidatePath("/admin/import");
   redirect(editPath(result.data.id));
@@ -249,6 +251,7 @@ export async function duplicateCampaignAction(
     return { status: "error", message: friendlyDuplicateError(result.error) };
   }
 
+  revalidateImportCampaign();
   revalidatePath(CONSOLIDADOS_PATH);
   revalidatePath("/admin/import");
   redirect(editPath(result.data.id));
@@ -275,6 +278,7 @@ export async function updateCampaignAction(
     return { status: "error", message: friendlyError(result.error) };
   }
 
+  revalidateImportCampaign();
   revalidatePath(CONSOLIDADOS_PATH);
   revalidatePath(editPath(campaignId));
   return { status: "success", data: result.data };
@@ -292,6 +296,7 @@ export async function setCampaignStatusAction(
   if (!repository.ok) return repository.state;
   const result = await repository.repository.setStatus(campaignId, expectedUpdatedAt, status);
   if (!result.ok) return { status: "error", message: friendlyError(result.error) };
+  revalidateImportCampaign();
   revalidatePath(CONSOLIDADOS_PATH);
   revalidatePath(editPath(campaignId));
   return { status: "success", data: result.data };
@@ -307,6 +312,7 @@ export async function archiveCampaignAction(
   if (!repository.ok) return repository.state;
   const result = await repository.repository.archive(campaignId, expectedUpdatedAt);
   if (!result.ok) return { status: "error", message: friendlyError(result.error) };
+  revalidateImportCampaign();
   revalidatePath(CONSOLIDADOS_PATH);
   revalidatePath(editPath(campaignId));
   revalidatePath("/admin/import");
@@ -332,6 +338,7 @@ export async function setCampaignProductsAction(
   const result = await repository.repository.setCampaignProducts(campaignId, expectedUpdatedAt, validation.value);
   if (!result.ok) return { status: "error", message: friendlyCampaignProductError(result.error) };
 
+  revalidateImportCampaign();
   revalidatePath(editPath(campaignId));
   return { status: "success", data: result.data };
 }
@@ -362,6 +369,7 @@ export async function updatePresentationOfferAction(campaignId: string, expected
     availabilityStatus:item.productId===productId && item.importPresentationId===presentationId ? input.availabilityStatus : item.availabilityStatus }));
   const result = await repository.repository.setCampaignProducts(campaignId, expectedUpdatedAt, items);
   if (!result.ok) return {status:"error",message:friendlyCampaignProductError(result.error)};
+  revalidateImportCampaign();
   revalidatePath(editPath(campaignId));
   revalidatePath(`/admin/import/productos/${productId}`);
   revalidatePath("/admin/import");
