@@ -260,7 +260,7 @@ export function ProductDetailExperience({
 
           <div className={styles.notesBlock}>
             <p className={styles.sectionLabel}>Notas principales</p>
-            <div className={styles.noteChips}>{product.notes.map((note) => <span key={note}>{note}</span>)}</div>
+            <div className={styles.noteChips} data-product-notes>{product.notes.map((note) => <span key={note}>{note}</span>)}</div>
           </div>
         </div>
       </section>
