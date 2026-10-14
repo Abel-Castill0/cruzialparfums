@@ -84,9 +84,8 @@ en el pedido** (`delivery_snapshot`, `deposit_policy_snapshot`), caché con `uns
    que hay es `product_variants.variant_kind = 'bottle'`. Un producto **es** frasco entero si tiene una variante `bottle` publicada
    y con stock: no hace falta una marca manual (y una marca manual podría contradecir los datos). El filtro `format = 'full_bottle'`
    del encargo se implementa como esa condición derivada.
-2. **No hay Zod en el proyecto** (ni librería de arrastrar y soltar, ni editor de texto enriquecido). Los esquemas actuales son
-   funciones escritas a mano más triggers en la BD. Adoptar Zod es una **decisión de dependencia nueva** (§6); mientras tanto el
-   esquema por tipo de bloque sigue el patrón vigente.
+2. **No había Zod** (ni librería de arrastrar y soltar, ni editor de texto enriquecido). Los esquemas del admin eran funciones escritas a mano
+   más triggers en la BD. **Resuelto el 2026-10-14 (§6):** Zod instalado y solo en servidor; sin arrastrar y soltar; sin editor enriquecido.
 3. **«Club de Nuit Précieux»** se llama en los datos **«Club de Nuit Precieux I»** (sin acento). La exclusión debe guardarse por
    **identidad del producto** (id o slug en la regla), nunca por nombre.
 4. **Texto enriquecido = HTML = superficie de XSS** bajo la CSP actual. No se propone HTML libre sino un subconjunto restringido (§5.3).
@@ -228,14 +227,83 @@ cambio de campaña.
 - **Verificación (<5 s):** una prueba e2e por etiqueta que guarda en el admin y sondea la página pública hasta ver el cambio con
   límite de 5 s; más un lint/prueba unitaria que **falla si una acción de admin que escribe en tablas públicas no llama al helper**.
 
-## 6. Decisiones de plataforma a tomar
+## 6. Decisiones de plataforma (aprobadas 2026-10-14)
 
-| Decisión | Opciones | Recomendación |
+| Tema | Decisión | Estado |
 |---|---|---|
-| Validación | A) mantener esquemas a mano + triggers · B) adoptar Zod (dependencia nueva) | B solo si se usa de forma única para formularios, RPC y respaldo; si no, A. |
-| Reordenar | botones (siempre) + arrastrar (`@dnd-kit`, dependencia nueva) | Botones primero; arrastrar es mejora opcional. |
-| Texto enriquecido | A) subconjunto Markdown propio · B) WYSIWYG (dependencia y superficie de XSS) | A. |
-| Previsualización | ruta de admin con borradores · entorno aparte | Ruta de admin (`noindex`, solo autenticados). |
+| Validación | **Zod** | instalado (rama `feat/rich-text-zod`, `zod ^4.6.7`) |
+| Reordenar | **Botones subir/bajar**, sin arrastrar y soltar | sin dependencia nueva |
+| Texto editable | **Markdown restringido**, sin editor enriquecido ni HTML crudo | parser y esquemas hechos (`docs/rich-text.md`) |
+| Imágenes | **Cloudinary** (ya en uso), con un preset por tipo de imagen | contrato definido abajo; presets sin crear en la cuenta |
+| Caché | **Etiqueta + TTL de 5 min como respaldo** | `import-campaign` hecha (`docs/cache-revalidation.md`); `content-blocks` se crea con el sistema de bloques |
+
+Ningún editor se implementa todavía: esto fija las bases para cuando se construyan.
+
+### 6.1 Por qué Zod sí
+
+- **Una sola definición por forma de dato.** Cada tipo de bloque (hero, carrusel, banner de texto, FAQ, galería) necesita validarse en el formulario del
+  admin, en la Server Action y en la lectura pública (para no pintar un bloque corrupto). Con funciones a mano eso son tres copias que se desvían;
+  con Zod es un esquema del que sale el tipo de TypeScript (`z.infer`) y los mensajes de error.
+- **Hay entradas hostiles de verdad**: texto libre y URLs que acaban en una página pública. El esquema es el lugar donde se rechazan (HTML,
+  imágenes, esquemas de URL distintos de `https`, largos), con casos de prueba.
+- **Coste cero en el navegador.** Medido con el mismo script antes y después (`docs/perf/zod-bundle/`): **0 bytes** en el total del JS de cliente
+  (1 293.5 KB crudo / 407.1 KB gzip, 68 archivos) y **0 de las 68 rutas** cambian su JS de primera carga, porque Zod solo se usa en el servidor.
+  Importarlo en un componente de cliente costaría **82.7 KB minificados (23.0 KB gzip)** con la build completa o 13.2 KB (4.6 KB gzip) con `zod/mini`;
+  por eso `lib/rich-text/schema.ts` importa `server-only` y esa regresión rompería el build.
+- `npm audit --omit=dev`: 0 vulnerabilidades.
+- **Alcance:** se adopta para el contenido editable nuevo. Los esquemas existentes del admin (productos, categorías…) **no se migran**: funcionan,
+  están probados y migrarlos no aporta nada al cliente.
+
+### 6.2 Por qué DnD no (botones subir/bajar)
+
+- **Accesibilidad:** arrastrar y soltar exige un puntero; WCAG 2.2 (criterio 2.5.7, «Movimientos de arrastre») obliga a ofrecer una alternativa de un solo
+  puntero. Los botones **son** esa alternativa, así que hay que construirlos igual; el arrastre solo sería un extra.
+- **Peso y riesgo:** una librería de arrastre (p. ej. `@dnd-kit`) suma dependencias y código de cliente para una lista de 5–20 elementos que se reordena
+  de vez en cuando; y en pantallas táctiles el arrastre dentro de una página con scroll es frágil.
+- **Auditable:** «subir/bajar» es una operación con un resultado exacto (intercambiar dos `display_order` en una RPC con `expected_updated_at`), fácil de
+  probar, de revertir y de registrar en `audit_log`.
+- Si algún día la lista creciera hasta hacerlo incómodo, se reevalúa con una necesidad real y manteniendo los botones.
+
+### 6.3 Por qué Markdown restringido (no Tiptap ni HTML)
+
+- **Seguridad:** un editor WYSIWYG guarda **HTML**, y HTML publicado en una página pública bajo nuestra CSP es la superficie de XSS más común; obliga a un
+  sanitizador cuyos fallos históricos son frecuentes. El subconjunto Markdown **no genera HTML**: se parsea a un árbol y se renderiza con elementos de
+  React (que escapan el texto); el único atributo con datos del autor es un `https` validado.
+- **Marca:** el cliente no puede romper la tipografía ni los colores del sistema de diseño; el componente `RichText` pone las clases (y el tono claro/oscuro).
+- **Peso:** un editor enriquecido son cientos de KB de JavaScript de cliente solo en el admin, más sus extensiones y su accesibilidad propia.
+- **Suficiente para el uso:** FAQ, condiciones y avisos necesitan párrafos, negrita, cursiva, listas y enlaces. Nada más. Lo que no está permitido se
+  ve como texto literal (no se pierde ni se ejecuta), y lo peligroso se **rechaza con un mensaje** en el formulario.
+- Detalle, casos maliciosos probados y límites (título ≤ 80, cuerpo ≤ 2000): `docs/rich-text.md`.
+
+### 6.4 Preset de Cloudinary por tipo de imagen
+
+Hoy: subida **firmada** (la firma la genera el servidor; el secreto no sale de `lib/media/cloudinary.ts`), carpeta `cruzial/{unidad}/products/{id}`,
+formatos `jpg/jpeg/png/webp`, máximo 10 MB, y las imágenes se sirven por `next/image` (`res.cloudinary.com` en `remotePatterns`), que redimensiona y
+convierte. Para el contenido editable se mantiene ese mecanismo y se añade **un preset por tipo**, que fija carpeta, límites y la transformación de
+entrada (tope de tamaño y calidad automática); la **proporción** la valida el servidor con las dimensiones que devuelve Cloudinary.
+
+| Tipo de imagen | Carpeta | Proporción | Mínimo | Máx. peso | Transformación de entrada | Alt |
+|---|---|---|---|---|---|---|
+| Héroe / banner ancho | `cruzial/{unidad}/content/hero` | 16:9 – 21:9 | 1920 px de ancho | 3 MB | `c_limit,w_2560,q_auto:good` | obligatorio |
+| Puerta del selector / tarjeta destacada | `cruzial/{unidad}/content/card` | 4:5 | 1200 × 1500 | 2 MB | `c_limit,w_1600,q_auto:good` | obligatorio |
+| Carrusel / galería | `cruzial/{unidad}/content/gallery` | 4:5 o 1:1 | 1200 px | 2 MB | `c_limit,w_1600,q_auto:good` | obligatorio |
+| Icono de nota / aroma | `cruzial/{unidad}/content/notes` | 1:1 | 400 × 400 | 300 KB | `c_limit,w_800,q_auto` | obligatorio |
+| Imagen social (OG) | `cruzial/{unidad}/content/og` | 1.91:1 (1200 × 630) | 1200 × 630 | 1 MB | `c_fill,w_1200,h_630,q_auto` | — |
+| Foto de producto *(ya existe)* | `cruzial/{unidad}/products/{id}` | libre (estudio sobre blanco) | — | 10 MB | sin cambios | obligatorio |
+
+Reglas comunes: **nunca** se retoca ni se recorta el arte de marca (el recorte solo existe en la entrega por `object-position`, no en el archivo);
+`f_auto` lo resuelve `next/image` (no se duplica la conversión); el logo oficial **no** pasa por ningún preset. **No se creó ningún preset en la
+cuenta de Cloudinary** (requiere acceso a la cuenta, que está fuera de esta sesión): este cuadro es el contrato para crearlos y para validar la subida
+en el servidor.
+
+### 6.5 Política de caché (etiqueta + TTL)
+
+1. **Cada lectura pública cacheada lleva una etiqueta y un TTL de respaldo.** La etiqueta es la invalidación principal; el TTL cubre cambios hechos fuera del admin.
+2. **Cada acción de admin que cambia algo público expira la etiqueta** con un helper (`revalidateTag(tag, { expire: 0 })`), después de comprobar que la mutación salió bien;
+   una prueba estructural falla si una acción nueva olvida la llamada.
+3. **Etiquetas:** `parfums-catalog` (TTL 60 s: lo tocan también pedidos y cargas por SQL), `import-campaign` (TTL **300 s**, hecha), `content-blocks` (TTL **300 s**, se crea con los bloques).
+4. **Objetivo:** un cambio guardado en el admin se ve en la web **en menos de 5 s**, verificado con una prueba e2e por etiqueta (la de `import-campaign` ya existe y tiene control negativo).
+5. Todo en `docs/cache-revalidation.md`.
 
 ## 7. Decisiones del cliente que bloquean o condicionan
 
