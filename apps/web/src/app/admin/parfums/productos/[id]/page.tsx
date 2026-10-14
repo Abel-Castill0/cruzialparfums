@@ -29,6 +29,7 @@ import { formatLimaDateTime } from "@/domains/admin/order-presentation";
 import { ProductCoreForm } from "./product-core-form";
 import { VariantManager } from "./variant-manager";
 import { CategoryPicker } from "./category-picker";
+import { ProductNotesEditor } from "./product-notes-editor";
 import { MediaManager } from "./media-manager";
 import { readCloudinaryEnv } from "@/lib/media/cloudinary-env";
 import styles from "@/components/admin/catalog-workspace.module.css";
@@ -92,11 +93,13 @@ export default async function EditProductPage({
 
   const repository = new AdminParfumsProductsRepository(supabase, membership.businessUnitId);
   const mediaRepository = new AdminParfumsMediaRepository(supabase);
-  const [detailResult, categoriesResult, mediaResult, comboResult] = await Promise.all([
+  const [detailResult, categoriesResult, mediaResult, comboResult, noteOptionsResult, productNotesResult] = await Promise.all([
     repository.getById(id),
     repository.listAvailableCategories(),
     mediaRepository.listForProduct(id),
     supabase.from("combos").select("id").eq("product_id", id).maybeSingle(),
+    supabase.from("notes").select("id,name").eq("business_unit_id", membership.businessUnitId).eq("is_active", true).order("name"),
+    supabase.from("product_notes").select("note_id,position").eq("product_id", id).order("position"),
   ]);
 
   if (!detailResult.ok) {
@@ -235,6 +238,19 @@ export default async function EditProductPage({
           />
         ) : (
           <Notice tone="attention" title="No pudimos cargar las categorías">Recarga la página antes de cambiarlas.</Notice>
+        )}
+      </div>
+
+      <div id="notas" className={styles.anchor}>
+        {noteOptionsResult.error || productNotesResult.error ? (
+          <Notice tone="attention" title="No pudimos cargar las notas">Recarga la página antes de cambiarlas.</Notice>
+        ) : (
+          <ProductNotesEditor
+            productId={product.id}
+            available={noteOptionsResult.data ?? []}
+            assignedIds={(productNotesResult.data ?? []).map((link) => link.note_id)}
+            disabled={!canWrite}
+          />
         )}
       </div>
 
