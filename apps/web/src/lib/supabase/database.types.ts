@@ -392,6 +392,25 @@ isOneToOne: true
       referencedColumns: ["id"]
     }
                   ]
+                },"notes": {
+                  Row: {
+                    "business_unit_id": string,"created_at": string,"description": string | null,"id": string,"image_url": string | null,"is_active": boolean,"name": string,"slug": string,"type": string,"updated_at": string
+                  }
+                  Insert: {
+                    "business_unit_id": string,"created_at"?: string,"description"?: string | null,"id"?: string,"image_url"?: string | null,"is_active"?: boolean,"name": string,"slug": string,"type"?: string,"updated_at"?: string
+                  }
+                  Update: {
+                    "business_unit_id"?: string,"created_at"?: string,"description"?: string | null,"id"?: string,"image_url"?: string | null,"is_active"?: boolean,"name"?: string,"slug"?: string,"type"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "notes_business_unit_id_fkey"
+      columns: ["business_unit_id"]
+isOneToOne: false
+      referencedRelation: "business_units"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"notification_delivery_events": {
                   Row: {
                     "occurred_at": string,"provider_message_id": string,"received_at": string,"status": string
@@ -606,6 +625,31 @@ isOneToOne: false
       columns: ["product_variant_id"]
 isOneToOne: false
       referencedRelation: "product_variants"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"product_notes": {
+                  Row: {
+                    "created_at": string,"note_id": string,"position": number,"product_id": string
+                  }
+                  Insert: {
+                    "created_at"?: string,"note_id": string,"position"?: number,"product_id": string
+                  }
+                  Update: {
+                    "created_at"?: string,"note_id"?: string,"position"?: number,"product_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "product_notes_note_id_fkey"
+      columns: ["note_id"]
+isOneToOne: false
+      referencedRelation: "notes"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "product_notes_product_id_fkey"
+      columns: ["product_id"]
+isOneToOne: false
+      referencedRelation: "products"
       referencedColumns: ["id"]
     }
                   ]
@@ -1102,6 +1146,8 @@ isOneToOne: false
 "admin_customer_order_summary":
 { Args: { "p_customer_id": string }; Returns: Json
                            },
+"admin_delete_note":
+{ Args: { "p_id": string,"p_unit_code": string }; Returns: undefined },
 "admin_duplicate_campaign":
 { Args: { "p_new_name": string,"p_new_number": number,"p_source_campaign_id": string }; Returns: {
               "archived_at": string | null,
@@ -1593,6 +1639,10 @@ isOneToOne: false
 "admin_retry_notification":
 { Args: { "p_business_unit_code": string,"p_expected_updated_at": string,"p_id": string,"p_verified_not_sent"?: boolean }; Returns: undefined
                            },
+"admin_save_note":
+{ Args: { "p_description": string,"p_expected_updated_at": string,"p_id": string,"p_image_url": string,"p_is_active": boolean,"p_name": string,"p_type": string,"p_unit_code": string }; Returns: {
+              "business_unit_id": string,"created_at": string,"description": string | null,"id": string,"image_url": string | null,"is_active": boolean,"name": string,"slug": string,"type": string,"updated_at": string
+            } },
 "admin_set_campaign_products":
 { Args: { "p_campaign_id": string,"p_expected_updated_at": string,"p_items": Json }; Returns: {
               "availability_status": string,
@@ -1682,6 +1732,10 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"admin_set_product_notes":
+{ Args: { "p_note_ids": string[],"p_product_id": string }; Returns: {
+              "created_at": string,"note_id": string,"position": number,"product_id": string
+            }[] },
 "admin_set_product_categories":
 { Args: { "p_category_ids": (string)[],"p_product_id": string }; Returns: {
               "category_id": string,
