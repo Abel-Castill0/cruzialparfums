@@ -3,16 +3,15 @@ import "server-only";
 import { unstable_cache } from "next/cache";
 import type { ImportGate } from "@/domains/import/import-gate";
 import { createSupabasePublicServerClient } from "@/lib/supabase/server";
-
-const IMPORT_GATE_REVALIDATE_SECONDS = 60;
+import { IMPORT_CAMPAIGN_CACHE_TAG, IMPORT_CAMPAIGN_REVALIDATE_SECONDS } from "./import-campaign-cache";
 
 type CampaignRows = Array<{ opens_at?: string | null }> | null;
 type Rpc = (name: string) => Promise<{ data: unknown; error: unknown }>;
 
 /**
  * Anonymous, cookie-free read of two public RPCs: is there a campaign open
- * right now and, if not, when does the next one open. Cached like the
- * storefront data so the gateway stays static-fast. Any error resolves to
+ * right now and, if not, when does the next one open. Cached under the
+ * `import-campaign` tag (every admin campaign action expires it at once; the 5 min TTL is only the fallback). Any error resolves to
  * "unknown" so the card never claims a closure it cannot back up.
  */
 export const readImportGate = unstable_cache(
@@ -34,5 +33,5 @@ export const readImportGate = unstable_cache(
     }
   },
   ["import-gate"],
-  { revalidate: IMPORT_GATE_REVALIDATE_SECONDS },
+  { revalidate: IMPORT_CAMPAIGN_REVALIDATE_SECONDS, tags: [IMPORT_CAMPAIGN_CACHE_TAG] },
 );

@@ -178,21 +178,26 @@ test("checkout shipping: pick a Shalom agency from the district map, by mouse an
   await expect(page.locator("[data-shalom-chosen]")).toBeVisible();
 });
 
-test("checkout shipping: motorizado flags restricted districts and offers Shalom instead", async ({ page }) => {
+test("checkout shipping: motorizado is turned off in restricted districts and Shalom is offered instead", async ({ page }) => {
+  // Zones come from `delivery_zones` (the proposed list is seeded on the local and QA stacks). Pucusana is restricted,
+  // Miraflores and Ate are covered. The option is turned off, the order is never blocked.
   await page.goto("/parfums/checkout");
   await page.getByRole("radio", { name: /Motorizado/ }).check({ force: true });
   await expect(page.locator("[data-motorizado-panel]")).toBeVisible();
 
-  await page.locator('[data-district="Comas"]').click();
+  await page.locator('[data-district="Pucusana"]').click();
   const callout = page.locator("[data-motorizado-panel] [role=status]");
-  await expect(callout).toContainText("Acceso restringido en Comas");
-  await expect(page.locator("#checkout-motorizado-district")).toHaveValue("Comas");
+  await expect(callout).toContainText("El motorizado no llega a Pucusana");
+  await expect(page.locator("#checkout-motorizado-district")).toHaveValue("Pucusana");
 
   await page.locator('[data-district="Miraflores"]').click();
-  await expect(callout).not.toContainText("Acceso restringido");
+  await expect(callout).not.toContainText("El motorizado no llega");
   await expect(callout).toContainText("Te cotizamos el motorizado por WhatsApp");
 
   await page.locator('[data-district="Ate"]').click();
+  await expect(callout).not.toContainText("El motorizado no llega");
+
+  await page.locator('[data-district="Pucusana"]').click();
   await page.getByRole("button", { name: "Prefiero recoger en Shalom" }).click();
   await expect(page.locator("[data-shalom-panel]")).toBeVisible();
 });

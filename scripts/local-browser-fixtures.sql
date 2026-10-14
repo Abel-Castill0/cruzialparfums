@@ -162,4 +162,11 @@ insert into public.campaign_products(id,campaign_id,product_id,import_presentati
 insert into public.product_media(id,product_id,provider,secure_url,alt,is_primary) values
 ('99004000-0000-4000-8000-000000000013','99004000-0000-4000-8000-000000000010','legacy_static','/icon.png','LOCAL QA — imagen de prueba',true),
 ('99004000-0000-4000-8000-000000000033','99004000-0000-4000-8000-000000000030','legacy_static','/icon.png','LOCAL QA — imagen de prueba',true) on conflict do nothing;
+-- Motorcycle delivery zones (docs/commercial-rules.md): the owner's PROPOSED list, only on the disposable local stack and
+-- the QA project, so the checkout e2e can exercise a covered and a restricted district. Production loads its own list
+-- after the owner validates it (supabase/provisioning/delivery-zones-PROPOSED.sql).
+insert into public.delivery_zones (business_unit_id, district, is_restricted)
+select '11111111-1111-4111-8111-111111111111', zone.district, zone.is_restricted
+from (values ('Ancón',true),('Santa Rosa',true),('Puente Piedra',true),('Carabayllo',false),('San Martín de Porres',false),('Los Olivos',false),('Comas',false),('Rímac',false),('Independencia',false),('San Juan de Lurigancho',false),('San Miguel',false),('Pueblo Libre',false),('Cercado de Lima',false),('El Agustino',false),('Santa Anita',false),('Ate',false),('Chaclacayo',true),('Lurigancho-Chosica',true),('Magdalena del Mar',false),('Jesús María',false),('Breña',false),('La Victoria',false),('San Luis',false),('La Molina',false),('Cieneguilla',true),('San Isidro',false),('Lince',false),('Surquillo',false),('San Borja',false),('Santiago de Surco',false),('Miraflores',false),('Barranco',false),('Chorrillos',false),('San Juan de Miraflores',false),('Villa María del Triunfo',false),('Pachacámac',true),('Villa El Salvador',false),('Lurín',true),('Punta Hermosa',true),('Punta Negra',true),('San Bartolo',true),('Santa María del Mar',true),('Pucusana',true)) as zone(district, is_restricted)
+on conflict do nothing;
 commit;

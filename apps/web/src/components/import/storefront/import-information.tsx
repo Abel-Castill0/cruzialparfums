@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { Reveal } from "@/components/storefront/home/reveal";
 import type { ImportDepositPercentages } from "@/domains/import/import-deposit-policies";
+import { IMPORT_DELIVERY_TIME, IMPORT_MINIMUM_ORDER } from "@/domains/import/import-terms";
 import styles from "./import-information.module.css";
 
 type Contact = { whatsappNumber: string } | null;
@@ -22,7 +23,7 @@ function buildFaqs(deposit: ImportDepositPercentages) {
     },
     {
       question: "¿Cómo llega mi pedido?",
-      answer: "Cruzial Import usa delivery privado. No utiliza la modalidad Shalom de Cruzial Parfums.",
+      answer: `Cruzial Import usa delivery privado. No utiliza la modalidad Shalom de Cruzial Parfums. Tiempo de entrega: ${IMPORT_DELIVERY_TIME}.`,
     },
     {
       question: "¿Puedo comprar fuera de un consolidado?",
@@ -50,7 +51,7 @@ const PROCESS_STEPS = [
   {
     number: "04",
     title: "Se entrega",
-    description: "Los pedidos de Import se coordinan mediante delivery privado.",
+    description: `Los pedidos de Import se coordinan mediante delivery privado. Tiempo de entrega: ${IMPORT_DELIVERY_TIME}.`,
   },
 ] as const;
 
@@ -124,7 +125,14 @@ export function ImportConditions({ depositPercentages }: { depositPercentages: I
             <dt className={styles.termText}>Entrega</dt>
             <dd>
               <strong>Delivery privado</strong>
-              <span>Los pedidos se coordinan de forma directa.</span>
+              <span>Los pedidos se coordinan de forma directa. Tiempo de entrega: {IMPORT_DELIVERY_TIME}.</span>
+            </dd>
+          </div>
+          <div>
+            <dt className={styles.termText}>Pedido</dt>
+            <dd>
+              <strong>{IMPORT_MINIMUM_ORDER}</strong>
+              <span>El mínimo de las compras mayoristas es aparte.</span>
             </dd>
           </div>
         </dl>

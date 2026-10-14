@@ -40,6 +40,10 @@ vi.mock("@/domains/platform/settings", () => ({
   PARFUMS_SETTINGS: { whatsappNumber: "51999000000" },
 }));
 
+vi.mock("@/lib/commercial/order-rules", () => ({
+  loadParfumsOrderRules: async () => ({ marker: "rules" }),
+}));
+
 const getPersistedParfumsOrderSummary = vi.fn();
 vi.mock("@/domains/orders/parfums-persisted-summary", () => ({
   getPersistedParfumsOrderSummary: (...args: unknown[]) => getPersistedParfumsOrderSummary(...args),
@@ -135,6 +139,7 @@ describe("createParfumsOrderRequest — Gate 2B rate limit integration", () => {
     expect(validateAndResolveParfumsOrder).toHaveBeenCalledWith(
       { requestId: expect.stringMatching(UUID_V4) },
       { marker: "catalog" },
+      { marker: "rules" },
     );
   });
 

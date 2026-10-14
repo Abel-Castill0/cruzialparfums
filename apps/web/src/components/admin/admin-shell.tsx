@@ -23,6 +23,7 @@ const NAV: Record<AdminShellUnit, { unitLabel: string; unitHint: string; groups:
         items: [
           { label: "Productos", href: "/admin/parfums/productos" },
           { label: "Categorías", href: "/admin/parfums/categorias" },
+          { label: "Notas y aromas", href: "/admin/parfums/notas" as Route },
           { label: "Combos", href: "/admin/parfums/combos" },
         ],
       },
@@ -31,6 +32,7 @@ const NAV: Record<AdminShellUnit, { unitLabel: string; unitHint: string; groups:
         label: "Gestión",
         items: [
           { label: "Operaciones", href: "/admin/parfums/operaciones" as Route },
+          { label: "Reglas comerciales", href: "/admin/parfums/reglas" as Route },
           { label: "Configuración", href: "/admin/parfums/configuracion" as Route },
         ],
       },

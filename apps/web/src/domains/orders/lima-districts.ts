@@ -62,32 +62,10 @@ export const LIMA_GRID_COLS = 8;
 export const LIMA_GRID_ROWS = 13;
 
 /**
- * Districts where the motorizado does not reach every zone, so the delivery
- * point is agreed over WhatsApp (or the customer picks a Shalom agency).
- *
- * PROVENANCE (provisional, owner to confirm): there is no official list of
- * "zonas rojas" for couriers. This starts from the eight Lima districts the
- * national government placed under a state of emergency for crime in 2025 (see
- * Panamericana / Radio Nacional / Mininter coverage). The 2026 decrees cover
- * ALL of Lima and Callao, so they cannot narrow the list. The wording shown to
- * customers is deliberately neutral ("acceso restringido") and never blocks an
- * order: the motorizado is always quoted and agreed over WhatsApp.
+ * Which districts the motorcycle reaches is data, not code: the `delivery_zones` table (docs/commercial-rules.md), read
+ * by the checkout and re-checked by the order validator. The static provisional list that lived here was replaced by the
+ * owner's rule of 2026-10-14.
  */
-export const MOTORIZADO_RESTRICTED_DISTRICTS: readonly string[] = [
-  "Ate",
-  "Carabayllo",
-  "Comas",
-  "Puente Piedra",
-  "San Martín de Porres",
-  "San Juan de Lurigancho",
-  "Villa María del Triunfo",
-  "Villa El Salvador",
-];
-
-export function isMotorizadoRestricted(district: string) {
-  return MOTORIZADO_RESTRICTED_DISTRICTS.includes(district);
-}
-
 export function isLimaDistrict(district: string) {
   return LIMA_DISTRICTS.some((item) => item.name === district);
 }

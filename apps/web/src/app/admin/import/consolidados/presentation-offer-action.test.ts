@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 const mocks=vi.hoisted(()=>({auth:vi.fn(),read:vi.fn(),write:vi.fn()}));
 vi.mock("server-only",()=>({}));
-vi.mock("next/cache",()=>({revalidatePath:vi.fn()}));
+vi.mock("next/cache",()=>({revalidatePath:vi.fn(),revalidateTag:vi.fn()}));
 vi.mock("next/navigation",()=>({redirect:vi.fn()}));
 vi.mock("@/lib/auth/admin-session",()=>({requireUnitAdmin:mocks.auth}));
 vi.mock("@/lib/supabase/server",()=>({createSupabaseServerClient:vi.fn().mockResolvedValue({})}));

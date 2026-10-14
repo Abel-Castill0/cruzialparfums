@@ -5,6 +5,8 @@ import { ActionLink, AdminPage, AdminPageHeader, BackLink, FactList, Notice } fr
 import { CopyButton } from "@/components/admin/copy-button";
 import { OrderDetailView } from "@/components/admin/order-detail-view";
 import { OrderStatusPanel, type OrderActionOption } from "@/components/admin/order-status-panel";
+import { ShippingCostForm } from "@/components/admin/shipping-cost-form";
+import { formatCentsAsSoles } from "@/domains/commercial/rule-forms";
 import { getAdminSession } from "@/lib/auth/admin-session";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { AdminParfumsOrdersRepository } from "@/domains/admin-parfums/orders-repository";
@@ -96,6 +98,11 @@ export default async function AdminParfumsOrderDetailPage({
   }
 
   const { order, lines } = detailResult.data;
+  let giftName: string | null = null;
+  if (order.giftProductId) {
+    const gift = await supabase.from("products").select("brand,name").eq("id", order.giftProductId).maybeSingle();
+    giftName = gift.data ? `${gift.data.brand} ${gift.data.name}`.trim() : "Perfume ya no disponible en el catálogo";
+  }
   const isAdmin = membership.role === "admin";
   const status = orderStatusPresentation("parfums", order.status);
   const deliveryInfo = describeParfumsDelivery(order.delivery.delivery);
@@ -189,6 +196,7 @@ export default async function AdminParfumsOrderDetailPage({
         </>
       }
       delivery={
+        <>
         <FactList
           items={[
             { term: "Distrito / Ciudad", value: order.delivery.district || "Sin indicar" },
@@ -196,8 +204,12 @@ export default async function AdminParfumsOrderDetailPage({
             ...(deliveryInfo.agency ? [{ term: "Agencia Shalom elegida", value: deliveryInfo.agency }] : []),
             ...(deliveryInfo.method === "motorizado" ? [{ term: "Acción pendiente", value: "Cotizar y acordar el envío por WhatsApp antes de despachar." }] : []),
             ...(order.delivery.note ? [{ term: "Nota del cliente", value: order.delivery.note }] : []),
+            { term: "Costo de envío", value: order.shippingCostCents === null ? "Sin cotizar" : formatCentsAsSoles(order.shippingCostCents) },
+            ...(giftName ? [{ term: "Regalo de 2 ml (elegido por el cliente)", value: giftName }] : []),
           ]}
         />
+        <ShippingCostForm orderId={order.id} cents={order.shippingCostCents} canEdit={isAdmin} />
+        </>
       }
       technical={
         <>

@@ -111,4 +111,14 @@ export class ParfumsOrderRepository {
       },
     };
   }
+
+  /** Stores the chosen 2 ml gift on an order that already exists. The database re-validates the rule (full bottle,
+   * published Arabic perfume, not excluded) and the call is idempotent per order. */
+  async attachGift(requestId: string, giftProductId: string): Promise<{ ok: true } | { ok: false; code: string }> {
+    const { error } = await this.supabase.rpc("attach_parfums_order_gift", {
+      p_request_id: requestId,
+      p_gift_product_id: giftProductId,
+    });
+    return error ? { ok: false, code: error.code ?? "unknown" } : { ok: true };
+  }
 }
