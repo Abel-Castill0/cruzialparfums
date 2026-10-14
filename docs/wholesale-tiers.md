@@ -1,5 +1,10 @@
 # Tramos mayoristas: qué hay hoy y qué falta (2026-10-14)
 
+> **Resolución del cliente (2026-10-14, vigente).** El tramo es **de 40 unidades mixtas** (lectura B de §4): los frascos completos de **cualquier**
+> tipo comercial se suman, y el descuento se calcula **por tipo, sobre el mix**: S/ 5 por cada frasco árabe, S/ 7 por cada diseñador y S/ 10 por cada nicho.
+> **Los tramos por encima de 40 no existen** y no se inventan: quedan como **T28** (el cliente debe definirlos; ver §7). Lo que sigue en §1 a §6 es el análisis
+> previo a esa decisión y se conserva como historia; donde contradice a este recuadro, manda el recuadro. Implementación: `docs/commercial-rules.md`.
+
 Solo documento: **no se implementó nada y no se inventó ningún valor**. Fuentes revisadas: `docs/client-decisions.md`,
 `docs/progress-v2.md`, `docs/current-v2.md`, `docs/4h2a-public-catalog-readiness.md`, `docs/architecture-v2.md`, `docs/import-decision.md`,
 las migraciones `20260908070000_admin_parfums_wholesale.sql` y `20261002045724_import_octavo_preview_and_wholesale_transfer.sql`, el esquema
@@ -93,7 +98,11 @@ No se rellena ningún valor. Una fila por tramo; si el cliente quiere varios tra
 
 Rellenar **% o S/**, no ambos. Para comparar, el valor vigente en soles es el de §2.
 
-## 6. Preguntas para el cliente
+## 6. Preguntas para el cliente (estado tras la resolución del 2026-10-14)
+
+Resueltas: la pregunta 1 (lectura **B**: 40 mixtas, los tipos se suman) y la pregunta 3 (se mantiene el **monto absoluto en soles por frasco**, por tipo).
+Siguen abiertas las demás y se agrega la T28 (§7).
+
 
 1. ¿«40 unidades mixtas» = lectura A, B o C de §4?
 2. ¿Habrá **más de un tramo** (por ejemplo, un descuento mayor a partir de otra cantidad) o se mantiene el tramo único de 40?
@@ -101,3 +110,27 @@ Rellenar **% o S/**, no ambos. Para comparar, el valor vigente en soles es el de
 4. ¿El mayorista vive en **Import** (como hoy) o también en Parfums (frascos sellados)?
 5. ¿Se calcula en el carrito o se sigue **coordinando por WhatsApp** con cotización manual?
 6. ¿Importa el orden de precedencia con el **regalo de 2 ml** (hoy: no aplica a mayorista)?
+
+## 7. Resolución del 2026-10-14: regla mixta y T28
+
+**Regla vigente (decidida por el cliente):**
+
+| Concepto | Valor |
+|---|---|
+| Umbral | **40 unidades** (frascos completos), **mixtas**: árabe + diseñador + nicho cuentan juntas |
+| Descuento | **Por tipo, sobre el mix**: S/ 5 árabe · S/ 7 diseñador · S/ 10 nicho, por frasco |
+| Qué cuenta | Solo frascos completos (los decants no suman; sin cambio) |
+| Tramos > 40 | **No existen.** No se asume ninguno |
+
+**Ejemplo.** Un pedido de 15 árabes + 15 diseñador + 10 nicho suma 40 → descuento = 15 × 5 + 15 × 7 + 10 × 10 = **S/ 280**. Con 39 unidades no hay descuento en ninguna línea.
+Con 50 unidades se aplican los mismos montos por tipo (no hay un segundo tramo).
+
+**Qué cambia respecto del modelo actual** (`wholesale_policies`): hoy el umbral vive **dentro de cada tipo** (`min_quantity` por fila, una fila activa por tipo) y la regla escrita
+en `client-decisions.md` dice que los tipos **no** se suman. La regla mixta necesita un **umbral global** y una tabla de descuentos por tipo. La implementación lo guarda
+como una `promotion_rules` de tipo `wholesale_mixed` (`conditions: { min_units }`, `actions: { discount_per_unit_cents: { arabic, designer, niche } }`) y deja `wholesale_policies`
+sin tocar; ver `docs/commercial-rules.md`. `docs/client-decisions.md` **no se edita** (es una entrada con hash de `commercial:check`): la discrepancia queda registrada aquí y en T28.
+
+**T28 (abierta, del cliente):** definir si habrá tramos por encima de 40 (por ejemplo 80 o 120), con qué descuento por tipo, y si el descuento sigue siendo un monto en soles o pasa a porcentaje.
+Hasta que la responda, el sistema aplica un único tramo y **no** extrapola.
+
+**Tabla de §5:** sigue vacía para los tramos > 40; la fila «Mixto» queda confirmada por la resolución anterior (40 · S/5/7/10) y no requiere más datos.

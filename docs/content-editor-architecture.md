@@ -305,7 +305,35 @@ en el servidor.
 4. **Objetivo:** un cambio guardado en el admin se ve en la web **en menos de 5 s**, verificado con una prueba e2e por etiqueta (la de `import-campaign` ya existe y tiene control negativo).
 5. Todo en `docs/cache-revalidation.md`.
 
-## 7. Decisiones del cliente que bloquean o condicionan
+## 7. Resoluciones del 2026-10-14 (los 3 conflictos) y decisiones del cliente
+
+### 7.0 Resoluciones
+
+La auditoría dejó tres conflictos entre los encargos. El dueño los resolvió así; lo que sigue es la regla vigente y reemplaza lo que §5 y §7.1–7.3 dicen en contra.
+
+**1. Zonas del motorizado (C14).** Cobertura **OK** = Centro de Lima + Ate + Villa El Salvador (VES) + Carabayllo + **los distritos intermedios**. Todo lo demás se marca
+`is_restricted = true`. Un solo conjunto de distritos, no dos listas. La lista de los 43 distritos de Lima Metropolitana la **propone** el desarrollo en `docs/commercial-rules.md` y el dueño
+la **valida antes de aplicarla**: la migración crea la tabla y **no** carga los distritos hasta esa validación.
+
+**2. Bloqueo de pedidos (C14): nunca.** Una zona restringida **solo deshabilita la opción motorizado**. Shalom (todo el Perú, cotización por WhatsApp) **siempre** está disponible y el pedido
+**siempre** se puede completar. Esto mantiene la regla vigente («la cobertura nunca bloquea») y descarta cualquier error de validación que impida confirmar un pedido por el distrito.
+
+**3. Acceso a `/import` (C11–C13): sin redirecciones.**
+
+| Visitante | Ve | No ve |
+|---|---|---|
+| No-admin, campaña no abierta (Próximamente / Cerrado) | Hero con estado y fechas, «Cómo funciona», «Condiciones» | Catálogo (`/import/catalogo`), botón de añadir al carrito, «Explorar vista previa» |
+| Dueño / admin | Todo, siempre | — |
+| Cualquiera, campaña abierta | Todo (sin cambios) | — |
+
+Se interpreta que el bloqueo aplica cuando la campaña **no** está abierta (el encargo original decía «bloqueado para no-admin cuando cerrado»); con campaña abierta Import sigue siendo público.
+Esto **sustituye** la vista previa pública de «Próximamente» por el hero + secciones informativas; ningún `redirect()`. Pendiente de implementar en su propio PR (no está en este).
+
+**4. «Ningún editor todavía».** Esa instrucción era de la fase 1 (auditoría) y **terminó**. Los editores se implementan en orden (§8), cada uno en su propio PR.
+**5. Tramos mayoristas.** 40 unidades mixtas, descuento por tipo (S/5 · S/7 · S/10); tramos > 40 = **T28**. Ver `docs/wholesale-tiers.md` §7.
+**6. Versión vigente del encargo:** la lista de **22 puntos**; no hay dos versiones.
+
+### 7.1 Decisiones del cliente que siguen abiertas
 
 1. **C14:** tramos y descuentos mayoristas (y dónde viven: Parfums o Import), zonas de Lima con cobertura restringida, si habrá tarifa
    publicada o solo cotización por WhatsApp, quién verifica las agencias Shalom y cómo.
@@ -329,7 +357,7 @@ en el servidor.
 | 4 | C9–C10 (carruseles) | fase 3 (biblioteca de medios) | M |
 | 5 | C7 (frascos) | fase 0 | M |
 | 6 | C11, C13 (Import: condiciones, FAQ, hero) | fase 3 y decisiones 3–4 | M |
-| 7 | C8, C12, C14 (regalo, Shalom Import, reglas) | **decisiones del cliente** (§7.1–7.3) | M–L |
+| 7 | C8, C12, C14 (regalo, Shalom Import, reglas) | resueltas el 2026-10-14 (§7.0); quedan T28 y la validación de la lista de distritos | M–L |
 
 ## 9. Riesgos
 
