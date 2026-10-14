@@ -1,13 +1,13 @@
 import { expect, test } from "@playwright/test";
-import { ADMIN_STATE, hasIdentity } from "./auth-state";
+import { GATE_B_ADMIN_STATE, hasIdentity } from "./auth-state";
 import { LOCAL_DB_AVAILABLE, localSql } from "./local-db";
 
 // Cache revalidation of Import campaign changes (`import-campaign` tag). Closes and reopens the live campaign through the
 // admin UI, so it runs in the isolated project (after the public journeys) and always restores the campaign.
 
 test.describe("Import campaign changes reach the gateway within 5 s", () => {
-  test.skip(!LOCAL_DB_AVAILABLE || !hasIdentity("E2E_ADMIN"), "requires the disposable local stack and the E2E_ADMIN_* identity");
-  test.use({ storageState: ADMIN_STATE, viewport: { width: 1280, height: 900 } });
+  test.skip(!LOCAL_DB_AVAILABLE || !hasIdentity("E2E_GATE_B_ADMIN"), "requires the disposable local stack and the E2E_GATE_B_ADMIN_* identity");
+  test.use({ storageState: GATE_B_ADMIN_STATE, viewport: { width: 1280, height: 900 } });
 
   test("closing and reopening the open campaign in the admin shows on / within 5 s each time", async ({ page, browser }) => {
     const campaignId = localSql("select id from public.campaigns where status = 'open' and archived_at is null order by number desc limit 1;");
