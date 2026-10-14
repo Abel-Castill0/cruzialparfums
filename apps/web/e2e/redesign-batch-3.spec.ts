@@ -177,9 +177,8 @@ test.describe("catalogo", () => {
     await select.selectOption({ label: brand });
     await page.keyboard.press("Escape");
     const cards = page.locator("[data-product-card]");
-    expect(await cards.count()).toBeGreaterThan(0);
-    const labels = await cards.locator("[class*=cardBrand]").allTextContents();
-    expect(new Set(labels)).toEqual(new Set([brand]));
+    // The server answers with the view for that brand (a round trip), so wait for it instead of reading the old grid.
+    await expect.poll(async () => [...new Set(await cards.locator("[class*=cardBrand]").allTextContents())], { timeout: 10_000 }).toEqual([brand]);
     await expect(page.getByRole("button", { name: "Quitar filtro Marca" })).toBeVisible();
     await expect.poll(() => new URL(page.url()).searchParams.get("brand")).toBe(brand);
   });
@@ -257,10 +256,10 @@ test.describe("catalogo", () => {
       test.skip(true, "this stack has 24 products or fewer");
     }
     expect(await cards.count()).toBe(24);
-    await expect(pager.getByRole("button", { name: "Vista 1" })).toHaveAttribute("aria-current", "page");
+    await expect(pager.getByRole("link", { name: "Vista 1" })).toHaveAttribute("aria-current", "page");
     const firstName = await cards.first().locator("h3").innerText();
-    await pager.getByRole("button", { name: "Vista 2" }).click();
-    await expect(pager.getByRole("button", { name: "Vista 2" })).toHaveAttribute("aria-current", "page");
+    await pager.getByRole("link", { name: "Vista 2" }).click();
+    await expect(pager.getByRole("link", { name: "Vista 2" })).toHaveAttribute("aria-current", "page");
     await expect(cards.first().locator("h3")).not.toHaveText(firstName);
     await expect.poll(() => new URL(page.url()).searchParams.get("vista")).toBe("2");
     expect(await cards.count()).toBeGreaterThan(0);
@@ -274,7 +273,7 @@ test.describe("catalogo", () => {
     await page.goto("/parfums/catalogo?vista=2");
     const pager = page.locator("[data-catalog-pager]");
     test.skip((await pager.count()) === 0, "this stack has 24 products or fewer");
-    await expect(pager.getByRole("button", { name: "Vista 2" })).toHaveAttribute("aria-current", "page");
+    await expect(pager.getByRole("link", { name: "Vista 2" })).toHaveAttribute("aria-current", "page");
   });
 
   test("product names are semibold and about 10% larger than the body text size", async ({ page }) => {
@@ -415,5 +414,90 @@ test.describe("combos page", () => {
       return document.activeElement === button;
     });
     expect(focusable).toBe(false);
+  });
+});
+
+// T12: the catalog state lives in the URL and the server sends only the requested view (no hidden products in the page).
+test.describe("catalog with server-side pagination", () => {
+  test("a filter change goes to the URL (router.replace, no extra history entry) and a reload shows the same view", async ({ page }) => {
+    await page.goto("/parfums/catalogo");
+    const door = page.getByRole("button", { name: /^Nicho/ });
+    await door.click();
+    await expect.poll(() => new URL(page.url()).searchParams.get("type")).toBe("niche");
+    await expect(door).toHaveAttribute("aria-pressed", "true");
+    // Cards of other types (a tag of "Árabe" or "Diseñador") must be gone; a card without a tag or a sold-out one says nothing.
+    const tags = async () => [...new Set(await page.locator("[data-product-card] [class*=tag]").allTextContents())].filter((tag) => tag && tag !== "Agotado");
+    await expect.poll(tags, { timeout: 10_000 }).not.toContain("Árabe");
+    expect(await tags()).not.toContain("Diseñador");
+    await page.reload();
+    await expect(page.getByRole("button", { name: /^Nicho/ })).toHaveAttribute("aria-pressed", "true");
+    expect(await tags()).not.toContain("Árabe");
+  });
+
+  test("search goes to the URL after a pause (not on every key) and clearing it returns to the clean URL", async ({ page }) => {
+    await page.goto("/parfums/catalogo");
+    const search = page.getByRole("searchbox");
+    await search.pressSequentially("zz", { delay: 40 });
+    expect(new URL(page.url()).searchParams.get("search"), "no navigation while typing").toBeNull();
+    await expect.poll(() => new URL(page.url()).searchParams.get("search")).toBe("zz");
+    await expect(page.getByText("Sin resultados")).toBeVisible();
+    await page.getByRole("button", { name: "Borrar búsqueda" }).click();
+    await expect.poll(() => new URL(page.url()).search).toBe("");
+    await expect(page.locator("[data-product-card]").first()).toBeVisible();
+  });
+
+  test("the catalog works without JavaScript: the URL alone decides what the server renders", async ({ browser }) => {
+    const context = await browser.newContext({ javaScriptEnabled: false });
+    const page = await context.newPage();
+    await page.goto("/parfums/catalogo");
+    const all = await page.locator("[data-product-card]").count();
+    expect(all).toBeGreaterThan(0);
+    expect(all).toBeLessThanOrEqual(24);
+    await page.goto("/parfums/catalogo?search=zzzzzz");
+    await expect(page.locator("[data-product-card]")).toHaveCount(0);
+    await expect(page.getByText("Sin resultados")).toBeVisible();
+    await page.goto("/parfums/catalogo?sort=priceAsc");
+    // Sold-out cards show "Agotado"/"—" instead of a price: only priced cards are compared.
+    const prices = (await page.locator("[data-product-card] [data-price]").allInnerTexts()).map((text) => Number(text.replace(/[^\d.]/g, ""))).filter((price) => price > 0);
+    expect(prices.length).toBeGreaterThan(0);
+    expect(prices).toEqual([...prices].sort((a, b) => a - b));
+    await context.close();
+  });
+
+  test("the HTML of a view holds that view's 24 cards and the pager links work as plain links", async ({ browser }) => {
+    const context = await browser.newContext({ javaScriptEnabled: false });
+    const page = await context.newPage();
+    await page.goto("/parfums/catalogo");
+    const pager = page.locator("[data-catalog-pager]");
+    test.skip((await pager.count()) === 0, "this stack has 24 products or fewer");
+    expect(await page.locator("[data-product-card]").count()).toBe(24);
+    const firstSlugs = await page.locator("[data-product-card]").evaluateAll((els) => els.map((el) => el.id));
+    await pager.getByRole("link", { name: "Vista 2" }).click();
+    await expect(page).toHaveURL(/vista=2/);
+    const secondSlugs = await page.locator("[data-product-card]").evaluateAll((els) => els.map((el) => el.id));
+    expect(secondSlugs.length).toBeGreaterThan(0);
+    expect(secondSlugs.filter((slug) => firstSlugs.includes(slug)), "a product never appears in two views").toEqual([]);
+    await context.close();
+  });
+
+  test("a view beyond the last one is clamped to the last view, and bad values fall back to the defaults", async ({ page }) => {
+    await page.goto("/parfums/catalogo?vista=9999&sort=nope&format=bottle&price=15");
+    await expect(page.locator("[data-product-grid]")).toBeVisible();
+    const pager = page.locator("[data-catalog-pager]");
+    if ((await pager.count()) > 0) {
+      const last = await pager.locator("li").count();
+      await expect(pager.getByRole("link", { name: `Vista ${last}` })).toHaveAttribute("aria-current", "page");
+    }
+    await expect(page.locator("[data-product-card]").first()).toBeVisible();
+  });
+
+  test("a finder recommendation survives filter changes and can be cleared", async ({ page }) => {
+    await page.goto("/parfums/catalogo?rw=mi&rf=fresh&ri=2");
+    const panel = page.locator("#recomendacion");
+    test.skip((await panel.count()) === 0, "no recommendation for these answers on this stack");
+    await page.getByRole("button", { name: /^Nicho/ }).click();
+    await expect.poll(() => new URL(page.url()).searchParams.get("type")).toBe("niche");
+    expect(new URL(page.url()).searchParams.get("rw"), "the answers stay in the URL").toBe("mi");
+    await expect(panel).toBeVisible();
   });
 });

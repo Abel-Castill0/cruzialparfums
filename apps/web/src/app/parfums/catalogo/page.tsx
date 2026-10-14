@@ -1,12 +1,10 @@
 import type { Metadata } from "next";
 import { CatalogExperience } from "@/components/parfums/catalog/catalog-experience";
-import {
-  DEFAULT_CATALOG_FILTERS,
-  type CatalogFilters,
-  type CatalogSort,
-} from "@/domains/catalog/catalog-query";
+import { parseCatalogQuery } from "@/domains/catalog/catalog-query";
 import { CatalogUnavailableNotice } from "@/components/parfums/catalog/catalog-unavailable-notice";
+import { findPerfumes } from "@/domains/finder/finder-rules";
 import { parseFinderAnswers } from "@/domains/finder/finder-url";
+import { loadCatalogPage } from "@/lib/catalog/parfums-catalog-page";
 import { loadParfumsStorefront } from "@/lib/catalog/parfums-storefront";
 
 export const metadata: Metadata = {
@@ -16,39 +14,32 @@ export const metadata: Metadata = {
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
-function scalar(value: string | string[] | undefined) {
-  return typeof value === "string" ? value : undefined;
-}
-
+/**
+ * The catalog's state is the URL: filters, search, order and view (`?vista=`). The server runs the query and sends only the
+ * requested 24 products; the retired `format` and `price` params are ignored, so an old shared link shows the decant catalog.
+ */
 export default async function CatalogPage({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams;
-  const initialFilters: CatalogFilters = {
-    ...DEFAULT_CATALOG_FILTERS,
-    gender: scalar(params.gender) ?? "all",
-    family: scalar(params.family) ?? "all",
-    type: scalar(params.type) ?? "all",
-    brand: scalar(params.brand) ?? "all",
-    // Retired filters (whole bottles and budget): a shared link that still carries them just shows the full decant catalog.
-    format: "all",
-    price: "all",
-    sort: (scalar(params.sort) ?? "featured") as CatalogSort,
-    search: scalar(params.search) ?? "",
-  };
-  const recommendation = parseFinderAnswers(params);
-  const { catalog, source } = await loadParfumsStorefront();
-  const products = catalog.listFragrances();
+  const query = parseCatalogQuery(params);
+  const answers = parseFinderAnswers(params);
+  const data = await loadCatalogPage(query);
+
+  // The finder's recommendation is computed here, from the full catalog, so the browser only gets the four products it shows.
+  let recommendation = null;
+  if (answers) {
+    const { catalog } = await loadParfumsStorefront();
+    recommendation = { answers, products: findPerfumes(catalog.listFragrances(), answers).map((result) => result.product) };
+  }
 
   return (
     <main id="main" tabIndex={-1}>
-      {source === "unavailable" ? <CatalogUnavailableNotice /> : null}
-      {/* Keyed by the answers so a new recommendation (arriving from the
-          questionnaire over this same route) starts from fresh state. */}
+      {data.source === "unavailable" ? <CatalogUnavailableNotice /> : null}
+      {/* Keyed by the answers so a new recommendation (arriving from the questionnaire over this same route) starts from fresh state. */}
       <CatalogExperience
-        key={recommendation ? JSON.stringify(recommendation) : "all"}
-        products={products}
-        initialFilters={initialFilters}
-        initialPage={Number.parseInt(scalar(params.vista) ?? "1", 10) || 1}
-        initialRecommendation={recommendation}
+        key={answers ? JSON.stringify(answers) : "all"}
+        data={data}
+        query={{ ...query, page: data.page }}
+        recommendation={recommendation}
       />
     </main>
   );

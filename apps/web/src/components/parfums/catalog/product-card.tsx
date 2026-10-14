@@ -12,7 +12,7 @@ import {
 import { cartIdentity } from "@/domains/catalog/types";
 import { isProductPurchasable } from "@/domains/catalog/availability";
 import { decantSizeOptions, defaultDecantSize, type DecantSize } from "@/domains/catalog/catalog-query";
-import type { CatalogProduct } from "@/domains/catalog/types";
+import type { CatalogCardProduct } from "@/domains/catalog/card-product";
 import styles from "./catalog.module.css";
 import { productMediaLinkLabel } from "./product-media-label";
 
@@ -30,7 +30,7 @@ export function ProductCard({
   onAdded,
   eager = false,
 }: {
-  product: CatalogProduct;
+  product: CatalogCardProduct;
   onAdded: (message: string) => void;
   eager?: boolean;
 }) {
