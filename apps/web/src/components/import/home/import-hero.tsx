@@ -3,7 +3,7 @@ import Link from "next/link";
 import type { Route } from "next";
 import type { BusinessUnitSettings } from "@/domains/platform/settings";
 import type { PublicImportCampaign } from "@/domains/import/public-import";
-import { estimatedOpeningLabel } from "@/domains/import/public-import";
+import { importHeroStatus } from "@/domains/import/hero-status";
 import styles from "./import-home.module.css";
 
 type HeroState =
@@ -13,13 +13,6 @@ type HeroState =
 
 function whatsappUrl(whatsappNumber: string, message = "Hola Cruzial Import, quiero más información.") {
   return `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
-}
-
-function formatClosingDate(value: string): string {
-  return new Intl.DateTimeFormat("es-PE", {
-    dateStyle: "long",
-    timeZone: "America/Lima",
-  }).format(new Date(value));
 }
 
 function WhatsappIcon() {
@@ -42,9 +35,9 @@ function ArrowIcon() {
 }
 
 /**
- * Campaign poster: the container image carries the page and the copy is just a
- * title, one short line and the actions (no status pill, no facts grid). One
- * heading id per state is kept because tests and anchors rely on
+ * Campaign poster: the container image carries the page. The copy is a small status badge with one date line under it, the
+ * title, one short line and the actions: no facts grid and no commercial terms (delivery time and minimum order live in
+ * "Cómo funciona" and "Condiciones"). One heading id per state is kept because tests and anchors rely on
  * `#campaign-title` / `#import-closed-title`.
  */
 export function ImportHero({
@@ -57,6 +50,11 @@ export function ImportHero({
   const open = hero.state === "campaign";
   const upcoming = hero.state === "upcoming";
   const titleId = open ? "campaign-title" : "import-closed-title";
+  const status = importHeroStatus({
+    state: hero.state,
+    opensAt: upcoming ? hero.campaign.opensAt : null,
+    closesAt: open ? hero.campaign.closesAt : null,
+  });
 
   return (
     <section className={styles.hero} data-import-home-hero aria-labelledby={titleId}>
@@ -74,6 +72,12 @@ export function ImportHero({
       </div>
 
       <div className={styles.heroCopy}>
+        {status.badge ? (
+          <div className={styles.heroStatus} data-import-hero-status>
+            <span className={`${styles.statusBadge} ${styles[`status_${status.badge.tone}`]}`}>{status.badge.label}</span>
+            {status.dateLine ? <p className={styles.statusDate}>{status.dateLine}</p> : null}
+          </div>
+        ) : null}
         <h1 id={titleId}>
           {open
             ? hero.campaign.name
@@ -84,13 +88,12 @@ export function ImportHero({
                 : "El próximo consolidado se está preparando."}
         </h1>
 
-        {/* One line (CSS clamps it). The owner's public message wins; without one, the closing date. */}
+        {/* One line (CSS clamps it). The owner's public message wins; the dates live in the badge group above. */}
         <p className={styles.heroSummary}>
           {open
-            ? hero.campaign.publicMessage ||
-              (hero.campaign.closesAt ? `Cierra el ${formatClosingDate(hero.campaign.closesAt)}` : "Precios exclusivos de este consolidado.")
+            ? hero.campaign.publicMessage || "Precios exclusivos de este consolidado."
             : upcoming
-              ? `Vista previa · apertura estimada: ${estimatedOpeningLabel(hero.campaign.opensAt)}`
+              ? hero.campaign.publicMessage || "Vista previa de productos y precios de referencia."
               : hero.state === "unavailable"
                 ? "No pudimos consultar el estado del consolidado."
                 : "Los productos y precios aparecerán cuando abra."}
@@ -109,7 +112,7 @@ export function ImportHero({
               href={whatsappUrl(contact.whatsappNumber)}
               target="_blank"
               rel="noopener noreferrer"
-              className={open ? styles.secondaryAction : styles.primaryAction}
+              className={open || upcoming ? styles.secondaryAction : styles.primaryAction}
             >
               <WhatsappIcon /> Consultar por WhatsApp
             </a>
