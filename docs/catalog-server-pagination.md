@@ -1,6 +1,6 @@
 # Catálogo de Parfums con paginación en el servidor (T12, primera mitad) — 2026-10-14
 
-Rama `perf/catalog-server-pagination` (sin push, sin PR, sin merge). Reemplaza la paginación provisional del lote 3
+Rama `perf/catalog-server-pagination` (con PR, sin merge). Reemplaza la paginación provisional del lote 3
 (`docs/redesign-batch-3.md` §3), que dibujaba 24 tarjetas pero **enviaba todos los productos** al navegador.
 
 ## 1. Qué cambió
