@@ -1,0 +1,36 @@
+{
+ "label": "after",
+ "runs": 5,
+ "results": {
+  "parfums/catalogo": {
+   "lcp": 1840,
+   "tbt": 159,
+   "fcp": 1100,
+   "flightChars": 177519,
+   "htmlChars": 268081,
+   "cards": 24,
+   "imgs": 30,
+   "nodes": 840,
+   "heapMB": 5.3,
+   "docKB": 26.3,
+   "scriptKB": 165,
+   "imageKB": 104.6,
+   "totalKB": 369.5
+  },
+  "parfums/catalogo?brand=Creed": {
+   "lcp": 1792,
+   "tbt": 155,
+   "fcp": 1076,
+   "flightChars": 166743,
+   "htmlChars": 206431,
+   "cards": 5,
+   "imgs": 11,
+   "nodes": 365,
+   "heapMB": 4.6,
+   "docKB": 24,
+   "scriptKB": 165,
+   "imageKB": 88,
+   "totalKB": 347.5
+  }
+ }
+}

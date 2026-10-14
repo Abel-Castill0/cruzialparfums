@@ -206,7 +206,7 @@ export type CatalogProduct = {
  * Prefers canonical productId (Supabase UUID) when available, falls back
  * to legacyId for pre-cutover products. Throws if neither exists.
  */
-export function cartIdentity(product: CatalogProduct): string {
+export function cartIdentity(product: Pick<CatalogProduct, "productId" | "legacyId" | "name">): string {
   if (product.productId) return product.productId;
   if (product.legacyId) return product.legacyId;
   throw new Error(`Product "${product.name}" has no cart identity (both productId and legacyId are null)`);

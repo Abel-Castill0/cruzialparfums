@@ -1,0 +1,21 @@
+{
+ "label": "layout-only",
+ "runs": 3,
+ "results": {
+  "parfums/nosotros": {
+   "lcp": 2380,
+   "tbt": 123,
+   "fcp": 1096,
+   "flightChars": 172936,
+   "htmlChars": 196816,
+   "cards": 0,
+   "imgs": 4,
+   "nodes": 272,
+   "heapMB": 4.1,
+   "docKB": 25.1,
+   "scriptKB": 157.1,
+   "imageKB": 94.4,
+   "totalKB": 344.3
+  }
+ }
+}

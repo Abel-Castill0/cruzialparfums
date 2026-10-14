@@ -7,6 +7,6 @@ import type { CatalogProduct } from "./types";
  * purchasable — only `out_of_stock` blocks a purchase. Centralized here so
  * ProductCard and ProductDetail never diverge.
  */
-export function isProductPurchasable(product: CatalogProduct): boolean {
+export function isProductPurchasable(product: Pick<CatalogProduct, "availabilityStatus">): boolean {
   return product.availabilityStatus !== "out_of_stock";
 }

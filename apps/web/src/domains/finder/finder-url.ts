@@ -23,7 +23,7 @@ export const FINDER_PARAMS = {
 
 const FINDER_PARAM_KEYS: readonly string[] = Object.values(FINDER_PARAMS);
 // Catalog filters that survive the hand-off (see CatalogExperience).
-const CATALOG_PARAM_KEYS = ["gender", "family", "type", "format", "price", "sort", "search"] as const;
+const CATALOG_PARAM_KEYS = ["gender", "family", "type", "brand", "sort", "search"] as const;
 
 const MAX_TEXT = 40;
 

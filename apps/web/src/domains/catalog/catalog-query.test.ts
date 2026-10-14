@@ -3,7 +3,13 @@ import { LegacyCatalogRepository } from "./legacy-catalog-repository";
 import {
   CATALOG_PAGE_SIZE,
   DEFAULT_CATALOG_FILTERS,
+  DEFAULT_CATALOG_QUERY,
   catalogBrands,
+  catalogFacets,
+  catalogQueryKey,
+  catalogQueryToFilters,
+  catalogQueryToParams,
+  parseCatalogQuery,
   decantSizeOptions,
   defaultDecantSize,
   filterCatalogProducts,
@@ -120,5 +126,56 @@ describe("catalog query", () => {
     it("no default when nothing is available", () => {
       expect(defaultDecantSize(decantSizeOptions({ ...product, decantPrices: {} }))).toBeNull();
     });
+  });
+});
+
+describe("catalog query in the URL", () => {
+  const products = new LegacyCatalogRepository().list();
+
+  it("reads the defaults from an empty URL", () => {
+    expect(parseCatalogQuery({})).toEqual(DEFAULT_CATALOG_QUERY);
+    expect(parseCatalogQuery(new URLSearchParams(""))).toEqual(DEFAULT_CATALOG_QUERY);
+  });
+
+  it("reads every filter, the search and the view", () => {
+    const query = parseCatalogQuery({ type: "arab", gender: "men", family: "woody", brand: "Lattafa", sort: "priceAsc", search: " oud ", vista: "3" });
+    expect(query).toEqual({ type: "arab", gender: "men", family: "woody", brand: "Lattafa", sort: "priceAsc", search: "oud", page: 3 });
+  });
+
+  it("falls back on unknown sorts, bad pages and oversized values; ignores the retired filters", () => {
+    expect(parseCatalogQuery({ sort: "random" }).sort).toBe("featured");
+    expect(parseCatalogQuery({ vista: "0" }).page).toBe(1);
+    expect(parseCatalogQuery({ vista: "-4" }).page).toBe(1);
+    expect(parseCatalogQuery({ vista: "abc" }).page).toBe(1);
+    expect(parseCatalogQuery({ vista: "999999" }).page).toBe(500);
+    expect(parseCatalogQuery({ brand: "x".repeat(81) }).brand).toBe("all");
+    expect(parseCatalogQuery({ format: "bottle", price: "15" })).toEqual(DEFAULT_CATALOG_QUERY);
+    expect(parseCatalogQuery({ type: ["arab", "niche"] }).type).toBe("all");
+  });
+
+  it("writes only what differs from the defaults, and round-trips", () => {
+    expect(catalogQueryToParams(DEFAULT_CATALOG_QUERY).toString()).toBe("");
+    const query = { type: "niche", gender: "all", family: "all", brand: "Creed", sort: "name", search: "iris", page: 2 } as const;
+    expect(parseCatalogQuery(catalogQueryToParams(query))).toEqual(query);
+    expect(catalogQueryToParams({ ...DEFAULT_CATALOG_QUERY, page: 1 }).has("vista")).toBe(false);
+  });
+
+  it("gives the same cache key to the same state and different keys to different states", () => {
+    expect(catalogQueryKey(DEFAULT_CATALOG_QUERY)).toBe("default");
+    expect(catalogQueryKey({ ...DEFAULT_CATALOG_QUERY, page: 2 })).not.toBe(catalogQueryKey(DEFAULT_CATALOG_QUERY));
+    expect(catalogQueryKey({ ...DEFAULT_CATALOG_QUERY, brand: "Creed" })).toBe(catalogQueryKey({ ...DEFAULT_CATALOG_QUERY, brand: "Creed" }));
+  });
+
+  it("filters exactly like the old client-side catalog did (same results, same order)", () => {
+    const query = parseCatalogQuery({ type: "designer", sort: "priceDesc" });
+    expect(filterCatalogProducts(products, catalogQueryToFilters(query))).toEqual(
+      filterCatalogProducts(products, { ...DEFAULT_CATALOG_FILTERS, type: "designer", sort: "priceDesc" }),
+    );
+  });
+
+  it("facets do not depend on the filters: all brands and the size of each type", () => {
+    const facets = catalogFacets(products.filter((p) => p.type !== "combo"));
+    expect(facets.brands).toEqual(catalogBrands(products));
+    expect(Object.values(facets.typeCounts).reduce((a, b) => a + b, 0)).toBe(products.filter((p) => p.type !== "combo").length);
   });
 });

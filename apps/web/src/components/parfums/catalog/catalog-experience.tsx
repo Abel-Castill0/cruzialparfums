@@ -3,22 +3,21 @@
 import type { Route } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useOptimistic, useRef, useState, useTransition } from "react";
 import {
-  catalogBrands,
-  DEFAULT_CATALOG_FILTERS,
-  filterCatalogProducts,
-  hasDecantOffer,
-  paginateCatalog,
-  type CatalogFilters,
+  catalogQueryToParams,
+  DEFAULT_CATALOG_QUERY,
+  type CatalogQuery,
   type CatalogSort,
 } from "@/domains/catalog/catalog-query";
 import { cartIdentity, type CatalogProduct } from "@/domains/catalog/types";
 import { SearchIcon } from "@/components/parfums/shell/shell-icons";
 import { RecommendationPanel } from "@/components/parfums/finder/recommendation-panel";
-import { finderAnswersToParams } from "@/domains/finder/finder-url";
+import { recommendationQueryString, withoutRecommendation } from "@/domains/finder/finder-url";
 import type { FinderAnswers } from "@/domains/finder/finder-rules";
 import { Reveal } from "@/components/storefront/home/reveal";
+import type { CatalogPageData } from "@/lib/catalog/parfums-catalog-page";
 import { ProductCard } from "./product-card";
 import { CatalogFilterPanel, FILTER_GROUPS, optionLabel, type FilterKey } from "./catalog-filter-panel";
 import toolbar from "./catalog-toolbar.module.css";
@@ -47,72 +46,88 @@ const discoveryShortcuts = [
 
 const filterDefinitions = FILTER_GROUPS.map(({ key, label }) => ({ key, label }));
 
-export function CatalogExperience({ products: allProducts, initialFilters, initialPage = 1, initialRecommendation = null }: {
-  products: CatalogProduct[];
-  initialFilters: CatalogFilters;
-  /** 1-based "Vista" the page opens on (from `?vista=`). */
-  initialPage?: number;
-  /** Answers of a completed finder questionnaire, already validated. */
-  initialRecommendation?: FinderAnswers | null;
+const SEARCH_DEBOUNCE_MS = 350;
+
+/**
+ * The Parfums catalog. The state of the catalog lives in the URL (`searchParams`): the server reads it, filters, sorts and
+ * paginates, and sends only the requested view (`data`, 24 card products plus the small facets). This component edits that
+ * state with `router.replace`; chips and category cards answer immediately (`useOptimistic`) while the new view loads.
+ */
+export function CatalogExperience({ data, query, recommendation = null }: {
+  data: CatalogPageData;
+  /** The state the server rendered `data` for. */
+  query: CatalogQuery;
+  /** A completed finder questionnaire and the few products the server picked for it. */
+  recommendation?: { answers: FinderAnswers; products: CatalogProduct[] } | null;
 }) {
-  // Decants only: a product without a decant price (a whole bottle) has no place in this catalog.
-  const products = useMemo(() => allProducts.filter(hasDecantOffer), [allProducts]);
-  const brands = useMemo(() => catalogBrands(products), [products]);
-  const [filters, setFilters] = useState(initialFilters);
-  const [page, setPage] = useState(initialPage);
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const [pending, startTransition] = useTransition();
+  const [optimistic, setOptimistic] = useOptimistic(query, (current: CatalogQuery, patch: Partial<CatalogQuery>) => ({ ...current, ...patch }));
   const gridTopRef = useRef<HTMLDivElement>(null);
-  const [recommendation, setRecommendation] = useState(initialRecommendation);
   const recommendationRef = useRef<HTMLDivElement>(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [toast, setToast] = useState("");
   const filterPanelRef = useRef<HTMLDivElement>(null);
   const filterTriggerRef = useRef<HTMLButtonElement>(null);
-  const results = useMemo(() => filterCatalogProducts(products, filters), [filters, products]);
-  const view = useMemo(() => paginateCatalog(results, page), [results, page]);
-  const activeFilters = filterDefinitions.filter(({ key }) => filters[key] !== "all");
-  const typeCounts = useMemo(() => {
-    const counts: Record<string, number> = {};
-    for (const product of products) counts[product.type] = (counts[product.type] ?? 0) + 1;
-    return counts;
-  }, [products]);
+  const [searchText, setSearchText] = useState(query.search);
+  const [seenSearch, setSeenSearch] = useState(query.search);
+  const activeFilters = filterDefinitions.filter(({ key }) => optimistic[key] !== "all");
 
-  // Keep the URL in sync with filter/search/sort changes so back/forward,
-  // refresh, and sharing a link all preserve the same view — without a
-  // Next.js navigation (which would re-render the route) on every
-  // keystroke. window.history.replaceState only updates the address bar;
-  // filtering itself stays entirely client-side off the `products` prop.
+  // The URL changed from outside (back/forward, a shared link): the input follows it.
+  if (query.search !== seenSearch) {
+    setSeenSearch(query.search);
+    setSearchText(query.search);
+  }
+
+  /** Catalog URL for a state, keeping a finder recommendation if there is one. */
+  function hrefFor(next: CatalogQuery): string {
+    const params = catalogQueryToParams(next);
+    for (const [key, value] of new URLSearchParams(recommendationQueryString(searchParams))) params.set(key, value);
+    const search = params.toString();
+    return search ? `${pathname}?${search}` : pathname;
+  }
+
+  // Any change to what is listed starts again from the first view; the pager is the only way to keep a page.
+  function navigate(patch: Partial<CatalogQuery>) {
+    const next: CatalogQuery = { ...query, ...patch, page: patch.page ?? 1 };
+    startTransition(() => {
+      setOptimistic({ ...patch, page: next.page });
+      router.replace(hrefFor(next) as Route, { scroll: false });
+    });
+  }
+
+  // Typing does not navigate on every key: the search goes to the URL after a short pause.
   useEffect(() => {
+    if (searchText.trim() === query.search) return undefined;
     const handle = setTimeout(() => {
-      const params = new URLSearchParams();
-      for (const { key } of filterDefinitions) {
-        if (filters[key] !== "all") params.set(key, filters[key]);
-      }
-      if (filters.sort !== "featured") params.set("sort", filters.sort);
-      if (filters.search.trim()) params.set("search", filters.search);
-      if (view.page > 1) params.set("vista", String(view.page));
-      // A completed recommendation stays in the address so a refresh or a
-      // shared link shows the same view.
-      if (recommendation) {
-        for (const [key, value] of finderAnswersToParams(recommendation)) params.set(key, value);
-      }
-      const query = params.toString();
-      const url = query ? `${window.location.pathname}?${query}` : window.location.pathname;
-      // Nothing to sync: leave history alone. Rewriting the same URL 300 ms after load can undo a link the visitor
-      // clicked in that window (the router had not committed it yet), sending them back to the catalog.
-      if (url === `${window.location.pathname}${window.location.search}`) return;
-      window.history.replaceState(null, "", url);
-    }, 300);
+      const next: CatalogQuery = { ...query, search: searchText.trim(), page: 1 };
+      startTransition(() => {
+        setOptimistic({ search: next.search, page: 1 });
+        router.replace(hrefFor(next) as Route, { scroll: false });
+      });
+    }, SEARCH_DEBOUNCE_MS);
     return () => clearTimeout(handle);
-  }, [filters, recommendation, view.page]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- hrefFor/startTransition are recreated each render; the inputs that matter are listed
+  }, [searchText, query]);
+
+  // A new view (pager, or ?vista= changing) brings its first row into sight; the first render never scrolls.
+  const shownPage = useRef(data.page);
+  useEffect(() => {
+    if (shownPage.current === data.page) return;
+    shownPage.current = data.page;
+    gridTopRef.current?.scrollIntoView({ block: "start" });
+  }, [data.page]);
 
   // Arriving from the questionnaire: bring the recommendation into view and
   // move focus to it so keyboard and screen-reader users land on the result.
   useEffect(() => {
-    if (!initialRecommendation) return;
+    if (!recommendation) return;
     const panel = recommendationRef.current?.querySelector<HTMLElement>("#recomendacion");
     panel?.scrollIntoView({ block: "start" });
     panel?.focus({ preventScroll: true });
-  }, [initialRecommendation]);
+  }, [recommendation]);
 
   useEffect(() => {
     if (!filtersOpen) return;
@@ -155,34 +170,21 @@ export function CatalogExperience({ products: allProducts, initialFilters, initi
     };
   }, [filtersOpen]);
 
-  // Any change to what is listed starts again from the first view.
-  function updateFilter<K extends keyof CatalogFilters>(key: K, value: CatalogFilters[K]) {
-    setFilters((current) => ({ ...current, [key]: value }));
-    setPage(1);
+  function updateFilter<K extends keyof CatalogQuery>(key: K, value: CatalogQuery[K]) {
+    navigate({ [key]: value } as Partial<CatalogQuery>);
   }
 
   function clearFilters() {
-    setFilters(DEFAULT_CATALOG_FILTERS);
-    setPage(1);
-  }
-
-  function goToPage(next: number) {
-    setPage(next);
-    // Bring the new view's first row into sight (the grid wrapper clears the sticky header and toolbar).
-    gridTopRef.current?.scrollIntoView({ block: "start" });
+    setSearchText("");
+    navigate({ ...DEFAULT_CATALOG_QUERY });
   }
 
   // The questionnaire keeps whatever filters are active when it is opened.
   const finderHref = useMemo(() => {
-    const params = new URLSearchParams();
-    for (const { key } of filterDefinitions) {
-      if (filters[key] !== "all") params.set(key, filters[key]);
-    }
-    if (filters.sort !== "featured") params.set("sort", filters.sort);
-    if (filters.search.trim()) params.set("search", filters.search);
-    const query = params.toString();
-    return (query ? `/parfums/finder?catalog=${encodeURIComponent(query)}` : "/parfums/finder") as Route;
-  }, [filters]);
+    const params = catalogQueryToParams({ ...optimistic, page: 1 });
+    const text = params.toString();
+    return (text ? `/parfums/finder?catalog=${encodeURIComponent(text)}` : "/parfums/finder") as Route;
+  }, [optimistic]);
 
   function announceAdded(message: string) {
     setToast(message);
@@ -202,10 +204,13 @@ export function CatalogExperience({ products: allProducts, initialFilters, initi
         <div className={styles.recommendationBand} ref={recommendationRef}>
           <div className={styles.container}>
             <RecommendationPanel
-              products={products}
-              answers={recommendation}
+              products={recommendation.products}
+              answers={recommendation.answers}
               redoHref={finderHref}
-              onClear={() => setRecommendation(null)}
+              onClear={() => {
+                const search = withoutRecommendation(searchParams.toString());
+                startTransition(() => router.replace((search ? `${pathname}?${search}` : pathname) as Route, { scroll: false }));
+              }}
               onNotice={announceAdded}
             />
           </div>
@@ -218,7 +223,7 @@ export function CatalogExperience({ products: allProducts, initialFilters, initi
           <div className={toolbar.container}>
             <ul className={toolbar.doorList}>
               {discoveryShortcuts.map((category) => {
-                const selected = filters.type === category.key;
+                const selected = optimistic.type === category.key;
                 return (
                   <li key={category.key}>
                     <button
@@ -231,7 +236,7 @@ export function CatalogExperience({ products: allProducts, initialFilters, initi
                       <span className={toolbar.doorBody}>
                         <span className={toolbar.doorLabel}>{category.label}</span>
                         <span className={toolbar.doorNote}>{category.note}</span>
-                        <span className={toolbar.doorCount}>{typeCounts[category.key] ?? 0} fragancias</span>
+                        <span className={toolbar.doorCount}>{data.typeCounts[category.key] ?? 0} fragancias</span>
                       </span>
                     </button>
                   </li>
@@ -247,9 +252,9 @@ export function CatalogExperience({ products: allProducts, initialFilters, initi
               <label className={toolbar.search}>
                 <span className={styles.srOnly}>Buscar fragancia</span>
                 <SearchIcon size={16} />
-                <input type="search" value={filters.search} onChange={(event) => updateFilter("search", event.target.value)} placeholder="Buscar fragancia, marca o nota" />
-                {filters.search ? (
-                  <button type="button" className={toolbar.searchClear} onClick={() => updateFilter("search", "")} aria-label="Borrar búsqueda">
+                <input type="search" value={searchText} onChange={(event) => setSearchText(event.target.value)} placeholder="Buscar fragancia, marca o nota" />
+                {searchText ? (
+                  <button type="button" className={toolbar.searchClear} onClick={() => { setSearchText(""); updateFilter("search", ""); }} aria-label="Borrar búsqueda">
                     <svg width="12" height="12" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="m2 2 10 10M12 2 2 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
                   </button>
                 ) : null}
@@ -262,7 +267,7 @@ export function CatalogExperience({ products: allProducts, initialFilters, initi
                 </button>
                 <label className={`${toolbar.control} ${toolbar.sort}`}>
                   <span>Orden</span>
-                  <select aria-label="Ordenar resultados" value={filters.sort} onChange={(event) => updateFilter("sort", event.target.value as CatalogSort)}>
+                  <select aria-label="Ordenar resultados" value={optimistic.sort} onChange={(event) => updateFilter("sort", event.target.value as CatalogSort)}>
                     <option value="featured">Destacados</option>
                     <option value="priceAsc">Precio: menor a mayor</option>
                     <option value="priceDesc">Precio: mayor a menor</option>
@@ -273,9 +278,9 @@ export function CatalogExperience({ products: allProducts, initialFilters, initi
               {filtersOpen ? (
                 <div ref={filterPanelRef} id="catalog-filters" className={toolbar.panel} role="dialog" aria-modal="true" aria-labelledby="catalog-filters-title">
                   <CatalogFilterPanel
-                    filters={filters}
-                    brands={brands}
-                    resultCount={results.length}
+                    filters={optimistic}
+                    brands={data.brands}
+                    resultCount={data.total}
                     onChange={(key, value) => updateFilter(key, value)}
                     onSort={(value) => updateFilter("sort", value)}
                     onClear={clearFilters}
@@ -288,7 +293,7 @@ export function CatalogExperience({ products: allProducts, initialFilters, initi
               <div className={toolbar.active} aria-live="polite">
                 {activeFilters.map(({ key, label }) => (
                   <span className={toolbar.activeChip} key={key}>
-                    <small>{label}</small> {optionLabel(key as FilterKey, filters[key])}
+                    <small>{label}</small> {optionLabel(key as FilterKey, optimistic[key])}
                     <button type="button" onClick={() => updateFilter(key, "all")} aria-label={`Quitar filtro ${label}`}>
                       <svg width="10" height="10" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="m2 2 10 10M12 2 2 12" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" /></svg>
                     </button>
@@ -305,13 +310,13 @@ export function CatalogExperience({ products: allProducts, initialFilters, initi
         <div className={styles.container}>
           {/* The visible "N perfumes" count was noise; screen readers still hear how many results a filter leaves. */}
           <span className={styles.srOnly} role="status">
-            {results.length} {results.length === 1 ? "perfume" : "perfumes"}
-            {view.pageCount > 1 ? `, vista ${view.page} de ${view.pageCount}` : ""}
+            {data.total} {data.total === 1 ? "perfume" : "perfumes"}
+            {data.pageCount > 1 ? `, vista ${data.page} de ${data.pageCount}` : ""}
           </span>
           <div ref={gridTopRef} className={styles.gridTop} />
-          {view.items.length > 0 ? (
-            <ul role="list" data-product-grid className={styles.productGrid}>
-              {view.items.map((product, index) => (
+          {data.items.length > 0 ? (
+            <ul role="list" data-product-grid className={`${styles.productGrid} ${pending ? styles.gridPending : ""}`} aria-busy={pending}>
+              {data.items.map((product, index) => (
                 <Reveal as="li" key={cartIdentity(product)} className={styles.revealCell} delay={(index % 4) * 60}>
                   <ProductCard product={product} onAdded={announceAdded} eager={index < 4} />
                 </Reveal>
@@ -327,17 +332,22 @@ export function CatalogExperience({ products: allProducts, initialFilters, initi
               </div>
             </div>
           )}
-          {view.pageCount > 1 ? (
+          {data.pageCount > 1 ? (
             <nav className={styles.pager} aria-label="Vistas del catálogo" data-catalog-pager>
               <ul>
-                {Array.from({ length: view.pageCount }, (_, index) => {
+                {Array.from({ length: data.pageCount }, (_, index) => {
                   const number = index + 1;
-                  const current = number === view.page;
+                  const current = number === data.page;
                   return (
                     <li key={number}>
-                      <button type="button" className={styles.pagerButton} aria-current={current ? "page" : undefined} onClick={() => goToPage(number)}>
+                      <Link
+                        href={hrefFor({ ...query, page: number }) as Route}
+                        scroll={false}
+                        className={styles.pagerButton}
+                        aria-current={current ? "page" : undefined}
+                      >
                         Vista {number}
-                      </button>
+                      </Link>
                     </li>
                   );
                 })}

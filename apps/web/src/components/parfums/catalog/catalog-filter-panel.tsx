@@ -77,7 +77,7 @@ export function CatalogFilterPanel({
   onClear,
   onClose,
 }: {
-  filters: CatalogFilters;
+  filters: Pick<CatalogFilters, FilterKey | "sort">;
   brands: readonly string[];
   resultCount: number;
   onChange: <K extends FilterKey>(key: K, value: CatalogFilters[K]) => void;

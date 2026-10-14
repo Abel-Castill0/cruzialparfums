@@ -67,6 +67,12 @@
   align-items: stretch;
 }
 
+/* A new view is loading on the server: the old one stays, dimmed, instead of flashing empty. */
+.gridPending {
+  opacity: 0.55;
+  transition: opacity var(--ds-dur-fast) var(--ds-ease-spring);
+}
+
 /* Off-screen cards skip layout and paint (content-visibility). Paint containment would clip the hover shadow, so
    the cell is padded by the grid gap and pulled back with a negative margin: same geometry, room for the shadow. */
 .revealCell {
@@ -331,6 +337,8 @@
 }
 
 .pagerButton {
+  display: grid;
+  place-items: center;
   min-width: 96px;
   min-height: var(--ds-touch);
   padding: 0 var(--ds-space-3);
@@ -342,6 +350,7 @@
   font: inherit;
   font-size: 0.9375rem;
   font-weight: 500;
+  text-decoration: none;
   cursor: pointer;
   transition: background-color var(--ds-dur-fast) var(--ds-ease-spring), color var(--ds-dur-fast) var(--ds-ease-spring);
 }
