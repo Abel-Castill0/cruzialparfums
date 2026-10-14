@@ -1,0 +1,176 @@
+diff --git a/apps/web/e2e/accessibility.spec.ts b/apps/web/e2e/accessibility.spec.ts
+index 2d9a2fd..5adcba9 100644
+--- a/apps/web/e2e/accessibility.spec.ts
++++ b/apps/web/e2e/accessibility.spec.ts
+@@ -88,8 +88,6 @@ test("the 404 page is accessible and raises no runtime error beyond its own 404
+ 
+ test("keyboard: the cart dialog opens, traps focus, closes with Escape and restores focus", async ({ page }) => {
+   await page.goto("/parfums/catalogo");
+-  const heroHeight = (await page.locator("[data-home-hero]").boundingBox())!.height;
+-  await page.evaluate((y) => window.scrollTo(0, y), heroHeight + 100);
+   const trigger = page.getByRole("button", { name: /Abrir carrito/ });
+   await trigger.focus();
+   await page.keyboard.press("Enter");
+@@ -107,8 +105,6 @@ test("keyboard: product card 'Añadir' is reachable and announces the cart updat
+   await add.focus();
+   await expect(add).toBeFocused();
+   await page.keyboard.press("Enter");
+-  // The header (and the cart button in it) stays hidden while the catalog hero is in view: scroll past it before asserting.
+-  await page.evaluate(() => window.scrollTo(0, (document.querySelector("[data-home-hero]") as HTMLElement).offsetHeight + 100));
+   await expect(page.getByRole("button", { name: /Abrir carrito, 1 producto/ })).toBeVisible();
+ });
+ 
+diff --git a/apps/web/e2e/import-catalog-view.spec.ts b/apps/web/e2e/import-catalog-view.spec.ts
+index 9634b84..18dc28c 100644
+--- a/apps/web/e2e/import-catalog-view.spec.ts
++++ b/apps/web/e2e/import-catalog-view.spec.ts
+@@ -23,29 +23,33 @@ test("Import catalog opens as a separate view and its home hero owns the first s
+   await expect(header).toHaveCSS("visibility", "visible");
+ });
+ 
+-test("Parfums catalog has exactly three discovery categories and hides the header again at the hero", async ({ page }) => {
++test("Parfums catalog has exactly three discovery categories, no hero, and a header that is always there; the home hides it at its hero", async ({ page }) => {
+   await page.goto("/parfums/catalogo");
+-  const hero = page.locator("[data-home-hero]");
+   const header = page.locator("header").first();
+ 
+-  await expect(hero).toBeVisible();
+-  await expect(header).toHaveCSS("visibility", "hidden");
++  // The catalog has no hero (2026-10-13): its header is visible from the first screen and never hides.
++  await expect(page.locator("[data-home-hero]")).toHaveCount(0);
++  await expect(header).toHaveCSS("visibility", "visible");
+   await expect(page.locator('nav[aria-label="Explorar por categoría"] li')).toHaveCount(3);
+-
+-  const heroHeight = (await hero.boundingBox())!.height;
+-  await page.evaluate((height) => window.scrollTo(0, height + 100), heroHeight);
++  await page.evaluate(() => window.scrollTo(0, 800));
+   await expect(header).toHaveCSS("visibility", "visible");
+   await page.evaluate(() => window.scrollTo(0, 0));
+-  await expect(header).toHaveCSS("visibility", "hidden");
++  await expect(header).toHaveCSS("visibility", "visible");
+ 
+   await page.goto("/parfums");
++  await expect(header).toHaveCSS("visibility", "hidden");
+   const homeHero = page.locator("[data-home-hero]");
+   const homeHeroHeight = (await homeHero.boundingBox())!.height;
+   await page.evaluate((height) => window.scrollTo(0, height + 100), homeHeroHeight);
+   await expect(header).toHaveCSS("visibility", "visible");
++  // Back at the hero the header hides again (this used to be asserted on the catalog hero; the home hero keeps that coverage).
++  await page.evaluate(() => window.scrollTo(0, 0));
++  await expect(header).toHaveCSS("visibility", "hidden");
++  await page.evaluate((height) => window.scrollTo(0, height + 100), homeHeroHeight);
++  await expect(header).toHaveCSS("visibility", "visible");
+   await page.getByRole("link", { name: "Catálogo" }).first().click();
+   await expect(page).toHaveURL(/\/parfums\/catalogo/);
+-  await expect(header).toHaveCSS("visibility", "hidden");
++  await expect(header).toHaveCSS("visibility", "visible");
+ });
+ 
+ test("each home exposes its configured TikTok player through the allowed frame origin", async ({ page }) => {
+diff --git a/apps/web/e2e/parfums-shell.spec.ts b/apps/web/e2e/parfums-shell.spec.ts
+index 63e9012..b76489c 100644
+--- a/apps/web/e2e/parfums-shell.spec.ts
++++ b/apps/web/e2e/parfums-shell.spec.ts
+@@ -12,9 +12,6 @@ async function firstPurchasableCardAdd(page: Page) {
+     .first();
+   await expect(card).toBeVisible();
+   await card.getByRole("button", { name: /^Añadir/ }).click();
+-  // The catalog hero hides the header (and its cart button) by design, and how far the click scrolls depends on image
+-  // layout: on a tall tablet it can stop with the hero still in view. Leave the hero explicitly, as accessibility.spec does.
+-  await page.evaluate(() => window.scrollTo(0, (document.querySelector("[data-home-hero]") as HTMLElement).offsetHeight + 100));
+ }
+ 
+ test.describe("parfums home hero and header", () => {
+@@ -180,12 +177,9 @@ test.describe("parfums home hero and header", () => {
+     await expect(page.locator("header").first()).toBeVisible();
+   });
+ 
+-  test("the catalog hero also hides the header until the visitor scrolls past it", async ({ page }) => {
++  test("the catalog has no hero, so the header is there from the first screen", async ({ page }) => {
+     await page.goto("/parfums/catalogo");
+-    const hero = page.locator("[data-home-hero]");
+-    const height = (await hero.boundingBox())!.height;
+-    await expect(page.locator("header").first()).toBeHidden();
+-    await page.evaluate((y) => window.scrollTo(0, y), height + 100);
++    await expect(page.locator("[data-home-hero]")).toHaveCount(0);
+     await expect(page.locator("header").first()).toBeVisible();
+   });
+ });
+@@ -193,9 +187,6 @@ test.describe("parfums home hero and header", () => {
+ test.describe("parfums search", () => {
+   test("opens over the whole viewport, takes focus and typing, finds products and closes with Escape", async ({ page }) => {
+     await page.goto("/parfums/catalogo");
+-    const catalogHero = page.locator("[data-home-hero]");
+-    const heroHeight = (await catalogHero.boundingBox())!.height;
+-    await page.evaluate((y) => window.scrollTo(0, y), heroHeight + 100);
+     const trigger = page.getByRole("button", { name: "Buscar fragancias" }).first();
+     await trigger.click();
+ 
+@@ -224,7 +215,8 @@ test.describe("parfums search", () => {
+ test.describe("parfums recommender", () => {
+   test("closing returns to the same page and position; completing hands over to the catalog", async ({ page }) => {
+     await page.goto("/parfums/catalogo?type=arab");
+-    const opener = page.getByRole("link", { name: /Encontrar mi fragancia/ }).first();
++    // The catalog no longer has a hero button: the recommender opens from the closing band ("¿No encuentras tu fragancia?").
++    const opener = page.getByRole("link", { name: /Usar el Finder/ }).first();
+     await opener.focus();
+     await page.evaluate(() => window.scrollTo(0, 700));
+     const before = await page.evaluate(() => window.scrollY);
+@@ -327,8 +319,7 @@ test.describe("import TikTok module", () => {
+   // "Permissions policy violation: accelerometer is not allowed in this document" and may refuse playback.
+   test("the Parfums TikTok iframe is created on play, also after a client-side navigation, with the permissions the player asks for", async ({ page }) => {
+     await page.goto("/parfums/catalogo");
+-    // The header is hidden over the catalog hero; scroll past it, then take the brand link back to /parfums (a client-side navigation).
+-    await page.evaluate(() => window.scrollTo(0, window.innerHeight + 300));
++    // Take the brand link back to /parfums (a client-side navigation).
+     await page.locator('header a[href="/parfums"]').first().click();
+     await page.waitForURL("**/parfums");
+     const section = page.locator("[data-home-video]");
+diff --git a/apps/web/e2e/parfums-storefront.spec.ts b/apps/web/e2e/parfums-storefront.spec.ts
+index cf3746d..27a095a 100644
+--- a/apps/web/e2e/parfums-storefront.spec.ts
++++ b/apps/web/e2e/parfums-storefront.spec.ts
+@@ -63,7 +63,7 @@ test.describe("parfums storefront", () => {
+     await page.goto("/parfums/catalogo?type=designer");
+     const designerCards = page.locator("[data-product-card]");
+     if ((await designerCards.count()) > 0) {
+-      await expect(designerCards.first()).toContainText(/Designer/i);
++      await expect(designerCards.first()).toContainText(/Diseñador/i);
+     }
+   });
+ 
+diff --git a/apps/web/e2e/ux-regressions-phone.spec.ts b/apps/web/e2e/ux-regressions-phone.spec.ts
+index 621679d..92aee42 100644
+--- a/apps/web/e2e/ux-regressions-phone.spec.ts
++++ b/apps/web/e2e/ux-regressions-phone.spec.ts
+@@ -117,17 +117,3 @@ test("combo builder: on a phone the size of a picked fragrance is chosen right u
+   await expect(price).not.toHaveText(before);
+   await expect(total).not.toHaveText(totalBefore);
+ });
+-
+-test("catalog hero stacks the photograph above the headline on phones; nothing is laid over the image", async ({ page }) => {
+-  await page.goto("/parfums/catalogo");
+-  const geometry = await page.evaluate(() => {
+-    const hero = document.querySelector("[data-home-hero]")!;
+-    const media = hero.querySelector("[class*=catalogHeroMedia]")!.getBoundingClientRect();
+-    const h1 = hero.querySelector("h1")!.getBoundingClientRect();
+-    const copy = hero.querySelector("[class*=catalogHeroCopyWrap]")!.getBoundingClientRect();
+-    return { mediaTop: media.top, mediaBottom: media.bottom, h1Top: h1.top, copyTop: copy.top, heroBottom: hero.getBoundingClientRect().bottom, h1Bottom: h1.bottom };
+-  });
+-  expect(geometry.h1Top, "headline starts below the photograph").toBeGreaterThanOrEqual(geometry.mediaBottom);
+-  expect(geometry.copyTop, "copy block starts below the photograph").toBeGreaterThanOrEqual(geometry.mediaBottom - 1);
+-  expect(geometry.h1Bottom).toBeLessThanOrEqual(geometry.heroBottom);
+-});
+diff --git a/apps/web/playwright.config.ts b/apps/web/playwright.config.ts
+index 5953926..5a2a0be 100644
+--- a/apps/web/playwright.config.ts
++++ b/apps/web/playwright.config.ts
+@@ -24,7 +24,7 @@ process.env.E2E_RUN_TAG ??= String(Math.floor(Date.now() / 1000) % 1_000_000).pa
+ const localPort = process.env.E2E_LOCAL_PORT || "3000";
+ const baseURL = process.env.E2E_BASE_URL || `http://localhost:${localPort}`;
+ const isLocalTarget = !process.env.E2E_BASE_URL;
+-const PUBLIC_SPECS = /(public-hub|parfums-public-journey|parfums-storefront|parfums-shell|import-public-journey|import-catalog-view|attempt-lifecycle|admin-protection|accessibility|accessibility-structure|ux-regressions)\.spec\.ts/;
++const PUBLIC_SPECS = /(public-hub|parfums-public-journey|parfums-storefront|parfums-shell|import-public-journey|import-catalog-view|attempt-lifecycle|admin-protection|accessibility|accessibility-structure|ux-regressions|redesign-batch-3)\.spec\.ts/;
+ 
+ export default defineConfig({
+   testDir: "./e2e",

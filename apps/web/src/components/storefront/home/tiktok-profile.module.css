@@ -2,11 +2,20 @@
   padding-block: var(--ds-section-y);
 }
 
-.parfums,
 .import {
   --tp-ink: var(--ds-ink);
   --tp-muted: var(--ds-ink-muted);
+  --tp-link: var(--ds-link);
   background: var(--ds-gray-50);
+  color: var(--tp-ink);
+}
+
+/* Parfums: the deepest band of the page. White on #17171a is 17.9:1, the muted copy 10.2:1, the gold link 7.3:1. */
+.parfums {
+  --tp-ink: var(--ds-on-dark);
+  --tp-muted: var(--ds-on-dark-muted);
+  --tp-link: var(--ds-color-accent);
+  background: var(--ds-color-surface-deep);
   color: var(--tp-ink);
 }
 
@@ -49,7 +58,7 @@
   display: inline-flex;
   align-items: center;
   gap: var(--ds-space-1);
-  color: var(--ds-link);
+  color: var(--tp-link);
   font-size: var(--ds-text-card);
   font-weight: 500;
   text-decoration: underline transparent;

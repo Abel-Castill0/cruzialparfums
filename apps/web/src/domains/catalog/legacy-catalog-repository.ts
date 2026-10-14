@@ -1,4 +1,5 @@
 import catalogFixtureJson from "../../fixtures/generated/legacy-catalog.json";
+import { displayTag } from "./display-labels";
 import {
   LegacyProductionMediaSource,
   type ProductMediaSource,
@@ -51,7 +52,7 @@ function toCatalogProduct(
     decantPrices: product.price,
     bottlePrices: product.bottle,
     notes: product.notes,
-    tag: product.tag,
+    tag: displayTag(product.tag),
     description: product.desc,
     discontinued: Boolean(product.discontinued),
     bestseller: Boolean(product.bestseller),

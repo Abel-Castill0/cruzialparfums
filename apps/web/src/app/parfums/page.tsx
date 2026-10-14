@@ -49,7 +49,7 @@ const discoveryCategories = [
   },
   {
     type: "designer",
-    label: "Designer",
+    label: "Diseñador",
     note: "Casas reconocidas internacionalmente.",
     image: "/images/parfums-home/parfums-designer.webp",
     focus: "70% 50%",
@@ -212,106 +212,6 @@ export default async function ParfumsHomePage() {
         </ul>
       </section>
 
-      <FinderDiscovery fragrances={fragrances} />
-
-      <section className={styles.craft} aria-labelledby="craft-title">
-        <div className={styles.craftGrid}>
-          <Reveal className={styles.craftBody}>
-            <h2 id="craft-title">
-              Del frasco original <em>a tu piel</em>.
-            </h2>
-            <ol className={styles.principles}>
-              {principios.map((principio) => (
-                <li key={principio.num}>
-                  <div>
-                    <h3>{principio.title}</h3>
-                    <p>{principio.text}</p>
-                  </div>
-                </li>
-              ))}
-            </ol>
-            <Link href="/parfums/nosotros" className={styles.textLink}>
-              Conoce Cruzial <span aria-hidden="true">→</span>
-            </Link>
-          </Reveal>
-          <Reveal className={styles.craftMediaWrap} delay={120}>
-            <figure className={styles.mosaic}>
-              <div className={`${styles.mosaicCell} ${styles.mosaicMain}`}>
-                <Image
-                  src="/images/parfums-home/decants-real-orders.jpg"
-                  alt="Decants reales preparados para pedidos de Cruzial Parfums, junto a los frascos originales"
-                  fill
-                  sizes="(max-width: 899px) 100vw, 46vw"
-                  className={styles.mosaicImage}
-                  style={{ objectPosition: "50% 55%" }}
-                  loading="lazy"
-                />
-              </div>
-              <div className={styles.mosaicCell}>
-                <Image
-                  src="/images/parfums-home/parfums-authenticity.webp"
-                  alt="Frasco Cruzial Parfums, negro y dorado"
-                  fill
-                  sizes="(max-width: 899px) 50vw, 23vw"
-                  className={styles.mosaicImage}
-                  style={{ objectPosition: "50% 50%" }}
-                  loading="lazy"
-                />
-              </div>
-              <div className={styles.mosaicCell}>
-                <Image
-                  src="/images/parfums-home/parfums-decant-5ml.webp"
-                  alt="Decant Cruzial Parfums de 5 ml"
-                  fill
-                  sizes="(max-width: 899px) 50vw, 23vw"
-                  className={styles.mosaicImage}
-                  style={{ objectPosition: "50% 50%" }}
-                  loading="lazy"
-                />
-              </div>
-              <figcaption>Fragancias y decants preparados por Cruzial Parfums.</figcaption>
-            </figure>
-          </Reveal>
-        </div>
-
-        <Reveal>
-          <div className={styles.formats}>
-            <div className={styles.formatsHead}>
-              <h3>Un decant no es una muestra.</h3>
-            </div>
-            <ul className={styles.formatList}>
-              {decantSizes.map((decant) => (
-                <li key={decant.size}>
-                  <strong className={styles.formatNumeral}>
-                    {decant.size}
-                    <span>ml</span>
-                  </strong>
-                  <div>
-                    <span className={styles.formatSprays}>
-                      ≈ {PARFUMS_ATOMIZATIONS?.[decant.size] ?? "—"} atomizaciones
-                    </span>
-                    <p>{decant.text}</p>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </Reveal>
-      </section>
-
-      {PARFUMS_HOME_VIDEO ? (
-        <VideoStory video={PARFUMS_HOME_VIDEO} tone="parfums" />
-      ) : (
-        <TikTokProfile
-          tone="parfums"
-          eyebrow="TikTok"
-          title="Cruzial en TikTok"
-          text="Sigue el perfil oficial de Cruzial para ver sus publicaciones en video."
-          posterSrc="/images/parfums-home/parfums-final-cta.webp"
-          posterAlt="Frascos de perfume sobre roca con luz dorada, imagen de marca"
-        />
-      )}
-
       <section className={styles.combos} aria-labelledby="combos-title">
         <div className={styles.combosInner}>
           <div className={styles.sectionHead}>
@@ -337,6 +237,71 @@ export default async function ParfumsHomePage() {
           </div>
         </div>
       </section>
+
+      <FinderDiscovery fragrances={fragrances} />
+
+      <section className={styles.craft} aria-labelledby="craft-title" data-band="dark">
+        <div className={styles.craftInner}>
+          <Reveal>
+            <div className={styles.craftHead}>
+              <h2 id="craft-title">
+                Del frasco original <em>a tu piel</em>.
+              </h2>
+              <Link href="/parfums/nosotros" className={styles.textLink}>
+                Conoce Cruzial <span aria-hidden="true">→</span>
+              </Link>
+            </div>
+          </Reveal>
+          <ol className={styles.principles}>
+            {principios.map((principio, index) => (
+              <li key={principio.num}>
+                <Reveal delay={index * 90}>
+                  <span className={styles.principleNum} aria-hidden="true">{principio.num}</span>
+                  <h3>{principio.title}</h3>
+                  <p>{principio.text}</p>
+                </Reveal>
+              </li>
+            ))}
+          </ol>
+
+          <Reveal>
+            <div className={styles.formats}>
+              <div className={styles.formatsHead}>
+                <h3>Un decant no es una muestra.</h3>
+              </div>
+              <ul className={styles.formatList}>
+                {decantSizes.map((decant) => (
+                  <li key={decant.size}>
+                    <strong className={styles.formatNumeral}>
+                      {decant.size}
+                      <span>ml</span>
+                    </strong>
+                    <div>
+                      <span className={styles.formatSprays}>
+                        ≈ {PARFUMS_ATOMIZATIONS?.[decant.size] ?? "—"} atomizaciones
+                      </span>
+                      <p>{decant.text}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {PARFUMS_HOME_VIDEO ? (
+        <VideoStory video={PARFUMS_HOME_VIDEO} tone="parfums" />
+      ) : (
+        <TikTokProfile
+          tone="parfums"
+          eyebrow="TikTok"
+          title="Cruzial en TikTok"
+          text="Sigue el perfil oficial de Cruzial para ver sus publicaciones en video."
+          posterSrc="/images/parfums-home/parfums-final-cta.webp"
+          posterAlt="Frascos de perfume sobre roca con luz dorada, imagen de marca"
+        />
+      )}
 
       <section className={styles.faq} aria-labelledby="faq-title" id="faq">
         <Reveal>

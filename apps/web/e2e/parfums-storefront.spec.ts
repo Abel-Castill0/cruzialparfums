@@ -63,7 +63,7 @@ test.describe("parfums storefront", () => {
     await page.goto("/parfums/catalogo?type=designer");
     const designerCards = page.locator("[data-product-card]");
     if ((await designerCards.count()) > 0) {
-      await expect(designerCards.first()).toContainText(/Designer/i);
+      await expect(designerCards.first()).toContainText(/Diseñador/i);
     }
   });
 

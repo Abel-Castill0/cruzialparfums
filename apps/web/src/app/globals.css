@@ -125,6 +125,13 @@ textarea {
   --ds-color-accent-hover: #b8934d;
   --ds-color-accent-active: #a8863f;
   --ds-color-on-accent: var(--ds-ink);
+  /* Band surfaces for the storefront: the light grey band, and a dark grey band (white on it is 14.1:1; the muted copy 8.4:1; gold on it 5.7:1). */
+  --ds-color-surface: var(--ds-gray-50);
+  --ds-color-surface-dark: #2b2b2e;
+  --ds-color-surface-deep: #17171a;
+  --ds-on-dark: #ffffff;
+  --ds-on-dark-muted: rgba(255, 255, 255, 0.74);
+  --ds-hairline-on-dark: rgba(255, 255, 255, 0.12);
   --ds-link: #0066cc;
   --ds-danger: #b42318;
   --ds-success: #137333;

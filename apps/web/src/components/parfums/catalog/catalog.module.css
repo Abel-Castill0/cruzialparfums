@@ -14,15 +14,6 @@
   border: 0;
 }
 
-.catalogHero {
-  position: relative;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: 1fr;
-  height: clamp(440px, 62svh, 600px);
-  background: var(--ds-white);
-}
-
 .eyebrow {
   margin-bottom: var(--ds-space-2);
   color: var(--ds-ink-muted);
@@ -30,111 +21,40 @@
   font-weight: 500;
 }
 
-.catalogHeroMedia {
-  position: relative;
-  grid-area: 1 / 1 / 2 / 2;
-  min-height: 100%;
-  overflow: hidden;
-  background: var(--ds-gray-100);
-}
-
-.catalogHeroImage {
-  object-fit: cover;
-}
-
 /* Neutral white wash (no cream tint) keeps the headline legible on the left. */
-.catalogHeroScrim {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0.94) 0%,
-    rgba(255, 255, 255, 0.7) 34%,
-    rgba(255, 255, 255, 0.12) 58%,
-    rgba(255, 255, 255, 0) 70%
-  );
-}
-
-.catalogHeroCopyWrap {
-  grid-area: 1 / 1 / 2 / 2;
-  position: relative;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-}
-
-.catalogHeroCopy {
-  width: min(560px, 100%);
-  display: grid;
-  gap: var(--ds-space-2);
+/* The whole catalog sits on the light grey surface (#F5F5F7); the cards are white on it. */
+.catalogIntro {
+  padding: clamp(40px, 6vw, 72px) 0 var(--ds-space-3);
   color: var(--ds-ink);
-  text-align: left;
+  background: var(--ds-color-surface);
 }
 
-.catalogHeroCopy h1 {
-  color: var(--ds-ink);
+.catalogIntro h1 {
   font-size: var(--ds-text-h1);
   font-weight: 600;
   line-height: 1.07;
   letter-spacing: -0.03em;
 }
 
-.catalogHeroCopy > p {
-  max-width: 42ch;
+.catalogIntro p {
+  max-width: 46ch;
+  margin-top: var(--ds-space-1);
   color: var(--ds-ink-muted);
   font-size: var(--ds-text-lead);
   line-height: 1.5;
-}
-
-.finderCta {
-  width: fit-content;
-  min-height: 48px;
-  margin-top: var(--ds-space-1);
-  padding: 0 var(--ds-space-3);
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ds-space-1);
-  border-radius: var(--ds-radius-pill);
-  color: var(--ds-color-on-accent);
-  background: var(--ds-color-accent);
-  font-size: var(--ds-text-card);
-  font-weight: 500;
-  letter-spacing: -0.01em;
-}
-
-.finderCta:hover {
-  background: var(--ds-color-accent-hover);
-}
-
-.finderCta:active {
-  background: var(--ds-color-accent-active);
 }
 
 .catalogLayout {
   min-height: 70vh;
   padding-bottom: clamp(70px, 8vw, 110px);
   color: var(--ds-ink);
-  background: var(--ds-white);
+  background: var(--ds-color-surface);
 }
 
-.resultsTop {
-  min-height: 26px;
-  margin-top: var(--ds-space-4);
-  margin-bottom: var(--ds-space-3);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--ds-space-3);
-  color: var(--ds-ink-muted);
-  font-size: var(--ds-text-small);
-  font-weight: 500;
-}
-
-.giftNote {
-  font-size: 12px;
-  font-weight: 400;
-
-  text-transform: none;
+/* Anchor for "Vista n": the view scrolls here, clear of the sticky header (72px) and toolbar (~76px). */
+.gridTop {
+  scroll-margin-top: 160px;
+  padding-top: var(--ds-space-4);
 }
 
 .productGrid {
@@ -169,7 +89,8 @@
   flex-direction: column;
   overflow: hidden;
   border-radius: var(--ds-radius-md);
-  background: var(--ds-gray-50);
+  background: var(--ds-white);
+  box-shadow: var(--ds-shadow-1);
   scroll-margin-top: 140px;
   transition: box-shadow var(--ds-dur-base) var(--ds-ease-spring), transform var(--ds-dur-base) var(--ds-ease-spring);
 }
@@ -246,7 +167,7 @@
   flex: 1;
   padding: var(--ds-space-1) var(--ds-space-3) var(--ds-space-3);
   display: grid;
-  grid-template-rows: minmax(76px, auto) auto auto minmax(32px, auto);
+  grid-template-rows: minmax(84px, auto) auto auto auto;
   align-content: start;
 }
 
@@ -268,8 +189,8 @@
   min-height: 2.6em;
   margin: 4px 0 var(--ds-space-1);
   color: var(--ds-ink);
-  font-size: var(--ds-text-card);
-  font-weight: 500;
+  font-size: calc(var(--ds-text-card) * 1.1);
+  font-weight: 600;
   line-height: 1.3;
   letter-spacing: -0.01em;
 }
@@ -296,58 +217,81 @@
   white-space: nowrap;
 }
 
-.quantityRow {
-  margin-top: var(--ds-space-2);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--ds-space-1);
-}
-
-.stepper {
-  display: inline-flex;
-  align-items: stretch;
-  flex: 0 0 auto;
-  overflow: hidden;
-  border-radius: var(--ds-radius-pill);
-  background: var(--ds-white);
-}
-
-.stepper button {
-  width: var(--ds-touch);
-  min-height: var(--ds-touch);
+/* Size picker: three radios as pills. The chosen size is solid ink with white text (16.8:1); the rest are white with an ink
+   hairline. A size with no price or stock is dimmed and cannot be chosen. The real input sits invisibly over the pill, so
+   it is a native radio for keyboards and screen readers (arrow keys move between sizes). */
+.sizePicker {
+  min-width: 0;
+  margin: var(--ds-space-2) 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
   border: 0;
-  background: transparent;
-  color: var(--ds-ink);
-  font-size: 1rem;
-  line-height: 1;
+}
+
+.sizeOption {
+  position: relative;
+  min-width: 0;
+  display: block;
+}
+
+.sizeOption input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
   cursor: pointer;
-  transition: background-color var(--ds-dur-fast) var(--ds-ease-spring);
 }
 
-.stepper button:hover:not(:disabled) {
-  background: var(--ds-gray-100);
+.sizeOption span {
+  min-height: var(--ds-touch);
+  display: grid;
+  place-items: center;
+  border-radius: var(--ds-radius-pill);
+  color: var(--ds-ink);
+  background: var(--ds-white);
+  box-shadow: inset 0 0 0 1px rgba(29, 29, 31, 0.28);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  transition: background-color var(--ds-dur-fast) var(--ds-ease-spring), color var(--ds-dur-fast) var(--ds-ease-spring), box-shadow var(--ds-dur-fast) var(--ds-ease-spring);
 }
 
-.stepper button:disabled {
-  opacity: 0.35;
+.sizeOption input:hover:not(:disabled):not(:checked) + span {
+  box-shadow: inset 0 0 0 1px var(--ds-ink);
+}
+
+.sizeOption input:checked + span {
+  color: var(--ds-white);
+  background: var(--ds-ink);
+  box-shadow: none;
+  font-weight: 600;
+}
+
+.sizeOption input:focus-visible + span {
+  outline: 2px solid var(--ds-accent);
+  outline-offset: 2px;
+}
+
+.sizeOption input:disabled {
   cursor: not-allowed;
 }
 
-.stepper output {
-  min-width: 32px;
-  display: grid;
-  place-items: center;
-  color: var(--ds-ink);
-  font-size: var(--ds-text-small);
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
+.sizeOption input:disabled + span {
+  color: var(--ds-ink-muted);
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--ds-hairline);
+  text-decoration: line-through;
 }
 
 .addButton {
-  flex: 1;
+  width: 100%;
   min-width: 0;
   min-height: var(--ds-touch);
+  margin-top: var(--ds-space-1);
   border: 0;
   border-radius: var(--ds-radius-pill);
   color: var(--ds-color-on-accent);
@@ -365,31 +309,52 @@
   background: var(--ds-color-accent-active);
 }
 
-.bottleSlot {
-  min-width: 0;
-  min-height: 32px;
+.addButton:disabled {
+  color: var(--ds-ink-muted);
+  background: var(--ds-gray-100);
+  cursor: not-allowed;
 }
 
-.bottleLink {
-  min-width: 0;
-  min-height: var(--ds-touch);
-  margin-top: var(--ds-space-1);
+/* Paginator: one pill per "Vista". The current one is solid ink, like the chosen size. */
+.pager {
+  margin-top: var(--ds-space-6);
+}
+
+.pager ul {
+  margin: 0;
+  padding: 0;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: var(--ds-space-1);
-  color: var(--ds-link);
-  font-size: 0.875rem;
-  line-height: 1.4;
+  list-style: none;
 }
 
-.bottleLink:hover {
-  text-decoration: underline;
-  text-underline-offset: 3px;
+.pagerButton {
+  min-width: 96px;
+  min-height: var(--ds-touch);
+  padding: 0 var(--ds-space-3);
+  border: 0;
+  border-radius: var(--ds-radius-pill);
+  color: var(--ds-ink);
+  background: var(--ds-white);
+  box-shadow: inset 0 0 0 1px rgba(29, 29, 31, 0.28);
+  font: inherit;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color var(--ds-dur-fast) var(--ds-ease-spring), color var(--ds-dur-fast) var(--ds-ease-spring);
 }
 
-.bottleLink span {
-  flex: 0 0 auto;
+.pagerButton:hover {
+  box-shadow: inset 0 0 0 1px var(--ds-ink);
+}
+
+.pagerButton[aria-current="page"] {
+  color: var(--ds-white);
+  background: var(--ds-ink);
+  box-shadow: none;
+  font-weight: 600;
 }
 
 .discontinuedLink {
@@ -522,45 +487,6 @@
     width: min(100% - 32px, 1200px);
   }
 
-  .catalogHero {
-    grid-template-rows: 1fr;
-    height: clamp(460px, 64svh, 560px);
-  }
-
-  .catalogHeroMedia {
-    grid-area: 1 / 1 / 2 / 2;
-    min-height: 100%;
-  }
-
-  .catalogHeroImage {
-    object-position: 78% 50%;
-  }
-
-  .catalogHeroScrim {
-    display: block;
-    background: linear-gradient(90deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.55) 55%, rgba(255, 255, 255, 0.05));
-  }
-
-  .catalogHeroCopyWrap {
-    grid-area: 1 / 1 / 2 / 2;
-    padding: 48px 0 24px;
-    background: transparent;
-  }
-
-  .catalogHeroCopy > p {
-    font-size: 14px;
-  }
-
-  .resultsTop {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .giftNote {
-    line-height: 1.45;
-  }
-
   .productGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 16px;
@@ -581,18 +507,7 @@
 
   .cardBody {
     padding: 16px 16px 16px;
-    grid-template-rows: minmax(69px, auto) auto auto minmax(35px, auto);
-  }
-
-  .quantityRow {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 8px;
-  }
-
-  .stepper button,
-  .addButton {
-    min-height: 44px;
+    grid-template-rows: minmax(76px, auto) auto auto auto;
   }
 
   .cardBrand {
@@ -601,7 +516,7 @@
   }
 
   .cardName {
-    font-size: 18px;
+    font-size: 19.5px;
   }
 
   .cardMeta {
@@ -618,17 +533,6 @@
     font-size: 16px;
   }
 
-  .bottleLink {
-    align-items: flex-start;
-    font-size: 0.875rem;
-
-  }
-}
-
-@media (max-width: 480px) {
-  .catalogHero h1 {
-    font-size: 40px;
-  }
 }
 
 @media (max-width: 359px) {
@@ -642,12 +546,7 @@
   }
 
   .cardName {
-    font-size: 22px;
-  }
-
-  .cardMeta span,
-  .bottleLink {
-    font-size: 0.875rem;
+    font-size: 24px;
   }
 
   .cardMeta strong {
@@ -657,7 +556,6 @@
 
 .catalogFooterBand {
   position: relative;
-  margin-top: clamp(48px, 7vw, 82px);
   overflow: hidden;
   background: var(--ds-ink);
 }
@@ -753,27 +651,6 @@
 
 /* Touch devices: controls under 16px make iOS Safari zoom the page on focus. */
 
-/* Phones: copy sits on a solid paper band at the bottom so it never crosses
- * the dark bottle in the photograph (grey text over dark glass was unreadable). */
-@media (max-width: 767px) {
-  .catalogHeroCopyWrap {
-    align-items: flex-end;
-  }
-
-  .catalogHeroScrim {
-    background: linear-gradient(
-      0deg,
-      rgba(255, 255, 255, 0.97) 0%,
-      rgba(255, 255, 255, 0.92) 40%,
-      rgba(255, 255, 255, 0) 66%
-    );
-  }
-
-  .catalogHeroImage {
-    object-position: 78% 30%;
-  }
-}
-
 /* Section heading for the product list: gives the h3 product names an h2 parent without adding a visible title. */
 .srOnly {
   position: absolute;
@@ -787,27 +664,3 @@
   border: 0;
 }
 
-/* Phones, catalog hero: a column. The photograph is its own band on top and the headline, text and button sit below it on
-   white. They used to share one grid cell (copy laid over the image under a scrim), so the h1 ran across the bottle. */
-@media (max-width: 767px) {
-  .catalogHero {
-    display: flex;
-    flex-direction: column;
-    height: auto;
-  }
-
-  .catalogHeroMedia {
-    flex: 0 0 auto;
-    height: clamp(220px, 36svh, 320px);
-    min-height: 0;
-  }
-
-  .catalogHeroScrim {
-    display: none;
-  }
-
-  .catalogHeroCopyWrap {
-    align-items: flex-start;
-    padding: var(--ds-space-4) 0 var(--ds-space-3);
-  }
-}

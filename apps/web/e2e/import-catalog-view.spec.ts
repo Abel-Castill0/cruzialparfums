@@ -23,29 +23,33 @@ test("Import catalog opens as a separate view and its home hero owns the first s
   await expect(header).toHaveCSS("visibility", "visible");
 });
 
-test("Parfums catalog has exactly three discovery categories and hides the header again at the hero", async ({ page }) => {
+test("Parfums catalog has exactly three discovery categories, no hero, and a header that is always there; the home hides it at its hero", async ({ page }) => {
   await page.goto("/parfums/catalogo");
-  const hero = page.locator("[data-home-hero]");
   const header = page.locator("header").first();
 
-  await expect(hero).toBeVisible();
-  await expect(header).toHaveCSS("visibility", "hidden");
+  // The catalog has no hero (2026-10-13): its header is visible from the first screen and never hides.
+  await expect(page.locator("[data-home-hero]")).toHaveCount(0);
+  await expect(header).toHaveCSS("visibility", "visible");
   await expect(page.locator('nav[aria-label="Explorar por categoría"] li')).toHaveCount(3);
-
-  const heroHeight = (await hero.boundingBox())!.height;
-  await page.evaluate((height) => window.scrollTo(0, height + 100), heroHeight);
+  await page.evaluate(() => window.scrollTo(0, 800));
   await expect(header).toHaveCSS("visibility", "visible");
   await page.evaluate(() => window.scrollTo(0, 0));
-  await expect(header).toHaveCSS("visibility", "hidden");
+  await expect(header).toHaveCSS("visibility", "visible");
 
   await page.goto("/parfums");
+  await expect(header).toHaveCSS("visibility", "hidden");
   const homeHero = page.locator("[data-home-hero]");
   const homeHeroHeight = (await homeHero.boundingBox())!.height;
   await page.evaluate((height) => window.scrollTo(0, height + 100), homeHeroHeight);
   await expect(header).toHaveCSS("visibility", "visible");
+  // Back at the hero the header hides again (this used to be asserted on the catalog hero; the home hero keeps that coverage).
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await expect(header).toHaveCSS("visibility", "hidden");
+  await page.evaluate((height) => window.scrollTo(0, height + 100), homeHeroHeight);
+  await expect(header).toHaveCSS("visibility", "visible");
   await page.getByRole("link", { name: "Catálogo" }).first().click();
   await expect(page).toHaveURL(/\/parfums\/catalogo/);
-  await expect(header).toHaveCSS("visibility", "hidden");
+  await expect(header).toHaveCSS("visibility", "visible");
 });
 
 test("each home exposes its configured TikTok player through the allowed frame origin", async ({ page }) => {

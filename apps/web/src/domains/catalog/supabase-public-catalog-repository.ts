@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database, Json } from "@/lib/supabase/database.types";
+import { displayTag } from "./display-labels";
 import type {
   CatalogGender,
   CatalogProduct,
@@ -390,7 +391,7 @@ export function mapPublicProduct(row: PublicProductRow): CatalogProduct | null {
     decantPrices: priceRecord(decants),
     bottlePrices: bottles.length > 0 ? priceRecord(bottles) : null,
     notes: asStringArray(row.notes),
-    tag: row.tag ?? family?.name ?? "",
+    tag: displayTag(row.tag ?? family?.name ?? ""),
     description: row.description ?? "",
     discontinued: production === "discontinued",
     bestseller: false,

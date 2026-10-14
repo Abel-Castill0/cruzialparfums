@@ -3,18 +3,24 @@
 import type { CatalogFilters, CatalogSort } from "@/domains/catalog/catalog-query";
 import styles from "./catalog-toolbar.module.css";
 
-export type FilterKey = "type" | "gender" | "family" | "format" | "price";
+/**
+ * Filters of the Parfums catalog. Budget and "whole bottle" are gone on purpose: the catalog sells decants only (whole
+ * bottles live on their own route) and the price is read on each card. The brand list comes from the catalog itself.
+ */
+export type FilterKey = "type" | "gender" | "family" | "brand";
 
 type Option = { value: string; label: string };
 
-export const FILTER_GROUPS: ReadonlyArray<{ key: FilterKey; label: string; wide?: boolean; options: Option[] }> = [
+type FilterGroup = { key: FilterKey; label: string; wide?: boolean; options: Option[] };
+
+export const FILTER_GROUPS: ReadonlyArray<FilterGroup> = [
   {
     key: "type",
     label: "Tipo",
     options: [
       { value: "all", label: "Todos" },
       { value: "arab", label: "Árabe" },
-      { value: "designer", label: "Designer" },
+      { value: "designer", label: "Diseñador" },
       { value: "niche", label: "Nicho" },
     ],
   },
@@ -43,24 +49,8 @@ export const FILTER_GROUPS: ReadonlyArray<{ key: FilterKey; label: string; wide?
       { value: "spicy", label: "Especiado" },
     ],
   },
-  {
-    key: "format",
-    label: "Formato",
-    options: [
-      { value: "all", label: "Todos" },
-      { value: "bottle", label: "Frasco completo" },
-    ],
-  },
-  {
-    key: "price",
-    label: "Presupuesto",
-    options: [
-      { value: "all", label: "Todos" },
-      { value: "15", label: "Hasta S/ 15" },
-      { value: "25", label: "S/ 16 – S/ 25" },
-      { value: "26+", label: "S/ 26 a más" },
-    ],
-  },
+  // The brand options are the catalog's own brands, so they are supplied at render time (a long list reads better as a select).
+  { key: "brand", label: "Marca", wide: true, options: [{ value: "all", label: "Todas" }] },
 ];
 
 export const SORT_OPTIONS: ReadonlyArray<{ value: CatalogSort; label: string }> = [
@@ -75,11 +65,12 @@ export function optionLabel(key: FilterKey, value: string) {
 }
 
 /**
- * Filter choices as chips. One component serves both layouts: an anchored
+ * Filter choices as chips (and a select for brands). One component serves both layouts: an anchored
  * popover on large screens and a bottom sheet on phones (CSS decides).
  */
 export function CatalogFilterPanel({
   filters,
+  brands,
   resultCount,
   onChange,
   onSort,
@@ -87,6 +78,7 @@ export function CatalogFilterPanel({
   onClose,
 }: {
   filters: CatalogFilters;
+  brands: readonly string[];
   resultCount: number;
   onChange: <K extends FilterKey>(key: K, value: CatalogFilters[K]) => void;
   onSort: (value: CatalogSort) => void;
@@ -105,23 +97,37 @@ export function CatalogFilterPanel({
         {FILTER_GROUPS.map((group, groupIndex) => (
           <fieldset key={group.key} className={`${styles.group} ${group.wide ? styles.groupWide : ""}`}>
             <legend>{group.label}</legend>
-            <div className={styles.chips}>
-              {group.options.map((option, optionIndex) => {
-                const selected = filters[group.key] === option.value;
-                return (
-                  <button
-                    key={option.value}
-                    type="button"
-                    className={styles.chip}
-                    aria-pressed={selected}
-                    data-autofocus={groupIndex === 0 && optionIndex === 0 ? "" : undefined}
-                    onClick={() => onChange(group.key, option.value as CatalogFilters[typeof group.key])}
-                  >
-                    {option.label}
-                  </button>
-                );
-              })}
-            </div>
+            {group.key === "brand" ? (
+              <select
+                className={styles.brandSelect}
+                aria-label="Marca"
+                value={filters.brand}
+                onChange={(event) => onChange("brand", event.target.value)}
+              >
+                <option value="all">Todas las marcas</option>
+                {brands.map((brand) => (
+                  <option key={brand} value={brand}>{brand}</option>
+                ))}
+              </select>
+            ) : (
+              <div className={styles.chips}>
+                {group.options.map((option, optionIndex) => {
+                  const selected = filters[group.key] === option.value;
+                  return (
+                    <button
+                      key={option.value}
+                      type="button"
+                      className={styles.chip}
+                      aria-pressed={selected}
+                      data-autofocus={groupIndex === 0 && optionIndex === 0 ? "" : undefined}
+                      onClick={() => onChange(group.key, option.value as CatalogFilters[typeof group.key])}
+                    >
+                      {option.label}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </fieldset>
         ))}
         {/* Phones fold the order control into the sheet; large screens keep the pill. */}

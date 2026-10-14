@@ -1,6 +1,6 @@
 .page {
   color: var(--ds-ink);
-  background: var(--ds-white);
+  background: var(--ds-color-surface);
 }
 
 .container {

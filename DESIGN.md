@@ -24,6 +24,11 @@ Estrategia: **Restrained** — neutros + un acento ≤ 10 % de la superficie. Re
 | `--ds-white` | `#FFFFFF` | Fondo base, tarjetas | — |
 | `--ds-gray-50` | `#F5F5F7` | Secciones alternas, chips, tarjeta de producto | — |
 | `--ds-gray-100` | `#E8E8ED` | Estado pressed de chips, skeletons | — |
+| `--ds-color-surface` | `var(--ds-gray-50)` `#F5F5F7` | Alias semántico de la banda gris clara: franja «100% originales», familias, catálogo, ficha de producto, página de combos | — |
+| `--ds-color-surface-dark` | `#2B2B2E` | Banda gris oscuro (2026-10-13): «Del frasco original a tu piel» | blanco 14.1:1 · `--ds-on-dark-muted` 8.4:1 · dorado 5.7:1 |
+| `--ds-color-surface-deep` | `#17171A` | Banda más oscura: TikTok / video de Parfums; base de la tarjeta de tamaños | blanco 17.9:1 · muted 10.2:1 · dorado 7.3:1 |
+| `--ds-on-dark` / `--ds-on-dark-muted` | `#FFF` / `rgba(255,255,255,.74)` | Texto sobre las bandas oscuras de Parfums | ver arriba |
+| `--ds-hairline-on-dark` | `rgba(255,255,255,.12)` | Separador sobre las bandas oscuras | — |
 | `--ds-ink` | `#1D1D1F` | Texto principal, botón secundario | 16.8:1 sobre blanco · 15.5:1 sobre `#F5F5F7` |
 | `--ds-ink-muted` | `#666669` | Texto secundario, precios, captions | 5.7:1 sobre blanco · 5.3:1 sobre `#F5F5F7` · 4.7:1 sobre `#E8E8ED` |
 | `--ds-accent` | `#0071E3` | CTA primario, selección de chip, foco | 4.7:1 con texto blanco encima · no usar como texto sobre `#F5F5F7` (4.3:1) |
@@ -147,7 +152,8 @@ El azul `--ds-accent*` queda sólo para el anillo de foco, el borde de campos co
 **Chip de filtro.** Pill, alto 44 px, fondo `--ds-gray-50`, texto `--ds-ink` 15 px / 500, sin borde. Seleccionado:
 fondo `--ds-color-accent`, texto `--ds-color-on-accent`; transición de color 200 ms.
 
-**Tarjeta de producto.** Sin borde; fondo `--ds-gray-50`, radio 14 px, padding 24 px. Las fotos son tomas de estudio
+**Tarjeta de producto.** Sin borde; fondo `--ds-gray-50` (catálogo de Parfums desde 2026-10-13: tarjeta **blanca** sobre página `--ds-color-surface`,
+foto sobre un recuadro gris), radio 14 px, padding 24 px. Las fotos son tomas de estudio
 sobre blanco: se mezclan con `mix-blend-mode: multiply` y llevan una *sombra de contacto* difusa detrás del frasco
 (`::before` radial, blur 6 px) en lugar de `drop-shadow` (que dibujaría un rectángulo). Marca (14 px,
 `--ds-ink-muted`), nombre (`--ds-text-card` 500), precio (14 px, `--ds-ink-muted`, tabular). Hover: `--ds-shadow-2`,
@@ -158,6 +164,17 @@ inferior; titular blanco 600 con tracking −0.035em, CTA primario (acento) + se
 ambos pill de 48 px. Home Parfums: la arte lleva el wordmark, así que se reserva una franja inferior
 (`--hero-foot`) para titular y botones (titular ≤ 3.5rem, una línea desde 1100 px). Home Import: `--ds-text-hero`.
 Entrada: imagen `scale(1.05→1)` + titular y botones con `fade-up`, ≤ 600 ms.
+
+**Selector de tamaño (catálogo de Parfums).** Tres radios nativos (3 / 5 / 10 ml) con aspecto de pill de 44 px: el elegido va en **tinta
+sólida con texto blanco** (16.8:1), el resto en blanco con un hilo de tinta; un tamaño sin precio o sin stock se atenúa, se tacha y no se
+puede elegir. Reemplaza al contador de cantidad (la cantidad se edita en el carrito). El tamaño elegido fija el precio mostrado.
+
+**Paginador del catálogo.** «Vista 1, Vista 2…» como pills de 44 px; la vista actual en tinta sólida (`aria-current="page"`). 24 productos por vista;
+cambiar un filtro vuelve a la Vista 1.
+
+**Carruseles que cambian solos** (fotos del producto cada 5 s, sets de Combos cada 4 s, tira de producto a 40 px/s). Reglas comunes (WCAG 2.2.2):
+nunca se mueven con `prefers-reduced-motion`; esperan mientras el puntero o el foco están encima; se detienen para siempre cuando la
+persona usa las flechas/miniaturas o el control de pausa (siempre visible); lo que queda fuera de vista es `inert`.
 
 **Carrusel.** Scroll-snap horizontal, controles circulares de 44 px (blanco translúcido), puntos de paginación de 8 px.
 

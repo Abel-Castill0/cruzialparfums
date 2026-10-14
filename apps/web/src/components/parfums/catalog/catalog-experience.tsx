@@ -5,15 +5,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
+  catalogBrands,
   DEFAULT_CATALOG_FILTERS,
   filterCatalogProducts,
+  hasDecantOffer,
+  paginateCatalog,
   type CatalogFilters,
   type CatalogSort,
 } from "@/domains/catalog/catalog-query";
-import {
-  BOTTLE_GIFT_MESSAGE,
-  isBottleGiftEligible,
-} from "@/domains/catalog/promotion-eligibility";
 import { cartIdentity, type CatalogProduct } from "@/domains/catalog/types";
 import { SearchIcon } from "@/components/parfums/shell/shell-icons";
 import { RecommendationPanel } from "@/components/parfums/finder/recommendation-panel";
@@ -34,7 +33,7 @@ const discoveryShortcuts = [
   },
   {
     key: "designer",
-    label: "Designer",
+    label: "Diseñador",
     note: "Casas reconocidas internacionalmente",
     image: "/images/parfums-catalog/catalog-category-designer.webp",
   },
@@ -48,13 +47,20 @@ const discoveryShortcuts = [
 
 const filterDefinitions = FILTER_GROUPS.map(({ key, label }) => ({ key, label }));
 
-export function CatalogExperience({ products, initialFilters, initialRecommendation = null }: {
+export function CatalogExperience({ products: allProducts, initialFilters, initialPage = 1, initialRecommendation = null }: {
   products: CatalogProduct[];
   initialFilters: CatalogFilters;
+  /** 1-based "Vista" the page opens on (from `?vista=`). */
+  initialPage?: number;
   /** Answers of a completed finder questionnaire, already validated. */
   initialRecommendation?: FinderAnswers | null;
 }) {
+  // Decants only: a product without a decant price (a whole bottle) has no place in this catalog.
+  const products = useMemo(() => allProducts.filter(hasDecantOffer), [allProducts]);
+  const brands = useMemo(() => catalogBrands(products), [products]);
   const [filters, setFilters] = useState(initialFilters);
+  const [page, setPage] = useState(initialPage);
+  const gridTopRef = useRef<HTMLDivElement>(null);
   const [recommendation, setRecommendation] = useState(initialRecommendation);
   const recommendationRef = useRef<HTMLDivElement>(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -62,6 +68,7 @@ export function CatalogExperience({ products, initialFilters, initialRecommendat
   const filterPanelRef = useRef<HTMLDivElement>(null);
   const filterTriggerRef = useRef<HTMLButtonElement>(null);
   const results = useMemo(() => filterCatalogProducts(products, filters), [filters, products]);
+  const view = useMemo(() => paginateCatalog(results, page), [results, page]);
   const activeFilters = filterDefinitions.filter(({ key }) => filters[key] !== "all");
   const typeCounts = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -82,6 +89,7 @@ export function CatalogExperience({ products, initialFilters, initialRecommendat
       }
       if (filters.sort !== "featured") params.set("sort", filters.sort);
       if (filters.search.trim()) params.set("search", filters.search);
+      if (view.page > 1) params.set("vista", String(view.page));
       // A completed recommendation stays in the address so a refresh or a
       // shared link shows the same view.
       if (recommendation) {
@@ -89,10 +97,13 @@ export function CatalogExperience({ products, initialFilters, initialRecommendat
       }
       const query = params.toString();
       const url = query ? `${window.location.pathname}?${query}` : window.location.pathname;
+      // Nothing to sync: leave history alone. Rewriting the same URL 300 ms after load can undo a link the visitor
+      // clicked in that window (the router had not committed it yet), sending them back to the catalog.
+      if (url === `${window.location.pathname}${window.location.search}`) return;
       window.history.replaceState(null, "", url);
     }, 300);
     return () => clearTimeout(handle);
-  }, [filters, recommendation]);
+  }, [filters, recommendation, view.page]);
 
   // Arriving from the questionnaire: bring the recommendation into view and
   // move focus to it so keyboard and screen-reader users land on the result.
@@ -144,12 +155,21 @@ export function CatalogExperience({ products, initialFilters, initialRecommendat
     };
   }, [filtersOpen]);
 
+  // Any change to what is listed starts again from the first view.
   function updateFilter<K extends keyof CatalogFilters>(key: K, value: CatalogFilters[K]) {
     setFilters((current) => ({ ...current, [key]: value }));
+    setPage(1);
   }
 
   function clearFilters() {
     setFilters(DEFAULT_CATALOG_FILTERS);
+    setPage(1);
+  }
+
+  function goToPage(next: number) {
+    setPage(next);
+    // Bring the new view's first row into sight (the grid wrapper clears the sticky header and toolbar).
+    gridTopRef.current?.scrollIntoView({ block: "start" });
   }
 
   // The questionnaire keeps whatever filters are active when it is opened.
@@ -171,28 +191,10 @@ export function CatalogExperience({ products, initialFilters, initialRecommendat
 
   return (
     <>
-      <section className={styles.catalogHero} data-home-hero>
-        <div className={styles.catalogHeroMedia}>
-          <Image
-            src="/images/parfums-catalog/catalog-hero.webp"
-            alt=""
-            fill
-            sizes="100vw"
-            preload
-            fetchPriority="high"
-            quality={60}
-            className={styles.catalogHeroImage}
-          />
-          <div className={styles.catalogHeroScrim} aria-hidden="true" />
-        </div>
-        <div className={styles.catalogHeroCopyWrap}>
-          <div className={styles.container}>
-            <div className={styles.catalogHeroCopy}>
-              <h1>Nuestra <em>Colección</em></h1>
-              <p>Explora nuestra selección de decants y frascos completos. Filtra por estilo, familia olfativa o presupuesto.</p>
-              <Link href={finderHref} className={styles.finderCta}>Encontrar mi fragancia <span aria-hidden="true">→</span></Link>
-            </div>
-          </div>
+      <section className={styles.catalogIntro} aria-labelledby="catalog-title">
+        <div className={styles.container}>
+          <h1 id="catalog-title">Nuestra Colección</h1>
+          <p>Decants de 3, 5 y 10 ml de fragancias originales.</p>
         </div>
       </section>
 
@@ -212,6 +214,33 @@ export function CatalogExperience({ products, initialFilters, initialRecommendat
 
       <section className={styles.catalogLayout} aria-labelledby="catalog-results-title">
         <h2 id="catalog-results-title" className={styles.srOnly}>Catálogo de perfumes</h2>
+        <nav className={toolbar.doors} aria-label="Explorar por categoría">
+          <div className={toolbar.container}>
+            <ul className={toolbar.doorList}>
+              {discoveryShortcuts.map((category) => {
+                const selected = filters.type === category.key;
+                return (
+                  <li key={category.key}>
+                    <button
+                      type="button"
+                      className={toolbar.door}
+                      onClick={() => updateFilter("type", selected ? "all" : category.key)}
+                      aria-pressed={selected}
+                    >
+                      <Image src={category.image} alt="" fill sizes="(max-width: 1240px) 33vw, 400px" className={toolbar.doorImage} />
+                      <span className={toolbar.doorBody}>
+                        <span className={toolbar.doorLabel}>{category.label}</span>
+                        <span className={toolbar.doorNote}>{category.note}</span>
+                        <span className={toolbar.doorCount}>{typeCounts[category.key] ?? 0} fragancias</span>
+                      </span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        </nav>
+
         <div className={toolbar.toolbar}>
           <div className={toolbar.container}>
             <div className={toolbar.bar}>
@@ -245,6 +274,7 @@ export function CatalogExperience({ products, initialFilters, initialRecommendat
                 <div ref={filterPanelRef} id="catalog-filters" className={toolbar.panel} role="dialog" aria-modal="true" aria-labelledby="catalog-filters-title">
                   <CatalogFilterPanel
                     filters={filters}
+                    brands={brands}
                     resultCount={results.length}
                     onChange={(key, value) => updateFilter(key, value)}
                     onSort={(value) => updateFilter("sort", value)}
@@ -271,46 +301,19 @@ export function CatalogExperience({ products, initialFilters, initialRecommendat
         </div>
         {filtersOpen ? <button type="button" aria-label="Cerrar filtros" tabIndex={-1} className={toolbar.overlay} onClick={() => setFiltersOpen(false)} /> : null}
 
-        <nav className={toolbar.doors} aria-label="Explorar por categoría">
-          <div className={toolbar.container}>
-            <ul className={toolbar.doorList}>
-              {discoveryShortcuts.map((category) => {
-                const selected = filters.type === category.key;
-                return (
-                  <li key={category.key}>
-                    <button
-                      type="button"
-                      className={toolbar.door}
-                      onClick={() => updateFilter("type", selected ? "all" : category.key)}
-                      aria-pressed={selected}
-                    >
-                      <Image src={category.image} alt="" fill sizes="(max-width: 1240px) 33vw, 400px" className={toolbar.doorImage} />
-                      <span className={toolbar.doorBody}>
-                        <span className={toolbar.doorLabel}>{category.label}</span>
-                        <span className={toolbar.doorNote}>{category.note}</span>
-                        <span className={toolbar.doorCount}>{typeCounts[category.key] ?? 0} fragancias</span>
-                      </span>
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        </nav>
 
         <div className={styles.container}>
           {/* The visible "N perfumes" count was noise; screen readers still hear how many results a filter leaves. */}
-          <span className={styles.srOnly} role="status">{results.length} {results.length === 1 ? "perfume" : "perfumes"}</span>
-          {isBottleGiftEligible(filters.format === "bottle" ? "bottle" : "decant") ? (
-            <div className={styles.resultsTop}>
-              <span className={styles.giftNote} data-bottle-gift-note>{BOTTLE_GIFT_MESSAGE}</span>
-            </div>
-          ) : null}
-          {results.length > 0 ? (
+          <span className={styles.srOnly} role="status">
+            {results.length} {results.length === 1 ? "perfume" : "perfumes"}
+            {view.pageCount > 1 ? `, vista ${view.page} de ${view.pageCount}` : ""}
+          </span>
+          <div ref={gridTopRef} className={styles.gridTop} />
+          {view.items.length > 0 ? (
             <ul role="list" data-product-grid className={styles.productGrid}>
-              {results.map((product, index) => (
+              {view.items.map((product, index) => (
                 <Reveal as="li" key={cartIdentity(product)} className={styles.revealCell} delay={(index % 4) * 60}>
-                  <ProductCard product={product} mode={filters.format === "bottle" ? "bottle" : "decant"} onAdded={announceAdded} eager={index < 4} />
+                  <ProductCard product={product} onAdded={announceAdded} eager={index < 4} />
                 </Reveal>
               ))}
             </ul>
@@ -324,6 +327,23 @@ export function CatalogExperience({ products, initialFilters, initialRecommendat
               </div>
             </div>
           )}
+          {view.pageCount > 1 ? (
+            <nav className={styles.pager} aria-label="Vistas del catálogo" data-catalog-pager>
+              <ul>
+                {Array.from({ length: view.pageCount }, (_, index) => {
+                  const number = index + 1;
+                  const current = number === view.page;
+                  return (
+                    <li key={number}>
+                      <button type="button" className={styles.pagerButton} aria-current={current ? "page" : undefined} onClick={() => goToPage(number)}>
+                        Vista {number}
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </nav>
+          ) : null}
         </div>
       </section>
 

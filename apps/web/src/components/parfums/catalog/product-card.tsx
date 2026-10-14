@@ -4,79 +4,57 @@ import type { Route } from "next";
 import Image from "next/image";
 import { MissingPhoto } from "../shared/missing-photo";
 import Link from "next/link";
-import { useState } from "react";
+import { useId, useState } from "react";
 import {
   addParfumsCartLine,
   PARFUMS_CART_UPDATED_EVENT,
 } from "@/domains/carts/parfums-cart";
 import { cartIdentity } from "@/domains/catalog/types";
 import { isProductPurchasable } from "@/domains/catalog/availability";
-import { minimumPrice } from "@/domains/catalog/catalog-query";
-import { clampPurchaseQuantity } from "@/domains/catalog/product-purchase";
+import { decantSizeOptions, defaultDecantSize, type DecantSize } from "@/domains/catalog/catalog-query";
 import type { CatalogProduct } from "@/domains/catalog/types";
 import styles from "./catalog.module.css";
 import { productMediaLinkLabel } from "./product-media-label";
-
-type CardMode = "decant" | "bottle";
 
 function money(value: number) {
   return `S/ ${value.toFixed(2)}`;
 }
 
-function smallestVariant(prices: Record<string, number>) {
-  const size = Math.min(...Object.keys(prices).map(Number));
-  return { size, price: prices[String(size)] ?? minimumPrice(prices) };
-}
-
+/**
+ * Card of the Parfums catalog. The catalog sells decants only, so the card offers the three sizes (3 / 5 / 10 ml) as a
+ * radio group (the chosen one is solid ink with white text) and adds one unit of the chosen size; quantity is edited in
+ * the cart. Whole bottles are not offered here.
+ */
 export function ProductCard({
   product,
-  mode,
   onAdded,
   eager = false,
 }: {
   product: CatalogProduct;
-  mode: CardMode;
   onAdded: (message: string) => void;
   eager?: boolean;
 }) {
   const detailHref = `/parfums/productos/${product.slug}` as Route;
-  const bottleVariant = product.bottlePrices
-    ? smallestVariant(product.bottlePrices)
-    : null;
-  const decantVariant = smallestVariant(product.decantPrices);
-  const currentVariant =
-    mode === "bottle" && bottleVariant ? bottleVariant : decantVariant;
-  const currentPrices =
-    mode === "bottle" && product.bottlePrices
-      ? product.bottlePrices
-      : product.decantPrices;
-  const currentKind = mode === "bottle" ? "bottle" : "decant";
-  // The card offers only this one fixed (cheapest) size per mode with no
-  // size picker, so availability is checked against that exact variant —
-  // never assumed from the product as a whole. DB persistence remains the
-  // final authority regardless; this only keeps the storefront from
-  // advertising a size the backend would reject.
-  const currentVariantAvailable = product.variants.some(
-    (v) => v.kind === currentKind && v.sizeMl === String(currentVariant.size) && v.isAvailable,
-  );
-  const [quantity, setQuantity] = useState(1);
+  const sizeOptions = decantSizeOptions(product);
+  const firstAvailable = defaultDecantSize(sizeOptions);
+  const [chosen, setChosen] = useState<DecantSize | null>(firstAvailable);
+  const groupName = useId();
+  const selected = sizeOptions.find((option) => option.size === chosen && option.available) ?? null;
+  const shownPrice = selected?.price ?? sizeOptions.find((option) => option.size === firstAvailable)?.price ?? null;
 
   function addSelection() {
-    const group = mode === "bottle" ? "bottle" : "decant";
+    if (!selected) return;
     const mutation = addParfumsCartLine(localStorage, {
       productId: cartIdentity(product),
-      variantId: `${group}-${currentVariant.size}ml`,
-      quantity,
+      variantId: `decant-${selected.size}ml`,
+      quantity: 1,
     });
     if (!mutation.persisted) {
       onAdded("No pudimos guardar tu selección. Revisa el almacenamiento del navegador.");
       return;
     }
     window.dispatchEvent(new Event(PARFUMS_CART_UPDATED_EVENT));
-    onAdded(
-      `${quantity} × ${product.brand} ${product.name} · ${currentVariant.size} ml añadido`,
-    );
-    setQuantity(1);
+    onAdded(`${product.brand} ${product.name} · ${selected.size} ml añadido`);
   }
 
   if (!isProductPurchasable(product)) {
@@ -105,26 +83,11 @@ export function ProductCard({
               <span>Sin stock disponible</span>
               <strong data-price className={styles.soldOut}>Agotado</strong>
             </div>
-            <div className={styles.quantityRow} />
-            <div className={styles.bottleSlot} />
           </div>
         </Link>
       </article>
     );
   }
-
-  const crossSell =
-    mode === "bottle"
-      ? {
-          href: detailHref,
-          label: `Decant desde ${money(decantVariant.price)}`,
-        }
-      : bottleVariant
-        ? {
-            href: `${detailHref}?variant=bottle` as Route,
-            label: `Frasco ${bottleVariant.size} ml · ${money(bottleVariant.price)}`,
-          }
-        : null;
 
   return (
     <article data-product-card className={styles.productCard} id={product.slug}>
@@ -151,46 +114,34 @@ export function ProductCard({
           <h3 className={styles.cardName}>{product.name}</h3>
         </Link>
         <div className={styles.cardMeta}>
-          <span>{mode === "bottle" ? `frasco ${currentVariant.size} ml` : `desde ${decantVariant.size} ml`}</span>
-          <strong data-price>{money(minimumPrice(currentPrices))}</strong>
+          <span>{selected ? `decant ${selected.size} ml` : "Elige un tamaño"}</span>
+          <strong data-price>{shownPrice !== null ? money(shownPrice) : "—"}</strong>
         </div>
-        {currentVariantAvailable ? (
-          <div className={styles.quantityRow} data-quantity-row>
-            <div className={styles.stepper} role="group" aria-label={`Cantidad de ${product.name}`}>
-              <button
-                type="button"
-                onClick={() => setQuantity((value) => clampPurchaseQuantity(value - 1))}
-                disabled={quantity === 1}
-                aria-label={`Reducir cantidad de ${product.name}`}
-              >
-                −
-              </button>
-              <output aria-label="Cantidad seleccionada">{quantity}</output>
-              <button
-                type="button"
-                onClick={() => setQuantity((value) => clampPurchaseQuantity(value + 1))}
-                disabled={quantity === 99}
-                aria-label={`Aumentar cantidad de ${product.name}`}
-              >
-                +
-              </button>
-            </div>
-            <button type="button" className={styles.addButton} onClick={addSelection} aria-label={`Añadir ${quantity} × ${product.name}, ${currentVariant.size} ml`}>
-              Añadir
-            </button>
-          </div>
-        ) : (
-          <div className={styles.quantityRow} data-quantity-row data-variant-unavailable>
-            <span className={styles.soldOut}>{currentVariant.size} ml agotado</span>
-          </div>
-        )}
-        <div className={styles.bottleSlot}>
-          {crossSell ? (
-            <Link href={crossSell.href} className={styles.bottleLink}>
-              {crossSell.label} <span aria-hidden="true">→</span>
-            </Link>
-          ) : null}
-        </div>
+        <fieldset className={styles.sizePicker} data-size-picker>
+          <legend className={styles.srOnly}>Tamaño del decant de {product.name}</legend>
+          {sizeOptions.map((option) => (
+            <label key={option.size} className={styles.sizeOption} data-unavailable={option.available ? undefined : ""}>
+              <input
+                type="radio"
+                name={`${groupName}-size`}
+                value={option.size}
+                checked={chosen === option.size}
+                disabled={!option.available}
+                onChange={() => setChosen(option.size)}
+              />
+              <span>{option.size} ml</span>
+            </label>
+          ))}
+        </fieldset>
+        <button
+          type="button"
+          className={styles.addButton}
+          onClick={addSelection}
+          disabled={!selected}
+          aria-label={selected ? `Añadir ${product.name}, ${selected.size} ml` : `${product.name}: sin tamaños disponibles`}
+        >
+          Añadir
+        </button>
       </div>
     </article>
   );

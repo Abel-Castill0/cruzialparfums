@@ -1,10 +1,14 @@
 /* Combo carousel: one white card per set. Copy on the left, the set's own artwork on the right, matted on the system's light
    grey (no dark panel: the artwork is 4:5 and used to sit between two black bars). Controls are 44px pills. */
 
+/* 15% smaller than the full column on desktop and tablet (width 85%, centred); on phones the card keeps the column and the
+   artwork gets shorter instead. */
 .carousel {
   position: relative;
+  width: 85%;
+  margin-inline: auto;
   aspect-ratio: 21 / 9;
-  min-height: 400px;
+  min-height: 340px;
   overflow: hidden;
   border-radius: var(--ds-radius-lg);
   background: var(--ds-white);
@@ -228,7 +232,7 @@
 @media (min-width: 641px) and (max-width: 1024px) {
   .carousel {
     aspect-ratio: auto;
-    min-height: 440px;
+    min-height: 375px;
   }
 
   .slideCopy {
@@ -245,6 +249,7 @@
      copy, so a set with a long list of fragrances ran up over the picture. Now the slide grows with its copy (the track
      stretches every slide to the tallest one, so the card does not jump while rotating). */
   .carousel {
+    width: 100%;
     aspect-ratio: auto;
     min-height: 0;
     height: auto;
@@ -265,7 +270,7 @@
     inset: auto;
     flex: 0 0 auto;
     width: 100%;
-    height: 340px;
+    height: 290px;
   }
 
   .slideImage {

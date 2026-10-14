@@ -2,12 +2,21 @@
   padding-block: var(--ds-section-y);
 }
 
-/* One light surface for both units (DESIGN.md): grey band, ink copy. */
-.parfums,
+/* Import keeps the light grey band (DESIGN.md). */
 .import {
   --vs-ink: var(--ds-ink);
   --vs-muted: var(--ds-ink-muted);
+  --vs-link: var(--ds-link);
   background: var(--ds-gray-50);
+  color: var(--vs-ink);
+}
+
+/* Parfums: the deepest band of the page. White on #17171a is 17.9:1, the muted copy 10.2:1, the gold link 7.3:1. */
+.parfums {
+  --vs-ink: var(--ds-on-dark);
+  --vs-muted: var(--ds-on-dark-muted);
+  --vs-link: var(--ds-color-accent);
+  background: var(--ds-color-surface-deep);
   color: var(--vs-ink);
 }
 
@@ -56,7 +65,7 @@
   display: inline-flex;
   align-items: center;
   gap: var(--ds-space-1);
-  color: var(--ds-link);
+  color: var(--vs-link);
   font-size: var(--ds-text-card);
   font-weight: 500;
   text-decoration: underline transparent;
@@ -98,7 +107,7 @@
 }
 
 .fallback a {
-  color: var(--ds-link);
+  color: var(--vs-link);
   text-decoration: underline;
   text-underline-offset: 3px;
 }

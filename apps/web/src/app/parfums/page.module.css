@@ -14,8 +14,8 @@
 
 /* Alternating bands: white <-> #F5F5F7, painted edge to edge without a wrapper. */
 .discovery {
-  background: var(--ds-gray-50);
-  box-shadow: 0 0 0 100vmax var(--ds-gray-50);
+  background: var(--ds-color-surface);
+  box-shadow: 0 0 0 100vmax var(--ds-color-surface);
   clip-path: inset(0 -100vmax);
 }
 
@@ -48,7 +48,6 @@
 
 .sectionHead h2,
 .faqHead h2,
-.craftBody h2,
 .showcase h2 {
   margin-top: 8px;
   font-family: var(--ds-font);
@@ -61,7 +60,6 @@
 
 .sectionHead h2 em,
 .faqHead h2 em,
-.craftBody h2 em,
 .showcase h2 em {
   color: var(--quiet);
   font-weight: 400;
@@ -101,6 +99,13 @@
   width: var(--wrap);
   margin-inline: auto;
   padding-block: var(--ds-section-y);
+}
+
+/* Family cards are 20% smaller than the full column; the heading row shares the same narrower column so they stay aligned. */
+.discovery .sectionHead,
+.tiles {
+  width: 80%;
+  margin-inline: auto;
 }
 
 .tiles {
@@ -221,112 +226,95 @@
   line-height: 1.6;
 }
 
-/* Craft — how the house works, told as one composition. */
+/* Craft — how the house works. A dark grey band, text only: no photographs of bottles, decants or customers' orders
+   (privacy), just the three principles and the three sizes. White on #2b2b2e is 14.1:1; the muted copy 8.4:1; gold 5.7:1. */
 
 .craft {
   padding-block: var(--ds-section-y);
-  background: var(--ds-white);
+  color: var(--ds-on-dark);
+  background: var(--ds-color-surface-dark);
 }
 
-.craftGrid,
-.formats {
+.craftInner {
   width: var(--wrap);
   margin-inline: auto;
 }
 
-.craftGrid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 0.92fr);
-  gap: clamp(36px, 7vw, 112px);
-  align-items: center;
+.craftHead {
+  margin-bottom: var(--ds-space-5);
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.craftHead h2 {
+  font-family: var(--ds-font);
+  letter-spacing: -0.03em;
+  font-size: var(--ds-text-h2);
+  font-weight: 600;
+  line-height: 1.1;
+  text-wrap: balance;
+}
+
+.craftHead h2 em {
+  color: var(--ds-on-dark-muted);
+  font-weight: 400;
+}
+
+.craft .textLink {
+  color: var(--ds-color-accent);
 }
 
 .principles {
-  margin-block: clamp(28px, 4vw, 44px);
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--ds-space-3);
   list-style: none;
-  border-top: 1px solid var(--ds-hairline);
 }
 
 .principles li {
-  padding-block: 24px;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 8px;
-  border-bottom: 1px solid var(--ds-hairline);
+  padding: clamp(24px, 3vw, 36px);
+  border: 1px solid var(--ds-hairline-on-dark);
+  border-radius: var(--ds-radius-lg);
+  background: rgba(255, 255, 255, 0.04);
 }
 
-.principles li > span {
-  padding-top: 4px;
-  color: var(--quiet);
-  font-size: 0.75rem;
+.principleNum {
+  display: block;
+  margin-bottom: var(--ds-space-2);
+  color: var(--ds-color-accent);
+  font-size: var(--ds-text-small);
   font-weight: 600;
-
+  font-variant-numeric: tabular-nums;
 }
 
 .principles h3 {
   font-family: var(--ds-font);
   letter-spacing: -0.03em;
-  font-size: clamp(1.4rem, 2.2vw, 1.75rem);
+  font-size: clamp(1.3rem, 2vw, 1.6rem);
   font-weight: 600;
-  line-height: 1.1;
+  line-height: 1.15;
 }
 
 .principles p {
-  max-width: 50ch;
-  margin-top: 8px;
-  color: var(--muted);
+  margin-top: var(--ds-space-1);
+  color: var(--ds-on-dark-muted);
   font-size: 0.94rem;
   line-height: 1.65;
 }
 
-
-
-
-/* Brand campaign mosaic */
-
-.mosaic {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  grid-template-rows: 1.5fr 1fr;
-  gap: var(--ds-space-2);
-  aspect-ratio: 5 / 6;
-}
-
-.mosaicCell {
-  position: relative;
-  overflow: hidden;
-  border-radius: var(--ds-radius-lg);
-  background: var(--ds-gray-50);
-}
-
-.mosaicMain {
-  grid-column: 1 / -1;
-}
-
-.mosaicImage {
-  object-fit: cover;
-}
-
-.mosaic figcaption {
-  grid-column: 1 / -1;
-  margin-top: -2px;
-  color: var(--quiet);
-  font-size: 0.75rem;
-
-}
-
 .formats {
-  margin-top: var(--ds-space-7);
+  margin-top: var(--ds-space-6);
   padding: clamp(32px, 5vw, 64px);
   display: grid;
   grid-template-columns: minmax(0, 0.8fr) minmax(0, 2fr);
   gap: var(--ds-space-4) clamp(32px, 6vw, 96px);
   border-radius: var(--ds-radius-lg);
-  background: var(--ds-gray-50);
+  background: var(--ds-color-surface-deep);
 }
 
 .formatsHead h3 {
-  margin-top: 8px;
   font-family: var(--ds-font);
   letter-spacing: -0.03em;
   font-size: clamp(1.5rem, 1.1rem + 1.2vw, 2rem);
@@ -355,24 +343,22 @@
 }
 
 .formatNumeral span {
-  color: var(--quiet);
+  color: var(--ds-on-dark-muted);
   font-size: 1.1rem;
-
   font-weight: 400;
 }
 
 .formatSprays {
   margin-top: 16px;
   display: block;
-  color: var(--ink);
+  color: var(--ds-color-accent);
   font-size: 0.75rem;
   font-weight: 600;
-
 }
 
 .formatList p {
   margin-top: 8px;
-  color: var(--muted);
+  color: var(--ds-on-dark-muted);
   font-size: 0.9rem;
   line-height: 1.6;
 }
@@ -510,17 +496,8 @@
 /* Tablet */
 
 @media (max-width: 1023px) {
-  .craftGrid {
+  .principles {
     grid-template-columns: minmax(0, 1fr);
-    gap: 32px;
-  }
-
-  .craftMediaWrap {
-    order: -1;
-  }
-
-  .mosaic {
-    aspect-ratio: 4 / 3;
   }
 
   .formats {
@@ -535,7 +512,13 @@
 /* Phone — behaviour changes here, it is not a shrunken desktop. */
 
 @media (max-width: 767px) {
-  .sectionHead {
+  .discovery .sectionHead,
+  .tiles {
+    width: 100%;
+  }
+
+  .sectionHead,
+  .craftHead {
     align-items: flex-start;
     flex-direction: column;
     gap: 16px;
@@ -558,7 +541,7 @@
   }
 
   .tileItem {
-    flex: 0 0 76%;
+    flex: 0 0 61%;
     scroll-snap-align: start;
   }
 
@@ -627,6 +610,9 @@
 .assurance {
   width: min(1200px, calc(100% - 48px));
   margin: 0 auto;
+  background: var(--ds-color-surface);
+  box-shadow: 0 0 0 100vmax var(--ds-color-surface);
+  clip-path: inset(0 -100vmax);
   padding: clamp(28px, 4vw, 44px) 0;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -694,6 +680,12 @@
 .home > :nth-child(n + 3) {
   content-visibility: auto;
   contain-intrinsic-size: auto 800px;
+}
+
+/* The dark bands are always laid out: with `content-visibility: auto` a contrast check (or anything that reads the background
+   under their text before they are first painted) sees the page's white instead of the band. They are few and light. */
+.home > [data-band="dark"] {
+  content-visibility: visible;
 }
 
 /* Phones: with the hero at 45% of the screen (42% on short ones) the essentials become a 2x2 grid with a short second line

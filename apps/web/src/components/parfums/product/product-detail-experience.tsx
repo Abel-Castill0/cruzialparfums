@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import {
   GalleryArrows,
+  GalleryRotationToggle,
   GalleryThumbs,
   galleryImages,
   useGallerySwipe,
@@ -43,7 +44,7 @@ function money(value: number) {
 function typeLabel(type: CatalogProduct["type"]) {
   if (type === "arab") return "Perfumería árabe";
   if (type === "niche") return "Nicho";
-  if (type === "designer") return "Designer";
+  if (type === "designer") return "Diseñador";
   return "Combo";
 }
 
@@ -134,6 +135,7 @@ export function ProductDetailExperience({
             tabIndex={gallery.count > 1 ? 0 : undefined}
             aria-label={gallery.count > 1 ? `Fotos de ${product.name}` : undefined}
             {...swipe}
+            {...gallery.rotation.hold}
           >
             {stageImage ? (
               <div className={styles.imageFrame}>
@@ -156,6 +158,7 @@ export function ProductDetailExperience({
               {!purchasable ? "Agotado" : product.discontinued ? "Descontinuado" : product.tag}
             </span>
             <GalleryArrows index={gallery.index} count={gallery.count} go={gallery.go} />
+            <GalleryRotationToggle rotation={gallery.rotation} />
           </div>
           <GalleryThumbs images={images} index={gallery.index} go={gallery.go} />
         </div>
@@ -269,7 +272,7 @@ export function ProductDetailExperience({
         </div>
         <div className={styles.relatedGrid}>
           {relatedProducts.map((related, index) => (
-            <ProductCard key={cartIdentity(related)} product={related} mode="decant" onAdded={announce} eager={index < 2} />
+            <ProductCard key={cartIdentity(related)} product={related} onAdded={announce} eager={index < 2} />
           ))}
         </div>
       </section>

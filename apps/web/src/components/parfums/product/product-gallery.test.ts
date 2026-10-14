@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { LegacyCatalogRepository } from "@/domains/catalog/legacy-catalog-repository";
 import type { CatalogProduct } from "@/domains/catalog/types";
-import { galleryImages } from "./product-gallery";
+import { GALLERY_ROTATION_MS, galleryImages, isGalleryRotating, nextGalleryIndex } from "./product-gallery";
 
 const base = new LegacyCatalogRepository().list()[0]!;
 
@@ -37,5 +37,38 @@ describe("galleryImages", () => {
 
   it("is empty when the product has no photo at all", () => {
     expect(galleryImages(withMedia([]), null)).toEqual([]);
+  });
+});
+
+describe("gallery rotation rules", () => {
+  const base = { count: 3, reducedMotion: false, stopped: false, holding: false };
+
+  it("rotates every 5 seconds", () => {
+    expect(GALLERY_ROTATION_MS).toBe(5000);
+  });
+
+  it("rotates with two photos or more when nothing holds it", () => {
+    expect(isGalleryRotating(base)).toBe(true);
+    expect(isGalleryRotating({ ...base, count: 2 })).toBe(true);
+  });
+
+  it("never rotates a single photo or none", () => {
+    expect(isGalleryRotating({ ...base, count: 1 })).toBe(false);
+    expect(isGalleryRotating({ ...base, count: 0 })).toBe(false);
+  });
+
+  it("never rotates under prefers-reduced-motion", () => {
+    expect(isGalleryRotating({ ...base, reducedMotion: true })).toBe(false);
+  });
+
+  it("waits while the pointer or focus is on the stage and stops once the visitor takes over", () => {
+    expect(isGalleryRotating({ ...base, holding: true })).toBe(false);
+    expect(isGalleryRotating({ ...base, stopped: true })).toBe(false);
+  });
+
+  it("wraps from the last photo to the first", () => {
+    expect(nextGalleryIndex(0, 3)).toBe(1);
+    expect(nextGalleryIndex(2, 3)).toBe(0);
+    expect(nextGalleryIndex(0, 0)).toBe(0);
   });
 });

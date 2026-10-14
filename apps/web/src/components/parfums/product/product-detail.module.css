@@ -12,7 +12,7 @@
   aspect-ratio: 1 / 1.08;
   overflow: hidden;
   border: 0;
-  background: var(--ds-gray-50);
+  background: var(--ds-white);
   border-radius: var(--ds-radius-lg);
 }
 
@@ -39,7 +39,7 @@
   overflow: hidden;
   border: 0;
   color: var(--ds-ink);
-  background: var(--ds-gray-50);
+  background: var(--ds-white);
   backdrop-filter: blur(8px);
   font-size: 0.75rem;
 
@@ -132,7 +132,7 @@
   min-width: 0;
   padding: var(--ds-space-2);
   border-radius: var(--ds-radius-md);
-  background: var(--ds-gray-50);
+  background: var(--ds-white);
 }
 
 .metaRow dt {
@@ -173,7 +173,7 @@
   padding: 8px 16px;
   border: 0;
   color: var(--ds-ink);
-  background: var(--ds-gray-50);
+  background: var(--ds-white);
   font-family: var(--ds-font);
   letter-spacing: -0.01em;
   font-size: 15px;
@@ -204,7 +204,7 @@
   padding: 8px 8px;
   border: 0;
   color: var(--ds-ink);
-  background: var(--ds-gray-50);
+  background: var(--ds-white);
   text-align: center;
   cursor: pointer;
   transition: background-color var(--ds-dur-fast) var(--ds-ease-spring), color var(--ds-dur-fast) var(--ds-ease-spring), transform var(--ds-dur-fast) var(--ds-ease-spring);
@@ -251,7 +251,7 @@
 
 .sizeButton.sizeUnavailable {
   border-style: dashed;
-  background: var(--ds-gray-50);
+  background: var(--ds-white);
   opacity: 0.6;
 }
 
@@ -270,7 +270,7 @@
   flex-direction: column;
   gap: 2px;
   border: 0;
-  background: var(--ds-gray-50);
+  background: var(--ds-white);
   border-radius: var(--ds-radius-md);
 }
 
@@ -340,7 +340,7 @@
   align-items: center;
   overflow: hidden;
   border-radius: var(--ds-radius-pill);
-  background: var(--ds-gray-50);
+  background: var(--ds-white);
 }
 
 .quantityControl button,
@@ -399,7 +399,7 @@
   text-align: center;
 
   cursor: pointer;
-  background: var(--ds-gray-50);
+  background: var(--ds-white);
   border-radius: var(--ds-radius-pill);
 }
 
@@ -439,14 +439,14 @@
   padding: 16px 16px;
   border: 0;
   color: var(--ds-ink-muted);
-  background: var(--ds-gray-50);
+  background: var(--ds-white);
   border-radius: var(--ds-radius-md);
 }
 
 .discontinuedNotice {
   padding: 16px 24px;
   border: 0;
-  background: var(--ds-gray-50);
+  background: var(--ds-white);
   border-radius: var(--ds-radius-md);
   box-shadow: var(--ds-shadow-1);
 }
@@ -708,7 +708,7 @@
 
 /* The photograph sits on the warm plate used across the catalog. */
 .productStage {
-  background: radial-gradient(90% 80% at 50% 38%, var(--ds-white) 0%, var(--ds-gray-50) 100%);
+  background: radial-gradient(90% 80% at 50% 38%, var(--ds-white) 0%, var(--ds-gray-100) 100%);
 }
 
 .productImage {

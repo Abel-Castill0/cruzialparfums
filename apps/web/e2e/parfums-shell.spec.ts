@@ -12,9 +12,6 @@ async function firstPurchasableCardAdd(page: Page) {
     .first();
   await expect(card).toBeVisible();
   await card.getByRole("button", { name: /^Añadir/ }).click();
-  // The catalog hero hides the header (and its cart button) by design, and how far the click scrolls depends on image
-  // layout: on a tall tablet it can stop with the hero still in view. Leave the hero explicitly, as accessibility.spec does.
-  await page.evaluate(() => window.scrollTo(0, (document.querySelector("[data-home-hero]") as HTMLElement).offsetHeight + 100));
 }
 
 test.describe("parfums home hero and header", () => {
@@ -180,12 +177,9 @@ test.describe("parfums home hero and header", () => {
     await expect(page.locator("header").first()).toBeVisible();
   });
 
-  test("the catalog hero also hides the header until the visitor scrolls past it", async ({ page }) => {
+  test("the catalog has no hero, so the header is there from the first screen", async ({ page }) => {
     await page.goto("/parfums/catalogo");
-    const hero = page.locator("[data-home-hero]");
-    const height = (await hero.boundingBox())!.height;
-    await expect(page.locator("header").first()).toBeHidden();
-    await page.evaluate((y) => window.scrollTo(0, y), height + 100);
+    await expect(page.locator("[data-home-hero]")).toHaveCount(0);
     await expect(page.locator("header").first()).toBeVisible();
   });
 });
@@ -193,9 +187,6 @@ test.describe("parfums home hero and header", () => {
 test.describe("parfums search", () => {
   test("opens over the whole viewport, takes focus and typing, finds products and closes with Escape", async ({ page }) => {
     await page.goto("/parfums/catalogo");
-    const catalogHero = page.locator("[data-home-hero]");
-    const heroHeight = (await catalogHero.boundingBox())!.height;
-    await page.evaluate((y) => window.scrollTo(0, y), heroHeight + 100);
     const trigger = page.getByRole("button", { name: "Buscar fragancias" }).first();
     await trigger.click();
 
@@ -224,7 +215,8 @@ test.describe("parfums search", () => {
 test.describe("parfums recommender", () => {
   test("closing returns to the same page and position; completing hands over to the catalog", async ({ page }) => {
     await page.goto("/parfums/catalogo?type=arab");
-    const opener = page.getByRole("link", { name: /Encontrar mi fragancia/ }).first();
+    // The catalog no longer has a hero button: the recommender opens from the closing band ("¿No encuentras tu fragancia?").
+    const opener = page.getByRole("link", { name: /Usar el Finder/ }).first();
     await opener.focus();
     await page.evaluate(() => window.scrollTo(0, 700));
     const before = await page.evaluate(() => window.scrollY);
@@ -327,8 +319,7 @@ test.describe("import TikTok module", () => {
   // "Permissions policy violation: accelerometer is not allowed in this document" and may refuse playback.
   test("the Parfums TikTok iframe is created on play, also after a client-side navigation, with the permissions the player asks for", async ({ page }) => {
     await page.goto("/parfums/catalogo");
-    // The header is hidden over the catalog hero; scroll past it, then take the brand link back to /parfums (a client-side navigation).
-    await page.evaluate(() => window.scrollTo(0, window.innerHeight + 300));
+    // Take the brand link back to /parfums (a client-side navigation).
     await page.locator('header a[href="/parfums"]').first().click();
     await page.waitForURL("**/parfums");
     const section = page.locator("[data-home-video]");
