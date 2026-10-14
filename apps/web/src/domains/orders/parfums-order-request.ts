@@ -1,7 +1,14 @@
 import { isProductPurchasable } from "../catalog/availability";
 import { listProductPurchaseVariants } from "../catalog/product-purchase";
-import type { PublicCatalogRepository } from "../catalog/types";
+import type { CatalogProduct, PublicCatalogRepository } from "../catalog/types";
 import type { ParfumsCheckoutCustomer } from "../whatsapp/parfums-message-builder";
+import {
+  isMotorizadoAllowed,
+  motorizadoAvailability,
+  MOTORIZADO_UNAVAILABLE_MESSAGE,
+  type DeliveryZone,
+} from "../commercial/delivery-zones";
+import { checkGiftSelection, hasFullBottle } from "../commercial/gift";
 import { parfumsDeliveryMethod } from "./parfums-delivery";
 
 export const PARFUMS_ORDER_MAX_LINES = 40;
@@ -13,6 +20,19 @@ export type ParfumsOrderRequestInput = {
   requestId: string;
   lines: Array<{ productId: string; variantId: string; quantity: number }>;
   customer: ParfumsCheckoutCustomer;
+  /** The Arabic perfume the customer picked for the free 2 ml decant (a catalog product id or legacy id). Optional. */
+  giftProductId?: string;
+};
+
+/**
+ * Commercial rules the caller loads from the database (docs/commercial-rules.md). Both default to "nothing enforced",
+ * which keeps every existing caller and test unchanged.
+ */
+export type ParfumsOrderRules = {
+  /** `delivery_zones`. Empty until the owner validates the district list: then the motorcycle is not restricted anywhere. */
+  zones?: readonly DeliveryZone[];
+  /** Product ids excluded from the gift (the active `gift_exclusion` rule). */
+  giftExcludedProductIds?: readonly string[];
 };
 
 export type ParfumsOrderLineSnapshot = {
@@ -41,6 +61,8 @@ export type ValidatedParfumsOrderRequest = {
   customerSnapshot: { name: string; phone: string };
   deliverySnapshot: { district: string; delivery: string; note: string };
   shippingMethodCode: "shalom" | null;
+  /** Database id of the chosen gift perfume, validated; null when the customer did not pick one. */
+  giftProductId: string | null;
   lines: ParfumsOrderLineSnapshot[];
   subtotal: number;
   customer: ParfumsCheckoutCustomer;
@@ -49,7 +71,7 @@ export type ValidatedParfumsOrderRequest = {
 export type ParfumsOrderValidationError = {
   ok: false;
   message: string;
-  fieldErrors?: Partial<Record<"name" | "phone" | "district" | "delivery" | "note" | "cart", string>>;
+  fieldErrors?: Partial<Record<"name" | "phone" | "district" | "delivery" | "note" | "cart" | "gift", string>>;
 };
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -61,6 +83,7 @@ function normalizeText(value: unknown, max: number) {
 export function validateAndResolveParfumsOrder(
   input: unknown,
   repository: PublicCatalogRepository,
+  rules: ParfumsOrderRules = {},
 ): ValidatedParfumsOrderRequest | ParfumsOrderValidationError {
   if (!input || typeof input !== "object") {
     return { ok: false, message: "No pudimos leer la solicitud. Revisa los datos e inténtalo otra vez." };
@@ -93,12 +116,17 @@ export function validateAndResolveParfumsOrder(
   if (district.length < 2 || district.length > 120) fieldErrors.district = "Ingresa un distrito o ciudad válido.";
   const deliveryMethod = parfumsDeliveryMethod(delivery);
   if (!deliveryMethod) fieldErrors.delivery = "Selecciona una opción de entrega válida.";
+  // A restricted district only turns the motorcycle off: the same order with Shalom always goes through.
+  if (deliveryMethod === "motorizado" && !isMotorizadoAllowed(motorizadoAvailability(district, rules.zones ?? []))) {
+    fieldErrors.delivery = MOTORIZADO_UNAVAILABLE_MESSAGE;
+  }
   if (note.length > 500) fieldErrors.note = "La nota no puede superar 500 caracteres.";
   if (Object.keys(fieldErrors).length > 0) {
     return { ok: false, message: "Revisa los campos marcados.", fieldErrors };
   }
 
   const snapshots: ParfumsOrderLineSnapshot[] = [];
+  const purchased: Array<{ product: CatalogProduct; group: "decant" | "bottle" }> = [];
   let subtotal = 0;
   const seen = new Set<string>();
   for (const rawLine of candidate.lines) {
@@ -127,6 +155,7 @@ export function validateAndResolveParfumsOrder(
       return { ok: false, message: "Una presentación ya no está disponible. Actualiza tu carrito.", fieldErrors: { cart: "Selecciona otra presentación." } };
     }
 
+    purchased.push({ product, group: variant.group });
     const quantity = line.quantity as number;
     const lineTotal = variant.price * quantity;
     subtotal += lineTotal;
@@ -152,6 +181,18 @@ export function validateAndResolveParfumsOrder(
     });
   }
 
+  let giftProductId: string | null = null;
+  if (candidate.giftProductId !== undefined && candidate.giftProductId !== null && candidate.giftProductId !== "") {
+    const giftProduct = typeof candidate.giftProductId === "string" ? repository.resolveCartIdentity(candidate.giftProductId) : null;
+    const gift = checkGiftSelection({
+      giftProduct,
+      fullBottleInOrder: hasFullBottle(purchased),
+      excludedProductIds: rules.giftExcludedProductIds ?? [],
+    });
+    if (!gift.ok) return { ok: false, message: gift.message, fieldErrors: { gift: gift.message } };
+    giftProductId = gift.productId;
+  }
+
   return {
     ok: true as const,
     requestId: candidate.requestId,
@@ -160,6 +201,7 @@ export function validateAndResolveParfumsOrder(
     // The motorizado has no shipping_methods row: its fee and route are agreed
     // over WhatsApp, so the order is stored without a method code.
     shippingMethodCode: deliveryMethod === "shalom" ? "shalom" : null,
+    giftProductId,
     lines: snapshots,
     subtotal,
     customer: { name, phone, district, delivery, note },

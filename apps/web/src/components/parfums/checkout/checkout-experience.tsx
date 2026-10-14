@@ -48,8 +48,11 @@ function money(value: number) {
 
 export function CheckoutExperience({
   products,
+  restrictedDistricts = [],
 }: {
   products: CatalogProduct[];
+  /** Districts the motorcycle does not reach; the checkout turns the option off there and points to Shalom. */
+  restrictedDistricts?: readonly string[];
 }) {
   const router = useRouter();
   const { lines, total, persistenceError, setQuantity, remove, clear } = useParfumsCart(products);
@@ -307,6 +310,7 @@ export function CheckoutExperience({
               showMissing={shippingMissing}
               districtError={result?.status === "error" ? result.fieldErrors?.district : undefined}
               deliveryError={result?.status === "error" ? result.fieldErrors?.delivery : undefined}
+              restrictedDistricts={restrictedDistricts}
             />
             <label>
               Nota <small>opcional</small>

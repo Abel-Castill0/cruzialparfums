@@ -120,3 +120,69 @@ describe("describeParfumsDelivery", () => {
     expect(describeParfumsDelivery("  ")).toMatchObject({ method: null, methodLabel: "Sin indicar" });
   });
 });
+
+describe("Parfums commercial rules in the order validator", () => {
+  const motorizado = { ...customer, district: "Pucusana", delivery: PARFUMS_MOTORIZADO_DELIVERY };
+  const zones = [
+    { district: "Miraflores", isRestricted: false },
+    { district: "Pucusana", isRestricted: true },
+  ];
+
+  it("turns the motorcycle off in a restricted district without blocking the order", () => {
+    const refused = validateAndResolveParfumsOrder({ ...validInput(), customer: motorizado }, repository, { zones });
+    expect(refused).toMatchObject({ ok: false, fieldErrors: { delivery: expect.stringContaining("Elige una agencia Shalom") } });
+    // The same order, same district, with Shalom goes through.
+    const withShalom = validateAndResolveParfumsOrder({ ...validInput(), customer: { ...motorizado, delivery: PARFUMS_SHALOM_DELIVERY } }, repository, { zones });
+    expect(withShalom.ok).toBe(true);
+  });
+
+  it("accepts the motorcycle in a covered district and when no zones are loaded", () => {
+    expect(validateAndResolveParfumsOrder({ ...validInput(), customer: { ...motorizado, district: "Miraflores" } }, repository, { zones }).ok).toBe(true);
+    expect(validateAndResolveParfumsOrder({ ...validInput(), customer: motorizado }, repository).ok).toBe(true);
+  });
+
+  it("refuses the motorcycle for a district that is not on the list once zones are enforced", () => {
+    expect(validateAndResolveParfumsOrder({ ...validInput(), customer: { ...motorizado, district: "Arequipa" } }, repository, { zones }).ok).toBe(false);
+  });
+
+  it("keeps a valid order without a gift: giftProductId is null", () => {
+    const result = validateAndResolveParfumsOrder(validInput(), repository);
+    expect(result.ok && result.giftProductId).toBe(null);
+  });
+
+  it("refuses a gift when the order has no full bottle, before anything is stored", () => {
+    const decantOnly = { ...validInput(), lines: [{ productId: product.legacyId!, variantId: listProductPurchaseVariants(product).find((item) => item.group === "decant")!.variantId, quantity: 1 }], giftProductId: product.legacyId! };
+    expect(validateAndResolveParfumsOrder(decantOnly, repository)).toMatchObject({ ok: false, fieldErrors: { gift: expect.stringContaining("frasco completo") } });
+  });
+
+  describe("with a gift", () => {
+    const bottleProduct = repository.list().find(
+      (item) => item.type === "arab" && item.availabilityStatus === "available" && listProductPurchaseVariants(item).some((entry) => entry.group === "bottle"),
+    );
+    const giftId = "aaaaaaaa-0000-4000-8000-000000000001";
+    // The fixture catalog has no database ids: expose the same Arabic perfume under one, as the Supabase catalog does.
+    const catalog = {
+      ...repository,
+      resolveCartIdentity: (identity: string) => {
+        const found = repository.resolveCartIdentity(identity);
+        return found && found.legacyId === bottleProduct?.legacyId ? { ...found, productId: giftId } : found;
+      },
+    } as unknown as typeof repository;
+
+    function withBottle(extra: object = {}) {
+      const bottle = listProductPurchaseVariants(bottleProduct!).find((entry) => entry.group === "bottle")!;
+      return { ...validInput(), lines: [{ productId: bottleProduct!.legacyId!, variantId: bottle.variantId, quantity: 1 }], giftProductId: bottleProduct!.legacyId!, ...extra };
+    }
+
+    it("stores the validated gift id for an Arabic perfume bought with a full bottle", () => {
+      expect(bottleProduct, "the fixture catalog needs an available Arabic perfume with a bottle").toBeDefined();
+      const result = validateAndResolveParfumsOrder(withBottle(), catalog);
+      expect(result.ok && result.giftProductId).toBe(giftId);
+    });
+
+    it("refuses the gift when its perfume is excluded by id", () => {
+      const result = validateAndResolveParfumsOrder(withBottle(), catalog, { giftExcludedProductIds: [giftId] });
+      expect(result).toMatchObject({ ok: false, fieldErrors: { gift: expect.stringContaining("no participa") } });
+    });
+  });
+});

@@ -286,6 +286,25 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"delivery_zones": {
+                  Row: {
+                    "business_unit_id": string,"created_at": string,"district": string,"id": string,"is_restricted": boolean,"updated_at": string
+                  }
+                  Insert: {
+                    "business_unit_id": string,"created_at"?: string,"district": string,"id"?: string,"is_restricted"?: boolean,"updated_at"?: string
+                  }
+                  Update: {
+                    "business_unit_id"?: string,"created_at"?: string,"district"?: string,"id"?: string,"is_restricted"?: boolean,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "delivery_zones_business_unit_id_fkey"
+      columns: ["business_unit_id"]
+isOneToOne: false
+      referencedRelation: "business_units"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"deposit_policies": {
                   Row: {
                     "business_unit_id": string,"created_at": string,"customer_status": string,"deposit_percentage": number,"effective_from": string,"effective_until": string | null,"id": string,"is_active": boolean,"source": string,"updated_at": string
@@ -525,13 +544,13 @@ isOneToOne: false
                   ]
                 },"orders": {
                   Row: {
-                    "archived_at": string | null,"business_unit_id": string,"campaign_id": string | null,"channel": string,"claimed_customer_status": string | null,"created_at": string,"currency": string,"customer_id": string | null,"customer_snapshot": NonNullable<Json>,"delivery_snapshot": NonNullable<Json>,"deposit_amount_snapshot": number | null,"deposit_percentage_snapshot": number | null,"deposit_policy_snapshot": Json | null,"id": string,"notes": string | null,"order_number": string,"request_id": string | null,"shipping_method_id": string | null,"status": string,"subtotal_amount": number,"updated_at": string,"verified_customer_status_snapshot": string | null
+                    "archived_at": string | null,"business_unit_id": string,"campaign_id": string | null,"channel": string,"claimed_customer_status": string | null,"created_at": string,"currency": string,"customer_id": string | null,"customer_snapshot": NonNullable<Json>,"delivery_snapshot": NonNullable<Json>,"deposit_amount_snapshot": number | null,"deposit_percentage_snapshot": number | null,"deposit_policy_snapshot": Json | null,"gift_product_id": string | null,"id": string,"notes": string | null,"order_number": string,"request_id": string | null,"shipping_cost_cents": number | null,"shipping_method_id": string | null,"status": string,"subtotal_amount": number,"updated_at": string,"verified_customer_status_snapshot": string | null
                   }
                   Insert: {
-                    "archived_at"?: string | null,"business_unit_id": string,"campaign_id"?: string | null,"channel"?: string,"claimed_customer_status"?: string | null,"created_at"?: string,"currency"?: string,"customer_id"?: string | null,"customer_snapshot"?: NonNullable<Json>,"delivery_snapshot"?: NonNullable<Json>,"deposit_amount_snapshot"?: number | null,"deposit_percentage_snapshot"?: number | null,"deposit_policy_snapshot"?: Json | null,"id"?: string,"notes"?: string | null,"order_number": string,"request_id"?: string | null,"shipping_method_id"?: string | null,"status"?: string,"subtotal_amount"?: number,"updated_at"?: string,"verified_customer_status_snapshot"?: string | null
+                    "archived_at"?: string | null,"business_unit_id": string,"campaign_id"?: string | null,"channel"?: string,"claimed_customer_status"?: string | null,"created_at"?: string,"currency"?: string,"customer_id"?: string | null,"customer_snapshot"?: NonNullable<Json>,"delivery_snapshot"?: NonNullable<Json>,"deposit_amount_snapshot"?: number | null,"deposit_percentage_snapshot"?: number | null,"deposit_policy_snapshot"?: Json | null,"gift_product_id"?: string | null,"id"?: string,"notes"?: string | null,"order_number": string,"request_id"?: string | null,"shipping_cost_cents"?: number | null,"shipping_method_id"?: string | null,"status"?: string,"subtotal_amount"?: number,"updated_at"?: string,"verified_customer_status_snapshot"?: string | null
                   }
                   Update: {
-                    "archived_at"?: string | null,"business_unit_id"?: string,"campaign_id"?: string | null,"channel"?: string,"claimed_customer_status"?: string | null,"created_at"?: string,"currency"?: string,"customer_id"?: string | null,"customer_snapshot"?: NonNullable<Json>,"delivery_snapshot"?: NonNullable<Json>,"deposit_amount_snapshot"?: number | null,"deposit_percentage_snapshot"?: number | null,"deposit_policy_snapshot"?: Json | null,"id"?: string,"notes"?: string | null,"order_number"?: string,"request_id"?: string | null,"shipping_method_id"?: string | null,"status"?: string,"subtotal_amount"?: number,"updated_at"?: string,"verified_customer_status_snapshot"?: string | null
+                    "archived_at"?: string | null,"business_unit_id"?: string,"campaign_id"?: string | null,"channel"?: string,"claimed_customer_status"?: string | null,"created_at"?: string,"currency"?: string,"customer_id"?: string | null,"customer_snapshot"?: NonNullable<Json>,"delivery_snapshot"?: NonNullable<Json>,"deposit_amount_snapshot"?: number | null,"deposit_percentage_snapshot"?: number | null,"deposit_policy_snapshot"?: Json | null,"gift_product_id"?: string | null,"id"?: string,"notes"?: string | null,"order_number"?: string,"request_id"?: string | null,"shipping_cost_cents"?: number | null,"shipping_method_id"?: string | null,"status"?: string,"subtotal_amount"?: number,"updated_at"?: string,"verified_customer_status_snapshot"?: string | null
                   }
                   Relationships: [
                     {
@@ -551,6 +570,12 @@ isOneToOne: false
       columns: ["customer_id"]
 isOneToOne: false
       referencedRelation: "customers"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "orders_gift_product_id_fkey"
+      columns: ["gift_product_id"]
+isOneToOne: false
+      referencedRelation: "products"
       referencedColumns: ["id"]
     },{
       foreignKeyName: "orders_shipping_method_id_fkey"
@@ -697,6 +722,25 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"promotion_rules": {
+                  Row: {
+                    "actions": NonNullable<Json>,"business_unit_id": string,"conditions": NonNullable<Json>,"created_at": string,"id": string,"is_active": boolean,"rule_type": string,"updated_at": string
+                  }
+                  Insert: {
+                    "actions"?: NonNullable<Json>,"business_unit_id": string,"conditions"?: NonNullable<Json>,"created_at"?: string,"id"?: string,"is_active"?: boolean,"rule_type": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "actions"?: NonNullable<Json>,"business_unit_id"?: string,"conditions"?: NonNullable<Json>,"created_at"?: string,"id"?: string,"is_active"?: boolean,"rule_type"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "promotion_rules_business_unit_id_fkey"
+      columns: ["business_unit_id"]
+isOneToOne: false
+      referencedRelation: "business_units"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"settings": {
                   Row: {
                     "business_unit_id": string | null,"created_at": string,"id": string,"is_public": boolean,"key": string,"updated_at": string,"updated_by": string | null,"value": NonNullable<Json>
@@ -710,6 +754,25 @@ isOneToOne: false
                   Relationships: [
                     {
       foreignKeyName: "settings_business_unit_id_fkey"
+      columns: ["business_unit_id"]
+isOneToOne: false
+      referencedRelation: "business_units"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"shipping_agencies": {
+                  Row: {
+                    "business_unit_id": string,"coverage": string,"created_at": string,"description": string | null,"id": string,"is_active": boolean,"name": string,"updated_at": string
+                  }
+                  Insert: {
+                    "business_unit_id": string,"coverage": string,"created_at"?: string,"description"?: string | null,"id"?: string,"is_active"?: boolean,"name": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "business_unit_id"?: string,"coverage"?: string,"created_at"?: string,"description"?: string | null,"id"?: string,"is_active"?: boolean,"name"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "shipping_agencies_business_unit_id_fkey"
       columns: ["business_unit_id"]
 isOneToOne: false
       referencedRelation: "business_units"
@@ -1146,6 +1209,12 @@ isOneToOne: false
 "admin_customer_order_summary":
 { Args: { "p_customer_id": string }; Returns: Json
                            },
+"admin_delete_delivery_zone":
+{ Args: { "p_id": string,"p_unit_code": string }; Returns: undefined },
+"admin_delete_promotion_rule":
+{ Args: { "p_id": string,"p_unit_code": string }; Returns: undefined },
+"admin_delete_shipping_agency":
+{ Args: { "p_id": string,"p_unit_code": string }; Returns: undefined },
 "admin_delete_note":
 { Args: { "p_id": string,"p_unit_code": string }; Returns: undefined },
 "admin_duplicate_campaign":
@@ -1378,6 +1447,10 @@ isOneToOne: false
 "admin_operations_summary":
 { Args: { "p_unit_code": string }; Returns: Json
                            },
+"admin_parfums_set_order_shipping_cost":
+{ Args: { "p_order_id": string,"p_shipping_cost_cents": number }; Returns: {
+              "archived_at": string | null,"business_unit_id": string,"campaign_id": string | null,"channel": string,"claimed_customer_status": string | null,"created_at": string,"currency": string,"customer_id": string | null,"customer_snapshot": NonNullable<Json>,"delivery_snapshot": NonNullable<Json>,"deposit_amount_snapshot": number | null,"deposit_percentage_snapshot": number | null,"deposit_policy_snapshot": Json | null,"gift_product_id": string | null,"id": string,"notes": string | null,"order_number": string,"request_id": string | null,"shipping_cost_cents": number | null,"shipping_method_id": string | null,"status": string,"subtotal_amount": number,"updated_at": string,"verified_customer_status_snapshot": string | null
+            } },
 "admin_parfums_update_order_status":
 { Args: { "p_expected_status": string,"p_new_status": string,"p_order_id": string,"p_reason"?: string }; Returns: {
               "archived_at": string | null,
@@ -1639,6 +1712,18 @@ isOneToOne: false
 "admin_retry_notification":
 { Args: { "p_business_unit_code": string,"p_expected_updated_at": string,"p_id": string,"p_verified_not_sent"?: boolean }; Returns: undefined
                            },
+"admin_save_delivery_zone":
+{ Args: { "p_district": string,"p_expected_updated_at": string,"p_id": string,"p_is_restricted": boolean,"p_unit_code": string }; Returns: {
+              "business_unit_id": string,"created_at": string,"district": string,"id": string,"is_restricted": boolean,"updated_at": string
+            } },
+"admin_save_promotion_rule":
+{ Args: { "p_actions": Json,"p_conditions": Json,"p_expected_updated_at": string,"p_id": string,"p_is_active": boolean,"p_rule_type": string,"p_unit_code": string }; Returns: {
+              "actions": NonNullable<Json>,"business_unit_id": string,"conditions": NonNullable<Json>,"created_at": string,"id": string,"is_active": boolean,"rule_type": string,"updated_at": string
+            } },
+"admin_save_shipping_agency":
+{ Args: { "p_coverage": string,"p_description": string,"p_expected_updated_at": string,"p_id": string,"p_is_active": boolean,"p_name": string,"p_unit_code": string }; Returns: {
+              "business_unit_id": string,"coverage": string,"created_at": string,"description": string | null,"id": string,"is_active": boolean,"name": string,"updated_at": string
+            } },
 "admin_save_note":
 { Args: { "p_description": string,"p_expected_updated_at": string,"p_id": string,"p_image_url": string,"p_is_active": boolean,"p_name": string,"p_type": string,"p_unit_code": string }; Returns: {
               "business_unit_id": string,"created_at": string,"description": string | null,"id": string,"image_url": string | null,"is_active": boolean,"name": string,"slug": string,"type": string,"updated_at": string
@@ -2086,6 +2171,14 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"calculate_mixed_wholesale_quote":
+{ Args: { "p_lines": Json,"p_unit_code": string }; Returns: {
+              "base_unit_price": number,"commercial_type": string,"currency": string,"discount_per_unit": number,"eligibility_status": string,"final_unit_price": number,"line_total": number,"min_units": number,"mix_units": number,"product_variant_id": string,"quantity": number,"threshold_reached": boolean
+            }[] },
+"attach_parfums_order_gift":
+{ Args: { "p_gift_product_id": string,"p_request_id": string }; Returns: {
+              "archived_at": string | null,"business_unit_id": string,"campaign_id": string | null,"channel": string,"claimed_customer_status": string | null,"created_at": string,"currency": string,"customer_id": string | null,"customer_snapshot": NonNullable<Json>,"delivery_snapshot": NonNullable<Json>,"deposit_amount_snapshot": number | null,"deposit_percentage_snapshot": number | null,"deposit_policy_snapshot": Json | null,"gift_product_id": string | null,"id": string,"notes": string | null,"order_number": string,"request_id": string | null,"shipping_cost_cents": number | null,"shipping_method_id": string | null,"status": string,"subtotal_amount": number,"updated_at": string,"verified_customer_status_snapshot": string | null
+            } },
 "calculate_parfums_wholesale_quote":
 { Args: { "p_lines": Json }; Returns: {
               "base_unit_price": number,"bottle_group_quantity": number,"commercial_type": string,"currency": string,"discount_per_unit": number,"eligibility_status": string,"final_unit_price": number,"line_total": number,"product_variant_id": string,"quantity": number,"threshold_reached": boolean
