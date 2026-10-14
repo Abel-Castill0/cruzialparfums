@@ -81,6 +81,52 @@
 }
 
 /* One line: a longer message is cut with an ellipsis instead of growing the hero. */
+/* Status badge + one date line, above the title. Small on purpose: the container photograph and the title lead. */
+.heroStatus {
+  margin-bottom: var(--ds-space-2);
+  display: grid;
+  justify-items: start;
+  gap: 6px;
+}
+
+.statusBadge {
+  min-height: 28px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--ds-radius-pill);
+  font-size: var(--ds-text-micro);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+/* Open: the brand gold with its ink label (6.85:1). */
+.status_open {
+  color: var(--ds-color-on-accent);
+  background: var(--ds-color-accent);
+}
+
+/* Soon: a grey veil with a hairline, white label (on the photo's dark veil). */
+.status_soon {
+  color: var(--ds-on-photo);
+  background: rgba(29, 29, 31, 0.55);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.55);
+}
+
+/* Closed: muted, no border and no accent: nothing to act on. */
+.status_closed {
+  color: var(--ds-on-photo-muted);
+  background: rgba(29, 29, 31, 0.5);
+}
+
+.statusDate {
+  margin: 0;
+  color: var(--import-muted);
+  font-size: var(--ds-text-small);
+  line-height: 1.4;
+  font-variant-numeric: tabular-nums;
+}
+
 .heroSummary {
   max-width: min(48ch, 100%);
   margin-top: 12px;
