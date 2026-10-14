@@ -39,6 +39,8 @@ La migración ejecuta `app.backfill_product_notes()` (idempotente; una función 
 
 El espejo se reescribe con los nombres ya unificados. Si dos productos tenían ortografías distintas de la misma nota, ahora muestran la misma. **Antes de aplicar en Producción** conviene revisar el resultado: `select * from app.backfill_product_notes()` informa cuántas notas y vínculos creó (el número de notas distintas debería ser ≤ las ortografías originales).
 
+Vista previa con los datos reales de Producción (solo lectura): `docs/notes-migration-preview.md` (70 notas, 297 vínculos, 0 colisiones).
+
 ## 4. Reglas
 
 - Una nota que usan productos **no se borra** (`P2050`): se quita de ellos o se oculta con «Visible en la tienda» desactivado.
