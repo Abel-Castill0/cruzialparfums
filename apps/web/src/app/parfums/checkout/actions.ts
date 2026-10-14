@@ -15,6 +15,7 @@ import {
   buildWhatsAppUrl,
 } from "@/domains/whatsapp/parfums-message-builder";
 import { loadParfumsStorefront } from "@/lib/catalog/parfums-storefront";
+import { loadParfumsOrderRules } from "@/lib/commercial/order-rules";
 import { ATTEMPT_EXPIRED_CODE, ATTEMPT_REQUIRED_CODE, resolveAttempt, rotateAttempt } from "@/lib/security/attempt-capability";
 import { checkOrderRequestRateLimit } from "@/lib/security/order-abuse";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
@@ -81,7 +82,9 @@ export async function createParfumsOrderRequest(
     // Any client-supplied requestId is overwritten: only the capability holder
     // can reproduce this id, so only they can have an existing order replayed.
     const input = { ...(submission as object), requestId: attempt.requestId } as ParfumsOrderRequestInput;
-    const validated = validateAndResolveParfumsOrder(input, storefront.catalog);
+    const giftChosen = typeof input.giftProductId === "string" && input.giftProductId !== "";
+    const rules = await loadParfumsOrderRules(client, { giftChosen });
+    const validated = validateAndResolveParfumsOrder(input, storefront.catalog, rules);
     if (isOrderError(validated)) return {
       status: "error",
       message: validated.message,
@@ -113,6 +116,11 @@ export async function createParfumsOrderRequest(
     if (!persisted.ok) return { status: "error", message: persisted.message };
     order = persisted.data;
     requestId = validated.requestId;
+    if (validated.giftProductId && persisted.data.created) {
+      // The order exists and stays: a gift the database refuses (it repeats the rules) is logged, never a blocked order.
+      const gift = await repository.attachGift(validated.requestId, validated.giftProductId);
+      if (!gift.ok) console.error("[parfums-order] gift not attached", { requestId: validated.requestId, code: gift.code });
+    }
     wakeNotificationWorker();
   }
 

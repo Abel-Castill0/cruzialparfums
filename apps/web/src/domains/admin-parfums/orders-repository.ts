@@ -61,6 +61,10 @@ export type OrderDetail = {
   status: string;
   currency: string;
   subtotalAmount: number;
+  /** Fee quoted by the operator over WhatsApp, in integer cents; null until quoted. Never part of the subtotal. */
+  shippingCostCents: number | null;
+  /** Perfume the customer chose for the free 2 ml decant, if any. */
+  giftProductId: string | null;
   customer: OrderCustomerSnapshot;
   delivery: OrderDeliverySnapshot;
 };
@@ -201,6 +205,8 @@ export class AdminParfumsOrdersRepository {
           status: order.status,
           currency: order.currency,
           subtotalAmount: order.subtotal_amount,
+          shippingCostCents: order.shipping_cost_cents,
+          giftProductId: order.gift_product_id,
           customer: readCustomerSnapshot(order.customer_snapshot),
           delivery: readDeliverySnapshot(order.delivery_snapshot),
         },

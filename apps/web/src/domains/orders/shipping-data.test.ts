@@ -1,11 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  LIMA_DISTRICTS,
-  LIMA_GRID_COLS,
-  LIMA_GRID_ROWS,
-  MOTORIZADO_RESTRICTED_DISTRICTS,
-  isMotorizadoRestricted,
-} from "./lima-districts";
+import { LIMA_DISTRICTS, LIMA_GRID_COLS, LIMA_GRID_ROWS } from "./lima-districts";
 import { shalomAgencyDelivery } from "./parfums-delivery";
 import { SHALOM_AGENCIES } from "./shalom-agencies";
 
@@ -29,11 +23,6 @@ describe("Lima district tile map", () => {
     expect(cells.size).toBe(LIMA_DISTRICTS.length);
   });
 
-  it("only restricts districts that exist on the map", () => {
-    for (const name of MOTORIZADO_RESTRICTED_DISTRICTS) expect(METRO.has(name), name).toBe(true);
-    expect(isMotorizadoRestricted("Miraflores")).toBe(false);
-    expect(isMotorizadoRestricted("Comas")).toBe(true);
-  });
 });
 
 describe("Shalom agency directory", () => {

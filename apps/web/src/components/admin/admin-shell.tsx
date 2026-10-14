@@ -31,6 +31,7 @@ const NAV: Record<AdminShellUnit, { unitLabel: string; unitHint: string; groups:
         label: "Gestión",
         items: [
           { label: "Operaciones", href: "/admin/parfums/operaciones" as Route },
+          { label: "Reglas comerciales", href: "/admin/parfums/reglas" as Route },
           { label: "Configuración", href: "/admin/parfums/configuracion" as Route },
         ],
       },

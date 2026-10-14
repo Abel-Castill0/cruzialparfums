@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import { AdminPage, AdminPageHeader, AdminSection, Notice } from "@/components/admin/admin-ui";
 import { requireUnitAdmin } from "@/lib/auth/admin-session";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { readMixedWholesaleRule } from "@/domains/commercial/rule-forms";
+import { MixedWholesaleRuleForm } from "./mixed-rule-form";
 import { ImportWholesalePolicyForm } from "./policy-form";
 
 export const dynamic = "force-dynamic";
@@ -16,10 +18,15 @@ export default async function ImportWholesaleAdminPage() {
   if (!supabase) return <AdminPage><Notice tone="danger" title="Panel no disponible" /></AdminPage>;
   const { data, error } = await supabase.from("wholesale_policies").select("*").eq("business_unit_id", auth.membership.businessUnitId).eq("scope", "per_commercial_type").is("archived_at", null).order("commercial_type");
   const policies = data ?? [];
+  const ruleResult = await supabase.from("promotion_rules").select("id,conditions,actions,is_active,updated_at").eq("business_unit_id", auth.membership.businessUnitId).eq("rule_type", "wholesale_mixed").maybeSingle();
+  const mixed = readMixedWholesaleRule(ruleResult.data);
   const canEdit = auth.membership.role === "admin";
   return <AdminPage>
-    <AdminPageHeader eyebrow="Cruzial Import" title="Mayorista" description="Reglas por tipo comercial. Los mínimos se cuentan solo con frascos completos y cada tipo se calcula por separado." meta={canEdit ? "Los cambios se reflejan en la información pública de Import." : "Acceso de solo lectura: un administrador de Import puede modificar las reglas."} />
-    <AdminSection title="Reglas vigentes" description="Confirma cada regla con el cliente antes de abrir pedidos mayoristas.">
+    <AdminPageHeader eyebrow="Cruzial Import" title="Mayorista" description="Regla vigente: unidades mixtas. Los frascos completos de cualquier tipo suman hacia el mínimo y cada frasco recibe el descuento de su tipo. Los decants no cuentan." meta={canEdit ? "Los cambios se reflejan en la información pública de Import." : "Acceso de solo lectura: un administrador de Import puede modificar las reglas."} />
+    <AdminSection title="Regla mixta (vigente)" description="Decidida por el cliente el 2026-10-14: un mínimo de unidades mixtas y un descuento por tipo. No hay tramos por encima del mínimo (T28).">
+      {ruleResult.error ? <Notice tone="danger" title="No se pudo consultar la regla mixta" /> : <MixedWholesaleRuleForm rule={mixed} canEdit={canEdit} />}
+    </AdminSection>
+    <AdminSection title="Reglas por tipo (presentación pública)" description="Son las que hoy muestra la sección Mayorista de Import. El cálculo mixto de arriba es el que manda; mantén aquí el mismo mínimo y los mismos montos.">
       {error ? <Notice tone="danger" title="No se pudieron consultar las reglas" /> : policies.length ? <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 280px), 1fr))", gap: 16 }}>
         {policies.map((policy) => {
           const type = policy.commercial_type;

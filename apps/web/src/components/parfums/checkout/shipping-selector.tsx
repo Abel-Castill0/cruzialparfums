@@ -1,10 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import {
-  LIMA_DISTRICTS,
-  isMotorizadoRestricted,
-} from "@/domains/orders/lima-districts";
+import { LIMA_DISTRICTS } from "@/domains/orders/lima-districts";
+import { districtKey } from "@/domains/commercial/delivery-zones";
 import {
   PARFUMS_MOTORIZADO_DELIVERY,
   PARFUMS_SHALOM_DELIVERY,
@@ -46,6 +44,7 @@ export function ShippingSelector({
   showMissing,
   districtError,
   deliveryError,
+  restrictedDistricts = [],
 }: {
   /** Free-text district/city, used only when the customer's Shalom agency is not listed. */
   districtValue: string;
@@ -55,12 +54,16 @@ export function ShippingSelector({
   showMissing: boolean;
   districtError?: string | undefined;
   deliveryError?: string | undefined;
+  /** Districts the motorcycle does not reach (`delivery_zones.is_restricted`). Empty until the owner validates the list. */
+  restrictedDistricts?: readonly string[];
 }) {
   const [method, setMethod] = useState<Method>("shalom");
   const [pick, setPick] = useState<ShalomPick>(null);
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<string | null>(null);
   const [motoDistrict, setMotoDistrict] = useState("");
+  const restrictedKeys = useMemo(() => new Set(restrictedDistricts.map(districtKey)), [restrictedDistricts]);
+  const isRestricted = (district: string) => district !== "" && restrictedKeys.has(districtKey(district));
 
   const byDistrict = useMemo(() => {
     const map = new Map<string, ShalomAgency[]>();
@@ -85,13 +88,15 @@ export function ShippingSelector({
   // district it stores, and whether the step is finished.
   const selection = useMemo<ShippingSelection>(() => {
     if (method === "motorizado") {
-      return { delivery: PARFUMS_MOTORIZADO_DELIVERY, district: motoDistrict, complete: motoDistrict !== "" };
+      // A restricted district leaves the step incomplete: the customer is pointed to Shalom instead of being blocked later.
+      return { delivery: PARFUMS_MOTORIZADO_DELIVERY, district: motoDistrict, complete: motoDistrict !== "" && !isRestricted(motoDistrict) };
     }
     if (selectedAgency) {
       return { delivery: shalomAgencyDelivery(selectedAgency), district: selectedAgency.district, complete: true };
     }
     return { delivery: PARFUMS_SHALOM_DELIVERY, district: pick?.kind === "other" ? districtValue : "", complete: pick?.kind === "other" };
-  }, [method, motoDistrict, selectedAgency, pick, districtValue]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- isRestricted derives from restrictedKeys
+  }, [method, motoDistrict, selectedAgency, pick, districtValue, restrictedKeys]);
 
   useEffect(() => {
     onChange(selection);
@@ -99,7 +104,7 @@ export function ShippingSelector({
   }, [selection.delivery, selection.district, selection.complete]);
 
   const missing = showMissing && !selection.complete;
-  const restricted = method === "motorizado" && isMotorizadoRestricted(motoDistrict);
+  const restricted = method === "motorizado" && isRestricted(motoDistrict);
 
   function chooseMethod(next: Method) {
     setMethod(next);
@@ -115,7 +120,7 @@ export function ShippingSelector({
     const count = byDistrict.get(district)?.length ?? 0;
     return count > 0 ? { count } : { disabled: true };
   };
-  const motoTile = (district: string): DistrictTileState => ({ restricted: isMotorizadoRestricted(district) });
+  const motoTile = (district: string): DistrictTileState => ({ restricted: isRestricted(district) });
 
   return (
     <fieldset className={styles.shipping} id="checkout-shipping" tabIndex={-1} aria-describedby={missing ? "shipping-missing" : undefined}>
@@ -229,14 +234,14 @@ export function ShippingSelector({
           </label>
 
           <DistrictMap
-            label="Mapa esquemático de distritos de Lima con zonas de acceso restringido para el motorizado"
+            label="Mapa esquemático de distritos de Lima donde el motorizado no está disponible"
             selected={motoDistrict || null}
             onSelect={setMotoDistrict}
             tileState={motoTile}
-            describe={(district, state) => (state.restricted ? `${district}: acceso restringido` : `${district}: se cotiza por WhatsApp`)}
+            describe={(district, state) => (state.restricted ? `${district}: sin motorizado, elige Shalom` : `${district}: se cotiza por WhatsApp`)}
           />
           <ul className={styles.keys} aria-label="Leyenda del mapa">
-            <li><i className={styles.keyRestricted} aria-hidden="true" />Acceso restringido</li>
+            <li><i className={styles.keyRestricted} aria-hidden="true" />Sin motorizado (elige Shalom)</li>
             <li><i className={styles.keyOpen} aria-hidden="true" />Se cotiza por WhatsApp</li>
           </ul>
           <p className={styles.legend}>Esquema referencial, no está a escala.</p>
@@ -246,8 +251,8 @@ export function ShippingSelector({
               <p>Elige tu distrito. El costo y la hora de entrega se acuerdan contigo por WhatsApp.</p>
             ) : restricted ? (
               <>
-                <strong>Acceso restringido en {motoDistrict}</strong>
-                <p>El motorizado no ingresa a todas las zonas de este distrito. Te escribimos por WhatsApp para acordar un punto de entrega seguro, o puedes recoger en una agencia Shalom.</p>
+                <strong>El motorizado no llega a {motoDistrict}</strong>
+                <p>Puedes recoger tu pedido en una agencia Shalom: llega a todo el Perú y tu pedido se registra igual.</p>
                 <button type="button" className={styles.switch} onClick={() => chooseMethod("shalom")}>Prefiero recoger en Shalom</button>
               </>
             ) : (
