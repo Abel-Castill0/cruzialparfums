@@ -1,0 +1,40 @@
+/* Editable copy in the design system's voice: body size, muted ink, tight rhythm. Links use the system link colour (gold on
+   the dark bands, where the blue would not pass AA). */
+.richText {
+  --rt-ink: var(--ds-ink);
+  --rt-muted: var(--ds-ink-muted);
+  --rt-link: var(--ds-link);
+  color: var(--rt-muted);
+  font-size: var(--ds-text-body);
+  line-height: 1.65;
+}
+
+.dark {
+  --rt-ink: var(--ds-on-dark);
+  --rt-muted: var(--ds-on-dark-muted);
+  --rt-link: var(--ds-color-accent);
+}
+
+.richText > * + * {
+  margin-top: var(--ds-space-2);
+}
+
+.richText strong {
+  color: var(--rt-ink);
+  font-weight: 600;
+}
+
+.richText ul {
+  padding-left: 1.25em;
+  list-style: disc;
+}
+
+.richText li + li {
+  margin-top: var(--ds-space-1);
+}
+
+.richText a {
+  color: var(--rt-link);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
