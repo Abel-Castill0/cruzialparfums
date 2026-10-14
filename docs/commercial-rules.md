@@ -78,13 +78,14 @@ Se puede corregir después desde `/admin/parfums/reglas` sin migración.
 
 - **`/admin/parfums/reglas`** (menú Gestión → Reglas comerciales): distritos (alta, edición «Sin motorizado», baja), agencias (alta, edición, baja) y perfumes excluidos del regalo (lista con buscador). Los cambios en zonas expiran la etiqueta de caché `delivery-zones` (TTL de respaldo 300 s), por lo que el checkout los ve en segundos.
 - **`/admin/import/mayorista`**: sección «Regla mixta (vigente)» (mínimo de unidades y tres descuentos). Las reglas por tipo de siempre siguen ahí porque son las que muestra hoy la sección pública Mayorista de Import; deben mantenerse con el mismo mínimo y montos.
+- **Texto público del mayorista** (home de Import): ahora dice que el mínimo es mixto (se suman los frascos de cualquier tipo) y cada tipo muestra «S/ X menos por frasco». El número del mínimo sale de las reglas por tipo y solo se muestra si los tres coinciden.
 - **Detalle del pedido de Parfums**: campo «Costo de envío cotizado (S/)» (guarda centavos, no toca el total) y, si el cliente eligió regalo, el perfume.
 - Solo administradores escriben; los visores ven la página en solo lectura.
 
 ## 6. Despliegue
 
 1. Migración `20261014120000` (aditiva; carga Shalom y la regla mixta de Import). Es un cambio sin efecto visible para el cliente: sin distritos no se restringe nada.
-2. `supabase/provisioning/commercial-rules-seed.sql` (exclusión del regalo): resuelve «Club de Nuit Precieux I» (Armaf) por nombre y marca, y **se detiene** si no encuentra exactamente un producto.
+2. `supabase/provisioning/commercial-rules-seed.sql` (exclusión del regalo): guarda el **id** del producto en la regla. Lo encuentra por su slug estable `cdn-preciux-i` dentro de Parfums y **se detiene** si no hay exactamente un producto con ese slug, nombre «Club de Nuit Precieux I» y marca Armaf. Verificado en solo lectura en Producción el 2026-10-14: una coincidencia, id `3228ae87-1dae-437e-b6f3-8a901f7cb4ac`, publicado (los «CDN Preciux I/IV» de Import son otros productos y el filtro de unidad los deja fuera).
 3. Cuando el dueño valide §4: `supabase/provisioning/delivery-zones-PROPOSED.sql` (o crear los distritos desde el admin).
 4. Producción: lo aplica el dueño con su proceso y comprobación previa; esta sesión no tocó Producción.
 
@@ -94,7 +95,6 @@ Los fixtures locales y del proyecto QA (`scripts/local-browser-fixtures.sql`) ca
 
 - **Selector de regalo en el checkout.** El servidor, la base de datos y el admin ya soportan `giftProductId`, pero el checkout público todavía no pregunta por el perfume (hoy el regalo se acuerda por WhatsApp). Es un cambio de interfaz pública que conviene diseñar aparte.
 - **Descuento mayorista en pedidos.** `calculate_mixed_wholesale_quote` calcula la cotización, pero ningún pedido de Import la usa: sigue la coordinación por WhatsApp y el total del pedido no se reescribe. Aplicarlo al pedido requiere cambiar `create_import_order_request`.
-- **Texto público del mayorista** («Desde N frascos por tipo») no se cambió; debe pasar a «unidades mixtas» cuando el dueño lo confirme.
 - **Bloqueo de `/import` para no-admin** (decisión 3 de `content-editor-architecture.md` §7.0): PR aparte.
 - **Tramos > 40 (T28)** y `shipping_agencies` como parte del checkout (hoy Shalom es la única opción y los puntos de recojo siguen en `shalom-agencies.ts`).
 - Pedidos anteriores: `shipping_cost_cents` y `gift_product_id` quedan nulos.

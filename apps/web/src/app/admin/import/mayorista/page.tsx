@@ -26,7 +26,7 @@ export default async function ImportWholesaleAdminPage() {
     <AdminSection title="Regla mixta (vigente)" description="Decidida por el cliente el 2026-10-14: un mínimo de unidades mixtas y un descuento por tipo. No hay tramos por encima del mínimo (T28).">
       {ruleResult.error ? <Notice tone="danger" title="No se pudo consultar la regla mixta" /> : <MixedWholesaleRuleForm rule={mixed} canEdit={canEdit} />}
     </AdminSection>
-    <AdminSection title="Reglas por tipo (presentación pública)" description="Son las que hoy muestra la sección Mayorista de Import. El cálculo mixto de arriba es el que manda; mantén aquí el mismo mínimo y los mismos montos.">
+    <AdminSection title="Reglas por tipo (presentación pública)" description="De aquí salen los descuentos por tipo que muestra la sección Mayorista de Import. El cálculo mixto de arriba es el que manda: mantén aquí los mismos montos y el mismo mínimo en los tres tipos (si difieren, la web pública no muestra el número).">
       {error ? <Notice tone="danger" title="No se pudieron consultar las reglas" /> : policies.length ? <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 280px), 1fr))", gap: 16 }}>
         {policies.map((policy) => {
           const type = policy.commercial_type;
