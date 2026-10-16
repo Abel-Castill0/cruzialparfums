@@ -13,6 +13,8 @@ import type { BusinessUnitSettings } from "@/domains/platform/settings";
 import { ImportConditions, ImportContactCta, ImportFaq, ImportProcess } from "@/components/import/storefront/import-information";
 import { ImportClosedNotice } from "./import-closed-notice";
 import { ImportHero } from "./import-hero";
+import { ProcessGallery } from "@/components/parfums/process-gallery";
+import { PROCESS_GALLERY_IMAGES } from "@/components/parfums/process-gallery-images";
 import { toImportShowcaseItems } from "./import-showcase";
 import styles from "./import-home.module.css";
 
@@ -39,6 +41,12 @@ export function ImportHomeView({ page, filters, contact, depositPercentages, who
   return (
     <main id="main" tabIndex={-1} className={styles.home}>
       <ImportHero hero={active ? { state: "campaign", campaign: active.campaign } : upcoming ? { state: "upcoming", campaign: upcoming.campaign } : { state: page.status === "closed" ? "closed" : "unavailable" }} contact={contact} />
+      <section className={styles.processGallery} aria-labelledby="import-process-gallery-title">
+        <p className={styles.eyebrow}>Así cuidamos cada pedido</p>
+        <h2 id="import-process-gallery-title">Pedidos que llegan a tu puerta</h2>
+        <p className={styles.processGalleryIntro}>Cada fragancia se revisa y prepara con cuidado antes de llegar a ti.</p>
+        <ProcessGallery images={PROCESS_GALLERY_IMAGES} />
+      </section>
       {showcase.length >= 3 ? <section className={styles.showcase} aria-labelledby="import-showcase-title"><Reveal><ProductMarquee tone="import" label="Productos del consolidado" items={showcase} heading={<><p className={styles.eyebrow}>En este consolidado</p><h2 id="import-showcase-title">Productos disponibles ahora</h2></>} /></Reveal></section> : null}
       {previewItems.length >= 3 ? <section className={styles.showcase} aria-labelledby="import-preview-showcase-title"><Reveal><ProductMarquee tone="import" label="Productos de referencia del próximo consolidado" items={previewItems} heading={<><p className={styles.eyebrow}>Próximo consolidado · vista previa</p><h2 id="import-preview-showcase-title">Productos en preparación</h2></>} /></Reveal></section> : null}
 

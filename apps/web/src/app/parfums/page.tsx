@@ -14,6 +14,8 @@ import {
 } from "@/components/parfums/home/showcase";
 import { CatalogUnavailableNotice } from "@/components/parfums/catalog/catalog-unavailable-notice";
 import { ProductMarquee } from "@/components/storefront/home/product-marquee";
+import { ProcessGallery } from "@/components/parfums/process-gallery";
+import { PROCESS_GALLERY_IMAGES } from "@/components/parfums/process-gallery-images";
 import { Reveal } from "@/components/storefront/home/reveal";
 import { TikTokProfile } from "@/components/storefront/home/tiktok-profile";
 import { VideoStory } from "@/components/storefront/home/video-story";
@@ -244,13 +246,17 @@ export default async function ParfumsHomePage() {
         <div className={styles.craftInner}>
           <Reveal>
             <div className={styles.craftHead}>
-              <h2 id="craft-title">
-                Del frasco original <em>a tu piel</em>.
-              </h2>
+              <div className={styles.craftTitle}>
+                <h2 id="craft-title">Del frasco original <em>a tu piel</em>.</h2>
+                <p>Perfumes sellados y una preparación cuidadosa en cada pedido.</p>
+              </div>
               <Link href="/parfums/nosotros" className={styles.textLink}>
                 Conoce Cruzial <span aria-hidden="true">→</span>
               </Link>
             </div>
+          </Reveal>
+          <Reveal>
+            <ProcessGallery images={PROCESS_GALLERY_IMAGES} />
           </Reveal>
           <ol className={styles.principles}>
             {principios.map((principio, index) => (
