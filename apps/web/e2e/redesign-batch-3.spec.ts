@@ -110,12 +110,12 @@ test.describe("parfums home", () => {
     expect(head).toBeTruthy();
   });
 
-  test("'Del frasco original a tu piel' is a dark grey band with no photographs", async ({ page }) => {
+  test("'Del frasco original a tu piel' is a dark grey band with the process collage", async ({ page }) => {
     await page.goto("/parfums");
     const craft = page.locator('section[aria-labelledby="craft-title"]');
     await craft.scrollIntoViewIfNeeded();
     expect(await bg(craft)).toBe("rgb(43, 43, 46)");
-    await expect(craft.locator("img")).toHaveCount(0);
+    await expect(craft.locator("[data-process-gallery] img")).toHaveCount(5);
     expect(await textContrast(craft.locator("h2"), craft)).toBeGreaterThanOrEqual(7);
     expect(await textContrast(craft.locator("ol li p").first(), craft)).toBeGreaterThanOrEqual(4.5);
   });
