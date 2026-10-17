@@ -1,5 +1,6 @@
 import "server-only";
 
+import { CAROUSEL_SPEED_DEFAULT } from "./carousel-speed";
 import type { CarouselContent, ContentBlockType, HeroContent, TextBannerContent } from "./schemas";
 
 /**
@@ -69,8 +70,8 @@ export const CONTENT_SECTIONS: readonly ContentSection[] = [
     key: "destacados",
     blockType: "carousel",
     label: "Carrusel de destacados",
-    description: "La tira de fragancias de la portada. Si eliges productos, se muestran en el orden que definas; si no, se usa la selección automática actual.",
-    fallback: { title: "Fragancias para descubrir." },
+    description: "La tira de fragancias de la portada. Si eliges productos, se muestran en el orden que definas; si no, se usa la selección automática actual. La velocidad controla cuán rápido se desplaza sola.",
+    fallback: { title: "Fragancias para descubrir.", speed: CAROUSEL_SPEED_DEFAULT },
   },
   {
     page: "parfums",

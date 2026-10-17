@@ -35,6 +35,36 @@ function heroRowCount(): string {
   );
 }
 
+// The carousel block of the Parfums rail (`destacados`) and its drift-speed slider.
+const CAROUSEL_SPEED = 52;
+function carouselCard(page: import("@playwright/test").Page) {
+  return page.locator('section#page-parfums li[data-section="destacados"]');
+}
+
+/** Deletes the parfums/destacados row, whatever state a failed test left behind. */
+function restoreDestacados() {
+  localSql(
+    `delete from public.content_blocks where business_unit_id = '${UNIT_PARFUMS}' and page_slug = 'parfums' and section_key = 'destacados';`,
+  );
+}
+
+function destacadosRowCount(): string {
+  return localSql(
+    `select count(*) from public.content_blocks where business_unit_id = '${UNIT_PARFUMS}' and page_slug = 'parfums' and section_key = 'destacados';`,
+  );
+}
+
+/** Sets a React-controlled `<input type="range">` (Playwright's fill() refuses non-text inputs). */
+async function setRange(input: import("@playwright/test").Locator, value: number) {
+  await input.evaluate((element, next) => {
+    const range = element as HTMLInputElement;
+    const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")?.set;
+    setter?.call(range, String(next));
+    range.dispatchEvent(new Event("input", { bubbles: true }));
+    range.dispatchEvent(new Event("change", { bubbles: true }));
+  }, value);
+}
+
 test.describe("Contenido web", () => {
   // Both journeys edit and delete the SAME parfums/hero row, so they must not
   // run in parallel: one test's "Restablecer"/cleanup would delete the row the
@@ -130,6 +160,49 @@ test.describe("Contenido web", () => {
       await expect.poll(publicTitle, { timeout: 5_000, intervals: [250] }).toBe(HERO_TITLE);
     } finally {
       restoreHero();
+      await visitor.context().close();
+    }
+  });
+
+  test("the carousel speed set in the admin reaches the public rail", async ({ page, browser }) => {
+    const visitor = await (await browser.newContext({ storageState: { cookies: [], origins: [] } })).newPage();
+    const publicSpeed = async () => {
+      await visitor.reload();
+      return visitor.locator("[data-product-marquee]").getAttribute("data-marquee-speed");
+    };
+
+    try {
+      restoreDestacados();
+      await visitor.goto("/parfums");
+      // The rail is always rendered (the seed has enough products to loop); with no block it drifts at the default.
+      await expect(visitor.locator("[data-product-marquee]")).toHaveAttribute("data-marquee-speed", "40");
+
+      // 1. The owner moves the speed slider from the admin.
+      await page.goto("/admin/contenido");
+      const card = carouselCard(page);
+      await card.locator("summary").click();
+      const form = saveForm(card);
+      await setRange(form.locator('input[name="speed"]'), CAROUSEL_SPEED);
+      await expect(form.locator('input[name="speed"]')).toHaveValue(String(CAROUSEL_SPEED));
+      await form.getByRole("checkbox", { name: "Aplicar esta edición en la web" }).check();
+      await form.getByRole("button", { name: "Guardar" }).click();
+      await expect(feedback(form)).toHaveText("Contenido guardado.", { timeout: SERVER_ACTION_TIMEOUT });
+
+      // 2. The public rail reflects the new speed within seconds.
+      await expect.poll(publicSpeed, { timeout: 5_000, intervals: [250] }).toBe(String(CAROUSEL_SPEED));
+
+      // 3. Restablecer deletes the row and the rail returns to the default speed.
+      await page.reload();
+      await expect(card).toContainText("Editado · aplicado en la web");
+      await card.getByRole("button", { name: "Restablecer" }).click();
+      const reset = resetForm(card);
+      await reset.getByRole("checkbox", { name: /Confirmo volver al contenido original/ }).check();
+      await reset.getByRole("button", { name: "Restablecer" }).click();
+      await expect(card).toContainText("Usando el contenido original", { timeout: SERVER_ACTION_TIMEOUT });
+      expect(destacadosRowCount()).toBe("0");
+      await expect.poll(publicSpeed, { timeout: 5_000, intervals: [250] }).toBe("40");
+    } finally {
+      restoreDestacados();
       await visitor.context().close();
     }
   });

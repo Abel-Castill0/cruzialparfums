@@ -39,13 +39,21 @@ function optional(formData: FormData, name: string): string | undefined {
   return trimmed.length ? trimmed : undefined;
 }
 
+/** An optional integer field: a blank value is "not sent" (the component keeps its default), and anything else is handed to
+ * Zod so the range check reports a real message instead of being silently dropped. */
+function optionalInt(formData: FormData, name: string): number | undefined {
+  const raw = optional(formData, name);
+  if (raw === undefined) return undefined;
+  return Number(raw);
+}
+
 /** Builds the `content` object for the block type from the submitted form, without trusting any extra field. */
 function readContentForm(blockType: string, formData: FormData): Record<string, unknown> {
   if (blockType === "hero") {
     return { title: formData.get("title"), ctaLabel: optional(formData, "ctaLabel"), ctaHref: optional(formData, "ctaHref") };
   }
   if (blockType === "carousel") {
-    return { title: optional(formData, "title") };
+    return { title: optional(formData, "title"), speed: optionalInt(formData, "speed") };
   }
   return {
     title: formData.get("title"),

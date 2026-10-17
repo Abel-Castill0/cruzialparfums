@@ -4,6 +4,7 @@ const { revalidateTag } = vi.hoisted(() => ({ revalidateTag: vi.fn() }));
 vi.mock("next/cache", () => ({ revalidateTag, unstable_cache: (fn: unknown) => fn }));
 
 import { CONTENT_BLOCKS_CACHE_TAG, CONTENT_BLOCKS_REVALIDATE_SECONDS, contentPageCacheTag } from "./content-cache";
+import { CAROUSEL_SPEED_DEFAULT, CAROUSEL_SPEED_MAX, CAROUSEL_SPEED_MIN } from "./carousel-speed";
 import { CONTENT_PAGES, CONTENT_SECTIONS, findSection, sectionsForPage } from "./registry";
 import {
   CONTENT_MAX,
@@ -115,7 +116,21 @@ describe("content block schemas", () => {
   it("covers the closed set of block types with one schema each", () => {
     const types: ContentBlockType[] = ["hero", "text_banner", "carousel"];
     for (const type of types) expect(contentSchemaFor(type)).toBeTruthy();
-    expect(Object.keys(contentSchemaFor("carousel").shape)).toEqual(["title"]);
+    expect(Object.keys(contentSchemaFor("carousel").shape)).toEqual(["title", "speed"]);
+  });
+
+  it("accepts an optional carousel speed only inside 20-60 whole px/s", () => {
+    expect(validateBlockContent("carousel", { title: "Destacados" }).ok).toBe(true);
+    expect(validateBlockContent("carousel", { speed: CAROUSEL_SPEED_MIN }).ok).toBe(true);
+    expect(validateBlockContent("carousel", { speed: CAROUSEL_SPEED_MAX }).ok).toBe(true);
+    expect(validateBlockContent("carousel", { speed: CAROUSEL_SPEED_DEFAULT }).ok).toBe(true);
+
+    for (const speed of [CAROUSEL_SPEED_MIN - 1, CAROUSEL_SPEED_MAX + 1, 26.5, Number.NaN]) {
+      expect(validateBlockContent("carousel", { speed }), String(speed)).toEqual({
+        ok: false,
+        errors: { speed: expect.any(String) },
+      });
+    }
   });
 
   it("treats a corrupt stored row as absent on the public read (the page uses its fallback)", () => {

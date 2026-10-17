@@ -9,8 +9,10 @@ import {
   useRef,
   useState,
   useSyncExternalStore,
+  type CSSProperties,
   type ReactNode,
 } from "react";
+import { CAROUSEL_SPEED_DEFAULT } from "@/lib/content/carousel-speed";
 import styles from "./product-marquee.module.css";
 
 export type MarqueeItem = {
@@ -31,13 +33,15 @@ type ProductMarqueeProps = {
   items: readonly MarqueeItem[];
   /** Visual personality; the structure and behaviour are shared. */
   tone: "parfums" | "import";
+  /** Drift speed in px/s, set by the owner from /admin/contenido. Falls back to the shared default (40). */
+  speed?: number | undefined;
 };
 
 // Below this the strip is a calm static row: duplicating two products to fake
 // an endless loop reads as a bug, not as abundance.
 const LOOP_MIN_ITEMS = 5;
-/** Drift speed of the strip (px/s). Code-level setting on purpose: it is not an admin option. */
-export const MARQUEE_DRIFT_PX_PER_SECOND = 40;
+/** Default drift speed of the strip (px/s), used when a rail has no admin-set speed. Mirrored as the CSS `--mq-speed`. */
+export const MARQUEE_DRIFT_PX_PER_SECOND = CAROUSEL_SPEED_DEFAULT;
 const RESUME_DELAY_MS = 900;
 
 function subscribeReducedMotion(callback: () => void) {
@@ -109,8 +113,9 @@ function Card({ item, hidden = false }: { item: MarqueeItem; hidden?: boolean })
  * only resumes after a pause. With reduced motion (or too few products to
  * loop honestly) it never moves by itself.
  */
-export function ProductMarquee({ heading, label, items, tone }: ProductMarqueeProps) {
+export function ProductMarquee({ heading, label, items, tone, speed }: ProductMarqueeProps) {
   const reducedMotion = usePrefersReducedMotion();
+  const driftSpeed = speed ?? CAROUSEL_SPEED_DEFAULT;
   const loop = items.length >= LOOP_MIN_ITEMS;
   const viewportRef = useRef<HTMLDivElement>(null);
   const pointerInsideRef = useRef(false);
@@ -146,7 +151,7 @@ export function ProductMarquee({ heading, label, items, tone }: ProductMarqueePr
         position = viewport.scrollLeft;
       } else {
         const half = viewport.scrollWidth / 2;
-        position += (MARQUEE_DRIFT_PX_PER_SECOND * elapsed) / 1000;
+        position += (driftSpeed * elapsed) / 1000;
         if (position >= half) position -= half;
         viewport.scrollLeft = position;
       }
@@ -155,7 +160,7 @@ export function ProductMarquee({ heading, label, items, tone }: ProductMarqueePr
 
     frame = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frame);
-  }, [running]);
+  }, [running, driftSpeed]);
 
   const holdFor = useCallback(() => {
     resumeAtRef.current = performance.now() + RESUME_DELAY_MS;
@@ -186,6 +191,8 @@ export function ProductMarquee({ heading, label, items, tone }: ProductMarqueePr
     <div
       className={`${styles.root} ${styles[tone]}`}
       data-product-marquee
+      data-marquee-speed={driftSpeed}
+      style={{ "--mq-speed": driftSpeed } as CSSProperties}
       // Keyboard focus pauses the rail until focus leaves; pointer focus does
       // not trap the animation after the visitor moves away.
       onFocusCapture={() => {

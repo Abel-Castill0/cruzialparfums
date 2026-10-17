@@ -2,6 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { adminButtonClass } from "@/components/admin/admin-ui";
+import { CAROUSEL_SPEED_DEFAULT, CAROUSEL_SPEED_MAX, CAROUSEL_SPEED_MIN, CAROUSEL_SPEED_STEP } from "@/lib/content/carousel-speed";
 import type { ContentBlockType } from "@/lib/content/schemas";
 import type { ContentPageSlug, ContentUnit } from "@/lib/content/registry";
 import {
@@ -17,6 +18,15 @@ const initial: ContentActionState = { status: "idle" };
 
 export type ProductCandidate = { id: string; label: string };
 
+/** Every editable value the form reads, as a single optional bag: each block type renders the subset it owns. */
+export type EditableContentValue = {
+  title?: string | undefined;
+  body?: string | undefined;
+  ctaLabel?: string | undefined;
+  ctaHref?: string | undefined;
+  speed?: number | undefined;
+};
+
 export type AdminContentSection = {
   page: ContentPageSlug;
   unit: ContentUnit;
@@ -28,8 +38,8 @@ export type AdminContentSection = {
   blockId: string | null;
   updatedAt: string | null;
   isVisible: boolean;
-  content: { title?: string | undefined; body?: string | undefined; ctaLabel?: string | undefined; ctaHref?: string | undefined } | null;
-  fallback: { title?: string | undefined; body?: string | undefined; ctaLabel?: string | undefined; ctaHref?: string | undefined };
+  content: EditableContentValue | null;
+  fallback: EditableContentValue;
   carouselIds: string[];
 };
 
@@ -52,6 +62,31 @@ const BLOCK_TYPE_LABEL: Record<ContentBlockType, string> = {
   text_banner: "Texto",
   carousel: "Carrusel",
 };
+
+function SpeedField({ defaultValue, disabled }: { defaultValue: number; disabled: boolean }) {
+  const [speed, setSpeed] = useState(defaultValue);
+  return (
+    <label className={styles.field}>
+      <span>
+        Velocidad del carrusel ({speed} px/s)
+      </span>
+      <input
+        type="range"
+        name="speed"
+        min={CAROUSEL_SPEED_MIN}
+        max={CAROUSEL_SPEED_MAX}
+        step={CAROUSEL_SPEED_STEP}
+        value={speed}
+        onChange={(event) => setSpeed(Number(event.target.value))}
+        disabled={disabled}
+      />
+      <small>
+        De {CAROUSEL_SPEED_MIN} a {CAROUSEL_SPEED_MAX} px por segundo. Por defecto {CAROUSEL_SPEED_DEFAULT}: se mueve sola
+        más despacio a la izquierda y más rápido a la derecha.
+      </small>
+    </label>
+  );
+}
 
 function ValueFields({ section }: { section: AdminContentSection }) {
   const value = section.content ?? section.fallback;
@@ -84,10 +119,13 @@ function ValueFields({ section }: { section: AdminContentSection }) {
   }
   if (section.blockType === "carousel") {
     return (
-      <label className={styles.field}>
-        <span>Título del carrusel (opcional)</span>
-        <input name="title" maxLength={80} defaultValue={value.title ?? ""} disabled={disabled} />
-      </label>
+      <>
+        <label className={styles.field}>
+          <span>Título del carrusel (opcional)</span>
+          <input name="title" maxLength={80} defaultValue={value.title ?? ""} disabled={disabled} />
+        </label>
+        <SpeedField defaultValue={value.speed ?? CAROUSEL_SPEED_DEFAULT} disabled={disabled} />
+      </>
     );
   }
   return (
