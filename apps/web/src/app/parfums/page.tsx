@@ -166,6 +166,7 @@ export default async function ParfumsHomePage() {
               tone="parfums"
               label="Fragancias del catálogo"
               items={showcase}
+              speed={destacados.content.speed}
               heading={
                 <>
                   <h2 id="showcase-title">

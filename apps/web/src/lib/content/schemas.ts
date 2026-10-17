@@ -3,6 +3,7 @@ import "server-only";
 import { z } from "zod";
 import { parseSafeHttpsUrl } from "@/lib/rich-text/parse";
 import { RICH_TEXT_BODY_MAX, RICH_TEXT_TITLE_MAX, restrictedMarkdownSchema } from "@/lib/rich-text/schema";
+import { CAROUSEL_SPEED_MAX, CAROUSEL_SPEED_MIN } from "./carousel-speed";
 
 /**
  * Zod schemas for editable content blocks (`content_blocks.content`).
@@ -83,6 +84,13 @@ export const textBannerContentSchema = z
 
 export const carouselContentSchema = z.strictObject({
   title: plainText(RICH_TEXT_TITLE_MAX, `El título no puede pasar de ${RICH_TEXT_TITLE_MAX} caracteres.`).optional(),
+  /** Drift speed of the rail (px/s). Optional: absent means the component keeps its own default. */
+  speed: z
+    .number()
+    .int("La velocidad debe ser un número entero.")
+    .min(CAROUSEL_SPEED_MIN, `La velocidad mínima es ${CAROUSEL_SPEED_MIN} px/s.`)
+    .max(CAROUSEL_SPEED_MAX, `La velocidad máxima es ${CAROUSEL_SPEED_MAX} px/s.`)
+    .optional(),
 });
 
 export type HeroContent = z.infer<typeof heroContentSchema>;
