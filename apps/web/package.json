@@ -48,7 +48,7 @@
     "@types/node": "~24.x",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@vercel/sdk": "1.28.41",
+    "@vercel/sdk": "1.28.44",
     "eslint": "10.12.0",
     "eslint-config-next": "16.4.1",
     "typescript": "~6.0.3",
