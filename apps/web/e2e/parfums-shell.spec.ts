@@ -129,7 +129,8 @@ test.describe("parfums home hero and header", () => {
     const html = await (await page.request.get("/parfums")).text();
     const state = await page.evaluate((serverHtml) => {
       const hero = document.querySelector("[data-home-hero] picture img") as HTMLImageElement;
-      const links = [...new DOMParser().parseFromString(serverHtml, "text/html").querySelectorAll<HTMLLinkElement>('link[rel="preload"][as="image"]')];
+      const links = [...new DOMParser().parseFromString(serverHtml, "text/html").querySelectorAll<HTMLLinkElement>('link[rel="preload"][as="image"]')]
+        .filter((link) => link.getAttribute("fetchpriority") === "high");
       const pictureSource = document.querySelector<HTMLSourceElement>("[data-home-hero] picture source[media]");
       return {
         currentSrc: hero.currentSrc,

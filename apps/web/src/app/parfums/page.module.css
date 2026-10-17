@@ -226,8 +226,7 @@
   line-height: 1.6;
 }
 
-/* Craft — how the house works. A dark grey band, text only: no photographs of bottles, decants or customers' orders
-   (privacy), just the three principles and the three sizes. White on #2b2b2e is 14.1:1; the muted copy 8.4:1; gold 5.7:1. */
+/* Craft — how the house works. Only the five privacy-reviewed product photos are included; customer and order images stay private until reviewed. */
 
 .craft {
   padding-block: var(--ds-section-y);
@@ -255,6 +254,13 @@
   font-weight: 600;
   line-height: 1.1;
   text-wrap: balance;
+}
+
+.craftTitle > p {
+  margin-top: 12px;
+  color: var(--ds-on-dark-muted);
+  font-size: 0.96rem;
+  line-height: 1.6;
 }
 
 .craftHead h2 em {
