@@ -89,9 +89,17 @@ export function orderSideEffects(phone: string) {
   return { orders, outbox, reservations };
 }
 
-/** Libro de Reclamaciones rows (and their outbox jobs) for one synthetic phone. */
-export function complaintSideEffects(phone: string) {
+/** The 2 ml gift product id of the single order for one synthetic phone ("" when none). */
+export function orderGiftProductId(phone: string): string {
   if (!/^\d{9,15}$/.test(phone)) throw new Error("phone must be digits only");
+  return localSql(`
+    select coalesce(gift_product_id::text, '') from public.orders
+     where regexp_replace(customer_snapshot->>'phone', '[^0-9]', '', 'g') = '${phone}'
+     limit 1;`);
+}
+
+/** Libro de Reclamaciones rows (and their outbox jobs) for one synthetic phone. */
+export function complaintSideEffects(phone: string) {  if (!/^\d{9,15}$/.test(phone)) throw new Error("phone must be digits only");
   const row = localSql(`
     with c as (select id from public.complaint_book_entries where phone = '${phone}')
     select (select count(*) from c),

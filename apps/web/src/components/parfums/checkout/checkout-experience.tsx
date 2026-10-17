@@ -14,6 +14,8 @@ import { useParfumsCart } from "@/components/parfums/cart/use-parfums-cart";
 import { Breadcrumbs } from "@/components/parfums/navigation/breadcrumbs";
 import type { CatalogProduct } from "@/domains/catalog/types";
 import { cartIdentity } from "@/domains/catalog/types";
+import { BOTTLE_GIFT_MESSAGE } from "@/domains/catalog/promotion-eligibility";
+import type { GiftCandidate } from "@/domains/commercial/gift";
 import { handoffStorageKey } from "@/domains/orders/parfums-order-handoff";
 import { PARFUMS_SHALOM_DELIVERY } from "@/domains/orders/parfums-delivery";
 import type { ParfumsCheckoutCustomer } from "@/domains/whatsapp/parfums-message-builder";
@@ -49,14 +51,18 @@ function money(value: number) {
 export function CheckoutExperience({
   products,
   restrictedDistricts = [],
+  giftCandidates = [],
 }: {
   products: CatalogProduct[];
   /** Districts the motorcycle does not reach; the checkout turns the option off there and points to Shalom. */
   restrictedDistricts?: readonly string[];
+  /** Arabic perfumes the customer may pick as the free 2 ml gift, excluded ones already removed. */
+  giftCandidates?: readonly GiftCandidate[];
 }) {
   const router = useRouter();
   const { lines, total, persistenceError, setQuantity, remove, clear } = useParfumsCart(products);
   const [customer, setCustomer] = useState(emptyCustomer);
+  const [giftProductId, setGiftProductId] = useState("");
   const [result, setResult] = useState<CreateParfumsOrderResult | null>(null);
   const [held, setHeld] = useState<HeldOrder | null>(null);
   const [shippingComplete, setShippingComplete] = useState(false);
@@ -64,6 +70,12 @@ export function CheckoutExperience({
   const [isPending, startTransition] = useTransition();
   const errorRef = useRef<HTMLDivElement>(null);
   const heldRef = useRef<HTMLDivElement>(null);
+  // The free 2 ml gift only applies with a full bottle in the order (sets never count). The choice follows the cart:
+  // removing the bottles hides the selector and drops a stale choice from the submission.
+  const giftEligible = lines.some((line) => line.variant.group === "bottle" && line.product.type !== "combo");
+  const giftOptions = giftEligible && giftCandidates.length > 0 ? giftCandidates : [];
+  const selectedGiftId = giftOptions.length > 0 ? giftProductId : "";
+  const giftError = result?.status === "error" ? result.fieldErrors?.gift : undefined;
   useEffect(() => {
     const panel = result?.status === "error" ? errorRef.current : held ? heldRef.current : null;
     panel?.focus({ preventScroll: true });
@@ -164,6 +176,7 @@ export function CheckoutExperience({
           quantity: line.quantity,
         })),
         customer,
+        ...(selectedGiftId ? { giftProductId: selectedGiftId } : {}),
       };
       actionResult = await submitWithAttemptCapability(() => createParfumsOrderRequest(submission));
     } catch {
@@ -316,6 +329,25 @@ export function CheckoutExperience({
               Nota <small>opcional</small>
               <textarea id="checkout-note" maxLength={500} rows={3} value={customer.note} onChange={(event) => updateCustomer("note", event.target.value)} placeholder="Horario, referencias o preferencias…" />
             </label>
+            {giftOptions.length > 0 ? (
+              <label data-checkout-gift>
+                Regalo <small>decant de 2 ml gratis</small>
+                <select
+                  data-gift-select
+                  value={selectedGiftId}
+                  onChange={(event) => { setGiftProductId(event.target.value); resetAttempt(); }}
+                  aria-invalid={Boolean(giftError)}
+                  aria-describedby={giftError ? "checkout-gift-help checkout-gift-error" : "checkout-gift-help"}
+                >
+                  <option value="">Sin regalo</option>
+                  {giftOptions.map((candidate) => (
+                    <option key={candidate.productId} value={candidate.productId}>{candidate.brand} — {candidate.name}</option>
+                  ))}
+                </select>
+                <small id="checkout-gift-help">{BOTTLE_GIFT_MESSAGE}</small>
+                {giftError ? <small id="checkout-gift-error" className={styles.fieldError}>{giftError}</small> : null}
+              </label>
+            ) : null}
             <button type="submit" className={styles.submit} data-checkout-submit disabled={lines.length === 0 || isPending || held !== null}>
               {lines.length === 0 ? "Añade productos para continuar" : isPending ? "Registrando solicitud…" : "Registrar y continuar"} <span aria-hidden="true">→</span>
             </button>

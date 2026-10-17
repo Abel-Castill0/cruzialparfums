@@ -14,6 +14,7 @@ export type HeaderSearchProduct = Pick<
 
 const navItems = [
   { href: "/parfums/catalogo", label: "Catálogo" },
+  { href: "/parfums/frascos", label: "Perfumes enteros" },
   { href: "/parfums/combos", label: "Arma tu combo" },
 ] as const;
 

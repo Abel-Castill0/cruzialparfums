@@ -1,0 +1,38 @@
+/* Whole-bottle catalog (/parfums/frascos). Shapes the shared catalog card and
+ * toolbar classes into the bottle grid; the card internals stay in
+ * catalog.module.css so decants and bottles never drift apart. */
+
+/* 1 column on phones, 2 on tablets, 3 on laptops, 4 on large desktops. */
+.bottleGrid {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+  align-items: stretch;
+}
+
+@media (max-width: 1024px) {
+  .bottleGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 599px) {
+  .bottleGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (min-width: 1440px) {
+  .bottleGrid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* Bottles come in one or two sizes (usually 50/100 ml): the pill row sizes to
+ * the options instead of reserving three decant columns. */
+.bottleSizePicker {
+  grid-template-columns: repeat(auto-fit, minmax(72px, 1fr));
+}
