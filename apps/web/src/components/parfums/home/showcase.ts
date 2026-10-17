@@ -50,6 +50,33 @@ export function selectShowcaseProducts(
   return [...lead, ...rest].slice(0, limit);
 }
 
+/**
+ * The products the owner picked for a carousel, in the order they picked them. Anything that is no longer honestly
+ * purchasable is dropped, never padded: a product that was later unpublished, hidden, sold out or lost its photo simply
+ * disappears from the rail (docs/content-editor-architecture.md §5.3).
+ */
+export function selectShowcaseProductsByIds(
+  ids: readonly string[],
+  fragrances: readonly CatalogProduct[],
+  limit = SHOWCASE_LIMIT,
+): CatalogProduct[] {
+  if (ids.length === 0) return [];
+  const byId = new Map<string, CatalogProduct>();
+  for (const product of fragrances) {
+    if (product.productId) byId.set(product.productId, product);
+  }
+  const picked: CatalogProduct[] = [];
+  const seen = new Set<string>();
+  for (const id of ids) {
+    const product = byId.get(id);
+    if (!product || !isShowable(product) || seen.has(product.slug)) continue;
+    seen.add(product.slug);
+    picked.push(product);
+    if (picked.length >= limit) break;
+  }
+  return picked;
+}
+
 export function toShowcaseItem(product: CatalogProduct): MarqueeItem {
   const lowest = minimumPrice(product.decantPrices);
   return {

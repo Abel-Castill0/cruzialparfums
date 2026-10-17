@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { describeImportGateDate, IMPORT_GATE_HEADLINE } from "@/domains/import/import-gate";
 import { readImportGate } from "@/lib/catalog/import-gate";
+import { readSection } from "@/lib/content/page-content";
 import styles from "./page.module.css";
 
 /**
@@ -12,6 +13,12 @@ export default async function Home() {
   const gate = await readImportGate();
   const importClosed = gate.state === "closed";
   const importDate = gate.state === "closed" ? describeImportGateDate(gate.opensAt) : null;
+  // Only the copy of each door is editable: the "Entrar" button and its destination are structural, so the gateway can
+  // never be pointed away from the two storefronts. With no rows the copy is exactly what is below in the fallbacks.
+  const [parfumsDoor, importDoor] = await Promise.all([
+    readSection("home", "door_parfums", "text_banner"),
+    readSection("home", "door_import", "text_banner"),
+  ]);
 
   return (
     <main id="main" tabIndex={-1} className={styles.page} aria-label="Elige tu tienda Cruzial">
@@ -45,8 +52,8 @@ export default async function Home() {
           />
         </span>
         <span className={styles.copy}>
-          <span className={styles.label}>Parfums</span>
-          <span className={styles.line}>Decants, frascos y combos de perfumería árabe, de diseñador y nicho.</span>
+          <span className={styles.label}>{parfumsDoor.content.title}</span>
+          <span className={styles.line}>{parfumsDoor.content.body}</span>
           <span className={styles.enter}>
             <span className={styles.enterText}>Entrar</span>
             <span className={styles.arrow} aria-hidden="true">↗</span>
@@ -76,14 +83,14 @@ export default async function Home() {
           <span className={styles.closedVeil} aria-hidden="true" />
         ) : null}
         <span className={styles.copy}>
-          <span className={styles.label}>Import</span>
+          <span className={styles.label}>{importDoor.content.title}</span>
           {importClosed ? (
             <span className={styles.closedNote}>
               <strong>{IMPORT_GATE_HEADLINE}</strong>
               <span>{importDate}</span>
             </span>
           ) : (
-            <span className={styles.line}>Consolidados de perfumería: compra grupal por campaña.</span>
+            <span className={styles.line}>{importDoor.content.body}</span>
           )}
           <span className={styles.enter}>
             <span className={styles.enterText}>Entrar</span>

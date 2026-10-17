@@ -20,12 +20,16 @@ import styles from "./import-home.module.css";
 
 export type ImportHomePage = PublicImportPageResult | { status: "unavailable" };
 
-export function ImportHomeView({ page, filters, contact, depositPercentages, wholesaleRules }: {
+/** Heading and intro of the preparation gallery, editable from the admin (page `import`, section `process`). */
+export type ImportProcessCopy = { title: string; body: string };
+
+export function ImportHomeView({ page, filters, contact, depositPercentages, wholesaleRules, process }: {
   page: ImportHomePage;
   filters: PublicImportFilters;
   contact: BusinessUnitSettings | null;
   depositPercentages: ImportDepositPercentages;
   wholesaleRules: PublicImportWholesaleRule[];
+  process: ImportProcessCopy;
 }) {
   const active = page.status === "active" ? page : null;
   const upcoming = page.status === "upcoming" ? page : null;
@@ -43,8 +47,8 @@ export function ImportHomeView({ page, filters, contact, depositPercentages, who
       <ImportHero hero={active ? { state: "campaign", campaign: active.campaign } : upcoming ? { state: "upcoming", campaign: upcoming.campaign } : { state: page.status === "closed" ? "closed" : "unavailable" }} contact={contact} />
       <section className={styles.processGallery} aria-labelledby="import-process-gallery-title">
         <p className={styles.eyebrow}>Así cuidamos cada pedido</p>
-        <h2 id="import-process-gallery-title">Pedidos que llegan a tu puerta</h2>
-        <p className={styles.processGalleryIntro}>Cada fragancia se revisa y prepara con cuidado antes de llegar a ti.</p>
+        <h2 id="import-process-gallery-title">{process.title}</h2>
+        <p className={styles.processGalleryIntro}>{process.body}</p>
         <ProcessGallery images={PROCESS_GALLERY_IMAGES} />
       </section>
       {showcase.length >= 3 ? <section className={styles.showcase} aria-labelledby="import-showcase-title"><Reveal><ProductMarquee tone="import" label="Productos del consolidado" items={showcase} heading={<><p className={styles.eyebrow}>En este consolidado</p><h2 id="import-showcase-title">Productos disponibles ahora</h2></>} /></Reveal></section> : null}
