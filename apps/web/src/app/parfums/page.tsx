@@ -10,10 +10,12 @@ import { HeroArtwork } from "@/components/parfums/home/hero-carousel";
 import {
   countFragrancesByType,
   selectShowcaseProducts,
+  selectShowcaseProductsByIds,
   toShowcaseItem,
 } from "@/components/parfums/home/showcase";
 import { CatalogUnavailableNotice } from "@/components/parfums/catalog/catalog-unavailable-notice";
 import { ProductMarquee } from "@/components/storefront/home/product-marquee";
+import { ContentLink } from "@/components/storefront/content-link";
 import { ProcessGallery } from "@/components/parfums/process-gallery";
 import { PROCESS_GALLERY_IMAGES } from "@/components/parfums/process-gallery-images";
 import { Reveal } from "@/components/storefront/home/reveal";
@@ -22,6 +24,7 @@ import { VideoStory } from "@/components/storefront/home/video-story";
 import { PARFUMS_HOME_VIDEO } from "@/domains/platform/home-video";
 import { PARFUMS_ATOMIZATIONS } from "@/domains/platform/parfums-storefront";
 import { loadParfumsStorefront } from "@/lib/catalog/parfums-storefront";
+import { readCarouselItems, readSection } from "@/lib/content/page-content";
 import styles from "./page.module.css";
 
 export const metadata: Metadata = {
@@ -116,21 +119,33 @@ const homeFaqs = [
 ];
 
 export default async function ParfumsHomePage() {
-  const { catalog, source } = await loadParfumsStorefront();
+  const [{ catalog, source }, hero, destacados, craft, tiktok, carouselIds] = await Promise.all([
+    loadParfumsStorefront(),
+    readSection("parfums", "hero", "hero"),
+    readSection("parfums", "destacados", "carousel"),
+    readSection("parfums", "craft", "text_banner"),
+    readSection("parfums", "tiktok", "text_banner"),
+    readCarouselItems("destacados"),
+  ]);
   const combos = catalog.listCombos();
   const fragrances = catalog.listFragrances();
   const comboPhotos = Object.fromEntries(
     combos.map((combo) => [combo.slug, resolveComboMemberPhotos(combo.comboContent?.perfumes ?? [], fragrances)]),
   );
-  const showcase = selectShowcaseProducts(catalog.listFeatured(), fragrances).map(toShowcaseItem);
+  // The owner may curate the rail from the admin; with no selection the page keeps the automatic one (featured products
+  // first, then the rest of the catalog mixed by brand), so the strip never depends on curation to exist.
+  const showcaseProducts = carouselIds.length
+    ? selectShowcaseProductsByIds(carouselIds, fragrances)
+    : selectShowcaseProducts(catalog.listFeatured(), fragrances);
+  const showcase = showcaseProducts.map(toShowcaseItem);
   const typeCounts = countFragrancesByType(fragrances);
 
   return (
     <main id="main" tabIndex={-1} className={styles.home}>
       <HeroArtwork
-        title="Perfumería de descubrimiento."
-        ctaHref="/parfums/catalogo"
-        ctaLabel="Explorar catálogo"
+        title={hero.content.title}
+        ctaHref={hero.content.ctaHref ?? "/parfums/catalogo"}
+        ctaLabel={hero.content.ctaLabel ?? "Explorar catálogo"}
       />
 
       <ul className={styles.assurance} aria-label="Lo esencial">
@@ -154,7 +169,7 @@ export default async function ParfumsHomePage() {
               heading={
                 <>
                   <h2 id="showcase-title">
-                    Fragancias para <em>descubrir</em>.
+                    {destacados.custom ? destacados.content.title : <>Fragancias para <em>descubrir</em>.</>}
                   </h2>
                 </>
               }
@@ -246,13 +261,13 @@ export default async function ParfumsHomePage() {
         <div className={styles.craftInner}>
           <Reveal>
             <div className={styles.craftHead}>
-              <div className={styles.craftTitle}>
-                <h2 id="craft-title">Del frasco original <em>a tu piel</em>.</h2>
-                <p>Perfumes sellados y una preparación cuidadosa en cada pedido.</p>
-              </div>
-              <Link href="/parfums/nosotros" className={styles.textLink}>
-                Conoce Cruzial <span aria-hidden="true">→</span>
-              </Link>
+            <div className={styles.craftTitle}>
+              <h2 id="craft-title">{craft.custom ? craft.content.title : <>Del frasco original <em>a tu piel</em>.</>}</h2>
+              <p>{craft.content.body}</p>
+            </div>
+            <ContentLink href={craft.content.ctaHref ?? "/parfums/nosotros"} className={styles.textLink}>
+              {craft.content.ctaLabel ?? "Conoce Cruzial"} <span aria-hidden="true">→</span>
+            </ContentLink>
             </div>
           </Reveal>
           <Reveal>
@@ -302,8 +317,8 @@ export default async function ParfumsHomePage() {
         <TikTokProfile
           tone="parfums"
           eyebrow="TikTok"
-          title="Cruzial en TikTok"
-          text="Sigue el perfil oficial de Cruzial para ver sus publicaciones en video."
+          title={tiktok.content.title}
+          text={tiktok.content.body}
           posterSrc="/images/parfums-home/parfums-final-cta.webp"
           posterAlt="Frascos de perfume sobre roca con luz dorada, imagen de marca"
         />

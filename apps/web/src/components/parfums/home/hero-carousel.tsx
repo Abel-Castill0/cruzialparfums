@@ -1,6 +1,5 @@
-import type { Route } from "next";
 import { getImageProps } from "next/image";
-import Link from "next/link";
+import { ContentLink } from "@/components/storefront/content-link";
 import styles from "./hero-carousel.module.css";
 
 /*
@@ -24,7 +23,7 @@ export function HeroArtwork({
   ctaLabel,
 }: {
   title: string;
-  ctaHref: Route;
+  ctaHref: string;
   ctaLabel: string;
 }) {
   // The hero image is the LCP element on every screen: eager + high priority + a preload, never lazy.
@@ -46,9 +45,9 @@ export function HeroArtwork({
         <div className={styles.foot}>
           <h1 className={styles.title}>{title}</h1>
           <div className={styles.actions}>
-            <Link href={ctaHref} className={styles.cta}>
+            <ContentLink href={ctaHref} className={styles.cta}>
               {ctaLabel}
-            </Link>
+            </ContentLink>
           </div>
         </div>
       </section>

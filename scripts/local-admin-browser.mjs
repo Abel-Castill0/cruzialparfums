@@ -6,7 +6,7 @@
 import { spawnSync } from "node:child_process";
 import { createRequire } from "node:module";
 import { randomBytes } from "node:crypto";
-import { mkdirSync, readFileSync } from "node:fs";
+import { mkdirSync, readFileSync, rmSync } from "node:fs";
 import { ensureIdentities } from "./lib/e2e-identities.mjs";
 import { fileURLToPath } from "node:url";
 const root = fileURLToPath(new URL("../", import.meta.url));
@@ -44,6 +44,10 @@ if (args.includes("--seed")) {
   if(seeded.status!==0) throw new Error(`Local fixtures failed: ${seeded.stderr}`);
   console.log("Synthetic local Import browser fixtures ready.");
 }
+// The Next data cache (`unstable_cache` entries such as the storefront's editable copy) is persisted under
+// .next/cache/fetch-cache, so a restarted server would still serve content cached by a previous run. Every local run starts
+// from a cold data cache so the storefront always reflects the database it is about to be tested against.
+rmSync(`${web}.next/cache/fetch-cache`, { recursive: true, force: true });
 env.E2E_LOCAL_FIXTURES="1";
 env.E2E_ALLOW_ORDER_SUBMIT="1";
 if (args[0] === "--gate") {

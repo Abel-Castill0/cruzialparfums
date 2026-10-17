@@ -155,6 +155,50 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"carousel_items": {
+                  Row: {
+                    "business_unit_id": string,"carousel_key": string,"created_at": string,"display_order": number,"id": string,"product_id": string
+                  }
+                  Insert: {
+                    "business_unit_id": string,"carousel_key": string,"created_at"?: string,"display_order"?: number,"id"?: string,"product_id": string
+                  }
+                  Update: {
+                    "business_unit_id"?: string,"carousel_key"?: string,"created_at"?: string,"display_order"?: number,"id"?: string,"product_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "carousel_items_business_unit_id_fkey"
+      columns: ["business_unit_id"]
+isOneToOne: false
+      referencedRelation: "business_units"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "carousel_items_product_id_fkey"
+      columns: ["product_id"]
+isOneToOne: false
+      referencedRelation: "products"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"content_blocks": {
+                  Row: {
+                    "block_type": string,"business_unit_id": string,"content": Json,"created_at": string,"display_order": number,"id": string,"is_visible": boolean,"page_slug": string,"section_key": string,"updated_at": string
+                  }
+                  Insert: {
+                    "block_type": string,"business_unit_id": string,"content"?: Json,"created_at"?: string,"display_order"?: number,"id"?: string,"is_visible"?: boolean,"page_slug": string,"section_key": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "block_type"?: string,"business_unit_id"?: string,"content"?: Json,"created_at"?: string,"display_order"?: number,"id"?: string,"is_visible"?: boolean,"page_slug"?: string,"section_key"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "content_blocks_business_unit_id_fkey"
+      columns: ["business_unit_id"]
+isOneToOne: false
+      referencedRelation: "business_units"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"categories": {
                   Row: {
                     "archived_at": string | null,"business_unit_id": string,"created_at": string,"description": string | null,"id": string,"kind": string,"name": string,"parent_id": string | null,"publication_status": string,"slug": string,"sort_order": number,"spec_schema": NonNullable<Json>,"updated_at": string
@@ -1217,6 +1261,22 @@ isOneToOne: false
 { Args: { "p_id": string,"p_unit_code": string }; Returns: undefined },
 "admin_delete_note":
 { Args: { "p_id": string,"p_unit_code": string }; Returns: undefined },
+"admin_delete_content_block":
+{ Args: { "p_id": string,"p_unit_code": string }; Returns: undefined },
+"admin_move_content_block":
+{ Args: { "p_direction": string,"p_id": string,"p_page_slug": string,"p_unit_code": string }; Returns: undefined },
+"admin_save_content_block":
+{ Args: { "p_block_type": string,"p_content": Json,"p_is_visible": boolean,"p_page_slug": string,"p_section_key": string,"p_unit_code": string }; Returns: {
+              "block_type": string,"business_unit_id": string,"content": Json,"created_at": string,"display_order": number,"id": string,"is_visible": boolean,"page_slug": string,"section_key": string,"updated_at": string
+            } },
+"admin_set_content_block_visibility":
+{ Args: { "p_expected_updated_at": string,"p_id": string,"p_is_visible": boolean,"p_unit_code": string }; Returns: {
+              "block_type": string,"business_unit_id": string,"content": Json,"created_at": string,"display_order": number,"id": string,"is_visible": boolean,"page_slug": string,"section_key": string,"updated_at": string
+            } },
+"admin_set_carousel_items":
+{ Args: { "p_carousel_key": string,"p_product_ids": string[],"p_unit_code": string }; Returns: {
+              "business_unit_id": string,"carousel_key": string,"created_at": string,"display_order": number,"id": string,"product_id": string
+            }[] },
 "admin_duplicate_campaign":
 { Args: { "p_new_name": string,"p_new_number": number,"p_source_campaign_id": string }; Returns: {
               "archived_at": string | null,
