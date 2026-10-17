@@ -96,6 +96,15 @@ export function hasDecantOffer(product: CatalogProduct): boolean {
   return Object.keys(product.decantPrices).length > 0;
 }
 
+/**
+ * Whole-bottle offer: a sealed bottle with a price and stock. The decant catalog never lists these; they live on
+ * their own route (`/parfums/frascos`). Combos are never bottles.
+ */
+export function hasBottleVariant(product: CatalogProduct): boolean {
+  if (product.bottlePrices === null || Object.keys(product.bottlePrices).length === 0) return false;
+  return product.variants.some((variant) => variant.kind === "bottle" && variant.isAvailable);
+}
+
 /** Distinct brands of the given products, sorted for display (Spanish collation). */
 export function catalogBrands(products: readonly CatalogProduct[]): string[] {
   const brands = new Set<string>();

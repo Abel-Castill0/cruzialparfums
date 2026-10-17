@@ -23,6 +23,29 @@ export function hasFullBottle(lines: ReadonlyArray<{ product: CatalogProduct; gr
   return lines.some((line) => line.group === "bottle" && line.product.type !== "combo");
 }
 
+/** The few fields a gift option shows; the browser only ever gets the perfume's id, brand and name. */
+export type GiftCandidate = Pick<CatalogProduct, "productId" | "brand" | "name"> & { productId: string };
+
+/**
+ * The Arabic perfumes the customer may pick as the free 2 ml decant: published, purchasable, with a database id and not
+ * excluded by the active rule. Built from the same catalog the server validates against, so the selector can only offer
+ * perfumes `checkGiftSelection` would accept.
+ */
+export function listGiftCandidates(
+  products: readonly CatalogProduct[],
+  excludedProductIds: readonly string[] = [],
+): GiftCandidate[] {
+  const candidates: GiftCandidate[] = [];
+  for (const product of products) {
+    if (product.type !== "arab") continue;
+    if (product.productId === null) continue;
+    if (!isProductPurchasable(product)) continue;
+    if (excludedProductIds.includes(product.productId)) continue;
+    candidates.push({ productId: product.productId, brand: product.brand, name: product.name });
+  }
+  return candidates.sort((a, b) => `${a.brand} ${a.name}`.localeCompare(`${b.brand} ${b.name}`, "es"));
+}
+
 export function checkGiftSelection(input: {
   giftProduct: CatalogProduct | null;
   fullBottleInOrder: boolean;

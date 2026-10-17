@@ -169,4 +169,39 @@ insert into public.delivery_zones (business_unit_id, district, is_restricted)
 select '11111111-1111-4111-8111-111111111111', zone.district, zone.is_restricted
 from (values ('Ancón',true),('Santa Rosa',true),('Puente Piedra',true),('Carabayllo',false),('San Martín de Porres',false),('Los Olivos',false),('Comas',false),('Rímac',false),('Independencia',false),('San Juan de Lurigancho',false),('San Miguel',false),('Pueblo Libre',false),('Cercado de Lima',false),('El Agustino',false),('Santa Anita',false),('Ate',false),('Chaclacayo',true),('Lurigancho-Chosica',true),('Magdalena del Mar',false),('Jesús María',false),('Breña',false),('La Victoria',false),('San Luis',false),('La Molina',false),('Cieneguilla',true),('San Isidro',false),('Lince',false),('Surquillo',false),('San Borja',false),('Santiago de Surco',false),('Miraflores',false),('Barranco',false),('Chorrillos',false),('San Juan de Miraflores',false),('Villa María del Triunfo',false),('Pachacámac',true),('Villa El Salvador',false),('Lurín',true),('Punta Hermosa',true),('Punta Negra',true),('San Bartolo',true),('Santa María del Mar',true),('Pucusana',true)) as zone(district, is_restricted)
 on conflict do nothing;
+
+-- Whole-bottle catalog (/parfums/frascos) + the free 2 ml gift (docs/commercial-rules.md). Synthetic, local stack only.
+-- An Arabic commercial_type category so these classify as "arab" (the public storefront only shows a product with a
+-- published commercial_type category and a gender), one Arabic perfume with a sealed bottle (its own card and a full
+-- bottle for the gift), one Arabic decant-only perfume (a gift candidate), and one Arabic decant-only perfume that the
+-- active gift_exclusion rule excludes. The gift rule is a single row per unit (unique business_unit_id, rule_type).
+insert into public.categories(id,business_unit_id,kind,slug,name,publication_status)
+values ('99005000-0000-4000-8000-000000000001','11111111-1111-4111-8111-111111111111','commercial_type','arabic','LOCAL QA Árabe','published') on conflict do nothing;
+insert into public.products(id,business_unit_id,slug,name,brand,gender,sales_mode,publication_status)
+values ('99005000-0000-4000-8000-000000000010','11111111-1111-4111-8111-111111111111','local-qa-frasco','LOCAL QA — Frasco árabe','LOCAL QA','unisex','always_available','published'),
+('99005000-0000-4000-8000-000000000020','11111111-1111-4111-8111-111111111111','local-qa-arabe-regalo','LOCAL QA — Árabe de regalo','LOCAL QA','unisex','always_available','published'),
+('99005000-0000-4000-8000-000000000030','11111111-1111-4111-8111-111111111111','local-qa-arabe-excluido','LOCAL QA — Árabe excluido','LOCAL QA','unisex','always_available','published') on conflict do nothing;
+insert into public.product_categories(product_id,category_id)
+values ('99005000-0000-4000-8000-000000000010','99005000-0000-4000-8000-000000000001'),
+('99005000-0000-4000-8000-000000000020','99005000-0000-4000-8000-000000000001'),
+('99005000-0000-4000-8000-000000000030','99005000-0000-4000-8000-000000000001') on conflict do nothing;
+insert into public.product_variants(id,product_id,variant_kind,size_ml,label,price_amount,currency,publication_status,price_verification_status)
+values ('99005000-0000-4000-8000-000000000011','99005000-0000-4000-8000-000000000010','decant',5,'LOCAL QA Frasco 5 ml',10,'PEN','published','client_confirmed'),
+('99005000-0000-4000-8000-000000000012','99005000-0000-4000-8000-000000000010','bottle',50,'LOCAL QA Frasco 50 ml',90,'PEN','published','client_confirmed'),
+('99005000-0000-4000-8000-000000000013','99005000-0000-4000-8000-000000000010','bottle',100,'LOCAL QA Frasco 100 ml',140,'PEN','published','client_confirmed'),
+('99005000-0000-4000-8000-000000000021','99005000-0000-4000-8000-000000000020','decant',5,'LOCAL QA Regalo 5 ml',12,'PEN','published','client_confirmed'),
+('99005000-0000-4000-8000-000000000031','99005000-0000-4000-8000-000000000030','decant',5,'LOCAL QA Excluido 5 ml',12,'PEN','published','client_confirmed') on conflict do nothing;
+insert into public.inventory(product_variant_id,inventory_mode,availability_status)
+values ('99005000-0000-4000-8000-000000000011','status_only','available'),
+('99005000-0000-4000-8000-000000000012','status_only','available'),
+('99005000-0000-4000-8000-000000000013','status_only','available'),
+('99005000-0000-4000-8000-000000000021','status_only','available'),
+('99005000-0000-4000-8000-000000000031','status_only','available') on conflict do nothing;
+insert into public.product_media(id,product_id,provider,secure_url,alt,is_primary)
+values ('99005000-0000-4000-8000-000000000014','99005000-0000-4000-8000-000000000010','legacy_static','/icon.png','LOCAL QA — frasco de prueba',true),
+('99005000-0000-4000-8000-000000000022','99005000-0000-4000-8000-000000000020','legacy_static','/icon.png','LOCAL QA — regalo de prueba',true),
+('99005000-0000-4000-8000-000000000032','99005000-0000-4000-8000-000000000030','legacy_static','/icon.png','LOCAL QA — excluido de prueba',true) on conflict do nothing;
+insert into public.promotion_rules (business_unit_id, rule_type, conditions, actions, is_active)
+values ('11111111-1111-4111-8111-111111111111','gift_exclusion',jsonb_build_object('excluded_product_ids', jsonb_build_array('99005000-0000-4000-8000-000000000030'::text)),'{}'::jsonb,true)
+on conflict (business_unit_id, rule_type) do update set conditions = excluded.conditions, actions = excluded.actions, is_active = excluded.is_active;
 commit;

@@ -13,6 +13,7 @@ import {
   decantSizeOptions,
   defaultDecantSize,
   filterCatalogProducts,
+  hasBottleVariant,
   hasDecantOffer,
   paginateCatalog,
 } from "./catalog-query";
@@ -69,6 +70,26 @@ describe("catalog query", () => {
 
   it("every legacy fragrance has a decant offer", () => {
     expect(products.filter((product) => product.type !== "combo").every(hasDecantOffer)).toBe(true);
+  });
+
+  it("offers a whole bottle exactly when a sealed-bottle variant is priced and in stock", () => {
+    // Same 22 records the parity UI sees, so `/parfums/frascos` can never show a product with no bottle to sell.
+    const withBottles = filterCatalogProducts(products, { ...DEFAULT_CATALOG_FILTERS, format: "bottle" });
+    expect(withBottles).toHaveLength(22);
+    expect(withBottles.every(hasBottleVariant)).toBe(true);
+    expect(products.filter((product) => product.type !== "combo" && !hasBottleVariant(product)).length).toBe(
+      products.filter((product) => product.type !== "combo").length - 22,
+    );
+  });
+
+  it("a priced but out-of-stock bottle is not an offer, and a decant-only product has none", () => {
+    const product = products.find(hasBottleVariant)!;
+    expect(product.bottlePrices).not.toBeNull();
+    expect(
+      hasBottleVariant({ ...product, variants: product.variants.map((variant) => (variant.kind === "bottle" ? { ...variant, isAvailable: false } : variant)) }),
+    ).toBe(false);
+    expect(hasBottleVariant({ ...product, bottlePrices: null })).toBe(false);
+    expect(hasBottleVariant({ ...product, variants: [] })).toBe(false);
   });
 
   describe("pagination", () => {

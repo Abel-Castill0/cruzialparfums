@@ -11,6 +11,7 @@ const PUBLIC_ROUTES = [
   "/",
   "/parfums",
   "/parfums/catalogo",
+  "/parfums/frascos",
   "/parfums/combos",
   "/parfums/checkout",
   "/parfums/contacto",
